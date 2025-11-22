@@ -42,6 +42,7 @@ export default function Home() {
   const [pact, setPact] = useState<Pact | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [dashboardData, setDashboardData] = useState({
     difficultyProgress: [] as any[],
     totalStepsCompleted: 0,
@@ -65,6 +66,17 @@ export default function Home() {
 
       setPact(pactData);
 
+      // Load custom difficulty name
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("custom_difficulty_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData?.custom_difficulty_name) {
+        setCustomDifficultyName(profileData.custom_difficulty_name);
+      }
+
       // Load all goals for status overview
       const { data: goalsData } = await supabase
         .from("goals")
@@ -83,7 +95,7 @@ export default function Home() {
         .eq("pact_id", pactData.id);
 
       // Calculate difficulty progress
-      const difficulties = ["easy", "medium", "hard", "extreme"];
+      const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
       const difficultyProgress = difficulties.map((difficulty) => {
         const diffGoals = allGoalsData?.filter((g) => g.difficulty === difficulty) || [];
         const totalSteps = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
@@ -243,6 +255,7 @@ export default function Home() {
           totalCostFinanced={dashboardData.totalCostFinanced}
           timelineData={dashboardData.timelineData}
           currentTier={pact.tier}
+          customDifficultyName={customDifficultyName}
         />
         <Card>
           <CardHeader>

@@ -26,6 +26,7 @@ interface PactDashboardProps {
   totalCostFinanced: number;
   timelineData: TimelineData[];
   currentTier: number;
+  customDifficultyName?: string;
 }
 
 const difficultyColors = {
@@ -33,6 +34,8 @@ const difficultyColors = {
   medium: "hsl(var(--primary))",
   hard: "hsl(var(--accent))",
   extreme: "hsl(var(--destructive))",
+  impossible: "hsl(280 100% 60%)", // Purple
+  custom: "hsl(45 100% 50%)", // Gold
 };
 
 export function PactDashboard({
@@ -43,8 +46,16 @@ export function PactDashboard({
   totalCostFinanced,
   timelineData,
   currentTier,
+  customDifficultyName,
 }: PactDashboardProps) {
   const costPercentage = totalCostEngaged > 0 ? (totalCostFinanced / totalCostEngaged) * 100 : 0;
+
+  const getDifficultyLabel = (difficulty: string) => {
+    if (difficulty === 'custom' && customDifficultyName) {
+      return customDifficultyName;
+    }
+    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  };
 
   return (
     <div className="space-y-6">
@@ -69,7 +80,7 @@ export function PactDashboard({
                       color: difficultyColors[item.difficulty as keyof typeof difficultyColors]
                     }}
                   >
-                    {item.difficulty}
+                    {getDifficultyLabel(item.difficulty)}
                   </Badge>
                   <span className="text-sm text-muted-foreground">
                     {item.completed} / {item.total}
