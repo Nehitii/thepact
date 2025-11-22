@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -61,6 +62,7 @@ export default function GoalDetail() {
   const [editStartDate, setEditStartDate] = useState("");
   const [editCompletionDate, setEditCompletionDate] = useState("");
   const [editImage, setEditImage] = useState("");
+  const [editDifficulty, setEditDifficulty] = useState("");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
 
   useEffect(() => {
@@ -91,6 +93,7 @@ export default function GoalDetail() {
         setEditStartDate(goalData.start_date?.split('T')[0] || "");
         setEditCompletionDate(goalData.completion_date?.split('T')[0] || "");
         setEditImage(goalData.image_url || "");
+        setEditDifficulty(goalData.difficulty || "medium");
 
         const { data: stepsData } = await supabase
           .from("steps")
@@ -208,6 +211,7 @@ export default function GoalDetail() {
     const updates: any = {};
     if (editName !== goal.name) updates.name = editName;
     if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
+    if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
     if (editStartDate && editStartDate !== goal.start_date?.split('T')[0]) {
       updates.start_date = new Date(editStartDate).toISOString();
     }
@@ -383,6 +387,22 @@ export default function GoalDetail() {
                       value={editSteps}
                       onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)}
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="difficulty">Difficulty</Label>
+                    <Select value={editDifficulty} onValueChange={setEditDifficulty}>
+                      <SelectTrigger id="difficulty">
+                        <SelectValue placeholder="Select difficulty" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="easy">Easy</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="hard">Hard</SelectItem>
+                        <SelectItem value="extreme">Extreme</SelectItem>
+                        <SelectItem value="impossible">Impossible</SelectItem>
+                        <SelectItem value="custom">{customDifficultyName || "Custom"}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div>
                     <Label htmlFor="startDate">Start Date</Label>
