@@ -397,7 +397,13 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
-      goal_difficulty: "easy" | "medium" | "hard" | "extreme" | "custom"
+      goal_difficulty:
+        | "easy"
+        | "medium"
+        | "hard"
+        | "extreme"
+        | "custom"
+        | "impossible"
       goal_status:
         | "active"
         | "completed"
@@ -544,7 +550,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin"],
-      goal_difficulty: ["easy", "medium", "hard", "extreme", "custom"],
+      goal_difficulty: [
+        "easy",
+        "medium",
+        "hard",
+        "extreme",
+        "custom",
+        "impossible",
+      ],
       goal_status: [
         "active",
         "completed",
