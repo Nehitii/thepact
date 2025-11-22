@@ -55,14 +55,17 @@ export type Database = {
       }
       goals: {
         Row: {
+          completion_date: string | null
           created_at: string | null
           difficulty: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost: number | null
           id: string
+          image_url: string | null
           name: string
           notes: string | null
           pact_id: string
           potential_score: number | null
+          start_date: string | null
           status: Database["public"]["Enums"]["goal_status"] | null
           total_steps: number | null
           type: Database["public"]["Enums"]["goal_type"] | null
@@ -70,14 +73,17 @@ export type Database = {
           validated_steps: number | null
         }
         Insert: {
+          completion_date?: string | null
           created_at?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost?: number | null
           id?: string
+          image_url?: string | null
           name: string
           notes?: string | null
           pact_id: string
           potential_score?: number | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"] | null
           total_steps?: number | null
           type?: Database["public"]["Enums"]["goal_type"] | null
@@ -85,14 +91,17 @@ export type Database = {
           validated_steps?: number | null
         }
         Update: {
+          completion_date?: string | null
           created_at?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost?: number | null
           id?: string
+          image_url?: string | null
           name?: string
           notes?: string | null
           pact_id?: string
           potential_score?: number | null
+          start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"] | null
           total_steps?: number | null
           type?: Database["public"]["Enums"]["goal_type"] | null
@@ -383,7 +392,15 @@ export type Database = {
     Enums: {
       app_role: "user" | "admin"
       goal_difficulty: "easy" | "medium" | "hard" | "extreme"
-      goal_status: "active" | "completed" | "paused" | "cancelled"
+      goal_status:
+        | "active"
+        | "completed"
+        | "paused"
+        | "cancelled"
+        | "not_started"
+        | "in_progress"
+        | "validated"
+        | "fully_completed"
       goal_type:
         | "personal"
         | "professional"
@@ -522,7 +539,16 @@ export const Constants = {
     Enums: {
       app_role: ["user", "admin"],
       goal_difficulty: ["easy", "medium", "hard", "extreme"],
-      goal_status: ["active", "completed", "paused", "cancelled"],
+      goal_status: [
+        "active",
+        "completed",
+        "paused",
+        "cancelled",
+        "not_started",
+        "in_progress",
+        "validated",
+        "fully_completed",
+      ],
       goal_type: [
         "personal",
         "professional",
