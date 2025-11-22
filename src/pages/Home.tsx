@@ -110,6 +110,7 @@ export default function Home() {
       const totalCostFinanced = spendingData?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
 
       // Generate timeline data (last 30 days)
+      const currentProgress = Number(pactData.global_progress) || 0;
       const timelineData = [];
       for (let i = 29; i >= 0; i--) {
         const date = subDays(new Date(), i);
@@ -117,7 +118,7 @@ export default function Home() {
         
         // In a real app, you'd query historical data
         // For now, we'll simulate progression
-        const dayProgress = Math.min(progressPercentage, ((30 - i) / 30) * progressPercentage);
+        const dayProgress = Math.min(currentProgress, ((30 - i) / 30) * currentProgress);
         const dayPoints = Math.min(pactData.points, Math.floor(((30 - i) / 30) * pactData.points));
         
         timelineData.push({
