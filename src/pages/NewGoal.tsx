@@ -81,6 +81,8 @@ export default function NewGoal() {
           notes: notes.trim() || null,
           total_steps: stepCount,
           potential_score: potentialScore,
+          start_date: new Date().toISOString(),
+          status: "not_started",
         } as any)
         .select()
         .single();
