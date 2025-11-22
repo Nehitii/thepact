@@ -65,14 +65,12 @@ export default function Home() {
 
       setPact(pactData);
 
-      // Load active goals
+      // Load all goals for status overview
       const { data: goalsData } = await supabase
         .from("goals")
         .select("*")
         .eq("pact_id", pactData.id)
-        .eq("status", "active")
-        .order("created_at", { ascending: false })
-        .limit(3);
+        .order("created_at", { ascending: false });
 
       if (goalsData) {
         setGoals(goalsData);

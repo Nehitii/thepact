@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowRight, ArrowUpDown } from "lucide-react";
+import { Plus, ArrowRight, ArrowUpDown, CheckCircle2 } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Goal {
   id: string;
@@ -49,6 +50,7 @@ export default function Goals() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("smart");
+  const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
 
   useEffect(() => {
     if (!user) return;
@@ -175,7 +177,14 @@ export default function Goals() {
     }
   };
 
-  const sortedGoals = sortGoals(goals);
+  // Filter goals by active/completed status
+  const activeGoals = goals.filter(g => 
+    g.status === 'not_started' || g.status === 'in_progress' || g.status === 'validated'
+  );
+  const completedGoals = goals.filter(g => g.status === 'fully_completed');
+  
+  const sortedActiveGoals = sortGoals(activeGoals);
+  const sortedCompletedGoals = sortGoals(completedGoals);
 
   if (loading) {
     return (
@@ -226,7 +235,7 @@ export default function Goals() {
           )}
         </div>
 
-        {/* Goals List */}
+        {/* Goals Tabs */}
         {goals.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -244,74 +253,190 @@ export default function Goals() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {sortedGoals.map((goal) => {
-              const progress =
-                goal.total_steps > 0
-                  ? (goal.validated_steps / goal.total_steps) * 100
-                  : 0;
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "completed")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="active">
+                Active ({activeGoals.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed ({completedGoals.length})
+              </TabsTrigger>
+            </TabsList>
 
-              return (
-                <Card
-                  key={goal.id}
-                  className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50"
-                  onClick={() => navigate(`/goals/${goal.id}`)}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between gap-4">
-                      {goal.image_url && (
-                        <img 
-                          src={goal.image_url} 
-                          alt={goal.name}
-                          className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                        />
-                      )}
-                      <div className="flex-1 space-y-3">
-                        <div>
-                          <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge variant="secondary">{goal.type}</Badge>
-                            <Badge variant="outline">{goal.difficulty}</Badge>
-                            <Badge className={getStatusColor(goal.status)}>
-                              {goal.status}
-                            </Badge>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-muted-foreground">
-                              {goal.validated_steps} / {goal.total_steps} steps completed
-                            </span>
-                            <span className="font-medium text-primary">
-                              {progress.toFixed(0)}%
-                            </span>
-                          </div>
-                          <div className="h-2 bg-muted rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary transition-all duration-500 rounded-full"
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        {goal.potential_score > 0 && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <span>Potential Score:</span>
-                            <span className="font-semibold text-primary">
-                              +{goal.potential_score} pts
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+            <TabsContent value="active" className="space-y-4 mt-6">
+              {activeGoals.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                      <Plus className="h-8 w-8 text-primary" />
                     </div>
+                    <h3 className="text-xl font-semibold mb-2">No Active Goals</h3>
+                    <p className="text-muted-foreground mb-6 max-w-sm">
+                      Start your journey by adding your first Pact evolution
+                    </p>
+                    <Button onClick={() => navigate("/goals/new")}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create First Goal
+                    </Button>
                   </CardContent>
                 </Card>
-              );
-            })}
-          </div>
+              ) : (
+                sortedActiveGoals.map((goal) => {
+                  const progress =
+                    goal.total_steps > 0
+                      ? (goal.validated_steps / goal.total_steps) * 100
+                      : 0;
+
+                  return (
+                    <Card
+                      key={goal.id}
+                      className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50"
+                      onClick={() => navigate(`/goals/${goal.id}`)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex items-start justify-between gap-4">
+                          {goal.image_url && (
+                            <img 
+                              src={goal.image_url} 
+                              alt={goal.name}
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 space-y-3">
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="secondary">{goal.type}</Badge>
+                                <Badge variant="outline">{goal.difficulty}</Badge>
+                                <Badge className={getStatusColor(goal.status)}>
+                                  {goal.status === 'not_started' ? 'Not Started' : 
+                                   goal.status === 'in_progress' ? 'In Progress' : 
+                                   goal.status === 'validated' ? 'Validated' : 'Completed'}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                  {goal.validated_steps} / {goal.total_steps} steps completed
+                                </span>
+                                <span className="font-medium text-primary">
+                                  {progress.toFixed(0)}%
+                                </span>
+                              </div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-primary transition-all duration-500 rounded-full"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            {goal.potential_score > 0 && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>Potential Score:</span>
+                                <span className="font-semibold text-primary">
+                                  +{goal.potential_score} pts
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </TabsContent>
+
+            <TabsContent value="completed" className="space-y-4 mt-6">
+              {completedGoals.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                    <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">No Completed Goals Yet</h3>
+                    <p className="text-muted-foreground max-w-sm">
+                      Complete your active goals to see them here
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                sortedCompletedGoals.map((goal) => {
+                  const progress = 100; // Completed goals are always 100%
+
+                  return (
+                    <Card
+                      key={goal.id}
+                      className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50 relative bg-muted/30"
+                      onClick={() => navigate(`/goals/${goal.id}`)}
+                    >
+                      {/* Green Completed Badge */}
+                      <div className="absolute top-4 right-4 z-10">
+                        <Badge className="bg-green-500/90 text-white hover:bg-green-600 flex items-center gap-1">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Completed
+                        </Badge>
+                      </div>
+                      
+                      <CardContent className="p-6 opacity-75">
+                        <div className="flex items-start justify-between gap-4">
+                          {goal.image_url && (
+                            <img 
+                              src={goal.image_url} 
+                              alt={goal.name}
+                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 grayscale"
+                            />
+                          )}
+                          <div className="flex-1 space-y-3">
+                            <div>
+                              <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge variant="secondary">{goal.type}</Badge>
+                                <Badge variant="outline">{goal.difficulty}</Badge>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-muted-foreground">
+                                  {goal.validated_steps} / {goal.total_steps} steps completed
+                                </span>
+                                <span className="font-medium text-green-600 dark:text-green-400">
+                                  {progress}%
+                                </span>
+                              </div>
+                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-green-500 transition-all duration-500 rounded-full"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            </div>
+
+                            {goal.potential_score > 0 && (
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>Score Earned:</span>
+                                <span className="font-semibold text-green-600 dark:text-green-400">
+                                  +{goal.potential_score} pts
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
+            </TabsContent>
+          </Tabs>
         )}
       </div>
 
