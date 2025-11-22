@@ -31,6 +31,9 @@ interface Goal {
   status: string;
   validated_steps: number;
   total_steps: number;
+  start_date?: string;
+  completion_date?: string;
+  image_url?: string;
 }
 
 export default function Home() {
@@ -197,6 +200,42 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Goal Status Counters */}
+        <Card className="animate-fade-in">
+          <CardHeader>
+            <CardTitle>Goal Status Overview</CardTitle>
+            <CardDescription>Track your progress across all goals</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
+                <div className="text-2xl font-bold text-muted-foreground">
+                  {goals.filter(g => g.status === 'not_started').length}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Not Started</div>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                <div className="text-2xl font-bold text-primary">
+                  {goals.filter(g => g.status === 'in_progress').length}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">In Progress</div>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 transition-colors">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                  {goals.filter(g => g.status === 'validated').length}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Validated</div>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                  {goals.filter(g => g.status === 'fully_completed').length}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">Completed</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Dashboard Indicators */}
         <PactDashboard
           difficultyProgress={dashboardData.difficultyProgress}
@@ -207,8 +246,6 @@ export default function Home() {
           timelineData={dashboardData.timelineData}
           currentTier={pact.tier}
         />
-
-        {/* Active Goals */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">

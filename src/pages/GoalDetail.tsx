@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Check, ChevronRight, Trash2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,6 +34,9 @@ interface Goal {
   estimated_cost: number;
   notes: string | null;
   potential_score: number;
+  start_date?: string;
+  completion_date?: string;
+  image_url?: string;
 }
 
 interface Step {
@@ -49,6 +55,12 @@ export default function GoalDetail() {
   const [goal, setGoal] = useState<Goal | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editSteps, setEditSteps] = useState(0);
+  const [editStartDate, setEditStartDate] = useState("");
+  const [editCompletionDate, setEditCompletionDate] = useState("");
+  const [editImage, setEditImage] = useState("");
 
   useEffect(() => {
     if (!user || !id) return;
@@ -62,6 +74,11 @@ export default function GoalDetail() {
 
       if (goalData) {
         setGoal(goalData);
+        setEditName(goalData.name);
+        setEditSteps(goalData.total_steps || 0);
+        setEditStartDate(goalData.start_date?.split('T')[0] || "");
+        setEditCompletionDate(goalData.completion_date?.split('T')[0] || "");
+        setEditImage(goalData.image_url || "");
 
         const { data: stepsData } = await supabase
           .from("steps")
@@ -126,6 +143,111 @@ export default function GoalDetail() {
     }
   };
 
+  const handleFullyComplete = async () => {
+    if (!goal) return;
+
+    const { handleFullyComplete: completeGoal } = await import("./GoalDetail_handlers");
+    
+    completeGoal(
+      goal.id,
+      goal.total_steps,
+      async () => {
+        // Reload data
+        const { data: updatedGoal } = await supabase
+          .from("goals")
+          .select("*")
+          .eq("id", goal.id)
+          .single();
+
+        if (updatedGoal) {
+          setGoal(updatedGoal);
+        }
+
+        const { data: updatedSteps } = await supabase
+          .from("steps")
+          .select("*")
+          .eq("goal_id", goal.id)
+          .order("order", { ascending: true });
+
+        if (updatedSteps) {
+          setSteps(updatedSteps);
+        }
+
+        toast({
+          title: "Goal Completed! 🎉",
+          description: "All steps have been marked as complete",
+        });
+      },
+      (message) => {
+        toast({
+          title: "Error",
+          description: message,
+          variant: "destructive",
+        });
+      }
+    );
+  };
+
+  const handleEditGoal = async () => {
+    if (!goal) return;
+
+    const { handleUpdateGoal } = await import("./GoalDetail_handlers");
+    
+    const updates: any = {};
+    if (editName !== goal.name) updates.name = editName;
+    if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
+    if (editStartDate && editStartDate !== goal.start_date?.split('T')[0]) {
+      updates.start_date = new Date(editStartDate).toISOString();
+    }
+    if (editCompletionDate && editCompletionDate !== goal.completion_date?.split('T')[0]) {
+      updates.completion_date = new Date(editCompletionDate).toISOString();
+    }
+    if (editImage !== goal.image_url) updates.image_url = editImage;
+
+    handleUpdateGoal(
+      goal.id,
+      goal.total_steps,
+      updates,
+      async () => {
+        // Reload data
+        const { data: updatedGoal } = await supabase
+          .from("goals")
+          .select("*")
+          .eq("id", goal.id)
+          .single();
+
+        if (updatedGoal) {
+          setGoal(updatedGoal);
+          setEditName(updatedGoal.name);
+          setEditSteps(updatedGoal.total_steps || 0);
+        }
+
+        const { data: updatedSteps } = await supabase
+          .from("steps")
+          .select("*")
+          .eq("goal_id", goal.id)
+          .order("order", { ascending: true });
+
+        if (updatedSteps) {
+          setSteps(updatedSteps);
+        }
+
+        setEditDialogOpen(false);
+        toast({
+          title: "Goal Updated",
+          description: "Changes saved successfully",
+        });
+      },
+      (message) => {
+        toast({
+          title: "Error",
+          description: message,
+          variant: "destructive",
+        });
+      }
+    );
+  };
+
   const handleDeleteGoal = async () => {
     if (!id) return;
 
@@ -182,6 +304,13 @@ export default function GoalDetail() {
             <Button variant="ghost" size="icon" onClick={() => navigate("/goals")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
+            {goal.image_url && (
+              <img 
+                src={goal.image_url} 
+                alt={goal.name}
+                className="w-20 h-20 rounded-lg object-cover"
+              />
+            )}
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">{goal.name}</h1>
               <div className="flex items-center gap-2 flex-wrap">
@@ -189,24 +318,99 @@ export default function GoalDetail() {
                 <Badge variant="outline">{goal.difficulty}</Badge>
                 <Badge
                   className={
-                    goal.status === "active"
+                    goal.status === "not_started"
+                      ? "bg-muted text-muted-foreground"
+                      : goal.status === "in_progress"
                       ? "bg-primary/10 text-primary"
-                      : goal.status === "completed"
+                      : goal.status === "validated"
+                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                      : goal.status === "fully_completed"
                       ? "bg-green-500/10 text-green-600 dark:text-green-400"
                       : "bg-muted"
                   }
                 >
-                  {goal.status}
+                  {goal.status.replace('_', ' ')}
                 </Badge>
               </div>
             </div>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Trash2 className="h-5 w-5 text-destructive" />
-              </Button>
-            </AlertDialogTrigger>
+          <div className="flex items-center gap-2">
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Edit className="h-5 w-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Edit Goal</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div>
+                    <Label htmlFor="name">Goal Name</Label>
+                    <Input
+                      id="name"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="steps">Number of Steps</Label>
+                    <Input
+                      id="steps"
+                      type="number"
+                      min="1"
+                      value={editSteps}
+                      onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="startDate">Start Date</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={editStartDate}
+                      onChange={(e) => setEditStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="completionDate">Completion Date</Label>
+                    <Input
+                      id="completionDate"
+                      type="date"
+                      value={editCompletionDate}
+                      onChange={(e) => setEditCompletionDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="image">Image URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="image"
+                        value={editImage}
+                        onChange={(e) => setEditImage(e.target.value)}
+                        placeholder="https://..."
+                      />
+                      <Button variant="outline" size="icon">
+                        <Upload className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <Button onClick={handleEditGoal} className="w-full">
+                    Save Changes
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" size="icon" onClick={handleFullyComplete}>
+              <Sparkles className="h-5 w-5 text-primary" />
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Trash2 className="h-5 w-5 text-destructive" />
+                </Button>
+              </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Delete Goal?</AlertDialogTitle>
@@ -222,6 +426,7 @@ export default function GoalDetail() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
+          </div>
         </div>
 
         {/* Progress */}
@@ -280,7 +485,7 @@ export default function GoalDetail() {
                     htmlFor={step.id}
                     className={`flex-1 cursor-pointer text-sm ${
                       step.status === "completed"
-                        ? "line-through text-muted-foreground"
+                        ? "text-primary font-medium"
                         : ""
                     }`}
                   >
