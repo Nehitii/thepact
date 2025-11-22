@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Goals from "./pages/Goals";
 import NewGoal from "./pages/NewGoal";
 import GoalDetail from "./pages/GoalDetail";
+import StepDetail from "./pages/StepDetail";
 import Health from "./pages/Health";
 import Finance from "./pages/Finance";
 import Profile from "./pages/Profile";
@@ -64,6 +65,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <GoalDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/step/:stepId"
+              element={
+                <ProtectedRoute>
+                  <StepDetail />
                 </ProtectedRoute>
               }
             />
