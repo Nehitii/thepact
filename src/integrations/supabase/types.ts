@@ -258,12 +258,50 @@ export type Database = {
         }
         Relationships: []
       }
+      step_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_status: Database["public"]["Enums"]["step_status"]
+          old_status: Database["public"]["Enums"]["step_status"] | null
+          step_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_status: Database["public"]["Enums"]["step_status"]
+          old_status?: Database["public"]["Enums"]["step_status"] | null
+          step_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_status?: Database["public"]["Enums"]["step_status"]
+          old_status?: Database["public"]["Enums"]["step_status"] | null
+          step_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "step_status_history_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       steps: {
         Row: {
+          completion_date: string | null
           created_at: string | null
+          description: string | null
           due_date: string | null
           goal_id: string
           id: string
+          notes: string | null
           order: number
           status: Database["public"]["Enums"]["step_status"] | null
           title: string
@@ -271,10 +309,13 @@ export type Database = {
           validated_at: string | null
         }
         Insert: {
+          completion_date?: string | null
           created_at?: string | null
+          description?: string | null
           due_date?: string | null
           goal_id: string
           id?: string
+          notes?: string | null
           order: number
           status?: Database["public"]["Enums"]["step_status"] | null
           title: string
@@ -282,10 +323,13 @@ export type Database = {
           validated_at?: string | null
         }
         Update: {
+          completion_date?: string | null
           created_at?: string | null
+          description?: string | null
           due_date?: string | null
           goal_id?: string
           id?: string
+          notes?: string | null
           order?: number
           status?: Database["public"]["Enums"]["step_status"] | null
           title?: string

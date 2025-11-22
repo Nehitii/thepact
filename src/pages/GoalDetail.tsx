@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Check, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -266,13 +266,16 @@ export default function GoalDetail() {
               {steps.map((step) => (
                 <div
                   key={step.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors cursor-pointer group"
+                  onClick={() => navigate(`/step/${step.id}`)}
                 >
-                  <Checkbox
-                    id={step.id}
-                    checked={step.status === "completed"}
-                    onCheckedChange={() => handleToggleStep(step.id, step.status)}
-                  />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      id={step.id}
+                      checked={step.status === "completed"}
+                      onCheckedChange={() => handleToggleStep(step.id, step.status)}
+                    />
+                  </div>
                   <label
                     htmlFor={step.id}
                     className={`flex-1 cursor-pointer text-sm ${
@@ -286,6 +289,7 @@ export default function GoalDetail() {
                   {step.status === "completed" && (
                     <Check className="h-4 w-4 text-primary" />
                   )}
+                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               ))}
             </div>

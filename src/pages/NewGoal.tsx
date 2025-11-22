@@ -91,6 +91,8 @@ export default function NewGoal() {
       const steps = Array.from({ length: stepCount }, (_, i) => ({
         goal_id: goalData.id,
         title: `Step ${i + 1}`,
+        description: "",
+        notes: "",
         order: i + 1,
       }));
 
