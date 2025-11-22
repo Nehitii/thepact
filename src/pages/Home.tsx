@@ -4,11 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserPact } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { PactVisual } from "@/components/PactVisual";
+import { PactDashboard } from "@/components/PactDashboard";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, TrendingUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { format, subDays } from "date-fns";
 
 interface Pact {
   id: string;
@@ -37,6 +39,14 @@ export default function Home() {
   const [pact, setPact] = useState<Pact | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState({
+    difficultyProgress: [] as any[],
+    totalStepsCompleted: 0,
+    totalSteps: 0,
+    totalCostEngaged: 0,
+    totalCostFinanced: 0,
+    timelineData: [] as any[],
+  });
 
   useEffect(() => {
     if (!user) return;
@@ -64,6 +74,68 @@ export default function Home() {
       if (goalsData) {
         setGoals(goalsData);
       }
+
+      // Load all goals for dashboard calculations
+      const { data: allGoalsData } = await supabase
+        .from("goals")
+        .select("*")
+        .eq("pact_id", pactData.id);
+
+      // Calculate difficulty progress
+      const difficulties = ["easy", "medium", "hard", "extreme"];
+      const difficultyProgress = difficulties.map((difficulty) => {
+        const diffGoals = allGoalsData?.filter((g) => g.difficulty === difficulty) || [];
+        const totalSteps = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+        const completedSteps = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+        return {
+          difficulty,
+          completed: completedSteps,
+          total: totalSteps,
+          percentage: totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0,
+        };
+      });
+
+      // Calculate total steps
+      const totalSteps = allGoalsData?.reduce((sum, g) => sum + (g.total_steps || 0), 0) || 0;
+      const totalStepsCompleted = allGoalsData?.reduce((sum, g) => sum + (g.validated_steps || 0), 0) || 0;
+
+      // Calculate costs
+      const totalCostEngaged = allGoalsData?.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0) || 0;
+      
+      const { data: spendingData } = await supabase
+        .from("pact_spending")
+        .select("amount")
+        .eq("user_id", user.id);
+      
+      const totalCostFinanced = spendingData?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
+
+      // Generate timeline data (last 30 days)
+      const timelineData = [];
+      for (let i = 29; i >= 0; i--) {
+        const date = subDays(new Date(), i);
+        const dateStr = format(date, "MM/dd");
+        
+        // In a real app, you'd query historical data
+        // For now, we'll simulate progression
+        const dayProgress = Math.min(progressPercentage, ((30 - i) / 30) * progressPercentage);
+        const dayPoints = Math.min(pactData.points, Math.floor(((30 - i) / 30) * pactData.points));
+        
+        timelineData.push({
+          date: dateStr,
+          progress: Number(dayProgress.toFixed(1)),
+          points: dayPoints,
+          steps: Math.floor(((30 - i) / 30) * totalStepsCompleted),
+        });
+      }
+
+      setDashboardData({
+        difficultyProgress,
+        totalStepsCompleted,
+        totalSteps,
+        totalCostEngaged,
+        totalCostFinanced,
+        timelineData,
+      });
 
       setLoading(false);
     };
@@ -123,6 +195,17 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Dashboard Indicators */}
+        <PactDashboard
+          difficultyProgress={dashboardData.difficultyProgress}
+          totalStepsCompleted={dashboardData.totalStepsCompleted}
+          totalSteps={dashboardData.totalSteps}
+          totalCostEngaged={dashboardData.totalCostEngaged}
+          totalCostFinanced={dashboardData.totalCostFinanced}
+          timelineData={dashboardData.timelineData}
+          currentTier={pact.tier}
+        />
 
         {/* Active Goals */}
         <Card>
