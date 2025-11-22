@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -21,8 +21,6 @@ const goalTypes = [
   "other",
 ];
 
-const difficulties = ["easy", "medium", "hard", "extreme"];
-
 export default function NewGoal() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -35,6 +33,39 @@ export default function NewGoal() {
   const [estimatedCost, setEstimatedCost] = useState("");
   const [notes, setNotes] = useState("");
   const [stepCount, setStepCount] = useState(5);
+  
+  const [customDifficultyName, setCustomDifficultyName] = useState("");
+  const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
+
+  // Load custom difficulty settings
+  useEffect(() => {
+    if (!user) return;
+
+    const loadProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("custom_difficulty_name, custom_difficulty_active")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (data) {
+        setCustomDifficultyName(data.custom_difficulty_name || "Custom");
+        setCustomDifficultyActive(data.custom_difficulty_active || false);
+      }
+    };
+
+    loadProfile();
+  }, [user]);
+
+  // Build difficulties array based on custom difficulty settings
+  const difficulties = [
+    { value: "easy", label: "Easy" },
+    { value: "medium", label: "Medium" },
+    { value: "hard", label: "Hard" },
+    { value: "extreme", label: "Extreme" },
+    { value: "impossible", label: "Impossible" },
+    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom" }] : []),
+  ];
 
   const handleCreate = async () => {
     if (!user || !name.trim()) {
@@ -66,7 +97,14 @@ export default function NewGoal() {
       }
 
       // Calculate potential score based on difficulty
-      const scoreMap = { easy: 10, medium: 25, hard: 50, extreme: 100 };
+      const scoreMap = { 
+        easy: 10, 
+        medium: 25, 
+        hard: 50, 
+        extreme: 100, 
+        impossible: 200,
+        custom: 500 
+      };
       const potentialScore = scoreMap[difficulty as keyof typeof scoreMap] || 25;
 
       // Create goal
@@ -178,8 +216,8 @@ export default function NewGoal() {
                   </SelectTrigger>
                   <SelectContent>
                     {difficulties.map((d) => (
-                      <SelectItem key={d} value={d}>
-                        {d.charAt(0).toUpperCase() + d.slice(1)}
+                      <SelectItem key={d.value} value={d.value}>
+                        {d.label}
                       </SelectItem>
                     ))}
                   </SelectContent>

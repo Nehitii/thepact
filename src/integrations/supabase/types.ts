@@ -244,6 +244,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string | null
+          custom_difficulty_active: boolean | null
+          custom_difficulty_name: string | null
           display_name: string | null
           id: string
           timezone: string | null
@@ -252,6 +254,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string | null
+          custom_difficulty_active?: boolean | null
+          custom_difficulty_name?: string | null
           display_name?: string | null
           id: string
           timezone?: string | null
@@ -260,6 +264,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string | null
+          custom_difficulty_active?: boolean | null
+          custom_difficulty_name?: string | null
           display_name?: string | null
           id?: string
           timezone?: string | null
@@ -391,7 +397,7 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
-      goal_difficulty: "easy" | "medium" | "hard" | "extreme"
+      goal_difficulty: "easy" | "medium" | "hard" | "extreme" | "custom"
       goal_status:
         | "active"
         | "completed"
@@ -538,7 +544,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin"],
-      goal_difficulty: ["easy", "medium", "hard", "extreme"],
+      goal_difficulty: ["easy", "medium", "hard", "extreme", "custom"],
       goal_status: [
         "active",
         "completed",

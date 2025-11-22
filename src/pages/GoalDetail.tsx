@@ -61,11 +61,23 @@ export default function GoalDetail() {
   const [editStartDate, setEditStartDate] = useState("");
   const [editCompletionDate, setEditCompletionDate] = useState("");
   const [editImage, setEditImage] = useState("");
+  const [customDifficultyName, setCustomDifficultyName] = useState("");
 
   useEffect(() => {
     if (!user || !id) return;
 
     const loadData = async () => {
+      // Load custom difficulty settings
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("custom_difficulty_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData?.custom_difficulty_name) {
+        setCustomDifficultyName(profileData.custom_difficulty_name);
+      }
+
       const { data: goalData } = await supabase
         .from("goals")
         .select("*")
@@ -295,6 +307,14 @@ export default function GoalDetail() {
   const progress =
     goal.total_steps > 0 ? (goal.validated_steps / goal.total_steps) * 100 : 0;
 
+  // Get display label for difficulty
+  const getDifficultyLabel = (difficulty: string) => {
+    if (difficulty === 'custom' && customDifficultyName) {
+      return customDifficultyName;
+    }
+    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary">
       <div className="max-w-2xl mx-auto p-6 space-y-6 pb-12">
@@ -315,7 +335,7 @@ export default function GoalDetail() {
               <h1 className="text-3xl font-bold mb-2">{goal.name}</h1>
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary">{goal.type}</Badge>
-                <Badge variant="outline">{goal.difficulty}</Badge>
+                <Badge variant="outline">{getDifficultyLabel(goal.difficulty)}</Badge>
                 <Badge
                   className={
                     goal.status === "not_started"

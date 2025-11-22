@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogOut, User } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { LogOut, User, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Profile() {
@@ -15,6 +16,8 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [timezone, setTimezone] = useState("UTC");
+  const [customDifficultyName, setCustomDifficultyName] = useState("");
+  const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -29,6 +32,8 @@ export default function Profile() {
       if (data) {
         setDisplayName(data.display_name || "");
         setTimezone(data.timezone || "UTC");
+        setCustomDifficultyName(data.custom_difficulty_name || "");
+        setCustomDifficultyActive(data.custom_difficulty_active || false);
       }
     };
 
@@ -45,6 +50,8 @@ export default function Profile() {
       .update({
         display_name: displayName.trim() || null,
         timezone,
+        custom_difficulty_name: customDifficultyName.trim() || null,
+        custom_difficulty_active: customDifficultyActive,
       })
       .eq("id", user.id);
 
@@ -114,6 +121,54 @@ export default function Profile() {
                 placeholder="UTC"
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
+              />
+            </div>
+
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Custom Difficulty */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5" />
+              Custom Difficulty
+            </CardTitle>
+            <CardDescription>Define your ultimate personal challenge</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="customDifficultyName">Custom Difficulty Name</Label>
+              <Input
+                id="customDifficultyName"
+                placeholder="Choose a name for your Custom Difficulty"
+                value={customDifficultyName}
+                onChange={(e) => setCustomDifficultyName(e.target.value)}
+                maxLength={50}
+              />
+              <p className="text-xs text-muted-foreground">
+                This name will replace "Custom Difficulty" throughout the app
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between space-x-4 rounded-lg border p-4">
+              <div className="flex-1 space-y-1">
+                <Label htmlFor="customDifficultyActive" className="text-base">
+                  Activate this Custom Difficulty in my Pact
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {customDifficultyActive 
+                    ? "Custom difficulty is available in all goal creation and editing" 
+                    : "Custom difficulty will not appear in difficulty selectors"}
+                </p>
+              </div>
+              <Switch
+                id="customDifficultyActive"
+                checked={customDifficultyActive}
+                onCheckedChange={setCustomDifficultyActive}
               />
             </div>
 
