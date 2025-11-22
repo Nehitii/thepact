@@ -51,11 +51,23 @@ export default function Goals() {
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("smart");
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
+  const [customDifficultyName, setCustomDifficultyName] = useState("");
 
   useEffect(() => {
     if (!user) return;
 
     const loadGoals = async () => {
+      // Load custom difficulty settings
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("custom_difficulty_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileData?.custom_difficulty_name) {
+        setCustomDifficultyName(profileData.custom_difficulty_name);
+      }
+
       // Get user's pact first
       const { data: pactData } = await supabase
         .from("pacts")
@@ -99,6 +111,14 @@ export default function Goals() {
     }
   };
 
+  // Get display label for difficulty
+  const getDifficultyLabel = (difficulty: string) => {
+    if (difficulty === 'custom' && customDifficultyName) {
+      return customDifficultyName;
+    }
+    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  };
+
   const sortGoals = (goalsToSort: Goal[]) => {
     const sorted = [...goalsToSort];
     
@@ -108,7 +128,7 @@ export default function Goals() {
         return sorted.sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
       
       case "difficulty":
-        const difficultyOrder = ["easy", "medium", "hard", "extreme"];
+        const difficultyOrder = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
         return sorted.sort((a, b) => difficultyOrder.indexOf(a.difficulty) - difficultyOrder.indexOf(b.difficulty));
       
       case "progress":
@@ -161,7 +181,7 @@ export default function Goals() {
           if (progressA !== progressB) return progressB - progressA;
           
           // Priority 4: Lower difficulty (easier wins)
-          const diffOrder = ["easy", "medium", "hard", "extreme"];
+          const diffOrder = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
           const diffA = diffOrder.indexOf(a.difficulty);
           const diffB = diffOrder.indexOf(b.difficulty);
           if (diffA !== diffB) return diffA - diffB;
@@ -307,7 +327,7 @@ export default function Goals() {
                               <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="secondary">{goal.type}</Badge>
-                                <Badge variant="outline">{goal.difficulty}</Badge>
+                                <Badge variant="outline">{getDifficultyLabel(goal.difficulty)}</Badge>
                                 <Badge className={getStatusColor(goal.status)}>
                                   {goal.status === 'not_started' ? 'Not Started' : 
                                    goal.status === 'in_progress' ? 'In Progress' : 
@@ -397,7 +417,7 @@ export default function Goals() {
                               <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <Badge variant="secondary">{goal.type}</Badge>
-                                <Badge variant="outline">{goal.difficulty}</Badge>
+                                <Badge variant="outline">{getDifficultyLabel(goal.difficulty)}</Badge>
                               </div>
                             </div>
 
