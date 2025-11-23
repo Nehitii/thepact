@@ -8,7 +8,7 @@ import { PactDashboard } from "@/components/PactDashboard";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, TrendingUp } from "lucide-react";
+import { Plus, TrendingUp, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format, subDays } from "date-fns";
 
@@ -21,6 +21,7 @@ interface Pact {
   points: number;
   tier: number;
   global_progress: number;
+  project_start_date?: string;
 }
 
 interface Rank {
@@ -229,6 +230,21 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-secondary">
       <div className="max-w-2xl mx-auto p-6 space-y-8">
+        {/* Project Start Date */}
+        {pact.project_start_date && (
+          <Card className="animate-fade-in mt-8">
+            <CardContent className="flex items-center gap-3 py-4">
+              <Calendar className="h-5 w-5 text-primary" />
+              <div>
+                <span className="text-sm text-muted-foreground">Project Start Date: </span>
+                <span className="font-semibold text-foreground">
+                  {format(new Date(pact.project_start_date), "PPP")}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Pact Header */}
         <div className="text-center space-y-6 pt-8 animate-fade-in">
           <div className="flex justify-center">

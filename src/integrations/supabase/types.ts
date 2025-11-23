@@ -210,6 +210,7 @@ export type Database = {
           mantra: string
           name: string
           points: number | null
+          project_start_date: string | null
           symbol: string | null
           tier: number | null
           updated_at: string | null
@@ -223,6 +224,7 @@ export type Database = {
           mantra: string
           name: string
           points?: number | null
+          project_start_date?: string | null
           symbol?: string | null
           tier?: number | null
           updated_at?: string | null
@@ -236,6 +238,7 @@ export type Database = {
           mantra?: string
           name?: string
           points?: number | null
+          project_start_date?: string | null
           symbol?: string | null
           tier?: number | null
           updated_at?: string | null

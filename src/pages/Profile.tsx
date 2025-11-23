@@ -7,9 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { LogOut, User, Zap } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { LogOut, User, Zap, Calendar as CalendarIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { RanksManager } from "@/components/RanksManager";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -20,6 +24,8 @@ export default function Profile() {
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+  const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
+  const [pactId, setPactId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -38,6 +44,20 @@ export default function Profile() {
         setCustomDifficultyActive(data.custom_difficulty_active || false);
         setCustomDifficultyColor(data.custom_difficulty_color || "#a855f7");
       }
+
+      // Load pact data including project start date
+      const { data: pactData } = await supabase
+        .from("pacts")
+        .select("id, project_start_date")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (pactData) {
+        setPactId(pactData.id);
+        if (pactData.project_start_date) {
+          setProjectStartDate(new Date(pactData.project_start_date));
+        }
+      }
     };
 
     loadProfile();
@@ -48,7 +68,8 @@ export default function Profile() {
 
     setLoading(true);
 
-    const { error } = await supabase
+    // Update profile
+    const { error: profileError } = await supabase
       .from("profiles")
       .update({
         display_name: displayName.trim() || null,
@@ -59,16 +80,28 @@ export default function Profile() {
       })
       .eq("id", user.id);
 
-    if (error) {
+    // Update pact start date if pactId exists
+    let pactError = null;
+    if (pactId) {
+      const { error } = await supabase
+        .from("pacts")
+        .update({
+          project_start_date: projectStartDate ? format(projectStartDate, "yyyy-MM-dd") : null,
+        })
+        .eq("id", pactId);
+      pactError = error;
+    }
+
+    if (profileError || pactError) {
       toast({
         title: "Error",
-        description: error.message,
+        description: profileError?.message || pactError?.message,
         variant: "destructive",
       });
     } else {
       toast({
         title: "Profile Updated",
-        description: "Your profile has been saved",
+        description: "Your profile and pact settings have been saved",
       });
     }
 
@@ -126,6 +159,52 @@ export default function Profile() {
                 value={timezone}
                 onChange={(e) => setTimezone(e.target.value)}
               />
+            </div>
+
+            <Button onClick={handleSave} disabled={loading} className="w-full">
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Pact Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarIcon className="h-5 w-5" />
+              Pact Settings
+            </CardTitle>
+            <CardDescription>Configure your pact start date and timeline</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="projectStartDate">Project Start Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !projectStartDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {projectStartDate ? format(projectStartDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={projectStartDate}
+                    onSelect={setProjectStartDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground">
+                This date marks when you started your pact journey
+              </p>
             </div>
 
             <Button onClick={handleSave} disabled={loading} className="w-full">
