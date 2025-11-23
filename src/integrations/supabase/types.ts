@@ -248,37 +248,52 @@ export type Database = {
       }
       profiles: {
         Row: {
+          age: number | null
           avatar_url: string | null
           created_at: string | null
+          currency: string | null
           custom_difficulty_active: boolean | null
           custom_difficulty_color: string | null
           custom_difficulty_name: string | null
           display_name: string | null
+          height: number | null
           id: string
+          language: string | null
           timezone: string | null
           updated_at: string | null
+          weight: number | null
         }
         Insert: {
+          age?: number | null
           avatar_url?: string | null
           created_at?: string | null
+          currency?: string | null
           custom_difficulty_active?: boolean | null
           custom_difficulty_color?: string | null
           custom_difficulty_name?: string | null
           display_name?: string | null
+          height?: number | null
           id: string
+          language?: string | null
           timezone?: string | null
           updated_at?: string | null
+          weight?: number | null
         }
         Update: {
+          age?: number | null
           avatar_url?: string | null
           created_at?: string | null
+          currency?: string | null
           custom_difficulty_active?: boolean | null
           custom_difficulty_color?: string | null
           custom_difficulty_name?: string | null
           display_name?: string | null
+          height?: number | null
           id?: string
+          language?: string | null
           timezone?: string | null
           updated_at?: string | null
+          weight?: number | null
         }
         Relationships: []
       }
