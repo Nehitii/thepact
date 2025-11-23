@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { TrendingUp, Target, DollarSign, CheckCircle2 } from "lucide-react";
+import { getDifficultyColor } from "@/lib/utils";
 
 interface DifficultyProgress {
   difficulty: string;
@@ -26,21 +27,12 @@ interface PactDashboardProps {
   customDifficultyColor?: string;
 }
 
-const difficultyColors = {
-  easy: "hsl(var(--health))",
-  medium: "hsl(var(--primary))",
-  hard: "hsl(var(--accent))",
-  extreme: "hsl(var(--destructive))",
-  impossible: "hsl(280 100% 60%)", // Purple
-  custom: "hsl(45 100% 50%)", // Gold
-};
-
 export function PactDashboard({
   difficultyProgress,
   totalCostEngaged,
   totalCostPaid,
   customDifficultyName,
-  customDifficultyColor = "#a855f7",
+  customDifficultyColor,
 }: PactDashboardProps) {
   const totalCostRemaining = totalCostEngaged - totalCostPaid;
   const paidPercentage = totalCostEngaged > 0 ? (totalCostPaid / totalCostEngaged) * 100 : 0;
@@ -52,11 +44,8 @@ export function PactDashboard({
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    if (difficulty === 'custom') {
-      return customDifficultyColor;
-    }
-    return difficultyColors[difficulty as keyof typeof difficultyColors];
+  const getColor = (difficulty: string) => {
+    return getDifficultyColor(difficulty, customDifficultyColor);
   };
 
   return (
@@ -78,8 +67,8 @@ export function PactDashboard({
                     variant="outline" 
                     className="capitalize"
                     style={{ 
-                      borderColor: getDifficultyColor(item.difficulty),
-                      color: getDifficultyColor(item.difficulty)
+                      borderColor: getColor(item.difficulty),
+                      color: getColor(item.difficulty)
                     }}
                   >
                     {getDifficultyLabel(item.difficulty)}
@@ -97,7 +86,7 @@ export function PactDashboard({
                 className="h-2"
                 style={{
                   // @ts-ignore
-                  "--progress-background": getDifficultyColor(item.difficulty)
+                  "--progress-background": getColor(item.difficulty)
                 }}
               />
             </div>
