@@ -4,6 +4,8 @@ import { Progress } from "@/components/ui/progress";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from "recharts";
 import { TrendingUp, Target, DollarSign, CheckCircle2 } from "lucide-react";
 import { getDifficultyColor } from "@/lib/utils";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { formatCurrency } from "@/lib/currency";
 
 interface DifficultyProgress {
   difficulty: string;
@@ -34,6 +36,7 @@ export function PactDashboard({
   customDifficultyName,
   customDifficultyColor,
 }: PactDashboardProps) {
+  const { currency } = useCurrency();
   const totalCostRemaining = totalCostEngaged - totalCostPaid;
   const paidPercentage = totalCostEngaged > 0 ? (totalCostPaid / totalCostEngaged) * 100 : 0;
 
@@ -107,15 +110,15 @@ export function PactDashboard({
             <div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Total Estimated</span>
-                <span className="font-semibold text-foreground">${totalCostEngaged.toFixed(0)}</span>
+                <span className="font-semibold text-foreground">{formatCurrency(totalCostEngaged, currency)}</span>
               </div>
               <div className="flex items-center justify-between text-sm mb-1">
                 <span className="text-muted-foreground">Paid / Financed</span>
-                <span className="font-semibold text-primary">${totalCostPaid.toFixed(0)}</span>
+                <span className="font-semibold text-primary">{formatCurrency(totalCostPaid, currency)}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Remaining</span>
-                <span className="font-semibold text-foreground">${totalCostRemaining.toFixed(0)}</span>
+                <span className="font-semibold text-foreground">{formatCurrency(totalCostRemaining, currency)}</span>
               </div>
             </div>
             <Progress value={paidPercentage} className="h-2" />
