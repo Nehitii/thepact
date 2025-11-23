@@ -276,6 +276,33 @@ export type Database = {
         }
         Relationships: []
       }
+      ranks: {
+        Row: {
+          created_at: string
+          id: string
+          min_points: number
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          min_points?: number
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          min_points?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       step_status_history: {
         Row: {
           changed_at: string

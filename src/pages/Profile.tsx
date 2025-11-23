@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { LogOut, User, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { RanksManager } from "@/components/RanksManager";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -177,6 +178,9 @@ export default function Profile() {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Ranks Management */}
+        {user && <RanksManager userId={user.id} />}
 
         {/* Sign Out */}
         <Card>

@@ -23,6 +23,12 @@ interface Pact {
   global_progress: number;
 }
 
+interface Rank {
+  id: string;
+  min_points: number;
+  name: string;
+}
+
 interface Goal {
   id: string;
   name: string;
@@ -43,6 +49,11 @@ export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
+  const [ranks, setRanks] = useState<Rank[]>([]);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [currentRank, setCurrentRank] = useState<Rank | null>(null);
+  const [nextRank, setNextRank] = useState<Rank | null>(null);
+  const [level, setLevel] = useState(1);
   const [dashboardData, setDashboardData] = useState({
     difficultyProgress: [] as any[],
     totalStepsCompleted: 0,
@@ -84,6 +95,16 @@ export default function Home() {
         setCustomDifficultyName(profileData.custom_difficulty_name);
       }
 
+      // Load ranks
+      const { data: ranksData } = await supabase
+        .from("ranks")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("min_points", { ascending: true });
+
+      const userRanks = ranksData || [];
+      setRanks(userRanks);
+
       // Load focus goals for display and all goals for calculations
       const { data: allGoalsData } = await supabase
         .from("goals")
@@ -96,6 +117,37 @@ export default function Home() {
       ) || [];
 
       setGoals(focusGoals);
+
+      // Calculate total points from validated and completed goals
+      const points = allGoalsData?.reduce((sum, g) => {
+        if (g.status === 'validated' || g.status === 'fully_completed') {
+          return sum + (g.potential_score || 0);
+        }
+        return sum;
+      }, 0) || 0;
+      setTotalPoints(points);
+
+      // Determine current rank and next rank
+      let current: Rank | null = null;
+      let next: Rank | null = null;
+      let levelIndex = 1;
+
+      for (let i = 0; i < userRanks.length; i++) {
+        if (points >= userRanks[i].min_points) {
+          current = userRanks[i];
+          levelIndex = i + 1;
+          next = i + 1 < userRanks.length ? userRanks[i + 1] : null;
+        } else {
+          if (!current && i === 0) {
+            next = userRanks[i];
+          }
+          break;
+        }
+      }
+
+      setCurrentRank(current);
+      setNextRank(next);
+      setLevel(levelIndex);
 
       // Calculate difficulty progress
       const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
@@ -190,21 +242,79 @@ export default function Home() {
             <p className="text-lg text-muted-foreground italic">&ldquo;{pact.mantra}&rdquo;</p>
           </div>
 
-          <div className="flex items-center justify-center gap-6 text-sm">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{pact.points}</div>
-              <div className="text-muted-foreground">Points</div>
+          <div className="space-y-4">
+            {/* Rank & Level Info */}
+            <div className="flex items-center justify-center gap-6 text-sm">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">{totalPoints}</div>
+                <div className="text-muted-foreground">Points</div>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  {currentRank ? currentRank.name : "No Rank"}
+                </div>
+                <div className="text-muted-foreground">Rank</div>
+              </div>
+              <div className="h-8 w-px bg-border" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">Level {level}</div>
+                <div className="text-muted-foreground">Tier</div>
+              </div>
             </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">Tier {pact.tier}</div>
-              <div className="text-muted-foreground">Level</div>
-            </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{progressPercentage.toFixed(0)}%</div>
-              <div className="text-muted-foreground">Progress</div>
-            </div>
+
+            {/* Progress to Next Rank */}
+            {nextRank && currentRank ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Next: {nextRank.name}
+                  </span>
+                  <span className="font-medium text-primary">
+                    {nextRank.min_points - totalPoints} points remaining
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-500"
+                    style={{
+                      width: `${
+                        ((totalPoints - currentRank.min_points) /
+                          (nextRank.min_points - currentRank.min_points)) *
+                        100
+                      }%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ) : nextRank && !currentRank ? (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">
+                    Next: {nextRank.name}
+                  </span>
+                  <span className="font-medium text-primary">
+                    {nextRank.min_points - totalPoints} points remaining
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-500"
+                    style={{
+                      width: `${(totalPoints / nextRank.min_points) * 100}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-sm text-muted-foreground">
+                {ranks.length === 0 ? (
+                  <span>No ranks defined. Set up ranks in your Profile.</span>
+                ) : (
+                  <span className="font-medium text-primary">🏆 Max Rank Reached</span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
