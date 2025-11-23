@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Upload } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Upload, Star, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -38,6 +38,7 @@ interface Goal {
   start_date?: string;
   completion_date?: string;
   image_url?: string;
+  is_focus?: boolean;
 }
 
 interface Step {
@@ -63,7 +64,9 @@ export default function GoalDetail() {
   const [editCompletionDate, setEditCompletionDate] = useState("");
   const [editImage, setEditImage] = useState("");
   const [editDifficulty, setEditDifficulty] = useState("");
+  const [editType, setEditType] = useState("");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
+  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
 
   useEffect(() => {
     if (!user || !id) return;
@@ -72,12 +75,13 @@ export default function GoalDetail() {
       // Load custom difficulty settings
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("custom_difficulty_name")
+        .select("custom_difficulty_name, custom_difficulty_color")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (profileData?.custom_difficulty_name) {
-        setCustomDifficultyName(profileData.custom_difficulty_name);
+      if (profileData) {
+        setCustomDifficultyName(profileData.custom_difficulty_name || "");
+        setCustomDifficultyColor(profileData.custom_difficulty_color || "#a855f7");
       }
 
       const { data: goalData } = await supabase
@@ -94,6 +98,7 @@ export default function GoalDetail() {
         setEditCompletionDate(goalData.completion_date?.split('T')[0] || "");
         setEditImage(goalData.image_url || "");
         setEditDifficulty(goalData.difficulty || "medium");
+        setEditType(goalData.type || "other");
 
         const { data: stepsData } = await supabase
           .from("steps")
@@ -212,6 +217,7 @@ export default function GoalDetail() {
     if (editName !== goal.name) updates.name = editName;
     if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
     if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
+    if (editType !== goal.type) updates.type = editType;
     if (editStartDate && editStartDate !== goal.start_date?.split('T')[0]) {
       updates.start_date = new Date(editStartDate).toISOString();
     }
@@ -308,8 +314,10 @@ export default function GoalDetail() {
     );
   }
 
-  const progress =
-    goal.total_steps > 0 ? (goal.validated_steps / goal.total_steps) * 100 : 0;
+  // Calculate actual completion ratio from steps
+  const completedStepsCount = steps.filter(s => s.status === "completed").length;
+  const totalStepsCount = steps.length || 1; // Avoid division by zero
+  const progress = (completedStepsCount / totalStepsCount) * 100;
 
   // Get display label for difficulty
   const getDifficultyLabel = (difficulty: string) => {
@@ -319,185 +327,345 @@ export default function GoalDetail() {
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   };
 
+  // Get difficulty color
+  const getDifficultyColor = (difficulty: string) => {
+    if (difficulty === 'custom') {
+      return customDifficultyColor;
+    }
+    const colorMap: Record<string, string> = {
+      easy: "hsl(var(--difficulty-easy))",
+      medium: "hsl(var(--difficulty-medium))",
+      hard: "hsl(var(--difficulty-hard))",
+      extreme: "hsl(var(--difficulty-extreme))",
+      impossible: "hsl(var(--difficulty-impossible))",
+    };
+    return colorMap[difficulty] || "hsl(var(--primary))";
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "not_started":
+        return "bg-muted text-muted-foreground";
+      case "in_progress":
+        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
+      case "validated":
+        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
+      case "fully_completed":
+        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
+      case "paused":
+        return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20";
+      default:
+        return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "not_started": return "Not Started";
+      case "in_progress": return "In Progress";
+      case "validated": return "Validated";
+      case "fully_completed": return "Completed";
+      case "paused": return "Paused";
+      default: return status;
+    }
+  };
+
+  const difficultyColor = getDifficultyColor(goal.difficulty);
+  const isCompleted = goal.status === "fully_completed";
+
+  const toggleFocus = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const { error } = await supabase
+      .from("goals")
+      .update({ is_focus: !goal.is_focus })
+      .eq("id", goal.id);
+
+    if (!error) {
+      setGoal({ ...goal, is_focus: !goal.is_focus });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary">
-      <div className="max-w-2xl mx-auto p-6 space-y-6 pb-12">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4 pt-8">
-          <div className="flex items-start gap-4 flex-1">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/goals")}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            {goal.image_url && (
-              <img 
-                src={goal.image_url} 
-                alt={goal.name}
-                className="w-20 h-20 rounded-lg object-cover"
-              />
-            )}
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{goal.name}</h1>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge variant="secondary">{goal.type}</Badge>
-                <Badge variant="outline">{getDifficultyLabel(goal.difficulty)}</Badge>
-                <Badge
-                  className={
-                    goal.status === "not_started"
-                      ? "bg-muted text-muted-foreground"
-                      : goal.status === "in_progress"
-                      ? "bg-primary/10 text-primary"
-                      : goal.status === "validated"
-                      ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                      : goal.status === "fully_completed"
-                      ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                      : "bg-muted"
-                  }
-                >
-                  {goal.status.replace('_', ' ')}
-                </Badge>
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Edit className="h-5 w-5" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Goal</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <div>
-                    <Label htmlFor="name">Goal Name</Label>
-                    <Input
-                      id="name"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="steps">Number of Steps</Label>
-                    <Input
-                      id="steps"
-                      type="number"
-                      min="1"
-                      value={editSteps}
-                      onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="difficulty">Difficulty</Label>
-                    <Select value={editDifficulty} onValueChange={setEditDifficulty}>
-                      <SelectTrigger id="difficulty">
-                        <SelectValue placeholder="Select difficulty" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
-                        <SelectItem value="extreme">Extreme</SelectItem>
-                        <SelectItem value="impossible">Impossible</SelectItem>
-                        <SelectItem value="custom">{customDifficultyName || "Custom"}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label htmlFor="startDate">Start Date</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={editStartDate}
-                      onChange={(e) => setEditStartDate(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="completionDate">Completion Date</Label>
-                    <Input
-                      id="completionDate"
-                      type="date"
-                      value={editCompletionDate}
-                      onChange={(e) => setEditCompletionDate(e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="image">Image URL</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="image"
-                        value={editImage}
-                        onChange={(e) => setEditImage(e.target.value)}
-                        placeholder="https://..."
-                      />
-                      <Button variant="outline" size="icon">
-                        <Upload className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <Button onClick={handleEditGoal} className="w-full">
-                    Save Changes
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-            <Button variant="outline" size="icon" onClick={handleFullyComplete}>
-              <Sparkles className="h-5 w-5 text-primary" />
-            </Button>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Trash2 className="h-5 w-5 text-destructive" />
-                </Button>
-              </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Goal?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete this goal and all its steps.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteGoal} className="bg-destructive text-destructive-foreground">
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          </div>
+      <div className="max-w-3xl mx-auto p-6 space-y-6 pb-12">
+        {/* Back Button */}
+        <div className="pt-8">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/goals")}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
         </div>
 
-        {/* Progress */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Progress</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {goal.validated_steps} / {goal.total_steps} steps completed
-                </span>
-                <span className="font-medium text-primary">{progress.toFixed(0)}%</span>
-              </div>
-              <div className="h-3 bg-muted rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-500 rounded-full"
-                  style={{ width: `${progress}%` }}
-                />
+        {/* Hero Card - Matches Goal Card Style */}
+        <Card 
+          className={`relative overflow-hidden transition-all duration-300 border-2 ${isCompleted ? 'opacity-70' : ''}`}
+          style={{
+            borderLeftWidth: '8px',
+            borderLeftColor: isCompleted ? `${difficultyColor}66` : difficultyColor,
+            background: isCompleted 
+              ? 'linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.8) 100%)'
+              : 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%)',
+          }}
+        >
+          {/* Completion Stamp Effect */}
+          {isCompleted && (
+            <div className="absolute top-4 right-20 opacity-20 pointer-events-none rotate-12 z-10">
+              <div className="border-4 border-green-500 rounded-lg px-4 py-2">
+                <span className="text-green-500 font-bold text-sm">COMPLETED</span>
               </div>
             </div>
+          )}
 
-            {goal.potential_score > 0 && (
-              <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
-                <span className="text-sm font-medium">Potential Score</span>
-                <span className="text-lg font-bold text-primary">
-                  +{goal.potential_score} pts
-                </span>
+          <CardContent className="p-6 relative">
+            <div className="flex gap-6">
+              {/* Left Section: Image + Focus Star */}
+              <div className="relative flex-shrink-0">
+                {goal.image_url ? (
+                  <div 
+                    className={`relative w-32 h-32 rounded-lg overflow-hidden border-2 shadow-lg ${isCompleted ? 'grayscale' : ''}`}
+                    style={{ borderColor: isCompleted ? `${difficultyColor}66` : difficultyColor }}
+                  >
+                    <img 
+                      src={goal.image_url} 
+                      alt={goal.name}
+                      className="w-full h-full object-cover"
+                    />
+                    {isCompleted && (
+                      <div className="absolute inset-0 border-2 pointer-events-none" 
+                        style={{ borderColor: `${difficultyColor}99` }} 
+                      />
+                    )}
+                    {/* Focus Star */}
+                    <button
+                      onClick={toggleFocus}
+                      className="absolute -top-2 -left-2 z-10 p-2 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                      style={{ borderColor: isCompleted ? `${difficultyColor}66` : difficultyColor }}
+                      aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                    >
+                      <Star 
+                        className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                      />
+                    </button>
+                  </div>
+                ) : (
+                  <div 
+                    className={`relative w-32 h-32 rounded-lg border-2 shadow-lg flex items-center justify-center ${isCompleted ? 'grayscale' : ''}`}
+                    style={{ 
+                      borderColor: isCompleted ? `${difficultyColor}66` : difficultyColor,
+                      background: `linear-gradient(135deg, ${difficultyColor}20, ${difficultyColor}10)`
+                    }}
+                  >
+                    <Trophy 
+                      className="h-14 w-14" 
+                      style={{ color: isCompleted ? `${difficultyColor}99` : difficultyColor }} 
+                    />
+                    {/* Focus Star */}
+                    <button
+                      onClick={toggleFocus}
+                      className="absolute -top-2 -left-2 z-10 p-2 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                      style={{ borderColor: isCompleted ? `${difficultyColor}66` : difficultyColor }}
+                      aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                    >
+                      <Star 
+                        className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                      />
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
+
+              {/* Middle Section: Content */}
+              <div className="flex-1 min-w-0 space-y-4">
+                {/* Title */}
+                <h1 className="text-3xl font-bold">{goal.name}</h1>
+                
+                {/* Badges */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge 
+                    variant="secondary" 
+                    className="text-sm font-medium capitalize"
+                    style={{ 
+                      backgroundColor: `${difficultyColor}20`,
+                      color: isCompleted ? `${difficultyColor}B3` : difficultyColor,
+                      borderColor: `${difficultyColor}50`
+                    }}
+                  >
+                    {getDifficultyLabel(goal.difficulty)}
+                  </Badge>
+                  <Badge variant="outline" className="text-sm capitalize border">
+                    {goal.type}
+                  </Badge>
+                  <Badge className={`text-sm border ${getStatusColor(goal.status)}`}>
+                    {getStatusLabel(goal.status)}
+                  </Badge>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground font-medium">
+                      {completedStepsCount} / {totalStepsCount} steps
+                    </span>
+                    <span className="font-bold" style={{ color: difficultyColor }}>
+                      {progress.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="h-3 bg-muted rounded-full overflow-hidden border border-border shadow-inner">
+                    <div
+                      className="h-full transition-all duration-500 rounded-full relative"
+                      style={{ 
+                        width: `${progress}%`,
+                        background: `linear-gradient(90deg, ${difficultyColor}CC, ${difficultyColor})`,
+                        boxShadow: `0 0 10px ${difficultyColor}80`
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* XP Points */}
+                {goal.potential_score > 0 && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Sparkles className="h-4 w-4" style={{ color: difficultyColor }} />
+                    <span className="font-bold" style={{ color: difficultyColor }}>
+                      +{goal.potential_score} XP
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Right Section: Actions */}
+              <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon">
+                      <Edit className="h-5 w-5" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>Edit Goal</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div>
+                        <Label htmlFor="name">Goal Name</Label>
+                        <Input
+                          id="name"
+                          value={editName}
+                          onChange={(e) => setEditName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="type">Category</Label>
+                        <Select value={editType} onValueChange={setEditType}>
+                          <SelectTrigger id="type">
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="personal">Personal</SelectItem>
+                            <SelectItem value="professional">Professional</SelectItem>
+                            <SelectItem value="health">Health</SelectItem>
+                            <SelectItem value="creative">Creative</SelectItem>
+                            <SelectItem value="financial">Financial</SelectItem>
+                            <SelectItem value="learning">Learning</SelectItem>
+                            <SelectItem value="bricolage">DIY</SelectItem>
+                            <SelectItem value="travaux">Home Renovation</SelectItem>
+                            <SelectItem value="relationnel">Relationships</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="steps">Number of Steps</Label>
+                        <Input
+                          id="steps"
+                          type="number"
+                          min="1"
+                          value={editSteps}
+                          onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="difficulty">Difficulty</Label>
+                        <Select value={editDifficulty} onValueChange={setEditDifficulty}>
+                          <SelectTrigger id="difficulty">
+                            <SelectValue placeholder="Select difficulty" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="easy">Easy</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="hard">Hard</SelectItem>
+                            <SelectItem value="extreme">Extreme</SelectItem>
+                            <SelectItem value="impossible">Impossible</SelectItem>
+                            <SelectItem value="custom">{customDifficultyName || "Custom"}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="startDate">Start Date</Label>
+                        <Input
+                          id="startDate"
+                          type="date"
+                          value={editStartDate}
+                          onChange={(e) => setEditStartDate(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="completionDate">Completion Date</Label>
+                        <Input
+                          id="completionDate"
+                          type="date"
+                          value={editCompletionDate}
+                          onChange={(e) => setEditCompletionDate(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="image">Image URL</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="image"
+                            value={editImage}
+                            onChange={(e) => setEditImage(e.target.value)}
+                            placeholder="https://..."
+                          />
+                          <Button variant="outline" size="icon">
+                            <Upload className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <Button onClick={handleEditGoal} className="w-full">
+                        Save Changes
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                <Button variant="outline" size="icon" onClick={handleFullyComplete}>
+                  <Sparkles className="h-5 w-5" style={{ color: difficultyColor }} />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Trash2 className="h-5 w-5 text-destructive" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Goal?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete this goal and all its steps.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteGoal} className="bg-destructive text-destructive-foreground">
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -525,14 +693,17 @@ export default function GoalDetail() {
                     htmlFor={step.id}
                     className={`flex-1 cursor-pointer text-sm ${
                       step.status === "completed"
-                        ? "text-primary font-medium"
+                        ? "font-medium"
                         : ""
                     }`}
+                    style={{
+                      color: step.status === "completed" ? difficultyColor : undefined
+                    }}
                   >
                     {step.title}
                   </label>
                   {step.status === "completed" && (
-                    <Check className="h-4 w-4 text-primary" />
+                    <Check className="h-4 w-4" style={{ color: difficultyColor }} />
                   )}
                   <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
