@@ -51,6 +51,12 @@ export default function Home() {
     totalCostPaid: 0,
     goalsCompleted: 0,
     totalGoals: 0,
+    statusCounts: {
+      not_started: 0,
+      in_progress: 0,
+      validated: 0,
+      fully_completed: 0,
+    },
   });
 
   useEffect(() => {
@@ -113,6 +119,14 @@ export default function Home() {
       const goalsCompleted = allGoalsData?.filter(g => g.status === 'fully_completed').length || 0;
       const totalGoals = allGoalsData?.length || 0;
 
+      // Calculate status counts
+      const statusCounts = {
+        not_started: allGoalsData?.filter(g => g.status === 'not_started').length || 0,
+        in_progress: allGoalsData?.filter(g => g.status === 'in_progress').length || 0,
+        validated: allGoalsData?.filter(g => g.status === 'validated').length || 0,
+        fully_completed: allGoalsData?.filter(g => g.status === 'fully_completed').length || 0,
+      };
+
       // Calculate costs - Total Estimated Cost
       const totalCostEngaged = allGoalsData?.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0) || 0;
       
@@ -132,6 +146,7 @@ export default function Home() {
         totalCostPaid,
         goalsCompleted,
         totalGoals,
+        statusCounts,
       });
 
       setLoading(false);
@@ -193,29 +208,147 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Goals & Steps Completed */}
-        <Card className="animate-fade-in">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="text-center p-4 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors">
-                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
-                  {dashboardData.goalsCompleted}
+        {/* Goals & Steps Completed with Gauges */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+          {/* Goals Completed Gauge */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Goals Completed</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-foreground mb-2">
+                  {dashboardData.goalsCompleted} <span className="text-2xl text-muted-foreground">/ {dashboardData.totalGoals}</span>
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">Goals Completed</div>
-                <div className="text-lg font-semibold text-green-600 dark:text-green-400 mt-2">
+                <div className="text-lg font-semibold text-primary">
                   {dashboardData.totalGoals > 0 
                     ? ((dashboardData.goalsCompleted / dashboardData.totalGoals) * 100).toFixed(0)
                     : 0}%
                 </div>
               </div>
-              <div className="text-center p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
-                <div className="text-3xl font-bold text-primary">
-                  {dashboardData.totalStepsCompleted}
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-green-500 to-green-600 dark:from-green-400 dark:to-green-500 transition-all duration-500"
+                    style={{ 
+                      width: `${dashboardData.totalGoals > 0 
+                        ? ((dashboardData.goalsCompleted / dashboardData.totalGoals) * 100)
+                        : 0}%` 
+                    }}
+                  />
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">Steps Completed</div>
-                <div className="text-lg font-semibold text-primary mt-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{dashboardData.goalsCompleted} completed</span>
+                  <span>{dashboardData.totalGoals - dashboardData.goalsCompleted} remaining</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Steps Completed Gauge */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Steps Completed</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-foreground mb-2">
+                  {dashboardData.totalStepsCompleted} <span className="text-2xl text-muted-foreground">/ {dashboardData.totalSteps}</span>
+                </div>
+                <div className="text-lg font-semibold text-primary">
                   {dashboardData.totalSteps > 0 
                     ? ((dashboardData.totalStepsCompleted / dashboardData.totalSteps) * 100).toFixed(0)
+                    : 0}%
+                </div>
+              </div>
+              <div className="space-y-2">
+                <div className="h-3 w-full bg-secondary rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-500"
+                    style={{ 
+                      width: `${dashboardData.totalSteps > 0 
+                        ? ((dashboardData.totalStepsCompleted / dashboardData.totalSteps) * 100)
+                        : 0}%` 
+                    }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{dashboardData.totalStepsCompleted} completed</span>
+                  <span>{dashboardData.totalSteps - dashboardData.totalStepsCompleted} remaining</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Goals Status Summary */}
+        <Card className="animate-fade-in">
+          <CardHeader>
+            <CardTitle>Goals Status Summary</CardTitle>
+            <CardDescription>Distribution of goals by current status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Not Started */}
+              <div className="text-center p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="h-3 w-3 rounded-full bg-muted-foreground"></div>
+                  <span className="text-xs font-medium text-muted-foreground">Not Started</span>
+                </div>
+                <div className="text-3xl font-bold text-foreground">
+                  {dashboardData.statusCounts.not_started}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {dashboardData.totalGoals > 0 
+                    ? ((dashboardData.statusCounts.not_started / dashboardData.totalGoals) * 100).toFixed(0)
+                    : 0}%
+                </div>
+              </div>
+
+              {/* In Progress */}
+              <div className="text-center p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="h-3 w-3 rounded-full bg-primary"></div>
+                  <span className="text-xs font-medium text-primary">In Progress</span>
+                </div>
+                <div className="text-3xl font-bold text-primary">
+                  {dashboardData.statusCounts.in_progress}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {dashboardData.totalGoals > 0 
+                    ? ((dashboardData.statusCounts.in_progress / dashboardData.totalGoals) * 100).toFixed(0)
+                    : 0}%
+                </div>
+              </div>
+
+              {/* Validated */}
+              <div className="text-center p-4 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 transition-colors">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="h-3 w-3 rounded-full bg-blue-600 dark:bg-blue-400"></div>
+                  <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Validated</span>
+                </div>
+                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                  {dashboardData.statusCounts.validated}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {dashboardData.totalGoals > 0 
+                    ? ((dashboardData.statusCounts.validated / dashboardData.totalGoals) * 100).toFixed(0)
+                    : 0}%
+                </div>
+              </div>
+
+              {/* Completed */}
+              <div className="text-center p-4 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <div className="h-3 w-3 rounded-full bg-green-600 dark:bg-green-400"></div>
+                  <span className="text-xs font-medium text-green-600 dark:text-green-400">Completed</span>
+                </div>
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  {dashboardData.statusCounts.fully_completed}
+                </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                  {dashboardData.totalGoals > 0 
+                    ? ((dashboardData.statusCounts.fully_completed / dashboardData.totalGoals) * 100).toFixed(0)
                     : 0}%
                 </div>
               </div>
