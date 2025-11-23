@@ -20,12 +20,8 @@ interface TimelineData {
 
 interface PactDashboardProps {
   difficultyProgress: DifficultyProgress[];
-  totalStepsCompleted: number;
-  totalSteps: number;
   totalCostEngaged: number;
-  totalCostFinanced: number;
-  timelineData: TimelineData[];
-  currentTier: number;
+  totalCostPaid: number;
   customDifficultyName?: string;
 }
 
@@ -40,15 +36,12 @@ const difficultyColors = {
 
 export function PactDashboard({
   difficultyProgress,
-  totalStepsCompleted,
-  totalSteps,
   totalCostEngaged,
-  totalCostFinanced,
-  timelineData,
-  currentTier,
+  totalCostPaid,
   customDifficultyName,
 }: PactDashboardProps) {
-  const costPercentage = totalCostEngaged > 0 ? (totalCostFinanced / totalCostEngaged) * 100 : 0;
+  const totalCostRemaining = totalCostEngaged - totalCostPaid;
+  const paidPercentage = totalCostEngaged > 0 ? (totalCostPaid / totalCostEngaged) * 100 : 0;
 
   const getDifficultyLabel = (difficulty: string) => {
     if (difficulty === 'custom' && customDifficultyName) {
@@ -103,126 +96,38 @@ export function PactDashboard({
         </CardContent>
       </Card>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Total Steps */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              Steps Completed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold text-primary">{totalStepsCompleted}</span>
-                <span className="text-lg text-muted-foreground">/ {totalSteps}</span>
-              </div>
-              <Progress 
-                value={totalSteps > 0 ? (totalStepsCompleted / totalSteps) * 100 : 0} 
-                className="h-2"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Cost Tracking */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <DollarSign className="h-4 w-4 text-primary" />
-              Cost Tracking
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Engaged</span>
-                <span className="font-medium text-foreground">${totalCostEngaged.toFixed(2)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Financed</span>
-                <span className="font-medium text-primary">${totalCostFinanced.toFixed(2)}</span>
-              </div>
-              <Progress value={costPercentage} className="h-2" />
-              <div className="text-xs text-muted-foreground text-right">
-                {costPercentage.toFixed(0)}% financed
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Pact Growth Timeline */}
+      {/* Cost Tracking */}
       <Card className="border-border/50 bg-card/50 backdrop-blur">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
-            Pact Evolution Timeline
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <DollarSign className="h-4 w-4 text-primary" />
+            Cost Tracking
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {timelineData.length > 0 ? (
-            <div className="h-[250px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={timelineData}>
-                  <defs>
-                    <linearGradient id="colorProgress" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorPoints" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <YAxis 
-                    stroke="hsl(var(--muted-foreground))"
-                    fontSize={12}
-                  />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "var(--radius)",
-                      color: "hsl(var(--foreground))"
-                    }}
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="progress" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorProgress)"
-                    name="Progress %"
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="points" 
-                    stroke="hsl(var(--accent))" 
-                    strokeWidth={2}
-                    fillOpacity={1}
-                    fill="url(#colorPoints)"
-                    name="Points"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+          <div className="space-y-3">
+            <div>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-muted-foreground">Total Estimated</span>
+                <span className="font-semibold text-foreground">${totalCostEngaged.toFixed(0)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm mb-1">
+                <span className="text-muted-foreground">Paid / Financed</span>
+                <span className="font-semibold text-primary">${totalCostPaid.toFixed(0)}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Remaining</span>
+                <span className="font-semibold text-foreground">${totalCostRemaining.toFixed(0)}</span>
+              </div>
             </div>
-          ) : (
-            <div className="h-[250px] flex items-center justify-center text-muted-foreground">
-              <p>Start completing goals to see your evolution timeline</p>
-            </div>
-          )}
+            <Progress value={paidPercentage} className="h-2" />
+            <p className="text-xs text-muted-foreground text-right">
+              {paidPercentage.toFixed(1)}% paid/financed
+            </p>
+          </div>
         </CardContent>
       </Card>
+
     </div>
   );
 }

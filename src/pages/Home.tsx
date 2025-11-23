@@ -48,8 +48,9 @@ export default function Home() {
     totalStepsCompleted: 0,
     totalSteps: 0,
     totalCostEngaged: 0,
-    totalCostFinanced: 0,
-    timelineData: [] as any[],
+    totalCostPaid: 0,
+    goalsCompleted: 0,
+    totalGoals: 0,
   });
 
   useEffect(() => {
@@ -77,22 +78,18 @@ export default function Home() {
         setCustomDifficultyName(profileData.custom_difficulty_name);
       }
 
-      // Load all goals for status overview
-      const { data: goalsData } = await supabase
-        .from("goals")
-        .select("*")
-        .eq("pact_id", pactData.id)
-        .order("created_at", { ascending: false });
-
-      if (goalsData) {
-        setGoals(goalsData);
-      }
-
-      // Load all goals for dashboard calculations
+      // Load focus goals for display and all goals for calculations
       const { data: allGoalsData } = await supabase
         .from("goals")
         .select("*")
         .eq("pact_id", pactData.id);
+
+      // Filter focus goals (excluding fully completed)
+      const focusGoals = allGoalsData?.filter(g => 
+        g.is_focus && g.status !== 'fully_completed'
+      ) || [];
+
+      setGoals(focusGoals);
 
       // Calculate difficulty progress
       const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
@@ -108,47 +105,33 @@ export default function Home() {
         };
       });
 
-      // Calculate total steps
+      // Calculate total steps across all goals
       const totalSteps = allGoalsData?.reduce((sum, g) => sum + (g.total_steps || 0), 0) || 0;
       const totalStepsCompleted = allGoalsData?.reduce((sum, g) => sum + (g.validated_steps || 0), 0) || 0;
 
-      // Calculate costs
+      // Calculate goals completed
+      const goalsCompleted = allGoalsData?.filter(g => g.status === 'fully_completed').length || 0;
+      const totalGoals = allGoalsData?.length || 0;
+
+      // Calculate costs - Total Estimated Cost
       const totalCostEngaged = allGoalsData?.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0) || 0;
       
-      const { data: spendingData } = await supabase
-        .from("pact_spending")
-        .select("amount")
-        .eq("user_id", user.id);
-      
-      const totalCostFinanced = spendingData?.reduce((sum, s) => sum + Number(s.amount), 0) || 0;
-
-      // Generate timeline data (last 30 days)
-      const currentProgress = Number(pactData.global_progress) || 0;
-      const timelineData = [];
-      for (let i = 29; i >= 0; i--) {
-        const date = subDays(new Date(), i);
-        const dateStr = format(date, "MM/dd");
-        
-        // In a real app, you'd query historical data
-        // For now, we'll simulate progression
-        const dayProgress = Math.min(currentProgress, ((30 - i) / 30) * currentProgress);
-        const dayPoints = Math.min(pactData.points, Math.floor(((30 - i) / 30) * pactData.points));
-        
-        timelineData.push({
-          date: dateStr,
-          progress: Number(dayProgress.toFixed(1)),
-          points: dayPoints,
-          steps: Math.floor(((30 - i) / 30) * totalStepsCompleted),
-        });
-      }
+      // Calculate costs - Paid/Financed So Far (proportional to completion)
+      const totalCostPaid = allGoalsData?.reduce((sum, g) => {
+        const completionRatio = (g.total_steps || 0) > 0 
+          ? (g.validated_steps || 0) / (g.total_steps || 0)
+          : 0;
+        return sum + ((Number(g.estimated_cost) || 0) * completionRatio);
+      }, 0) || 0;
 
       setDashboardData({
         difficultyProgress,
         totalStepsCompleted,
         totalSteps,
         totalCostEngaged,
-        totalCostFinanced,
-        timelineData,
+        totalCostPaid,
+        goalsCompleted,
+        totalGoals,
       });
 
       setLoading(false);
@@ -210,37 +193,31 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Goal Status Counters */}
+        {/* Goals & Steps Completed */}
         <Card className="animate-fade-in">
-          <CardHeader>
-            <CardTitle>Goal Status Overview</CardTitle>
-            <CardDescription>Track your progress across all goals</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 rounded-lg bg-secondary/50 hover:bg-secondary/70 transition-colors">
-                <div className="text-2xl font-bold text-muted-foreground">
-                  {goals.filter(g => g.status === 'not_started').length}
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-2 gap-6">
+              <div className="text-center p-4 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors">
+                <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+                  {dashboardData.goalsCompleted}
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">Not Started</div>
+                <div className="text-sm text-muted-foreground mt-1">Goals Completed</div>
+                <div className="text-lg font-semibold text-green-600 dark:text-green-400 mt-2">
+                  {dashboardData.totalGoals > 0 
+                    ? ((dashboardData.goalsCompleted / dashboardData.totalGoals) * 100).toFixed(0)
+                    : 0}%
+                </div>
               </div>
               <div className="text-center p-4 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors">
-                <div className="text-2xl font-bold text-primary">
-                  {goals.filter(g => g.status === 'in_progress').length}
+                <div className="text-3xl font-bold text-primary">
+                  {dashboardData.totalStepsCompleted}
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">In Progress</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 transition-colors">
-                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                  {goals.filter(g => g.status === 'validated').length}
+                <div className="text-sm text-muted-foreground mt-1">Steps Completed</div>
+                <div className="text-lg font-semibold text-primary mt-2">
+                  {dashboardData.totalSteps > 0 
+                    ? ((dashboardData.totalStepsCompleted / dashboardData.totalSteps) * 100).toFixed(0)
+                    : 0}%
                 </div>
-                <div className="text-sm text-muted-foreground mt-1">Validated</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-green-500/10 hover:bg-green-500/20 transition-colors">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  {goals.filter(g => g.status === 'fully_completed').length}
-                </div>
-                <div className="text-sm text-muted-foreground mt-1">Completed</div>
               </div>
             </div>
           </CardContent>
@@ -249,12 +226,8 @@ export default function Home() {
         {/* Dashboard Indicators */}
         <PactDashboard
           difficultyProgress={dashboardData.difficultyProgress}
-          totalStepsCompleted={dashboardData.totalStepsCompleted}
-          totalSteps={dashboardData.totalSteps}
           totalCostEngaged={dashboardData.totalCostEngaged}
-          totalCostFinanced={dashboardData.totalCostFinanced}
-          timelineData={dashboardData.timelineData}
-          currentTier={pact.tier}
+          totalCostPaid={dashboardData.totalCostPaid}
           customDifficultyName={customDifficultyName}
         />
         <Card>
@@ -263,21 +236,20 @@ export default function Home() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5" />
-                  Active Goals
+                  Focus Goals
                 </CardTitle>
-                <CardDescription>Your current evolutions</CardDescription>
+                <CardDescription>Your starred priorities</CardDescription>
               </div>
-              <Button size="sm" onClick={() => navigate("/goals/new")}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add
+              <Button size="sm" onClick={() => navigate("/goals")}>
+                View All
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             {goals.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p>No active goals yet</p>
-                <p className="text-sm mt-2">Start by adding your first Pact evolution</p>
+                <p>No focus goals yet</p>
+                <p className="text-sm mt-2">Star goals in the Goals tab to see them here</p>
               </div>
             ) : (
               <div className="space-y-3">
