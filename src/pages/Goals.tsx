@@ -36,23 +36,23 @@ interface Goal {
 }
 
 type SortOption = 
-  | "status" 
   | "difficulty" 
-  | "progress" 
-  | "cost" 
+  | "type" 
+  | "points" 
   | "created" 
-  | "start" 
-  | "completion" 
-  | "name-asc" 
-  | "name-desc"
-  | "smart";
+  | "name" 
+  | "status" 
+  | "start";
+
+type SortDirection = "asc" | "desc";
 
 export default function Goals() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState<SortOption>("smart");
+  const [sortBy, setSortBy] = useState<SortOption>("created");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
@@ -182,77 +182,55 @@ export default function Goals() {
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   };
 
+  const handleSortChange = (newSortBy: SortOption) => {
+    if (newSortBy === sortBy) {
+      // Toggle direction if same sort option
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // New sort option, start with ascending
+      setSortBy(newSortBy);
+      setSortDirection("asc");
+    }
+  };
+
   const sortGoals = (goalsToSort: Goal[]) => {
     const sorted = [...goalsToSort];
+    const direction = sortDirection === "asc" ? 1 : -1;
     
     switch (sortBy) {
-      case "status":
-        const statusOrder = ["not_started", "in_progress", "validated", "fully_completed", "paused"];
-        return sorted.sort((a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status));
-      
       case "difficulty":
         const difficultyOrder = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
-        return sorted.sort((a, b) => difficultyOrder.indexOf(a.difficulty) - difficultyOrder.indexOf(b.difficulty));
-      
-      case "progress":
         return sorted.sort((a, b) => {
-          const progressA = (a.totalStepsCount || 0) > 0 ? ((a.completedStepsCount || 0) / (a.totalStepsCount || 0)) : 0;
-          const progressB = (b.totalStepsCount || 0) > 0 ? ((b.completedStepsCount || 0) / (b.totalStepsCount || 0)) : 0;
-          return progressB - progressA;
+          const indexA = difficultyOrder.indexOf(a.difficulty);
+          const indexB = difficultyOrder.indexOf(b.difficulty);
+          return (indexA - indexB) * direction;
         });
       
-      case "cost":
-        return sorted.sort((a, b) => (b.estimated_cost || 0) - (a.estimated_cost || 0));
+      case "type":
+        return sorted.sort((a, b) => a.type.localeCompare(b.type) * direction);
+      
+      case "points":
+        return sorted.sort((a, b) => ((a.potential_score || 0) - (b.potential_score || 0)) * direction);
       
       case "created":
-        return sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return sorted.sort((a, b) => (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * direction);
+      
+      case "name":
+        return sorted.sort((a, b) => a.name.localeCompare(b.name) * direction);
+      
+      case "status":
+        const statusOrder = ["not_started", "in_progress", "validated", "fully_completed", "paused"];
+        return sorted.sort((a, b) => {
+          const indexA = statusOrder.indexOf(a.status);
+          const indexB = statusOrder.indexOf(b.status);
+          return (indexA - indexB) * direction;
+        });
       
       case "start":
         return sorted.sort((a, b) => {
           if (!a.start_date) return 1;
           if (!b.start_date) return -1;
-          return new Date(b.start_date).getTime() - new Date(a.start_date).getTime();
-        });
-      
-      case "completion":
-        return sorted.sort((a, b) => {
-          if (!a.completion_date) return 1;
-          if (!b.completion_date) return -1;
-          return new Date(b.completion_date).getTime() - new Date(a.completion_date).getTime();
-        });
-      
-      case "name-asc":
-        return sorted.sort((a, b) => a.name.localeCompare(b.name));
-      
-      case "name-desc":
-        return sorted.sort((a, b) => b.name.localeCompare(a.name));
-      
-      case "smart":
-        // Smart sort: prioritize by urgency, progress, difficulty, and activity
-        return sorted.sort((a, b) => {
-          // Priority 1: In progress goals first
-          if (a.status === "in_progress" && b.status !== "in_progress") return -1;
-          if (b.status === "in_progress" && a.status !== "in_progress") return 1;
-          
-          // Priority 2: Not started goals next
-          if (a.status === "not_started" && b.status !== "not_started") return -1;
-          if (b.status === "not_started" && a.status !== "not_started") return 1;
-          
-          // Priority 3: Higher progress percentage (closer to completion)
-          const progressA = (a.totalStepsCount || 0) > 0 ? ((a.completedStepsCount || 0) / (a.totalStepsCount || 0)) : 0;
-          const progressB = (b.totalStepsCount || 0) > 0 ? ((b.completedStepsCount || 0) / (b.totalStepsCount || 0)) : 0;
-          if (progressA !== progressB) return progressB - progressA;
-          
-          // Priority 4: Lower difficulty (easier wins)
-          const diffOrder = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
-          const diffA = diffOrder.indexOf(a.difficulty);
-          const diffB = diffOrder.indexOf(b.difficulty);
-          if (diffA !== diffB) return diffA - diffB;
-          
-          // Priority 5: Most recent start date
-          const dateA = a.start_date ? new Date(a.start_date).getTime() : 0;
-          const dateB = b.start_date ? new Date(b.start_date).getTime() : 0;
-          return dateB - dateA;
+          return (new Date(a.start_date).getTime() - new Date(b.start_date).getTime()) * direction;
         });
       
       default:
@@ -297,21 +275,18 @@ export default function Goals() {
           {goals.length > 0 && (
             <div className="flex items-center gap-3">
               <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
-              <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
                 <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="smart">🧠 Smart Sort</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                  <SelectItem value="progress">Progress</SelectItem>
-                  <SelectItem value="difficulty">Difficulty</SelectItem>
-                  <SelectItem value="cost">Cost</SelectItem>
-                  <SelectItem value="created">Created Date</SelectItem>
-                  <SelectItem value="start">Start Date</SelectItem>
-                  <SelectItem value="completion">Completion Date</SelectItem>
-                  <SelectItem value="name-asc">Name (A-Z)</SelectItem>
-                  <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                  <SelectItem value="difficulty">Difficulty {sortBy === "difficulty" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
+                  <SelectItem value="type">Category {sortBy === "type" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
+                  <SelectItem value="points">Points {sortBy === "points" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
+                  <SelectItem value="created">Created Date {sortBy === "created" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
+                  <SelectItem value="name">Name {sortBy === "name" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
+                  <SelectItem value="status">Status {sortBy === "status" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
+                  <SelectItem value="start">Start Date {sortBy === "start" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
