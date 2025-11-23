@@ -15,7 +15,7 @@ import { DevilNoteModal } from "@/components/profile/DevilNoteModal";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
-  const { refreshCurrency } = useCurrency();
+  const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [devilNoteOpen, setDevilNoteOpen] = useState(false);
@@ -120,7 +120,10 @@ export default function Profile() {
         variant: "destructive",
       });
     } else {
-      // Refresh currency context to update all currency displays
+      // Immediately update currency context to trigger UI refresh everywhere
+      updateGlobalCurrency(currency);
+      
+      // Also refresh from database to ensure consistency
       await refreshCurrency();
       
       toast({
