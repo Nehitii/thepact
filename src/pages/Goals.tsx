@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowRight, ArrowUpDown, CheckCircle2, Star, Sparkles, Trophy } from "lucide-react";
+import { Plus, ArrowRight, CheckCircle2, Star, Sparkles, Trophy } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -15,6 +15,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useParticleEffect } from "@/components/ParticleEffect";
+import { CyberBackground } from "@/components/CyberBackground";
 
 interface Goal {
   id: string;
@@ -56,6 +58,7 @@ export default function Goals() {
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+  const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
   useEffect(() => {
     if (!user) return;
@@ -119,6 +122,13 @@ export default function Goals() {
 
   const toggleFocus = async (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Trigger particle effect
+    const goal = goals.find(g => g.id === goalId);
+    if (goal) {
+      const difficultyColor = getDifficultyColor(goal.difficulty);
+      triggerParticles(e, difficultyColor);
+    }
     
     const { error } = await supabase
       .from("goals")
@@ -254,8 +264,11 @@ export default function Goals() {
   }
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-secondary">
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen pb-20 relative">
+      <CyberBackground />
+      <ParticleEffects />
+      <div className="relative z-10 bg-gradient-to-br from-background via-background/95 to-secondary/50">
+        <div className="max-w-2xl mx-auto p-6 space-y-6">
         {/* Header */}
         <div className="flex flex-col gap-4 pt-8">
           <div className="flex items-center justify-between">
@@ -688,6 +701,7 @@ export default function Goals() {
             </TabsContent>
           </Tabs>
         )}
+        </div>
       </div>
 
       <Navigation />

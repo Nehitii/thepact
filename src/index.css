@@ -8,135 +8,140 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Base colors - warm neutral palette */
-    --background: 32 25% 97%;
-    --foreground: 28 15% 12%;
+    /* Base colors - Futuristic gaming light mode */
+    --background: 210 40% 98%;
+    --foreground: 220 90% 10%;
 
-    /* Card surfaces */
+    /* Card surfaces - Holographic panels */
     --card: 0 0% 100%;
-    --card-foreground: 28 15% 12%;
+    --card-foreground: 220 90% 10%;
 
     /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 28 15% 12%;
+    --popover-foreground: 220 90% 10%;
 
-    /* Primary - Warm amber/gold for the Pact */
-    --primary: 36 100% 50%;
-    --primary-foreground: 28 15% 12%;
-    --primary-glow: 36 100% 65%;
+    /* Primary - Cyber cyan/electric blue */
+    --primary: 195 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 195 100% 65%;
 
-    /* Secondary - Soft warm gray */
-    --secondary: 32 12% 90%;
-    --secondary-foreground: 28 15% 12%;
+    /* Secondary - Tech gray */
+    --secondary: 215 20% 85%;
+    --secondary-foreground: 220 90% 10%;
 
     /* Muted */
-    --muted: 32 12% 94%;
-    --muted-foreground: 28 8% 45%;
+    --muted: 215 20% 92%;
+    --muted-foreground: 215 15% 45%;
 
-    /* Accent - Deeper amber */
-    --accent: 28 85% 55%;
-    --accent-foreground: 32 25% 97%;
+    /* Accent - Neon purple */
+    --accent: 270 80% 60%;
+    --accent-foreground: 0 0% 100%;
 
     /* Destructive */
-    --destructive: 0 72% 51%;
+    --destructive: 0 85% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* Health green */
-    --health: 142 76% 36%;
+    --health: 142 70% 45%;
     --health-foreground: 0 0% 100%;
 
     /* Finance blue */
-    --finance: 212 95% 45%;
+    --finance: 212 90% 50%;
     --finance-foreground: 0 0% 100%;
 
-    /* Borders and inputs */
-    --border: 32 20% 88%;
-    --input: 32 20% 88%;
-    --ring: 36 100% 50%;
+    /* Borders and inputs - Cyber lines */
+    --border: 215 30% 80%;
+    --input: 215 30% 88%;
+    --ring: 195 100% 50%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
-    /* Gradients */
-    --gradient-pact: linear-gradient(135deg, hsl(36 100% 50%), hsl(36 100% 65%));
-    --gradient-subtle: linear-gradient(180deg, hsl(32 25% 97%), hsl(32 15% 94%));
+    /* Futuristic Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(195 100% 50%), hsl(270 80% 60%));
+    --gradient-hologram: linear-gradient(135deg, hsl(195 100% 50% / 0.1), hsl(270 80% 60% / 0.1));
+    --gradient-panel: linear-gradient(180deg, hsl(210 40% 98%), hsl(215 35% 95%));
     
-    /* Shadows */
-    --shadow-glow: 0 0 40px hsla(36 100% 50% / 0.3);
-    --shadow-soft: 0 4px 16px hsla(28 15% 12% / 0.08);
+    /* Gaming Shadows & Glows */
+    --shadow-neon: 0 0 20px hsla(195 100% 50% / 0.5), 0 0 40px hsla(195 100% 50% / 0.3);
+    --shadow-cyber: 0 4px 20px hsla(195 100% 50% / 0.2), inset 0 1px 0 hsla(0 0% 100% / 0.4);
+    --shadow-hologram: 0 8px 32px hsla(195 100% 50% / 0.15);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    /* Difficulty Colors */
-    --difficulty-easy: 142 76% 45%;
-    --difficulty-medium: 45 93% 47%;
-    --difficulty-hard: 25 95% 53%;
-    --difficulty-extreme: 0 84% 60%;
-    --difficulty-impossible: 280 70% 35%;
-    --difficulty-custom: 270 95% 60%;
+    /* Difficulty Colors - Enhanced gaming palette */
+    --difficulty-easy: 142 70% 50%;
+    --difficulty-medium: 45 95% 55%;
+    --difficulty-hard: 25 100% 60%;
+    --difficulty-extreme: 0 90% 65%;
+    --difficulty-impossible: 280 75% 45%;
+    --difficulty-custom: 270 90% 65%;
   }
 
   .dark {
-    /* Base colors - deep, warm darkness */
-    --background: 28 20% 8%;
-    --foreground: 32 15% 92%;
+    /* Base colors - Deep space gaming darkness */
+    --background: 220 50% 5%;
+    --foreground: 210 40% 98%;
 
-    /* Card surfaces */
-    --card: 28 18% 12%;
-    --card-foreground: 32 15% 92%;
+    /* Card surfaces - Glowing panels */
+    --card: 220 40% 10%;
+    --card-foreground: 210 40% 98%;
 
     /* Popover */
-    --popover: 28 18% 12%;
-    --popover-foreground: 32 15% 92%;
+    --popover: 220 45% 8%;
+    --popover-foreground: 210 40% 98%;
 
-    /* Primary - Glowing amber */
-    --primary: 36 100% 55%;
-    --primary-foreground: 28 20% 8%;
-    --primary-glow: 36 100% 70%;
+    /* Primary - Electric cyan glow */
+    --primary: 195 100% 55%;
+    --primary-foreground: 220 50% 5%;
+    --primary-glow: 195 100% 70%;
 
-    /* Secondary */
-    --secondary: 28 15% 18%;
-    --secondary-foreground: 32 15% 92%;
+    /* Secondary - Dark tech panel */
+    --secondary: 220 30% 15%;
+    --secondary-foreground: 210 40% 98%;
 
     /* Muted */
-    --muted: 28 15% 16%;
-    --muted-foreground: 32 10% 60%;
+    --muted: 220 35% 12%;
+    --muted-foreground: 215 20% 65%;
 
-    /* Accent */
-    --accent: 28 85% 60%;
-    --accent-foreground: 28 20% 8%;
+    /* Accent - Neon magenta */
+    --accent: 320 85% 60%;
+    --accent-foreground: 0 0% 100%;
 
     /* Destructive */
-    --destructive: 0 72% 51%;
+    --destructive: 0 90% 65%;
     --destructive-foreground: 0 0% 100%;
 
     /* Health */
-    --health: 142 76% 42%;
+    --health: 142 70% 50%;
     --health-foreground: 0 0% 100%;
 
     /* Finance */
-    --finance: 212 95% 55%;
+    --finance: 212 90% 60%;
     --finance-foreground: 0 0% 100%;
 
-    /* Borders and inputs */
-    --border: 28 15% 20%;
-    --input: 28 15% 20%;
-    --ring: 36 100% 55%;
+    /* Borders and inputs - Glowing edges */
+    --border: 220 40% 20%;
+    --input: 220 40% 18%;
+    --ring: 195 100% 55%;
 
-    /* Gradients */
-    --gradient-pact: linear-gradient(135deg, hsl(36 100% 55%), hsl(36 100% 70%));
-    --gradient-subtle: linear-gradient(180deg, hsl(28 20% 8%), hsl(28 18% 10%));
+    /* Futuristic Gradients */
+    --gradient-cyber: linear-gradient(135deg, hsl(195 100% 55%), hsl(270 85% 65%));
+    --gradient-hologram: linear-gradient(135deg, hsl(195 100% 55% / 0.15), hsl(270 85% 65% / 0.15));
+    --gradient-panel: linear-gradient(180deg, hsl(220 45% 10%), hsl(220 40% 8%));
     
-    /* Shadows */
-    --shadow-glow: 0 0 60px hsla(36 100% 55% / 0.4);
-    --shadow-soft: 0 4px 16px hsla(0 0% 0% / 0.5);
+    /* Gaming Shadows & Glows */
+    --shadow-neon: 0 0 30px hsla(195 100% 55% / 0.6), 0 0 60px hsla(195 100% 55% / 0.4);
+    --shadow-cyber: 0 4px 24px hsla(195 100% 55% / 0.3), inset 0 1px 0 hsla(195 100% 70% / 0.2);
+    --shadow-hologram: 0 8px 40px hsla(195 100% 55% / 0.25);
 
-    /* Difficulty Colors */
-    --difficulty-easy: 142 76% 50%;
-    --difficulty-medium: 45 93% 55%;
-    --difficulty-hard: 25 95% 60%;
-    --difficulty-extreme: 0 84% 65%;
-    --difficulty-impossible: 280 70% 50%;
+    /* Difficulty Colors - Vivid gaming palette */
+    --difficulty-easy: 142 70% 55%;
+    --difficulty-medium: 45 95% 60%;
+    --difficulty-hard: 25 100% 65%;
+    --difficulty-extreme: 0 95% 70%;
+    --difficulty-impossible: 280 80% 55%;
     --difficulty-custom: 270 95% 70%;
   }
 }
@@ -148,18 +153,25 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Custom animations */
+  /* Futuristic heading font */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', 'Rajdhani', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  /* Gaming UI animations */
   @keyframes glow-pulse {
     0%, 100% {
       opacity: 1;
-      filter: drop-shadow(0 0 20px currentColor);
+      filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 16px currentColor);
     }
     50% {
-      opacity: 0.8;
-      filter: drop-shadow(0 0 30px currentColor);
+      opacity: 0.85;
+      filter: drop-shadow(0 0 12px currentColor) drop-shadow(0 0 24px currentColor);
     }
   }
 
@@ -172,6 +184,42 @@ All colors MUST be HSL.
     }
   }
 
+  @keyframes scan-line {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  @keyframes hologram-flicker {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.95;
+    }
+  }
+
+  @keyframes neon-glow {
+    0%, 100% {
+      box-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 15px currentColor;
+    }
+    50% {
+      box-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 30px currentColor;
+    }
+  }
+
+  @keyframes cyber-shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
   .animate-glow-pulse {
     animation: glow-pulse 3s ease-in-out infinite;
   }
@@ -180,8 +228,104 @@ All colors MUST be HSL.
     animation: float 4s ease-in-out infinite;
   }
 
+  .animate-scan {
+    animation: scan-line 3s linear infinite;
+  }
+
+  .animate-hologram {
+    animation: hologram-flicker 0.15s infinite;
+  }
+
+  .animate-neon-glow {
+    animation: neon-glow 2s ease-in-out infinite;
+  }
+
+  .animate-cyber-shimmer {
+    animation: cyber-shimmer 3s linear infinite;
+  }
+
   /* Smooth transitions */
   .transition-smooth {
     transition: var(--transition-smooth);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+
+  /* Futuristic glass morphism */
+  .glass-panel {
+    background: linear-gradient(135deg, 
+      hsla(var(--card) / 0.7) 0%, 
+      hsla(var(--card) / 0.5) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid hsla(var(--primary) / 0.2);
+  }
+
+  /* Cyber grid background */
+  .cyber-grid {
+    background-image: 
+      linear-gradient(hsla(var(--primary) / 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--primary) / 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Neon border effect */
+  .neon-border {
+    position: relative;
+    border: 1px solid hsla(var(--primary) / 0.5);
+    box-shadow: 
+      inset 0 0 10px hsla(var(--primary) / 0.2),
+      0 0 10px hsla(var(--primary) / 0.3);
+  }
+
+  .neon-border::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, 
+      transparent, 
+      hsla(var(--primary) / 0.3), 
+      transparent);
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .neon-border:hover::before {
+    opacity: 1;
+  }
+
+  /* Holographic corner accents */
+  .corner-accents::before,
+  .corner-accents::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid hsla(var(--primary) / 0.6);
+    transition: all 0.3s ease;
+  }
+
+  .corner-accents::before {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
+  }
+
+  .corner-accents::after {
+    bottom: -1px;
+    right: -1px;
+    border-left: none;
+    border-top: none;
+  }
+
+  .corner-accents:hover::before,
+  .corner-accents:hover::after {
+    width: 30px;
+    height: 30px;
+    border-color: hsla(var(--primary) / 1);
   }
 }
