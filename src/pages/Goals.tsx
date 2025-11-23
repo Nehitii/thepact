@@ -31,6 +31,8 @@ interface Goal {
   completion_date?: string;
   image_url?: string;
   is_focus?: boolean;
+  completedStepsCount?: number;
+  totalStepsCount?: number;
 }
 
 type SortOption = 
@@ -88,7 +90,25 @@ export default function Goals() {
         .order("created_at", { ascending: false });
 
       if (goalsData) {
-        setGoals(goalsData);
+        // Fetch actual step counts for each goal
+        const goalsWithStepCounts = await Promise.all(
+          goalsData.map(async (goal) => {
+            const { data: steps } = await supabase
+              .from("steps")
+              .select("status")
+              .eq("goal_id", goal.id);
+
+            const totalStepsCount = steps?.length || 0;
+            const completedStepsCount = steps?.filter(s => s.status === "completed").length || 0;
+
+            return {
+              ...goal,
+              totalStepsCount,
+              completedStepsCount,
+            };
+          })
+        );
+        setGoals(goalsWithStepCounts);
       }
 
       setLoading(false);
@@ -176,8 +196,8 @@ export default function Goals() {
       
       case "progress":
         return sorted.sort((a, b) => {
-          const progressA = a.total_steps > 0 ? (a.validated_steps / a.total_steps) : 0;
-          const progressB = b.total_steps > 0 ? (b.validated_steps / b.total_steps) : 0;
+          const progressA = (a.totalStepsCount || 0) > 0 ? ((a.completedStepsCount || 0) / (a.totalStepsCount || 0)) : 0;
+          const progressB = (b.totalStepsCount || 0) > 0 ? ((b.completedStepsCount || 0) / (b.totalStepsCount || 0)) : 0;
           return progressB - progressA;
         });
       
@@ -219,8 +239,8 @@ export default function Goals() {
           if (b.status === "not_started" && a.status !== "not_started") return 1;
           
           // Priority 3: Higher progress percentage (closer to completion)
-          const progressA = a.total_steps > 0 ? (a.validated_steps / a.total_steps) : 0;
-          const progressB = b.total_steps > 0 ? (b.validated_steps / b.total_steps) : 0;
+          const progressA = (a.totalStepsCount || 0) > 0 ? ((a.completedStepsCount || 0) / (a.totalStepsCount || 0)) : 0;
+          const progressB = (b.totalStepsCount || 0) > 0 ? ((b.completedStepsCount || 0) / (b.totalStepsCount || 0)) : 0;
           if (progressA !== progressB) return progressB - progressA;
           
           // Priority 4: Lower difficulty (easier wins)
@@ -345,10 +365,9 @@ export default function Goals() {
                 </Card>
               ) : (
                 sortedActiveGoals.map((goal) => {
-                  const progress =
-                    goal.total_steps > 0
-                      ? (goal.validated_steps / goal.total_steps) * 100
-                      : 0;
+                  const totalSteps = goal.totalStepsCount || 0;
+                  const completedSteps = goal.completedStepsCount || 0;
+                  const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
                   const difficultyColor = getDifficultyColor(goal.difficulty);
 
                   return (
@@ -453,7 +472,7 @@ export default function Goals() {
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-muted-foreground font-medium">
-                                  {goal.validated_steps} / {goal.total_steps} steps
+                                  {completedSteps} / {totalSteps} steps
                                 </span>
                                 <span className="font-bold" style={{ color: difficultyColor }}>
                                   {progress.toFixed(0)}%
@@ -464,7 +483,7 @@ export default function Goals() {
                                   className="h-full transition-all duration-500 rounded-full relative"
                                   style={{ 
                                     width: `${progress}%`,
-                                    background: `linear-gradient(90deg, ${difficultyColor}CC, ${difficultyColor})`,
+                                    backgroundColor: difficultyColor,
                                     boxShadow: `0 0 10px ${difficultyColor}80`
                                   }}
                                 >
@@ -513,7 +532,7 @@ export default function Goals() {
                 </Card>
               ) : (
                 sortedCompletedGoals.map((goal) => {
-                  const progress = 100; // Completed goals are always 100%
+                  const totalSteps = goal.totalStepsCount || 0;
                   const difficultyColor = getDifficultyColor(goal.difficulty);
 
                   return (
@@ -613,21 +632,32 @@ export default function Goals() {
                               </div>
                             </div>
 
-                            {/* Progress Bar - Full */}
+                            {/* Progress Bar - Full with Difficulty Accent */}
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-muted-foreground font-medium">
-                                  {goal.total_steps} / {goal.total_steps} steps
+                                  {totalSteps} / {totalSteps} steps
                                 </span>
                                 <span className="font-bold text-green-600 dark:text-green-400">
                                   100%
                                 </span>
                               </div>
-                              <div className="h-2.5 bg-muted rounded-full overflow-hidden border border-border shadow-inner">
+                              <div className="h-2.5 bg-muted rounded-full overflow-hidden shadow-inner relative"
+                                style={{ 
+                                  border: `2px solid ${difficultyColor}66`
+                                }}>
                                 <div
-                                  className="h-full transition-all duration-500 rounded-full bg-green-500"
+                                  className="h-full transition-all duration-500 rounded-full bg-green-500 relative"
                                   style={{ width: "100%" }}
-                                />
+                                >
+                                  {/* Thin difficulty color accent overlay */}
+                                  <div 
+                                    className="absolute inset-0 rounded-full"
+                                    style={{
+                                      background: `linear-gradient(90deg, transparent 0%, ${difficultyColor}40 50%, transparent 100%)`
+                                    }}
+                                  />
+                                </div>
                               </div>
                             </div>
 
