@@ -405,17 +405,17 @@ export default function Goals() {
                           {/* Left Section: Image + Focus Star */}
                           <div className="relative flex-shrink-0">
                             {goal.image_url ? (
-                              <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 shadow-lg"
+                              <div className="relative w-24 h-24 rounded-lg border-2 shadow-lg"
                                 style={{ borderColor: difficultyColor }}>
                                 <img 
                                   src={goal.image_url} 
                                   alt={goal.name}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-cover rounded-lg"
                                 />
                                 {/* Focus Star Overlay on Image */}
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  className="absolute -top-3 -left-3 z-20 p-1.5 bg-card rounded-full shadow-lg hover:scale-110 transition-transform border-2"
                                   style={{ borderColor: difficultyColor }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
@@ -434,7 +434,7 @@ export default function Goals() {
                                 {/* Focus Star when no image */}
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  className="absolute -top-3 -left-3 z-20 p-1.5 bg-card rounded-full shadow-lg hover:scale-110 transition-transform border-2"
                                   style={{ borderColor: difficultyColor }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
@@ -455,12 +455,13 @@ export default function Goals() {
                               </h3>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <Badge 
-                                  variant="secondary" 
-                                  className="text-xs font-medium capitalize"
+                                  variant="outline" 
+                                  className="text-xs font-semibold capitalize px-2.5 py-0.5 shadow-sm"
                                   style={{ 
-                                    backgroundColor: `${difficultyColor}20`,
+                                    backgroundColor: `${difficultyColor}15`,
                                     color: difficultyColor,
-                                    borderColor: `${difficultyColor}50`
+                                    borderColor: difficultyColor,
+                                    boxShadow: `0 0 8px ${difficultyColor}40`
                                   }}
                                 >
                                   {getDifficultyLabel(goal.difficulty)}
@@ -564,21 +565,21 @@ export default function Goals() {
                           {/* Left Section: Image + Focus Star */}
                           <div className="relative flex-shrink-0">
                             {goal.image_url ? (
-                              <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 shadow-lg grayscale"
+                              <div className="relative w-24 h-24 rounded-lg border-2 shadow-lg grayscale"
                                 style={{ borderColor: `${difficultyColor}66` }}>
                                 <img 
                                   src={goal.image_url} 
                                   alt={goal.name}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-cover rounded-lg"
                                 />
                                 {/* Thin difficulty accent border visible on completed */}
-                                <div className="absolute inset-0 border-2 pointer-events-none" 
+                                <div className="absolute inset-0 border-2 pointer-events-none rounded-lg" 
                                   style={{ borderColor: `${difficultyColor}99` }} 
                                 />
                                 {/* Focus Star */}
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  className="absolute -top-3 -left-3 z-20 p-1.5 bg-card rounded-full shadow-lg hover:scale-110 transition-transform border-2"
                                   style={{ borderColor: `${difficultyColor}66` }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
@@ -597,7 +598,7 @@ export default function Goals() {
                                 {/* Focus Star */}
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  className="absolute -top-3 -left-3 z-20 p-1.5 bg-card rounded-full shadow-lg hover:scale-110 transition-transform border-2"
                                   style={{ borderColor: `${difficultyColor}66` }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
@@ -618,12 +619,13 @@ export default function Goals() {
                               </h3>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <Badge 
-                                  variant="secondary" 
-                                  className="text-xs font-medium capitalize"
+                                  variant="outline" 
+                                  className="text-xs font-semibold capitalize px-2.5 py-0.5 opacity-75"
                                   style={{ 
-                                    backgroundColor: `${difficultyColor}20`,
+                                    backgroundColor: `${difficultyColor}12`,
                                     color: `${difficultyColor}B3`,
-                                    borderColor: `${difficultyColor}33`
+                                    borderColor: `${difficultyColor}66`,
+                                    boxShadow: `0 0 6px ${difficultyColor}30`
                                   }}
                                 >
                                   {getDifficultyLabel(goal.difficulty)}
