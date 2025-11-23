@@ -49,6 +49,7 @@ export default function Home() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
+  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
   const [ranks, setRanks] = useState<Rank[]>([]);
   const [totalPoints, setTotalPoints] = useState(0);
   const [currentRank, setCurrentRank] = useState<Rank | null>(null);
@@ -84,15 +85,16 @@ export default function Home() {
 
       setPact(pactData);
 
-      // Load custom difficulty name
+      // Load custom difficulty settings
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("custom_difficulty_name")
+        .select("custom_difficulty_name, custom_difficulty_color")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (profileData?.custom_difficulty_name) {
-        setCustomDifficultyName(profileData.custom_difficulty_name);
+      if (profileData) {
+        setCustomDifficultyName(profileData.custom_difficulty_name || "");
+        setCustomDifficultyColor(profileData.custom_difficulty_color || "#a855f7");
       }
 
       // Load ranks
@@ -472,6 +474,7 @@ export default function Home() {
           totalCostEngaged={dashboardData.totalCostEngaged}
           totalCostPaid={dashboardData.totalCostPaid}
           customDifficultyName={customDifficultyName}
+          customDifficultyColor={customDifficultyColor}
         />
         <Card>
           <CardHeader>

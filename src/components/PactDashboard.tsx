@@ -23,6 +23,7 @@ interface PactDashboardProps {
   totalCostEngaged: number;
   totalCostPaid: number;
   customDifficultyName?: string;
+  customDifficultyColor?: string;
 }
 
 const difficultyColors = {
@@ -39,6 +40,7 @@ export function PactDashboard({
   totalCostEngaged,
   totalCostPaid,
   customDifficultyName,
+  customDifficultyColor = "#a855f7",
 }: PactDashboardProps) {
   const totalCostRemaining = totalCostEngaged - totalCostPaid;
   const paidPercentage = totalCostEngaged > 0 ? (totalCostPaid / totalCostEngaged) * 100 : 0;
@@ -48,6 +50,13 @@ export function PactDashboard({
       return customDifficultyName;
     }
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    if (difficulty === 'custom') {
+      return customDifficultyColor;
+    }
+    return difficultyColors[difficulty as keyof typeof difficultyColors];
   };
 
   return (
@@ -69,8 +78,8 @@ export function PactDashboard({
                     variant="outline" 
                     className="capitalize"
                     style={{ 
-                      borderColor: difficultyColors[item.difficulty as keyof typeof difficultyColors],
-                      color: difficultyColors[item.difficulty as keyof typeof difficultyColors]
+                      borderColor: getDifficultyColor(item.difficulty),
+                      color: getDifficultyColor(item.difficulty)
                     }}
                   >
                     {getDifficultyLabel(item.difficulty)}
@@ -88,7 +97,7 @@ export function PactDashboard({
                 className="h-2"
                 style={{
                   // @ts-ignore
-                  "--progress-background": difficultyColors[item.difficulty as keyof typeof difficultyColors]
+                  "--progress-background": getDifficultyColor(item.difficulty)
                 }}
               />
             </div>

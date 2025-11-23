@@ -53,6 +53,7 @@ export default function Goals() {
   const [sortBy, setSortBy] = useState<SortOption>("smart");
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
+  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
 
   useEffect(() => {
     if (!user) return;
@@ -61,12 +62,13 @@ export default function Goals() {
       // Load custom difficulty settings
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("custom_difficulty_name")
+        .select("custom_difficulty_name, custom_difficulty_color")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (profileData?.custom_difficulty_name) {
-        setCustomDifficultyName(profileData.custom_difficulty_name);
+      if (profileData) {
+        setCustomDifficultyName(profileData.custom_difficulty_name || "");
+        setCustomDifficultyColor(profileData.custom_difficulty_color || "#a855f7");
       }
 
       // Get user's pact first
@@ -139,15 +141,17 @@ export default function Goals() {
   };
 
   const getDifficultyColor = (difficulty: string) => {
+    if (difficulty === 'custom') {
+      return customDifficultyColor;
+    }
     const colorMap: Record<string, string> = {
-      easy: "difficulty-easy",
-      medium: "difficulty-medium",
-      hard: "difficulty-hard",
-      extreme: "difficulty-extreme",
-      impossible: "difficulty-impossible",
-      custom: "difficulty-custom",
+      easy: "hsl(var(--difficulty-easy))",
+      medium: "hsl(var(--difficulty-medium))",
+      hard: "hsl(var(--difficulty-hard))",
+      extreme: "hsl(var(--difficulty-extreme))",
+      impossible: "hsl(var(--difficulty-impossible))",
     };
-    return colorMap[difficulty] || "primary";
+    return colorMap[difficulty] || "hsl(var(--primary))";
   };
 
   // Get display label for difficulty
@@ -353,7 +357,7 @@ export default function Goals() {
                       className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] border-2"
                       style={{
                         borderLeftWidth: '6px',
-                        borderLeftColor: `hsl(var(--${difficultyColor}))`,
+                        borderLeftColor: difficultyColor,
                         background: 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%)',
                       }}
                       onClick={() => navigate(`/goals/${goal.id}`)}
@@ -365,8 +369,8 @@ export default function Goals() {
                             90deg,
                             transparent,
                             transparent 2px,
-                            hsl(var(--${difficultyColor})) 2px,
-                            hsl(var(--${difficultyColor})) 4px
+                            ${difficultyColor} 2px,
+                            ${difficultyColor} 4px
                           )`,
                         }}
                       />
@@ -377,7 +381,7 @@ export default function Goals() {
                           <div className="relative flex-shrink-0">
                             {goal.image_url ? (
                               <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 shadow-lg"
-                                style={{ borderColor: `hsl(var(--${difficultyColor}))` }}>
+                                style={{ borderColor: difficultyColor }}>
                                 <img 
                                   src={goal.image_url} 
                                   alt={goal.name}
@@ -387,7 +391,7 @@ export default function Goals() {
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
                                   className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
-                                  style={{ borderColor: `hsl(var(--${difficultyColor}))` }}
+                                  style={{ borderColor: difficultyColor }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
                                   <Star 
@@ -398,15 +402,15 @@ export default function Goals() {
                             ) : (
                               <div className="relative w-24 h-24 rounded-lg border-2 shadow-lg flex items-center justify-center"
                                 style={{ 
-                                  borderColor: `hsl(var(--${difficultyColor}))`,
-                                  background: `linear-gradient(135deg, hsl(var(--${difficultyColor}) / 0.1), hsl(var(--${difficultyColor}) / 0.05))`
+                                  borderColor: difficultyColor,
+                                  background: `linear-gradient(135deg, ${difficultyColor}20, ${difficultyColor}10)`
                                 }}>
-                                <Trophy className="h-10 w-10" style={{ color: `hsl(var(--${difficultyColor}))` }} />
+                                <Trophy className="h-10 w-10" style={{ color: difficultyColor }} />
                                 {/* Focus Star when no image */}
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
                                   className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
-                                  style={{ borderColor: `hsl(var(--${difficultyColor}))` }}
+                                  style={{ borderColor: difficultyColor }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
                                   <Star 
@@ -429,9 +433,9 @@ export default function Goals() {
                                   variant="secondary" 
                                   className="text-xs font-medium capitalize"
                                   style={{ 
-                                    backgroundColor: `hsl(var(--${difficultyColor}) / 0.15)`,
-                                    color: `hsl(var(--${difficultyColor}))`,
-                                    borderColor: `hsl(var(--${difficultyColor}) / 0.3)`
+                                    backgroundColor: `${difficultyColor}20`,
+                                    color: difficultyColor,
+                                    borderColor: `${difficultyColor}50`
                                   }}
                                 >
                                   {getDifficultyLabel(goal.difficulty)}
@@ -451,7 +455,7 @@ export default function Goals() {
                                 <span className="text-muted-foreground font-medium">
                                   {goal.validated_steps} / {goal.total_steps} steps
                                 </span>
-                                <span className="font-bold" style={{ color: `hsl(var(--${difficultyColor}))` }}>
+                                <span className="font-bold" style={{ color: difficultyColor }}>
                                   {progress.toFixed(0)}%
                                 </span>
                               </div>
@@ -460,8 +464,8 @@ export default function Goals() {
                                   className="h-full transition-all duration-500 rounded-full relative"
                                   style={{ 
                                     width: `${progress}%`,
-                                    background: `linear-gradient(90deg, hsl(var(--${difficultyColor}) / 0.8), hsl(var(--${difficultyColor})))`,
-                                    boxShadow: `0 0 10px hsl(var(--${difficultyColor}) / 0.5)`
+                                    background: `linear-gradient(90deg, ${difficultyColor}CC, ${difficultyColor})`,
+                                    boxShadow: `0 0 10px ${difficultyColor}80`
                                   }}
                                 >
                                   <div className="absolute inset-0 bg-white/20 animate-pulse" />
@@ -472,8 +476,8 @@ export default function Goals() {
                             {/* XP Points */}
                             {goal.potential_score > 0 && (
                               <div className="flex items-center gap-1.5 text-xs">
-                                <Sparkles className="h-3.5 w-3.5" style={{ color: `hsl(var(--${difficultyColor}))` }} />
-                                <span className="font-bold" style={{ color: `hsl(var(--${difficultyColor}))` }}>
+                                <Sparkles className="h-3.5 w-3.5" style={{ color: difficultyColor }} />
+                                <span className="font-bold" style={{ color: difficultyColor }}>
                                   +{goal.potential_score} XP
                                 </span>
                               </div>
@@ -518,7 +522,7 @@ export default function Goals() {
                       className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.01] border-2 opacity-70 hover:opacity-85"
                       style={{
                         borderLeftWidth: '6px',
-                        borderLeftColor: `hsl(var(--${difficultyColor}) / 0.4)`,
+                        borderLeftColor: `${difficultyColor}66`,
                         background: 'linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.8) 100%)',
                       }}
                       onClick={() => navigate(`/goals/${goal.id}`)}
@@ -536,7 +540,7 @@ export default function Goals() {
                           <div className="relative flex-shrink-0">
                             {goal.image_url ? (
                               <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 shadow-lg grayscale"
-                                style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.4)` }}>
+                                style={{ borderColor: `${difficultyColor}66` }}>
                                 <img 
                                   src={goal.image_url} 
                                   alt={goal.name}
@@ -544,13 +548,13 @@ export default function Goals() {
                                 />
                                 {/* Thin difficulty accent border visible on completed */}
                                 <div className="absolute inset-0 border-2 pointer-events-none" 
-                                  style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.6)` }} 
+                                  style={{ borderColor: `${difficultyColor}99` }} 
                                 />
                                 {/* Focus Star */}
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
                                   className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
-                                  style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.4)` }}
+                                  style={{ borderColor: `${difficultyColor}66` }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
                                   <Star 
@@ -561,15 +565,15 @@ export default function Goals() {
                             ) : (
                               <div className="relative w-24 h-24 rounded-lg border-2 shadow-lg flex items-center justify-center grayscale"
                                 style={{ 
-                                  borderColor: `hsl(var(--${difficultyColor}) / 0.4)`,
-                                  background: `linear-gradient(135deg, hsl(var(--${difficultyColor}) / 0.1), hsl(var(--${difficultyColor}) / 0.05))`
+                                  borderColor: `${difficultyColor}66`,
+                                  background: `linear-gradient(135deg, ${difficultyColor}20, ${difficultyColor}10)`
                                 }}>
-                                <Trophy className="h-10 w-10" style={{ color: `hsl(var(--${difficultyColor}) / 0.6)` }} />
+                                <Trophy className="h-10 w-10" style={{ color: `${difficultyColor}99` }} />
                                 {/* Focus Star */}
                                 <button
                                   onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
                                   className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
-                                  style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.4)` }}
+                                  style={{ borderColor: `${difficultyColor}66` }}
                                   aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                                 >
                                   <Star 
@@ -592,9 +596,9 @@ export default function Goals() {
                                   variant="secondary" 
                                   className="text-xs font-medium capitalize"
                                   style={{ 
-                                    backgroundColor: `hsl(var(--${difficultyColor}) / 0.1)`,
-                                    color: `hsl(var(--${difficultyColor}) / 0.7)`,
-                                    borderColor: `hsl(var(--${difficultyColor}) / 0.2)`
+                                    backgroundColor: `${difficultyColor}20`,
+                                    color: `${difficultyColor}B3`,
+                                    borderColor: `${difficultyColor}33`
                                   }}
                                 >
                                   {getDifficultyLabel(goal.difficulty)}
