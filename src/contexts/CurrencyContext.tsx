@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 
@@ -14,8 +14,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [currency, setCurrencyState] = useState<string>("eur");
 
-  const loadCurrency = async () => {
-    if (!user) return;
+  const loadCurrency = useCallback(async () => {
+    if (!user) {
+      setCurrencyState("eur"); // Reset to default when no user
+      return;
+    }
 
     const { data } = await supabase
       .from("profiles")
@@ -26,11 +29,11 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     if (data?.currency) {
       setCurrencyState(data.currency);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     loadCurrency();
-  }, [user]);
+  }, [loadCurrency]);
 
   const setCurrency = (newCurrency: string) => {
     setCurrencyState(newCurrency);
