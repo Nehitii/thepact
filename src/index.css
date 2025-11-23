@@ -66,6 +66,14 @@ All colors MUST be HSL.
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Difficulty Colors */
+    --difficulty-easy: 142 76% 45%;
+    --difficulty-medium: 45 93% 47%;
+    --difficulty-hard: 25 95% 53%;
+    --difficulty-extreme: 0 84% 60%;
+    --difficulty-impossible: 280 70% 35%;
+    --difficulty-custom: 270 95% 60%;
   }
 
   .dark {
@@ -122,6 +130,14 @@ All colors MUST be HSL.
     /* Shadows */
     --shadow-glow: 0 0 60px hsla(36 100% 55% / 0.4);
     --shadow-soft: 0 4px 16px hsla(0 0% 0% / 0.5);
+
+    /* Difficulty Colors */
+    --difficulty-easy: 142 76% 50%;
+    --difficulty-medium: 45 93% 55%;
+    --difficulty-hard: 25 95% 60%;
+    --difficulty-extreme: 0 84% 65%;
+    --difficulty-impossible: 280 70% 50%;
+    --difficulty-custom: 270 95% 70%;
   }
 }
 

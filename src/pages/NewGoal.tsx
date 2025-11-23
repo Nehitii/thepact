@@ -18,6 +18,9 @@ const goalTypes = [
   "creative",
   "financial",
   "learning",
+  "bricolage",
+  "travaux",
+  "relationnel",
   "other",
 ];
 

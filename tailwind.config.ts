@@ -56,6 +56,14 @@ export default {
           DEFAULT: "hsl(var(--finance))",
           foreground: "hsl(var(--finance-foreground))",
         },
+        difficulty: {
+          easy: "hsl(var(--difficulty-easy))",
+          medium: "hsl(var(--difficulty-medium))",
+          hard: "hsl(var(--difficulty-hard))",
+          extreme: "hsl(var(--difficulty-extreme))",
+          impossible: "hsl(var(--difficulty-impossible))",
+          custom: "hsl(var(--difficulty-custom))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
