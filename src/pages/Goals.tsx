@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowRight, ArrowUpDown, CheckCircle2 } from "lucide-react";
+import { Plus, ArrowRight, ArrowUpDown, CheckCircle2, Star } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -30,6 +30,7 @@ interface Goal {
   start_date?: string;
   completion_date?: string;
   image_url?: string;
+  is_focus?: boolean;
 }
 
 type SortOption = 
@@ -93,6 +94,21 @@ export default function Goals() {
 
     loadGoals();
   }, [user]);
+
+  const toggleFocus = async (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const { error } = await supabase
+      .from("goals")
+      .update({ is_focus: !currentFocus })
+      .eq("id", goalId);
+
+    if (!error) {
+      setGoals(goals.map(g => 
+        g.id === goalId ? { ...g, is_focus: !currentFocus } : g
+      ));
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -310,9 +326,18 @@ export default function Goals() {
                   return (
                     <Card
                       key={goal.id}
-                      className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50"
+                      className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50 relative"
                       onClick={() => navigate(`/goals/${goal.id}`)}
                     >
+                      <button
+                        onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                        className="absolute top-4 right-4 z-10 p-2 hover:bg-secondary rounded-full transition-colors"
+                        aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                      >
+                        <Star 
+                          className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                        />
+                      </button>
                       <CardContent className="p-6">
                         <div className="flex items-start justify-between gap-4">
                           {goal.image_url && (
@@ -322,7 +347,7 @@ export default function Goals() {
                               className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                             />
                           )}
-                          <div className="flex-1 space-y-3">
+                          <div className="flex-1 space-y-3 pr-8">
                             <div>
                               <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -395,8 +420,16 @@ export default function Goals() {
                       className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50 relative bg-muted/30"
                       onClick={() => navigate(`/goals/${goal.id}`)}
                     >
-                      {/* Green Completed Badge */}
-                      <div className="absolute top-4 right-4 z-10">
+                      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+                        <button
+                          onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                          className="p-2 hover:bg-secondary rounded-full transition-colors"
+                          aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                        >
+                          <Star 
+                            className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                          />
+                        </button>
                         <Badge className="bg-green-500/90 text-white hover:bg-green-600 flex items-center gap-1">
                           <CheckCircle2 className="h-3 w-3" />
                           Completed

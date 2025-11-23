@@ -61,6 +61,7 @@ export type Database = {
           estimated_cost: number | null
           id: string
           image_url: string | null
+          is_focus: boolean | null
           name: string
           notes: string | null
           pact_id: string
@@ -79,6 +80,7 @@ export type Database = {
           estimated_cost?: number | null
           id?: string
           image_url?: string | null
+          is_focus?: boolean | null
           name: string
           notes?: string | null
           pact_id: string
@@ -97,6 +99,7 @@ export type Database = {
           estimated_cost?: number | null
           id?: string
           image_url?: string | null
+          is_focus?: boolean | null
           name?: string
           notes?: string | null
           pact_id?: string
