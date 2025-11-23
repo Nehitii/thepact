@@ -19,6 +19,7 @@ export default function Profile() {
   const [timezone, setTimezone] = useState("UTC");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
+  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
 
   useEffect(() => {
     if (!user) return;
@@ -35,6 +36,7 @@ export default function Profile() {
         setTimezone(data.timezone || "UTC");
         setCustomDifficultyName(data.custom_difficulty_name || "");
         setCustomDifficultyActive(data.custom_difficulty_active || false);
+        setCustomDifficultyColor(data.custom_difficulty_color || "#a855f7");
       }
     };
 
@@ -53,6 +55,7 @@ export default function Profile() {
         timezone,
         custom_difficulty_name: customDifficultyName.trim() || null,
         custom_difficulty_active: customDifficultyActive,
+        custom_difficulty_color: customDifficultyColor,
       })
       .eq("id", user.id);
 
@@ -152,6 +155,31 @@ export default function Profile() {
               />
               <p className="text-xs text-muted-foreground">
                 This name will replace "Custom Difficulty" throughout the app
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customDifficultyColor">Custom Difficulty Color</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  id="customDifficultyColor"
+                  type="color"
+                  value={customDifficultyColor}
+                  onChange={(e) => setCustomDifficultyColor(e.target.value)}
+                  className="w-20 h-10 cursor-pointer"
+                />
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    value={customDifficultyColor}
+                    onChange={(e) => setCustomDifficultyColor(e.target.value)}
+                    placeholder="#a855f7"
+                    maxLength={7}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                This color will be used for custom difficulty goals and progress tracking
               </p>
             </div>
 
