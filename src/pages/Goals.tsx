@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowRight, ArrowUpDown, CheckCircle2, Star } from "lucide-react";
+import { Plus, ArrowRight, ArrowUpDown, CheckCircle2, Star, Sparkles, Trophy } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -115,16 +115,39 @@ export default function Goals() {
       case "not_started":
         return "bg-muted text-muted-foreground";
       case "in_progress":
-        return "bg-primary/10 text-primary";
+        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
       case "validated":
-        return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
+        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
       case "fully_completed":
-        return "bg-green-500/10 text-green-600 dark:text-green-400";
+        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
       case "paused":
-        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400";
+        return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20";
       default:
         return "bg-muted text-muted-foreground";
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "not_started": return "Not Started";
+      case "in_progress": return "In Progress";
+      case "validated": return "Validated";
+      case "fully_completed": return "Completed";
+      case "paused": return "Paused";
+      default: return status;
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    const colorMap: Record<string, string> = {
+      easy: "difficulty-easy",
+      medium: "difficulty-medium",
+      hard: "difficulty-hard",
+      extreme: "difficulty-extreme",
+      impossible: "difficulty-impossible",
+      custom: "difficulty-custom",
+    };
+    return colorMap[difficulty] || "primary";
   };
 
   // Get display label for difficulty
@@ -322,73 +345,147 @@ export default function Goals() {
                     goal.total_steps > 0
                       ? (goal.validated_steps / goal.total_steps) * 100
                       : 0;
+                  const difficultyColor = getDifficultyColor(goal.difficulty);
 
                   return (
                     <Card
                       key={goal.id}
-                      className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50 relative"
+                      className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] border-2"
+                      style={{
+                        borderLeftWidth: '6px',
+                        borderLeftColor: `hsl(var(--${difficultyColor}))`,
+                        background: 'linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%)',
+                      }}
                       onClick={() => navigate(`/goals/${goal.id}`)}
                     >
-                      <button
-                        onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                        className="absolute top-4 right-4 z-10 p-2 hover:bg-secondary rounded-full transition-colors"
-                        aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
-                      >
-                        <Star 
-                          className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
-                        />
-                      </button>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between gap-4">
-                          {goal.image_url && (
-                            <img 
-                              src={goal.image_url} 
-                              alt={goal.name}
-                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                            />
-                          )}
-                          <div className="flex-1 space-y-3 pr-8">
+                      {/* Quest Frame Effect */}
+                      <div className="absolute inset-0 opacity-5 pointer-events-none"
+                        style={{
+                          backgroundImage: `repeating-linear-gradient(
+                            90deg,
+                            transparent,
+                            transparent 2px,
+                            hsl(var(--${difficultyColor})) 2px,
+                            hsl(var(--${difficultyColor})) 4px
+                          )`,
+                        }}
+                      />
+
+                      <CardContent className="p-5 relative">
+                        <div className="flex gap-4">
+                          {/* Left Section: Image + Focus Star */}
+                          <div className="relative flex-shrink-0">
+                            {goal.image_url ? (
+                              <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 shadow-lg"
+                                style={{ borderColor: `hsl(var(--${difficultyColor}))` }}>
+                                <img 
+                                  src={goal.image_url} 
+                                  alt={goal.name}
+                                  className="w-full h-full object-cover"
+                                />
+                                {/* Focus Star Overlay on Image */}
+                                <button
+                                  onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  style={{ borderColor: `hsl(var(--${difficultyColor}))` }}
+                                  aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                                >
+                                  <Star 
+                                    className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                                  />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="relative w-24 h-24 rounded-lg border-2 shadow-lg flex items-center justify-center"
+                                style={{ 
+                                  borderColor: `hsl(var(--${difficultyColor}))`,
+                                  background: `linear-gradient(135deg, hsl(var(--${difficultyColor}) / 0.1), hsl(var(--${difficultyColor}) / 0.05))`
+                                }}>
+                                <Trophy className="h-10 w-10" style={{ color: `hsl(var(--${difficultyColor}))` }} />
+                                {/* Focus Star when no image */}
+                                <button
+                                  onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  style={{ borderColor: `hsl(var(--${difficultyColor}))` }}
+                                  aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                                >
+                                  <Star 
+                                    className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                                  />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Middle Section: Content */}
+                          <div className="flex-1 min-w-0 space-y-3">
+                            {/* Title & Badges */}
                             <div>
-                              <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="secondary">{goal.type}</Badge>
-                                <Badge variant="outline">{getDifficultyLabel(goal.difficulty)}</Badge>
-                                <Badge className={getStatusColor(goal.status)}>
-                                  {goal.status === 'not_started' ? 'Not Started' : 
-                                   goal.status === 'in_progress' ? 'In Progress' : 
-                                   goal.status === 'validated' ? 'Validated' : 'Completed'}
+                              <h3 className="text-lg font-bold mb-2 line-clamp-2 group-hover:text-primary transition-colors">
+                                {goal.name}
+                              </h3>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <Badge 
+                                  variant="secondary" 
+                                  className="text-xs font-medium capitalize"
+                                  style={{ 
+                                    backgroundColor: `hsl(var(--${difficultyColor}) / 0.15)`,
+                                    color: `hsl(var(--${difficultyColor}))`,
+                                    borderColor: `hsl(var(--${difficultyColor}) / 0.3)`
+                                  }}
+                                >
+                                  {getDifficultyLabel(goal.difficulty)}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs capitalize border">
+                                  {goal.type}
+                                </Badge>
+                                <Badge className={`text-xs border ${getStatusColor(goal.status)}`}>
+                                  {getStatusLabel(goal.status)}
                                 </Badge>
                               </div>
                             </div>
 
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">
-                                  {goal.validated_steps} / {goal.total_steps} steps completed
+                            {/* Progress Bar */}
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground font-medium">
+                                  {goal.validated_steps} / {goal.total_steps} steps
                                 </span>
-                                <span className="font-medium text-primary">
+                                <span className="font-bold" style={{ color: `hsl(var(--${difficultyColor}))` }}>
                                   {progress.toFixed(0)}%
                                 </span>
                               </div>
-                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-2.5 bg-muted rounded-full overflow-hidden border border-border shadow-inner">
                                 <div
-                                  className="h-full bg-primary transition-all duration-500 rounded-full"
-                                  style={{ width: `${progress}%` }}
-                                />
+                                  className="h-full transition-all duration-500 rounded-full relative"
+                                  style={{ 
+                                    width: `${progress}%`,
+                                    background: `linear-gradient(90deg, hsl(var(--${difficultyColor}) / 0.8), hsl(var(--${difficultyColor})))`,
+                                    boxShadow: `0 0 10px hsl(var(--${difficultyColor}) / 0.5)`
+                                  }}
+                                >
+                                  <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                                </div>
                               </div>
                             </div>
 
+                            {/* XP Points */}
                             {goal.potential_score > 0 && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <span>Potential Score:</span>
-                                <span className="font-semibold text-primary">
-                                  +{goal.potential_score} pts
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <Sparkles className="h-3.5 w-3.5" style={{ color: `hsl(var(--${difficultyColor}))` }} />
+                                <span className="font-bold" style={{ color: `hsl(var(--${difficultyColor}))` }}>
+                                  +{goal.potential_score} XP
                                 </span>
                               </div>
                             )}
                           </div>
 
-                          <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                          {/* Right Section: Arrow */}
+                          <div className="flex items-center justify-center flex-shrink-0 pl-2">
+                            <ArrowRight 
+                              className="h-6 w-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" 
+                            />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
@@ -413,75 +510,140 @@ export default function Goals() {
               ) : (
                 sortedCompletedGoals.map((goal) => {
                   const progress = 100; // Completed goals are always 100%
+                  const difficultyColor = getDifficultyColor(goal.difficulty);
 
                   return (
                     <Card
                       key={goal.id}
-                      className="hover:shadow-lg transition-all cursor-pointer border-2 hover:border-primary/50 relative bg-muted/30"
+                      className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.01] border-2 opacity-70 hover:opacity-85"
+                      style={{
+                        borderLeftWidth: '6px',
+                        borderLeftColor: `hsl(var(--${difficultyColor}) / 0.4)`,
+                        background: 'linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.8) 100%)',
+                      }}
                       onClick={() => navigate(`/goals/${goal.id}`)}
                     >
-                      <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-                        <button
-                          onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                          className="p-2 hover:bg-secondary rounded-full transition-colors"
-                          aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
-                        >
-                          <Star 
-                            className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
-                          />
-                        </button>
-                        <Badge className="bg-green-500/90 text-white hover:bg-green-600 flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" />
-                          Completed
-                        </Badge>
+                      {/* Completion Stamp Effect */}
+                      <div className="absolute top-2 right-16 opacity-20 pointer-events-none rotate-12">
+                        <div className="border-4 border-green-500 rounded-lg px-3 py-1">
+                          <span className="text-green-500 font-bold text-xs">COMPLETED</span>
+                        </div>
                       </div>
-                      
-                      <CardContent className="p-6 opacity-75">
-                        <div className="flex items-start justify-between gap-4">
-                          {goal.image_url && (
-                            <img 
-                              src={goal.image_url} 
-                              alt={goal.name}
-                              className="w-20 h-20 rounded-lg object-cover flex-shrink-0 grayscale"
-                            />
-                          )}
-                          <div className="flex-1 space-y-3">
+
+                      <CardContent className="p-5 relative">
+                        <div className="flex gap-4">
+                          {/* Left Section: Image + Focus Star */}
+                          <div className="relative flex-shrink-0">
+                            {goal.image_url ? (
+                              <div className="relative w-24 h-24 rounded-lg overflow-hidden border-2 shadow-lg grayscale"
+                                style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.4)` }}>
+                                <img 
+                                  src={goal.image_url} 
+                                  alt={goal.name}
+                                  className="w-full h-full object-cover"
+                                />
+                                {/* Thin difficulty accent border visible on completed */}
+                                <div className="absolute inset-0 border-2 pointer-events-none" 
+                                  style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.6)` }} 
+                                />
+                                {/* Focus Star */}
+                                <button
+                                  onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.4)` }}
+                                  aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                                >
+                                  <Star 
+                                    className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                                  />
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="relative w-24 h-24 rounded-lg border-2 shadow-lg flex items-center justify-center grayscale"
+                                style={{ 
+                                  borderColor: `hsl(var(--${difficultyColor}) / 0.4)`,
+                                  background: `linear-gradient(135deg, hsl(var(--${difficultyColor}) / 0.1), hsl(var(--${difficultyColor}) / 0.05))`
+                                }}>
+                                <Trophy className="h-10 w-10" style={{ color: `hsl(var(--${difficultyColor}) / 0.6)` }} />
+                                {/* Focus Star */}
+                                <button
+                                  onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                                  className="absolute -top-2 -left-2 z-10 p-1.5 bg-card rounded-full shadow-md hover:scale-110 transition-transform border-2"
+                                  style={{ borderColor: `hsl(var(--${difficultyColor}) / 0.4)` }}
+                                  aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                                >
+                                  <Star 
+                                    className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`}
+                                  />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Middle Section: Content */}
+                          <div className="flex-1 min-w-0 space-y-3">
+                            {/* Title & Badges */}
                             <div>
-                              <h3 className="text-xl font-semibold mb-2">{goal.name}</h3>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <Badge variant="secondary">{goal.type}</Badge>
-                                <Badge variant="outline">{getDifficultyLabel(goal.difficulty)}</Badge>
+                              <h3 className="text-lg font-bold mb-2 line-clamp-2">
+                                {goal.name}
+                              </h3>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <Badge 
+                                  variant="secondary" 
+                                  className="text-xs font-medium capitalize"
+                                  style={{ 
+                                    backgroundColor: `hsl(var(--${difficultyColor}) / 0.1)`,
+                                    color: `hsl(var(--${difficultyColor}) / 0.7)`,
+                                    borderColor: `hsl(var(--${difficultyColor}) / 0.2)`
+                                  }}
+                                >
+                                  {getDifficultyLabel(goal.difficulty)}
+                                </Badge>
+                                <Badge variant="outline" className="text-xs capitalize border">
+                                  {goal.type}
+                                </Badge>
+                                <Badge className={`text-xs border ${getStatusColor(goal.status)}`}>
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  Completed
+                                </Badge>
                               </div>
                             </div>
 
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-muted-foreground">
-                                  {goal.validated_steps} / {goal.total_steps} steps completed
+                            {/* Progress Bar - Full */}
+                            <div className="space-y-1.5">
+                              <div className="flex items-center justify-between text-xs">
+                                <span className="text-muted-foreground font-medium">
+                                  {goal.total_steps} / {goal.total_steps} steps
                                 </span>
-                                <span className="font-medium text-green-600 dark:text-green-400">
-                                  {progress}%
+                                <span className="font-bold text-green-600 dark:text-green-400">
+                                  100%
                                 </span>
                               </div>
-                              <div className="h-2 bg-muted rounded-full overflow-hidden">
+                              <div className="h-2.5 bg-muted rounded-full overflow-hidden border border-border shadow-inner">
                                 <div
-                                  className="h-full bg-green-500 transition-all duration-500 rounded-full"
-                                  style={{ width: `${progress}%` }}
+                                  className="h-full transition-all duration-500 rounded-full bg-green-500"
+                                  style={{ width: "100%" }}
                                 />
                               </div>
                             </div>
 
+                            {/* XP Points Earned */}
                             {goal.potential_score > 0 && (
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <span>Score Earned:</span>
-                                <span className="font-semibold text-green-600 dark:text-green-400">
-                                  +{goal.potential_score} pts
+                              <div className="flex items-center gap-1.5 text-xs">
+                                <Trophy className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                                <span className="font-bold text-green-600 dark:text-green-400">
+                                  +{goal.potential_score} XP Earned
                                 </span>
                               </div>
                             )}
                           </div>
 
-                          <ArrowRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mt-1" />
+                          {/* Right Section: Arrow */}
+                          <div className="flex items-center justify-center flex-shrink-0 pl-2">
+                            <ArrowRight 
+                              className="h-6 w-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" 
+                            />
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
