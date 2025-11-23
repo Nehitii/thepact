@@ -506,22 +506,42 @@ export default function GoalDetail() {
                     <span className="text-muted-foreground font-medium">
                       {completedStepsCount} / {totalStepsCount} steps
                     </span>
-                    <span className="font-bold" style={{ color: difficultyColor }}>
+                    <span className="font-bold" style={{ color: isCompleted ? "hsl(var(--green-600))" : difficultyColor }}>
                       {progress.toFixed(0)}%
                     </span>
                   </div>
-                  <div className="h-3 bg-muted rounded-full overflow-hidden border border-border shadow-inner">
-                    <div
-                      className="h-full transition-all duration-500 rounded-full relative"
+                  {isCompleted ? (
+                    <div className="h-3 bg-muted rounded-full overflow-hidden shadow-inner relative"
                       style={{ 
-                        width: `${progress}%`,
-                        background: `linear-gradient(90deg, ${difficultyColor}CC, ${difficultyColor})`,
-                        boxShadow: `0 0 10px ${difficultyColor}80`
-                      }}
-                    >
-                      <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                        border: `2px solid ${difficultyColor}66`
+                      }}>
+                      <div
+                        className="h-full transition-all duration-500 rounded-full bg-green-500 relative"
+                        style={{ width: "100%" }}
+                      >
+                        {/* Thin difficulty color accent overlay */}
+                        <div 
+                          className="absolute inset-0 rounded-full"
+                          style={{
+                            background: `linear-gradient(90deg, transparent 0%, ${difficultyColor}40 50%, transparent 100%)`
+                          }}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="h-3 bg-muted rounded-full overflow-hidden border border-border shadow-inner">
+                      <div
+                        className="h-full transition-all duration-500 rounded-full relative"
+                        style={{ 
+                          width: `${progress}%`,
+                          backgroundColor: difficultyColor,
+                          boxShadow: `0 0 10px ${difficultyColor}80`
+                        }}
+                      >
+                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* XP Points */}
