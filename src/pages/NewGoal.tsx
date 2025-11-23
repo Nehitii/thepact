@@ -11,6 +11,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CyberBackground } from "@/components/CyberBackground";
+import { z } from "zod";
+
+const goalSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(1, { message: "Goal name is required" })
+    .max(100, { message: "Goal name must be less than 100 characters" }),
+  type: z.string(),
+  difficulty: z.string(),
+  stepCount: z.number()
+    .int()
+    .min(1, { message: "Must have at least 1 step" })
+    .max(20, { message: "Cannot have more than 20 steps" }),
+  estimatedCost: z.number()
+    .min(0, { message: "Cost cannot be negative" })
+    .optional(),
+  notes: z.string()
+    .max(500, { message: "Notes must be less than 500 characters" })
+    .optional(),
+});
 
 const goalTypes = [
   "personal",
@@ -72,18 +92,28 @@ export default function NewGoal() {
   ];
 
   const handleCreate = async () => {
-    if (!user || !name.trim()) {
+    if (!user) {
       toast({
-        title: "Missing Information",
-        description: "Please provide a goal name",
+        title: "Error",
+        description: "You must be logged in to create goals",
         variant: "destructive",
       });
       return;
     }
 
-    setLoading(true);
-
+    // Validate input
     try {
+      const validatedData = goalSchema.parse({
+        name: name.trim(),
+        type,
+        difficulty,
+        stepCount,
+        estimatedCost: estimatedCost ? parseFloat(estimatedCost) : undefined,
+        notes: notes.trim(),
+      });
+
+      setLoading(true);
+
       // Get user's pact
       const { data: pactData } = await supabase
         .from("pacts")
@@ -97,6 +127,7 @@ export default function NewGoal() {
           description: "Pact not found",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -116,12 +147,12 @@ export default function NewGoal() {
         .from("goals")
         .insert({
           pact_id: pactData.id,
-          name: name.trim(),
-          type: type as any,
-          difficulty: difficulty as any,
-          estimated_cost: estimatedCost ? parseFloat(estimatedCost) : 0,
-          notes: notes.trim() || null,
-          total_steps: stepCount,
+          name: validatedData.name,
+          type: validatedData.type as any,
+          difficulty: validatedData.difficulty as any,
+          estimated_cost: validatedData.estimatedCost || 0,
+          notes: validatedData.notes || null,
+          total_steps: validatedData.stepCount,
           potential_score: potentialScore,
           start_date: new Date().toISOString(),
           status: "not_started",
@@ -132,7 +163,7 @@ export default function NewGoal() {
       if (goalError) throw goalError;
 
       // Create default steps
-      const steps = Array.from({ length: stepCount }, (_, i) => ({
+      const steps = Array.from({ length: validatedData.stepCount }, (_, i) => ({
         goal_id: goalData.id,
         title: `Step ${i + 1}`,
         description: "",
@@ -153,11 +184,19 @@ export default function NewGoal() {
 
       navigate(`/goals/${goalData.id}`);
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Validation Error",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to create goal",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -180,26 +219,27 @@ export default function NewGoal() {
         </div>
 
         {/* Form */}
-        <Card>
+        <Card className="relative z-10">
           <CardHeader>
             <CardTitle>Goal Details</CardTitle>
             <CardDescription>Define what you want to achieve</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 relative z-10">
             <div className="space-y-2">
-              <Label htmlFor="name">Goal Name *</Label>
+              <Label htmlFor="name" className="cursor-pointer">Goal Name *</Label>
               <Input
                 id="name"
                 placeholder="Learn a new skill"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 maxLength={100}
+                autoComplete="off"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type" className="cursor-pointer">Type</Label>
                 <Select value={type} onValueChange={setType}>
                   <SelectTrigger id="type">
                     <SelectValue />
@@ -215,7 +255,7 @@ export default function NewGoal() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="difficulty">Difficulty</Label>
+                <Label htmlFor="difficulty" className="cursor-pointer">Difficulty</Label>
                 <Select value={difficulty} onValueChange={setDifficulty}>
                   <SelectTrigger id="difficulty">
                     <SelectValue />
@@ -232,7 +272,7 @@ export default function NewGoal() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="steps">Number of Steps (1-20)</Label>
+              <Label htmlFor="steps" className="cursor-pointer">Number of Steps (1-20)</Label>
               <Input
                 id="steps"
                 type="number"
@@ -240,11 +280,12 @@ export default function NewGoal() {
                 max="20"
                 value={stepCount}
                 onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                autoComplete="off"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cost">Estimated Cost (optional)</Label>
+              <Label htmlFor="cost" className="cursor-pointer">Estimated Cost (optional)</Label>
               <Input
                 id="cost"
                 type="number"
@@ -253,11 +294,12 @@ export default function NewGoal() {
                 placeholder="0.00"
                 value={estimatedCost}
                 onChange={(e) => setEstimatedCost(e.target.value)}
+                autoComplete="off"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
+              <Label htmlFor="notes" className="cursor-pointer">Notes (optional)</Label>
               <Textarea
                 id="notes"
                 placeholder="Additional details about this goal..."
