@@ -183,14 +183,12 @@ export default function Goals() {
   };
 
   const handleSortChange = (newSortBy: SortOption) => {
-    if (newSortBy === sortBy) {
-      // Toggle direction if same sort option
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      // New sort option, start with ascending
-      setSortBy(newSortBy);
-      setSortDirection("asc");
-    }
+    // Just change the sort category, keep the current direction
+    setSortBy(newSortBy);
+  };
+
+  const handleDirectionChange = (newDirection: SortDirection) => {
+    setSortDirection(newDirection);
   };
 
   const sortGoals = (goalsToSort: Goal[]) => {
@@ -274,21 +272,49 @@ export default function Goals() {
           {/* Sort Controls */}
           {goals.length > 0 && (
             <div className="flex items-center gap-3">
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground font-medium">Sort by:</span>
               <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[160px]">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="difficulty">Difficulty {sortBy === "difficulty" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
-                  <SelectItem value="type">Category {sortBy === "type" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
-                  <SelectItem value="points">Points {sortBy === "points" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
-                  <SelectItem value="created">Created Date {sortBy === "created" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
-                  <SelectItem value="name">Name {sortBy === "name" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
-                  <SelectItem value="status">Status {sortBy === "status" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
-                  <SelectItem value="start">Start Date {sortBy === "start" && (sortDirection === "asc" ? "▲" : "▼")}</SelectItem>
+                <SelectContent className="z-50 bg-card">
+                  <SelectItem value="difficulty">Difficulty</SelectItem>
+                  <SelectItem value="type">Category</SelectItem>
+                  <SelectItem value="points">Points</SelectItem>
+                  <SelectItem value="created">Created Date</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="start">Start Date</SelectItem>
                 </SelectContent>
               </Select>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={`h-8 w-8 transition-all ${
+                    sortDirection === "asc" 
+                      ? "bg-primary/10 border-primary text-primary shadow-sm" 
+                      : "hover:bg-muted"
+                  }`}
+                  onClick={() => handleDirectionChange("asc")}
+                  aria-label="Sort ascending"
+                >
+                  <span className="text-base">▲</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className={`h-8 w-8 transition-all ${
+                    sortDirection === "desc" 
+                      ? "bg-primary/10 border-primary text-primary shadow-sm" 
+                      : "hover:bg-muted"
+                  }`}
+                  onClick={() => handleDirectionChange("desc")}
+                  aria-label="Sort descending"
+                >
+                  <span className="text-base">▼</span>
+                </Button>
+              </div>
             </div>
           )}
         </div>
