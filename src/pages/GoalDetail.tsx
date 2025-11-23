@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,7 @@ import {
 import { CyberBackground } from "@/components/CyberBackground";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
+import { formatCurrency } from "@/lib/currency";
 
 interface Goal {
   id: string;
@@ -55,6 +57,7 @@ interface Step {
 export default function GoalDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [goal, setGoal] = useState<Goal | null>(null);
@@ -750,7 +753,7 @@ export default function GoalDetail() {
               {goal.estimated_cost > 0 && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Estimated Cost</p>
-                  <p className="text-lg font-semibold">${goal.estimated_cost.toFixed(2)}</p>
+                  <p className="text-lg font-semibold">{formatCurrency(goal.estimated_cost, currency)}</p>
                 </div>
               )}
               {goal.notes && (

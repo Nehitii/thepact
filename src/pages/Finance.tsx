@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
@@ -7,9 +8,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { formatCurrency, getCurrencySymbol } from "@/lib/currency";
 
 export default function Finance() {
   const { user } = useAuth();
+  const { currency } = useCurrency();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -113,7 +116,7 @@ export default function Finance() {
               <Label htmlFor="income">Income</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  $
+                  {getCurrencySymbol(currency)}
                 </span>
                 <Input
                   id="income"
@@ -132,7 +135,7 @@ export default function Finance() {
               <Label htmlFor="fixed">Fixed Expenses</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  $
+                  {getCurrencySymbol(currency)}
                 </span>
                 <Input
                   id="fixed"
@@ -154,7 +157,7 @@ export default function Finance() {
               <Label htmlFor="variable">Variable Expenses</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  $
+                  {getCurrencySymbol(currency)}
                 </span>
                 <Input
                   id="variable"
@@ -176,7 +179,7 @@ export default function Finance() {
               <Label htmlFor="savings">Savings</Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  $
+                  {getCurrencySymbol(currency)}
                 </span>
                 <Input
                   id="savings"
@@ -205,7 +208,7 @@ export default function Finance() {
                     remaining >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
                   }`}
                 >
-                  ${remaining.toFixed(2)}
+                  {formatCurrency(remaining, currency)}
                 </span>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { ArrowLeft, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CyberBackground } from "@/components/CyberBackground";
 import { z } from "zod";
+import { getCurrencySymbol } from "@/lib/currency";
 
 const goalSchema = z.object({
   name: z.string()
@@ -47,6 +49,7 @@ const goalTypes = [
 
 export default function NewGoal() {
   const { user } = useAuth();
+  const { currency } = useCurrency();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -286,16 +289,22 @@ export default function NewGoal() {
 
             <div className="space-y-2">
               <Label htmlFor="cost" className="cursor-pointer">Estimated Cost (optional)</Label>
-              <Input
-                id="cost"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                value={estimatedCost}
-                onChange={(e) => setEstimatedCost(e.target.value)}
-                autoComplete="off"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                  {getCurrencySymbol(currency)}
+                </span>
+                <Input
+                  id="cost"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="pl-7"
+                  value={estimatedCost}
+                  onChange={(e) => setEstimatedCost(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
