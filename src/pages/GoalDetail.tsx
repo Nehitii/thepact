@@ -23,6 +23,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { CyberBackground } from "@/components/CyberBackground";
+import { useParticleEffect } from "@/components/ParticleEffect";
 
 interface Goal {
   id: string;
@@ -67,6 +69,7 @@ export default function GoalDetail() {
   const [editType, setEditType] = useState("");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+  const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -122,6 +125,17 @@ export default function GoalDetail() {
 
     const newStatus = currentStatus === "completed" ? "pending" : "completed";
     const validatedAt = newStatus === "completed" ? new Date().toISOString() : null;
+
+    // Trigger particle effect at center of screen
+    if (newStatus === "completed") {
+      const difficultyColor = getDifficultyColor(goal.difficulty);
+      const mockEvent = {
+        clientX: window.innerWidth / 2,
+        clientY: window.innerHeight / 2,
+        currentTarget: document.body
+      } as unknown as React.MouseEvent;
+      triggerParticles(mockEvent, difficultyColor);
+    }
 
     const { error } = await supabase
       .from("steps")
@@ -387,8 +401,11 @@ export default function GoalDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary">
-      <div className="max-w-3xl mx-auto p-6 space-y-6 pb-12">
+    <div className="min-h-screen relative">
+      <CyberBackground />
+      <ParticleEffects />
+      <div className="relative z-10 bg-gradient-to-br from-background via-background/95 to-secondary/50">
+        <div className="max-w-3xl mx-auto p-6 space-y-6 pb-12">
         {/* Back Button */}
         <div className="pt-8">
           <Button variant="ghost" size="icon" onClick={() => navigate("/goals")}>
@@ -699,10 +716,10 @@ export default function GoalDetail() {
               {steps.map((step) => (
                 <div
                   key={step.id}
-                  className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-secondary/50 transition-colors cursor-pointer group"
+                  className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(var(--primary)/0.2)] transition-all duration-300 cursor-pointer group relative"
                   onClick={() => navigate(`/step/${step.id}`)}
                 >
-                  <div onClick={(e) => e.stopPropagation()}>
+                  <div onClick={(e) => e.stopPropagation()} className="relative z-20">
                     <Checkbox
                       id={step.id}
                       checked={step.status === "completed"}
@@ -713,7 +730,7 @@ export default function GoalDetail() {
                     htmlFor={step.id}
                     className={`flex-1 cursor-pointer text-sm ${
                       step.status === "completed"
-                        ? "font-medium"
+                        ? "font-semibold"
                         : ""
                     }`}
                     style={{
@@ -725,7 +742,7 @@ export default function GoalDetail() {
                   {step.status === "completed" && (
                     <Check className="h-4 w-4" style={{ color: difficultyColor }} />
                   )}
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
                 </div>
               ))}
             </div>
@@ -754,6 +771,7 @@ export default function GoalDetail() {
             </CardContent>
           </Card>
         )}
+        </div>
       </div>
     </div>
   );

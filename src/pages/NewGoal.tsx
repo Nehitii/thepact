@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CyberBackground } from "@/components/CyberBackground";
 
 const goalTypes = [
   "personal",
@@ -163,8 +164,10 @@ export default function NewGoal() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary">
-      <div className="max-w-2xl mx-auto p-6 space-y-6 pb-12">
+    <div className="min-h-screen relative">
+      <CyberBackground />
+      <div className="relative z-10 bg-gradient-to-br from-background via-background/95 to-secondary/50">
+        <div className="max-w-2xl mx-auto p-6 space-y-6 pb-12">
         {/* Header */}
         <div className="flex items-center gap-4 pt-8">
           <Button variant="ghost" size="icon" onClick={() => navigate("/goals")}>
@@ -283,6 +286,7 @@ export default function NewGoal() {
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );
