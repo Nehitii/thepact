@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
+import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 
 interface Goal {
   id: string;
@@ -126,7 +127,7 @@ export default function Goals() {
     // Trigger particle effect
     const goal = goals.find(g => g.id === goalId);
     if (goal) {
-      const difficultyColor = getDifficultyColor(goal.difficulty);
+      const difficultyColor = getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor);
       triggerParticles(e, difficultyColor);
     }
     
@@ -170,18 +171,9 @@ export default function Goals() {
     }
   };
 
+  // Use unified difficulty color system
   const getDifficultyColor = (difficulty: string) => {
-    if (difficulty === 'custom') {
-      return customDifficultyColor;
-    }
-    const colorMap: Record<string, string> = {
-      easy: "hsl(var(--difficulty-easy))",
-      medium: "hsl(var(--difficulty-medium))",
-      hard: "hsl(var(--difficulty-hard))",
-      extreme: "hsl(var(--difficulty-extreme))",
-      impossible: "hsl(var(--difficulty-impossible))",
-    };
-    return colorMap[difficulty] || "hsl(var(--primary))";
+    return getUnifiedDifficultyColor(difficulty, customDifficultyColor);
   };
 
   // Get display label for difficulty
