@@ -173,6 +173,32 @@ export default function Profile() {
         {/* Finance Settings */}
         <ProfileFinanceSettings />
 
+        {/* Achievements Section */}
+        <Card 
+          className="border-primary/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-primary/10 transition-all hover:border-primary/50"
+          onClick={() => window.location.href = "/achievements"}
+        >
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <span className="text-2xl">🏆</span>
+              The Pact Achievements
+            </CardTitle>
+            <CardDescription>View your unlocked achievements and track your progress</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.location.href = "/achievements";
+              }}
+            >
+              View All Achievements
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Save Button */}
         <Button onClick={handleSave} disabled={loading} className="w-full" size="lg">
           {loading ? "Saving..." : "Save All Changes"}

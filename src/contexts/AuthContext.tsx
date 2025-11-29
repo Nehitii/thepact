@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
+import { trackLogin, initializeAchievementTracking } from "@/lib/achievements";
 
 interface AuthContextType {
   user: User | null;
@@ -33,6 +34,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
 
+        // Handle sign in - track login for achievements
+        if (event === "SIGNED_IN" && session?.user) {
+          setTimeout(() => {
+            initializeAchievementTracking(session.user.id);
+            trackLogin(session.user.id);
+          }, 0);
+        }
+
         // Handle sign out
         if (event === "SIGNED_OUT") {
           navigate("/auth");
@@ -45,6 +54,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      
+      // Track login for existing session
+      if (session?.user) {
+        setTimeout(() => {
+          initializeAchievementTracking(session.user.id);
+          trackLogin(session.user.id);
+        }, 0);
+      }
     });
 
     return () => subscription.unsubscribe();

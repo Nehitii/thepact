@@ -5,6 +5,7 @@ import { getUserPact } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { PactVisual } from "@/components/PactVisual";
 import { PactDashboard } from "@/components/PactDashboard";
+import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -554,15 +555,7 @@ export default function Home() {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            variant="outline"
-            className="h-auto py-6 flex flex-col gap-2"
-            onClick={() => navigate("/health")}
-          >
-            <span className="text-2xl">❤️</span>
-            <span className="text-sm font-medium">Log Health</span>
-          </Button>
+        <div className="grid grid-cols-1 gap-4">
           <Button
             variant="outline"
             className="h-auto py-6 flex flex-col gap-2"
@@ -572,6 +565,9 @@ export default function Home() {
             <span className="text-sm font-medium">Track Finance</span>
           </Button>
         </div>
+
+        {/* Achievements Widget */}
+        <AchievementsWidget />
       </div>
 
       <Navigation />

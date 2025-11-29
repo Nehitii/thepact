@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
+import { trackStepCompleted } from "@/lib/achievements";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -173,6 +174,13 @@ export default function GoalDetail() {
       setGoal({ ...goal, validated_steps: newValidatedCount });
 
       if (newStatus === "completed") {
+        // Track achievement
+        if (user) {
+          setTimeout(() => {
+            trackStepCompleted(user.id);
+          }, 0);
+        }
+
         toast({
           title: "Step Completed",
           description: "You're making progress!",
@@ -182,13 +190,16 @@ export default function GoalDetail() {
   };
 
   const handleFullyComplete = async () => {
-    if (!goal) return;
+    if (!goal || !user) return;
 
     const { handleFullyComplete: completeGoal } = await import("./GoalDetail_handlers");
     
     completeGoal(
       goal.id,
       goal.total_steps,
+      user.id,
+      goal.difficulty,
+      goal.start_date || new Date().toISOString(),
       async () => {
         // Reload data
         const { data: updatedGoal } = await supabase

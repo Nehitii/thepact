@@ -574,6 +574,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_tracking_counter: {
+        Args: { p_field: string; p_increment?: number; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "user" | "admin"

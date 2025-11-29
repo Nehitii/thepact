@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
+import { trackGoalCreated } from "@/lib/achievements";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -179,6 +180,11 @@ export default function NewGoal() {
         .insert(steps);
 
       if (stepsError) throw stepsError;
+
+      // Track achievement
+      setTimeout(() => {
+        trackGoalCreated(user.id, difficulty);
+      }, 0);
 
       toast({
         title: "Goal Created",

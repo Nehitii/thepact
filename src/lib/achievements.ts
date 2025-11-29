@@ -124,17 +124,19 @@ export async function trackLogin(userId: string) {
 export async function trackGoalCreated(userId: string, difficulty: string) {
   const difficultyField = `${difficulty.toLowerCase()}_goals_created`;
   
-  await supabase.rpc('increment_tracking_counter', {
+  const { error: error1 } = await supabase.rpc('increment_tracking_counter' as any, {
     p_user_id: userId,
     p_field: 'total_goals_created',
     p_increment: 1
-  }).then(() => {
-    return supabase.rpc('increment_tracking_counter', {
+  });
+  
+  if (!error1) {
+    await supabase.rpc('increment_tracking_counter' as any, {
       p_user_id: userId,
       p_field: difficultyField,
       p_increment: 1
     });
-  });
+  }
 
   await checkAchievements(userId);
 }
@@ -153,17 +155,19 @@ export async function trackGoalCompleted(
   const hoursDiff = timeDiff / (1000 * 60 * 60);
   const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
 
-  await supabase.rpc('increment_tracking_counter', {
+  const { error: error1 } = await supabase.rpc('increment_tracking_counter' as any, {
     p_user_id: userId,
     p_field: 'goals_completed_total',
     p_increment: 1
-  }).then(() => {
-    return supabase.rpc('increment_tracking_counter', {
+  });
+  
+  if (!error1) {
+    await supabase.rpc('increment_tracking_counter' as any, {
       p_user_id: userId,
       p_field: difficultyField,
       p_increment: 1
     });
-  });
+  }
 
   // Check time-based achievements
   if (difficulty === 'impossible' && daysDiff < 30) {
@@ -184,7 +188,7 @@ export async function trackGoalCompleted(
 
 // Track step completion
 export async function trackStepCompleted(userId: string) {
-  await supabase.rpc('increment_tracking_counter', {
+  await supabase.rpc('increment_tracking_counter' as any, {
     p_user_id: userId,
     p_field: 'steps_completed_total',
     p_increment: 1
@@ -239,21 +243,21 @@ async function checkAchievements(userId: string) {
   for (const def of definitions) {
     if (unlockedKeys.has(def.key)) continue;
 
-    const condition = def.conditions;
+    const condition = def.conditions as any;
     let shouldUnlock = false;
 
     switch (condition.type) {
       case "consecutive_login_days":
-        shouldUnlock = (tracking.consecutive_login_days || 0) >= condition.value;
+        shouldUnlock = (tracking.consecutive_login_days || 0) >= (condition.value as number);
         break;
       case "logins_at_same_hour_streak":
-        shouldUnlock = (tracking.logins_at_same_hour_streak || 0) >= condition.value;
+        shouldUnlock = (tracking.logins_at_same_hour_streak || 0) >= (condition.value as number);
         break;
       case "midnight_logins_count":
-        shouldUnlock = (tracking.midnight_logins_count || 0) >= condition.value;
+        shouldUnlock = (tracking.midnight_logins_count || 0) >= (condition.value as number);
         break;
       case "total_goals_created":
-        shouldUnlock = (tracking.total_goals_created || 0) >= condition.value;
+        shouldUnlock = (tracking.total_goals_created || 0) >= (condition.value as number);
         break;
       case "all_difficulties_created":
         shouldUnlock = 
@@ -271,13 +275,13 @@ async function checkAchievements(userId: string) {
       case "impossible_goals_completed":
       case "custom_goals_completed":
         const field = condition.type as keyof typeof tracking;
-        shouldUnlock = ((tracking[field] as number) || 0) >= condition.value;
+        shouldUnlock = ((tracking[field] as number) || 0) >= (condition.value as number);
         break;
       case "goals_completed_total":
-        shouldUnlock = (tracking.goals_completed_total || 0) >= condition.value;
+        shouldUnlock = (tracking.goals_completed_total || 0) >= (condition.value as number);
         break;
       case "steps_completed_total":
-        shouldUnlock = (tracking.steps_completed_total || 0) >= condition.value;
+        shouldUnlock = (tracking.steps_completed_total || 0) >= (condition.value as number);
         break;
       case "has_pact":
         shouldUnlock = tracking.has_pact || false;
@@ -291,7 +295,7 @@ async function checkAchievements(userId: string) {
     }
 
     if (shouldUnlock) {
-      await unlockAchievement(userId, def.key, def.name, def.rarity);
+      await unlockAchievement(userId, def.key, def.name, def.rarity as AchievementRarity);
     }
   }
 }
@@ -348,10 +352,12 @@ export async function getUserAchievements(userId: string): Promise<Achievement[]
 
   return definitions.map(def => ({
     ...def,
+    category: def.category as AchievementCategory,
+    rarity: def.rarity as AchievementRarity,
     unlocked: achievementMap.has(def.key),
     unlocked_at: achievementMap.get(def.key)?.unlocked_at,
     progress: achievementMap.get(def.key)?.progress,
-  }));
+  })) as Achievement[];
 }
 
 // Get achievement statistics
