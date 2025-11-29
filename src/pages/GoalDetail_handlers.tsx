@@ -1,9 +1,13 @@
 // Handler functions for GoalDetail - extracted for better code organization
 import { supabase } from "@/lib/supabase";
+import { trackGoalCompleted } from "@/lib/achievements";
 
 export async function handleFullyComplete(
   goalId: string,
   totalSteps: number,
+  userId: string,
+  difficulty: string,
+  createdAt: string,
   onSuccess: () => void,
   onError: (message: string) => void
 ) {
@@ -47,6 +51,11 @@ export async function handleFullyComplete(
       onError(goalError.message);
       return;
     }
+
+    // Track achievement
+    setTimeout(() => {
+      trackGoalCompleted(userId, difficulty, createdAt, new Date().toISOString());
+    }, 0);
 
     onSuccess();
   } catch (error: any) {

@@ -15,6 +15,7 @@ import GoalDetail from "./pages/GoalDetail";
 import StepDetail from "./pages/StepDetail";
 import Finance from "./pages/Finance";
 import Profile from "./pages/Profile";
+import Achievements from "./pages/Achievements";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -90,6 +91,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/achievements"
+                element={
+                  <ProtectedRoute>
+                    <Achievements />
                   </ProtectedRoute>
                 }
               />
