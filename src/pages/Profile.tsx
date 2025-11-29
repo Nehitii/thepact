@@ -9,7 +9,6 @@ import { LogOut, Flame, Skull } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
-import { ProfileHealthSettings } from "@/components/profile/ProfileHealthSettings";
 import { ProfileFinanceSettings } from "@/components/profile/ProfileFinanceSettings";
 import { DevilNoteModal } from "@/components/profile/DevilNoteModal";
 
@@ -33,11 +32,6 @@ export default function Profile() {
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
   const [pactId, setPactId] = useState<string | null>(null);
 
-  // Health settings
-  const [age, setAge] = useState<number | undefined>(undefined);
-  const [weight, setWeight] = useState<number | undefined>(undefined);
-  const [height, setHeight] = useState<number | undefined>(undefined);
-
   useEffect(() => {
     if (!user) return;
 
@@ -56,9 +50,6 @@ export default function Profile() {
         setCustomDifficultyName(data.custom_difficulty_name || "");
         setCustomDifficultyActive(data.custom_difficulty_active || false);
         setCustomDifficultyColor(data.custom_difficulty_color || "#a855f7");
-        setAge(data.age || undefined);
-        setWeight(data.weight || undefined);
-        setHeight(data.height || undefined);
       }
 
       // Load pact data
@@ -95,9 +86,6 @@ export default function Profile() {
         custom_difficulty_name: customDifficultyName.trim() || null,
         custom_difficulty_active: customDifficultyActive,
         custom_difficulty_color: customDifficultyColor,
-        age: age || null,
-        weight: weight || null,
-        height: height || null,
       })
       .eq("id", user.id);
 
@@ -181,16 +169,6 @@ export default function Profile() {
             onCustomDifficultyColorChange={setCustomDifficultyColor}
           />
         )}
-
-        {/* Health Settings */}
-        <ProfileHealthSettings
-          age={age}
-          weight={weight}
-          height={height}
-          onAgeChange={setAge}
-          onWeightChange={setWeight}
-          onHeightChange={setHeight}
-        />
 
         {/* Finance Settings */}
         <ProfileFinanceSettings />

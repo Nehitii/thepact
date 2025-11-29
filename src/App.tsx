@@ -13,7 +13,6 @@ import Goals from "./pages/Goals";
 import NewGoal from "./pages/NewGoal";
 import GoalDetail from "./pages/GoalDetail";
 import StepDetail from "./pages/StepDetail";
-import Health from "./pages/Health";
 import Finance from "./pages/Finance";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -75,14 +74,6 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <StepDetail />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/health"
-                element={
-                  <ProtectedRoute>
-                    <Health />
                   </ProtectedRoute>
                 }
               />
