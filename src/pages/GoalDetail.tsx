@@ -460,68 +460,32 @@ export default function GoalDetail() {
                 {/* Left Section: Image + Focus Star */}
                 <div className="relative flex-shrink-0">
                   {goal.image_url ? (
-                    <div 
-                      className={`relative w-36 h-36 rounded-xl overflow-hidden border-2 border-primary/40 ${isCompleted ? 'grayscale' : ''}`}
-                      style={{ 
-                        boxShadow: isCompleted 
-                          ? `0 0 20px ${difficultyColor}30, inset 0 0 30px rgba(0,0,0,0.5)` 
-                          : `0 0 30px ${difficultyColor}60, inset 0 0 30px ${difficultyColor}15`,
-                      }}
-                    >
-                      <img 
-                        src={goal.image_url} 
-                        alt={goal.name}
-                        className="w-full h-full object-cover"
-                      />
-                      {/* Difficulty overlay */}
+                    <>
                       <div 
-                        className="absolute inset-0 pointer-events-none"
+                        className={`relative w-36 h-36 rounded-xl overflow-hidden border-2 border-primary/40 ${isCompleted ? 'grayscale' : ''}`}
                         style={{ 
-                          background: `linear-gradient(135deg, ${difficultyColor}${isCompleted ? '10' : '20'}, transparent 50%)` 
+                          boxShadow: isCompleted 
+                            ? `0 0 20px ${difficultyColor}30, inset 0 0 30px rgba(0,0,0,0.5)` 
+                            : `0 0 30px ${difficultyColor}60, inset 0 0 30px ${difficultyColor}15`,
                         }}
-                      />
-                      {/* Focus Star */}
-                      <button
-                        onClick={toggleFocus}
-                        className="absolute -top-3 -right-3 z-10 p-2 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 transition-all shadow-[0_0_20px_rgba(91,180,255,0.7)]"
-                        aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                       >
-                        <Star 
-                          className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-primary/70'}`}
-                          style={{ filter: goal.is_focus ? 'drop-shadow(0 0 6px rgba(250, 204, 21, 0.9))' : 'none' }}
+                        <img 
+                          src={goal.image_url} 
+                          alt={goal.name}
+                          className="w-full h-full object-cover"
                         />
-                      </button>
-                    </div>
-                  ) : (
-                    <div 
-                      className={`relative w-36 h-36 rounded-xl border-2 border-primary/40 flex items-center justify-center overflow-hidden ${isCompleted ? 'grayscale' : ''}`}
-                      style={{ 
-                        background: `radial-gradient(circle at 30% 30%, ${difficultyColor}${isCompleted ? '15' : '25'}, #00050B)`,
-                        boxShadow: isCompleted 
-                          ? `0 0 20px ${difficultyColor}30, inset 0 0 30px rgba(0,0,0,0.5)` 
-                          : `0 0 30px ${difficultyColor}60, inset 0 0 30px ${difficultyColor}20`
-                      }}
-                    >
-                      <Trophy 
-                        className="h-16 w-16 relative z-10" 
-                        style={{ 
-                          color: difficultyColor,
-                          filter: `drop-shadow(0 0 12px ${difficultyColor}${isCompleted ? '80' : 'FF'})`
-                        }} 
-                      />
-                      {/* Animated glow */}
-                      {!isCompleted && (
+                        {/* Difficulty overlay */}
                         <div 
-                          className="absolute inset-0 animate-pulse opacity-40"
+                          className="absolute inset-0 pointer-events-none"
                           style={{ 
-                            background: `radial-gradient(circle, ${difficultyColor}50, transparent 70%)` 
+                            background: `linear-gradient(135deg, ${difficultyColor}${isCompleted ? '10' : '20'}, transparent 50%)` 
                           }}
                         />
-                      )}
-                      {/* Focus Star */}
+                      </div>
+                      {/* Focus Star - positioned outside image container */}
                       <button
                         onClick={toggleFocus}
-                        className="absolute -top-3 -right-3 z-10 p-2 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 transition-all shadow-[0_0_20px_rgba(91,180,255,0.7)]"
+                        className="absolute -top-4 -right-4 z-20 p-2 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 transition-all shadow-[0_0_20px_rgba(91,180,255,0.7)]"
                         aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
                       >
                         <Star 
@@ -529,7 +493,47 @@ export default function GoalDetail() {
                           style={{ filter: goal.is_focus ? 'drop-shadow(0 0 6px rgba(250, 204, 21, 0.9))' : 'none' }}
                         />
                       </button>
-                    </div>
+                    </>
+                  ) : (
+                    <>
+                      <div 
+                        className={`relative w-36 h-36 rounded-xl border-2 border-primary/40 flex items-center justify-center overflow-hidden ${isCompleted ? 'grayscale' : ''}`}
+                        style={{ 
+                          background: `radial-gradient(circle at 30% 30%, ${difficultyColor}${isCompleted ? '15' : '25'}, #00050B)`,
+                          boxShadow: isCompleted 
+                            ? `0 0 20px ${difficultyColor}30, inset 0 0 30px rgba(0,0,0,0.5)` 
+                            : `0 0 30px ${difficultyColor}60, inset 0 0 30px ${difficultyColor}20`
+                        }}
+                      >
+                        <Trophy 
+                          className="h-16 w-16 relative z-10" 
+                          style={{ 
+                            color: difficultyColor,
+                            filter: `drop-shadow(0 0 12px ${difficultyColor}${isCompleted ? '80' : 'FF'})`
+                          }} 
+                        />
+                        {/* Animated glow */}
+                        {!isCompleted && (
+                          <div 
+                            className="absolute inset-0 animate-pulse opacity-40"
+                            style={{ 
+                              background: `radial-gradient(circle, ${difficultyColor}50, transparent 70%)` 
+                            }}
+                          />
+                        )}
+                      </div>
+                      {/* Focus Star - positioned outside image container */}
+                      <button
+                        onClick={toggleFocus}
+                        className="absolute -top-4 -right-4 z-20 p-2 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 transition-all shadow-[0_0_20px_rgba(91,180,255,0.7)]"
+                        aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
+                      >
+                        <Star 
+                          className={`h-5 w-5 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-primary/70'}`}
+                          style={{ filter: goal.is_focus ? 'drop-shadow(0 0 6px rgba(250, 204, 21, 0.9))' : 'none' }}
+                        />
+                      </button>
+                    </>
                   )}
                 </div>
 
