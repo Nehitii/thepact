@@ -199,8 +199,9 @@ export default function StepDetail() {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={() => step && navigate(`/goal/${step.goal_id}`)} 
-            className="relative border-2 border-primary/60 rounded-lg bg-card/40 backdrop-blur-sm hover:bg-card/60 hover:border-primary/80 transition-all duration-300 shadow-[0_0_20px_rgba(91,180,255,0.3)] hover:shadow-[0_0_30px_rgba(91,180,255,0.5)]"
+            onClick={() => step && navigate(`/goals/${step.goal_id}`)} 
+            disabled={!step}
+            className="relative border-2 border-primary/60 rounded-lg bg-card/40 backdrop-blur-sm hover:bg-card/60 hover:border-primary/80 active:scale-95 active:shadow-[0_0_40px_rgba(91,180,255,0.6)] transition-all duration-200 shadow-[0_0_20px_rgba(91,180,255,0.3)] hover:shadow-[0_0_30px_rgba(91,180,255,0.5)] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowLeft className="h-5 w-5 text-[#E7F8FF] drop-shadow-[0_0_8px_rgba(190,235,255,0.4)]" />
           </Button>
