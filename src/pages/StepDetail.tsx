@@ -207,16 +207,21 @@ export default function StepDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <div className="container max-w-2xl mx-auto p-4 space-y-6">
+    <div className="min-h-screen relative pb-20" style={{ background: '#00050B' }}>
+      {/* Dark sci-fi background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#00050B] via-[#050A13] to-[#00050B] opacity-90" />
+      
+      <div className="container max-w-2xl mx-auto p-6 space-y-6 relative z-10">
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 pt-8">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">Edit Step</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-2xl font-bold font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary">
+              EDIT STEP
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Created {format(new Date(step.created_at), "MMM d, yyyy")}
             </p>
           </div>
@@ -225,131 +230,78 @@ export default function StepDetail() {
           </Badge>
         </div>
 
-        {/* Edit Form */}
-        <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle>Step Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title">Step Name *</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter step name"
-              />
-            </div>
+        {/* Simplified Edit Form - Only Step Name and Notes */}
+        <div className="relative overflow-hidden rounded-lg">
+          {/* Holographic border effect */}
+          <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary/30 via-transparent to-primary/20 p-[2px]">
+            <div className="h-full w-full rounded-lg bg-[#00050B]" />
+          </div>
+          
+          <Card className="relative border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl shadow-[0_0_30px_rgba(91,180,255,0.15)]">
+            <CardHeader className="border-b border-primary/20">
+              <CardTitle className="text-lg font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-glow">
+                STEP DETAILS
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6 pt-6">
+              {/* Step Name */}
+              <div className="space-y-3">
+                <Label htmlFor="title" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                  Step Name *
+                </Label>
+                <Input
+                  id="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Enter step name"
+                  className="bg-background/40 border-primary/30 focus:border-primary/60 text-foreground placeholder:text-muted-foreground/50"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe what needs to be done"
-                rows={3}
-              />
-            </div>
+              {/* Notes */}
+              <div className="space-y-3">
+                <Label htmlFor="notes" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                  Notes
+                </Label>
+                <Textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Additional notes or context"
+                  rows={5}
+                  className="bg-background/40 border-primary/30 focus:border-primary/60 text-foreground placeholder:text-muted-foreground/50 resize-none"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Additional notes or context"
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+              {/* Status (kept for functionality but styled minimally) */}
+              <div className="space-y-3 pt-2">
+                <Label htmlFor="status" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                  Status
+                </Label>
                 <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger id="status">
+                  <SelectTrigger id="status" className="bg-background/40 border-primary/30">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#00050B] border-primary/30">
                     <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
                     <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="blocked">Blocked</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="due_date" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Due Date
-                </Label>
-                <Input
-                  id="due_date"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="completion_date" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Completion Date (for retroactive entries)
-              </Label>
-              <Input
-                id="completion_date"
-                type="datetime-local"
-                value={completionDate}
-                onChange={(e) => setCompletionDate(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Set a past date if this step was actually completed earlier
-              </p>
-            </div>
-
-            <Button onClick={handleSave} disabled={saving} className="w-full">
-              {saving ? "Saving..." : "Save Changes"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Status Change History */}
-        {statusHistory.length > 0 && (
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5" />
-                Status Change History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {statusHistory.map((change) => (
-                  <div key={change.id} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                    <div className="flex items-center gap-2">
-                      {change.old_status && (
-                        <>
-                          <Badge variant="outline" className="text-xs">
-                            {change.old_status.replace("_", " ")}
-                          </Badge>
-                          <span className="text-muted-foreground">→</span>
-                        </>
-                      )}
-                      <Badge className={`text-xs ${getStatusColor(change.new_status)}`}>
-                        {change.new_status.replace("_", " ")}
-                      </Badge>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {format(new Date(change.changed_at), "MMM d, h:mm a")}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <Button 
+                onClick={handleSave} 
+                disabled={saving} 
+                className="w-full mt-6 relative overflow-hidden group"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary-glow/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <span className="relative z-10 font-rajdhani tracking-wider">
+                  {saving ? "SAVING..." : "SAVE CHANGES"}
+                </span>
+              </Button>
             </CardContent>
           </Card>
-        )}
+        </div>
       </div>
     </div>
   );

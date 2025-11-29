@@ -212,30 +212,40 @@ export default function NewGoal() {
   };
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative pb-20" style={{ background: '#00050B' }}>
+      {/* Ultra-dark background with radial gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#00050B] via-[#050A13] to-[#00050B]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
+      
       <CyberBackground />
-      <div className="relative z-10 bg-gradient-to-br from-background via-background/95 to-secondary/50">
-        <div className="max-w-2xl mx-auto p-6 space-y-6 pb-12">
+      <div className="relative z-10">
+        <div className="max-w-2xl mx-auto p-6 space-y-8">
         {/* Header */}
         <div className="flex items-center gap-4 pt-8">
           <Button variant="ghost" size="icon" onClick={() => navigate("/goals")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">New Goal</h1>
-            <p className="text-muted-foreground">Add an evolution to your Pact</p>
+            <h1 className="text-3xl font-bold font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+              NEW GOAL
+            </h1>
+            <p className="text-muted-foreground font-rajdhani tracking-wide mt-1">Add an evolution to your Pact</p>
           </div>
         </div>
 
         {/* Form */}
-        <Card className="relative z-10">
-          <CardHeader>
-            <CardTitle>Goal Details</CardTitle>
-            <CardDescription>Define what you want to achieve</CardDescription>
+        <Card className="relative border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl shadow-[0_0_30px_rgba(91,180,255,0.15)]">
+          <CardHeader className="border-b border-primary/20">
+            <CardTitle className="font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-glow">
+              GOAL DETAILS
+            </CardTitle>
+            <CardDescription className="font-rajdhani tracking-wide">Define what you want to achieve</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 relative z-10">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="cursor-pointer">Goal Name *</Label>
+          <CardContent className="space-y-6 pt-6 relative z-10">
+            <div className="space-y-3">
+              <Label htmlFor="name" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                Goal Name *
+              </Label>
               <Input
                 id="name"
                 placeholder="Learn a new skill"
@@ -243,17 +253,20 @@ export default function NewGoal() {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={100}
                 autoComplete="off"
+                className="bg-background/40 border-primary/30 focus:border-primary/60"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="type" className="cursor-pointer">Type</Label>
+              <div className="space-y-3">
+                <Label htmlFor="type" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                  Type
+                </Label>
                 <Select value={type} onValueChange={setType}>
-                  <SelectTrigger id="type">
+                  <SelectTrigger id="type" className="bg-background/40 border-primary/30">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#00050B] border-primary/30">
                     {goalTypes.map((t) => (
                       <SelectItem key={t} value={t}>
                         {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -263,13 +276,15 @@ export default function NewGoal() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="difficulty" className="cursor-pointer">Difficulty</Label>
+              <div className="space-y-3">
+                <Label htmlFor="difficulty" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                  Difficulty
+                </Label>
                 <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger id="difficulty">
+                  <SelectTrigger id="difficulty" className="bg-background/40 border-primary/30">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#00050B] border-primary/30">
                     {difficulties.map((d) => (
                       <SelectItem key={d.value} value={d.value}>
                         {d.label}
@@ -280,8 +295,10 @@ export default function NewGoal() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="steps" className="cursor-pointer">Number of Steps (1-20)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="steps" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                Number of Steps (1-20)
+              </Label>
               <Input
                 id="steps"
                 type="number"
@@ -290,11 +307,14 @@ export default function NewGoal() {
                 value={stepCount}
                 onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
                 autoComplete="off"
+                className="bg-background/40 border-primary/30 focus:border-primary/60"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cost" className="cursor-pointer">Estimated Cost (optional)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="cost" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                Estimated Cost (optional)
+              </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                   {getCurrencySymbol(currency)}
@@ -305,7 +325,7 @@ export default function NewGoal() {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="pl-7"
+                  className="pl-7 bg-background/40 border-primary/30 focus:border-primary/60"
                   value={estimatedCost}
                   onChange={(e) => setEstimatedCost(e.target.value)}
                   autoComplete="off"
@@ -313,8 +333,10 @@ export default function NewGoal() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="cursor-pointer">Notes (optional)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="notes" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                Notes (optional)
+              </Label>
               <Textarea
                 id="notes"
                 placeholder="Additional details about this goal..."
@@ -322,23 +344,27 @@ export default function NewGoal() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
                 maxLength={500}
+                className="bg-background/40 border-primary/30 focus:border-primary/60 resize-none"
               />
             </div>
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-4 pt-6">
               <Button
                 variant="outline"
                 onClick={() => navigate("/goals")}
-                className="flex-1"
+                className="flex-1 border-primary/30"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleCreate}
                 disabled={loading || !name.trim()}
-                className="flex-1"
+                className="flex-1 relative overflow-hidden group"
               >
-                {loading ? "Creating..." : "Create Goal"}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary-glow/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <span className="relative z-10 font-rajdhani tracking-wider">
+                  {loading ? "CREATING..." : "CREATE GOAL"}
+                </span>
               </Button>
             </div>
           </CardContent>
