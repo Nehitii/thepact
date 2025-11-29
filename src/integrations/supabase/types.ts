@@ -14,6 +14,144 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_definitions: {
+        Row: {
+          category: string
+          conditions: Json
+          created_at: string | null
+          description: string
+          flavor_text: string | null
+          icon_key: string
+          id: string
+          is_hidden: boolean | null
+          key: string
+          name: string
+          rarity: string
+        }
+        Insert: {
+          category: string
+          conditions: Json
+          created_at?: string | null
+          description: string
+          flavor_text?: string | null
+          icon_key: string
+          id?: string
+          is_hidden?: boolean | null
+          key: string
+          name: string
+          rarity: string
+        }
+        Update: {
+          category?: string
+          conditions?: Json
+          created_at?: string | null
+          description?: string
+          flavor_text?: string | null
+          icon_key?: string
+          id?: string
+          is_hidden?: boolean | null
+          key?: string
+          name?: string
+          rarity?: string
+        }
+        Relationships: []
+      }
+      achievement_tracking: {
+        Row: {
+          consecutive_income_growth_months: number | null
+          consecutive_login_days: number | null
+          created_at: string | null
+          current_rank_tier: number | null
+          custom_goals_completed: number | null
+          custom_goals_created: number | null
+          easy_goals_completed: number | null
+          easy_goals_created: number | null
+          extreme_goals_completed: number | null
+          extreme_goals_created: number | null
+          goals_completed_total: number | null
+          hard_goals_completed: number | null
+          hard_goals_created: number | null
+          has_edited_pact: boolean | null
+          has_pact: boolean | null
+          id: string
+          impossible_goals_completed: number | null
+          impossible_goals_created: number | null
+          last_login_date: string | null
+          logins_at_same_hour_streak: number | null
+          medium_goals_completed: number | null
+          medium_goals_created: number | null
+          midnight_logins_count: number | null
+          months_without_negative_balance: number | null
+          steps_completed_total: number | null
+          total_goals_created: number | null
+          updated_at: string | null
+          user_id: string
+          usual_login_hour: number | null
+        }
+        Insert: {
+          consecutive_income_growth_months?: number | null
+          consecutive_login_days?: number | null
+          created_at?: string | null
+          current_rank_tier?: number | null
+          custom_goals_completed?: number | null
+          custom_goals_created?: number | null
+          easy_goals_completed?: number | null
+          easy_goals_created?: number | null
+          extreme_goals_completed?: number | null
+          extreme_goals_created?: number | null
+          goals_completed_total?: number | null
+          hard_goals_completed?: number | null
+          hard_goals_created?: number | null
+          has_edited_pact?: boolean | null
+          has_pact?: boolean | null
+          id?: string
+          impossible_goals_completed?: number | null
+          impossible_goals_created?: number | null
+          last_login_date?: string | null
+          logins_at_same_hour_streak?: number | null
+          medium_goals_completed?: number | null
+          medium_goals_created?: number | null
+          midnight_logins_count?: number | null
+          months_without_negative_balance?: number | null
+          steps_completed_total?: number | null
+          total_goals_created?: number | null
+          updated_at?: string | null
+          user_id: string
+          usual_login_hour?: number | null
+        }
+        Update: {
+          consecutive_income_growth_months?: number | null
+          consecutive_login_days?: number | null
+          created_at?: string | null
+          current_rank_tier?: number | null
+          custom_goals_completed?: number | null
+          custom_goals_created?: number | null
+          easy_goals_completed?: number | null
+          easy_goals_created?: number | null
+          extreme_goals_completed?: number | null
+          extreme_goals_created?: number | null
+          goals_completed_total?: number | null
+          hard_goals_completed?: number | null
+          hard_goals_created?: number | null
+          has_edited_pact?: boolean | null
+          has_pact?: boolean | null
+          id?: string
+          impossible_goals_completed?: number | null
+          impossible_goals_created?: number | null
+          last_login_date?: string | null
+          logins_at_same_hour_streak?: number | null
+          medium_goals_completed?: number | null
+          medium_goals_created?: number | null
+          midnight_logins_count?: number | null
+          months_without_negative_balance?: number | null
+          steps_completed_total?: number | null
+          total_goals_created?: number | null
+          updated_at?: string | null
+          user_id?: string
+          usual_login_hour?: number | null
+        }
+        Relationships: []
+      }
       finance: {
         Row: {
           created_at: string | null
@@ -372,6 +510,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_achievements: {
+        Row: {
+          achievement_key: string
+          created_at: string | null
+          id: string
+          progress: number | null
+          seen: boolean | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_key: string
+          created_at?: string | null
+          id?: string
+          progress?: number | null
+          seen?: boolean | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_key?: string
+          created_at?: string | null
+          id?: string
+          progress?: number | null
+          seen?: boolean | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
