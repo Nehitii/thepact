@@ -342,12 +342,6 @@ export default function Goals() {
                                   <div className="absolute inset-0 pointer-events-none" style={{
                             background: `linear-gradient(135deg, ${difficultyColor}15, transparent 50%, ${difficultyColor}10)`
                           }} />
-                                  {/* Focus Star */}
-                                  <button onClick={e => toggleFocus(goal.id, goal.is_focus || false, e)} className="absolute -top-2 -right-2 z-20 p-1.5 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 transition-all shadow-[0_0_15px_rgba(91,180,255,0.6)]" aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}>
-                                    <Star className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-primary/70'}`} style={{
-                              filter: goal.is_focus ? 'drop-shadow(0 0 4px rgba(250, 204, 21, 0.8))' : 'none'
-                            }} />
-                                  </button>
                                 </div> : <div className="relative w-24 h-24 rounded-lg border-2 border-primary/40 flex items-center justify-center overflow-hidden" style={{
                           background: `radial-gradient(circle at 30% 30%, ${difficultyColor}20, #00050B)`,
                           boxShadow: `0 0 20px ${difficultyColor}50, inset 0 0 20px ${difficultyColor}15`
@@ -360,13 +354,13 @@ export default function Goals() {
                                   <div className="absolute inset-0 animate-pulse opacity-30" style={{
                             background: `radial-gradient(circle, ${difficultyColor}40, transparent 70%)`
                           }} />
-                                  {/* Focus Star */}
-                                  <button onClick={e => toggleFocus(goal.id, goal.is_focus || false, e)} className="absolute -top-2 -right-2 z-20 p-1.5 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 transition-all shadow-[0_0_15px_rgba(91,180,255,0.6)]" aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}>
-                                    <Star className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-primary/70'}`} style={{
+                                </div>}
+                              {/* Focus Star - positioned above image frame */}
+                              <button onClick={e => toggleFocus(goal.id, goal.is_focus || false, e)} className="absolute -top-3 -right-3 z-30 p-1.5 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(91,180,255,0.6)] hover:shadow-[0_0_25px_rgba(91,180,255,0.8)]" aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}>
+                                <Star className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-primary/70'}`} style={{
                               filter: goal.is_focus ? 'drop-shadow(0 0 4px rgba(250, 204, 21, 0.8))' : 'none'
                             }} />
-                                  </button>
-                                </div>}
+                              </button>
                             </div>
 
                             {/* Content Section */}
@@ -495,12 +489,6 @@ export default function Goals() {
                                 <div className="absolute inset-0 border-2 pointer-events-none rounded-lg" style={{
                           borderColor: `${difficultyColor}99`
                         }} />
-                                {/* Focus Star */}
-                                <button onClick={e => toggleFocus(goal.id, goal.is_focus || false, e)} className="absolute -top-3 -left-3 z-20 p-1.5 bg-card rounded-full shadow-lg hover:scale-110 transition-transform border-2" style={{
-                          borderColor: `${difficultyColor}66`
-                        }} aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}>
-                                  <Star className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
-                                </button>
                               </div> : <div className="relative w-24 h-24 rounded-lg border-2 shadow-lg flex items-center justify-center grayscale" style={{
                         borderColor: `${difficultyColor}66`,
                         background: `linear-gradient(135deg, ${difficultyColor}20, ${difficultyColor}10)`
@@ -508,13 +496,13 @@ export default function Goals() {
                                 <Trophy className="h-10 w-10" style={{
                           color: `${difficultyColor}99`
                         }} />
-                                {/* Focus Star */}
-                                <button onClick={e => toggleFocus(goal.id, goal.is_focus || false, e)} className="absolute -top-3 -left-3 z-20 p-1.5 bg-card rounded-full shadow-lg hover:scale-110 transition-transform border-2" style={{
-                          borderColor: `${difficultyColor}66`
-                        }} aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}>
-                                  <Star className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} />
-                                </button>
                               </div>}
+                            {/* Focus Star - positioned above image frame */}
+                            <button onClick={e => toggleFocus(goal.id, goal.is_focus || false, e)} className="absolute -top-3 -right-3 z-30 p-1.5 bg-card rounded-full shadow-[0_0_15px_rgba(91,180,255,0.4)] hover:shadow-[0_0_25px_rgba(91,180,255,0.6)] hover:scale-110 active:scale-95 transition-all border-2 border-primary/50" aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}>
+                              <Star className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-muted-foreground'}`} style={{
+                          filter: goal.is_focus ? 'drop-shadow(0 0 4px rgba(250, 204, 21, 0.8))' : 'none'
+                        }} />
+                            </button>
                           </div>
 
                           {/* Middle Section: Content */}
