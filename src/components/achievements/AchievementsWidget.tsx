@@ -94,7 +94,7 @@ export function AchievementsWidget() {
 
           {stats.unlocked === 0 && <div className="text-center py-8">
               <Trophy className="w-12 h-12 mx-auto mb-3 text-muted" />
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted">
                 Complete actions to unlock your first achievement
               </p>
             </div>}
