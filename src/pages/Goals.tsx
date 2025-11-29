@@ -487,9 +487,10 @@ export default function Goals() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-4 mb-4">
                                 <div className="flex-1 min-w-0">
-                                  <h3 className="font-bold text-xl leading-tight mb-2 line-clamp-2 font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-foreground to-foreground/80"
+                                   <h3 className="font-bold text-xl leading-tight mb-2 line-clamp-2 font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#E7F8FF] via-[#BEEBFF] to-[#E7F8FF]"
                                     style={{ 
-                                      textShadow: '0 0 20px rgba(91, 180, 255, 0.15)' 
+                                      textShadow: '0 0 12px rgba(190, 235, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.3)',
+                                      filter: 'drop-shadow(0 0 8px rgba(190, 235, 255, 0.4))'
                                     }}>
                                     {goal.name}
                                   </h3>
@@ -665,7 +666,11 @@ export default function Goals() {
                           <div className="flex-1 min-w-0 space-y-3">
                             {/* Title & Badges */}
                             <div>
-                              <h3 className="text-lg font-bold mb-2 line-clamp-2">
+                              <h3 className="text-lg font-bold mb-2 line-clamp-2 font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#E7F8FF] via-[#BEEBFF] to-[#E7F8FF]"
+                                style={{ 
+                                  textShadow: '0 0 12px rgba(190, 235, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.3)',
+                                  filter: 'drop-shadow(0 0 8px rgba(190, 235, 255, 0.4))'
+                                }}>
                                 {goal.name}
                               </h3>
                               <div className="flex items-center gap-1.5 flex-wrap">
