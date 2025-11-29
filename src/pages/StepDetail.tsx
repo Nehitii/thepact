@@ -196,7 +196,7 @@ export default function StepDetail() {
       <div className="container max-w-2xl mx-auto p-6 space-y-6 relative z-10">
         {/* Header */}
         <div className="flex items-center gap-4 pt-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="text-primary bg-secondary-foreground border rounded">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="border rounded text-primary-foreground bg-primary-foreground">
             <ArrowLeft className="h-5 w-5 text-primary bg-accent-foreground" />
           </Button>
           <div className="flex-1">
