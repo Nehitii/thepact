@@ -536,9 +536,10 @@ export default function GoalDetail() {
                 {/* Middle Section: Content */}
                 <div className="flex-1 min-w-0 space-y-5">
                   {/* Title */}
-                  <h1 className="text-4xl font-bold font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-foreground via-primary/90 to-foreground"
+                  <h1 className="text-4xl font-bold font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#E7F8FF] via-[#BEEBFF] to-[#E7F8FF]"
                     style={{ 
-                      textShadow: '0 0 30px rgba(91, 180, 255, 0.3)' 
+                      textShadow: '0 0 16px rgba(190, 235, 255, 0.3), 0 2px 3px rgba(0, 0, 0, 0.3)',
+                      filter: 'drop-shadow(0 0 12px rgba(190, 235, 255, 0.5))'
                     }}>
                     {goal.name}
                   </h1>
