@@ -8,34 +8,34 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Base colors - Futuristic gaming light mode */
-    --background: 210 40% 98%;
-    --foreground: 220 90% 10%;
+    /* Sci-Fi HUD Base Colors - Light Mode */
+    --background: 210 50% 96%;
+    --foreground: 210 100% 12%;
 
-    /* Card surfaces - Holographic panels */
-    --card: 0 0% 100%;
-    --card-foreground: 220 90% 10%;
+    /* HUD Card Surfaces */
+    --card: 210 40% 98%;
+    --card-foreground: 210 100% 12%;
 
     /* Popover */
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 90% 10%;
+    --popover: 210 40% 98%;
+    --popover-foreground: 210 100% 12%;
 
-    /* Primary - Cyber cyan/electric blue */
-    --primary: 195 100% 50%;
-    --primary-foreground: 0 0% 100%;
-    --primary-glow: 195 100% 65%;
+    /* Primary - Neon Cyan HUD Accent */
+    --primary: 200 100% 67%;
+    --primary-foreground: 210 100% 5%;
+    --primary-glow: 200 100% 75%;
 
-    /* Secondary - Tech gray */
-    --secondary: 215 20% 85%;
-    --secondary-foreground: 220 90% 10%;
+    /* Secondary - Soft Blue Gray */
+    --secondary: 210 30% 85%;
+    --secondary-foreground: 210 100% 12%;
 
     /* Muted */
-    --muted: 215 20% 92%;
-    --muted-foreground: 215 15% 45%;
+    --muted: 210 25% 90%;
+    --muted-foreground: 210 20% 40%;
 
-    /* Accent - Neon purple */
-    --accent: 270 80% 60%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Luminous Highlight */
+    --accent: 200 100% 75%;
+    --accent-foreground: 210 100% 5%;
 
     /* Destructive */
     --destructive: 0 85% 60%;
@@ -49,28 +49,30 @@ All colors MUST be HSL.
     --finance: 212 90% 50%;
     --finance-foreground: 0 0% 100%;
 
-    /* Borders and inputs - Cyber lines */
-    --border: 215 30% 80%;
-    --input: 215 30% 88%;
-    --ring: 195 100% 50%;
+    /* HUD Borders and Inputs */
+    --border: 200 50% 75%;
+    --input: 210 35% 92%;
+    --ring: 200 100% 67%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
 
-    /* Futuristic Gradients */
-    --gradient-cyber: linear-gradient(135deg, hsl(195 100% 50%), hsl(270 80% 60%));
-    --gradient-hologram: linear-gradient(135deg, hsl(195 100% 50% / 0.1), hsl(270 80% 60% / 0.1));
-    --gradient-panel: linear-gradient(180deg, hsl(210 40% 98%), hsl(215 35% 95%));
+    /* Sci-Fi HUD Gradients */
+    --gradient-hud: linear-gradient(135deg, hsl(200 100% 67% / 0.15), hsl(200 100% 75% / 0.05));
+    --gradient-hologram: linear-gradient(135deg, hsl(200 100% 67% / 0.1), hsl(200 100% 75% / 0.05));
+    --gradient-panel: linear-gradient(180deg, hsl(210 40% 98%), hsl(210 35% 96%));
+    --gradient-radial: radial-gradient(circle, hsl(200 100% 67% / 0.2) 0%, transparent 70%);
     
-    /* Gaming Shadows & Glows */
-    --shadow-neon: 0 0 20px hsla(195 100% 50% / 0.5), 0 0 40px hsla(195 100% 50% / 0.3);
-    --shadow-cyber: 0 4px 20px hsla(195 100% 50% / 0.2), inset 0 1px 0 hsla(0 0% 100% / 0.4);
-    --shadow-hologram: 0 8px 32px hsla(195 100% 50% / 0.15);
+    /* HUD Glows & Shadows */
+    --glow-cyan: 0 0 10px hsl(200 100% 67% / 0.4), 0 0 20px hsl(200 100% 67% / 0.2), 0 0 30px hsl(200 100% 67% / 0.1);
+    --glow-white-blue: 0 0 15px hsl(205 100% 85% / 0.6), 0 0 30px hsl(205 100% 85% / 0.3);
+    --shadow-hud: 0 4px 20px hsla(200 100% 67% / 0.2), inset 0 1px 0 hsla(200 100% 100% / 0.4);
+    --shadow-deep: 0 8px 32px hsla(210 100% 5% / 0.25), inset 0 -1px 0 hsla(200 100% 67% / 0.15);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    /* Difficulty Colors - Enhanced gaming palette */
+    /* CRITICAL: Preserve Original Difficulty Colors - DO NOT MODIFY */
     --difficulty-easy: 142 70% 50%;
     --difficulty-medium: 45 95% 55%;
     --difficulty-hard: 25 100% 60%;
@@ -88,34 +90,34 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Base colors - Deep space gaming darkness */
-    --background: 220 50% 5%;
-    --foreground: 210 40% 98%;
+    /* Sci-Fi HUD Dark Mode - Deep Blue-Black */
+    --background: 210 100% 2%;
+    --foreground: 205 100% 90%;
 
-    /* Card surfaces - Glowing panels */
-    --card: 220 40% 10%;
-    --card-foreground: 210 40% 98%;
+    /* HUD Card Surfaces - Deep Panels */
+    --card: 210 80% 5%;
+    --card-foreground: 205 100% 90%;
 
     /* Popover */
-    --popover: 220 45% 8%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 210 90% 4%;
+    --popover-foreground: 205 100% 90%;
 
-    /* Primary - Electric cyan glow */
-    --primary: 195 100% 55%;
-    --primary-foreground: 220 50% 5%;
-    --primary-glow: 195 100% 70%;
+    /* Primary - Neon Cyan HUD Accent */
+    --primary: 200 100% 67%;
+    --primary-foreground: 210 100% 5%;
+    --primary-glow: 200 100% 75%;
 
-    /* Secondary - Dark tech panel */
-    --secondary: 220 30% 15%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary - Dark HUD Panel */
+    --secondary: 210 50% 12%;
+    --secondary-foreground: 205 100% 90%;
 
     /* Muted */
-    --muted: 220 35% 12%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 210 40% 10%;
+    --muted-foreground: 210 30% 60%;
 
-    /* Accent - Neon magenta */
-    --accent: 320 85% 60%;
-    --accent-foreground: 0 0% 100%;
+    /* Accent - Luminous Highlight */
+    --accent: 200 100% 75%;
+    --accent-foreground: 210 100% 5%;
 
     /* Destructive */
     --destructive: 0 90% 65%;
@@ -129,28 +131,30 @@ All colors MUST be HSL.
     --finance: 212 90% 60%;
     --finance-foreground: 0 0% 100%;
 
-    /* Borders and inputs - Glowing edges */
-    --border: 220 40% 20%;
-    --input: 220 40% 18%;
-    --ring: 195 100% 55%;
+    /* HUD Borders - Glowing Cyan Edges */
+    --border: 200 60% 25%;
+    --input: 210 50% 10%;
+    --ring: 200 100% 67%;
 
-    /* Futuristic Gradients */
-    --gradient-cyber: linear-gradient(135deg, hsl(195 100% 55%), hsl(270 85% 65%));
-    --gradient-hologram: linear-gradient(135deg, hsl(195 100% 55% / 0.15), hsl(270 85% 65% / 0.15));
-    --gradient-panel: linear-gradient(180deg, hsl(220 45% 10%), hsl(220 40% 8%));
+    /* Sci-Fi HUD Gradients */
+    --gradient-hud: linear-gradient(135deg, hsl(200 100% 67% / 0.2), hsl(200 100% 75% / 0.05));
+    --gradient-hologram: linear-gradient(135deg, hsl(200 100% 67% / 0.15), hsl(200 100% 75% / 0.05));
+    --gradient-panel: linear-gradient(180deg, hsl(210 80% 6%), hsl(210 90% 4%));
+    --gradient-radial: radial-gradient(circle, hsl(200 100% 67% / 0.3) 0%, transparent 70%);
     
-    /* Gaming Shadows & Glows */
-    --shadow-neon: 0 0 30px hsla(195 100% 55% / 0.6), 0 0 60px hsla(195 100% 55% / 0.4);
-    --shadow-cyber: 0 4px 24px hsla(195 100% 55% / 0.3), inset 0 1px 0 hsla(195 100% 70% / 0.2);
-    --shadow-hologram: 0 8px 40px hsla(195 100% 55% / 0.25);
+    /* HUD Glows & Shadows - Enhanced */
+    --glow-cyan: 0 0 15px hsl(200 100% 67% / 0.6), 0 0 30px hsl(200 100% 67% / 0.3), 0 0 45px hsl(200 100% 67% / 0.15);
+    --glow-white-blue: 0 0 20px hsl(205 100% 85% / 0.8), 0 0 40px hsl(205 100% 85% / 0.4);
+    --shadow-hud: 0 4px 24px hsla(200 100% 67% / 0.3), inset 0 1px 0 hsla(200 100% 67% / 0.2);
+    --shadow-deep: 0 10px 40px hsla(210 100% 2% / 0.6), inset 0 -1px 0 hsla(200 100% 67% / 0.2);
 
-    /* Difficulty Colors - Vivid gaming palette */
-    --difficulty-easy: 142 70% 55%;
-    --difficulty-medium: 45 95% 60%;
-    --difficulty-hard: 25 100% 65%;
-    --difficulty-extreme: 0 95% 70%;
-    --difficulty-impossible: 280 80% 55%;
-    --difficulty-custom: 270 95% 70%;
+    /* CRITICAL: Preserve Original Difficulty Colors - DO NOT MODIFY */
+    --difficulty-easy: 142 70% 50%;
+    --difficulty-medium: 45 95% 55%;
+    --difficulty-hard: 25 100% 60%;
+    --difficulty-extreme: 0 90% 65%;
+    --difficulty-impossible: 280 75% 45%;
+    --difficulty-custom: 270 90% 65%;
 
     /* Achievement Rarity Colors */
     --achievement-common: 45 95% 60%;
@@ -171,12 +175,24 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
     font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-image: radial-gradient(circle at 50% 0%, hsl(200 100% 67% / 0.05) 0%, transparent 50%);
   }
 
-  /* Futuristic heading font */
+  /* Sci-Fi HUD Typography */
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Orbitron', 'Rajdhani', sans-serif;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  /* HUD Labels */
+  label, .hud-label {
+    font-family: 'Orbitron', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 0.75rem;
+    font-weight: 600;
   }
 
   /* Gaming UI animations */
@@ -269,79 +285,210 @@ All colors MUST be HSL.
     transition: var(--transition-bounce);
   }
 
-  /* Futuristic glass morphism */
-  .glass-panel {
+  /* Sci-Fi HUD Panel */
+  .hud-panel {
     background: linear-gradient(135deg, 
-      hsla(var(--card) / 0.7) 0%, 
-      hsla(var(--card) / 0.5) 100%);
-    backdrop-filter: blur(10px);
-    border: 1px solid hsla(var(--primary) / 0.2);
+      hsla(var(--card) / 0.9) 0%, 
+      hsla(var(--card) / 0.7) 100%);
+    backdrop-filter: blur(20px);
+    border: 2px solid hsla(var(--primary) / 0.3);
+    box-shadow: 
+      var(--shadow-deep),
+      inset 0 0 20px hsla(var(--primary) / 0.05),
+      0 0 30px hsla(var(--primary) / 0.1);
+    position: relative;
   }
 
-  /* Cyber grid background */
-  .cyber-grid {
+  .hud-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-hud);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .hud-panel::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(45deg, 
+      transparent 0%, 
+      hsla(var(--primary) / 0.1) 50%, 
+      transparent 100%);
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .hud-panel:hover::after {
+    opacity: 1;
+  }
+
+  /* HUD Grid Background */
+  .hud-grid {
     background-image: 
-      linear-gradient(hsla(var(--primary) / 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(var(--primary) / 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
+      linear-gradient(hsla(var(--primary) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: relative;
   }
 
-  /* Neon border effect */
+  .hud-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-radial);
+    pointer-events: none;
+  }
+
+  /* Neon Glow Border */
   .neon-border {
     position: relative;
-    border: 1px solid hsla(var(--primary) / 0.5);
-    box-shadow: 
-      inset 0 0 10px hsla(var(--primary) / 0.2),
-      0 0 10px hsla(var(--primary) / 0.3);
+    border: 2px solid hsla(var(--primary) / 0.6);
+    box-shadow: var(--glow-cyan);
   }
 
   .neon-border::before {
     content: '';
     position: absolute;
-    inset: -2px;
+    inset: -4px;
     background: linear-gradient(45deg, 
-      transparent, 
       hsla(var(--primary) / 0.3), 
-      transparent);
+      hsla(var(--primary-glow) / 0.2), 
+      hsla(var(--primary) / 0.3));
     border-radius: inherit;
     z-index: -1;
     opacity: 0;
     transition: opacity 0.3s ease;
+    filter: blur(8px);
   }
 
   .neon-border:hover::before {
     opacity: 1;
   }
 
-  /* Holographic corner accents */
-  .corner-accents::before,
-  .corner-accents::after {
+  /* Double Border Frame */
+  .double-border {
+    border: 2px solid hsla(var(--primary) / 0.4);
+    box-shadow: 
+      inset 0 0 0 1px hsla(var(--primary) / 0.2),
+      0 0 20px hsla(var(--primary) / 0.15);
+    position: relative;
+  }
+
+  .double-border::after {
     content: '';
     position: absolute;
-    width: 20px;
-    height: 20px;
-    border: 2px solid hsla(var(--primary) / 0.6);
+    inset: 4px;
+    border: 1px solid hsla(var(--primary) / 0.3);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  /* Holographic Corner Brackets */
+  .corner-brackets {
+    position: relative;
+  }
+
+  .corner-brackets::before,
+  .corner-brackets::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border: 2px solid hsla(var(--primary) / 0.7);
     transition: all 0.3s ease;
   }
 
-  .corner-accents::before {
-    top: -1px;
-    left: -1px;
+  .corner-brackets::before {
+    top: -2px;
+    left: -2px;
     border-right: none;
     border-bottom: none;
+    box-shadow: 0 0 10px hsla(var(--primary) / 0.4);
   }
 
-  .corner-accents::after {
-    bottom: -1px;
-    right: -1px;
+  .corner-brackets::after {
+    bottom: -2px;
+    right: -2px;
     border-left: none;
     border-top: none;
+    box-shadow: 0 0 10px hsla(var(--primary) / 0.4);
   }
 
-  .corner-accents:hover::before,
-  .corner-accents:hover::after {
-    width: 30px;
-    height: 30px;
+  .corner-brackets:hover::before,
+  .corner-brackets:hover::after {
+    width: 32px;
+    height: 32px;
     border-color: hsla(var(--primary) / 1);
+    box-shadow: var(--glow-cyan);
+  }
+
+  /* Beveled Edge Effect */
+  .bevel-edge {
+    position: relative;
+    clip-path: polygon(
+      8px 0, 100% 0, 100% calc(100% - 8px), 
+      calc(100% - 8px) 100%, 0 100%, 0 8px
+    );
+  }
+
+  .bevel-edge::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, 
+      hsla(var(--primary) / 0.1) 0%, 
+      transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Holographic Scan Line */
+  .scan-line {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-line::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsla(var(--primary) / 0.8), 
+      transparent);
+    box-shadow: 0 0 10px hsla(var(--primary) / 0.6);
+    animation: scan-line 4s linear infinite;
+  }
+
+  @keyframes scan-line {
+    0% { top: -100%; }
+    100% { top: 100%; }
+  }
+
+  /* Radial HUD Glow */
+  .radial-glow {
+    position: relative;
+  }
+
+  .radial-glow::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(circle, 
+      hsla(var(--primary) / 0.2) 0%, 
+      transparent 60%);
+    pointer-events: none;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
   }
 }
