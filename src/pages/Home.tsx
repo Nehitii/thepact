@@ -252,7 +252,7 @@ export default function Home() {
         {pact.project_start_date && (
           <div className="animate-fade-in mt-8 relative group">
             <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:bg-primary/20 transition-all" />
-            <div className="relative bg-card/40 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 overflow-hidden corner-brackets">
+            <div className="relative bg-card/40 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 overflow-hidden">
               <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
               </div>
@@ -316,7 +316,7 @@ export default function Home() {
             {/* Rank Panel */}
             <div className="relative group">
               <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden corner-brackets">
+              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden">
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
                 </div>
