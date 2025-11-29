@@ -368,7 +368,7 @@ export default function GoalDetail() {
         <div className="max-w-3xl mx-auto p-6 space-y-8 pb-24">
         {/* Back Button */}
         <div className="pt-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/goals")} className="hover:bg-primary/10 hover:text-primary transition-colors">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/goals")} className="transition-colors text-primary bg-secondary-foreground border rounded">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </div>
