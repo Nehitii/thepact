@@ -132,14 +132,31 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-secondary/20">
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
+      {/* Deep space background with radial glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Sci-fi grid overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px'
+        }} />
+      </div>
+
+      <div className="max-w-2xl mx-auto p-6 space-y-8 relative z-10">
         {/* Header */}
-        <div className="pt-8">
-          <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+        <div className="pt-8 text-center space-y-3 animate-fade-in">
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
             Profile
           </h1>
-          <p className="text-muted-foreground">Configure your pact settings</p>
+          <p className="text-primary/70 tracking-wide font-rajdhani">Configure your pact settings</p>
         </div>
 
         {/* Account Information */}
@@ -174,78 +191,101 @@ export default function Profile() {
         <ProfileFinanceSettings />
 
         {/* Achievements Section */}
-        <Card 
-          className="border-primary/30 bg-card/50 backdrop-blur cursor-pointer hover:bg-primary/10 transition-all hover:border-primary/50"
-          onClick={() => window.location.href = "/achievements"}
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <span className="text-2xl">🏆</span>
-              The Pact Achievements
-            </CardTitle>
-            <CardDescription>View your unlocked achievements and track your progress</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={(e) => {
-                e.stopPropagation();
-                window.location.href = "/achievements";
-              }}
-            >
-              View All Achievements
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="relative group animate-fade-in">
+          <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+          <Card 
+            className="relative border-2 border-primary/30 bg-card/30 backdrop-blur-xl cursor-pointer hover:bg-card/40 transition-all hover:border-primary/50 overflow-hidden"
+            onClick={() => window.location.href = "/achievements"}
+          >
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
+            </div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-primary font-orbitron uppercase tracking-wider drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+                <span className="text-2xl">🏆</span>
+                The Pact Achievements
+              </CardTitle>
+              <CardDescription className="text-primary/60 font-rajdhani">View your unlocked achievements and track your progress</CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10">
+              <Button
+                variant="outline"
+                className="w-full bg-primary/10 border-primary/30 hover:border-primary/50 hover:bg-primary/20 text-primary font-rajdhani uppercase tracking-wide"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.location.href = "/achievements";
+                }}
+              >
+                View All Achievements
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Save Button */}
-        <Button onClick={handleSave} disabled={loading} className="w-full" size="lg">
-          {loading ? "Saving..." : "Save All Changes"}
+        <Button 
+          onClick={handleSave} 
+          disabled={loading} 
+          className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider transition-all animate-fade-in" 
+          size="lg"
+        >
+          {loading ? "SAVING..." : "SAVE ALL CHANGES"}
         </Button>
 
         {/* Devil Note */}
-        <Card 
-          className="border-destructive/30 bg-destructive/5 backdrop-blur cursor-pointer hover:bg-destructive/10 transition-all hover:border-destructive/50"
-          onClick={() => setDevilNoteOpen(true)}
-        >
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <Skull className="h-5 w-5" />
-              Devil Note
-            </CardTitle>
-            <CardDescription>A warning from beyond</CardDescription>
-          </CardHeader>
-        </Card>
+        <div className="relative group animate-fade-in">
+          <div className="absolute inset-0 bg-destructive/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+          <Card 
+            className="relative border-2 border-destructive/30 bg-destructive/10 backdrop-blur-xl cursor-pointer hover:bg-destructive/20 transition-all hover:border-destructive/50 overflow-hidden"
+            onClick={() => setDevilNoteOpen(true)}
+          >
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-destructive/20 rounded-[6px]" />
+            </div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-destructive font-orbitron uppercase tracking-wider drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">
+                <Skull className="h-5 w-5" />
+                Devil Note
+              </CardTitle>
+              <CardDescription className="text-destructive/60 font-rajdhani">A warning from beyond</CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
 
         {/* Sign Out */}
-        <Card className="border-primary/20 bg-card/50 backdrop-blur">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <LogOut className="h-5 w-5" />
-              Sign Out
-            </CardTitle>
-            <CardDescription>End your current session</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={handleSignOut}
-              variant="outline"
-              className="w-full text-destructive hover:text-destructive"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="relative group animate-fade-in">
+          <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl transition-all" />
+          <Card className="relative border-2 border-primary/30 bg-card/30 backdrop-blur-xl overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
+            </div>
+            <CardHeader className="relative z-10">
+              <CardTitle className="flex items-center gap-2 text-primary font-orbitron uppercase tracking-wider">
+                <LogOut className="h-5 w-5" />
+                Sign Out
+              </CardTitle>
+              <CardDescription className="text-primary/60 font-rajdhani">End your current session</CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10">
+              <Button
+                onClick={handleSignOut}
+                variant="outline"
+                className="w-full bg-destructive/10 border-destructive/30 hover:border-destructive/50 hover:bg-destructive/20 text-destructive font-rajdhani uppercase tracking-wide"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Credits */}
-        <div className="text-center py-6 space-y-2">
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Flame className="h-4 w-4 text-primary" />
-            <span className="font-light tracking-wide">Version: V3.0 – The Pact</span>
+        <div className="text-center py-6 space-y-2 animate-fade-in">
+          <div className="flex items-center justify-center gap-2 text-sm text-primary/60">
+            <Flame className="h-4 w-4 text-primary animate-glow-pulse" />
+            <span className="font-light tracking-wide font-rajdhani">Version: V3.0 – The Pact</span>
           </div>
-          <div className="text-xs text-muted-foreground/70 font-light tracking-wider">
+          <div className="text-xs text-primary/40 font-light tracking-wider font-rajdhani">
             Author: G.L
           </div>
         </div>

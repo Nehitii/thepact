@@ -96,128 +96,171 @@ export default function Finance() {
   });
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-secondary">
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+    <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
+      {/* Deep space background with radial glow */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Sci-fi grid overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-20">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px'
+        }} />
+      </div>
+
+      <div className="max-w-2xl mx-auto p-6 space-y-8 relative z-10">
         {/* Header */}
-        <div className="pt-8">
-          <h1 className="text-3xl font-bold mb-2">Finance</h1>
-          <p className="text-muted-foreground">Manage your financial flow</p>
+        <div className="pt-8 text-center space-y-3 animate-fade-in">
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
+            Finance
+          </h1>
+          <p className="text-primary/70 tracking-wide font-rajdhani">Manage your financial flow</p>
         </div>
 
         {/* This Month */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{monthName}</CardTitle>
-            <CardDescription>Track your monthly finances</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Income */}
-            <div className="space-y-2">
-              <Label htmlFor="income">Income</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {getCurrencySymbol(currency)}
-                </span>
-                <Input
-                  id="income"
-                  type="number"
-                  step="0.01"
-                  className="pl-7"
-                  placeholder="0.00"
-                  value={income}
-                  onChange={(e) => setIncome(e.target.value)}
-                />
-              </div>
+        <div className="relative group animate-fade-in">
+          <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+          <Card className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 hover:border-primary/50 transition-all overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
             </div>
-
-            {/* Fixed Expenses */}
-            <div className="space-y-2">
-              <Label htmlFor="fixed">Fixed Expenses</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {getCurrencySymbol(currency)}
-                </span>
-                <Input
-                  id="fixed"
-                  type="number"
-                  step="0.01"
-                  className="pl-7"
-                  placeholder="0.00"
-                  value={fixedExpenses}
-                  onChange={(e) => setFixedExpenses(e.target.value)}
-                />
+            <CardHeader className="relative z-10">
+              <CardTitle className="text-2xl font-orbitron text-primary uppercase tracking-wider drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+                {monthName}
+              </CardTitle>
+              <CardDescription className="text-primary/60 font-rajdhani">Track your monthly finances</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 relative z-10">
+              {/* Income */}
+              <div className="space-y-2">
+                <Label htmlFor="income" className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm">Income</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70 font-orbitron">
+                    {getCurrencySymbol(currency)}
+                  </span>
+                  <Input
+                    id="income"
+                    type="number"
+                    step="0.01"
+                    className="pl-7 bg-card/50 border-primary/20 text-primary focus:border-primary/50 font-orbitron"
+                    placeholder="0.00"
+                    value={income}
+                    onChange={(e) => setIncome(e.target.value)}
+                  />
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Rent, utilities, subscriptions...
-              </p>
-            </div>
 
-            {/* Variable Expenses */}
-            <div className="space-y-2">
-              <Label htmlFor="variable">Variable Expenses</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {getCurrencySymbol(currency)}
-                </span>
-                <Input
-                  id="variable"
-                  type="number"
-                  step="0.01"
-                  className="pl-7"
-                  placeholder="0.00"
-                  value={variableExpenses}
-                  onChange={(e) => setVariableExpenses(e.target.value)}
-                />
+              {/* Fixed Expenses */}
+              <div className="space-y-2">
+                <Label htmlFor="fixed" className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm">Fixed Expenses</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70 font-orbitron">
+                    {getCurrencySymbol(currency)}
+                  </span>
+                  <Input
+                    id="fixed"
+                    type="number"
+                    step="0.01"
+                    className="pl-7 bg-card/50 border-primary/20 text-primary focus:border-primary/50 font-orbitron"
+                    placeholder="0.00"
+                    value={fixedExpenses}
+                    onChange={(e) => setFixedExpenses(e.target.value)}
+                  />
+                </div>
+                <p className="text-xs text-primary/50 font-rajdhani">
+                  Rent, utilities, subscriptions...
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Food, entertainment, shopping...
-              </p>
-            </div>
 
-            {/* Savings */}
-            <div className="space-y-2">
-              <Label htmlFor="savings">Savings</Label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {getCurrencySymbol(currency)}
-                </span>
-                <Input
-                  id="savings"
-                  type="number"
-                  step="0.01"
-                  className="pl-7"
-                  placeholder="0.00"
-                  value={savings}
-                  onChange={(e) => setSavings(e.target.value)}
-                />
+              {/* Variable Expenses */}
+              <div className="space-y-2">
+                <Label htmlFor="variable" className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm">Variable Expenses</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70 font-orbitron">
+                    {getCurrencySymbol(currency)}
+                  </span>
+                  <Input
+                    id="variable"
+                    type="number"
+                    step="0.01"
+                    className="pl-7 bg-card/50 border-primary/20 text-primary focus:border-primary/50 font-orbitron"
+                    placeholder="0.00"
+                    value={variableExpenses}
+                    onChange={(e) => setVariableExpenses(e.target.value)}
+                  />
+                </div>
+                <p className="text-xs text-primary/50 font-rajdhani">
+                  Food, entertainment, shopping...
+                </p>
               </div>
-            </div>
 
-            {/* Remaining Budget */}
-            <div
-              className={`p-4 rounded-lg border-2 ${
-                remaining >= 0
-                  ? "border-green-500/20 bg-green-500/10"
-                  : "border-red-500/20 bg-red-500/10"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Remaining Budget</span>
-                <span
-                  className={`text-2xl font-bold ${
-                    remaining >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+              {/* Savings */}
+              <div className="space-y-2">
+                <Label htmlFor="savings" className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm">Savings</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/70 font-orbitron">
+                    {getCurrencySymbol(currency)}
+                  </span>
+                  <Input
+                    id="savings"
+                    type="number"
+                    step="0.01"
+                    className="pl-7 bg-card/50 border-primary/20 text-primary focus:border-primary/50 font-orbitron"
+                    placeholder="0.00"
+                    value={savings}
+                    onChange={(e) => setSavings(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Remaining Budget */}
+              <div className="relative group/budget">
+                <div className={`absolute inset-0 rounded-lg blur-md ${
+                  remaining >= 0 ? "bg-green-500/10" : "bg-red-500/10"
+                }`} />
+                <div
+                  className={`relative p-5 rounded-lg border-2 overflow-hidden ${
+                    remaining >= 0
+                      ? "border-green-500/30 bg-green-500/10"
+                      : "border-red-500/30 bg-red-500/10"
                   }`}
                 >
-                  {formatCurrency(remaining, currency)}
-                </span>
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className={`absolute inset-[2px] border rounded-[6px] ${
+                      remaining >= 0 ? "border-green-500/20" : "border-red-500/20"
+                    }`} />
+                  </div>
+                  <div className="relative z-10 flex items-center justify-between">
+                    <span className={`font-medium font-rajdhani uppercase tracking-wider ${
+                      remaining >= 0 ? "text-green-400" : "text-red-400"
+                    }`}>Remaining Budget</span>
+                    <span
+                      className={`text-3xl font-bold font-orbitron ${
+                        remaining >= 0 ? "text-green-400 drop-shadow-[0_0_10px_rgba(34,197,94,0.5)]" : "text-red-400 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                      }`}
+                    >
+                      {formatCurrency(remaining, currency)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <Button onClick={handleSave} disabled={loading} className="w-full">
-              {loading ? "Saving..." : "Save Month Data"}
-            </Button>
-          </CardContent>
-        </Card>
+              <Button 
+                onClick={handleSave} 
+                disabled={loading} 
+                className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider transition-all"
+              >
+                {loading ? "SAVING..." : "SAVE MONTH DATA"}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <Navigation />
