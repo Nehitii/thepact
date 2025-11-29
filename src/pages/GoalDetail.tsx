@@ -636,10 +636,10 @@ export default function GoalDetail() {
 
         {/* Steps */}
         <Card>
-          <CardHeader>
+          <CardHeader className="text-primary bg-secondary-foreground">
             <CardTitle>Steps</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-primary bg-secondary-foreground">
             <div className="space-y-2">
               {steps.map(step => <div key={step.id} className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(var(--primary)/0.2)] transition-all duration-300 cursor-pointer group relative" onClick={() => navigate(`/step/${step.id}`)}>
                   <div onClick={e => e.stopPropagation()} className="relative z-20">
