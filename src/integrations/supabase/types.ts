@@ -121,45 +121,6 @@ export type Database = {
           },
         ]
       }
-      health: {
-        Row: {
-          activity: string | null
-          created_at: string | null
-          date: string
-          id: string
-          mood: number | null
-          notes: string | null
-          sleep: number | null
-          updated_at: string | null
-          user_id: string
-          weight: number | null
-        }
-        Insert: {
-          activity?: string | null
-          created_at?: string | null
-          date: string
-          id?: string
-          mood?: number | null
-          notes?: string | null
-          sleep?: number | null
-          updated_at?: string | null
-          user_id: string
-          weight?: number | null
-        }
-        Update: {
-          activity?: string | null
-          created_at?: string | null
-          date?: string
-          id?: string
-          mood?: number | null
-          notes?: string | null
-          sleep?: number | null
-          updated_at?: string | null
-          user_id?: string
-          weight?: number | null
-        }
-        Relationships: []
-      }
       pact_spending: {
         Row: {
           amount: number
