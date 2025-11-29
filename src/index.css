@@ -369,61 +369,66 @@ All colors MUST be HSL.
     opacity: 1;
   }
 
-  /* Double Border Frame */
+  /* Double Border Frame - Perfect Geometry */
   .double-border {
     border: 2px solid hsla(var(--primary) / 0.4);
     box-shadow: 
       inset 0 0 0 1px hsla(var(--primary) / 0.2),
       0 0 20px hsla(var(--primary) / 0.15);
     position: relative;
+    overflow: hidden;
   }
 
   .double-border::after {
     content: '';
     position: absolute;
-    inset: 4px;
+    inset: 5px;
     border: 1px solid hsla(var(--primary) / 0.3);
-    border-radius: inherit;
+    border-radius: calc(var(--radius) - 3px);
     pointer-events: none;
   }
 
-  /* Holographic Corner Brackets */
+  /* Holographic Corner Brackets - Perfect Alignment */
   .corner-brackets {
     position: relative;
+    isolation: isolate;
   }
 
   .corner-brackets::before,
   .corner-brackets::after {
     content: '';
     position: absolute;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
     border: 2px solid hsla(var(--primary) / 0.7);
     transition: all 0.3s ease;
+    z-index: 1;
   }
 
   .corner-brackets::before {
-    top: -2px;
-    left: -2px;
+    top: 0;
+    left: 0;
     border-right: none;
     border-bottom: none;
+    border-top-left-radius: var(--radius);
     box-shadow: 0 0 10px hsla(var(--primary) / 0.4);
   }
 
   .corner-brackets::after {
-    bottom: -2px;
-    right: -2px;
+    bottom: 0;
+    right: 0;
     border-left: none;
     border-top: none;
+    border-bottom-right-radius: var(--radius);
     box-shadow: 0 0 10px hsla(var(--primary) / 0.4);
   }
 
   .corner-brackets:hover::before,
   .corner-brackets:hover::after {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-color: hsla(var(--primary) / 1);
-    box-shadow: var(--glow-cyan);
+    box-shadow: 0 0 15px hsla(var(--primary) / 0.6), 0 0 30px hsla(var(--primary) / 0.3);
   }
 
   /* Beveled Edge Effect */

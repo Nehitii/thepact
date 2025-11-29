@@ -252,8 +252,11 @@ export default function Home() {
         {pact.project_start_date && (
           <div className="animate-fade-in mt-8 relative group">
             <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:bg-primary/20 transition-all" />
-            <div className="relative bg-card/40 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 corner-brackets">
-              <div className="flex items-center gap-3">
+            <div className="relative bg-card/40 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 overflow-hidden corner-brackets">
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
+              </div>
+              <div className="relative z-10 flex items-center gap-3">
                 <div className="relative">
                   <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
                   <Calendar className="h-5 w-5 text-primary relative z-10 animate-glow-pulse" />
@@ -295,37 +298,52 @@ export default function Home() {
           <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto">
             {/* Pact XP Panel */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-primary/10 blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 double-border hover:border-primary/50 transition-all">
-                <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Pact XP</div>
-                <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                  {totalPoints}
+              <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
                 </div>
-                <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Points</div>
+                <div className="relative z-10">
+                  <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Pact XP</div>
+                  <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+                    {totalPoints}
+                  </div>
+                  <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Points</div>
+                </div>
               </div>
             </div>
 
             {/* Rank Panel */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-primary/10 blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 double-border hover:border-primary/50 transition-all corner-brackets">
-                <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Rank</div>
-                <div className="text-2xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)] truncate">
-                  {currentRank ? currentRank.name : "No Rank"}
+              <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden corner-brackets">
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
                 </div>
-                <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Current Tier</div>
+                <div className="relative z-10">
+                  <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Rank</div>
+                  <div className="text-2xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)] truncate">
+                    {currentRank ? currentRank.name : "No Rank"}
+                  </div>
+                  <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Current Tier</div>
+                </div>
               </div>
             </div>
 
             {/* Level Panel */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-primary/10 blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 double-border hover:border-primary/50 transition-all">
-                <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Level</div>
-                <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                  {level}
+              <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden">
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
                 </div>
-                <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Tier</div>
+                <div className="relative z-10">
+                  <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Level</div>
+                  <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+                    {level}
+                  </div>
+                  <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Tier</div>
+                </div>
               </div>
             </div>
           </div>
@@ -396,36 +414,41 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
           {/* Goals Completed Gauge */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-primary/5 blur-xl group-hover:blur-2xl transition-all" />
-            <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-6 double-border scan-line">
-              <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-4">Goals Completed</div>
-              <div className="text-center mb-4">
-                <div className="text-5xl font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)]">
-                  {dashboardData.goalsCompleted}
-                  <span className="text-2xl text-primary/50 ml-2">/ {dashboardData.totalGoals}</span>
-                </div>
-                <div className="text-xl font-semibold text-accent mt-2 font-orbitron">
-                  {dashboardData.totalGoals > 0 
-                    ? ((dashboardData.goalsCompleted / dashboardData.totalGoals) * 100).toFixed(0)
-                    : 0}%
-                </div>
+            <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+            <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-6 scan-line overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
               </div>
-              <div className="space-y-2">
-                <div className="relative h-3 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
-                  <div
-                    className="h-full bg-gradient-to-r from-health via-health to-health/80 transition-all duration-1000 shadow-[0_0_15px_rgba(74,222,128,0.5)]"
-                    style={{ 
-                      width: `${dashboardData.totalGoals > 0 
-                        ? ((dashboardData.goalsCompleted / dashboardData.totalGoals) * 100)
-                        : 0}%` 
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
+              <div className="relative z-10">
+                <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-4">Goals Completed</div>
+                <div className="text-center mb-4">
+                  <div className="text-5xl font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)]">
+                    {dashboardData.goalsCompleted}
+                    <span className="text-2xl text-primary/50 ml-2">/ {dashboardData.totalGoals}</span>
+                  </div>
+                  <div className="text-xl font-semibold text-accent mt-2 font-orbitron">
+                    {dashboardData.totalGoals > 0 
+                      ? ((dashboardData.goalsCompleted / dashboardData.totalGoals) * 100).toFixed(0)
+                      : 0}%
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-primary/50 uppercase tracking-wider font-rajdhani">
-                  <span>{dashboardData.goalsCompleted} complete</span>
-                  <span>{dashboardData.totalGoals - dashboardData.goalsCompleted} remaining</span>
+                <div className="space-y-2">
+                  <div className="relative h-3 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
+                    <div
+                      className="h-full bg-gradient-to-r from-health via-health to-health/80 transition-all duration-1000 shadow-[0_0_15px_rgba(74,222,128,0.5)]"
+                      style={{ 
+                        width: `${dashboardData.totalGoals > 0 
+                          ? ((dashboardData.goalsCompleted / dashboardData.totalGoals) * 100)
+                          : 0}%` 
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-primary/50 uppercase tracking-wider font-rajdhani">
+                    <span>{dashboardData.goalsCompleted} complete</span>
+                    <span>{dashboardData.totalGoals - dashboardData.goalsCompleted} remaining</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -433,36 +456,41 @@ export default function Home() {
 
           {/* Steps Completed Gauge */}
           <div className="relative group">
-            <div className="absolute inset-0 bg-primary/5 blur-xl group-hover:blur-2xl transition-all" />
-            <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-6 double-border scan-line">
-              <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-4">Steps Completed</div>
-              <div className="text-center mb-4">
-                <div className="text-5xl font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)]">
-                  {dashboardData.totalStepsCompleted}
-                  <span className="text-2xl text-primary/50 ml-2">/ {dashboardData.totalSteps}</span>
-                </div>
-                <div className="text-xl font-semibold text-accent mt-2 font-orbitron">
-                  {dashboardData.totalSteps > 0 
-                    ? ((dashboardData.totalStepsCompleted / dashboardData.totalSteps) * 100).toFixed(0)
-                    : 0}%
-                </div>
+            <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+            <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-6 scan-line overflow-hidden">
+              <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
               </div>
-              <div className="space-y-2">
-                <div className="relative h-3 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
-                  <div
-                    className="h-full bg-gradient-to-r from-primary via-accent to-primary transition-all duration-1000 shadow-[0_0_15px_rgba(91,180,255,0.5)]"
-                    style={{ 
-                      width: `${dashboardData.totalSteps > 0 
-                        ? ((dashboardData.totalStepsCompleted / dashboardData.totalSteps) * 100)
-                        : 0}%` 
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
+              <div className="relative z-10">
+                <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-4">Steps Completed</div>
+                <div className="text-center mb-4">
+                  <div className="text-5xl font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)]">
+                    {dashboardData.totalStepsCompleted}
+                    <span className="text-2xl text-primary/50 ml-2">/ {dashboardData.totalSteps}</span>
+                  </div>
+                  <div className="text-xl font-semibold text-accent mt-2 font-orbitron">
+                    {dashboardData.totalSteps > 0 
+                      ? ((dashboardData.totalStepsCompleted / dashboardData.totalSteps) * 100).toFixed(0)
+                      : 0}%
                   </div>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-primary/50 uppercase tracking-wider font-rajdhani">
-                  <span>{dashboardData.totalStepsCompleted} complete</span>
-                  <span>{dashboardData.totalSteps - dashboardData.totalStepsCompleted} remaining</span>
+                <div className="space-y-2">
+                  <div className="relative h-3 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
+                    <div
+                      className="h-full bg-gradient-to-r from-primary via-accent to-primary transition-all duration-1000 shadow-[0_0_15px_rgba(91,180,255,0.5)]"
+                      style={{ 
+                        width: `${dashboardData.totalSteps > 0 
+                          ? ((dashboardData.totalStepsCompleted / dashboardData.totalSteps) * 100)
+                          : 0}%` 
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-primary/50 uppercase tracking-wider font-rajdhani">
+                    <span>{dashboardData.totalStepsCompleted} complete</span>
+                    <span>{dashboardData.totalSteps - dashboardData.totalStepsCompleted} remaining</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -471,77 +499,102 @@ export default function Home() {
 
         {/* Goals Status Summary - Dark HUD Panel */}
         <div className="animate-fade-in relative group">
-          <div className="absolute inset-0 bg-primary/5 blur-2xl" />
-          <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg double-border">
-            <div className="p-6 border-b border-primary/20">
-              <h3 className="text-sm font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary">
-                Goals Status Summary
-              </h3>
-              <p className="text-xs text-primary/50 font-rajdhani mt-1">Distribution by current status</p>
+          <div className="absolute inset-0 bg-primary/5 rounded-lg blur-2xl" />
+          <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
             </div>
-            <div className="p-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {/* Not Started */}
-                <div className="text-center p-4 rounded-lg bg-card/30 backdrop-blur border border-primary/20 hover:border-primary/40 transition-all corner-brackets group/stat">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <div className="h-2 w-2 rounded-full bg-muted-foreground shadow-[0_0_8px_rgba(156,163,175,0.5)]"></div>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider font-orbitron">Not Started</span>
+            <div className="relative z-10">
+              <div className="p-6 border-b border-primary/20">
+                <h3 className="text-sm font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary">
+                  Goals Status Summary
+                </h3>
+                <p className="text-xs text-primary/50 font-rajdhani mt-1">Distribution by current status</p>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {/* Not Started */}
+                  <div className="relative text-center p-4 rounded-lg bg-card/30 backdrop-blur border border-primary/20 hover:border-primary/40 transition-all overflow-hidden group/stat">
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <div className="h-2 w-2 rounded-full bg-muted-foreground shadow-[0_0_8px_rgba(156,163,175,0.5)]"></div>
+                        <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider font-orbitron">Not Started</span>
+                      </div>
+                      <div className="text-4xl font-bold text-muted-foreground font-orbitron drop-shadow-[0_0_10px_rgba(156,163,175,0.3)]">
+                        {dashboardData.statusCounts.not_started}
+                      </div>
+                      <div className="text-xs text-muted-foreground/70 mt-2 font-rajdhani">
+                        {dashboardData.totalGoals > 0 
+                          ? ((dashboardData.statusCounts.not_started / dashboardData.totalGoals) * 100).toFixed(0)
+                          : 0}%
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-4xl font-bold text-muted-foreground font-orbitron drop-shadow-[0_0_10px_rgba(156,163,175,0.3)]">
-                    {dashboardData.statusCounts.not_started}
-                  </div>
-                  <div className="text-xs text-muted-foreground/70 mt-2 font-rajdhani">
-                    {dashboardData.totalGoals > 0 
-                      ? ((dashboardData.statusCounts.not_started / dashboardData.totalGoals) * 100).toFixed(0)
-                      : 0}%
-                  </div>
-                </div>
 
-                {/* In Progress */}
-                <div className="text-center p-4 rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all corner-brackets group/stat">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(91,180,255,0.6)] animate-glow-pulse"></div>
-                    <span className="text-[10px] font-medium text-primary uppercase tracking-wider font-orbitron">In Progress</span>
+                  {/* In Progress */}
+                  <div className="relative text-center p-4 rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all overflow-hidden group/stat">
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(91,180,255,0.6)] animate-glow-pulse"></div>
+                        <span className="text-[10px] font-medium text-primary uppercase tracking-wider font-orbitron">In Progress</span>
+                      </div>
+                      <div className="text-4xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+                        {dashboardData.statusCounts.in_progress}
+                      </div>
+                      <div className="text-xs text-primary/70 mt-2 font-rajdhani">
+                        {dashboardData.totalGoals > 0 
+                          ? ((dashboardData.statusCounts.in_progress / dashboardData.totalGoals) * 100).toFixed(0)
+                          : 0}%
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-4xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                    {dashboardData.statusCounts.in_progress}
-                  </div>
-                  <div className="text-xs text-primary/70 mt-2 font-rajdhani">
-                    {dashboardData.totalGoals > 0 
-                      ? ((dashboardData.statusCounts.in_progress / dashboardData.totalGoals) * 100).toFixed(0)
-                      : 0}%
-                  </div>
-                </div>
 
-                {/* Validated */}
-                <div className="text-center p-4 rounded-lg bg-accent/5 backdrop-blur border border-accent/30 hover:border-accent/50 transition-all corner-brackets group/stat">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <div className="h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_rgba(122,191,255,0.6)]"></div>
-                    <span className="text-[10px] font-medium text-accent uppercase tracking-wider font-orbitron">Validated</span>
+                  {/* Validated */}
+                  <div className="relative text-center p-4 rounded-lg bg-accent/5 backdrop-blur border border-accent/30 hover:border-accent/50 transition-all overflow-hidden group/stat">
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <div className="h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_rgba(122,191,255,0.6)]"></div>
+                        <span className="text-[10px] font-medium text-accent uppercase tracking-wider font-orbitron">Validated</span>
+                      </div>
+                      <div className="text-4xl font-bold text-accent font-orbitron drop-shadow-[0_0_10px_rgba(122,191,255,0.5)]">
+                        {dashboardData.statusCounts.validated}
+                      </div>
+                      <div className="text-xs text-accent/70 mt-2 font-rajdhani">
+                        {dashboardData.totalGoals > 0 
+                          ? ((dashboardData.statusCounts.validated / dashboardData.totalGoals) * 100).toFixed(0)
+                          : 0}%
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-4xl font-bold text-accent font-orbitron drop-shadow-[0_0_10px_rgba(122,191,255,0.5)]">
-                    {dashboardData.statusCounts.validated}
-                  </div>
-                  <div className="text-xs text-accent/70 mt-2 font-rajdhani">
-                    {dashboardData.totalGoals > 0 
-                      ? ((dashboardData.statusCounts.validated / dashboardData.totalGoals) * 100).toFixed(0)
-                      : 0}%
-                  </div>
-                </div>
 
-                {/* Completed */}
-                <div className="text-center p-4 rounded-lg bg-health/5 backdrop-blur border border-health/30 hover:border-health/50 transition-all corner-brackets group/stat">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    <div className="h-2 w-2 rounded-full bg-health shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div>
-                    <span className="text-[10px] font-medium text-health uppercase tracking-wider font-orbitron">Completed</span>
-                  </div>
-                  <div className="text-4xl font-bold text-health font-orbitron drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]">
-                    {dashboardData.statusCounts.fully_completed}
-                  </div>
-                  <div className="text-xs text-health/70 mt-2 font-rajdhani">
-                    {dashboardData.totalGoals > 0 
-                      ? ((dashboardData.statusCounts.fully_completed / dashboardData.totalGoals) * 100).toFixed(0)
-                      : 0}%
+                  {/* Completed */}
+                  <div className="relative text-center p-4 rounded-lg bg-health/5 backdrop-blur border border-health/30 hover:border-health/50 transition-all overflow-hidden group/stat">
+                    <div className="absolute inset-0 pointer-events-none">
+                      <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
+                    </div>
+                    <div className="relative z-10">
+                      <div className="flex items-center justify-center gap-2 mb-3">
+                        <div className="h-2 w-2 rounded-full bg-health shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div>
+                        <span className="text-[10px] font-medium text-health uppercase tracking-wider font-orbitron">Completed</span>
+                      </div>
+                      <div className="text-4xl font-bold text-health font-orbitron drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]">
+                        {dashboardData.statusCounts.fully_completed}
+                      </div>
+                      <div className="text-xs text-health/70 mt-2 font-rajdhani">
+                        {dashboardData.totalGoals > 0 
+                          ? ((dashboardData.statusCounts.fully_completed / dashboardData.totalGoals) * 100).toFixed(0)
+                          : 0}%
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
