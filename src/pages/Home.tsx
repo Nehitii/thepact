@@ -610,77 +610,109 @@ export default function Home() {
           customDifficultyName={customDifficultyName}
           customDifficultyColor={customDifficultyColor}
         />
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Focus Goals
-                </CardTitle>
-                <CardDescription>Your starred priorities</CardDescription>
-              </div>
-              <Button size="sm" onClick={() => navigate("/goals")}>
-                View All
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {goals.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No focus goals yet</p>
-                <p className="text-sm mt-2">Star goals in the Goals tab to see them here</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {goals.map((goal) => (
-                  <button
-                    key={goal.id}
-                    onClick={() => navigate(`/goals/${goal.id}`)}
-                    className="w-full text-left p-4 rounded-lg border border-border hover:border-primary/50 transition-all hover:shadow-md"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h3 className="font-medium mb-1">{goal.name}</h3>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant="secondary" className="text-xs">
-                            {goal.type}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {goal.difficulty}
-                          </Badge>
-                          <span className="text-sm text-muted-foreground">
-                            {goal.validated_steps} / {goal.total_steps} steps
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex-shrink-0">
-                        <div className="h-12 w-12 rounded-full border-2 border-primary/20 flex items-center justify-center">
-                          <span className="text-sm font-bold text-primary">
-                            {goal.total_steps > 0
-                              ? Math.round((goal.validated_steps / goal.total_steps) * 100)
-                              : 0}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 gap-4">
-          <Button
-            variant="outline"
-            className="h-auto py-6 flex flex-col gap-2"
+        {/* Focus Goals - Dark HUD Panel */}
+        <div className="animate-fade-in relative group">
+          <div className="absolute inset-0 bg-primary/5 rounded-lg blur-2xl" />
+          <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden">
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
+            </div>
+            <div className="relative z-10">
+              <div className="p-6 border-b border-primary/20">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
+                      <TrendingUp className="h-5 w-5 text-primary relative z-10 animate-glow-pulse" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary">
+                        Focus Goals
+                      </h3>
+                      <p className="text-xs text-primary/50 font-rajdhani mt-1">Your starred priorities</p>
+                    </div>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    onClick={() => navigate("/goals")}
+                    className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 font-orbitron text-xs uppercase tracking-wider"
+                  >
+                    View All
+                  </Button>
+                </div>
+              </div>
+              <div className="p-6">
+                {goals.length === 0 ? (
+                  <div className="text-center py-8">
+                    <p className="text-primary/60 font-rajdhani">No focus goals yet</p>
+                    <p className="text-xs text-primary/40 mt-2 font-rajdhani">Star goals in the Goals tab to see them here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {goals.map((goal) => (
+                      <button
+                        key={goal.id}
+                        onClick={() => navigate(`/goals/${goal.id}`)}
+                        className="w-full text-left p-4 rounded-lg bg-card/30 backdrop-blur border border-primary/20 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(91,180,255,0.2)] group/goal overflow-hidden relative"
+                      >
+                        <div className="absolute inset-0 pointer-events-none">
+                          <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
+                        </div>
+                        <div className="relative z-10 flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h3 className="font-medium mb-2 text-primary font-orbitron">{goal.name}</h3>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-primary/10 text-primary border border-primary/20">
+                                {goal.type}
+                              </span>
+                              <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-accent/10 text-accent border border-accent/20">
+                                {goal.difficulty}
+                              </span>
+                              <span className="text-xs text-primary/50 font-rajdhani">
+                                {goal.validated_steps} / {goal.total_steps} steps
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <div className="h-12 w-12 rounded-full border-2 border-primary/30 flex items-center justify-center bg-primary/5">
+                              <span className="text-sm font-bold text-primary font-orbitron drop-shadow-[0_0_5px_rgba(91,180,255,0.5)]">
+                                {goal.total_steps > 0
+                                  ? Math.round((goal.validated_steps / goal.total_steps) * 100)
+                                  : 0}%
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Finance Quick Action - Dark HUD Panel */}
+        <div className="animate-fade-in relative group">
+          <div className="absolute inset-0 bg-finance/5 rounded-lg blur-2xl" />
+          <button
             onClick={() => navigate("/finance")}
+            className="relative w-full bg-card/20 backdrop-blur-xl border-2 border-finance/30 rounded-lg overflow-hidden hover:border-finance/50 transition-all hover:shadow-[0_0_20px_rgba(72,149,239,0.3)] group/finance"
           >
-            <span className="text-2xl">💰</span>
-            <span className="text-sm font-medium">Track Finance</span>
-          </Button>
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-finance/20 rounded-[6px]" />
+            </div>
+            <div className="relative z-10 p-6 flex items-center justify-center gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-finance/20 blur-md rounded-full" />
+                <span className="text-4xl relative z-10">💰</span>
+              </div>
+              <span className="text-lg font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-finance via-finance to-finance">
+                Track Finance
+              </span>
+            </div>
+          </button>
         </div>
 
         {/* Achievements Widget */}
