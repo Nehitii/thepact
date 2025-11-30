@@ -613,7 +613,7 @@ export default function Home() {
 
         {/* Focus Goals - Dark HUD Panel */}
         <div className="animate-fade-in relative group">
-          <div className="absolute inset-0 bg-primary/5 rounded-lg blur-2xl" />
+          <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
           <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden">
             <div className="absolute inset-0 pointer-events-none">
               <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
@@ -645,7 +645,11 @@ export default function Home() {
               <div className="p-6">
                 {goals.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-primary/60 font-rajdhani">No focus goals yet</p>
+                    <div className="relative inline-block">
+                      <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
+                      <TrendingUp className="w-12 h-12 mx-auto mb-3 text-primary/40 relative z-10" />
+                    </div>
+                    <p className="text-sm text-primary/60 font-rajdhani">No focus goals yet</p>
                     <p className="text-xs text-primary/40 mt-2 font-rajdhani">Star goals in the Goals tab to see them here</p>
                   </div>
                 ) : (
@@ -654,29 +658,30 @@ export default function Home() {
                       <button
                         key={goal.id}
                         onClick={() => navigate(`/goals/${goal.id}`)}
-                        className="w-full text-left p-4 rounded-lg bg-card/30 backdrop-blur border border-primary/20 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(91,180,255,0.2)] group/goal overflow-hidden relative"
+                        className="w-full text-left p-4 rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_rgba(91,180,255,0.2)] group/goal overflow-hidden relative"
                       >
                         <div className="absolute inset-0 pointer-events-none">
                           <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
                         </div>
                         <div className="relative z-10 flex items-start justify-between gap-4">
                           <div className="flex-1">
-                            <h3 className="font-medium mb-2 text-primary font-orbitron">{goal.name}</h3>
+                            <h3 className="font-semibold mb-2 text-primary font-orbitron drop-shadow-[0_0_5px_rgba(91,180,255,0.3)]">{goal.name}</h3>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-primary/10 text-primary border border-primary/20">
+                              <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-primary/10 text-primary border border-primary/30">
                                 {goal.type}
                               </span>
-                              <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-accent/10 text-accent border border-accent/20">
+                              <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-accent/10 text-accent border border-accent/30">
                                 {goal.difficulty}
                               </span>
-                              <span className="text-xs text-primary/50 font-rajdhani">
+                              <span className="text-xs text-primary/70 font-rajdhani">
                                 {goal.validated_steps} / {goal.total_steps} steps
                               </span>
                             </div>
                           </div>
                           <div className="flex-shrink-0">
-                            <div className="h-12 w-12 rounded-full border-2 border-primary/30 flex items-center justify-center bg-primary/5">
-                              <span className="text-sm font-bold text-primary font-orbitron drop-shadow-[0_0_5px_rgba(91,180,255,0.5)]">
+                            <div className="relative h-12 w-12 rounded-full border-2 border-primary/30 flex items-center justify-center bg-primary/5">
+                              <div className="absolute inset-0 bg-primary/10 rounded-full blur-sm" />
+                              <span className="text-sm font-bold text-primary font-orbitron drop-shadow-[0_0_5px_rgba(91,180,255,0.5)] relative z-10">
                                 {goal.total_steps > 0
                                   ? Math.round((goal.validated_steps / goal.total_steps) * 100)
                                   : 0}%
