@@ -302,10 +302,13 @@ export type Database = {
       }
       pacts: {
         Row: {
+          checkin_streak: number | null
+          checkin_total_count: number | null
           color: string | null
           created_at: string | null
           global_progress: number | null
           id: string
+          last_checkin_date: string | null
           mantra: string
           name: string
           points: number | null
@@ -316,10 +319,13 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          checkin_streak?: number | null
+          checkin_total_count?: number | null
           color?: string | null
           created_at?: string | null
           global_progress?: number | null
           id?: string
+          last_checkin_date?: string | null
           mantra: string
           name: string
           points?: number | null
@@ -330,10 +336,13 @@ export type Database = {
           user_id: string
         }
         Update: {
+          checkin_streak?: number | null
+          checkin_total_count?: number | null
           color?: string | null
           created_at?: string | null
           global_progress?: number | null
           id?: string
+          last_checkin_date?: string | null
           mantra?: string
           name?: string
           points?: number | null
