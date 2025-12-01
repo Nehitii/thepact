@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Flame, Check } from 'lucide-react';
+import { Flame, Check, Zap } from 'lucide-react';
 import { toast } from 'sonner';
 import { useParticleEffect } from './ParticleEffect';
+import { Button } from './ui/button';
 
 interface PactData {
   id: string;
@@ -14,6 +15,15 @@ interface PactData {
 
 const HOLD_DURATION = 20000; // 20 seconds in milliseconds
 
+// Animation states
+enum AnimationState {
+  IDLE = 0,
+  PRESS_START = 1,
+  CHARGING = 2,
+  COMPLETION = 3,
+  LOCKED = 4
+}
+
 export const PactCheckIn = () => {
   const { user } = useAuth();
   const [pactData, setPactData] = useState<PactData | null>(null);
@@ -21,6 +31,8 @@ export const PactCheckIn = () => {
   const [progress, setProgress] = useState(0);
   const [completedToday, setCompletedToday] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [animState, setAnimState] = useState<AnimationState>(AnimationState.IDLE);
+  const [isExploding, setIsExploding] = useState(false);
   const holdStartRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
   const { trigger, ParticleEffects } = useParticleEffect();
@@ -67,7 +79,16 @@ export const PactCheckIn = () => {
 
     e.preventDefault();
     setIsHolding(true);
+    setAnimState(AnimationState.PRESS_START);
     holdStartRef.current = Date.now();
+    
+    // Small delay before starting charge animation
+    setTimeout(() => {
+      if (isHolding) {
+        setAnimState(AnimationState.CHARGING);
+      }
+    }, 100);
+    
     animateProgress();
   };
 
@@ -75,14 +96,16 @@ export const PactCheckIn = () => {
     if (!isHolding) return;
 
     setIsHolding(false);
+    setAnimState(AnimationState.IDLE);
     cancelAnimationFrame(animationFrameRef.current);
 
-    // If not completed, shake and reset
+    // If not completed, show energy collapse
     if (progress < 100) {
       const button = document.getElementById('energy-core');
-      button?.classList.add('animate-shake');
+      button?.classList.add('animate-shake', 'energy-collapse');
+      toast.error('You released too early. Try again.');
       setTimeout(() => {
-        button?.classList.remove('animate-shake');
+        button?.classList.remove('animate-shake', 'energy-collapse');
       }, 500);
       setProgress(0);
     }
@@ -100,11 +123,44 @@ export const PactCheckIn = () => {
     }
   };
 
-  const completeCheckIn = async () => {
+  const triggerExplosion = async (saveData: boolean = true) => {
+    setAnimState(AnimationState.COMPLETION);
+    setIsExploding(true);
+    setIsHolding(false);
+
+    // Trigger particle effect at the center of the button
+    const button = document.getElementById('energy-core');
+    if (button) {
+      const rect = button.getBoundingClientRect();
+      trigger({ clientX: rect.left + rect.width / 2, clientY: rect.top + rect.height / 2 } as any);
+    }
+
+    // Screen shake
+    document.body.classList.add('screen-shake');
+    
+    if (saveData && pactData) {
+      await saveCheckInData();
+    }
+
+    // Wait for explosion animation
+    setTimeout(() => {
+      setIsExploding(false);
+      document.body.classList.remove('screen-shake');
+      if (saveData) {
+        setAnimState(AnimationState.LOCKED);
+        setCompletedToday(true);
+        toast.success('Pact fueled for today');
+      } else {
+        setAnimState(AnimationState.IDLE);
+        setProgress(0);
+      }
+    }, 2000);
+  };
+
+  const saveCheckInData = async () => {
     if (!pactData || isCompleting) return;
 
     setIsCompleting(true);
-    setIsHolding(false);
 
     // Calculate streak
     let newStreak = 1;
@@ -138,16 +194,25 @@ export const PactCheckIn = () => {
       return;
     }
 
-    // Success animation
-    setCompletedToday(true);
-    toast.success('Energy collected — Your Pact grows stronger.');
-    
     // Refresh data
     setTimeout(() => {
       fetchPactData();
       setIsCompleting(false);
     }, 1000);
   };
+
+  const completeCheckIn = async () => {
+    await triggerExplosion(true);
+  };
+
+  useEffect(() => {
+    // Update animation state based on completion
+    if (completedToday && !isExploding) {
+      setAnimState(AnimationState.LOCKED);
+    } else if (!completedToday && !isHolding && !isExploding) {
+      setAnimState(AnimationState.IDLE);
+    }
+  }, [completedToday, isHolding, isExploding]);
 
   useEffect(() => {
     return () => {
@@ -162,12 +227,25 @@ export const PactCheckIn = () => {
   const circumference = 2 * Math.PI * 60;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
+  // Calculate visual effects based on progress
+  const flameScale = 1 + (progress / 100) * 0.3;
+  const glowIntensity = 0.3 + (progress / 100) * 0.7;
+  const shouldShowSubFlames = progress > 50;
+  const shouldShowHalo = progress > 70;
+
   return (
     <>
       <ParticleEffects />
       <div className="animate-fade-in relative group">
-        <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
-        <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden">
+        {/* Outer glow */}
+        <div className={`absolute inset-0 bg-primary/5 rounded-lg blur-xl transition-all duration-500 ${
+          shouldShowHalo ? 'scale-110 bg-primary/20 animate-pulse' : ''
+        }`} />
+        
+        {/* Glassmorphism container */}
+        <div className={`relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden transition-all duration-300 ${
+          isExploding ? 'scale-105' : ''
+        }`}>
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
           </div>
@@ -195,6 +273,14 @@ export const PactCheckIn = () => {
             <div className="flex flex-col items-center">
               {/* Energy Core Button */}
               <div className="relative mb-6">
+                {/* Shockwave effect during explosion */}
+                {isExploding && (
+                  <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute inset-0 rounded-full border-4 border-primary animate-ping" style={{ animationDuration: '1s' }} />
+                    <div className="absolute inset-0 rounded-full bg-primary/30 animate-ping" style={{ animationDuration: '0.8s', animationDelay: '0.2s' }} />
+                  </div>
+                )}
+
                 <button
                   id="energy-core"
                   onMouseDown={startHolding}
@@ -206,12 +292,17 @@ export const PactCheckIn = () => {
                   className={`relative w-40 h-40 rounded-full transition-all duration-300 ${
                     completedToday
                       ? 'bg-green-500/20 border-green-500/50 cursor-not-allowed'
+                      : isExploding
+                      ? 'bg-primary/50 border-primary shadow-[0_0_80px_rgba(91,180,255,1)] scale-110'
                       : isHolding
                       ? 'bg-primary/30 border-primary shadow-[0_0_40px_rgba(91,180,255,0.6)] scale-105'
                       : 'bg-primary/10 border-primary/50 shadow-[0_0_20px_rgba(91,180,255,0.3)] hover:bg-primary/20 hover:scale-102 cursor-pointer'
                   } border-4 flex items-center justify-center group/core`}
                   style={{
-                    animation: isHolding ? 'pulse 1s ease-in-out infinite' : 'none',
+                    animation: animState === AnimationState.IDLE && !completedToday ? 'breathe 3s ease-in-out infinite' : 
+                               animState === AnimationState.CHARGING ? 'pulse 1s ease-in-out infinite' : 
+                               'none',
+                    transform: `scale(${isExploding ? 1.1 : flameScale})`,
                   }}
                 >
                   {/* Progress Ring */}
@@ -243,12 +334,37 @@ export const PactCheckIn = () => {
                   )}
 
                   {/* Inner Glow */}
-                  <div className={`absolute inset-6 rounded-full ${
+                  <div className={`absolute inset-6 rounded-full blur-xl transition-all duration-500 ${
                     completedToday ? 'bg-green-500/10' : 'bg-primary/10'
-                  } blur-xl`} />
+                  }`} 
+                  style={{
+                    opacity: glowIntensity,
+                  }} />
+
+                  {/* Sub-flames at 50% */}
+                  {shouldShowSubFlames && !completedToday && (
+                    <>
+                      {[0, 120, 240].map((rotation, i) => (
+                        <Flame
+                          key={i}
+                          className="absolute w-8 h-8 text-primary/60"
+                          style={{
+                            transform: `rotate(${rotation}deg) translateY(-40px) rotate(-${rotation}deg)`,
+                            animation: 'orbit 3s linear infinite',
+                            animationDelay: `${i * 1}s`,
+                            filter: 'drop-shadow(0 0 8px rgba(91, 180, 255, 0.6))',
+                          }}
+                        />
+                      ))}
+                    </>
+                  )}
 
                   {/* Icon */}
-                  {completedToday ? (
+                  {isExploding ? (
+                    <Zap className="w-20 h-20 text-primary relative z-10 animate-spin" style={{
+                      filter: 'drop-shadow(0 0 30px rgba(91, 180, 255, 1))',
+                    }} />
+                  ) : completedToday ? (
                     <Check className="w-16 h-16 text-green-500 relative z-10 drop-shadow-[0_0_10px_rgba(34,197,94,0.7)]" />
                   ) : (
                     <Flame
@@ -256,7 +372,7 @@ export const PactCheckIn = () => {
                         isHolding ? 'text-primary scale-110' : 'text-primary/70'
                       }`}
                       style={{
-                        filter: isHolding ? 'drop-shadow(0 0 15px rgba(91, 180, 255, 0.8))' : 'drop-shadow(0 0 8px rgba(91, 180, 255, 0.4))',
+                        filter: isHolding ? `drop-shadow(0 0 ${15 * glowIntensity}px rgba(91, 180, 255, ${0.8 * glowIntensity}))` : 'drop-shadow(0 0 8px rgba(91, 180, 255, 0.4))',
                       }}
                     />
                   )}
@@ -295,14 +411,39 @@ export const PactCheckIn = () => {
               {/* Status Text */}
               <div className="text-center mt-8 mb-4">
                 {completedToday ? (
-                  <p className="text-primary/80 font-rajdhani text-lg">
-                    Your ritual for today is complete.
+                  <>
+                    <p className="text-primary/80 font-rajdhani text-lg mb-2">
+                      Pact fueled for today
+                    </p>
+                    <p className="text-primary/50 font-rajdhani text-sm">
+                      Next reset: after midnight
+                    </p>
+                  </>
+                ) : isHolding ? (
+                  <p className="text-primary font-rajdhani text-lg animate-pulse">
+                    Channeling energy...
                   </p>
                 ) : (
                   <p className="text-primary/70 font-rajdhani text-lg">
-                    Hold to channel your energy
+                    Press and hold to fuel your Pact
                   </p>
                 )}
+              </div>
+
+              {/* Dev Test Button */}
+              <div className="text-center mb-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => triggerExplosion(false)}
+                  disabled={isExploding}
+                  className="font-rajdhani text-xs"
+                >
+                  Test Animation (dev)
+                </Button>
+                <p className="text-primary/40 text-xs mt-1 font-rajdhani">
+                  This will not affect your real streak
+                </p>
               </div>
 
               {/* Stats Footer */}
@@ -357,8 +498,48 @@ export const PactCheckIn = () => {
           75% { transform: translateX(5px); }
         }
 
+        @keyframes breathe {
+          0%, 100% { 
+            transform: scale(1);
+            opacity: 0.7;
+          }
+          50% { 
+            transform: scale(1.05);
+            opacity: 1;
+          }
+        }
+
+        @keyframes orbit {
+          from {
+            transform: rotate(0deg) translateY(-40px);
+          }
+          to {
+            transform: rotate(360deg) translateY(-40px);
+          }
+        }
+
         .animate-shake {
           animation: shake 0.3s ease-in-out;
+        }
+
+        .energy-collapse {
+          animation: energyCollapse 0.5s ease-out;
+        }
+
+        @keyframes energyCollapse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(0.9); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+
+        .screen-shake {
+          animation: screenShake 0.5s ease-in-out;
+        }
+
+        @keyframes screenShake {
+          0%, 100% { transform: translate(0, 0); }
+          10%, 30%, 50%, 70%, 90% { transform: translate(-2px, 2px); }
+          20%, 40%, 60%, 80% { transform: translate(2px, -2px); }
         }
       `}</style>
     </>
