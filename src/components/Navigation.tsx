@@ -1,8 +1,9 @@
 import { NavLink } from "react-router-dom";
-import { Home, Target, DollarSign, User } from "lucide-react";
+import { Home, Target, DollarSign, User, Flame } from "lucide-react";
 
 const navItems = [
   { to: "/", icon: Home, label: "Home" },
+  { to: "/the-call", icon: Flame, label: "The Call" },
   { to: "/goals", icon: Target, label: "Goals" },
   { to: "/finance", icon: DollarSign, label: "Finance" },
   { to: "/profile", icon: User, label: "Profile" },

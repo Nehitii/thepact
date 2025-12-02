@@ -6,7 +6,6 @@ import { supabase } from "@/lib/supabase";
 import { PactVisual } from "@/components/PactVisual";
 import { PactDashboard } from "@/components/PactDashboard";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
-import { PactCheckIn } from "@/components/PactCheckIn";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -611,9 +610,6 @@ export default function Home() {
           customDifficultyName={customDifficultyName}
           customDifficultyColor={customDifficultyColor}
         />
-
-        {/* Pact Check-In */}
-        <PactCheckIn />
 
         {/* Focus Goals - Dark HUD Panel */}
         <div className="animate-fade-in relative group">

@@ -9,6 +9,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Home from "./pages/Home";
+import TheCall from "./pages/TheCall";
 import Goals from "./pages/Goals";
 import NewGoal from "./pages/NewGoal";
 import GoalDetail from "./pages/GoalDetail";
@@ -35,6 +36,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/the-call"
+                element={
+                  <ProtectedRoute>
+                    <TheCall />
                   </ProtectedRoute>
                 }
               />
