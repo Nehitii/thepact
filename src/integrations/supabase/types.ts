@@ -197,6 +197,9 @@ export type Database = {
           created_at: string | null
           difficulty: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost: number | null
+          goal_type: string
+          habit_checks: boolean[] | null
+          habit_duration_days: number | null
           id: string
           image_url: string | null
           is_focus: boolean | null
@@ -216,6 +219,9 @@ export type Database = {
           created_at?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost?: number | null
+          goal_type?: string
+          habit_checks?: boolean[] | null
+          habit_duration_days?: number | null
           id?: string
           image_url?: string | null
           is_focus?: boolean | null
@@ -235,6 +241,9 @@ export type Database = {
           created_at?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost?: number | null
+          goal_type?: string
+          habit_checks?: boolean[] | null
+          habit_duration_days?: number | null
           id?: string
           image_url?: string | null
           is_focus?: boolean | null

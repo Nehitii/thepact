@@ -34,6 +34,9 @@ interface Goal {
   completion_date?: string;
   image_url?: string;
   is_focus?: boolean;
+  goal_type?: string;
+  habit_duration_days?: number;
+  habit_checks?: boolean[];
 }
 interface Step {
   id: string;
@@ -173,6 +176,69 @@ export default function GoalDetail() {
       }
     }
   };
+
+  // Handle habit check toggle
+  const handleToggleHabitCheck = async (dayIndex: number) => {
+    if (!goal || !goal.habit_checks || !user) return;
+
+    const newChecks = [...goal.habit_checks];
+    newChecks[dayIndex] = !newChecks[dayIndex];
+
+    // Trigger particle effect
+    if (newChecks[dayIndex]) {
+      const difficultyColor = getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor);
+      const mockEvent = {
+        clientX: window.innerWidth / 2,
+        clientY: window.innerHeight / 2,
+        currentTarget: document.body
+      } as unknown as React.MouseEvent;
+      triggerParticles(mockEvent, difficultyColor);
+    }
+
+    const completedCount = newChecks.filter(Boolean).length;
+    const isNowComplete = completedCount === goal.habit_duration_days;
+
+    const { error } = await supabase
+      .from("goals")
+      .update({
+        habit_checks: newChecks,
+        validated_steps: completedCount,
+        status: isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started",
+        completion_date: isNowComplete ? new Date().toISOString() : null,
+      })
+      .eq("id", goal.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setGoal({
+      ...goal,
+      habit_checks: newChecks,
+      validated_steps: completedCount,
+      status: isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started",
+    });
+
+    if (newChecks[dayIndex]) {
+      if (user) {
+        setTimeout(() => {
+          trackStepCompleted(user.id);
+        }, 0);
+      }
+      toast({
+        title: `Day ${dayIndex + 1} Complete!`,
+        description: isNowComplete 
+          ? "Congratulations! Habit completed!" 
+          : `${completedCount}/${goal.habit_duration_days} days done`
+      });
+    }
+  };
+
   const handleFullyComplete = async () => {
     if (!goal || !user) return;
     const {
@@ -289,9 +355,14 @@ export default function GoalDetail() {
       </div>;
   }
 
-  // Calculate actual completion ratio from steps
-  const completedStepsCount = steps.filter(s => s.status === "completed").length;
-  const totalStepsCount = steps.length || 1; // Avoid division by zero
+  // Calculate actual completion ratio from steps or habit checks
+  const isHabitGoal = goal.goal_type === "habit";
+  const completedStepsCount = isHabitGoal 
+    ? (goal.habit_checks?.filter(Boolean).length || 0)
+    : steps.filter(s => s.status === "completed").length;
+  const totalStepsCount = isHabitGoal 
+    ? (goal.habit_duration_days || 1)
+    : (steps.length || 1); // Avoid division by zero
   const progress = completedStepsCount / totalStepsCount * 100;
 
   // Get display label for difficulty
@@ -634,30 +705,68 @@ export default function GoalDetail() {
         </Card>
         </div>
 
-        {/* Steps */}
-        <Card>
-          <CardHeader className="text-primary bg-secondary-foreground">
-            <CardTitle>Steps</CardTitle>
-          </CardHeader>
-          <CardContent className="text-primary bg-secondary-foreground">
-            <div className="space-y-2">
-              {steps.map(step => <div key={step.id} className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(var(--primary)/0.2)] transition-all duration-300 cursor-pointer group relative" onClick={() => navigate(`/step/${step.id}`)}>
-                  <div onClick={e => e.stopPropagation()} className="relative z-20">
-                    <Checkbox id={step.id} checked={step.status === "completed"} onCheckedChange={() => handleToggleStep(step.id, step.status)} />
+        {/* Steps or Habit Tracking */}
+        {isHabitGoal ? (
+          <Card>
+            <CardHeader className="text-primary bg-secondary-foreground">
+              <CardTitle>Habit Tracking ({completedStepsCount}/{goal.habit_duration_days} days)</CardTitle>
+            </CardHeader>
+            <CardContent className="text-primary bg-secondary-foreground">
+              <div className="grid grid-cols-7 gap-2">
+                {goal.habit_checks?.map((checked, index) => (
+                  <div
+                    key={index}
+                    onClick={() => handleToggleHabitCheck(index)}
+                    className={`relative flex flex-col items-center justify-center p-2 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                      checked
+                        ? "border-primary bg-primary/20 shadow-[0_0_15px_rgba(91,180,255,0.3)]"
+                        : "border-primary/20 bg-card/50 hover:border-primary/40 hover:bg-card/80"
+                    }`}
+                  >
+                    <span className="text-xs text-muted-foreground mb-1">Day</span>
+                    <span className={`text-sm font-bold ${checked ? "text-primary" : ""}`} style={{
+                      color: checked ? difficultyColor : undefined
+                    }}>
+                      {index + 1}
+                    </span>
+                    {checked && (
+                      <Check className="absolute top-1 right-1 h-3 w-3" style={{ color: difficultyColor }} />
+                    )}
                   </div>
-                  <label htmlFor={step.id} className={`flex-1 cursor-pointer text-sm ${step.status === "completed" ? "font-semibold" : ""}`} style={{
-                  color: step.status === "completed" ? difficultyColor : undefined
-                }}>
-                    {step.title}
-                  </label>
-                  {step.status === "completed" && <Check className="h-4 w-4" style={{
-                  color: difficultyColor
-                }} />}
-                  <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                </div>)}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                Tap a day to mark it as complete
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader className="text-primary bg-secondary-foreground">
+              <CardTitle>Steps</CardTitle>
+            </CardHeader>
+            <CardContent className="text-primary bg-secondary-foreground">
+              <div className="space-y-2">
+                {steps.map(step => (
+                  <div key={step.id} className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(var(--primary)/0.2)] transition-all duration-300 cursor-pointer group relative" onClick={() => navigate(`/step/${step.id}`)}>
+                    <div onClick={e => e.stopPropagation()} className="relative z-20">
+                      <Checkbox id={step.id} checked={step.status === "completed"} onCheckedChange={() => handleToggleStep(step.id, step.status)} />
+                    </div>
+                    <label htmlFor={step.id} className={`flex-1 cursor-pointer text-sm ${step.status === "completed" ? "font-semibold" : ""}`} style={{
+                      color: step.status === "completed" ? difficultyColor : undefined
+                    }}>
+                      {step.title}
+                    </label>
+                    {step.status === "completed" && <Check className="h-4 w-4" style={{
+                      color: difficultyColor
+                    }} />}
+                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Details */}
         {(goal.notes || goal.estimated_cost > 0) && <Card>
