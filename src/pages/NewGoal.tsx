@@ -23,10 +23,17 @@ const goalSchema = z.object({
     .max(100, { message: "Goal name must be less than 100 characters" }),
   type: z.string(),
   difficulty: z.string(),
+  goalType: z.enum(["normal", "habit"]),
   stepCount: z.number()
     .int()
     .min(1, { message: "Must have at least 1 step" })
-    .max(20, { message: "Cannot have more than 20 steps" }),
+    .max(20, { message: "Cannot have more than 20 steps" })
+    .optional(),
+  habitDurationDays: z.number()
+    .int()
+    .min(1, { message: "Must be at least 1 day" })
+    .max(365, { message: "Cannot exceed 365 days" })
+    .optional(),
   estimatedCost: z.number()
     .min(0, { message: "Cost cannot be negative" })
     .optional(),
@@ -61,6 +68,8 @@ export default function NewGoal() {
   const [estimatedCost, setEstimatedCost] = useState("");
   const [notes, setNotes] = useState("");
   const [stepCount, setStepCount] = useState(5);
+  const [goalType, setGoalType] = useState<"normal" | "habit">("normal");
+  const [habitDurationDays, setHabitDurationDays] = useState(7);
   
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
@@ -111,7 +120,9 @@ export default function NewGoal() {
         name: name.trim(),
         type,
         difficulty,
-        stepCount,
+        goalType,
+        stepCount: goalType === "normal" ? stepCount : undefined,
+        habitDurationDays: goalType === "habit" ? habitDurationDays : undefined,
         estimatedCost: estimatedCost ? parseFloat(estimatedCost) : undefined,
         notes: notes.trim(),
       });
@@ -146,6 +157,11 @@ export default function NewGoal() {
       };
       const potentialScore = scoreMap[difficulty as keyof typeof scoreMap] || 25;
 
+      // Prepare habit checks array if habit goal
+      const habitChecks = goalType === "habit" 
+        ? Array(habitDurationDays).fill(false) 
+        : null;
+
       // Create goal
       const { data: goalData, error: goalError } = await supabase
         .from("goals")
@@ -156,30 +172,35 @@ export default function NewGoal() {
           difficulty: validatedData.difficulty as any,
           estimated_cost: validatedData.estimatedCost || 0,
           notes: validatedData.notes || null,
-          total_steps: validatedData.stepCount,
+          total_steps: goalType === "normal" ? validatedData.stepCount : habitDurationDays,
           potential_score: potentialScore,
           start_date: new Date().toISOString(),
           status: "not_started",
+          goal_type: goalType,
+          habit_duration_days: goalType === "habit" ? habitDurationDays : null,
+          habit_checks: habitChecks,
         } as any)
         .select()
         .single();
 
       if (goalError) throw goalError;
 
-      // Create default steps
-      const steps = Array.from({ length: validatedData.stepCount }, (_, i) => ({
-        goal_id: goalData.id,
-        title: `Step ${i + 1}`,
-        description: "",
-        notes: "",
-        order: i + 1,
-      }));
+      // Create default steps only for normal goals
+      if (goalType === "normal" && validatedData.stepCount) {
+        const steps = Array.from({ length: validatedData.stepCount }, (_, i) => ({
+          goal_id: goalData.id,
+          title: `Step ${i + 1}`,
+          description: "",
+          notes: "",
+          order: i + 1,
+        }));
 
-      const { error: stepsError } = await supabase
-        .from("steps")
-        .insert(steps);
+        const { error: stepsError } = await supabase
+          .from("steps")
+          .insert(steps);
 
-      if (stepsError) throw stepsError;
+        if (stepsError) throw stepsError;
+      }
 
       // Track achievement
       setTimeout(() => {
@@ -295,21 +316,79 @@ export default function NewGoal() {
               </div>
             </div>
 
+            {/* Goal Type Selection */}
             <div className="space-y-3">
-              <Label htmlFor="steps" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                Number of Steps (1-20)
+              <Label className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                Goal Type
               </Label>
-              <Input
-                id="steps"
-                type="number"
-                min="1"
-                max="20"
-                value={stepCount}
-                onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-                autoComplete="off"
-                className="bg-background/40 border-primary/30 focus:border-primary/60"
-              />
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setGoalType("normal")}
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 text-left ${
+                    goalType === "normal"
+                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(91,180,255,0.3)]"
+                      : "border-primary/30 bg-background/40 hover:border-primary/50"
+                  }`}
+                >
+                  <div className="font-rajdhani font-bold text-primary mb-1">Normal Goal</div>
+                  <div className="text-xs text-muted-foreground">Track progress with steps</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGoalType("habit")}
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 text-left ${
+                    goalType === "habit"
+                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(91,180,255,0.3)]"
+                      : "border-primary/30 bg-background/40 hover:border-primary/50"
+                  }`}
+                >
+                  <div className="font-rajdhani font-bold text-primary mb-1">Habit Goal</div>
+                  <div className="text-xs text-muted-foreground">Daily check-ins for X days</div>
+                </button>
+              </div>
             </div>
+
+            {/* Normal Goal: Number of Steps */}
+            {goalType === "normal" && (
+              <div className="space-y-3">
+                <Label htmlFor="steps" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                  Number of Steps (1-20)
+                </Label>
+                <Input
+                  id="steps"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={stepCount}
+                  onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                  autoComplete="off"
+                  className="bg-background/40 border-primary/30 focus:border-primary/60"
+                />
+              </div>
+            )}
+
+            {/* Habit Goal: Duration in Days */}
+            {goalType === "habit" && (
+              <div className="space-y-3">
+                <Label htmlFor="habitDays" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+                  Habit Duration (days)
+                </Label>
+                <Input
+                  id="habitDays"
+                  type="number"
+                  min="1"
+                  max="365"
+                  value={habitDurationDays}
+                  onChange={(e) => setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))}
+                  autoComplete="off"
+                  className="bg-background/40 border-primary/30 focus:border-primary/60"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? 's' : ''} to finish this habit
+                </p>
+              </div>
+            )}
 
             <div className="space-y-3">
               <Label htmlFor="cost" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">

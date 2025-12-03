@@ -29,6 +29,9 @@ interface Goal {
   is_focus?: boolean;
   completedStepsCount?: number;
   totalStepsCount?: number;
+  goal_type?: string;
+  habit_duration_days?: number;
+  habit_checks?: boolean[];
 }
 type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start";
 type SortDirection = "asc" | "desc";
@@ -310,8 +313,13 @@ export default function Goals() {
                     </Button>
                   </CardContent>
                 </Card> : sortedActiveGoals.map(goal => {
-              const totalSteps = goal.totalStepsCount || 0;
-              const completedSteps = goal.completedStepsCount || 0;
+              const isHabitGoal = goal.goal_type === "habit";
+              const totalSteps = isHabitGoal 
+                ? (goal.habit_duration_days || 0)
+                : (goal.totalStepsCount || 0);
+              const completedSteps = isHabitGoal
+                ? (goal.habit_checks?.filter(Boolean).length || 0)
+                : (goal.completedStepsCount || 0);
               const progress = totalSteps > 0 ? completedSteps / totalSteps * 100 : 0;
               const difficultyColor = getDifficultyColor(goal.difficulty);
               return <div key={goal.id} className="relative group">
@@ -386,6 +394,11 @@ export default function Goals() {
                                     <Badge variant="outline" className="text-xs capitalize font-rajdhani border-primary/30 text-primary">
                                       {goal.type}
                                     </Badge>
+                                    {isHabitGoal && (
+                                      <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                                        Habit
+                                      </Badge>
+                                    )}
                                   </div>
                                 </div>
                                 <Badge className={`${getStatusColor(goal.status)} font-rajdhani font-bold uppercase text-xs tracking-wider`}>
@@ -399,13 +412,13 @@ export default function Goals() {
                                   <span className="uppercase tracking-wider text-primary/80 font-bold" style={{
                               textShadow: '0 0 10px rgba(91, 180, 255, 0.4)'
                             }}>
-                                    Progress
+                                    {isHabitGoal ? "Days" : "Progress"}
                                   </span>
                                   <span className="font-bold text-foreground" style={{
                               color: difficultyColor,
                               textShadow: `0 0 10px ${difficultyColor}60`
                             }}>
-                                    {completedSteps}/{totalSteps} • {progress.toFixed(0)}%
+                                    {completedSteps}/{totalSteps} {isHabitGoal ? "days" : "steps"} • {progress.toFixed(0)}%
                                   </span>
                                 </div>
                                 <div className="h-3 w-full bg-[#050A13] rounded-full overflow-hidden border-2 border-primary/30 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
@@ -463,7 +476,10 @@ export default function Goals() {
                     </p>
                   </CardContent>
                 </Card> : sortedCompletedGoals.map(goal => {
-              const totalSteps = goal.totalStepsCount || 0;
+              const isHabitGoal = goal.goal_type === "habit";
+              const totalSteps = isHabitGoal 
+                ? (goal.habit_duration_days || 0)
+                : (goal.totalStepsCount || 0);
               const difficultyColor = getDifficultyColor(goal.difficulty);
               return <Card key={goal.id} className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.01] border-2 opacity-70 hover:opacity-85" style={{
                 borderLeftWidth: '6px',
@@ -527,6 +543,11 @@ export default function Goals() {
                                 <Badge variant="outline" className="text-xs capitalize border">
                                   {goal.type}
                                 </Badge>
+                                {isHabitGoal && (
+                                  <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400/70 bg-emerald-500/10">
+                                    Habit
+                                  </Badge>
+                                )}
                                 <Badge className={`text-xs border ${getStatusColor(goal.status)}`}>
                                   <CheckCircle2 className="h-3 w-3 mr-1" />
                                   Completed
@@ -538,7 +559,7 @@ export default function Goals() {
                             <div className="space-y-1.5">
                               <div className="flex items-center justify-between text-xs">
                                 <span className="text-muted-foreground font-medium">
-                                  {totalSteps} / {totalSteps} steps
+                                  {totalSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"}
                                 </span>
                                 <span className="font-bold text-green-600 dark:text-green-400">
                                   100%
