@@ -321,6 +321,7 @@ export type Database = {
           mantra: string
           name: string
           points: number | null
+          project_end_date: string | null
           project_start_date: string | null
           symbol: string | null
           tier: number | null
@@ -338,6 +339,7 @@ export type Database = {
           mantra: string
           name: string
           points?: number | null
+          project_end_date?: string | null
           project_start_date?: string | null
           symbol?: string | null
           tier?: number | null
@@ -355,6 +357,7 @@ export type Database = {
           mantra?: string
           name?: string
           points?: number | null
+          project_end_date?: string | null
           project_start_date?: string | null
           symbol?: string | null
           tier?: number | null
@@ -366,48 +369,63 @@ export type Database = {
       profiles: {
         Row: {
           age: number | null
+          avatar_frame: string | null
           avatar_url: string | null
+          birthday: string | null
+          country: string | null
           created_at: string | null
           currency: string | null
           custom_difficulty_active: boolean | null
           custom_difficulty_color: string | null
           custom_difficulty_name: string | null
           display_name: string | null
+          displayed_badges: string[] | null
           height: number | null
           id: string
           language: string | null
+          personal_quote: string | null
           timezone: string | null
           updated_at: string | null
           weight: number | null
         }
         Insert: {
           age?: number | null
+          avatar_frame?: string | null
           avatar_url?: string | null
+          birthday?: string | null
+          country?: string | null
           created_at?: string | null
           currency?: string | null
           custom_difficulty_active?: boolean | null
           custom_difficulty_color?: string | null
           custom_difficulty_name?: string | null
           display_name?: string | null
+          displayed_badges?: string[] | null
           height?: number | null
           id: string
           language?: string | null
+          personal_quote?: string | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
         }
         Update: {
           age?: number | null
+          avatar_frame?: string | null
           avatar_url?: string | null
+          birthday?: string | null
+          country?: string | null
           created_at?: string | null
           currency?: string | null
           custom_difficulty_active?: boolean | null
           custom_difficulty_color?: string | null
           custom_difficulty_name?: string | null
           display_name?: string | null
+          displayed_badges?: string[] | null
           height?: number | null
           id?: string
           language?: string | null
+          personal_quote?: string | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
