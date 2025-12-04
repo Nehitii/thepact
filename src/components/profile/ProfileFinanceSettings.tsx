@@ -1,29 +1,49 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ProfileMenuCard } from "./ProfileMenuCard";
+import { useToast } from "@/hooks/use-toast";
 import { DollarSign } from "lucide-react";
 
 export function ProfileFinanceSettings() {
+  const { toast } = useToast();
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    
+    // Placeholder for future finance settings save logic
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    toast({
+      title: "Finance Settings Updated",
+      description: "Your finance preferences have been saved",
+    });
+    
+    setSaving(false);
+  };
+
   return (
-    <div className="relative group animate-fade-in">
-      <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-      <Card className="relative border-2 border-primary/30 bg-card/30 backdrop-blur-xl overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
+    <ProfileMenuCard
+      icon={<DollarSign className="h-5 w-5 text-primary" />}
+      title="Finance Settings"
+      description="Financial configuration and preferences"
+    >
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-8 text-center rounded-lg bg-card/30 border border-primary/20">
+          <p className="text-sm text-primary/60 font-rajdhani">
+            More finance configuration options will appear here soon.
+          </p>
         </div>
-        <CardHeader className="relative z-10">
-          <CardTitle className="flex items-center gap-2 text-primary font-orbitron uppercase tracking-wider drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-            <DollarSign className="h-5 w-5" />
-            Finance Settings
-          </CardTitle>
-          <CardDescription className="text-primary/60 font-rajdhani">Financial configuration and preferences</CardDescription>
-        </CardHeader>
-        <CardContent className="relative z-10">
-          <div className="flex items-center justify-center py-8 text-center">
-            <p className="text-sm text-primary/60 font-rajdhani">
-              More finance configuration options will appear here soon.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+
+        {/* Save Button */}
+        <Button
+          onClick={handleSave}
+          disabled={saving}
+          className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
+        >
+          {saving ? "SAVING..." : "SAVE CHANGES"}
+        </Button>
+      </div>
+    </ProfileMenuCard>
   );
 }
