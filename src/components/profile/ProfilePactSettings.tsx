@@ -45,7 +45,22 @@ export function ProfilePactSettings({
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
+  // Validation: end date must be after start date
+  const dateValidationError = projectStartDate && projectEndDate && projectEndDate <= projectStartDate
+    ? "End date must be after start date."
+    : null;
+
   const handleSave = async () => {
+    // Validate dates before saving
+    if (dateValidationError) {
+      toast({
+        title: "Validation Error",
+        description: dateValidationError,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setSaving(true);
 
     // Update profile custom difficulty
@@ -80,7 +95,7 @@ export function ProfilePactSettings({
     } else {
       toast({
         title: "Pact Settings Updated",
-        description: "Your pact configuration has been saved",
+        description: "Your pact configuration has been saved. Timeline will update on Home.",
       });
     }
 
@@ -158,6 +173,11 @@ export function ProfilePactSettings({
           <p className="text-xs text-primary/50 font-rajdhani">
             A symbolic deadline for your pact journey
           </p>
+          {dateValidationError && (
+            <p className="text-xs text-destructive font-rajdhani mt-1">
+              {dateValidationError}
+            </p>
+          )}
         </div>
 
         {/* Custom Difficulty Section */}

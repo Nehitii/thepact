@@ -5,6 +5,7 @@ import { getUserPact } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { PactVisual } from "@/components/PactVisual";
 import { PactDashboard } from "@/components/PactDashboard";
+import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
@@ -22,7 +23,8 @@ interface Pact {
   points: number;
   tier: number;
   global_progress: number;
-  project_start_date?: string;
+  project_start_date?: string | null;
+  project_end_date?: string | null;
 }
 
 interface Rank {
@@ -248,29 +250,13 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto p-6 space-y-8 relative z-10">
-        {/* Project Start Date - Floating HUD Element */}
-        {pact.project_start_date && (
-          <div className="animate-fade-in mt-8 relative group">
-            <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:bg-primary/20 transition-all" />
-            <div className="relative bg-card/40 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 overflow-hidden">
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
-              </div>
-              <div className="relative z-10 flex items-center gap-3">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
-                  <Calendar className="h-5 w-5 text-primary relative z-10 animate-glow-pulse" />
-                </div>
-                <div>
-                  <span className="text-xs text-primary/70 uppercase tracking-wider font-orbitron">Project Start: </span>
-                  <span className="font-semibold text-primary text-sm ml-2 font-orbitron">
-                    {format(new Date(pact.project_start_date), "PPP")}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Pact Timeline Widget */}
+        <div className="mt-8">
+          <PactTimeline 
+            projectStartDate={pact.project_start_date} 
+            projectEndDate={pact.project_end_date} 
+          />
+        </div>
 
         {/* Pact Header - Main HUD Panel */}
         <div className="text-center space-y-8 pt-8 animate-fade-in">
