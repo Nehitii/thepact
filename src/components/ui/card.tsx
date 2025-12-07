@@ -9,10 +9,10 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
       className={cn(
         "rounded-md border-2 border-primary/30 bg-card/90 text-card-foreground backdrop-blur-xl",
         "relative overflow-hidden",
-        "shadow-[0_8px_32px_rgba(0,5,11,0.4),inset_0_0_20px_rgba(91,180,255,0.05)]",
+        "shadow-lg",
         "before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent before:pointer-events-none",
         "after:absolute after:inset-[-1px] after:rounded-md after:bg-gradient-to-br after:from-transparent after:via-primary/5 after:to-transparent after:pointer-events-none after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300",
-        "transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_30px_rgba(91,180,255,0.2)]",
+        "transition-all duration-300 hover:border-primary/50",
         className
       )}
       {...props}
@@ -42,8 +42,7 @@ const CardTitle = React.forwardRef<HTMLParagraphElement, React.HTMLAttributes<HT
       ref={ref}
       className={cn(
         "text-xl font-bold leading-none tracking-widest uppercase font-orbitron",
-        "text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary",
-        "drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]",
+        "text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary to-primary",
         className
       )}
       {...props}
