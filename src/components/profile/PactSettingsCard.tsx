@@ -37,9 +37,9 @@ export function PactSettingsCard({
               {icon}
             </div>
             <div>
-              <h3 className="font-orbitron uppercase tracking-wider text-base text-primary drop-shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
-                {title}
-              </h3>
+            <h3 className="font-orbitron uppercase tracking-wider text-base text-primary">
+              {title}
+            </h3>
               <p className="text-sm text-primary/60 font-rajdhani mt-0.5">
                 {description}
               </p>
