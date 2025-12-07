@@ -41,7 +41,7 @@ export function PactSettingsCard({
         </div>
 
         {/* Content */}
-        <div className="relative z-10 p-5 space-y-5">
+        <div className="relative z-10 p-5 space-y-5 bg-slate-700">
           {children}
         </div>
       </div>
