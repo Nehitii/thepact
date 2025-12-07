@@ -42,11 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }, 0);
         }
 
-        // Handle sign out - use setTimeout to avoid navigation during state update
+        // Handle sign out
         if (event === "SIGNED_OUT") {
-          setTimeout(() => {
-            navigate("/auth", { replace: true });
-          }, 0);
+          navigate("/auth");
         }
       }
     );
