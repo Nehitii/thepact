@@ -28,7 +28,7 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
   };
 
   const iconSizes = {
-    small: 23,
+    small: 24,
     medium: 32,
     large: 48,
   };
