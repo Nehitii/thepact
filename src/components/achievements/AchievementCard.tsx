@@ -9,11 +9,13 @@ interface AchievementCardProps {
 }
 
 export function AchievementCard({ achievement, size = "medium" }: AchievementCardProps) {
-  const IconComponent = (LucideIcons as any)[
-    achievement.icon_key.split('-').map((w: string) => 
-      w.charAt(0).toUpperCase() + w.slice(1)
-    ).join('')
-  ] || LucideIcons.Award;
+  const IconComponent =
+    (LucideIcons as any)[
+      achievement.icon_key
+        .split("-")
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join("")
+    ] || LucideIcons.Award;
 
   const isLocked = !achievement.unlocked;
   const isHidden = achievement.is_hidden && isLocked;
@@ -26,7 +28,7 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
   };
 
   const iconSizes = {
-    small: 24,
+    small: 23,
     medium: 32,
     large: 48,
   };
@@ -39,24 +41,17 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
       className={cn(
         "relative rounded-lg border transition-all duration-300",
         sizeClasses[size],
-        isLocked 
-          ? "bg-muted/20 border-border/50 opacity-60" 
-          : "bg-card/30 backdrop-blur-sm border-border/80",
-        !isLocked && "shadow-lg"
+        isLocked ? "bg-muted/20 border-border/50 opacity-60" : "bg-card/30 backdrop-blur-sm border-border/80",
+        !isLocked && "shadow-lg",
       )}
       style={{
-        boxShadow: isLocked 
-          ? "none" 
-          : `0 0 20px ${color}40, inset 0 0 20px ${color}20`,
+        boxShadow: isLocked ? "none" : `0 0 20px ${color}40, inset 0 0 20px ${color}20`,
         borderColor: isLocked ? undefined : color,
       }}
     >
       {/* Rarity glow effect */}
       {!isLocked && (
-        <div
-          className="absolute inset-0 rounded-lg opacity-20 blur-xl"
-          style={{ backgroundColor: color }}
-        />
+        <div className="absolute inset-0 rounded-lg opacity-20 blur-xl" style={{ backgroundColor: color }} />
       )}
 
       <div className="relative flex items-start gap-3">
@@ -64,7 +59,7 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
         <div
           className={cn(
             "rounded-full p-2 flex items-center justify-center shrink-0",
-            isLocked ? "bg-muted/50" : "bg-background/50"
+            isLocked ? "bg-muted/50" : "bg-background/50",
           )}
           style={{
             boxShadow: isLocked ? "none" : `0 0 15px ${color}60`,
@@ -72,10 +67,7 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
             borderWidth: isLocked ? 0 : 2,
           }}
         >
-          <IconComponent
-            size={iconSizes[size]}
-            style={{ color: isLocked ? "hsl(var(--muted-foreground))" : color }}
-          />
+          <IconComponent size={iconSizes[size]} style={{ color: isLocked ? "hsl(var(--muted-foreground))" : color }} />
         </div>
 
         {/* Content */}
@@ -85,17 +77,17 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
               className={cn(
                 "font-bold leading-tight",
                 size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg",
-                isLocked ? "text-muted-foreground" : "text-foreground"
+                isLocked ? "text-muted-foreground" : "text-foreground",
               )}
             >
               {isHidden ? "???" : achievement.name}
             </h3>
-            
+
             {/* Rarity badge */}
             <span
               className={cn(
                 "text-xs font-bold px-2 py-0.5 rounded-full shrink-0",
-                isLocked ? "bg-muted" : "bg-background/80"
+                isLocked ? "bg-muted" : "bg-background/80",
               )}
               style={{
                 color: isLocked ? "hsl(var(--muted-foreground))" : color,
@@ -107,10 +99,7 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
             </span>
           </div>
 
-          <p className={cn(
-            "text-sm mt-1",
-            isLocked ? "text-muted-foreground/70" : "text-muted-foreground"
-          )}>
+          <p className={cn("text-sm mt-1", isLocked ? "text-muted-foreground/70" : "text-muted-foreground")}>
             {isHidden ? "Secret achievement - complete hidden objectives to unlock" : achievement.description}
           </p>
 
