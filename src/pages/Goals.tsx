@@ -243,14 +243,12 @@ export default function Goals() {
           </div>
           
           {/* Sort Controls */}
-          {goals.length > 0 && (
-            <div className="relative overflow-hidden rounded-md border-2 border-primary/30 bg-card/90 backdrop-blur-xl p-4 flex items-center gap-4
+          {goals.length > 0 && <div className="relative overflow-hidden rounded-md border-2 border-primary/30 bg-card/90 backdrop-blur-xl p-4 flex items-center gap-4
               before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent before:pointer-events-none
               after:absolute after:inset-[-1px] after:rounded-md after:bg-gradient-to-br after:from-transparent after:via-primary/5 after:to-transparent after:pointer-events-none after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300
               transition-all duration-300 hover:border-primary/50
               shadow-[0_8px_32px_hsl(var(--background)/0.4),inset_0_0_20px_hsl(var(--primary)/0.05)]
-              hover:shadow-[0_8px_32px_hsl(var(--background)/0.4),inset_0_0_20px_hsl(var(--primary)/0.05),0_0_30px_hsl(var(--primary)/0.2)]"
-            >
+              hover:shadow-[0_8px_32px_hsl(var(--background)/0.4),inset_0_0_20px_hsl(var(--primary)/0.05),0_0_30px_hsl(var(--primary)/0.2)]">
               <span className="relative z-10 text-sm font-bold font-orbitron tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary drop-shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
                 Sort by
               </span>
@@ -268,21 +266,10 @@ export default function Goals() {
                   <SelectItem value="start">Start Date</SelectItem>
                 </SelectContent>
               </Select>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="relative z-10 h-9 w-9 transition-all duration-300 border-primary/30 bg-card/60 hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
-                onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} 
-                aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
-              >
-                <ChevronRight 
-                  className={`h-4 w-4 text-primary transition-transform duration-300 ease-out ${
-                    sortDirection === "asc" ? "-rotate-90" : "rotate-90"
-                  }`} 
-                />
+              <Button variant="outline" size="icon" onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`} className="relative z-10 h-9 w-9 transition-all duration-300 hover:shadow-[0_0_15px_hsl(var(--primary)/0.3)] text-center bg-primary-foreground border-primary-glow">
+                <ChevronRight className={`h-4 w-4 text-primary transition-transform duration-300 ease-out ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`} />
               </Button>
-            </div>
-          )}
+            </div>}
         </div>
 
         {/* Goals Tabs */}
@@ -329,12 +316,8 @@ export default function Goals() {
                   </CardContent>
                 </Card> : sortedActiveGoals.map(goal => {
               const isHabitGoal = goal.goal_type === "habit";
-              const totalSteps = isHabitGoal 
-                ? (goal.habit_duration_days || 0)
-                : (goal.totalStepsCount || 0);
-              const completedSteps = isHabitGoal
-                ? (goal.habit_checks?.filter(Boolean).length || 0)
-                : (goal.completedStepsCount || 0);
+              const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
+              const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
               const progress = totalSteps > 0 ? completedSteps / totalSteps * 100 : 0;
               const difficultyColor = getDifficultyColor(goal.difficulty);
               return <div key={goal.id} className="relative group">
@@ -381,8 +364,8 @@ export default function Goals() {
                               {/* Focus Star - positioned above image frame */}
                               <button onClick={e => toggleFocus(goal.id, goal.is_focus || false, e)} className="absolute -top-3 -right-3 z-30 p-1.5 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(91,180,255,0.6)] hover:shadow-[0_0_25px_rgba(91,180,255,0.8)]" aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}>
                                 <Star className={`h-4 w-4 ${goal.is_focus ? 'fill-yellow-400 text-yellow-400' : 'text-primary/70'}`} style={{
-                              filter: goal.is_focus ? 'drop-shadow(0 0 4px rgba(250, 204, 21, 0.8))' : 'none'
-                            }} />
+                            filter: goal.is_focus ? 'drop-shadow(0 0 4px rgba(250, 204, 21, 0.8))' : 'none'
+                          }} />
                               </button>
                             </div>
 
@@ -409,11 +392,9 @@ export default function Goals() {
                                     <Badge variant="outline" className="text-xs capitalize font-rajdhani border-primary/30 text-primary">
                                       {goal.type}
                                     </Badge>
-                                    {isHabitGoal && (
-                                      <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
+                                    {isHabitGoal && <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400 bg-emerald-500/10">
                                         Habit
-                                      </Badge>
-                                    )}
+                                      </Badge>}
                                   </div>
                                 </div>
                                 <Badge className={`${getStatusColor(goal.status)} font-rajdhani font-bold uppercase text-xs tracking-wider`}>
@@ -492,9 +473,7 @@ export default function Goals() {
                   </CardContent>
                 </Card> : sortedCompletedGoals.map(goal => {
               const isHabitGoal = goal.goal_type === "habit";
-              const totalSteps = isHabitGoal 
-                ? (goal.habit_duration_days || 0)
-                : (goal.totalStepsCount || 0);
+              const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
               const difficultyColor = getDifficultyColor(goal.difficulty);
               return <Card key={goal.id} className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.01] border-2 opacity-70 hover:opacity-85" style={{
                 borderLeftWidth: '6px',
@@ -558,11 +537,9 @@ export default function Goals() {
                                 <Badge variant="outline" className="text-xs capitalize border">
                                   {goal.type}
                                 </Badge>
-                                {isHabitGoal && (
-                                  <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400/70 bg-emerald-500/10">
+                                {isHabitGoal && <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400/70 bg-emerald-500/10">
                                     Habit
-                                  </Badge>
-                                )}
+                                  </Badge>}
                                 <Badge className={`text-xs border ${getStatusColor(goal.status)}`}>
                                   <CheckCircle2 className="h-3 w-3 mr-1" />
                                   Completed
