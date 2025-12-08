@@ -243,13 +243,13 @@ export default function Goals() {
           </div>
           
           {/* Sort Controls */}
-          {goals.length > 0 && <div className="flex items-center gap-3 p-4 rounded-lg border border-primary/20 bg-[#00050B]/60 backdrop-blur-sm">
+          {goals.length > 0 && <div className="flex items-center gap-3 p-4 rounded-lg border border-primary/20 bg-card/80 backdrop-blur-sm">
               <span className="text-sm text-primary/70 font-rajdhani tracking-wide uppercase">Sort by:</span>
               <Select value={sortBy} onValueChange={value => handleSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[160px] bg-background/40 border-primary/30">
+                <SelectTrigger className="w-[160px] bg-card border-primary/30 text-foreground">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
-                <SelectContent className="z-50 bg-[#00050B] border-primary/30">
+                <SelectContent className="z-50 bg-popover border-primary/30">
                   <SelectItem value="difficulty">Difficulty</SelectItem>
                   <SelectItem value="type">Category</SelectItem>
                   <SelectItem value="points">Points</SelectItem>
@@ -259,14 +259,19 @@ export default function Goals() {
                   <SelectItem value="start">Start Date</SelectItem>
                 </SelectContent>
               </Select>
-              <div className="flex gap-2">
-                <Button variant="outline" size="icon" className={`h-8 w-8 transition-all border-primary/30 ${sortDirection === "asc" ? "bg-primary/20 border-primary/60 text-primary shadow-[0_0_15px_rgba(91,180,255,0.3)]" : "hover:bg-primary/10 hover:border-primary/40"}`} onClick={() => handleDirectionChange("asc")} aria-label="Sort ascending">
-                  <span className="text-base">▲</span>
-                </Button>
-                <Button variant="outline" size="icon" className={`h-8 w-8 transition-all border-primary/30 ${sortDirection === "desc" ? "bg-primary/20 border-primary/60 text-primary shadow-[0_0_15px_rgba(91,180,255,0.3)]" : "hover:bg-primary/10 hover:border-primary/40"}`} onClick={() => handleDirectionChange("desc")} aria-label="Sort descending">
-                  <span className="text-base">▼</span>
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="h-8 w-8 transition-all duration-300 border-primary/30 bg-primary/10 hover:bg-primary/20 hover:border-primary/50"
+                onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} 
+                aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
+              >
+                <ChevronRight 
+                  className={`h-4 w-4 text-primary transition-transform duration-300 ease-out ${
+                    sortDirection === "asc" ? "-rotate-90" : "rotate-90"
+                  }`} 
+                />
+              </Button>
             </div>}
         </div>
 
