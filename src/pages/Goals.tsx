@@ -243,13 +243,22 @@ export default function Goals() {
           </div>
           
           {/* Sort Controls */}
-          {goals.length > 0 && <div className="flex items-center gap-3 p-4 rounded-lg border border-primary/20 bg-card/80 backdrop-blur-sm">
-              <span className="text-sm text-primary/70 font-rajdhani tracking-wide uppercase">Sort by:</span>
+          {goals.length > 0 && (
+            <div className="relative overflow-hidden rounded-md border-2 border-primary/30 bg-card/90 backdrop-blur-xl p-4 flex items-center gap-4
+              before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent before:pointer-events-none
+              after:absolute after:inset-[-1px] after:rounded-md after:bg-gradient-to-br after:from-transparent after:via-primary/5 after:to-transparent after:pointer-events-none after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300
+              transition-all duration-300 hover:border-primary/50
+              shadow-[0_8px_32px_hsl(var(--background)/0.4),inset_0_0_20px_hsl(var(--primary)/0.05)]
+              hover:shadow-[0_8px_32px_hsl(var(--background)/0.4),inset_0_0_20px_hsl(var(--primary)/0.05),0_0_30px_hsl(var(--primary)/0.2)]"
+            >
+              <span className="relative z-10 text-sm font-bold font-orbitron tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary drop-shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
+                Sort by
+              </span>
               <Select value={sortBy} onValueChange={value => handleSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[160px] bg-card border-primary/30 text-foreground">
+                <SelectTrigger className="relative z-10 w-[160px] bg-card/60 border-primary/30 text-foreground font-rajdhani tracking-wide transition-all duration-300 hover:border-primary/50 hover:bg-card/80">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
-                <SelectContent className="z-50 bg-popover border-primary/30">
+                <SelectContent className="z-50 bg-popover/95 backdrop-blur-xl border-2 border-primary/30">
                   <SelectItem value="difficulty">Difficulty</SelectItem>
                   <SelectItem value="type">Category</SelectItem>
                   <SelectItem value="points">Points</SelectItem>
@@ -262,7 +271,7 @@ export default function Goals() {
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-8 w-8 transition-all duration-300 border-primary/30 bg-primary/10 hover:bg-primary/20 hover:border-primary/50"
+                className="relative z-10 h-9 w-9 transition-all duration-300 border-primary/30 bg-card/60 hover:bg-primary/20 hover:border-primary/50 hover:shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
                 onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} 
                 aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
               >
@@ -272,7 +281,8 @@ export default function Goals() {
                   }`} 
                 />
               </Button>
-            </div>}
+            </div>
+          )}
         </div>
 
         {/* Goals Tabs */}
