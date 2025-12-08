@@ -256,14 +256,14 @@ export default function Goals() {
                 <SelectTrigger className="relative z-10 w-[160px] bg-[#00050B]/80 border-primary/30 text-foreground font-rajdhani tracking-wide transition-all duration-300 hover:border-primary/50 hover:bg-[#00050B]">
                   <SelectValue placeholder="Sort by..." />
                 </SelectTrigger>
-                <SelectContent className="z-50 bg-[#00050B]/95 backdrop-blur-xl border-2 border-primary/30">
-                  <SelectItem value="difficulty">Difficulty</SelectItem>
-                  <SelectItem value="type">Category</SelectItem>
-                  <SelectItem value="points">Points</SelectItem>
-                  <SelectItem value="created">Created Date</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="status">Status</SelectItem>
-                  <SelectItem value="start">Start Date</SelectItem>
+                <SelectContent className="z-50 bg-[#00050B]/95 backdrop-blur-xl border-2 border-primary/30 text-gray-100">
+                  <SelectItem value="difficulty" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">Difficulty</SelectItem>
+                  <SelectItem value="type" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">Category</SelectItem>
+                  <SelectItem value="points" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">Points</SelectItem>
+                  <SelectItem value="created" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">Created Date</SelectItem>
+                  <SelectItem value="name" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">Name</SelectItem>
+                  <SelectItem value="status" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">Status</SelectItem>
+                  <SelectItem value="start" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">Start Date</SelectItem>
                 </SelectContent>
               </Select>
               <Button variant="outline" size="icon" onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`} className="relative z-10 h-9 w-9 transition-all duration-300 hover:shadow-[0_0_15px_rgba(91,180,255,0.3)] bg-[#00050B]/80 border-primary/30 hover:border-primary/50 hover:bg-[#00050B]">
