@@ -704,85 +704,208 @@ export default function GoalDetail() {
         </Card>
         </div>
 
-        {/* Steps or Habit Tracking */}
+        {/* Steps or Habit Tracking - Unified HUD Style */}
         {isHabitGoal ? (
-          <Card>
-            <CardHeader className="text-primary bg-secondary-foreground">
-              <CardTitle>Habit Tracking ({completedStepsCount}/{goal.habit_duration_days} days)</CardTitle>
-            </CardHeader>
-            <CardContent className="text-primary bg-secondary-foreground">
-              <div className="grid grid-cols-7 gap-2">
-                {goal.habit_checks?.map((checked, index) => (
-                  <div
-                    key={index}
-                    onClick={() => handleToggleHabitCheck(index)}
-                    className={`relative flex flex-col items-center justify-center p-2 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
-                      checked
-                        ? "border-primary bg-primary/20 shadow-[0_0_15px_rgba(91,180,255,0.3)]"
-                        : "border-primary/20 bg-card/50 hover:border-primary/40 hover:bg-card/80"
-                    }`}
-                  >
-                    <span className="text-xs text-muted-foreground mb-1">Day</span>
-                    <span className={`text-sm font-bold ${checked ? "text-primary" : ""}`} style={{
-                      color: checked ? difficultyColor : undefined
-                    }}>
-                      {index + 1}
-                    </span>
-                    {checked && (
-                      <Check className="absolute top-1 right-1 h-3 w-3" style={{ color: difficultyColor }} />
-                    )}
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground mt-4 text-center">
-                Tap a day to mark it as complete
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader className="text-primary bg-secondary-foreground">
-              <CardTitle>Steps</CardTitle>
-            </CardHeader>
-            <CardContent className="text-primary bg-secondary-foreground">
-              <div className="space-y-2">
-                {steps.map(step => (
-                  <div key={step.id} className="flex items-center gap-3 p-3 rounded-lg border-2 border-primary/20 bg-card/50 backdrop-blur-sm hover:bg-card/80 hover:border-primary/40 hover:shadow-[0_0_15px_rgba(var(--primary)/0.2)] transition-all duration-300 cursor-pointer group relative" onClick={() => navigate(`/step/${step.id}`)}>
-                    <div onClick={e => e.stopPropagation()} className="relative z-20">
-                      <Checkbox id={step.id} checked={step.status === "completed"} onCheckedChange={() => handleToggleStep(step.id, step.status)} />
+          <div className="relative group">
+            {/* Outer glow */}
+            <div className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" style={{
+              background: `${difficultyColor}15`
+            }} />
+            
+            <Card className="relative overflow-hidden border-2 border-primary/30 bg-[#00050B]/95 backdrop-blur-xl shadow-[0_0_40px_rgba(91,180,255,0.2)]">
+              {/* Top accent bar */}
+              <div className="absolute top-0 left-0 right-0 h-1" style={{
+                background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)`,
+                boxShadow: `0 0 15px ${difficultyColor}60`
+              }} />
+              
+              {/* Holographic overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+              
+              <CardHeader className="relative z-10 border-b border-primary/20">
+                <CardTitle className="flex items-center gap-3">
+                  <Calendar className="h-5 w-5" style={{ color: difficultyColor, filter: `drop-shadow(0 0 8px ${difficultyColor}80)` }} />
+                  <span>Habit Tracking</span>
+                  <Badge variant="outline" className="ml-auto font-rajdhani text-sm" style={{
+                    borderColor: difficultyColor,
+                    color: difficultyColor,
+                    boxShadow: `0 0 10px ${difficultyColor}40`
+                  }}>
+                    {completedStepsCount}/{goal.habit_duration_days} days
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10 pt-6">
+                <div className="grid grid-cols-7 gap-2">
+                  {goal.habit_checks?.map((checked, index) => (
+                    <div
+                      key={index}
+                      onClick={() => handleToggleHabitCheck(index)}
+                      className={`relative flex flex-col items-center justify-center p-3 rounded-lg border-2 cursor-pointer transition-all duration-300 ${
+                        checked
+                          ? "border-primary/60 bg-[#050A13]"
+                          : "border-primary/20 bg-[#050A13]/50 hover:border-primary/40 hover:bg-[#050A13]/80"
+                      }`}
+                      style={{
+                        boxShadow: checked 
+                          ? `0 0 20px ${difficultyColor}40, inset 0 0 15px ${difficultyColor}15` 
+                          : 'inset 0 0 10px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      <span className="text-xs text-muted-foreground mb-1 font-rajdhani uppercase tracking-wider">Day</span>
+                      <span className={`text-lg font-bold font-orbitron ${checked ? "" : "text-muted-foreground"}`} style={{
+                        color: checked ? difficultyColor : undefined,
+                        textShadow: checked ? `0 0 10px ${difficultyColor}80` : undefined
+                      }}>
+                        {index + 1}
+                      </span>
+                      {checked && (
+                        <Check className="absolute top-1 right-1 h-4 w-4" style={{ 
+                          color: difficultyColor,
+                          filter: `drop-shadow(0 0 6px ${difficultyColor})`
+                        }} />
+                      )}
                     </div>
-                    <label htmlFor={step.id} className={`flex-1 cursor-pointer text-sm ${step.status === "completed" ? "font-semibold" : ""}`} style={{
-                      color: step.status === "completed" ? difficultyColor : undefined
-                    }}>
-                      {step.title}
-                    </label>
-                    {step.status === "completed" && <Check className="h-4 w-4" style={{
-                      color: difficultyColor
-                    }} />}
-                    <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-6 text-center font-rajdhani uppercase tracking-widest">
+                  Tap a day to mark it as complete
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="relative group">
+            {/* Outer glow */}
+            <div className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" style={{
+              background: `${difficultyColor}15`
+            }} />
+            
+            <Card className="relative overflow-hidden border-2 border-primary/30 bg-[#00050B]/95 backdrop-blur-xl shadow-[0_0_40px_rgba(91,180,255,0.2)]">
+              {/* Top accent bar */}
+              <div className="absolute top-0 left-0 right-0 h-1" style={{
+                background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)`,
+                boxShadow: `0 0 15px ${difficultyColor}60`
+              }} />
+              
+              {/* Holographic overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+              
+              <CardHeader className="relative z-10 border-b border-primary/20">
+                <CardTitle className="flex items-center gap-3">
+                  <Check className="h-5 w-5" style={{ color: difficultyColor, filter: `drop-shadow(0 0 8px ${difficultyColor}80)` }} />
+                  <span>Steps</span>
+                  <Badge variant="outline" className="ml-auto font-rajdhani text-sm" style={{
+                    borderColor: difficultyColor,
+                    color: difficultyColor,
+                    boxShadow: `0 0 10px ${difficultyColor}40`
+                  }}>
+                    {completedStepsCount}/{totalStepsCount}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10 pt-6">
+                <div className="space-y-3">
+                  {steps.map(step => (
+                    <div 
+                      key={step.id} 
+                      className={`flex items-center gap-4 p-4 rounded-lg border-2 cursor-pointer group/step transition-all duration-300 ${
+                        step.status === "completed"
+                          ? "border-primary/40 bg-[#050A13]"
+                          : "border-primary/20 bg-[#050A13]/50 hover:border-primary/40 hover:bg-[#050A13]/80"
+                      }`}
+                      style={{
+                        boxShadow: step.status === "completed" 
+                          ? `0 0 20px ${difficultyColor}30, inset 0 0 15px ${difficultyColor}10` 
+                          : 'inset 0 0 10px rgba(0,0,0,0.3)'
+                      }}
+                      onClick={() => navigate(`/step/${step.id}`)}
+                    >
+                      <div onClick={e => e.stopPropagation()} className="relative z-20">
+                        <Checkbox 
+                          id={step.id} 
+                          checked={step.status === "completed"} 
+                          onCheckedChange={() => handleToggleStep(step.id, step.status)}
+                          className="border-primary/50 data-[state=checked]:border-primary data-[state=checked]:bg-primary/20"
+                        />
+                      </div>
+                      <label 
+                        htmlFor={step.id} 
+                        className={`flex-1 cursor-pointer font-rajdhani text-base tracking-wide ${
+                          step.status === "completed" ? "font-semibold" : "text-muted-foreground"
+                        }`} 
+                        style={{
+                          color: step.status === "completed" ? difficultyColor : undefined,
+                          textShadow: step.status === "completed" ? `0 0 8px ${difficultyColor}60` : undefined
+                        }}
+                      >
+                        {step.title}
+                      </label>
+                      {step.status === "completed" && (
+                        <Check className="h-5 w-5" style={{
+                          color: difficultyColor,
+                          filter: `drop-shadow(0 0 6px ${difficultyColor})`
+                        }} />
+                      )}
+                      <ChevronRight className="h-5 w-5 text-muted-foreground group-hover/step:text-primary group-hover/step:translate-x-1 transition-all" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
-        {/* Details */}
-        {(goal.notes || goal.estimated_cost > 0) && <Card>
-            <CardHeader>
-              <CardTitle>Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {goal.estimated_cost > 0 && <div>
-                  <p className="text-sm text-muted-foreground mb-1">Estimated Cost</p>
-                  <p className="text-lg font-semibold">{formatCurrency(goal.estimated_cost, currency)}</p>
-                </div>}
-              {goal.notes && <div>
-                  <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                  <p className="text-sm">{goal.notes}</p>
-                </div>}
-            </CardContent>
-          </Card>}
+        {/* Details - Unified HUD Style */}
+        {(goal.notes || goal.estimated_cost > 0) && (
+          <div className="relative group">
+            {/* Outer glow */}
+            <div className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 blur-2xl transition-opacity duration-500" style={{
+              background: `${difficultyColor}15`
+            }} />
+            
+            <Card className="relative overflow-hidden border-2 border-primary/30 bg-[#00050B]/95 backdrop-blur-xl shadow-[0_0_40px_rgba(91,180,255,0.2)]">
+              {/* Top accent bar */}
+              <div className="absolute top-0 left-0 right-0 h-1" style={{
+                background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)`,
+                boxShadow: `0 0 15px ${difficultyColor}60`
+              }} />
+              
+              {/* Holographic overlay */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+              
+              <CardHeader className="relative z-10 border-b border-primary/20">
+                <CardTitle className="flex items-center gap-3">
+                  <Sparkles className="h-5 w-5" style={{ color: difficultyColor, filter: `drop-shadow(0 0 8px ${difficultyColor}80)` }} />
+                  <span>Details</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="relative z-10 pt-6 space-y-6">
+                {goal.estimated_cost > 0 && (
+                  <div className="p-4 rounded-lg border-2 border-primary/20 bg-[#050A13]/50" style={{
+                    boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)'
+                  }}>
+                    <p className="text-xs text-muted-foreground mb-2 font-orbitron uppercase tracking-widest">Estimated Cost</p>
+                    <p className="text-2xl font-bold font-orbitron" style={{
+                      color: difficultyColor,
+                      textShadow: `0 0 12px ${difficultyColor}60`
+                    }}>
+                      {formatCurrency(goal.estimated_cost, currency)}
+                    </p>
+                  </div>
+                )}
+                {goal.notes && (
+                  <div className="p-4 rounded-lg border-2 border-primary/20 bg-[#050A13]/50" style={{
+                    boxShadow: 'inset 0 0 10px rgba(0,0,0,0.3)'
+                  }}>
+                    <p className="text-xs text-muted-foreground mb-2 font-orbitron uppercase tracking-widest">Notes</p>
+                    <p className="text-sm font-rajdhani leading-relaxed text-foreground/90">{goal.notes}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
         </div>
       </div>
     </div>;
