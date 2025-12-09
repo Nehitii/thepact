@@ -42,17 +42,15 @@ const goalSchema = z.object({
     .optional(),
 });
 
+// Goal types with display labels (value matches database enum)
 const goalTypes = [
-  "personal",
-  "professional",
-  "health",
-  "creative",
-  "financial",
-  "learning",
-  "bricolage",
-  "travaux",
-  "relationnel",
-  "other",
+  { value: "personal", label: "Personal" },
+  { value: "professional", label: "Professional" },
+  { value: "health", label: "Health" },
+  { value: "creative", label: "Creative" },
+  { value: "financial", label: "Financial" },
+  { value: "learning", label: "Learning" },
+  { value: "other", label: "Other" },
 ];
 
 export default function NewGoal() {
@@ -287,10 +285,10 @@ export default function NewGoal() {
                   <SelectTrigger id="type" className="bg-background/40 border-primary/30">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#00050B] border-primary/30">
+                  <SelectContent className="bg-[#00050B] border-primary/30 text-gray-100">
                     {goalTypes.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t.charAt(0).toUpperCase() + t.slice(1)}
+                      <SelectItem key={t.value} value={t.value} className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">
+                        {t.label}
                       </SelectItem>
                     ))}
                   </SelectContent>

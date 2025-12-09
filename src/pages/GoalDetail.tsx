@@ -623,9 +623,6 @@ export default function GoalDetail() {
                             <SelectItem value="creative">Creative</SelectItem>
                             <SelectItem value="financial">Financial</SelectItem>
                             <SelectItem value="learning">Learning</SelectItem>
-                            <SelectItem value="bricolage">DIY</SelectItem>
-                            <SelectItem value="travaux">Home Renovation</SelectItem>
-                            <SelectItem value="relationnel">Relationships</SelectItem>
                             <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
