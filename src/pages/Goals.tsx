@@ -33,7 +33,7 @@ interface Goal {
   habit_duration_days?: number;
   habit_checks?: boolean[];
 }
-type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start";
+type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression";
 type SortDirection = "asc" | "desc";
 export default function Goals() {
   const { user } = useAuth();
@@ -204,6 +204,23 @@ export default function Goals() {
           if (!b.start_date) return -1;
           return (new Date(a.start_date).getTime() - new Date(b.start_date).getTime()) * direction;
         });
+      case "progression":
+        return sorted.sort((a, b) => {
+          // Calculate progression percentage for each goal
+          const getProgression = (goal: Goal) => {
+            // For habit goals, use habit_checks
+            if (goal.goal_type === "habit" && goal.habit_checks && goal.habit_duration_days) {
+              const completedDays = goal.habit_checks.filter(Boolean).length;
+              return (completedDays / goal.habit_duration_days) * 100;
+            }
+            // For normal goals, use step counts
+            const total = goal.totalStepsCount || goal.total_steps || 0;
+            const completed = goal.completedStepsCount || goal.validated_steps || 0;
+            if (total === 0) return 0;
+            return (completed / total) * 100;
+          };
+          return (getProgression(a) - getProgression(b)) * direction;
+        });
       default:
         return sorted;
     }
@@ -313,6 +330,12 @@ export default function Goals() {
                       className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
                     >
                       Start Date
+                    </SelectItem>
+                    <SelectItem
+                      value="progression"
+                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
+                    >
+                      Progression
                     </SelectItem>
                   </SelectContent>
                 </Select>
