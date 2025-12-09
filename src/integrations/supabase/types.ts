@@ -641,6 +641,8 @@ export type Database = {
         | "financial"
         | "learning"
         | "other"
+        | "relationship"
+        | "diy"
       step_status: "pending" | "completed"
     }
     CompositeTypes: {
@@ -796,6 +798,8 @@ export const Constants = {
         "financial",
         "learning",
         "other",
+        "relationship",
+        "diy",
       ],
       step_status: ["pending", "completed"],
     },

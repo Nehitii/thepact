@@ -50,6 +50,8 @@ const goalTypes = [
   { value: "creative", label: "Creative" },
   { value: "financial", label: "Financial" },
   { value: "learning", label: "Learning" },
+  { value: "relationship", label: "Relationship" },
+  { value: "diy", label: "DIY" },
   { value: "other", label: "Other" },
 ];
 
