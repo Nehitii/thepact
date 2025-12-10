@@ -10,7 +10,7 @@ import { AchievementsWidget } from "@/components/achievements/AchievementsWidget
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, TrendingUp, Calendar } from "lucide-react";
+import { Plus, TrendingUp, Calendar, Flame } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format, subDays } from "date-fns";
 
@@ -682,6 +682,53 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* The Call - Mysterious Access Button */}
+        <div className="animate-fade-in relative group">
+          <div className="absolute inset-0 bg-orange-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-red-500/10 to-orange-500/5 rounded-lg blur-2xl animate-pulse" />
+          <button
+            onClick={() => navigate("/the-call")}
+            className="relative w-full bg-gradient-to-br from-card/30 via-orange-950/20 to-card/30 backdrop-blur-xl border-2 border-orange-500/40 rounded-lg overflow-hidden hover:border-orange-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.4),inset_0_0_30px_rgba(249,115,22,0.1)] group/call"
+          >
+            {/* Inner border glow */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute inset-[2px] border border-orange-500/20 rounded-[6px]" />
+              <div className="absolute inset-[4px] border border-orange-500/10 rounded-[5px]" />
+            </div>
+            
+            {/* Animated background particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              <div className="absolute top-1/2 left-1/4 w-1 h-1 bg-orange-400/60 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-red-400/50 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
+              <div className="absolute bottom-1/3 left-1/3 w-1 h-1 bg-orange-300/40 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
+            </div>
+            
+            <div className="relative z-10 p-6 flex items-center justify-center gap-4">
+              {/* Flame icon with glow */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full scale-150 group-hover/call:scale-[2] transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-red-500/30 to-orange-400/30 blur-lg rounded-full animate-pulse" />
+                <Flame className="w-8 h-8 text-orange-400 relative z-10 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)] group-hover/call:drop-shadow-[0_0_25px_rgba(249,115,22,1)] transition-all duration-300 group-hover/call:scale-110" />
+              </div>
+              
+              <div className="flex flex-col items-start">
+                <span className="text-lg font-bold uppercase tracking-[0.2em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 drop-shadow-[0_0_10px_rgba(249,115,22,0.5)]">
+                  The Call
+                </span>
+                <span className="text-xs text-orange-400/60 font-rajdhani tracking-wide mt-0.5 group-hover/call:text-orange-400/80 transition-colors">
+                  Answer if you dare...
+                </span>
+              </div>
+            </div>
+            
+            {/* Corner accents */}
+            <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-orange-500/50 rounded-tl group-hover/call:border-orange-400/80 transition-colors" />
+            <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-orange-500/50 rounded-tr group-hover/call:border-orange-400/80 transition-colors" />
+            <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-orange-500/50 rounded-bl group-hover/call:border-orange-400/80 transition-colors" />
+            <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-orange-500/50 rounded-br group-hover/call:border-orange-400/80 transition-colors" />
+          </button>
         </div>
 
         {/* Finance Quick Action - Dark HUD Panel */}
