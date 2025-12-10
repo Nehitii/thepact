@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowRight, CheckCircle2, Star, Sparkles, Trophy, ChevronRight } from "lucide-react";
+import { Plus, ArrowRight, CheckCircle2, Star, Sparkles, Trophy, ChevronRight, ChevronLeft } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParticleEffect } from "@/components/ParticleEffect";
@@ -45,6 +45,9 @@ export default function Goals() {
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+  const [itemsPerPage, setItemsPerPage] = useState<number>(10);
+  const [activeCurrentPage, setActiveCurrentPage] = useState(1);
+  const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
   useEffect(() => {
     if (!user) return;
@@ -233,6 +236,26 @@ export default function Goals() {
   const completedGoals = goals.filter((g) => g.status === "fully_completed");
   const sortedActiveGoals = sortGoals(activeGoals);
   const sortedCompletedGoals = sortGoals(completedGoals);
+
+  // Pagination calculations
+  const activeTotalPages = Math.ceil(sortedActiveGoals.length / itemsPerPage);
+  const completedTotalPages = Math.ceil(sortedCompletedGoals.length / itemsPerPage);
+  
+  const paginatedActiveGoals = sortedActiveGoals.slice(
+    (activeCurrentPage - 1) * itemsPerPage,
+    activeCurrentPage * itemsPerPage
+  );
+  const paginatedCompletedGoals = sortedCompletedGoals.slice(
+    (completedCurrentPage - 1) * itemsPerPage,
+    completedCurrentPage * itemsPerPage
+  );
+
+  // Reset to page 1 when items per page changes
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setActiveCurrentPage(1);
+    setCompletedCurrentPage(1);
+  };
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -374,20 +397,38 @@ export default function Goals() {
             </Card>
           ) : (
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "completed")} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 bg-[#00050B]/80 border border-primary/20 p-1">
-                <TabsTrigger
-                  value="active"
-                  className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] font-rajdhani tracking-wide"
-                >
-                  Active ({activeGoals.length})
-                </TabsTrigger>
-                <TabsTrigger
-                  value="completed"
-                  className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] font-rajdhani tracking-wide"
-                >
-                  Completed ({completedGoals.length})
-                </TabsTrigger>
-              </TabsList>
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <TabsList className="grid w-full grid-cols-2 bg-[#00050B]/80 border border-primary/20 p-1 flex-1">
+                  <TabsTrigger
+                    value="active"
+                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] font-rajdhani tracking-wide"
+                  >
+                    Active ({activeGoals.length})
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="completed"
+                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] font-rajdhani tracking-wide"
+                  >
+                    Completed ({completedGoals.length})
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* Items per page selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-rajdhani text-muted-foreground whitespace-nowrap">Per page:</span>
+                  <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+                    <SelectTrigger className="w-[70px] h-8 bg-[#00050B]/80 border-primary/30 text-foreground text-gray-100 font-rajdhani text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-50 bg-[#00050B]/95 backdrop-blur-xl border-2 border-primary/30 text-gray-100">
+                      <SelectItem value="5" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">5</SelectItem>
+                      <SelectItem value="10" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">10</SelectItem>
+                      <SelectItem value="20" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">20</SelectItem>
+                      <SelectItem value="50" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">50</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
 
               <TabsContent value="active" className="space-y-6 mt-8">
                 {activeGoals.length === 0 ? (
@@ -410,7 +451,8 @@ export default function Goals() {
                     </CardContent>
                   </Card>
                 ) : (
-                  sortedActiveGoals.map((goal) => {
+                  <>
+                  {paginatedActiveGoals.map((goal) => {
                     const isHabitGoal = goal.goal_type === "habit";
                     const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
                     const completedSteps = isHabitGoal
@@ -635,7 +677,63 @@ export default function Goals() {
                         </Card>
                       </div>
                     );
-                  })
+                  })}
+                  
+                  {/* Pagination Controls for Active */}
+                  {activeTotalPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pt-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setActiveCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={activeCurrentPage === 1}
+                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: Math.min(5, activeTotalPages) }, (_, i) => {
+                          let pageNum: number;
+                          if (activeTotalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (activeCurrentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (activeCurrentPage >= activeTotalPages - 2) {
+                            pageNum = activeTotalPages - 4 + i;
+                          } else {
+                            pageNum = activeCurrentPage - 2 + i;
+                          }
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={activeCurrentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setActiveCurrentPage(pageNum)}
+                              className={`w-8 h-8 p-0 ${
+                                activeCurrentPage === pageNum
+                                  ? "bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(91,180,255,0.3)]"
+                                  : "bg-[#00050B]/80 border-primary/30 hover:border-primary/50"
+                              }`}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setActiveCurrentPage((prev) => Math.min(prev + 1, activeTotalPages))}
+                        disabled={activeCurrentPage === activeTotalPages}
+                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  )}
+                  </>
                 )}
               </TabsContent>
 
@@ -655,7 +753,8 @@ export default function Goals() {
                     </CardContent>
                   </Card>
                 ) : (
-                  sortedCompletedGoals.map((goal) => {
+                  <>
+                  {paginatedCompletedGoals.map((goal) => {
                     const isHabitGoal = goal.goal_type === "habit";
                     const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
                     const difficultyColor = getDifficultyColor(goal.difficulty);
@@ -826,7 +925,63 @@ export default function Goals() {
                         </CardContent>
                       </Card>
                     );
-                  })
+                  })}
+                  
+                  {/* Pagination Controls for Completed */}
+                  {completedTotalPages > 1 && (
+                    <div className="flex items-center justify-center gap-4 pt-6">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCompletedCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        disabled={completedCurrentPage === 1}
+                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        Previous
+                      </Button>
+                      <div className="flex items-center gap-2">
+                        {Array.from({ length: Math.min(5, completedTotalPages) }, (_, i) => {
+                          let pageNum: number;
+                          if (completedTotalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (completedCurrentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (completedCurrentPage >= completedTotalPages - 2) {
+                            pageNum = completedTotalPages - 4 + i;
+                          } else {
+                            pageNum = completedCurrentPage - 2 + i;
+                          }
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={completedCurrentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCompletedCurrentPage(pageNum)}
+                              className={`w-8 h-8 p-0 ${
+                                completedCurrentPage === pageNum
+                                  ? "bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(91,180,255,0.3)]"
+                                  : "bg-[#00050B]/80 border-primary/30 hover:border-primary/50"
+                              }`}
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCompletedCurrentPage((prev) => Math.min(prev + 1, completedTotalPages))}
+                        disabled={completedCurrentPage === completedTotalPages}
+                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  )}
+                  </>
                 )}
               </TabsContent>
             </Tabs>
