@@ -90,7 +90,7 @@ export function AchievementsWidget() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                onClick={() => navigate("/profile?tab=achievements")} 
+                onClick={() => navigate("/achievements")} 
                 className="gap-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 font-orbitron text-xs uppercase tracking-wider"
               >
                 View All
