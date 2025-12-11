@@ -37,37 +37,67 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: isLocked ? 1 : 1.05 }}
+      whileHover={{ scale: isLocked ? 1 : 1.02 }}
       className={cn(
-        "relative rounded-lg border transition-all duration-300",
+        "relative rounded-lg transition-all duration-300 overflow-hidden",
         sizeClasses[size],
-        isLocked ? "bg-muted/20 border-border/50 opacity-60" : "bg-card/30 backdrop-blur-sm border-border/80",
-        !isLocked && "shadow-lg",
+        isLocked 
+          ? "bg-card/10 backdrop-blur-sm border border-primary/10" 
+          : "bg-card/30 backdrop-blur-xl border-2 border-primary/30",
       )}
       style={{
-        boxShadow: isLocked ? "none" : `0 0 20px ${color}40, inset 0 0 20px ${color}20`,
-        borderColor: isLocked ? undefined : color,
+        boxShadow: isLocked 
+          ? "none" 
+          : `0 0 30px ${color}30, inset 0 0 30px ${color}10, 0 8px 32px rgba(0,5,11,0.4)`,
+        borderColor: isLocked ? undefined : `${color}80`,
       }}
     >
-      {/* Rarity glow effect */}
+      {/* Inner border glow */}
       {!isLocked && (
-        <div className="absolute inset-0 rounded-lg opacity-20 blur-xl" style={{ backgroundColor: color }} />
+        <div className="absolute inset-[2px] rounded-[6px] border pointer-events-none" style={{ borderColor: `${color}30` }} />
       )}
 
-      <div className="relative flex items-start gap-3">
+      {/* Rarity glow effect */}
+      {!isLocked && (
+        <div 
+          className="absolute inset-0 rounded-lg opacity-20 blur-xl pointer-events-none" 
+          style={{ backgroundColor: color }} 
+        />
+      )}
+
+      {/* Scan line effect for unlocked */}
+      {!isLocked && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
+          <div 
+            className="absolute top-0 left-0 right-0 h-[2px] animate-scan"
+            style={{ 
+              background: `linear-gradient(90deg, transparent, ${color}80, transparent)`,
+              boxShadow: `0 0 10px ${color}60`
+            }}
+          />
+        </div>
+      )}
+
+      <div className="relative flex items-start gap-3 z-10">
         {/* Icon */}
         <div
           className={cn(
-            "rounded-full p-2 flex items-center justify-center shrink-0",
-            isLocked ? "bg-muted/50" : "bg-background/50",
+            "rounded-lg p-2.5 flex items-center justify-center shrink-0 transition-all",
+            isLocked ? "bg-card/20" : "bg-card/40 backdrop-blur-sm",
           )}
           style={{
-            boxShadow: isLocked ? "none" : `0 0 15px ${color}60`,
-            borderColor: color,
-            borderWidth: isLocked ? 0 : 2,
+            boxShadow: isLocked ? "none" : `0 0 20px ${color}40, inset 0 0 10px ${color}20`,
+            borderColor: isLocked ? "transparent" : color,
+            borderWidth: 2,
           }}
         >
-          <IconComponent size={iconSizes[size]} style={{ color: isLocked ? "hsl(var(--muted-foreground))" : color }} />
+          <IconComponent 
+            size={iconSizes[size]} 
+            style={{ 
+              color: isLocked ? "hsl(var(--muted-foreground))" : color,
+              filter: isLocked ? "none" : `drop-shadow(0 0 8px ${color})`
+            }} 
+          />
         </div>
 
         {/* Content */}
@@ -75,10 +105,13 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
           <div className="flex items-start justify-between gap-2">
             <h3
               className={cn(
-                "font-bold leading-tight",
-                size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg",
-                isLocked ? "text-muted-foreground" : "text-foreground",
+                "font-bold leading-tight font-orbitron uppercase tracking-wider",
+                size === "small" ? "text-xs" : size === "medium" ? "text-sm" : "text-base",
+                isLocked ? "text-muted-foreground/60" : "text-foreground",
               )}
+              style={{
+                textShadow: isLocked ? "none" : `0 0 10px ${color}60`
+              }}
             >
               {isHidden ? "???" : achievement.name}
             </h3>
@@ -86,34 +119,41 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
             {/* Rarity badge */}
             <span
               className={cn(
-                "text-xs font-bold px-2 py-0.5 rounded-full shrink-0",
-                isLocked ? "bg-muted" : "bg-background/80",
+                "text-[10px] font-bold px-2 py-1 rounded shrink-0 font-orbitron uppercase tracking-wider",
+                isLocked ? "bg-card/30 text-muted-foreground/50" : "bg-card/50 backdrop-blur-sm",
               )}
               style={{
-                color: isLocked ? "hsl(var(--muted-foreground))" : color,
-                borderColor: color,
-                borderWidth: isLocked ? 0 : 1,
+                color: isLocked ? undefined : color,
+                borderColor: isLocked ? "transparent" : `${color}60`,
+                borderWidth: 1,
+                boxShadow: isLocked ? "none" : `0 0 10px ${color}30`
               }}
             >
               {achievement.rarity.toUpperCase()}
             </span>
           </div>
 
-          <p className={cn("text-sm mt-1", isLocked ? "text-muted-foreground/70" : "text-muted-foreground")}>
+          <p className={cn(
+            "text-sm mt-1.5 font-rajdhani tracking-wide leading-relaxed",
+            isLocked ? "text-muted-foreground/40" : "text-muted-foreground"
+          )}>
             {isHidden ? "Secret achievement - complete hidden objectives to unlock" : achievement.description}
           </p>
 
           {achievement.flavor_text && !isHidden && (
             <p
-              className="text-xs italic mt-2 opacity-80"
-              style={{ color: isLocked ? "hsl(var(--muted-foreground))" : color }}
+              className="text-xs italic mt-2 opacity-80 font-rajdhani"
+              style={{ 
+                color: isLocked ? "hsl(var(--muted-foreground))" : color,
+                textShadow: isLocked ? "none" : `0 0 5px ${color}40`
+              }}
             >
               "{achievement.flavor_text}"
             </p>
           )}
 
           {achievement.unlocked && achievement.unlocked_at && (
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-xs text-primary/60 mt-2 font-orbitron tracking-wider uppercase">
               Unlocked {new Date(achievement.unlocked_at).toLocaleDateString()}
             </p>
           )}
@@ -122,27 +162,37 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
 
       {/* Particle effect for unlocked achievements */}
       {!isLocked && (
-        <div className="absolute inset-0 pointer-events-none">
-          {[...Array(3)].map((_, i) => (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
+          {[...Array(4)].map((_, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 rounded-full"
               style={{ backgroundColor: color }}
-              initial={{ opacity: 0 }}
+              initial={{ opacity: 0, x: "50%", y: "50%" }}
               animate={{
-                opacity: [0, 1, 0],
-                x: [0, Math.random() * 100 - 50],
-                y: [0, -Math.random() * 100],
+                opacity: [0, 0.8, 0],
+                x: [`50%`, `${Math.random() * 100}%`],
+                y: [`50%`, `${Math.random() * 100}%`],
               }}
               transition={{
-                duration: 2,
+                duration: 3,
                 repeat: Infinity,
-                delay: i * 0.7,
+                delay: i * 0.8,
                 ease: "easeOut",
               }}
             />
           ))}
         </div>
+      )}
+
+      {/* Shimmer effect on hover for unlocked */}
+      {!isLocked && (
+        <div 
+          className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{
+            background: `linear-gradient(135deg, transparent 0%, ${color}10 50%, transparent 100%)`
+          }}
+        />
       )}
     </motion.div>
   );
