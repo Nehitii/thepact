@@ -3,7 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PactSettingsCard } from "./PactSettingsCard";
-import { Trophy, Plus, Trash2, Edit2, X, Check } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Trophy, Plus, Trash2, Edit2, X, Check, Crown, Star, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,22 @@ interface Rank {
 interface RanksCardProps {
   userId: string;
 }
+
+// Get tier icon based on position
+const getTierIcon = (index: number, total: number) => {
+  const percentage = total > 1 ? index / (total - 1) : 0;
+  if (percentage >= 0.8) return Crown;
+  if (percentage >= 0.5) return Star;
+  return Zap;
+};
+
+// Get tier color based on position
+const getTierColor = (index: number, total: number) => {
+  const percentage = total > 1 ? index / (total - 1) : 0;
+  if (percentage >= 0.8) return "text-yellow-400 border-yellow-400/30 bg-yellow-400/10";
+  if (percentage >= 0.5) return "text-purple-400 border-purple-400/30 bg-purple-400/10";
+  return "text-primary border-primary/30 bg-primary/10";
+};
 
 export function RanksCard({ userId }: RanksCardProps) {
   const { toast } = useToast();
@@ -157,106 +174,133 @@ export function RanksCard({ userId }: RanksCardProps) {
       title="Ranks"
       description="Define progression ranks and point thresholds"
     >
-      {/* Ranks List */}
-      <div className="space-y-3">
+      {/* Ranks List with ScrollArea */}
+      <div className="relative">
         {ranks.length === 0 ? (
-          <div className="text-center py-6 text-muted-foreground font-rajdhani">
-            No ranks defined yet. Add your first rank below.
+          <div className="text-center py-8 text-muted-foreground font-rajdhani border border-dashed border-primary/20 rounded-lg bg-primary/5">
+            <Trophy className="h-8 w-8 mx-auto mb-2 text-primary/40" />
+            <p>No ranks defined yet.</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Add your first rank below.</p>
           </div>
         ) : (
-          ranks.map((rank) => (
-            <div
-              key={rank.id}
-              className={cn(
-                "flex items-center gap-3 p-4 rounded-lg",
-                "bg-secondary/30 border-2 border-primary/20",
-                "transition-all duration-200",
-                editingId === rank.id && "border-primary/50 bg-secondary/50"
-              )}
-            >
-              {editingId === rank.id ? (
-                <>
-                  <div className="flex-1 grid grid-cols-2 gap-3">
-                    <Input
-                      type="number"
-                      placeholder="Min Points"
-                      value={editForm.min_points}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, min_points: e.target.value })
-                      }
-                      min="0"
-                      className="h-10"
-                    />
-                    <Input
-                      placeholder="Rank Name"
-                      value={editForm.name}
-                      onChange={(e) =>
-                        setEditForm({ ...editForm, name: e.target.value })
-                      }
-                      maxLength={50}
-                      className="h-10"
-                    />
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleEdit(rank.id)}
-                    disabled={loading}
-                    className="h-10 w-10 text-primary hover:bg-primary/20"
+          <ScrollArea className="h-[280px] pr-3">
+            <div className="space-y-2">
+              {ranks.map((rank, index) => {
+                const TierIcon = getTierIcon(index, ranks.length);
+                const tierColorClass = getTierColor(index, ranks.length);
+                
+                return (
+                  <div
+                    key={rank.id}
+                    className={cn(
+                      "relative group/item flex items-center gap-3 p-3 rounded-lg",
+                      "bg-gradient-to-r from-[#0a1525]/80 to-[#0d1a2d]/80",
+                      "border border-primary/20 hover:border-primary/40",
+                      "transition-all duration-200",
+                      editingId === rank.id && "border-primary/50 bg-primary/5"
+                    )}
                   >
-                    <Check className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={cancelEdit}
-                    disabled={loading}
-                    className="h-10 w-10 text-muted-foreground hover:bg-secondary/50"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-foreground font-orbitron uppercase tracking-wide truncate">
-                      {rank.name}
+                    {/* Tier indicator */}
+                    <div className={cn(
+                      "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border",
+                      tierColorClass
+                    )}>
+                      <TierIcon className="h-4 w-4" />
                     </div>
-                    <div className="text-sm text-muted-foreground font-rajdhani">
-                      {rank.min_points.toLocaleString()} points
-                    </div>
+
+                    {editingId === rank.id ? (
+                      <>
+                        <div className="flex-1 grid grid-cols-2 gap-2">
+                          <Input
+                            type="number"
+                            placeholder="Points"
+                            value={editForm.min_points}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, min_points: e.target.value })
+                            }
+                            min="0"
+                            className="h-9 text-sm bg-[#0a1525] border-primary/30 focus:border-primary/60"
+                          />
+                          <Input
+                            placeholder="Name"
+                            value={editForm.name}
+                            onChange={(e) =>
+                              setEditForm({ ...editForm, name: e.target.value })
+                            }
+                            maxLength={50}
+                            className="h-9 text-sm bg-[#0a1525] border-primary/30 focus:border-primary/60"
+                          />
+                        </div>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(rank.id)}
+                          disabled={loading}
+                          className="h-9 w-9 text-primary hover:bg-primary/20 flex-shrink-0"
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={cancelEdit}
+                          disabled={loading}
+                          className="h-9 w-9 text-muted-foreground hover:bg-secondary/50 flex-shrink-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-foreground font-orbitron uppercase tracking-wide text-sm truncate">
+                            {rank.name}
+                          </div>
+                          <div className="text-xs text-muted-foreground/80 font-rajdhani">
+                            {rank.min_points.toLocaleString()} pts
+                          </div>
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => startEdit(rank)}
+                            disabled={loading}
+                            className="h-8 w-8 text-primary/70 hover:text-primary hover:bg-primary/20"
+                          >
+                            <Edit2 className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => handleDelete(rank.id, rank.name)}
+                            disabled={loading}
+                            className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/20"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => startEdit(rank)}
-                    disabled={loading}
-                    className="h-10 w-10 text-primary/70 hover:text-primary hover:bg-primary/20"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDelete(rank.id, rank.name)}
-                    disabled={loading}
-                    className="h-10 w-10 text-destructive/70 hover:text-destructive hover:bg-destructive/20"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
+                );
+              })}
             </div>
-          ))
+          </ScrollArea>
+        )}
+        
+        {/* Fade indicator at bottom when scrollable */}
+        {ranks.length > 4 && (
+          <div className="absolute bottom-0 left-0 right-3 h-8 bg-gradient-to-t from-[#050d18] to-transparent pointer-events-none rounded-b-lg" />
         )}
       </div>
 
       {/* Add New Rank Form */}
       {showAddForm ? (
-        <div className="p-4 rounded-lg bg-secondary/30 border-2 border-primary/30 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted-foreground font-orbitron uppercase tracking-widest">
+        <div className="p-4 rounded-lg bg-gradient-to-b from-primary/10 to-primary/5 border border-primary/30 space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest">
                 Min Points
               </label>
               <Input
@@ -267,11 +311,11 @@ export function RanksCard({ userId }: RanksCardProps) {
                   setNewRank({ ...newRank, min_points: e.target.value })
                 }
                 min="0"
-                className="h-11"
+                className="h-10 bg-[#0a1525] border-primary/30 focus:border-primary/60"
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-muted-foreground font-orbitron uppercase tracking-widest">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest">
                 Rank Name
               </label>
               <Input
@@ -279,17 +323,17 @@ export function RanksCard({ userId }: RanksCardProps) {
                 value={newRank.name}
                 onChange={(e) => setNewRank({ ...newRank, name: e.target.value })}
                 maxLength={50}
-                className="h-11"
+                className="h-10 bg-[#0a1525] border-primary/30 focus:border-primary/60"
               />
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <Button 
               onClick={handleAdd} 
               disabled={loading} 
               className={cn(
-                "flex-1 h-11 font-orbitron uppercase tracking-wider text-sm",
-                "bg-primary/20 border-2 border-primary/40 rounded-lg",
+                "flex-1 h-10 font-orbitron uppercase tracking-wider text-xs",
+                "bg-primary/20 border border-primary/40 rounded-lg",
                 "text-primary hover:bg-primary/30 hover:border-primary/60"
               )}
             >
@@ -303,10 +347,9 @@ export function RanksCard({ userId }: RanksCardProps) {
                 setNewRank({ min_points: "", name: "" });
               }}
               disabled={loading}
-              className="h-11 px-4 border-2 border-primary/30 text-muted-foreground"
+              className="h-10 px-4 border border-primary/30 text-muted-foreground hover:bg-primary/10"
             >
-              <X className="h-4 w-4 mr-2" />
-              Cancel
+              <X className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -315,8 +358,8 @@ export function RanksCard({ userId }: RanksCardProps) {
           onClick={() => setShowAddForm(true)}
           variant="outline"
           className={cn(
-            "w-full h-11 font-orbitron uppercase tracking-wider text-sm",
-            "border-2 border-dashed border-primary/40 rounded-lg",
+            "w-full h-10 font-orbitron uppercase tracking-wider text-xs",
+            "border border-dashed border-primary/40 rounded-lg",
             "text-primary/70 hover:text-primary hover:border-primary/60 hover:bg-primary/10"
           )}
         >
