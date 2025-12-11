@@ -67,7 +67,7 @@ export function CustomDifficultyCard({
       <div className="space-y-4">
         {/* Name Input */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest">
+          <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
             Difficulty Name
           </label>
           <Input
@@ -75,14 +75,14 @@ export function CustomDifficultyCard({
             value={customDifficultyName}
             onChange={(e) => onCustomDifficultyNameChange(e.target.value)}
             maxLength={50}
-            className="h-11 bg-gradient-to-r from-[#0a1525]/80 to-[#0d1a2d]/80 border border-primary/30 focus:border-primary/60"
+            className="h-11 bg-[#0d1a2d]/90 border border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
           />
         </div>
 
         {/* Color Picker */}
         <div className="space-y-1.5">
-          <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest flex items-center gap-1.5">
-            <Palette className="h-3 w-3" />
+          <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest flex items-center gap-1.5 drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
+            <Palette className="h-3 w-3 text-[#8ACBFF]" />
             Difficulty Color
           </label>
           <div className="flex items-center gap-3">
@@ -110,18 +110,18 @@ export function CustomDifficultyCard({
               onChange={(e) => onCustomDifficultyColorChange(e.target.value)}
               placeholder="#a855f7"
               maxLength={7}
-              className="h-11 flex-1 bg-gradient-to-r from-[#0a1525]/80 to-[#0d1a2d]/80 border border-primary/30 focus:border-primary/60 font-mono text-sm"
+              className="h-11 flex-1 bg-[#0d1a2d]/90 border border-primary/40 focus:border-primary/70 font-mono text-sm text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
             />
           </div>
         </div>
 
         {/* Active Toggle */}
-        <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-[#0a1525]/80 to-[#0d1a2d]/80 border border-primary/20 hover:border-primary/30 transition-colors">
+        <div className="flex items-center justify-between p-3 rounded-lg bg-[#0d1a2d]/80 border border-primary/30 hover:border-primary/40 transition-colors">
           <div className="space-y-0.5 min-w-0 flex-1 mr-3">
-            <span className="text-sm font-semibold text-foreground font-rajdhani uppercase tracking-wide block truncate">
+            <span className="text-sm font-semibold text-[#e0f0ff] font-rajdhani uppercase tracking-wide block truncate">
               Activate Custom Difficulty
             </span>
-            <p className="text-xs text-muted-foreground/80 font-rajdhani truncate">
+            <p className="text-xs text-[#8ACBFF] font-rajdhani truncate">
               {customDifficultyActive 
                 ? "Available in goal creation" 
                 : "Hidden from selectors"}
@@ -137,8 +137,8 @@ export function CustomDifficultyCard({
 
         {/* Preview */}
         {customDifficultyName && (
-          <div className="p-3 rounded-lg border border-dashed border-primary/20 bg-primary/5">
-            <p className="text-[10px] text-muted-foreground/60 font-orbitron uppercase tracking-widest mb-2">Preview</p>
+          <div className="p-3 rounded-lg border border-dashed border-primary/30 bg-primary/5">
+            <p className="text-[10px] text-[#7eb3d9] font-orbitron uppercase tracking-widest mb-2">Preview</p>
             <div className="flex items-center gap-2">
               <div 
                 className="w-3 h-3 rounded-full"

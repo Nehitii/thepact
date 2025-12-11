@@ -99,8 +99,8 @@ export function ProjectTimelineCard({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Start Date */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-primary/60" />
+            <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest flex items-center gap-1.5 drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
+              <div className="w-2 h-2 rounded-full bg-primary/80 shadow-[0_0_6px_rgba(91,180,255,0.6)]" />
               Start Date
             </label>
             <Popover>
@@ -109,15 +109,15 @@ export function ProjectTimelineCard({
                   variant="outline"
                   className={cn(
                     "w-full h-11 justify-start text-left font-normal px-3",
-                    "bg-gradient-to-r from-[#0a1525]/80 to-[#0d1a2d]/80",
-                    "border border-primary/30 rounded-lg",
-                    "text-foreground font-rajdhani text-sm",
-                    "hover:border-primary/50 hover:bg-primary/5",
+                    "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]",
+                    "border border-primary/40 rounded-lg",
+                    "text-[#e0f0ff] font-rajdhani text-sm",
+                    "hover:border-primary/60 hover:bg-[#0d1a2d]",
                     "focus:ring-1 focus:ring-primary/50",
-                    !projectStartDate && "text-muted-foreground/60"
+                    !projectStartDate && "text-[#6b9ec4]"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                  <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF] flex-shrink-0" />
                   <span className="truncate">
                     {projectStartDate ? formatDisplayDate(projectStartDate) : "Select start"}
                   </span>
@@ -140,8 +140,8 @@ export function ProjectTimelineCard({
 
           {/* End Date */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-primary/30" />
+            <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest flex items-center gap-1.5 drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
+              <div className="w-2 h-2 rounded-full bg-primary/60 shadow-[0_0_6px_rgba(91,180,255,0.4)]" />
               End Date
             </label>
             <Popover>
@@ -150,15 +150,15 @@ export function ProjectTimelineCard({
                   variant="outline"
                   className={cn(
                     "w-full h-11 justify-start text-left font-normal px-3",
-                    "bg-gradient-to-r from-[#0a1525]/80 to-[#0d1a2d]/80",
-                    "border border-primary/30 rounded-lg",
-                    "text-foreground font-rajdhani text-sm",
-                    "hover:border-primary/50 hover:bg-primary/5",
+                    "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]",
+                    "border border-primary/40 rounded-lg",
+                    "text-[#e0f0ff] font-rajdhani text-sm",
+                    "hover:border-primary/60 hover:bg-[#0d1a2d]",
                     "focus:ring-1 focus:ring-primary/50",
-                    !projectEndDate && "text-muted-foreground/60"
+                    !projectEndDate && "text-[#6b9ec4]"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
+                  <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF] flex-shrink-0" />
                   <span className="truncate">
                     {projectEndDate ? formatDisplayDate(projectEndDate) : "Select end"}
                   </span>
