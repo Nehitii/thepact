@@ -41,10 +41,10 @@ export function PactSettingsCard({
               {icon}
             </div>
             <div className="min-w-0 flex-1">
-              <h3 className="font-orbitron uppercase tracking-wider text-sm text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.6)]">
+              <h3 className="font-orbitron uppercase tracking-wider text-sm text-[#8ACBFF] drop-shadow-[0_0_8px_rgba(138,203,255,0.6)]">
                 {title}
               </h3>
-              <p className="text-xs text-muted-foreground/80 font-rajdhani mt-0.5 truncate">
+              <p className="text-xs text-[#a8c8e8] font-rajdhani mt-0.5 truncate">
                 {description}
               </p>
             </div>

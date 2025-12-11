@@ -177,10 +177,10 @@ export function RanksCard({ userId }: RanksCardProps) {
       {/* Ranks List with ScrollArea */}
       <div className="relative">
         {ranks.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground font-rajdhani border border-dashed border-primary/20 rounded-lg bg-primary/5">
-            <Trophy className="h-8 w-8 mx-auto mb-2 text-primary/40" />
+          <div className="text-center py-8 text-[#a8c8e8] font-rajdhani border border-dashed border-primary/20 rounded-lg bg-primary/5">
+            <Trophy className="h-8 w-8 mx-auto mb-2 text-primary/60" />
             <p>No ranks defined yet.</p>
-            <p className="text-xs text-muted-foreground/60 mt-1">Add your first rank below.</p>
+            <p className="text-xs text-[#7eb3d9] mt-1">Add your first rank below.</p>
           </div>
         ) : (
           <ScrollArea className="h-[280px] pr-3">
@@ -219,7 +219,7 @@ export function RanksCard({ userId }: RanksCardProps) {
                               setEditForm({ ...editForm, min_points: e.target.value })
                             }
                             min="0"
-                            className="h-9 text-sm bg-[#0a1525] border-primary/30 focus:border-primary/60"
+                            className="h-9 text-sm bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
                           />
                           <Input
                             placeholder="Name"
@@ -228,7 +228,7 @@ export function RanksCard({ userId }: RanksCardProps) {
                               setEditForm({ ...editForm, name: e.target.value })
                             }
                             maxLength={50}
-                            className="h-9 text-sm bg-[#0a1525] border-primary/30 focus:border-primary/60"
+                            className="h-9 text-sm bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
                           />
                         </div>
                         <Button
@@ -253,10 +253,10 @@ export function RanksCard({ userId }: RanksCardProps) {
                     ) : (
                       <>
                         <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-foreground font-orbitron uppercase tracking-wide text-sm truncate">
+                          <div className="font-semibold text-[#e0f0ff] font-orbitron uppercase tracking-wide text-sm truncate drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
                             {rank.name}
                           </div>
-                          <div className="text-xs text-muted-foreground/80 font-rajdhani">
+                          <div className="text-xs text-[#8ACBFF] font-rajdhani font-medium">
                             {rank.min_points.toLocaleString()} pts
                           </div>
                         </div>
@@ -300,7 +300,7 @@ export function RanksCard({ userId }: RanksCardProps) {
         <div className="p-4 rounded-lg bg-gradient-to-b from-primary/10 to-primary/5 border border-primary/30 space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest">
+              <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
                 Min Points
               </label>
               <Input
@@ -311,11 +311,11 @@ export function RanksCard({ userId }: RanksCardProps) {
                   setNewRank({ ...newRank, min_points: e.target.value })
                 }
                 min="0"
-                className="h-10 bg-[#0a1525] border-primary/30 focus:border-primary/60"
+                className="h-10 bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[10px] font-semibold text-muted-foreground font-orbitron uppercase tracking-widest">
+              <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
                 Rank Name
               </label>
               <Input
@@ -323,7 +323,7 @@ export function RanksCard({ userId }: RanksCardProps) {
                 value={newRank.name}
                 onChange={(e) => setNewRank({ ...newRank, name: e.target.value })}
                 maxLength={50}
-                className="h-10 bg-[#0a1525] border-primary/30 focus:border-primary/60"
+                className="h-10 bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
               />
             </div>
           </div>
