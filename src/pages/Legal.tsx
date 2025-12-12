@@ -5,6 +5,15 @@ import { Navigation } from "@/components/Navigation";
 export default function Legal() {
   const navigate = useNavigate();
 
+  const handleBack = () => {
+    // Check if there's history to go back to, otherwise go to profile
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/profile');
+    }
+  };
+
   return (
     <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
       {/* Deep space background with radial glow */}
@@ -28,7 +37,7 @@ export default function Legal() {
         {/* Header */}
         <div className="pt-8 space-y-4 animate-fade-in">
           <button
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="flex items-center gap-2 text-[#6b9ec4] hover:text-[#8ACBFF] transition-colors font-rajdhani"
           >
             <ArrowLeft className="h-4 w-4" />
