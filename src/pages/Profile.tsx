@@ -191,9 +191,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Floating Devil Note Button */}
-        {user && <ProfileDevilNote />}
-
         {/* Credits */}
         <div className="text-center py-6 space-y-2 animate-fade-in">
           <div className="flex items-center justify-center gap-2 text-sm text-primary/60">
@@ -218,6 +215,9 @@ export default function Profile() {
           </Link>
         </div>
       </div>
+
+      {/* Fixed Devil Note Button - Outside scrollable content */}
+      {user && <ProfileDevilNote />}
 
       <Navigation />
     </div>
