@@ -7,9 +7,9 @@ import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSetti
 import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
 import { ProfileFinanceSettings } from "@/components/profile/ProfileFinanceSettings";
+import { ProfileDisplaySounds } from "@/components/profile/ProfileDisplaySounds";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { ProfileSignOut } from "@/components/profile/ProfileSignOut";
-import { ProfileAchievements } from "@/components/profile/ProfileAchievements";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -182,16 +182,16 @@ export default function Profile() {
             {/* Finance Settings */}
             <ProfileFinanceSettings />
 
-            {/* Achievements */}
-            <ProfileAchievements />
-
-            {/* Devil Note */}
-            <ProfileDevilNote />
+            {/* Display & Sounds */}
+            <ProfileDisplaySounds />
 
             {/* Sign Out */}
             <ProfileSignOut />
           </div>
         )}
+
+        {/* Floating Devil Note Button */}
+        {user && <ProfileDevilNote />}
 
         {/* Credits */}
         <div className="text-center py-6 space-y-2 animate-fade-in">
