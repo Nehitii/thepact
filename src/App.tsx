@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
 import Community from "./pages/Community";
+import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -126,6 +127,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Community />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/legal"
+                element={
+                  <ProtectedRoute>
+                    <Legal />
                   </ProtectedRoute>
                 }
               />

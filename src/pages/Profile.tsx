@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Navigation } from "@/components/Navigation";
-import { Flame } from "lucide-react";
+import { Flame, Scale } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
 import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
@@ -202,6 +203,19 @@ export default function Profile() {
           <div className="text-xs text-primary/40 font-light tracking-wider font-rajdhani">
             Author: G.L
           </div>
+        </div>
+
+        {/* Legal Access */}
+        <div className="text-center pb-4 animate-fade-in">
+          <Link
+            to="/legal"
+            className="inline-flex items-center gap-2 text-xs text-[#6b9ec4]/70 hover:text-[#8ACBFF] transition-colors duration-300 font-rajdhani tracking-wide group"
+          >
+            <Scale className="h-3 w-3 group-hover:drop-shadow-[0_0_6px_rgba(91,180,255,0.5)] transition-all duration-300" />
+            <span className="group-hover:drop-shadow-[0_0_8px_rgba(91,180,255,0.4)]">
+              Copyright, Terms & Legal
+            </span>
+          </Link>
         </div>
       </div>
 
