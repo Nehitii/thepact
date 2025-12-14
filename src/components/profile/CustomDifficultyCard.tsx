@@ -86,24 +86,26 @@ export function CustomDifficultyCard({
             Difficulty Color
           </label>
           <div className="flex items-center gap-3">
-            <div 
-              className="relative w-11 h-11 rounded-lg border border-primary/40 overflow-hidden flex-shrink-0 shadow-[0_0_15px_rgba(91,180,255,0.1)]"
+            <label 
+              className="relative w-12 h-12 rounded-lg border border-primary/40 overflow-hidden flex-shrink-0 shadow-[0_0_15px_rgba(91,180,255,0.1)] cursor-pointer group transition-all duration-200 hover:border-primary/70 hover:shadow-[0_0_20px_rgba(91,180,255,0.25)] active:scale-95"
               style={{ backgroundColor: customDifficultyColor }}
             >
               <input
                 type="color"
                 value={customDifficultyColor}
                 onChange={(e) => onCustomDifficultyColorChange(e.target.value)}
-                className="absolute inset-0 w-full h-full cursor-pointer opacity-0"
+                className="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 cursor-pointer opacity-0"
               />
-              {/* Inner glow effect */}
+              {/* Inner glow effect - pointer-events-none to not block clicks */}
               <div 
-                className="absolute inset-0 rounded-lg"
+                className="absolute inset-0 rounded-lg pointer-events-none transition-all duration-200 group-hover:opacity-80"
                 style={{ 
                   boxShadow: `inset 0 0 20px ${customDifficultyColor}40`
                 }}
               />
-            </div>
+              {/* Hover indicator */}
+              <div className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/10 transition-colors pointer-events-none" />
+            </label>
             <Input
               type="text"
               value={customDifficultyColor}
