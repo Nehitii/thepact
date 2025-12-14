@@ -1,4 +1,5 @@
-import { Settings2, Check, X, RotateCcw, LayoutGrid } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Check, X, RotateCcw, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -8,6 +9,7 @@ interface ModuleManagerProps {
   onValidate: () => void;
   onCancel: () => void;
   onReset: () => void;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 export function ModuleManager({
@@ -16,17 +18,46 @@ export function ModuleManager({
   onValidate,
   onCancel,
   onReset,
+  scrollContainerRef,
 }: ModuleManagerProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const threshold = 100;
+      
+      if (scrollY > threshold) {
+        // Scrolled down past threshold - hide button
+        setIsVisible(false);
+      } else {
+        // At top - show button
+        setIsVisible(true);
+      }
+      
+      lastScrollY.current = scrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (!isEditMode) {
     return (
       <button
         onClick={onEnterEdit}
-        className="fixed bottom-24 right-4 z-40 group"
+        className={cn(
+          "absolute top-8 right-6 z-40 group transition-all duration-500 ease-out",
+          isVisible 
+            ? "opacity-100 translate-y-0 pointer-events-auto" 
+            : "opacity-0 -translate-y-4 pointer-events-none"
+        )}
       >
-        <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl group-hover:blur-2xl transition-all" />
-        <div className="relative flex items-center gap-2 px-4 py-3 bg-card/90 backdrop-blur-xl border-2 border-primary/40 rounded-full shadow-[0_0_20px_rgba(91,180,255,0.3)] hover:border-primary/60 hover:shadow-[0_0_30px_rgba(91,180,255,0.5)] transition-all">
-          <LayoutGrid className="w-5 h-5 text-primary" />
-          <span className="text-sm font-orbitron text-primary uppercase tracking-wider hidden sm:inline">
+        <div className="absolute inset-0 bg-primary/20 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
+        <div className="relative flex items-center gap-2 px-4 py-2.5 bg-card/80 backdrop-blur-xl border border-primary/30 rounded-lg shadow-[0_0_15px_rgba(91,180,255,0.2)] hover:border-primary/50 hover:shadow-[0_0_25px_rgba(91,180,255,0.4)] transition-all">
+          <LayoutGrid className="w-4 h-4 text-primary" />
+          <span className="text-xs font-orbitron text-primary uppercase tracking-wider">
             Customize
           </span>
         </div>

@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserPact } from "@/lib/supabase";
 import { supabase } from "@/lib/supabase";
 import { PactVisual } from "@/components/PactVisual";
-import { PactDashboard } from "@/components/PactDashboard";
 import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 import { Navigation } from "@/components/Navigation";
@@ -14,6 +13,8 @@ import { useModuleLayout } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
 import { ModuleGrid } from "@/components/home/ModuleGrid";
 import { ModuleManager } from "@/components/home/ModuleManager";
+import { ProgressByDifficultyModule } from "@/components/home/ProgressByDifficultyModule";
+import { CostTrackingModule } from "@/components/home/CostTrackingModule";
 
 interface Pact {
   id: string;
@@ -230,8 +231,8 @@ export default function Home() {
   const progressPercentage = Number(pact.global_progress) || 0;
   const sortedModules = getAllModules();
 
-  // Module rendering map
-  const renderModule = (moduleId: string) => {
+  // Module rendering map with compact support
+  const renderModule = (moduleId: string, compact: boolean = false) => {
     switch (moduleId) {
       case 'timeline':
         return (
@@ -241,27 +242,34 @@ export default function Home() {
           />
         );
       case 'goals-gauge':
-        return <GoalsGaugeModule data={dashboardData} />;
+        return <GoalsGaugeModule data={dashboardData} compact={compact} />;
       case 'steps-gauge':
-        return <StepsGaugeModule data={dashboardData} />;
+        return <StepsGaugeModule data={dashboardData} compact={compact} />;
       case 'status-summary':
-        return <StatusSummaryModule data={dashboardData} />;
-      case 'dashboard':
+        return <StatusSummaryModule data={dashboardData} compact={compact} />;
+      case 'progress-difficulty':
         return (
-          <PactDashboard
+          <ProgressByDifficultyModule
             difficultyProgress={dashboardData.difficultyProgress}
-            totalCostEngaged={dashboardData.totalCostEngaged}
-            totalCostPaid={dashboardData.totalCostPaid}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
+            compact={compact}
+          />
+        );
+      case 'cost-tracking':
+        return (
+          <CostTrackingModule
+            totalCostEngaged={dashboardData.totalCostEngaged}
+            totalCostPaid={dashboardData.totalCostPaid}
+            compact={compact}
           />
         );
       case 'focus-goals':
-        return <FocusGoalsModule goals={goals} navigate={navigate} />;
+        return <FocusGoalsModule goals={goals} navigate={navigate} compact={compact} />;
       case 'the-call':
-        return <TheCallModule navigate={navigate} />;
+        return <TheCallModule navigate={navigate} compact={compact} />;
       case 'finance':
-        return <FinanceModule navigate={navigate} />;
+        return <FinanceModule navigate={navigate} compact={compact} />;
       case 'achievements':
         return <AchievementsWidget />;
       default:
@@ -437,12 +445,13 @@ export default function Home() {
             <ModuleCard
               key={module.id}
               id={module.id}
+              name={module.name}
               isEditMode={isEditMode}
               isEnabled={module.enabled}
               onToggle={() => toggleModule(module.id)}
               size={module.size}
             >
-              {renderModule(module.id)}
+              {renderModule(module.id, module.size === 'half')}
             </ModuleCard>
           ))}
         </ModuleGrid>
@@ -464,29 +473,29 @@ export default function Home() {
 
 // ===== MODULE COMPONENTS =====
 
-function GoalsGaugeModule({ data }: { data: any }) {
+function GoalsGaugeModule({ data, compact = false }: { data: any; compact?: boolean }) {
   return (
     <div className="relative group animate-fade-in">
       <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-6 scan-line overflow-hidden">
+      <div className={`relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg scan-line overflow-hidden hover:border-primary/50 transition-all ${compact ? 'p-4' : 'p-6'}`}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
         </div>
         <div className="relative z-10">
-          <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-4">Goals Completed</div>
-          <div className="text-center mb-4">
-            <div className="text-5xl font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)]">
+          <div className={`text-primary/70 uppercase tracking-widest font-orbitron ${compact ? 'text-[10px] mb-2' : 'text-xs mb-4'}`}>Goals Completed</div>
+          <div className={`text-center ${compact ? 'mb-2' : 'mb-4'}`}>
+            <div className={`font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)] ${compact ? 'text-3xl' : 'text-5xl'}`}>
               {data.goalsCompleted}
-              <span className="text-2xl text-primary/50 ml-2">/ {data.totalGoals}</span>
+              <span className={`text-primary/50 ml-2 ${compact ? 'text-lg' : 'text-2xl'}`}>/ {data.totalGoals}</span>
             </div>
-            <div className="text-xl font-semibold text-accent mt-2 font-orbitron">
+            <div className={`font-semibold text-accent font-orbitron ${compact ? 'text-sm mt-1' : 'text-xl mt-2'}`}>
               {data.totalGoals > 0 
                 ? ((data.goalsCompleted / data.totalGoals) * 100).toFixed(0)
                 : 0}%
             </div>
           </div>
           <div className="space-y-2">
-            <div className="relative h-3 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
+            <div className={`relative w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20 ${compact ? 'h-2' : 'h-3'}`}>
               <div
                 className="h-full bg-gradient-to-r from-health via-health to-health/80 transition-all duration-1000 shadow-[0_0_15px_rgba(74,222,128,0.5)]"
                 style={{ 
@@ -498,7 +507,7 @@ function GoalsGaugeModule({ data }: { data: any }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
               </div>
             </div>
-            <div className="flex items-center justify-between text-[10px] text-primary/50 uppercase tracking-wider font-rajdhani">
+            <div className={`flex items-center justify-between text-primary/50 uppercase tracking-wider font-rajdhani ${compact ? 'text-[9px]' : 'text-[10px]'}`}>
               <span>{data.goalsCompleted} complete</span>
               <span>{data.totalGoals - data.goalsCompleted} remaining</span>
             </div>
@@ -509,29 +518,29 @@ function GoalsGaugeModule({ data }: { data: any }) {
   );
 }
 
-function StepsGaugeModule({ data }: { data: any }) {
+function StepsGaugeModule({ data, compact = false }: { data: any; compact?: boolean }) {
   return (
     <div className="relative group animate-fade-in">
       <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-6 scan-line overflow-hidden">
+      <div className={`relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg scan-line overflow-hidden hover:border-primary/50 transition-all ${compact ? 'p-4' : 'p-6'}`}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
         </div>
         <div className="relative z-10">
-          <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-4">Steps Completed</div>
-          <div className="text-center mb-4">
-            <div className="text-5xl font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)]">
+          <div className={`text-primary/70 uppercase tracking-widest font-orbitron ${compact ? 'text-[10px] mb-2' : 'text-xs mb-4'}`}>Steps Completed</div>
+          <div className={`text-center ${compact ? 'mb-2' : 'mb-4'}`}>
+            <div className={`font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)] ${compact ? 'text-3xl' : 'text-5xl'}`}>
               {data.totalStepsCompleted}
-              <span className="text-2xl text-primary/50 ml-2">/ {data.totalSteps}</span>
+              <span className={`text-primary/50 ml-2 ${compact ? 'text-lg' : 'text-2xl'}`}>/ {data.totalSteps}</span>
             </div>
-            <div className="text-xl font-semibold text-accent mt-2 font-orbitron">
+            <div className={`font-semibold text-accent font-orbitron ${compact ? 'text-sm mt-1' : 'text-xl mt-2'}`}>
               {data.totalSteps > 0 
                 ? ((data.totalStepsCompleted / data.totalSteps) * 100).toFixed(0)
                 : 0}%
             </div>
           </div>
           <div className="space-y-2">
-            <div className="relative h-3 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
+            <div className={`relative w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20 ${compact ? 'h-2' : 'h-3'}`}>
               <div
                 className="h-full bg-gradient-to-r from-primary via-accent to-primary transition-all duration-1000 shadow-[0_0_15px_rgba(91,180,255,0.5)]"
                 style={{ 
@@ -543,7 +552,7 @@ function StepsGaugeModule({ data }: { data: any }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
               </div>
             </div>
-            <div className="flex items-center justify-between text-[10px] text-primary/50 uppercase tracking-wider font-rajdhani">
+            <div className={`flex items-center justify-between text-primary/50 uppercase tracking-wider font-rajdhani ${compact ? 'text-[9px]' : 'text-[10px]'}`}>
               <span>{data.totalStepsCompleted} complete</span>
               <span>{data.totalSteps - data.totalStepsCompleted} remaining</span>
             </div>
@@ -554,37 +563,37 @@ function StepsGaugeModule({ data }: { data: any }) {
   );
 }
 
-function StatusSummaryModule({ data }: { data: any }) {
+function StatusSummaryModule({ data, compact = false }: { data: any; compact?: boolean }) {
   return (
     <div className="animate-fade-in relative group">
       <div className="absolute inset-0 bg-primary/5 rounded-lg blur-2xl" />
-      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden">
+      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden hover:border-primary/50 transition-all">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
         </div>
         <div className="relative z-10">
-          <div className="p-6 border-b border-primary/20">
-            <h3 className="text-sm font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary">
+          <div className={`border-b border-primary/20 ${compact ? 'p-4' : 'p-6'}`}>
+            <h3 className={`font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary ${compact ? 'text-xs' : 'text-sm'}`}>
               Goals Status Summary
             </h3>
-            <p className="text-xs text-primary/50 font-rajdhani mt-1">Distribution by current status</p>
+            <p className={`text-primary/50 font-rajdhani mt-1 ${compact ? 'text-[10px]' : 'text-xs'}`}>Distribution by current status</p>
           </div>
-          <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className={compact ? 'p-4' : 'p-6'}>
+            <div className={`grid gap-3 ${compact ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4 gap-4'}`}>
               {/* Not Started */}
-              <div className="relative text-center p-4 rounded-lg bg-card/30 backdrop-blur border border-primary/20 hover:border-primary/40 transition-all overflow-hidden">
+              <div className={`relative text-center rounded-lg bg-card/30 backdrop-blur border border-primary/20 hover:border-primary/40 transition-all overflow-hidden ${compact ? 'p-3' : 'p-4'}`}>
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
                 </div>
                 <div className="relative z-10">
-                  <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className={`flex items-center justify-center gap-2 ${compact ? 'mb-2' : 'mb-3'}`}>
                     <div className="h-2 w-2 rounded-full bg-muted-foreground shadow-[0_0_8px_rgba(156,163,175,0.5)]"></div>
-                    <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider font-orbitron">Not Started</span>
+                    <span className={`font-medium text-muted-foreground uppercase tracking-wider font-orbitron ${compact ? 'text-[8px]' : 'text-[10px]'}`}>Not Started</span>
                   </div>
-                  <div className="text-4xl font-bold text-muted-foreground font-orbitron drop-shadow-[0_0_10px_rgba(156,163,175,0.3)]">
+                  <div className={`font-bold text-muted-foreground font-orbitron drop-shadow-[0_0_10px_rgba(156,163,175,0.3)] ${compact ? 'text-2xl' : 'text-4xl'}`}>
                     {data.statusCounts.not_started}
                   </div>
-                  <div className="text-xs text-muted-foreground/70 mt-2 font-rajdhani">
+                  <div className={`text-muted-foreground/70 mt-1 font-rajdhani ${compact ? 'text-[10px]' : 'text-xs mt-2'}`}>
                     {data.totalGoals > 0 
                       ? ((data.statusCounts.not_started / data.totalGoals) * 100).toFixed(0)
                       : 0}%
@@ -593,19 +602,19 @@ function StatusSummaryModule({ data }: { data: any }) {
               </div>
 
               {/* In Progress */}
-              <div className="relative text-center p-4 rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all overflow-hidden">
+              <div className={`relative text-center rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all overflow-hidden ${compact ? 'p-3' : 'p-4'}`}>
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
                 </div>
                 <div className="relative z-10">
-                  <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className={`flex items-center justify-center gap-2 ${compact ? 'mb-2' : 'mb-3'}`}>
                     <div className="h-2 w-2 rounded-full bg-primary shadow-[0_0_8px_rgba(91,180,255,0.6)] animate-glow-pulse"></div>
-                    <span className="text-[10px] font-medium text-primary uppercase tracking-wider font-orbitron">In Progress</span>
+                    <span className={`font-medium text-primary uppercase tracking-wider font-orbitron ${compact ? 'text-[8px]' : 'text-[10px]'}`}>In Progress</span>
                   </div>
-                  <div className="text-4xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+                  <div className={`font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)] ${compact ? 'text-2xl' : 'text-4xl'}`}>
                     {data.statusCounts.in_progress}
                   </div>
-                  <div className="text-xs text-primary/70 mt-2 font-rajdhani">
+                  <div className={`text-primary/70 mt-1 font-rajdhani ${compact ? 'text-[10px]' : 'text-xs mt-2'}`}>
                     {data.totalGoals > 0 
                       ? ((data.statusCounts.in_progress / data.totalGoals) * 100).toFixed(0)
                       : 0}%
@@ -614,19 +623,19 @@ function StatusSummaryModule({ data }: { data: any }) {
               </div>
 
               {/* Validated */}
-              <div className="relative text-center p-4 rounded-lg bg-accent/5 backdrop-blur border border-accent/30 hover:border-accent/50 transition-all overflow-hidden">
+              <div className={`relative text-center rounded-lg bg-accent/5 backdrop-blur border border-accent/30 hover:border-accent/50 transition-all overflow-hidden ${compact ? 'p-3' : 'p-4'}`}>
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
                 </div>
                 <div className="relative z-10">
-                  <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className={`flex items-center justify-center gap-2 ${compact ? 'mb-2' : 'mb-3'}`}>
                     <div className="h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_rgba(122,191,255,0.6)]"></div>
-                    <span className="text-[10px] font-medium text-accent uppercase tracking-wider font-orbitron">Validated</span>
+                    <span className={`font-medium text-accent uppercase tracking-wider font-orbitron ${compact ? 'text-[8px]' : 'text-[10px]'}`}>Validated</span>
                   </div>
-                  <div className="text-4xl font-bold text-accent font-orbitron drop-shadow-[0_0_10px_rgba(122,191,255,0.5)]">
+                  <div className={`font-bold text-accent font-orbitron drop-shadow-[0_0_10px_rgba(122,191,255,0.5)] ${compact ? 'text-2xl' : 'text-4xl'}`}>
                     {data.statusCounts.validated}
                   </div>
-                  <div className="text-xs text-accent/70 mt-2 font-rajdhani">
+                  <div className={`text-accent/70 mt-1 font-rajdhani ${compact ? 'text-[10px]' : 'text-xs mt-2'}`}>
                     {data.totalGoals > 0 
                       ? ((data.statusCounts.validated / data.totalGoals) * 100).toFixed(0)
                       : 0}%
@@ -635,19 +644,19 @@ function StatusSummaryModule({ data }: { data: any }) {
               </div>
 
               {/* Completed */}
-              <div className="relative text-center p-4 rounded-lg bg-health/5 backdrop-blur border border-health/30 hover:border-health/50 transition-all overflow-hidden">
+              <div className={`relative text-center rounded-lg bg-health/5 backdrop-blur border border-health/30 hover:border-health/50 transition-all overflow-hidden ${compact ? 'p-3' : 'p-4'}`}>
                 <div className="absolute inset-0 pointer-events-none">
                   <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
                 </div>
                 <div className="relative z-10">
-                  <div className="flex items-center justify-center gap-2 mb-3">
+                  <div className={`flex items-center justify-center gap-2 ${compact ? 'mb-2' : 'mb-3'}`}>
                     <div className="h-2 w-2 rounded-full bg-health shadow-[0_0_8px_rgba(74,222,128,0.6)]"></div>
-                    <span className="text-[10px] font-medium text-health uppercase tracking-wider font-orbitron">Completed</span>
+                    <span className={`font-medium text-health uppercase tracking-wider font-orbitron ${compact ? 'text-[8px]' : 'text-[10px]'}`}>Completed</span>
                   </div>
-                  <div className="text-4xl font-bold text-health font-orbitron drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]">
+                  <div className={`font-bold text-health font-orbitron drop-shadow-[0_0_10px_rgba(74,222,128,0.5)] ${compact ? 'text-2xl' : 'text-4xl'}`}>
                     {data.statusCounts.fully_completed}
                   </div>
-                  <div className="text-xs text-health/70 mt-2 font-rajdhani">
+                  <div className={`text-health/70 mt-1 font-rajdhani ${compact ? 'text-[10px]' : 'text-xs mt-2'}`}>
                     {data.totalGoals > 0 
                       ? ((data.statusCounts.fully_completed / data.totalGoals) * 100).toFixed(0)
                       : 0}%
@@ -662,7 +671,7 @@ function StatusSummaryModule({ data }: { data: any }) {
   );
 }
 
-function FocusGoalsModule({ goals, navigate }: { goals: Goal[]; navigate: any }) {
+function FocusGoalsModule({ goals, navigate, compact = false }: { goals: Goal[]; navigate: any; compact?: boolean }) {
   return (
     <div className="animate-fade-in relative group">
       <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
@@ -752,7 +761,7 @@ function FocusGoalsModule({ goals, navigate }: { goals: Goal[]; navigate: any })
   );
 }
 
-function TheCallModule({ navigate }: { navigate: any }) {
+function TheCallModule({ navigate, compact = false }: { navigate: any; compact?: boolean }) {
   return (
     <div className="animate-fade-in relative group">
       <div className="absolute inset-0 bg-orange-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
@@ -798,7 +807,7 @@ function TheCallModule({ navigate }: { navigate: any }) {
   );
 }
 
-function FinanceModule({ navigate }: { navigate: any }) {
+function FinanceModule({ navigate, compact = false }: { navigate: any; compact?: boolean }) {
   return (
     <div className="animate-fade-in relative group">
       <div className="absolute inset-0 bg-finance/5 rounded-lg blur-2xl" />
