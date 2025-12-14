@@ -18,11 +18,12 @@ const DEFAULT_MODULES: ModuleConfig[] = [
   { id: 'goals-gauge', name: 'Goals Completed', enabled: true, order: 1, size: 'half' },
   { id: 'steps-gauge', name: 'Steps Completed', enabled: true, order: 2, size: 'half' },
   { id: 'status-summary', name: 'Goals Status Summary', enabled: true, order: 3, size: 'full' },
-  { id: 'dashboard', name: 'Progress Dashboard', enabled: true, order: 4, size: 'full' },
-  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 5, size: 'full' },
-  { id: 'the-call', name: 'The Call', enabled: true, order: 6, size: 'full' },
-  { id: 'finance', name: 'Track Finance', enabled: true, order: 7, size: 'full' },
-  { id: 'achievements', name: 'Achievements', enabled: true, order: 8, size: 'full' },
+  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 4, size: 'full' },
+  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 5, size: 'half' },
+  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 6, size: 'full' },
+  { id: 'the-call', name: 'The Call', enabled: true, order: 7, size: 'half' },
+  { id: 'finance', name: 'Track Finance', enabled: true, order: 8, size: 'full' },
+  { id: 'achievements', name: 'Achievements', enabled: true, order: 9, size: 'full' },
 ];
 
 const STORAGE_KEY = 'home-module-layout';
