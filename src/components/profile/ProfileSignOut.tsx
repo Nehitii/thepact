@@ -1,6 +1,4 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { ProfileMenuCard } from "./ProfileMenuCard";
 import { useToast } from "@/hooks/use-toast";
 import { LogOut } from "lucide-react";
 
@@ -17,19 +15,20 @@ export function ProfileSignOut() {
   };
 
   return (
-    <ProfileMenuCard
-      icon={<LogOut className="h-5 w-5 text-primary" />}
-      title="Sign Out"
-      description="End your current session"
-    >
-      <Button
+    <div className="pt-6 animate-fade-in">
+      <button
         onClick={handleSignOut}
-        variant="outline"
-        className="w-full bg-destructive/10 border-destructive/30 hover:border-destructive/50 hover:bg-destructive/20 text-destructive font-rajdhani uppercase tracking-wide"
+        className="w-full py-4 px-6 flex items-center justify-center gap-3 
+          bg-destructive/10 hover:bg-destructive/20 
+          border border-destructive/30 hover:border-destructive/50 
+          rounded-lg transition-all duration-300 group
+          shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.2)]"
       >
-        <LogOut className="h-4 w-4 mr-2" />
-        Sign Out
-      </Button>
-    </ProfileMenuCard>
+        <LogOut className="h-5 w-5 text-destructive group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.6)] transition-all duration-300" />
+        <span className="text-destructive font-rajdhani font-semibold uppercase tracking-widest text-sm group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.5)]">
+          Sign Out
+        </span>
+      </button>
+    </div>
   );
 }
