@@ -25,21 +25,19 @@ export function PactVisual({ symbol = "flame", progress = 0, size = "lg" }: Pact
   const currentSize = sizes[size];
 
   return (
-    <div className="relative inline-block">
+    <div className="relative inline-block overflow-visible p-8">
       {/* Outer radial glow - Deep space aura */}
       <div 
-        className="absolute inset-0 rounded-full blur-[40px] animate-glow-pulse"
+        className="absolute -inset-8 rounded-full blur-[40px] animate-glow-pulse pointer-events-none"
         style={{ 
-          transform: "scale(1.5)",
           background: "radial-gradient(circle, rgba(91, 180, 255, 0.3) 0%, rgba(91, 180, 255, 0.1) 50%, transparent 70%)"
         }}
       />
       
       {/* Middle glow ring */}
       <div 
-        className="absolute inset-0 rounded-full blur-xl"
+        className="absolute -inset-4 rounded-full blur-xl pointer-events-none"
         style={{ 
-          transform: "scale(1.3)",
           background: "radial-gradient(circle, rgba(122, 191, 255, 0.4) 0%, transparent 60%)"
         }}
       />
