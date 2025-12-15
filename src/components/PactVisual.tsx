@@ -42,9 +42,9 @@ export function PactVisual({ symbol = "flame", progress = 0, size = "lg" }: Pact
         }}
       />
       
-      {/* Progress ring container */}
-      <div className="relative">
-        <svg className={`${currentSize.container} -rotate-90 drop-shadow-[0_0_20px_rgba(91,180,255,0.6)]`}>
+      {/* Progress ring container - drop-shadow moved to wrapper to prevent SVG clipping */}
+      <div className="relative drop-shadow-[0_0_20px_rgba(91,180,255,0.6)]">
+        <svg className={`${currentSize.container} -rotate-90`} style={{ overflow: 'visible' }}>
           {/* Background ring - Dark with inner glow */}
           <circle
             cx="50%"
