@@ -300,9 +300,9 @@ export default function Home() {
         {/* ===== FIXED CORE SECTION (Non-modifiable) ===== */}
         <div className="text-center space-y-8 pt-8 animate-fade-in">
           {/* Level Core - Center */}
-          <div className="flex justify-center relative">
+          <div className="flex justify-center relative overflow-visible">
             <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full" />
-            <div className="relative">
+            <div className="relative overflow-visible">
               <PactVisual 
                 symbol={pact.symbol} 
                 progress={progressPercentage}
