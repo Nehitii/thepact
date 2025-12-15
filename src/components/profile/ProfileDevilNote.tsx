@@ -7,22 +7,35 @@ export function ProfileDevilNote() {
 
   return (
     <>
-      {/* Floating Devil Note Button - Bottom Left */}
       <button
         onClick={() => setModalOpen(true)}
-        className="fixed bottom-24 left-4 z-40 group"
+        className="inline-flex items-center gap-2 text-xs font-rajdhani tracking-wide group relative"
         aria-label="Devil Note"
       >
-        {/* Outer glow ring */}
-        <div className="absolute inset-0 rounded-full bg-destructive/20 blur-md group-hover:blur-lg group-hover:bg-destructive/30 transition-all duration-300" />
+        {/* Demonic glow aura - hidden by default, revealed on hover */}
+        <div className="absolute inset-0 -m-2 rounded-full bg-gradient-to-r from-red-900/0 via-destructive/0 to-red-900/0 group-hover:from-red-900/20 group-hover:via-destructive/30 group-hover:to-red-900/20 blur-md transition-all duration-500" />
         
-        {/* Button container */}
-        <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-[#1a0808]/90 border border-destructive/40 group-hover:border-destructive/60 transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.3)] group-hover:shadow-[0_0_25px_rgba(239,68,68,0.5)]">
-          {/* Inner glow */}
-          <div className="absolute inset-1 rounded-full bg-gradient-to-br from-destructive/10 to-transparent" />
+        {/* Inner demonic container */}
+        <div className="relative flex items-center gap-2 px-2 py-1 rounded transition-all duration-300
+          group-hover:bg-[#1a0505]/40">
           
-          {/* Skull icon */}
-          <Skull className="relative h-5 w-5 text-destructive group-hover:text-red-400 transition-colors duration-300 drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]" />
+          {/* Skull icon with demonic styling */}
+          <div className="relative">
+            {/* Pulsing dark aura */}
+            <div className="absolute inset-0 -m-1 rounded-full bg-gradient-radial from-destructive/30 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-500" />
+            
+            {/* Skull */}
+            <Skull className="relative h-3.5 w-3.5 text-destructive/50 group-hover:text-destructive transition-all duration-300 
+              group-hover:drop-shadow-[0_0_6px_rgba(220,38,38,0.8)]
+              group-hover:animate-[pulse_2s_ease-in-out_infinite]" />
+          </div>
+          
+          {/* Text with arcane feel */}
+          <span className="text-destructive/40 group-hover:text-destructive/80 transition-colors duration-300
+            group-hover:drop-shadow-[0_0_8px_rgba(220,38,38,0.6)]
+            font-light italic">
+            Devil Note
+          </span>
         </div>
       </button>
 

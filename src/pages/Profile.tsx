@@ -185,11 +185,11 @@ export default function Profile() {
 
             {/* Display & Sounds */}
             <ProfileDisplaySounds />
-
-            {/* Sign Out */}
-            <ProfileSignOut />
           </div>
         )}
+
+        {/* Standalone Sign Out Button */}
+        {user && <ProfileSignOut />}
 
         {/* Credits */}
         <div className="text-center py-6 space-y-2 animate-fade-in">
@@ -202,22 +202,38 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Legal Access */}
-        <div className="text-center pb-4 animate-fade-in">
+        {/* Bottom Actions: Legal, Delete Account, Devil Note */}
+        <div className="flex items-center justify-center gap-6 pb-8 animate-fade-in">
+          {/* Legal Link */}
           <Link
             to="/legal"
             className="inline-flex items-center gap-2 text-xs text-[#6b9ec4]/70 hover:text-[#8ACBFF] transition-colors duration-300 font-rajdhani tracking-wide group"
           >
             <Scale className="h-3 w-3 group-hover:drop-shadow-[0_0_6px_rgba(91,180,255,0.5)] transition-all duration-300" />
             <span className="group-hover:drop-shadow-[0_0_8px_rgba(91,180,255,0.4)]">
-              Copyright, Terms & Legal
+              Terms & Legal
             </span>
           </Link>
+
+          {/* Separator */}
+          <span className="text-primary/20">|</span>
+
+          {/* Delete Account */}
+          <button
+            className="inline-flex items-center gap-2 text-xs text-destructive/60 hover:text-destructive transition-colors duration-300 font-rajdhani tracking-wide group"
+          >
+            <span className="group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]">
+              Delete Account
+            </span>
+          </button>
+
+          {/* Separator */}
+          <span className="text-primary/20">|</span>
+
+          {/* Devil Note */}
+          {user && <ProfileDevilNote />}
         </div>
       </div>
-
-      {/* Fixed Devil Note Button - Outside scrollable content */}
-      {user && <ProfileDevilNote />}
 
       <Navigation />
     </div>
