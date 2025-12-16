@@ -20,6 +20,7 @@ import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
 import Community from "./pages/Community";
 import Legal from "./pages/Legal";
+import AdminCosmetics from "./pages/AdminCosmetics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -135,6 +136,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Legal />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/cosmetics"
+                element={
+                  <ProtectedRoute>
+                    <AdminCosmetics />
                   </ProtectedRoute>
                 }
               />

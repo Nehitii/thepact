@@ -2,24 +2,49 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProfileMenuCard } from "./ProfileMenuCard";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  User, 
-  Quote, 
-  Trophy, 
-  Target, 
-  Flame, 
-  Zap,
-  Star,
-  Shield,
+  Shield, 
+  Upload,
+  Link as LinkIcon,
+  ImageIcon,
+  Crown,
   Sparkles,
-  Crown
+  Lock,
+  Check
 } from "lucide-react";
+
+interface CosmeticFrame {
+  id: string;
+  name: string;
+  rarity: string;
+  border_color: string;
+  glow_color: string;
+  is_default: boolean;
+}
+
+interface CosmeticBanner {
+  id: string;
+  name: string;
+  rarity: string;
+  gradient_start: string;
+  gradient_end: string;
+  banner_url: string | null;
+  is_default: boolean;
+}
+
+interface CosmeticTitle {
+  id: string;
+  title_text: string;
+  rarity: string;
+  glow_color: string;
+  text_color: string;
+  is_default: boolean;
+}
 
 interface ProfileBoundedProfileProps {
   userId: string;
@@ -34,120 +59,118 @@ interface ProfileBoundedProfileProps {
   onDisplayedBadgesChange: (badges: string[]) => void;
 }
 
-const frameStyles: Record<string, { border: string; glow: string; name: string }> = {
-  default: { 
-    border: "border-primary/40", 
-    glow: "shadow-[0_0_20px_rgba(91,180,255,0.3)]", 
-    name: "Default" 
-  },
-  fire: { 
-    border: "border-orange-500/60", 
-    glow: "shadow-[0_0_25px_rgba(249,115,22,0.5)]", 
-    name: "Fire" 
-  },
-  ice: { 
-    border: "border-cyan-400/60", 
-    glow: "shadow-[0_0_25px_rgba(34,211,238,0.5)]", 
-    name: "Ice" 
-  },
-  royal: { 
-    border: "border-yellow-500/60", 
-    glow: "shadow-[0_0_25px_rgba(234,179,8,0.5)]", 
-    name: "Royal" 
-  },
-  void: { 
-    border: "border-purple-500/60", 
-    glow: "shadow-[0_0_25px_rgba(168,85,247,0.5)]", 
-    name: "Void" 
-  },
-  blood: { 
-    border: "border-red-500/60", 
-    glow: "shadow-[0_0_25px_rgba(239,68,68,0.5)]", 
-    name: "Blood" 
-  },
+const rarityColors: Record<string, { bg: string; text: string; glow: string }> = {
+  common: { bg: "bg-slate-500/20", text: "text-slate-400", glow: "" },
+  rare: { bg: "bg-blue-500/20", text: "text-blue-400", glow: "shadow-[0_0_10px_rgba(59,130,246,0.3)]" },
+  epic: { bg: "bg-purple-500/20", text: "text-purple-400", glow: "shadow-[0_0_10px_rgba(168,85,247,0.3)]" },
+  legendary: { bg: "bg-amber-500/20", text: "text-amber-400", glow: "shadow-[0_0_15px_rgba(245,158,11,0.4)]" },
 };
 
 export function ProfileBoundedProfile({
   userId,
   displayName,
   avatarUrl,
-  avatarFrame,
-  personalQuote,
-  displayedBadges,
   onAvatarUrlChange,
-  onAvatarFrameChange,
-  onPersonalQuoteChange,
-  onDisplayedBadgesChange,
 }: ProfileBoundedProfileProps) {
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
-  const [pactStats, setPactStats] = useState({
-    pactName: "—",
-    points: 0,
-    tier: 1,
-    goalsCompleted: 0,
-    stepsCompleted: 0,
-    streak: 0,
-    totalCost: 0,
-  });
-  const [availableBadges, setAvailableBadges] = useState<string[]>([]);
-  const [showBadgeSelector, setShowBadgeSelector] = useState(false);
+  const [avatarUrlInput, setAvatarUrlInput] = useState("");
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [showFrameDialog, setShowFrameDialog] = useState(false);
+  const [showBannerDialog, setShowBannerDialog] = useState(false);
+  const [showTitleDialog, setShowTitleDialog] = useState(false);
 
-  // Load pact stats and badges
+  // Cosmetics data
+  const [frames, setFrames] = useState<CosmeticFrame[]>([]);
+  const [banners, setBanners] = useState<CosmeticBanner[]>([]);
+  const [titles, setTitles] = useState<CosmeticTitle[]>([]);
+  
+  // Owned cosmetics
+  const [ownedFrameIds, setOwnedFrameIds] = useState<Set<string>>(new Set());
+  const [ownedBannerIds, setOwnedBannerIds] = useState<Set<string>>(new Set());
+  const [ownedTitleIds, setOwnedTitleIds] = useState<Set<string>>(new Set());
+  
+  // Active selections
+  const [activeFrameId, setActiveFrameId] = useState<string | null>(null);
+  const [activeBannerId, setActiveBannerId] = useState<string | null>(null);
+  const [activeTitleId, setActiveTitleId] = useState<string | null>(null);
+
+  // Derived active cosmetics
+  const activeFrame = frames.find(f => f.id === activeFrameId) || frames.find(f => f.is_default);
+  const activeBanner = banners.find(b => b.id === activeBannerId) || banners.find(b => b.is_default);
+  const activeTitle = titles.find(t => t.id === activeTitleId) || titles.find(t => t.is_default);
+
+  // Load cosmetics and ownership
   useEffect(() => {
     const loadData = async () => {
-      // Load pact data
-      const { data: pact } = await supabase
-        .from("pacts")
-        .select("name, points, tier, checkin_streak")
-        .eq("user_id", userId)
-        .maybeSingle();
+      // Load all cosmetics
+      const [framesRes, bannersRes, titlesRes] = await Promise.all([
+        supabase.from("cosmetic_frames").select("*").eq("is_active", true),
+        supabase.from("cosmetic_banners").select("*").eq("is_active", true),
+        supabase.from("cosmetic_titles").select("*").eq("is_active", true),
+      ]);
 
-      if (pact) {
-        // Load goals stats
-        const { data: goals } = await supabase
-          .from("goals")
-          .select("status, estimated_cost")
-          .eq("pact_id", (await supabase.from("pacts").select("id").eq("user_id", userId).single()).data?.id);
+      if (framesRes.data) setFrames(framesRes.data);
+      if (bannersRes.data) setBanners(bannersRes.data);
+      if (titlesRes.data) setTitles(titlesRes.data);
 
-        const completedGoals = goals?.filter(g => 
-          g.status === "completed" || g.status === "fully_completed" || g.status === "validated"
-        ).length || 0;
-        
-        const totalCost = goals?.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0) || 0;
+      // Load user ownership
+      const { data: ownership } = await supabase
+        .from("user_cosmetics")
+        .select("cosmetic_type, cosmetic_id")
+        .eq("user_id", userId);
 
-        // Load steps stats
-        const { data: tracking } = await supabase
-          .from("achievement_tracking")
-          .select("steps_completed_total")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        setPactStats({
-          pactName: pact.name || "—",
-          points: pact.points || 0,
-          tier: pact.tier || 1,
-          goalsCompleted: completedGoals,
-          stepsCompleted: tracking?.steps_completed_total || 0,
-          streak: pact.checkin_streak || 0,
-          totalCost,
-        });
+      if (ownership) {
+        const frameIds = new Set(ownership.filter(o => o.cosmetic_type === "frame").map(o => o.cosmetic_id));
+        const bannerIds = new Set(ownership.filter(o => o.cosmetic_type === "banner").map(o => o.cosmetic_id));
+        const titleIds = new Set(ownership.filter(o => o.cosmetic_type === "title").map(o => o.cosmetic_id));
+        setOwnedFrameIds(frameIds);
+        setOwnedBannerIds(bannerIds);
+        setOwnedTitleIds(titleIds);
       }
 
-      // Load unlocked achievements as available badges
-      const { data: achievements } = await supabase
-        .from("user_achievements")
-        .select("achievement_key")
-        .eq("user_id", userId)
-        .not("unlocked_at", "is", null);
+      // Load active selections from profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_frame_id, active_banner_id, active_title_id")
+        .eq("id", userId)
+        .single();
 
-      if (achievements) {
-        setAvailableBadges(achievements.map(a => a.achievement_key));
+      if (profile) {
+        setActiveFrameId(profile.active_frame_id);
+        setActiveBannerId(profile.active_banner_id);
+        setActiveTitleId(profile.active_title_id);
       }
     };
 
     loadData();
   }, [userId]);
+
+  const handleSaveAvatar = async () => {
+    if (avatarUrlInput.trim()) {
+      onAvatarUrlChange(avatarUrlInput.trim());
+    }
+    setShowAvatarDialog(false);
+    setAvatarUrlInput("");
+  };
+
+  const handleSelectFrame = (frame: CosmeticFrame) => {
+    if (ownedFrameIds.has(frame.id) || frame.is_default) {
+      setActiveFrameId(frame.id);
+    }
+  };
+
+  const handleSelectBanner = (banner: CosmeticBanner) => {
+    if (ownedBannerIds.has(banner.id) || banner.is_default) {
+      setActiveBannerId(banner.id);
+    }
+  };
+
+  const handleSelectTitle = (title: CosmeticTitle) => {
+    if (ownedTitleIds.has(title.id) || title.is_default) {
+      setActiveTitleId(title.id);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -156,9 +179,9 @@ export function ProfileBoundedProfile({
       .from("profiles")
       .update({
         avatar_url: avatarUrl,
-        avatar_frame: avatarFrame,
-        personal_quote: personalQuote.trim() || null,
-        displayed_badges: displayedBadges,
+        active_frame_id: activeFrameId,
+        active_banner_id: activeBannerId,
+        active_title_id: activeTitleId,
       })
       .eq("id", userId);
 
@@ -170,29 +193,13 @@ export function ProfileBoundedProfile({
       });
     } else {
       toast({
-        title: "Profile Updated",
-        description: "Your bounded profile has been saved",
+        title: "Identity Saved",
+        description: "Your bounded profile has been updated",
       });
     }
 
     setSaving(false);
   };
-
-  const toggleBadge = (badge: string) => {
-    if (displayedBadges.includes(badge)) {
-      onDisplayedBadgesChange(displayedBadges.filter(b => b !== badge));
-    } else if (displayedBadges.length < 3) {
-      onDisplayedBadgesChange([...displayedBadges, badge]);
-    } else {
-      toast({
-        title: "Maximum Badges",
-        description: "You can only display 3 badges at a time",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const currentFrame = frameStyles[avatarFrame] || frameStyles.default;
 
   return (
     <ProfileMenuCard
@@ -201,178 +208,338 @@ export function ProfileBoundedProfile({
       description="Your futuristic identity card"
     >
       {/* Identity Card Preview */}
-      <div className="relative p-6 rounded-xl bg-gradient-to-br from-card/80 via-card/60 to-card/40 border-2 border-primary/30 overflow-hidden">
-        {/* Holographic overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-cyber-shimmer" />
-        
-        {/* Corner decorations */}
-        <div className="absolute top-2 left-2 w-4 h-4 border-l-2 border-t-2 border-primary/50" />
-        <div className="absolute top-2 right-2 w-4 h-4 border-r-2 border-t-2 border-primary/50" />
-        <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-primary/50" />
-        <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-primary/50" />
+      <div className="relative rounded-2xl overflow-hidden border-2 border-primary/30 shadow-[0_0_30px_rgba(91,180,255,0.15)]">
+        {/* Banner Background */}
+        <div 
+          className="relative h-32 overflow-hidden"
+          style={{
+            background: activeBanner?.banner_url 
+              ? `url(${activeBanner.banner_url}) center/cover`
+              : `linear-gradient(135deg, ${activeBanner?.gradient_start || '#0a0a12'}, ${activeBanner?.gradient_end || '#1a1a2e'})`
+          }}
+        >
+          {/* Banner overlay effects */}
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-cyber-shimmer" />
+          
+          {/* Scan lines */}
+          <div className="absolute inset-0 opacity-10" style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(91,180,255,0.1) 2px, rgba(91,180,255,0.1) 4px)',
+          }} />
 
-        <div className="relative z-10 flex flex-col items-center gap-4">
-          {/* Avatar with Frame */}
-          <div className={`relative p-1 rounded-full ${currentFrame.glow}`}>
-            <div className={`p-1 rounded-full border-2 ${currentFrame.border}`}>
-              <Avatar className="h-24 w-24">
-                <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback className="bg-primary/20 text-primary text-2xl font-orbitron">
-                  {displayName?.charAt(0)?.toUpperCase() || "?"}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            {/* Animated particles around avatar */}
-            <div className="absolute -inset-2 rounded-full animate-spin-slow pointer-events-none" style={{ animationDuration: '10s' }}>
-              <div className="absolute top-0 left-1/2 w-1 h-1 bg-primary rounded-full" />
-              <div className="absolute bottom-0 left-1/2 w-1 h-1 bg-primary/50 rounded-full" />
-            </div>
-          </div>
+          {/* Corner brackets */}
+          <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-primary/50" />
+          <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-primary/50" />
+        </div>
 
-          {/* Name */}
-          <h3 className="text-xl font-orbitron text-primary tracking-wider drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-            {displayName || "UNKNOWN"}
-          </h3>
-
-          {/* Quote */}
-          {personalQuote && (
-            <p className="text-sm text-primary/70 font-rajdhani italic text-center max-w-xs">
-              "{personalQuote}"
-            </p>
-          )}
-
-          {/* Displayed Badges */}
-          {displayedBadges.length > 0 && (
-            <div className="flex gap-2 mt-2">
-              {displayedBadges.map((badge, i) => (
+        {/* Main Card Content */}
+        <div className="relative px-6 pb-6 pt-2 bg-gradient-to-b from-card/95 to-card">
+          {/* Left side: Avatar with Frame - positioned to overlap banner */}
+          <div className="flex items-start gap-6">
+            {/* Avatar Container */}
+            <div className="relative -mt-16 flex-shrink-0">
+              <div 
+                className="relative p-1.5 rounded-full transition-all duration-300"
+                style={{
+                  boxShadow: `0 0 25px ${activeFrame?.glow_color || 'rgba(91,180,255,0.3)'}`,
+                  background: `linear-gradient(135deg, ${activeFrame?.border_color || '#5bb4ff'}40, transparent)`
+                }}
+              >
                 <div 
-                  key={badge}
-                  className="p-2 rounded-lg bg-primary/10 border border-primary/30 animate-glow-pulse"
-                  style={{ animationDelay: `${i * 0.2}s` }}
+                  className="p-1 rounded-full"
+                  style={{ border: `3px solid ${activeFrame?.border_color || '#5bb4ff'}` }}
                 >
-                  <Trophy className="h-5 w-5 text-primary" />
+                  <Avatar className="h-24 w-24 ring-2 ring-card">
+                    <AvatarImage src={avatarUrl || undefined} />
+                    <AvatarFallback className="bg-primary/20 text-primary text-2xl font-orbitron">
+                      {displayName?.charAt(0)?.toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
                 </div>
-              ))}
+                {/* Animated ring */}
+                <div 
+                  className="absolute -inset-1 rounded-full animate-spin-slow pointer-events-none opacity-60" 
+                  style={{ 
+                    animationDuration: '15s',
+                    border: `1px dashed ${activeFrame?.border_color || '#5bb4ff'}40`
+                  }} 
+                />
+              </div>
             </div>
-          )}
+
+            {/* Right side: Name & Title */}
+            <div className="flex-1 pt-2 min-w-0">
+              {/* Display Name */}
+              <h3 className="text-xl font-orbitron text-primary tracking-wider truncate drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
+                {displayName || "UNKNOWN"}
+              </h3>
+              
+              {/* Title */}
+              <div 
+                className="inline-block mt-2 px-3 py-1 rounded-md text-sm font-rajdhani tracking-wide"
+                style={{
+                  color: activeTitle?.text_color || '#5bb4ff',
+                  textShadow: `0 0 10px ${activeTitle?.glow_color || 'rgba(91,180,255,0.5)'}`,
+                  background: `linear-gradient(135deg, ${activeTitle?.text_color || '#5bb4ff'}15, transparent)`,
+                  border: `1px solid ${activeTitle?.text_color || '#5bb4ff'}30`
+                }}
+              >
+                <Crown className="inline-block h-3 w-3 mr-1.5 -mt-0.5" />
+                {activeTitle?.title_text || "Pact Member"}
+              </div>
+
+              {/* Frame & Banner names */}
+              <div className="flex gap-3 mt-3 text-xs text-primary/50 font-rajdhani">
+                <span className="flex items-center gap-1">
+                  <Sparkles className="h-3 w-3" />
+                  {activeFrame?.name || "Default"} Frame
+                </span>
+                <span className="flex items-center gap-1">
+                  <ImageIcon className="h-3 w-3" />
+                  {activeBanner?.name || "Default"} Banner
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom corner brackets */}
+          <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-primary/30" />
+          <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-primary/30" />
         </div>
       </div>
 
-      {/* Pact Summary Widget */}
-      <div className="mt-6 space-y-3">
-        <Label className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm flex items-center gap-2">
-          <Zap className="h-4 w-4" />
-          Pact Summary
-        </Label>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-card/50 border border-primary/20 text-center">
-            <div className="text-2xl font-orbitron text-primary">{pactStats.points}</div>
-            <div className="text-xs text-primary/60 font-rajdhani uppercase">XP</div>
-          </div>
-          <div className="p-3 rounded-lg bg-card/50 border border-primary/20 text-center">
-            <div className="text-2xl font-orbitron text-primary">{pactStats.tier}</div>
-            <div className="text-xs text-primary/60 font-rajdhani uppercase">Tier</div>
-          </div>
-          <div className="p-3 rounded-lg bg-card/50 border border-primary/20 text-center">
-            <div className="text-2xl font-orbitron text-primary">{pactStats.goalsCompleted}</div>
-            <div className="text-xs text-primary/60 font-rajdhani uppercase">Goals</div>
-          </div>
-          <div className="p-3 rounded-lg bg-card/50 border border-primary/20 text-center">
-            <div className="text-2xl font-orbitron text-primary">{pactStats.streak}</div>
-            <div className="text-xs text-primary/60 font-rajdhani uppercase">Streak</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Avatar Frame Selector */}
-      <div className="space-y-3">
-        <Label className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm">
-          Avatar Frame
-        </Label>
-        <div className="grid grid-cols-3 gap-2">
-          {Object.entries(frameStyles).map(([key, style]) => (
-            <button
-              key={key}
-              onClick={() => onAvatarFrameChange(key)}
-              className={`p-3 rounded-lg border-2 transition-all ${
-                avatarFrame === key 
-                  ? `${style.border} ${style.glow} bg-primary/10` 
-                  : "border-primary/20 hover:border-primary/40"
-              }`}
+      {/* Customization Controls */}
+      <div className="grid grid-cols-2 gap-3 mt-6">
+        {/* Edit Avatar */}
+        <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
             >
-              <span className="text-xs font-rajdhani text-primary uppercase">{style.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+              <Upload className="h-4 w-4" />
+              <span className="text-xs font-rajdhani">Edit Avatar</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-primary/30">
+            <DialogHeader>
+              <DialogTitle className="text-primary font-orbitron">Set Avatar</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-primary/80 font-rajdhani flex items-center gap-2">
+                  <LinkIcon className="h-4 w-4" />
+                  Image URL
+                </Label>
+                <Input
+                  placeholder="https://example.com/avatar.png"
+                  value={avatarUrlInput}
+                  onChange={(e) => setAvatarUrlInput(e.target.value)}
+                  className="bg-card/50 border-primary/30 text-primary"
+                />
+              </div>
+              <Button 
+                onClick={handleSaveAvatar}
+                className="w-full bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary font-orbitron"
+              >
+                Save Avatar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
-      {/* Personal Quote */}
-      <div className="space-y-2">
-        <Label htmlFor="personalQuote" className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm flex items-center gap-2">
-          <Quote className="h-4 w-4" />
-          Personal Quote
-        </Label>
-        <Textarea
-          id="personalQuote"
-          placeholder="I walk in fire but do not burn..."
-          value={personalQuote}
-          onChange={(e) => onPersonalQuoteChange(e.target.value)}
-          maxLength={150}
-          className="bg-card/50 border-primary/20 text-primary focus:border-primary/50 font-rajdhani resize-none"
-          rows={2}
-        />
-        <p className="text-xs text-primary/50">{personalQuote.length}/150 characters</p>
-      </div>
+        {/* Select Frame */}
+        <Dialog open={showFrameDialog} onOpenChange={setShowFrameDialog}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
+            >
+              <Sparkles className="h-4 w-4" />
+              <span className="text-xs font-rajdhani">Select Frame</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-primary/30 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-primary font-orbitron">Avatar Frames</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2">
+              {frames.map((frame) => {
+                const owned = ownedFrameIds.has(frame.id) || frame.is_default;
+                const active = activeFrameId === frame.id || (!activeFrameId && frame.is_default);
+                const rarity = rarityColors[frame.rarity] || rarityColors.common;
+                
+                return (
+                  <button
+                    key={frame.id}
+                    onClick={() => handleSelectFrame(frame)}
+                    disabled={!owned}
+                    className={`relative p-4 rounded-xl border-2 transition-all ${
+                      active 
+                        ? "border-primary bg-primary/10" 
+                        : owned 
+                          ? "border-primary/30 hover:border-primary/50 bg-card/50" 
+                          : "border-primary/10 bg-card/30 opacity-60"
+                    }`}
+                  >
+                    {/* Frame preview */}
+                    <div 
+                      className="w-12 h-12 mx-auto rounded-full mb-2"
+                      style={{
+                        border: `3px solid ${frame.border_color}`,
+                        boxShadow: `0 0 15px ${frame.glow_color}`
+                      }}
+                    />
+                    <div className="text-xs font-rajdhani text-primary">{frame.name}</div>
+                    <div className={`text-[10px] uppercase ${rarity.text} mt-1`}>{frame.rarity}</div>
+                    
+                    {/* Lock or check indicator */}
+                    {!owned && (
+                      <div className="absolute top-2 right-2">
+                        <Lock className="h-3 w-3 text-primary/40" />
+                      </div>
+                    )}
+                    {active && owned && (
+                      <div className="absolute top-2 right-2">
+                        <Check className="h-4 w-4 text-green-400" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
 
-      {/* Badge Selector */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-primary/90 font-rajdhani uppercase tracking-wide text-sm flex items-center gap-2">
-            <Star className="h-4 w-4" />
-            Display Badges ({displayedBadges.length}/3)
-          </Label>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowBadgeSelector(!showBadgeSelector)}
-            className="text-xs bg-primary/10 border-primary/30 hover:bg-primary/20 text-primary"
-          >
-            {showBadgeSelector ? "Hide" : "Select Badges"}
-          </Button>
-        </div>
-        
-        {showBadgeSelector && (
-          <div className="grid grid-cols-4 gap-2 p-3 rounded-lg bg-card/30 border border-primary/20">
-            {availableBadges.length > 0 ? (
-              availableBadges.map((badge) => (
-                <button
-                  key={badge}
-                  onClick={() => toggleBadge(badge)}
-                  className={`p-2 rounded-lg border transition-all ${
-                    displayedBadges.includes(badge)
-                      ? "border-primary/50 bg-primary/20"
-                      : "border-primary/20 hover:border-primary/40"
-                  }`}
-                >
-                  <Trophy className="h-4 w-4 text-primary mx-auto" />
-                </button>
-              ))
-            ) : (
-              <p className="col-span-4 text-center text-sm text-primary/50 font-rajdhani py-2">
-                Unlock achievements to display badges
-              </p>
-            )}
-          </div>
-        )}
+        {/* Select Banner */}
+        <Dialog open={showBannerDialog} onOpenChange={setShowBannerDialog}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
+            >
+              <ImageIcon className="h-4 w-4" />
+              <span className="text-xs font-rajdhani">Select Banner</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-primary/30 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-primary font-orbitron">Profile Banners</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2">
+              {banners.map((banner) => {
+                const owned = ownedBannerIds.has(banner.id) || banner.is_default;
+                const active = activeBannerId === banner.id || (!activeBannerId && banner.is_default);
+                const rarity = rarityColors[banner.rarity] || rarityColors.common;
+                
+                return (
+                  <button
+                    key={banner.id}
+                    onClick={() => handleSelectBanner(banner)}
+                    disabled={!owned}
+                    className={`relative p-3 rounded-xl border-2 transition-all ${
+                      active 
+                        ? "border-primary bg-primary/10" 
+                        : owned 
+                          ? "border-primary/30 hover:border-primary/50 bg-card/50" 
+                          : "border-primary/10 bg-card/30 opacity-60"
+                    }`}
+                  >
+                    {/* Banner preview */}
+                    <div 
+                      className="w-full h-12 rounded-lg mb-2"
+                      style={{
+                        background: banner.banner_url 
+                          ? `url(${banner.banner_url}) center/cover`
+                          : `linear-gradient(135deg, ${banner.gradient_start}, ${banner.gradient_end})`
+                      }}
+                    />
+                    <div className="text-xs font-rajdhani text-primary">{banner.name}</div>
+                    <div className={`text-[10px] uppercase ${rarity.text} mt-1`}>{banner.rarity}</div>
+                    
+                    {!owned && (
+                      <div className="absolute top-2 right-2">
+                        <Lock className="h-3 w-3 text-primary/40" />
+                      </div>
+                    )}
+                    {active && owned && (
+                      <div className="absolute top-2 right-2">
+                        <Check className="h-4 w-4 text-green-400" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Select Title */}
+        <Dialog open={showTitleDialog} onOpenChange={setShowTitleDialog}>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
+            >
+              <Crown className="h-4 w-4" />
+              <span className="text-xs font-rajdhani">Select Title</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="bg-card border-primary/30 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-primary font-orbitron">Titles</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+              {titles.map((title) => {
+                const owned = ownedTitleIds.has(title.id) || title.is_default;
+                const active = activeTitleId === title.id || (!activeTitleId && title.is_default);
+                const rarity = rarityColors[title.rarity] || rarityColors.common;
+                
+                return (
+                  <button
+                    key={title.id}
+                    onClick={() => handleSelectTitle(title)}
+                    disabled={!owned}
+                    className={`relative w-full p-4 rounded-xl border-2 transition-all text-left ${
+                      active 
+                        ? "border-primary bg-primary/10" 
+                        : owned 
+                          ? "border-primary/30 hover:border-primary/50 bg-card/50" 
+                          : "border-primary/10 bg-card/30 opacity-60"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div 
+                          className="text-sm font-rajdhani"
+                          style={{
+                            color: title.text_color,
+                            textShadow: `0 0 8px ${title.glow_color}`
+                          }}
+                        >
+                          {title.title_text}
+                        </div>
+                        <div className={`text-[10px] uppercase ${rarity.text} mt-1`}>{title.rarity}</div>
+                      </div>
+                      
+                      {!owned && <Lock className="h-4 w-4 text-primary/40" />}
+                      {active && owned && <Check className="h-4 w-4 text-green-400" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Save Button */}
       <Button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
+        className="w-full mt-4 bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
       >
-        {saving ? "SAVING..." : "SAVE CHANGES"}
+        {saving ? "SAVING..." : "SAVE IDENTITY"}
       </Button>
     </ProfileMenuCard>
   );

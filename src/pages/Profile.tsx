@@ -25,9 +25,6 @@ export default function Profile() {
   
   // Bounded Profile settings
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [avatarFrame, setAvatarFrame] = useState("default");
-  const [personalQuote, setPersonalQuote] = useState("");
-  const [displayedBadges, setDisplayedBadges] = useState<string[]>([]);
   
   // Pact settings
   const [pactId, setPactId] = useState<string | null>(null);
@@ -55,9 +52,6 @@ export default function Profile() {
         setBirthday(data.birthday ? new Date(data.birthday) : undefined);
         setCountry(data.country || "");
         setAvatarUrl(data.avatar_url || null);
-        setAvatarFrame(data.avatar_frame || "default");
-        setPersonalQuote(data.personal_quote || "");
-        setDisplayedBadges(data.displayed_badges || []);
         setCustomDifficultyName(data.custom_difficulty_name || "");
         setCustomDifficultyActive(data.custom_difficulty_active || false);
         setCustomDifficultyColor(data.custom_difficulty_color || "#a855f7");
@@ -155,13 +149,13 @@ export default function Profile() {
               userId={user.id}
               displayName={displayName}
               avatarUrl={avatarUrl}
-              avatarFrame={avatarFrame}
-              personalQuote={personalQuote}
-              displayedBadges={displayedBadges}
+              avatarFrame=""
+              personalQuote=""
+              displayedBadges={[]}
               onAvatarUrlChange={setAvatarUrl}
-              onAvatarFrameChange={setAvatarFrame}
-              onPersonalQuoteChange={setPersonalQuote}
-              onDisplayedBadgesChange={setDisplayedBadges}
+              onAvatarFrameChange={() => {}}
+              onPersonalQuoteChange={() => {}}
+              onDisplayedBadgesChange={() => {}}
             />
 
             {/* Pact Settings */}
