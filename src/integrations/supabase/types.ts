@@ -152,6 +152,132 @@ export type Database = {
         }
         Relationships: []
       }
+      cosmetic_banners: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          gradient_end: string | null
+          gradient_start: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          preview_url: string | null
+          price: number
+          rarity: string
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          gradient_end?: string | null
+          gradient_start?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          preview_url?: string | null
+          price?: number
+          rarity?: string
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          gradient_end?: string | null
+          gradient_start?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          preview_url?: string | null
+          price?: number
+          rarity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cosmetic_frames: {
+        Row: {
+          border_color: string
+          created_at: string
+          glow_color: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          name: string
+          preview_url: string | null
+          price: number
+          rarity: string
+          updated_at: string
+        }
+        Insert: {
+          border_color?: string
+          created_at?: string
+          glow_color?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name: string
+          preview_url?: string | null
+          price?: number
+          rarity?: string
+          updated_at?: string
+        }
+        Update: {
+          border_color?: string
+          created_at?: string
+          glow_color?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          name?: string
+          preview_url?: string | null
+          price?: number
+          rarity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cosmetic_titles: {
+        Row: {
+          created_at: string
+          glow_color: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          price: number
+          rarity: string
+          text_color: string | null
+          title_text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          glow_color?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          price?: number
+          rarity?: string
+          text_color?: string | null
+          title_text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          glow_color?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          price?: number
+          rarity?: string
+          text_color?: string | null
+          title_text?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       finance: {
         Row: {
           created_at: string | null
@@ -368,6 +494,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_banner_id: string | null
+          active_frame_id: string | null
+          active_title_id: string | null
           age: number | null
           avatar_frame: string | null
           avatar_url: string | null
@@ -389,6 +518,9 @@ export type Database = {
           weight: number | null
         }
         Insert: {
+          active_banner_id?: string | null
+          active_frame_id?: string | null
+          active_title_id?: string | null
           age?: number | null
           avatar_frame?: string | null
           avatar_url?: string | null
@@ -410,6 +542,9 @@ export type Database = {
           weight?: number | null
         }
         Update: {
+          active_banner_id?: string | null
+          active_frame_id?: string | null
+          active_title_id?: string | null
           age?: number | null
           avatar_frame?: string | null
           avatar_url?: string | null
@@ -573,6 +708,30 @@ export type Database = {
           progress?: number | null
           seen?: boolean | null
           unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_cosmetics: {
+        Row: {
+          acquired_at: string
+          cosmetic_id: string
+          cosmetic_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          acquired_at?: string
+          cosmetic_id: string
+          cosmetic_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          acquired_at?: string
+          cosmetic_id?: string
+          cosmetic_type?: string
+          id?: string
           user_id?: string
         }
         Relationships: []
