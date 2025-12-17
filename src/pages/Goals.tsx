@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -12,94 +12,49 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
-interface Goal {
-  id: string;
-  name: string;
-  type: string;
-  difficulty: string;
-  status: string;
-  validated_steps: number;
-  total_steps: number;
-  potential_score: number;
-  estimated_cost: number;
-  created_at: string;
-  start_date?: string;
-  completion_date?: string;
-  image_url?: string;
-  is_focus?: boolean;
-  completedStepsCount?: number;
-  totalStepsCount?: number;
-  goal_type?: string;
-  habit_duration_days?: number;
-  habit_checks?: boolean[];
-}
+import { usePact } from "@/hooks/usePact";
+import { useGoals, Goal } from "@/hooks/useGoals";
+import { useProfile } from "@/hooks/useProfile";
+
 type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression";
 type SortDirection = "asc" | "desc";
+
 export default function Goals() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<SortOption>("created");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
-  const [customDifficultyName, setCustomDifficultyName] = useState("");
-  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [activeCurrentPage, setActiveCurrentPage] = useState(1);
   const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
+
+  // Use React Query hooks for cached data
+  const { data: pact } = usePact(user?.id);
+  const { data: goals = [], isLoading: goalsLoading } = useGoals(pact?.id, { includeStepCounts: true });
+  const { data: profile } = useProfile(user?.id);
+
+  const customDifficultyName = profile?.custom_difficulty_name || "";
+  const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
+  const loading = !user || goalsLoading;
+
+  // Local state for optimistic UI updates on focus toggle
+  const [localGoals, setLocalGoals] = useState<Goal[]>([]);
+  
+  // Sync local goals with fetched goals
   useEffect(() => {
-    if (!user) return;
-    const loadGoals = async () => {
-      // Load custom difficulty settings
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("custom_difficulty_name, custom_difficulty_color")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (profileData) {
-        setCustomDifficultyName(profileData.custom_difficulty_name || "");
-        setCustomDifficultyColor(profileData.custom_difficulty_color || "#a855f7");
-      }
+    if (goals.length > 0) {
+      setLocalGoals(goals);
+    }
+  }, [goals]);
 
-      // Get user's pact first
-      const { data: pactData } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
-      if (!pactData) return;
-
-      // Load all goals
-      const { data: goalsData } = await supabase
-        .from("goals")
-        .select("*")
-        .eq("pact_id", pactData.id)
-        .order("created_at", {
-          ascending: false,
-        });
-      if (goalsData) {
-        // Fetch actual step counts for each goal
-        const goalsWithStepCounts = await Promise.all(
-          goalsData.map(async (goal) => {
-            const { data: steps } = await supabase.from("steps").select("status").eq("goal_id", goal.id);
-            const totalStepsCount = steps?.length || 0;
-            const completedStepsCount = steps?.filter((s) => s.status === "completed").length || 0;
-            return {
-              ...goal,
-              totalStepsCount,
-              completedStepsCount,
-            };
-          }),
-        );
-        setGoals(goalsWithStepCounts);
-      }
-      setLoading(false);
-    };
-    loadGoals();
-  }, [user]);
+  const displayGoals = localGoals.length > 0 ? localGoals : goals;
   const toggleFocus = async (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
 
     // Trigger particle effect
-    const goal = goals.find((g) => g.id === goalId);
+    const goal = displayGoals.find((g) => g.id === goalId);
     if (goal) {
       const difficultyColor = getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor);
       triggerParticles(e, difficultyColor);
@@ -111,8 +66,8 @@ export default function Goals() {
       })
       .eq("id", goalId);
     if (!error) {
-      setGoals(
-        goals.map((g) =>
+      setLocalGoals(
+        displayGoals.map((g) =>
           g.id === goalId
             ? {
                 ...g,
@@ -230,10 +185,10 @@ export default function Goals() {
   };
 
   // Filter goals by active/completed status
-  const activeGoals = goals.filter(
+  const activeGoals = displayGoals.filter(
     (g) => g.status === "not_started" || g.status === "in_progress" || g.status === "validated",
   );
-  const completedGoals = goals.filter((g) => g.status === "fully_completed");
+  const completedGoals = displayGoals.filter((g) => g.status === "fully_completed");
   const sortedActiveGoals = sortGoals(activeGoals);
   const sortedCompletedGoals = sortGoals(completedGoals);
 
@@ -295,7 +250,7 @@ export default function Goals() {
             </div>
 
             {/* Sort Controls */}
-            {goals.length > 0 && (
+            {displayGoals.length > 0 && (
               <div
                 className="relative overflow-hidden rounded-md border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl p-4 flex items-center gap-4
               before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent before:pointer-events-none
@@ -378,7 +333,7 @@ export default function Goals() {
           </div>
 
           {/* Goals Tabs */}
-          {goals.length === 0 ? (
+          {displayGoals.length === 0 ? (
             <Card className="border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl shadow-[0_0_30px_rgba(91,180,255,0.15)]">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(91,180,255,0.2)]">
