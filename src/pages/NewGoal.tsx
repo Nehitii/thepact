@@ -274,7 +274,6 @@ export default function NewGoal() {
                 onChange={(e) => setName(e.target.value)}
                 maxLength={100}
                 autoComplete="off"
-                className="bg-background/40 border-primary/30 focus:border-primary/60"
               />
             </div>
 
@@ -284,12 +283,12 @@ export default function NewGoal() {
                   Type
                 </Label>
                 <Select value={type} onValueChange={setType}>
-                  <SelectTrigger id="type" className="bg-background/40 border-primary/30">
+                  <SelectTrigger id="type">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#00050B] border-primary/30 text-gray-100">
+                  <SelectContent>
                     {goalTypes.map((t) => (
-                      <SelectItem key={t.value} value={t.value} className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">
+                      <SelectItem key={t.value} value={t.value}>
                         {t.label}
                       </SelectItem>
                     ))}
@@ -302,10 +301,10 @@ export default function NewGoal() {
                   Difficulty
                 </Label>
                 <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger id="difficulty" className="bg-background/40 border-primary/30">
+                  <SelectTrigger id="difficulty">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#00050B] border-primary/30">
+                  <SelectContent>
                     {difficulties.map((d) => (
                       <SelectItem key={d.value} value={d.value}>
                         {d.label}
@@ -363,7 +362,6 @@ export default function NewGoal() {
                   value={stepCount}
                   onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
                   autoComplete="off"
-                  className="bg-background/40 border-primary/30 focus:border-primary/60"
                 />
               </div>
             )}
@@ -382,7 +380,6 @@ export default function NewGoal() {
                   value={habitDurationDays}
                   onChange={(e) => setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))}
                   autoComplete="off"
-                  className="bg-background/40 border-primary/30 focus:border-primary/60"
                 />
                 <p className="text-xs text-muted-foreground">
                   Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? 's' : ''} to finish this habit
@@ -404,7 +401,7 @@ export default function NewGoal() {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="pl-7 bg-background/40 border-primary/30 focus:border-primary/60"
+                  className="pl-7"
                   value={estimatedCost}
                   onChange={(e) => setEstimatedCost(e.target.value)}
                   autoComplete="off"
@@ -423,7 +420,6 @@ export default function NewGoal() {
                 onChange={(e) => setNotes(e.target.value)}
                 rows={4}
                 maxLength={500}
-                className="bg-background/40 border-primary/30 focus:border-primary/60 resize-none"
               />
             </div>
 

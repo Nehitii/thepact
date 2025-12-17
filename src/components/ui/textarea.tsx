@@ -8,7 +8,12 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
   return (
     <textarea
       className={cn(
-        "flex min-h-[80px] w-full rounded-md border-2 border-primary/30 bg-card/80 backdrop-blur-sm px-3 py-2 text-sm transition-all duration-300 hover:border-primary/60 hover:shadow-[0_0_15px_rgba(var(--primary)/0.2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:border-primary focus-visible:shadow-[0_0_20px_rgba(var(--primary)/0.4)] disabled:cursor-not-allowed disabled:opacity-50 placeholder:text-muted-foreground resize-y relative z-20",
+        "flex min-h-[80px] w-full rounded-xl border-[1.5px] border-primary/50 bg-[hsl(210_80%_8%/0.9)] backdrop-blur-sm px-4 py-3 text-base text-foreground transition-all duration-200 ease-out",
+        "hover:border-primary/70 hover:shadow-[0_0_12px_hsl(var(--primary)/0.3)] hover:bg-[hsl(210_80%_10%/0.95)]",
+        "focus-visible:outline-none focus-visible:border-primary focus-visible:shadow-[0_0_20px_hsl(var(--primary)/0.4),0_0_40px_hsl(var(--primary)/0.15)] focus-visible:bg-[hsl(210_80%_10%/0.95)]",
+        "disabled:cursor-not-allowed disabled:opacity-50",
+        "placeholder:text-[hsl(200_60%_65%)] placeholder:opacity-80",
+        "resize-y relative z-20",
         className,
       )}
       ref={ref}
