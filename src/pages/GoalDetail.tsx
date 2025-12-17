@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Upload, Star, Trophy } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Star, Trophy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -19,6 +19,7 @@ import { CyberBackground } from "@/components/CyberBackground";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { formatCurrency } from "@/lib/currency";
+import { GoalImageUpload } from "@/components/GoalImageUpload";
 interface Goal {
   id: string;
   name: string;
@@ -657,15 +658,16 @@ export default function GoalDetail() {
                         <Label htmlFor="completionDate">Completion Date</Label>
                         <Input id="completionDate" type="date" value={editCompletionDate} onChange={e => setEditCompletionDate(e.target.value)} />
                       </div>
-                      <div>
-                        <Label htmlFor="image">Image URL</Label>
-                        <div className="flex gap-2">
-                          <Input id="image" value={editImage} onChange={e => setEditImage(e.target.value)} placeholder="https://..." />
-                          <Button variant="outline" size="icon">
-                            <Upload className="h-4 w-4" />
-                          </Button>
+                      {user && (
+                        <div>
+                          <Label>Goal Image</Label>
+                          <GoalImageUpload
+                            value={editImage}
+                            onChange={setEditImage}
+                            userId={user.id}
+                          />
                         </div>
-                      </div>
+                      )}
                       <Button onClick={handleEditGoal} className="w-full">
                         Save Changes
                       </Button>
