@@ -392,7 +392,7 @@ export default function NewGoal() {
                 Estimated Cost (optional)
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[hsl(200_60%_65%)] text-base">
                   {getCurrencySymbol(currency)}
                 </span>
                 <Input
@@ -401,7 +401,7 @@ export default function NewGoal() {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                  className="pl-7"
+                  className="pl-8"
                   value={estimatedCost}
                   onChange={(e) => setEstimatedCost(e.target.value)}
                   autoComplete="off"
