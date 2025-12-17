@@ -9,7 +9,7 @@ const SelectTrigger = React.forwardRef<React.ElementRef<typeof SelectPrimitive.T
   className,
   children,
   ...props
-}, ref) => <SelectPrimitive.Trigger ref={ref} className={cn("flex h-11 w-full items-center justify-between rounded-xl border-[1.5px] border-primary/50 bg-[hsl(210_80%_8%/0.9)] backdrop-blur-sm px-4 py-3 text-base text-foreground transition-all duration-200 ease-out", "hover:border-primary/70 hover:shadow-[0_0_12px_hsl(var(--primary)/0.3)] hover:bg-[hsl(210_80%_10%/0.95)]", "focus:outline-none focus:border-primary focus:shadow-[0_0_20px_hsl(var(--primary)/0.4),0_0_40px_hsl(var(--primary)/0.15)] focus:bg-[hsl(210_80%_10%/0.95)]", "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 relative z-10", className)} {...props}>
+}, ref) => <SelectPrimitive.Trigger ref={ref} className={cn("flex h-11 w-full items-center justify-between rounded-xl border-[1.5px] border-primary/50 bg-[hsl(210_80%_8%/0.9)] backdrop-blur-sm px-4 py-3 text-base transition-all duration-200 ease-out", "[&>span]:text-[hsl(205_100%_90%)]", "hover:border-primary/70 hover:shadow-[0_0_12px_hsl(var(--primary)/0.3)] hover:bg-[hsl(210_80%_10%/0.95)]", "focus:outline-none focus:border-primary focus:shadow-[0_0_20px_hsl(var(--primary)/0.4),0_0_40px_hsl(var(--primary)/0.15)] focus:bg-[hsl(210_80%_10%/0.95)]", "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 relative z-10", className)} {...props}>
     {children}
     <SelectPrimitive.Icon asChild>
       <ChevronDown className="h-4 w-4 opacity-80 text-primary" />

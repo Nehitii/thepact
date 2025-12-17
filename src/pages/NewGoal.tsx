@@ -324,26 +324,26 @@ export default function NewGoal() {
                 <button
                   type="button"
                   onClick={() => setGoalType("normal")}
-                  className={`p-4 rounded-lg border-2 transition-all duration-300 text-left ${
+                  className={`p-4 rounded-xl border-[1.5px] transition-all duration-300 text-left ${
                     goalType === "normal"
-                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(91,180,255,0.3)]"
-                      : "border-primary/30 bg-background/40 hover:border-primary/50"
+                      ? "border-primary bg-[hsl(210_80%_10%/0.95)] shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                      : "border-primary/50 bg-[hsl(210_80%_8%/0.9)] hover:border-primary/70 hover:bg-[hsl(210_80%_10%/0.95)]"
                   }`}
                 >
                   <div className="font-rajdhani font-bold text-primary mb-1">Normal Goal</div>
-                  <div className="text-xs text-muted-foreground">Track progress with steps</div>
+                  <div className="text-xs text-[hsl(200_60%_70%)]">Track progress with steps</div>
                 </button>
                 <button
                   type="button"
                   onClick={() => setGoalType("habit")}
-                  className={`p-4 rounded-lg border-2 transition-all duration-300 text-left ${
+                  className={`p-4 rounded-xl border-[1.5px] transition-all duration-300 text-left ${
                     goalType === "habit"
-                      ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(91,180,255,0.3)]"
-                      : "border-primary/30 bg-background/40 hover:border-primary/50"
+                      ? "border-primary bg-[hsl(210_80%_10%/0.95)] shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                      : "border-primary/50 bg-[hsl(210_80%_8%/0.9)] hover:border-primary/70 hover:bg-[hsl(210_80%_10%/0.95)]"
                   }`}
                 >
                   <div className="font-rajdhani font-bold text-primary mb-1">Habit Goal</div>
-                  <div className="text-xs text-muted-foreground">Daily check-ins for X days</div>
+                  <div className="text-xs text-[hsl(200_60%_70%)]">Daily check-ins for X days</div>
                 </button>
               </div>
             </div>
@@ -381,7 +381,7 @@ export default function NewGoal() {
                   onChange={(e) => setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))}
                   autoComplete="off"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[hsl(200_60%_70%)]">
                   Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? 's' : ''} to finish this habit
                 </p>
               </div>
