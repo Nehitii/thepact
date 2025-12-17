@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CyberBackground } from "@/components/CyberBackground";
+import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { z } from "zod";
 import { getCurrencySymbol } from "@/lib/currency";
 const goalSchema = z.object({
@@ -93,6 +94,7 @@ export default function NewGoal() {
   const [habitDurationDays, setHabitDurationDays] = useState(7);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   // Load custom difficulty settings
   useEffect(() => {
@@ -198,7 +200,8 @@ export default function NewGoal() {
         status: "not_started",
         goal_type: goalType,
         habit_duration_days: goalType === "habit" ? habitDurationDays : null,
-        habit_checks: habitChecks
+        habit_checks: habitChecks,
+        image_url: imageUrl || null
       } as any).select().single();
       if (goalError) throw goalError;
 
@@ -366,6 +369,15 @@ export default function NewGoal() {
                 <Input id="cost" type="number" min="0" step="0.01" placeholder="0.00" value={estimatedCost} onChange={e => setEstimatedCost(e.target.value)} autoComplete="off" className="pl-8 px-[15px]" />
               </div>
             </div>
+
+            {/* Image Upload */}
+            {user && (
+              <GoalImageUpload
+                value={imageUrl}
+                onChange={setImageUrl}
+                userId={user.id}
+              />
+            )}
 
             <div className="space-y-3">
               <Label htmlFor="notes" className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
