@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserPact } from "@/lib/supabase";
-import { supabase } from "@/lib/supabase";
 import { PactVisual } from "@/components/PactVisual";
 import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
@@ -15,67 +13,23 @@ import { ModuleGrid } from "@/components/home/ModuleGrid";
 import { ModuleManager } from "@/components/home/ModuleManager";
 import { ProgressByDifficultyModule } from "@/components/home/ProgressByDifficultyModule";
 import { CostTrackingModule } from "@/components/home/CostTrackingModule";
-
-interface Pact {
-  id: string;
-  name: string;
-  mantra: string;
-  symbol: string;
-  color: string;
-  points: number;
-  tier: number;
-  global_progress: number;
-  project_start_date?: string | null;
-  project_end_date?: string | null;
-}
-
-interface Rank {
-  id: string;
-  min_points: number;
-  name: string;
-}
-
-interface Goal {
-  id: string;
-  name: string;
-  type: string;
-  difficulty: string;
-  status: string;
-  validated_steps: number;
-  total_steps: number;
-  start_date?: string;
-  completion_date?: string;
-  image_url?: string;
-}
+import { usePact, Pact } from "@/hooks/usePact";
+import { useRanks, Rank } from "@/hooks/useRanks";
+import { useProfile } from "@/hooks/useProfile";
+import { useGoals, Goal } from "@/hooks/useGoals";
 
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [pact, setPact] = useState<Pact | null>(null);
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [customDifficultyName, setCustomDifficultyName] = useState("");
-  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
-  const [ranks, setRanks] = useState<Rank[]>([]);
-  const [totalPoints, setTotalPoints] = useState(0);
-  const [currentRank, setCurrentRank] = useState<Rank | null>(null);
-  const [nextRank, setNextRank] = useState<Rank | null>(null);
-  const [level, setLevel] = useState(1);
-  const [dashboardData, setDashboardData] = useState({
-    difficultyProgress: [] as any[],
-    totalStepsCompleted: 0,
-    totalSteps: 0,
-    totalCostEngaged: 0,
-    totalCostPaid: 0,
-    goalsCompleted: 0,
-    totalGoals: 0,
-    statusCounts: {
-      not_started: 0,
-      in_progress: 0,
-      validated: 0,
-      fully_completed: 0,
-    },
-  });
+
+  // Use React Query hooks - these run in parallel automatically
+  const { data: pact, isLoading: pactLoading } = usePact(user?.id);
+  const { data: ranks = [] } = useRanks(user?.id);
+  const { data: profile } = useProfile(user?.id);
+  const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
+
+  const customDifficultyName = profile?.custom_difficulty_name || "";
+  const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
 
   const {
     modules,
@@ -89,129 +43,96 @@ export default function Home() {
     getAllModules,
   } = useModuleLayout();
 
-  useEffect(() => {
-    if (!user) return;
+  // Compute derived data from React Query results
+  const { focusGoals, totalPoints, currentRank, nextRank, level, dashboardData } = useMemo(() => {
+    const focusGoals = allGoals.filter(g => 
+      g.is_focus && g.status !== 'fully_completed'
+    );
 
-    const loadData = async () => {
-      const { data: pactData } = await getUserPact(user.id);
-      
-      if (!pactData) {
-        navigate("/onboarding");
-        return;
+    const totalPoints = allGoals.reduce((sum, g) => {
+      if (g.status === 'validated' || g.status === 'fully_completed') {
+        return sum + (g.potential_score || 0);
       }
+      return sum;
+    }, 0);
 
-      setPact(pactData);
+    let currentRank: Rank | null = null;
+    let nextRank: Rank | null = null;
+    let level = 1;
 
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("custom_difficulty_name, custom_difficulty_color")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (profileData) {
-        setCustomDifficultyName(profileData.custom_difficulty_name || "");
-        setCustomDifficultyColor(profileData.custom_difficulty_color || "#a855f7");
-      }
-
-      const { data: ranksData } = await supabase
-        .from("ranks")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("min_points", { ascending: true });
-
-      const userRanks = ranksData || [];
-      setRanks(userRanks);
-
-      const { data: allGoalsData } = await supabase
-        .from("goals")
-        .select("*")
-        .eq("pact_id", pactData.id);
-
-      const focusGoals = allGoalsData?.filter(g => 
-        g.is_focus && g.status !== 'fully_completed'
-      ) || [];
-
-      setGoals(focusGoals);
-
-      const points = allGoalsData?.reduce((sum, g) => {
-        if (g.status === 'validated' || g.status === 'fully_completed') {
-          return sum + (g.potential_score || 0);
+    for (let i = 0; i < ranks.length; i++) {
+      if (totalPoints >= ranks[i].min_points) {
+        currentRank = ranks[i];
+        level = i + 1;
+        nextRank = i + 1 < ranks.length ? ranks[i + 1] : null;
+      } else {
+        if (!currentRank && i === 0) {
+          nextRank = ranks[i];
         }
-        return sum;
-      }, 0) || 0;
-      setTotalPoints(points);
-
-      let current: Rank | null = null;
-      let next: Rank | null = null;
-      let levelIndex = 1;
-
-      for (let i = 0; i < userRanks.length; i++) {
-        if (points >= userRanks[i].min_points) {
-          current = userRanks[i];
-          levelIndex = i + 1;
-          next = i + 1 < userRanks.length ? userRanks[i + 1] : null;
-        } else {
-          if (!current && i === 0) {
-            next = userRanks[i];
-          }
-          break;
-        }
+        break;
       }
+    }
 
-      setCurrentRank(current);
-      setNextRank(next);
-      setLevel(levelIndex);
-
-      const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
-      const difficultyProgress = difficulties.map((difficulty) => {
-        const diffGoals = allGoalsData?.filter((g) => g.difficulty === difficulty) || [];
-        const totalSteps = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-        const completedSteps = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-        return {
-          difficulty,
-          completed: completedSteps,
-          total: totalSteps,
-          percentage: totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0,
-        };
-      });
-
-      const totalSteps = allGoalsData?.reduce((sum, g) => sum + (g.total_steps || 0), 0) || 0;
-      const totalStepsCompleted = allGoalsData?.reduce((sum, g) => sum + (g.validated_steps || 0), 0) || 0;
-      const goalsCompleted = allGoalsData?.filter(g => g.status === 'fully_completed').length || 0;
-      const totalGoals = allGoalsData?.length || 0;
-
-      const statusCounts = {
-        not_started: allGoalsData?.filter(g => g.status === 'not_started').length || 0,
-        in_progress: allGoalsData?.filter(g => g.status === 'in_progress').length || 0,
-        validated: allGoalsData?.filter(g => g.status === 'validated').length || 0,
-        fully_completed: allGoalsData?.filter(g => g.status === 'fully_completed').length || 0,
+    const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
+    const difficultyProgress = difficulties.map((difficulty) => {
+      const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
+      const totalSteps = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+      const completedSteps = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+      return {
+        difficulty,
+        completed: completedSteps,
+        total: totalSteps,
+        percentage: totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0,
       };
+    });
 
-      const totalCostEngaged = allGoalsData?.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0) || 0;
-      
-      const totalCostPaid = allGoalsData?.reduce((sum, g) => {
-        const completionRatio = (g.total_steps || 0) > 0 
-          ? (g.validated_steps || 0) / (g.total_steps || 0)
-          : 0;
-        return sum + ((Number(g.estimated_cost) || 0) * completionRatio);
-      }, 0) || 0;
+    const totalSteps = allGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+    const totalStepsCompleted = allGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+    const goalsCompleted = allGoals.filter(g => g.status === 'fully_completed').length;
+    const totalGoalsCount = allGoals.length;
 
-      setDashboardData({
+    const statusCounts = {
+      not_started: allGoals.filter(g => g.status === 'not_started').length,
+      in_progress: allGoals.filter(g => g.status === 'in_progress').length,
+      validated: allGoals.filter(g => g.status === 'validated').length,
+      fully_completed: allGoals.filter(g => g.status === 'fully_completed').length,
+    };
+
+    const totalCostEngaged = allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
+    
+    const totalCostPaid = allGoals.reduce((sum, g) => {
+      const completionRatio = (g.total_steps || 0) > 0 
+        ? (g.validated_steps || 0) / (g.total_steps || 0)
+        : 0;
+      return sum + ((Number(g.estimated_cost) || 0) * completionRatio);
+    }, 0);
+
+    return {
+      focusGoals,
+      totalPoints,
+      currentRank,
+      nextRank,
+      level,
+      dashboardData: {
         difficultyProgress,
         totalStepsCompleted,
         totalSteps,
         totalCostEngaged,
         totalCostPaid,
         goalsCompleted,
-        totalGoals,
+        totalGoals: totalGoalsCount,
         statusCounts,
-      });
-
-      setLoading(false);
+      },
     };
+  }, [allGoals, ranks]);
 
-    loadData();
-  }, [user, navigate]);
+  // Redirect to onboarding if no pact (after loading)
+  const loading = !user || pactLoading || (pact && goalsLoading);
+  
+  if (!pactLoading && !pact && user) {
+    navigate("/onboarding");
+    return null;
+  }
 
   if (loading) {
     return (
@@ -265,7 +186,7 @@ export default function Home() {
           />
         );
       case 'focus-goals':
-        return <FocusGoalsModule goals={goals} navigate={navigate} compact={compact} />;
+        return <FocusGoalsModule goals={focusGoals} navigate={navigate} compact={compact} />;
       case 'the-call':
         return <TheCallModule navigate={navigate} compact={compact} />;
       case 'finance':
