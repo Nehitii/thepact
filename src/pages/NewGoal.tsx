@@ -261,8 +261,13 @@ export default function NewGoal() {
         <div className="max-w-2xl mx-auto p-6 space-y-8">
         {/* Header */}
         <div className="flex items-center gap-4 pt-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/goals")}>
-            <ArrowLeft className="h-5 w-5" />
+          <Button 
+            variant="hud" 
+            onClick={() => navigate("/goals")}
+            className="px-4 py-2 font-rajdhani text-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
           </Button>
           <div>
             <h1 className="text-3xl font-bold font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
