@@ -440,8 +440,13 @@ export default function GoalDetail() {
         <div className="max-w-3xl mx-auto p-6 space-y-8 pb-24">
         {/* Back Button */}
         <div className="pt-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/goals")} className="transition-colors text-primary bg-secondary-foreground border rounded">
-            <ArrowLeft className="h-5 w-5" />
+          <Button 
+            variant="hud" 
+            onClick={() => navigate("/goals")} 
+            className="px-4 py-2 font-rajdhani text-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
           </Button>
         </div>
 
@@ -596,12 +601,13 @@ export default function GoalDetail() {
 
                 {/* Right Section: Actions */}
                 <div className="flex flex-col items-center gap-2 flex-shrink-0">
-                <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <Edit className="h-5 w-5" />
-                    </Button>
-                  </DialogTrigger>
+              <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="hud" className="px-4 py-2 font-rajdhani text-sm">
+                    <Edit className="h-4 w-4" />
+                    <span>Edit</span>
+                  </Button>
+                </DialogTrigger>
                   <DialogContent className="max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                       <DialogTitle>Edit Goal</DialogTitle>
@@ -673,16 +679,28 @@ export default function GoalDetail() {
                       </Button>
                     </div>
                   </DialogContent>
-                </Dialog>
-                <Button variant="outline" size="icon" onClick={handleFullyComplete}>
-                  <Sparkles className="h-5 w-5" style={{
-                      color: difficultyColor
-                    }} />
+              </Dialog>
+                <Button 
+                  variant="hud" 
+                  onClick={handleFullyComplete}
+                  className="px-4 py-2 font-rajdhani text-sm"
+                  style={{
+                    borderColor: `${difficultyColor}60`,
+                    color: difficultyColor,
+                    boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`
+                  }}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>Complete</span>
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <Trash2 className="h-5 w-5 text-destructive" />
+                    <Button 
+                      variant="hud" 
+                      className="px-4 py-2 font-rajdhani text-sm border-destructive/40 text-destructive hover:border-destructive/70 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
