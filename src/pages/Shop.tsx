@@ -118,10 +118,6 @@ export default function Shop() {
         {renderContent()}
       </div>
 
-      {/* Decorative corner accents */}
-      <div className="fixed top-4 left-4 w-12 h-12 border-l-2 border-t-2 border-primary/20 rounded-tl-lg pointer-events-none" />
-      <div className="fixed top-4 right-4 w-12 h-12 border-r-2 border-t-2 border-primary/20 rounded-tr-lg pointer-events-none" />
-
       <Navigation />
     </div>
   );
