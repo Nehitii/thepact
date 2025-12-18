@@ -160,25 +160,77 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
         </div>
       </div>
 
-      {/* Particle effect for unlocked achievements */}
+      {/* Particle effect for unlocked achievements - reward-style */}
       {!isLocked && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
-          {[...Array(4)].map((_, i) => (
+          {/* Corner sparkles */}
+          {[
+            { x: '10%', y: '15%', delay: 0 },
+            { x: '85%', y: '20%', delay: 1.2 },
+            { x: '15%', y: '75%', delay: 2.4 },
+            { x: '90%', y: '80%', delay: 3.6 },
+            { x: '50%', y: '10%', delay: 4.8 },
+            { x: '45%', y: '85%', delay: 0.6 },
+          ].map((pos, i) => (
             <motion.div
               key={i}
-              className="absolute w-1 h-1 rounded-full"
-              style={{ backgroundColor: color }}
-              initial={{ opacity: 0, x: "50%", y: "50%" }}
+              className="absolute"
+              style={{ 
+                left: pos.x, 
+                top: pos.y,
+                transform: 'translate(-50%, -50%)'
+              }}
+              initial={{ opacity: 0, scale: 0 }}
               animate={{
-                opacity: [0, 0.8, 0],
-                x: [`50%`, `${Math.random() * 100}%`],
-                y: [`50%`, `${Math.random() * 100}%`],
+                opacity: [0, 0.9, 0.9, 0],
+                scale: [0.3, 1, 1, 0.3],
+                y: [0, -8, -12, -16],
               }}
               transition={{
-                duration: 3,
+                duration: 4,
                 repeat: Infinity,
-                delay: i * 0.8,
+                delay: pos.delay,
                 ease: "easeOut",
+                times: [0, 0.15, 0.7, 1]
+              }}
+            >
+              <div 
+                className="w-1.5 h-1.5 rounded-full"
+                style={{ 
+                  backgroundColor: i % 3 === 0 ? '#FFD700' : i % 3 === 1 ? color : '#E8F4FF',
+                  boxShadow: `0 0 6px ${i % 3 === 0 ? '#FFD700' : i % 3 === 1 ? color : '#E8F4FF'}`,
+                  filter: 'blur(0.3px)'
+                }}
+              />
+            </motion.div>
+          ))}
+          
+          {/* Floating shimmer dots */}
+          {[
+            { x: '25%', y: '40%', delay: 1.5 },
+            { x: '70%', y: '50%', delay: 3 },
+          ].map((pos, i) => (
+            <motion.div
+              key={`shimmer-${i}`}
+              className="absolute w-1 h-1 rounded-full"
+              style={{ 
+                left: pos.x, 
+                top: pos.y,
+                backgroundColor: '#B8E0FF',
+                boxShadow: '0 0 4px #B8E0FF'
+              }}
+              initial={{ opacity: 0 }}
+              animate={{
+                opacity: [0, 0.7, 0],
+                x: [0, i % 2 === 0 ? 6 : -6],
+                y: [0, -10],
+                scale: [0.5, 1, 0.5]
+              }}
+              transition={{
+                duration: 5,
+                repeat: Infinity,
+                delay: pos.delay,
+                ease: "easeInOut",
               }}
             />
           ))}
