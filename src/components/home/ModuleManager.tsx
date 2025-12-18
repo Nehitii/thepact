@@ -54,10 +54,11 @@ export function ModuleManager({
             : "opacity-0 -translate-y-4 pointer-events-none"
         )}
       >
-        <div className="absolute inset-0 bg-primary/20 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-        <div className="relative flex items-center gap-2 px-4 py-2.5 bg-card/80 backdrop-blur-xl border border-primary/30 rounded-lg shadow-[0_0_15px_rgba(91,180,255,0.2)] hover:border-primary/50 hover:shadow-[0_0_25px_rgba(91,180,255,0.4)] transition-all">
-          <LayoutGrid className="w-4 h-4 text-primary" />
-          <span className="text-xs font-orbitron text-primary uppercase tracking-wider">
+        <div className="relative flex items-center gap-2 px-4 py-2 rounded-lg bg-transparent border border-primary/40 backdrop-blur-md shadow-[0_0_12px_rgba(91,180,255,0.15),inset_0_1px_0_rgba(91,180,255,0.1)] hover:border-primary/70 hover:shadow-[0_0_20px_rgba(91,180,255,0.3),inset_0_1px_0_rgba(91,180,255,0.2)] active:scale-[0.98] transition-all duration-300 overflow-hidden">
+          {/* Inner gradient overlay */}
+          <div className="absolute inset-0 rounded-lg bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+          <LayoutGrid className="w-4 h-4 text-primary relative z-10 transition-colors duration-300 group-hover:text-primary-glow" />
+          <span className="text-xs font-rajdhani text-primary uppercase tracking-wider relative z-10 transition-colors duration-300 group-hover:text-primary-glow">
             Customize
           </span>
         </div>
