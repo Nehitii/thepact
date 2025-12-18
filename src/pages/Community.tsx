@@ -45,12 +45,6 @@ export default function Community() {
             Connect with fellow seekers. Together, we rise beyond limits.
           </p>
         </div>
-
-        {/* Decorative corner accents */}
-        <div className="absolute top-8 left-8 w-16 h-16 border-l-2 border-t-2 border-primary/30 rounded-tl-lg" />
-        <div className="absolute top-8 right-8 w-16 h-16 border-r-2 border-t-2 border-primary/30 rounded-tr-lg" />
-        <div className="absolute bottom-24 left-8 w-16 h-16 border-l-2 border-b-2 border-primary/30 rounded-bl-lg" />
-        <div className="absolute bottom-24 right-8 w-16 h-16 border-r-2 border-b-2 border-primary/30 rounded-br-lg" />
       </div>
 
       <Navigation />
