@@ -6,8 +6,8 @@ import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Flame } from "lucide-react";
-import { useModuleLayout } from "@/hooks/useModuleLayout";
+import { TrendingUp, Flame, ListTodo, BookOpen, Lock } from "lucide-react";
+import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
 import { ModuleGrid } from "@/components/home/ModuleGrid";
 import { ModuleManager } from "@/components/home/ModuleManager";
@@ -37,6 +37,7 @@ export default function Home() {
     enterEditMode,
     exitEditMode,
     toggleModule,
+    cycleModuleSize,
     reorderModules,
     validateLayout,
     resetToDefault,
@@ -73,16 +74,17 @@ export default function Home() {
       }
     }
 
+    // Goals-based difficulty progress (count goals, not steps)
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
       const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
-      const totalSteps = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-      const completedSteps = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+      const completedGoals = diffGoals.filter(g => g.status === 'fully_completed').length;
+      const totalGoals = diffGoals.length;
       return {
         difficulty,
-        completed: completedSteps,
-        total: totalSteps,
-        percentage: totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0,
+        completed: completedGoals,
+        total: totalGoals,
+        percentage: totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0,
       };
     });
 
@@ -153,13 +155,15 @@ export default function Home() {
   const sortedModules = getAllModules();
 
   // Module rendering map with compact support
-  const renderModule = (moduleId: string, compact: boolean = false) => {
+  const renderModule = (moduleId: string, size: ModuleSize) => {
+    const compact = size !== 'full';
     switch (moduleId) {
       case 'timeline':
         return (
           <PactTimeline 
             projectStartDate={pact.project_start_date} 
-            projectEndDate={pact.project_end_date} 
+            projectEndDate={pact.project_end_date}
+            hideBackgroundLines={true}
           />
         );
       case 'goals-gauge':
@@ -175,6 +179,7 @@ export default function Home() {
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
             compact={compact}
+            hideBackgroundLines={true}
           />
         );
       case 'cost-tracking':
@@ -188,11 +193,15 @@ export default function Home() {
       case 'focus-goals':
         return <FocusGoalsModule goals={focusGoals} navigate={navigate} compact={compact} />;
       case 'the-call':
-        return <TheCallModule navigate={navigate} compact={compact} />;
+        return <TheCallModule navigate={navigate} size={size} />;
       case 'finance':
-        return <FinanceModule navigate={navigate} compact={compact} />;
+        return <FinanceModule navigate={navigate} size={size} />;
       case 'achievements':
         return <AchievementsWidget />;
+      case 'todo-list':
+        return <PlaceholderModule name="To Do List" icon={ListTodo} size={size} />;
+      case 'journal':
+        return <PlaceholderModule name="Journal" icon={BookOpen} size={size} />;
       default:
         return null;
     }
@@ -370,9 +379,13 @@ export default function Home() {
               isEditMode={isEditMode}
               isEnabled={module.enabled}
               onToggle={() => toggleModule(module.id)}
+              onCycleSize={() => cycleModuleSize(module.id)}
               size={module.size}
+              category={module.category}
+              allowedSizes={module.allowedSizes}
+              isPlaceholder={module.isPlaceholder}
             >
-              {renderModule(module.id, module.size === 'half')}
+              {renderModule(module.id, module.size)}
             </ModuleCard>
           ))}
         </ModuleGrid>
@@ -398,7 +411,7 @@ function GoalsGaugeModule({ data, compact = false }: { data: any; compact?: bool
   return (
     <div className="relative group animate-fade-in">
       <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-      <div className={`relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg scan-line overflow-hidden hover:border-primary/50 transition-all ${compact ? 'p-4' : 'p-6'}`}>
+      <div className={`relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden hover:border-primary/50 transition-all ${compact ? 'p-4' : 'p-6'}`}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
         </div>
@@ -443,7 +456,7 @@ function StepsGaugeModule({ data, compact = false }: { data: any; compact?: bool
   return (
     <div className="relative group animate-fade-in">
       <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-      <div className={`relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg scan-line overflow-hidden hover:border-primary/50 transition-all ${compact ? 'p-4' : 'p-6'}`}>
+      <div className={`relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden hover:border-primary/50 transition-all ${compact ? 'p-4' : 'p-6'}`}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
         </div>
@@ -682,73 +695,112 @@ function FocusGoalsModule({ goals, navigate, compact = false }: { goals: Goal[];
   );
 }
 
-function TheCallModule({ navigate, compact = false }: { navigate: any; compact?: boolean }) {
+function TheCallModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+  const isCompact = size === 'quarter';
+  
   return (
-    <div className="animate-fade-in relative group">
+    <div className="animate-fade-in relative group h-full">
       <div className="absolute inset-0 bg-orange-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
       <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-red-500/10 to-orange-500/5 rounded-lg blur-2xl animate-pulse" />
       <button
         onClick={() => navigate("/the-call")}
-        className="relative w-full bg-gradient-to-br from-card/30 via-orange-950/20 to-card/30 backdrop-blur-xl border-2 border-orange-500/40 rounded-lg overflow-hidden hover:border-orange-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.4),inset_0_0_30px_rgba(249,115,22,0.1)] group/call"
+        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-orange-950/20 to-card/30 backdrop-blur-xl border-2 border-orange-500/40 rounded-lg overflow-hidden hover:border-orange-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.4),inset_0_0_30px_rgba(249,115,22,0.1)] group/call"
       >
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-orange-500/20 rounded-[6px]" />
-          <div className="absolute inset-[4px] border border-orange-500/10 rounded-[5px]" />
         </div>
         
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-1/2 left-1/4 w-1 h-1 bg-orange-400/60 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
           <div className="absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-red-400/50 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.5s' }} />
-          <div className="absolute bottom-1/3 left-1/3 w-1 h-1 bg-orange-300/40 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }} />
         </div>
         
-        <div className="relative z-10 p-6 flex items-center justify-center gap-4">
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 ${isCompact ? 'flex-col' : ''}`}>
           <div className="relative">
             <div className="absolute inset-0 bg-orange-500/40 blur-xl rounded-full scale-150 group-hover/call:scale-[2] transition-transform duration-500" />
-            <div className="absolute inset-0 bg-gradient-to-t from-red-500/30 to-orange-400/30 blur-lg rounded-full animate-pulse" />
-            <Flame className="w-8 h-8 text-orange-400 relative z-10 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)] group-hover/call:drop-shadow-[0_0_25px_rgba(249,115,22,1)] transition-all duration-300 group-hover/call:scale-110" />
+            <Flame className={`text-orange-400 relative z-10 drop-shadow-[0_0_15px_rgba(249,115,22,0.8)] ${isCompact ? 'w-6 h-6' : 'w-8 h-8'}`} />
           </div>
           
-          <div className="flex flex-col items-start">
-            <span className="text-lg font-bold uppercase tracking-[0.2em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 drop-shadow-[0_0_10px_rgba(249,115,22,0.5)]">
+          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
+            <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-400 to-orange-400 ${isCompact ? 'text-xs' : 'text-lg'}`}>
               The Call
             </span>
-            <span className="text-xs text-orange-400/60 font-rajdhani tracking-wide mt-0.5 group-hover/call:text-orange-400/80 transition-colors">
-              Answer if you dare...
-            </span>
+            {!isCompact && (
+              <span className="text-xs text-orange-400/60 font-rajdhani tracking-wide mt-0.5">
+                Answer if you dare...
+              </span>
+            )}
           </div>
         </div>
         
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-orange-500/50 rounded-tl group-hover/call:border-orange-400/80 transition-colors" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-orange-500/50 rounded-tr group-hover/call:border-orange-400/80 transition-colors" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-orange-500/50 rounded-bl group-hover/call:border-orange-400/80 transition-colors" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-orange-500/50 rounded-br group-hover/call:border-orange-400/80 transition-colors" />
+        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-orange-500/50 rounded-tl" />
+        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-orange-500/50 rounded-tr" />
+        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-orange-500/50 rounded-bl" />
+        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-orange-500/50 rounded-br" />
       </button>
     </div>
   );
 }
 
-function FinanceModule({ navigate, compact = false }: { navigate: any; compact?: boolean }) {
+function FinanceModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+  const isCompact = size === 'quarter';
+  
   return (
-    <div className="animate-fade-in relative group">
-      <div className="absolute inset-0 bg-finance/5 rounded-lg blur-2xl" />
+    <div className="animate-fade-in relative group h-full">
+      {/* Distinct accent glow for Track Finance */}
+      <div className="absolute inset-0 bg-emerald-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-teal-500/10 to-emerald-500/5 rounded-lg blur-2xl" />
       <button
         onClick={() => navigate("/finance")}
-        className="relative w-full bg-card/20 backdrop-blur-xl border-2 border-finance/30 rounded-lg overflow-hidden hover:border-finance/50 transition-all hover:shadow-[0_0_20px_rgba(72,149,239,0.3)] group/finance"
+        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-emerald-950/20 to-card/30 backdrop-blur-xl border-2 border-emerald-500/40 rounded-lg overflow-hidden hover:border-emerald-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.4),inset_0_0_30px_rgba(16,185,129,0.1)] group/finance"
       >
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-finance/20 rounded-[6px]" />
+          <div className="absolute inset-[2px] border border-emerald-500/20 rounded-[6px]" />
         </div>
-        <div className="relative z-10 p-6 flex items-center justify-center gap-4">
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 ${isCompact ? 'flex-col' : ''}`}>
           <div className="relative">
-            <div className="absolute inset-0 bg-finance/20 blur-md rounded-full" />
-            <span className="text-4xl relative z-10">💰</span>
+            <div className="absolute inset-0 bg-emerald-500/30 blur-lg rounded-full" />
+            <span className={`relative z-10 ${isCompact ? 'text-2xl' : 'text-4xl'}`}>💰</span>
           </div>
-          <span className="text-lg font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-finance via-finance to-finance">
+          <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 ${isCompact ? 'text-xs' : 'text-lg'}`}>
             Track Finance
           </span>
         </div>
+        
+        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-emerald-500/50 rounded-tl" />
+        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-emerald-500/50 rounded-tr" />
+        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-emerald-500/50 rounded-bl" />
+        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-emerald-500/50 rounded-br" />
       </button>
+    </div>
+  );
+}
+
+function PlaceholderModule({ name, icon: Icon, size = 'quarter' }: { name: string; icon: any; size?: ModuleSize }) {
+  const isCompact = size === 'quarter';
+  
+  return (
+    <div className="animate-fade-in relative group h-full">
+      <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
+      <div className="relative w-full h-full min-h-[80px] bg-card/20 backdrop-blur-xl border-2 border-primary/20 border-dashed rounded-lg overflow-hidden">
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 h-full ${isCompact ? 'flex-col' : ''}`}>
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/10 blur-md rounded-full" />
+            <Icon className={`text-primary/40 relative z-10 ${isCompact ? 'w-5 h-5' : 'w-6 h-6'}`} />
+          </div>
+          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
+            <span className={`font-medium uppercase tracking-wider font-orbitron text-primary/40 ${isCompact ? 'text-[10px]' : 'text-sm'}`}>
+              {name}
+            </span>
+            <div className="flex items-center gap-1 mt-1">
+              <Lock className="w-3 h-3 text-primary/30" />
+              <span className="text-[10px] text-primary/30 font-rajdhani uppercase tracking-wider">
+                Coming Soon
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
