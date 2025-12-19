@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 interface PactTimelineProps {
   projectStartDate?: string | null;
   projectEndDate?: string | null;
+  hideBackgroundLines?: boolean;
 }
 
-export function PactTimeline({ projectStartDate, projectEndDate }: PactTimelineProps) {
+export function PactTimeline({ projectStartDate, projectEndDate, hideBackgroundLines }: PactTimelineProps) {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
 
