@@ -37,7 +37,7 @@ export function ProgressByDifficultyModule({
   return (
     <div className="relative group animate-fade-in">
       <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
-      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg scan-line overflow-hidden hover:border-primary/50 transition-all">
+      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden hover:border-primary/50 transition-all">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
         </div>
