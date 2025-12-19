@@ -1,11 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 
+export type ModuleSize = 'full' | 'half' | 'quarter';
+export type ModuleCategory = 'display' | 'action';
+
 export interface ModuleConfig {
   id: string;
   name: string;
   enabled: boolean;
   order: number;
-  size: 'full' | 'half'; // full = full width, half = 50% (2 per row)
+  size: ModuleSize;
+  category: ModuleCategory;
+  allowedSizes: ModuleSize[];
+  isPlaceholder?: boolean;
 }
 
 export interface ModuleLayoutState {
@@ -14,19 +20,26 @@ export interface ModuleLayoutState {
 }
 
 const DEFAULT_MODULES: ModuleConfig[] = [
-  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 0, size: 'full' },
-  { id: 'goals-gauge', name: 'Goals Completed', enabled: true, order: 1, size: 'half' },
-  { id: 'steps-gauge', name: 'Steps Completed', enabled: true, order: 2, size: 'half' },
-  { id: 'status-summary', name: 'Goals Status Summary', enabled: true, order: 3, size: 'full' },
-  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 4, size: 'full' },
-  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 5, size: 'half' },
-  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 6, size: 'full' },
-  { id: 'the-call', name: 'The Call', enabled: true, order: 7, size: 'half' },
-  { id: 'finance', name: 'Track Finance', enabled: true, order: 8, size: 'full' },
-  { id: 'achievements', name: 'Achievements', enabled: true, order: 9, size: 'full' },
+  // Display modules - support full/half only
+  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 0, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'goals-gauge', name: 'Goals Completed', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'steps-gauge', name: 'Steps Completed', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'status-summary', name: 'Goals Status Summary', enabled: true, order: 3, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 4, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 6, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'achievements', name: 'Achievements', enabled: true, order: 7, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
+  
+  // Action modules - support full/half/quarter
+  { id: 'the-call', name: 'The Call', enabled: true, order: 8, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'] },
+  { id: 'finance', name: 'Track Finance', enabled: true, order: 9, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'] },
+  
+  // Placeholder action modules
+  { id: 'todo-list', name: 'To Do List', enabled: true, order: 10, size: 'quarter', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
+  { id: 'journal', name: 'Journal', enabled: true, order: 11, size: 'quarter', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
 ];
 
-const STORAGE_KEY = 'home-module-layout';
+const STORAGE_KEY = 'home-module-layout-v2';
 
 export function useModuleLayout() {
   const [modules, setModules] = useState<ModuleConfig[]>(DEFAULT_MODULES);
@@ -42,7 +55,15 @@ export function useModuleLayout() {
         // Merge with defaults in case new modules were added
         const merged = DEFAULT_MODULES.map(defaultModule => {
           const savedModule = parsed.find(m => m.id === defaultModule.id);
-          return savedModule ? { ...defaultModule, ...savedModule } : defaultModule;
+          if (savedModule) {
+            return { 
+              ...defaultModule, 
+              enabled: savedModule.enabled,
+              order: savedModule.order,
+              size: savedModule.size,
+            };
+          }
+          return defaultModule;
         });
         setModules(merged);
         setPendingModules(merged);
@@ -65,6 +86,17 @@ export function useModuleLayout() {
   const toggleModule = useCallback((moduleId: string) => {
     setPendingModules(prev => 
       prev.map(m => m.id === moduleId ? { ...m, enabled: !m.enabled } : m)
+    );
+  }, []);
+
+  const cycleModuleSize = useCallback((moduleId: string) => {
+    setPendingModules(prev => 
+      prev.map(m => {
+        if (m.id !== moduleId) return m;
+        const currentIndex = m.allowedSizes.indexOf(m.size);
+        const nextIndex = (currentIndex + 1) % m.allowedSizes.length;
+        return { ...m, size: m.allowedSizes[nextIndex] };
+      })
     );
   }, []);
 
@@ -112,6 +144,7 @@ export function useModuleLayout() {
     enterEditMode,
     exitEditMode,
     toggleModule,
+    cycleModuleSize,
     reorderModules,
     validateLayout,
     resetToDefault,
