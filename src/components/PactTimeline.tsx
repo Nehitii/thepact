@@ -122,7 +122,7 @@ export function PactTimeline({ projectStartDate, projectEndDate, hideBackgroundL
       
       {/* Main card - consistent with other modules */}
       <div className={cn(
-        "relative bg-card/20 backdrop-blur-xl border-2 rounded-lg overflow-hidden transition-all scan-line",
+        "relative bg-card/20 backdrop-blur-xl border-2 rounded-lg overflow-hidden transition-all",
         isNearEnd 
           ? "border-accent/40 hover:border-accent/60" 
           : "border-primary/30 hover:border-primary/50"
@@ -134,12 +134,6 @@ export function PactTimeline({ projectStartDate, projectEndDate, hideBackgroundL
             isNearEnd ? "border-accent/15" : "border-primary/20"
           )} />
         </div>
-
-        {/* Animated shimmer overlay */}
-        <div 
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer pointer-events-none" 
-          style={{ backgroundSize: '200% auto' }} 
-        />
 
         {/* Header Section */}
         <div className={cn(
