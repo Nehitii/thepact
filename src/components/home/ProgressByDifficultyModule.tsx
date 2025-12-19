@@ -13,6 +13,7 @@ interface ProgressByDifficultyModuleProps {
   customDifficultyName?: string;
   customDifficultyColor?: string;
   compact?: boolean;
+  hideBackgroundLines?: boolean;
 }
 
 export function ProgressByDifficultyModule({
@@ -20,6 +21,7 @@ export function ProgressByDifficultyModule({
   customDifficultyName,
   customDifficultyColor,
   compact = false,
+  hideBackgroundLines,
 }: ProgressByDifficultyModuleProps) {
   const getDifficultyLabel = (difficulty: string) => {
     if (difficulty === 'custom' && customDifficultyName) {
