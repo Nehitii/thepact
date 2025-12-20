@@ -394,6 +394,51 @@ export type Database = {
           },
         ]
       }
+      monthly_finance_validations: {
+        Row: {
+          actual_total_expenses: number | null
+          actual_total_income: number | null
+          confirmed_expenses: boolean
+          confirmed_income: boolean
+          created_at: string
+          id: string
+          month: string
+          unplanned_expenses: number | null
+          unplanned_income: number | null
+          updated_at: string
+          user_id: string
+          validated_at: string | null
+        }
+        Insert: {
+          actual_total_expenses?: number | null
+          actual_total_income?: number | null
+          confirmed_expenses?: boolean
+          confirmed_income?: boolean
+          created_at?: string
+          id?: string
+          month: string
+          unplanned_expenses?: number | null
+          unplanned_income?: number | null
+          updated_at?: string
+          user_id: string
+          validated_at?: string | null
+        }
+        Update: {
+          actual_total_expenses?: number | null
+          actual_total_income?: number | null
+          confirmed_expenses?: boolean
+          confirmed_income?: boolean
+          created_at?: string
+          id?: string
+          month?: string
+          unplanned_expenses?: number | null
+          unplanned_income?: number | null
+          updated_at?: string
+          user_id?: string
+          validated_at?: string | null
+        }
+        Relationships: []
+      }
       pact_spending: {
         Row: {
           amount: number
@@ -513,6 +558,9 @@ export type Database = {
           id: string
           language: string | null
           personal_quote: string | null
+          project_funding_target: number | null
+          project_monthly_allocation: number | null
+          salary_payment_day: number | null
           timezone: string | null
           updated_at: string | null
           weight: number | null
@@ -537,6 +585,9 @@ export type Database = {
           id: string
           language?: string | null
           personal_quote?: string | null
+          project_funding_target?: number | null
+          project_monthly_allocation?: number | null
+          salary_payment_day?: number | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
@@ -561,6 +612,9 @@ export type Database = {
           id?: string
           language?: string | null
           personal_quote?: string | null
+          project_funding_target?: number | null
+          project_monthly_allocation?: number | null
+          salary_payment_day?: number | null
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
@@ -588,6 +642,66 @@ export type Database = {
           created_at?: string
           id?: string
           min_points?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recurring_expenses: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      recurring_income: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          is_active?: boolean
           name?: string
           updated_at?: string
           user_id?: string
