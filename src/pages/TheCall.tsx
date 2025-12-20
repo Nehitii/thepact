@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Flame, Zap, Check } from 'lucide-react';
+import { Flame, Zap, Check, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Navigation } from '@/components/Navigation';
@@ -25,6 +26,7 @@ enum RitualState {
 const HOLD_DURATION = 20000;
 
 export default function TheCall() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [pactData, setPactData] = useState<PactData | null>(null);
   const [ritualState, setRitualState] = useState<RitualState>(RitualState.IDLE);
