@@ -11,10 +11,11 @@ import { ProfileFinanceSettings } from "@/components/profile/ProfileFinanceSetti
 import { ProfileDisplaySounds } from "@/components/profile/ProfileDisplaySounds";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { ProfileSignOut } from "@/components/profile/ProfileSignOut";
-
 export default function Profile() {
-  const { user } = useAuth();
-  
+  const {
+    user
+  } = useAuth();
+
   // Account settings
   const [displayName, setDisplayName] = useState("");
   const [timezone, setTimezone] = useState("UTC");
@@ -22,10 +23,10 @@ export default function Profile() {
   const [currency, setCurrency] = useState("eur");
   const [birthday, setBirthday] = useState<Date | undefined>(undefined);
   const [country, setCountry] = useState("");
-  
+
   // Bounded Profile settings
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  
+
   // Pact settings
   const [pactId, setPactId] = useState<string | null>(null);
   const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
@@ -33,17 +34,12 @@ export default function Profile() {
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
-
   useEffect(() => {
     if (!user) return;
-
     const loadProfile = async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-
+      const {
+        data
+      } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
       if (data) {
         setDisplayName(data.display_name || "");
         setTimezone(data.timezone || "UTC");
@@ -58,12 +54,9 @@ export default function Profile() {
       }
 
       // Load pact data
-      const { data: pactData } = await supabase
-        .from("pacts")
-        .select("id, project_start_date, project_end_date")
-        .eq("user_id", user.id)
-        .maybeSingle();
-
+      const {
+        data: pactData
+      } = await supabase.from("pacts").select("id, project_start_date, project_end_date").eq("user_id", user.id).maybeSingle();
       if (pactData) {
         setPactId(pactData.id);
         if (pactData.project_start_date) {
@@ -74,12 +67,9 @@ export default function Profile() {
         }
       }
     };
-
     loadProfile();
   }, [user]);
-
-  return (
-    <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
+  return <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
@@ -90,28 +80,22 @@ export default function Profile() {
       {/* Sci-fi grid overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-20">
         <div className="absolute inset-0" style={{
-          backgroundImage: `
+        backgroundImage: `
             linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px'
-        }} />
+        backgroundSize: '50px 50px'
+      }} />
       </div>
 
       {/* Floating particles */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${4 + Math.random() * 4}s`,
-            }}
-          />
-        ))}
+        {[...Array(20)].map((_, i) => <div key={i} className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float" style={{
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDelay: `${Math.random() * 5}s`,
+        animationDuration: `${4 + Math.random() * 4}s`
+      }} />)}
       </div>
 
       <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10">
@@ -124,63 +108,22 @@ export default function Profile() {
         </div>
 
         {/* Menu Cards */}
-        {user && (
-          <div className="space-y-4">
+        {user && <div className="space-y-4">
             {/* Account Information */}
-            <ProfileAccountSettings
-              userId={user.id}
-              email={user.email || ""}
-              displayName={displayName}
-              timezone={timezone}
-              language={language}
-              currency={currency}
-              birthday={birthday}
-              country={country}
-              onDisplayNameChange={setDisplayName}
-              onTimezoneChange={setTimezone}
-              onLanguageChange={setLanguage}
-              onCurrencyChange={setCurrency}
-              onBirthdayChange={setBirthday}
-              onCountryChange={setCountry}
-            />
+            <ProfileAccountSettings userId={user.id} email={user.email || ""} displayName={displayName} timezone={timezone} language={language} currency={currency} birthday={birthday} country={country} onDisplayNameChange={setDisplayName} onTimezoneChange={setTimezone} onLanguageChange={setLanguage} onCurrencyChange={setCurrency} onBirthdayChange={setBirthday} onCountryChange={setCountry} />
 
             {/* Bounded Profile */}
-            <ProfileBoundedProfile
-              userId={user.id}
-              displayName={displayName}
-              avatarUrl={avatarUrl}
-              avatarFrame=""
-              personalQuote=""
-              displayedBadges={[]}
-              onAvatarUrlChange={setAvatarUrl}
-              onAvatarFrameChange={() => {}}
-              onPersonalQuoteChange={() => {}}
-              onDisplayedBadgesChange={() => {}}
-            />
+            <ProfileBoundedProfile userId={user.id} displayName={displayName} avatarUrl={avatarUrl} avatarFrame="" personalQuote="" displayedBadges={[]} onAvatarUrlChange={setAvatarUrl} onAvatarFrameChange={() => {}} onPersonalQuoteChange={() => {}} onDisplayedBadgesChange={() => {}} />
 
             {/* Pact Settings */}
-            <ProfilePactSettings
-              userId={user.id}
-              pactId={pactId}
-              projectStartDate={projectStartDate}
-              projectEndDate={projectEndDate}
-              customDifficultyName={customDifficultyName}
-              customDifficultyActive={customDifficultyActive}
-              customDifficultyColor={customDifficultyColor}
-              onProjectStartDateChange={setProjectStartDate}
-              onProjectEndDateChange={setProjectEndDate}
-              onCustomDifficultyNameChange={setCustomDifficultyName}
-              onCustomDifficultyActiveChange={setCustomDifficultyActive}
-              onCustomDifficultyColorChange={setCustomDifficultyColor}
-            />
+            <ProfilePactSettings userId={user.id} pactId={pactId} projectStartDate={projectStartDate} projectEndDate={projectEndDate} customDifficultyName={customDifficultyName} customDifficultyActive={customDifficultyActive} customDifficultyColor={customDifficultyColor} onProjectStartDateChange={setProjectStartDate} onProjectEndDateChange={setProjectEndDate} onCustomDifficultyNameChange={setCustomDifficultyName} onCustomDifficultyActiveChange={setCustomDifficultyActive} onCustomDifficultyColorChange={setCustomDifficultyColor} />
 
             {/* Finance Settings */}
             <ProfileFinanceSettings />
 
             {/* Display & Sounds */}
             <ProfileDisplaySounds />
-          </div>
-        )}
+          </div>}
 
         {/* Standalone Sign Out Button */}
         {user && <ProfileSignOut />}
@@ -189,7 +132,7 @@ export default function Profile() {
         <div className="text-center py-6 space-y-2 animate-fade-in">
           <div className="flex items-center justify-center gap-2 text-sm text-primary/60">
             <Flame className="h-4 w-4 text-primary animate-glow-pulse" />
-            <span className="font-light tracking-wide font-rajdhani">Version: V3.0 – The Pact</span>
+            <span className="font-light tracking-wide font-rajdhani">Version : 3.1 </span>
           </div>
           <div className="text-xs text-primary/40 font-light tracking-wider font-rajdhani">
             Author: G.L
@@ -199,10 +142,7 @@ export default function Profile() {
         {/* Bottom Actions: Legal, Delete Account, Devil Note */}
         <div className="flex items-center justify-center gap-6 pb-8 animate-fade-in">
           {/* Legal Link */}
-          <Link
-            to="/legal"
-            className="inline-flex items-center gap-2 text-xs text-[#6b9ec4]/70 hover:text-[#8ACBFF] transition-colors duration-300 font-rajdhani tracking-wide group"
-          >
+          <Link to="/legal" className="inline-flex items-center gap-2 text-xs text-[#6b9ec4]/70 hover:text-[#8ACBFF] transition-colors duration-300 font-rajdhani tracking-wide group">
             <Scale className="h-3 w-3 group-hover:drop-shadow-[0_0_6px_rgba(91,180,255,0.5)] transition-all duration-300" />
             <span className="group-hover:drop-shadow-[0_0_8px_rgba(91,180,255,0.4)]">
               Terms & Legal
@@ -213,9 +153,7 @@ export default function Profile() {
           <span className="text-primary/20">|</span>
 
           {/* Delete Account */}
-          <button
-            className="inline-flex items-center gap-2 text-xs text-destructive/60 hover:text-destructive transition-colors duration-300 font-rajdhani tracking-wide group"
-          >
+          <button className="inline-flex items-center gap-2 text-xs text-destructive/60 hover:text-destructive transition-colors duration-300 font-rajdhani tracking-wide group">
             <span className="group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]">
               Delete Account
             </span>
@@ -230,6 +168,5 @@ export default function Profile() {
       </div>
 
       <Navigation />
-    </div>
-  );
+    </div>;
 }
