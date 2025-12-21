@@ -152,6 +152,105 @@ export type Database = {
         }
         Relationships: []
       }
+      bond_balance: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_earned: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_earned?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bond_packs: {
+        Row: {
+          bond_amount: number
+          bonus_percentage: number | null
+          created_at: string
+          display_order: number | null
+          id: string
+          is_active: boolean
+          name: string
+          price_eur: number
+          updated_at: string
+        }
+        Insert: {
+          bond_amount: number
+          bonus_percentage?: number | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          price_eur: number
+          updated_at?: string
+        }
+        Update: {
+          bond_amount?: number
+          bonus_percentage?: number | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          price_eur?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bond_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          reference_type: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          reference_type?: string | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cosmetic_banners: {
         Row: {
           banner_url: string | null
@@ -708,6 +807,108 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_modules: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          icon_key: string | null
+          id: string
+          is_active: boolean
+          is_coming_soon: boolean
+          key: string
+          name: string
+          price_bonds: number
+          price_eur: number | null
+          rarity: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon_key?: string | null
+          id?: string
+          is_active?: boolean
+          is_coming_soon?: boolean
+          key: string
+          name: string
+          price_bonds?: number
+          price_eur?: number | null
+          rarity?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          icon_key?: string | null
+          id?: string
+          is_active?: boolean
+          is_coming_soon?: boolean
+          key?: string
+          name?: string
+          price_bonds?: number
+          price_eur?: number | null
+          rarity?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      special_offers: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          items: Json | null
+          name: string
+          original_price_bonds: number | null
+          original_price_eur: number | null
+          price_bonds: number | null
+          price_eur: number | null
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          items?: Json | null
+          name: string
+          original_price_bonds?: number | null
+          original_price_eur?: number | null
+          price_bonds?: number | null
+          price_eur?: number | null
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          items?: Json | null
+          name?: string
+          original_price_bonds?: number | null
+          original_price_eur?: number | null
+          price_bonds?: number | null
+          price_eur?: number | null
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       step_status_history: {
         Row: {
           changed_at: string
@@ -849,6 +1050,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_module_purchases: {
+        Row: {
+          id: string
+          module_id: string
+          purchased_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          module_id: string
+          purchased_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          module_id?: string
+          purchased_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_module_purchases_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "shop_modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
