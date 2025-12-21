@@ -387,3 +387,45 @@ export function usePurchaseModule() {
     },
   });
 }
+
+// Combined hook for easy access to user's purchased modules with module details
+export function useShop() {
+  const { data: modules = [], isLoading: modulesLoading } = useShopModules();
+  const { data: purchasedModuleIds = [], isLoading: purchasesLoading } = useUserModulePurchases(undefined);
+  
+  // Get purchased modules with their full details
+  const userModules = modules
+    .filter(m => purchasedModuleIds.includes(m.id))
+    .map(m => ({ module: m }));
+  
+  // Check if a specific module is purchased by key
+  const isModulePurchased = (moduleKey: string) => {
+    return userModules.some(um => um.module?.key === moduleKey);
+  };
+  
+  return {
+    userModules,
+    isModulePurchased,
+    isLoading: modulesLoading || purchasesLoading,
+  };
+}
+
+// Hook for user-specific shop data
+export function useUserShop(userId: string | undefined) {
+  const { data: modules = [], isLoading: modulesLoading } = useShopModules();
+  const { data: purchasedModuleIds = [], isLoading: purchasesLoading } = useUserModulePurchases(userId);
+  
+  const userModules = modules
+    .filter(m => purchasedModuleIds.includes(m.id))
+    .map(m => ({ module: m }));
+  
+  const isModulePurchased = (moduleKey: string) => {
+    return userModules.some(um => um.module?.key === moduleKey);
+  };
+  
+  return {
+    userModules,
+    isModulePurchased,
+    isLoading: modulesLoading || purchasesLoading,
+  };
+}

@@ -20,7 +20,10 @@ import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
 import Community from "./pages/Community";
 import Legal from "./pages/Legal";
-import AdminCosmetics from "./pages/AdminCosmetics";
+import Admin from "./pages/Admin";
+import AdminCosmeticsManager from "./pages/AdminCosmeticsManager";
+import AdminModuleManager from "./pages/AdminModuleManager";
+import AdminMoneyManager from "./pages/AdminMoneyManager";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -140,10 +143,34 @@ const App = () => (
                 }
               />
               <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/admin/cosmetics"
                 element={
                   <ProtectedRoute>
-                    <AdminCosmetics />
+                    <AdminCosmeticsManager />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/modules"
+                element={
+                  <ProtectedRoute>
+                    <AdminModuleManager />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/money"
+                element={
+                  <ProtectedRoute>
+                    <AdminMoneyManager />
                   </ProtectedRoute>
                 }
               />
