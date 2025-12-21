@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProfileMenuCard } from "./ProfileMenuCard";
 import { supabase } from "@/lib/supabase";
@@ -24,6 +25,7 @@ interface CosmeticFrame {
   rarity: string;
   border_color: string;
   glow_color: string;
+  preview_url: string | null;
   is_default: boolean;
 }
 
@@ -236,35 +238,16 @@ export function ProfileBoundedProfile({
         <div className="relative px-6 pb-6 pt-2 bg-gradient-to-b from-card/95 to-card">
           {/* Left side: Avatar with Frame - positioned to overlap banner */}
           <div className="flex items-start gap-6">
-            {/* Avatar Container */}
+            {/* Avatar with Frame - using layered AvatarFrame component */}
             <div className="relative -mt-16 flex-shrink-0">
-              <div 
-                className="relative p-1.5 rounded-full transition-all duration-300"
-                style={{
-                  boxShadow: `0 0 25px ${activeFrame?.glow_color || 'rgba(91,180,255,0.3)'}`,
-                  background: `linear-gradient(135deg, ${activeFrame?.border_color || '#5bb4ff'}40, transparent)`
-                }}
-              >
-                <div 
-                  className="p-1 rounded-full"
-                  style={{ border: `3px solid ${activeFrame?.border_color || '#5bb4ff'}` }}
-                >
-                  <Avatar className="h-24 w-24 ring-2 ring-card">
-                    <AvatarImage src={avatarUrl || undefined} />
-                    <AvatarFallback className="bg-primary/20 text-primary text-2xl font-orbitron">
-                      {displayName?.charAt(0)?.toUpperCase() || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-                {/* Animated ring */}
-                <div 
-                  className="absolute -inset-1 rounded-full animate-spin-slow pointer-events-none opacity-60" 
-                  style={{ 
-                    animationDuration: '15s',
-                    border: `1px dashed ${activeFrame?.border_color || '#5bb4ff'}40`
-                  }} 
-                />
-              </div>
+              <AvatarFrame
+                avatarUrl={avatarUrl}
+                fallback={displayName || "?"}
+                size="xl"
+                frameImage={activeFrame?.preview_url}
+                borderColor={activeFrame?.border_color || '#5bb4ff'}
+                glowColor={activeFrame?.glow_color || 'rgba(91,180,255,0.5)'}
+              />
             </div>
 
             {/* Right side: Name & Title */}
@@ -382,14 +365,15 @@ export function ProfileBoundedProfile({
                           : "border-primary/10 bg-card/30 opacity-60"
                     }`}
                   >
-                    {/* Frame preview */}
-                    <div 
-                      className="w-12 h-12 mx-auto rounded-full mb-2"
-                      style={{
-                        border: `3px solid ${frame.border_color}`,
-                        boxShadow: `0 0 15px ${frame.glow_color}`
-                      }}
-                    />
+                    {/* Frame preview using proper component */}
+                    <div className="flex justify-center mb-2">
+                      <FramePreview
+                        size="sm"
+                        frameImage={frame.preview_url}
+                        borderColor={frame.border_color}
+                        glowColor={frame.glow_color}
+                      />
+                    </div>
                     <div className="text-xs font-rajdhani text-primary">{frame.name}</div>
                     <div className={`text-[10px] uppercase ${rarity.text} mt-1`}>{frame.rarity}</div>
                     

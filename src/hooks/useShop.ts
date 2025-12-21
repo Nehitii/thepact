@@ -371,12 +371,16 @@ export function usePurchaseModule() {
         reference_type: "module",
       });
       
-      return true;
+      return { userId, moduleId };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Immediately invalidate and refetch to ensure instant UI update
+      queryClient.invalidateQueries({ queryKey: ["bond-balance", data.userId] });
+      queryClient.invalidateQueries({ queryKey: ["user-module-purchases", data.userId] });
+      // Also invalidate non-user-specific queries
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
-      toast({ title: "Module unlocked!" });
+      toast({ title: "Module unlocked!", description: "Your new module is now available" });
     },
     onError: (error: Error) => {
       toast({ 
@@ -410,22 +414,31 @@ export function useShop() {
   };
 }
 
-// Hook for user-specific shop data
+// Hook for user-specific shop data with real-time module ownership check
 export function useUserShop(userId: string | undefined) {
   const { data: modules = [], isLoading: modulesLoading } = useShopModules();
   const { data: purchasedModuleIds = [], isLoading: purchasesLoading } = useUserModulePurchases(userId);
+  
+  // Build a map of module key to purchased status for quick lookup
+  const purchasedModuleKeysSet = new Set(
+    modules
+      .filter(m => purchasedModuleIds.includes(m.id))
+      .map(m => m.key)
+  );
   
   const userModules = modules
     .filter(m => purchasedModuleIds.includes(m.id))
     .map(m => ({ module: m }));
   
-  const isModulePurchased = (moduleKey: string) => {
-    return userModules.some(um => um.module?.key === moduleKey);
+  // Check if a specific module is purchased by key - using memoized set for efficiency
+  const isModulePurchased = (moduleKey: string): boolean => {
+    return purchasedModuleKeysSet.has(moduleKey);
   };
   
   return {
     userModules,
     isModulePurchased,
+    purchasedModuleIds, // Expose for debugging
     isLoading: modulesLoading || purchasesLoading,
   };
 }
