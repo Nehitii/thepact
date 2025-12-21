@@ -21,7 +21,12 @@ import {
   Pencil, 
   ArrowLeft,
   Trash2,
-  Link as LinkIcon
+  Link as LinkIcon,
+  ZoomIn,
+  ZoomOut,
+  Move,
+  RotateCcw,
+  Crosshair
 } from "lucide-react";
 
 interface CosmeticFrame {
@@ -34,6 +39,9 @@ interface CosmeticFrame {
   is_active: boolean;
   is_default: boolean;
   price: number;
+  frame_scale?: number;
+  frame_offset_x?: number;
+  frame_offset_y?: number;
 }
 
 interface CosmeticBanner {
@@ -137,6 +145,9 @@ export default function AdminCosmeticsManager() {
       is_active: editingFrame.is_active ?? true,
       is_default: editingFrame.is_default ?? false,
       price: editingFrame.price || 450,
+      frame_scale: editingFrame.frame_scale ?? 1.0,
+      frame_offset_x: editingFrame.frame_offset_x ?? 0,
+      frame_offset_y: editingFrame.frame_offset_y ?? 0,
     };
 
     if (editingFrame.id) {
@@ -348,15 +359,187 @@ export default function AdminCosmeticsManager() {
                   </div>
 
                   {frameCreationMode === "image" ? (
-                    <div>
-                      <Label className="text-primary/80">Frame Image URL</Label>
-                      <Input
-                        placeholder="https://example.com/frame.png"
-                        value={editingFrame?.preview_url || ""}
-                        onChange={(e) => setEditingFrame({ ...editingFrame, preview_url: e.target.value })}
-                        className="bg-card/50 border-primary/30 text-primary"
-                      />
-                    </div>
+                    <>
+                      <div>
+                        <Label className="text-primary/80">Frame Image URL</Label>
+                        <Input
+                          placeholder="https://example.com/frame.png"
+                          value={editingFrame?.preview_url || ""}
+                          onChange={(e) => setEditingFrame({ ...editingFrame, preview_url: e.target.value })}
+                          className="bg-card/50 border-primary/30 text-primary"
+                        />
+                      </div>
+                      
+                      {/* Frame Alignment Tool - only show for image frames */}
+                      {editingFrame?.preview_url && (
+                        <div className="space-y-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-primary font-orbitron text-xs uppercase tracking-wider flex items-center gap-2">
+                              <Move className="h-4 w-4" />
+                              Frame Alignment Tool
+                            </Label>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingFrame({
+                                ...editingFrame,
+                                frame_scale: 1.0,
+                                frame_offset_x: 0,
+                                frame_offset_y: 0,
+                              })}
+                              className="text-xs text-primary/60 hover:text-primary"
+                            >
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              Reset
+                            </Button>
+                          </div>
+                          
+                          {/* Live Preview */}
+                          <div className="flex justify-center">
+                            <div className="relative w-24 h-24 flex items-center justify-center">
+                              {/* Glow effect */}
+                              <div 
+                                className="absolute inset-0 rounded-full blur-md opacity-60"
+                                style={{ backgroundColor: editingFrame.glow_color || "rgba(91,180,255,0.5)" }}
+                              />
+                              {/* Sample avatar */}
+                              <div className="absolute inset-[15%] rounded-full bg-card/50 z-10 flex items-center justify-center">
+                                <span className="text-primary/40 font-orbitron text-xl">A</span>
+                              </div>
+                              {/* Frame overlay with alignment applied */}
+                              <img
+                                src={editingFrame.preview_url}
+                                alt="Frame preview"
+                                className="absolute inset-0 w-full h-full object-contain z-20"
+                                style={{
+                                  transform: `scale(${editingFrame.frame_scale ?? 1}) translate(${editingFrame.frame_offset_x ?? 0}px, ${editingFrame.frame_offset_y ?? 0}px)`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* Scale Control */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-xs text-primary/60">
+                              <span className="flex items-center gap-1">
+                                <ZoomIn className="h-3 w-3" />
+                                Scale
+                              </span>
+                              <span>{((editingFrame.frame_scale ?? 1) * 100).toFixed(0)}%</span>
+                            </div>
+                            <input
+                              type="range"
+                              min="0.5"
+                              max="2"
+                              step="0.05"
+                              value={editingFrame.frame_scale ?? 1}
+                              onChange={(e) => setEditingFrame({
+                                ...editingFrame,
+                                frame_scale: parseFloat(e.target.value),
+                              })}
+                              className="w-full accent-primary"
+                            />
+                          </div>
+                          
+                          {/* X/Y Offset Controls */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-2">
+                              <Label className="text-xs text-primary/60">X Offset</Label>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => setEditingFrame({
+                                    ...editingFrame,
+                                    frame_offset_x: (editingFrame.frame_offset_x ?? 0) - 1,
+                                  })}
+                                  className="h-6 w-6 text-primary/60 hover:text-primary"
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  value={editingFrame.frame_offset_x ?? 0}
+                                  onChange={(e) => setEditingFrame({
+                                    ...editingFrame,
+                                    frame_offset_x: parseFloat(e.target.value) || 0,
+                                  })}
+                                  className="bg-card/50 border-primary/30 text-primary text-center h-8 text-xs"
+                                />
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => setEditingFrame({
+                                    ...editingFrame,
+                                    frame_offset_x: (editingFrame.frame_offset_x ?? 0) + 1,
+                                  })}
+                                  className="h-6 w-6 text-primary/60 hover:text-primary"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="text-xs text-primary/60">Y Offset</Label>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => setEditingFrame({
+                                    ...editingFrame,
+                                    frame_offset_y: (editingFrame.frame_offset_y ?? 0) - 1,
+                                  })}
+                                  className="h-6 w-6 text-primary/60 hover:text-primary"
+                                >
+                                  -
+                                </Button>
+                                <Input
+                                  type="number"
+                                  value={editingFrame.frame_offset_y ?? 0}
+                                  onChange={(e) => setEditingFrame({
+                                    ...editingFrame,
+                                    frame_offset_y: parseFloat(e.target.value) || 0,
+                                  })}
+                                  className="bg-card/50 border-primary/30 text-primary text-center h-8 text-xs"
+                                />
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => setEditingFrame({
+                                    ...editingFrame,
+                                    frame_offset_y: (editingFrame.frame_offset_y ?? 0) + 1,
+                                  })}
+                                  className="h-6 w-6 text-primary/60 hover:text-primary"
+                                >
+                                  +
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Snap to Center */}
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setEditingFrame({
+                              ...editingFrame,
+                              frame_offset_x: 0,
+                              frame_offset_y: 0,
+                            })}
+                            className="w-full text-xs text-primary/60 hover:text-primary border border-primary/20 hover:border-primary/40"
+                          >
+                            <Crosshair className="h-3 w-3 mr-2" />
+                            Snap to Center
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <>
                       <div>
@@ -407,10 +590,32 @@ export default function AdminCosmeticsManager() {
               {frames.map((frame) => (
                 <div key={frame.id} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-primary/20">
                   <div className="flex items-center gap-4">
-                    <div 
-                      className="w-10 h-10 rounded-full"
-                      style={{ border: `3px solid ${frame.border_color}`, boxShadow: `0 0 10px ${frame.glow_color}` }}
-                    />
+                    {/* Use same frame preview as Shop - with image support */}
+                    <div className="relative w-14 h-14 flex items-center justify-center">
+                      {frame.preview_url ? (
+                        <div className="relative w-full h-full">
+                          <div 
+                            className="absolute inset-[15%] rounded-full bg-card/50"
+                          />
+                          <img
+                            src={frame.preview_url}
+                            alt={frame.name}
+                            className="absolute inset-0 w-full h-full object-contain"
+                            style={{
+                              transform: `scale(${frame.frame_scale || 1}) translate(${frame.frame_offset_x || 0}px, ${frame.frame_offset_y || 0}px)`,
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div 
+                          className="w-10 h-10 rounded-full"
+                          style={{ 
+                            border: `3px solid ${frame.border_color}`, 
+                            boxShadow: `0 0 10px ${frame.glow_color}` 
+                          }}
+                        />
+                      )}
+                    </div>
                     <div>
                       <div className="text-primary font-rajdhani">{frame.name}</div>
                       <div className="text-xs text-primary/50">{frame.rarity} · {frame.price} Bonds</div>

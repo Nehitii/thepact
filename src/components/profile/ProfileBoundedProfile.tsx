@@ -27,6 +27,9 @@ interface CosmeticFrame {
   glow_color: string;
   preview_url: string | null;
   is_default: boolean;
+  frame_scale?: number;
+  frame_offset_x?: number;
+  frame_offset_y?: number;
 }
 
 interface CosmeticBanner {
@@ -247,6 +250,9 @@ export function ProfileBoundedProfile({
                 frameImage={activeFrame?.preview_url}
                 borderColor={activeFrame?.border_color || '#5bb4ff'}
                 glowColor={activeFrame?.glow_color || 'rgba(91,180,255,0.5)'}
+                frameScale={activeFrame?.frame_scale}
+                frameOffsetX={activeFrame?.frame_offset_x}
+                frameOffsetY={activeFrame?.frame_offset_y}
               />
             </div>
 
