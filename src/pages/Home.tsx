@@ -6,7 +6,7 @@ import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Flame, ListTodo, BookOpen, Lock } from "lucide-react";
+import { TrendingUp, Flame, ListTodo, BookOpen, Lock, ShoppingCart } from "lucide-react";
 import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
 import { ModuleGrid } from "@/components/home/ModuleGrid";
@@ -17,6 +17,7 @@ import { usePact, Pact } from "@/hooks/usePact";
 import { useRanks, Rank } from "@/hooks/useRanks";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals, Goal } from "@/hooks/useGoals";
+import { useUserShop } from "@/hooks/useShop";
 
 export default function Home() {
   const { user } = useAuth();
@@ -27,6 +28,7 @@ export default function Home() {
   const { data: ranks = [] } = useRanks(user?.id);
   const { data: profile } = useProfile(user?.id);
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
+  const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
@@ -129,7 +131,7 @@ export default function Home() {
   }, [allGoals, ranks]);
 
   // Redirect to onboarding if no pact (after loading)
-  const loading = !user || pactLoading || (pact && goalsLoading);
+  const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
   
   if (!pactLoading && !pact && user) {
     navigate("/onboarding");
@@ -193,8 +195,16 @@ export default function Home() {
       case 'focus-goals':
         return <FocusGoalsModule goals={focusGoals} navigate={navigate} compact={compact} />;
       case 'the-call':
+        // Only show if purchased
+        if (!isModulePurchased("the_call")) {
+          return <LockedModuleCard name="The Call" moduleKey="the_call" icon={Flame} size={size} navigate={navigate} />;
+        }
         return <TheCallModule navigate={navigate} size={size} />;
       case 'finance':
+        // Only show if purchased
+        if (!isModulePurchased("track_finance")) {
+          return <LockedModuleCard name="Track Finance" moduleKey="track_finance" icon={() => <span className="text-2xl">💰</span>} size={size} navigate={navigate} />;
+        }
         return <FinanceModule navigate={navigate} size={size} />;
       case 'achievements':
         return <AchievementsWidget />;
@@ -801,6 +811,58 @@ function PlaceholderModule({ name, icon: Icon, size = 'quarter' }: { name: strin
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Locked module card - prompts user to purchase in shop
+function LockedModuleCard({ 
+  name, 
+  moduleKey, 
+  icon: Icon, 
+  size = 'quarter', 
+  navigate 
+}: { 
+  name: string; 
+  moduleKey: string; 
+  icon: any; 
+  size?: ModuleSize; 
+  navigate: any;
+}) {
+  const isCompact = size === 'quarter';
+  
+  return (
+    <div className="animate-fade-in relative group h-full">
+      <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
+      <button
+        onClick={() => navigate("/shop")}
+        className="relative w-full h-full min-h-[80px] bg-card/20 backdrop-blur-xl border-2 border-primary/20 rounded-lg overflow-hidden hover:border-primary/40 transition-all cursor-pointer"
+      >
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 h-full ${isCompact ? 'flex-col' : ''}`}>
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/10 blur-md rounded-full" />
+            {typeof Icon === 'function' && Icon.toString().includes('span') ? (
+              <div className={`relative z-10 opacity-40 ${isCompact ? 'text-xl' : 'text-2xl'}`}>
+                <Icon />
+              </div>
+            ) : (
+              <Icon className={`text-primary/40 relative z-10 ${isCompact ? 'w-5 h-5' : 'w-6 h-6'}`} />
+            )}
+          </div>
+          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
+            <span className={`font-medium uppercase tracking-wider font-orbitron text-primary/50 ${isCompact ? 'text-[10px]' : 'text-sm'}`}>
+              {name}
+            </span>
+            <div className="flex items-center gap-1.5 mt-1">
+              <Lock className="w-3 h-3 text-primary/40" />
+              <span className="text-[10px] text-primary/40 font-rajdhani uppercase tracking-wider">
+                Unlock in Shop
+              </span>
+            </div>
+          </div>
+          <ShoppingCart className={`absolute ${isCompact ? 'top-2 right-2 w-3 h-3' : 'top-3 right-3 w-4 h-4'} text-primary/30`} />
+        </div>
+      </button>
     </div>
   );
 }
