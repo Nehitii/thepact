@@ -151,6 +151,9 @@ export function CosmeticShop() {
                       frameImage={frame.preview_url}
                       borderColor={frame.border_color}
                       glowColor={frame.glow_color}
+                      frameScale={frame.frame_scale}
+                      frameOffsetX={frame.frame_offset_x}
+                      frameOffsetY={frame.frame_offset_y}
                     />
                   </div>
                   

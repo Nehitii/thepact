@@ -60,6 +60,9 @@ export interface CosmeticFrame {
   is_active: boolean;
   is_default: boolean;
   price: number;
+  frame_scale?: number;
+  frame_offset_x?: number;
+  frame_offset_y?: number;
 }
 
 export interface CosmeticBanner {

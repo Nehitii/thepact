@@ -300,6 +300,9 @@ export type Database = {
         Row: {
           border_color: string
           created_at: string
+          frame_offset_x: number | null
+          frame_offset_y: number | null
+          frame_scale: number | null
           glow_color: string
           id: string
           is_active: boolean
@@ -313,6 +316,9 @@ export type Database = {
         Insert: {
           border_color?: string
           created_at?: string
+          frame_offset_x?: number | null
+          frame_offset_y?: number | null
+          frame_scale?: number | null
           glow_color?: string
           id?: string
           is_active?: boolean
@@ -326,6 +332,9 @@ export type Database = {
         Update: {
           border_color?: string
           created_at?: string
+          frame_offset_x?: number | null
+          frame_offset_y?: number | null
+          frame_scale?: number | null
           glow_color?: string
           id?: string
           is_active?: boolean

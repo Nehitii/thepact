@@ -11,6 +11,9 @@ export interface AvatarFrameProps {
   glowColor?: string;
   className?: string;
   showFallbackOnError?: boolean;
+  frameScale?: number;
+  frameOffsetX?: number;
+  frameOffsetY?: number;
 }
 
 const sizeClasses = {
@@ -37,6 +40,9 @@ export function AvatarFrame({
   glowColor = "rgba(91,180,255,0.5)",
   className,
   showFallbackOnError = true,
+  frameScale = 1,
+  frameOffsetX = 0,
+  frameOffsetY = 0,
 }: AvatarFrameProps) {
   const [frameError, setFrameError] = useState(false);
   const sizeConfig = sizeClasses[size];
@@ -89,7 +95,7 @@ export function AvatarFrame({
         <div 
           className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center"
           style={{ 
-            transform: "scale(1.15)", // Frame slightly exceeds avatar bounds
+            transform: `scale(${1.15 * frameScale}) translate(${frameOffsetX}px, ${frameOffsetY}px)`,
           }}
         >
           <img
@@ -127,6 +133,9 @@ export function FramePreview({
   glowColor = "rgba(91,180,255,0.5)",
   size = "md",
   className,
+  frameScale = 1,
+  frameOffsetX = 0,
+  frameOffsetY = 0,
 }: Omit<AvatarFrameProps, "avatarUrl" | "fallback">) {
   const [frameError, setFrameError] = useState(false);
   const sizeClasses = {
@@ -153,11 +162,14 @@ export function FramePreview({
           <div 
             className="absolute inset-[15%] rounded-full bg-card/50 z-10"
           />
-          {/* Frame image overlay */}
+          {/* Frame image overlay with alignment */}
           <img
             src={frameImage}
             alt="Frame preview"
             className="absolute inset-0 w-full h-full object-contain z-20"
+            style={{
+              transform: `scale(${frameScale}) translate(${frameOffsetX}px, ${frameOffsetY}px)`,
+            }}
             onError={() => setFrameError(true)}
           />
         </div>

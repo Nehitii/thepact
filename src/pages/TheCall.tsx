@@ -372,6 +372,18 @@ export default function TheCall() {
       )}
 
       <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pb-28 pt-8">
+        {/* Header with Back Button */}
+        <div className="absolute top-8 left-6">
+          <Button 
+            variant="hud" 
+            onClick={() => navigate("/")}
+            className="px-4 py-2 font-rajdhani text-sm"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Back</span>
+          </Button>
+        </div>
+
         {/* Title */}
         <div className="relative mb-8">
           <h1 className="text-4xl md:text-5xl font-orbitron font-black tracking-wider">
