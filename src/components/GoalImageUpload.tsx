@@ -59,12 +59,14 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
 
       if (error) throw error;
 
-      // Get public URL
-      const { data: urlData } = supabase.storage
+      // Get signed URL (bucket is now private for security)
+      const { data: urlData, error: urlError } = await supabase.storage
         .from("goal-images")
-        .getPublicUrl(data.path);
+        .createSignedUrl(data.path, 60 * 60 * 24 * 365); // 1 year expiry
 
-      onChange(urlData.publicUrl);
+      if (urlError) throw urlError;
+
+      onChange(urlData.signedUrl);
 
       toast({
         title: "Image uploaded",
