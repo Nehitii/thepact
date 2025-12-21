@@ -64,6 +64,14 @@ export default function Admin() {
 
   const menuItems = [
     {
+      title: "Admin Mode",
+      description: "Test purchases & simulate flows",
+      icon: Shield,
+      href: "/admin/mode",
+      available: true,
+      highlight: true,
+    },
+    {
       title: "Cosmetics Manager",
       description: "Manage frames, banners, and titles",
       icon: Palette,
@@ -131,6 +139,7 @@ export default function Admin() {
         <div className="grid gap-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
+            const isHighlight = 'highlight' in item && item.highlight;
             return (
               <Button
                 key={item.title}
@@ -138,27 +147,33 @@ export default function Admin() {
                 onClick={() => item.available && navigate(item.href)}
                 disabled={!item.available}
                 className={`relative w-full h-auto p-6 justify-start rounded-2xl border-2 transition-all ${
-                  item.available
+                  isHighlight
+                    ? "border-amber-500/50 bg-amber-500/5 hover:bg-amber-500/10 hover:border-amber-500/70"
+                    : item.available
                     ? "border-primary/30 bg-card/30 hover:bg-primary/10 hover:border-primary/50"
                     : "border-primary/10 bg-card/10 opacity-60 cursor-not-allowed"
                 }`}
               >
                 <div className="flex items-center gap-4 w-full">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                    item.available ? "bg-primary/10 border border-primary/30" : "bg-primary/5 border border-primary/10"
+                    isHighlight 
+                      ? "bg-amber-500/20 border border-amber-500/50"
+                      : item.available 
+                      ? "bg-primary/10 border border-primary/30" 
+                      : "bg-primary/5 border border-primary/10"
                   }`}>
-                    <Icon className={`h-6 w-6 ${item.available ? "text-primary" : "text-primary/40"}`} />
+                    <Icon className={`h-6 w-6 ${isHighlight ? "text-amber-400" : item.available ? "text-primary" : "text-primary/40"}`} />
                   </div>
                   <div className="flex-1 text-left">
-                    <h3 className={`font-orbitron text-lg tracking-wide ${item.available ? "text-primary" : "text-primary/40"}`}>
+                    <h3 className={`font-orbitron text-lg tracking-wide ${isHighlight ? "text-amber-400" : item.available ? "text-primary" : "text-primary/40"}`}>
                       {item.title}
                     </h3>
-                    <p className={`text-sm font-rajdhani ${item.available ? "text-primary/60" : "text-primary/30"}`}>
+                    <p className={`text-sm font-rajdhani ${isHighlight ? "text-amber-400/60" : item.available ? "text-primary/60" : "text-primary/30"}`}>
                       {item.description}
                     </p>
                   </div>
                   {item.available ? (
-                    <ChevronRight className="h-5 w-5 text-primary/60" />
+                    <ChevronRight className={`h-5 w-5 ${isHighlight ? "text-amber-400/60" : "text-primary/60"}`} />
                   ) : (
                     <span className="text-xs uppercase tracking-wider px-2 py-1 rounded bg-primary/10 text-primary/40">
                       Soon

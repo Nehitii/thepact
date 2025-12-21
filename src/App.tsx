@@ -24,6 +24,7 @@ import Admin from "./pages/Admin";
 import AdminCosmeticsManager from "./pages/AdminCosmeticsManager";
 import AdminModuleManager from "./pages/AdminModuleManager";
 import AdminMoneyManager from "./pages/AdminMoneyManager";
+import AdminMode from "./pages/AdminMode";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -171,6 +172,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <AdminMoneyManager />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/mode"
+                element={
+                  <ProtectedRoute>
+                    <AdminMode />
                   </ProtectedRoute>
                 }
               />
