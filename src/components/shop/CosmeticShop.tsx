@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useShopFrames, useShopBanners, useUserCosmetics, usePurchaseCosmetic, useBondBalance } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
 import { ThemePreviewCard } from "./ThemePreviewCard";
+import { FramePreview } from "@/components/ui/avatar-frame";
 
 type CosmeticCategory = "themes" | "frames" | "banners";
 
@@ -143,14 +144,13 @@ export function CosmeticShop() {
                   key={frame.id}
                   className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} ${rarity.glow} backdrop-blur-sm transition-all hover:scale-[1.02]`}
                 >
-                  {/* Frame preview */}
+                  {/* Frame preview using proper layered component */}
                   <div className="flex justify-center mb-4">
-                    <div
-                      className="w-20 h-20 rounded-full bg-card/50"
-                      style={{
-                        border: `4px solid ${frame.border_color}`,
-                        boxShadow: `0 0 20px ${frame.glow_color}`,
-                      }}
+                    <FramePreview
+                      size="lg"
+                      frameImage={frame.preview_url}
+                      borderColor={frame.border_color}
+                      glowColor={frame.glow_color}
                     />
                   </div>
                   
