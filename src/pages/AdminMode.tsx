@@ -154,6 +154,44 @@ export default function AdminMode() {
           </div>
         </div>
 
+        {/* Debug Panel - Module Ownership State */}
+        <Card className="mb-6 p-4 border border-cyan-500/30 bg-cyan-500/5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="text-sm font-orbitron text-cyan-400">Debug: Module Ownership State</span>
+          </div>
+          <div className="grid grid-cols-2 gap-4 text-xs font-mono">
+            <div>
+              <div className="text-primary/60 mb-1">Purchased Module IDs (from DB):</div>
+              <div className="text-primary bg-background/50 p-2 rounded border border-primary/20 max-h-24 overflow-auto">
+                {purchasedModuleIds.length > 0 ? (
+                  purchasedModuleIds.map((id) => (
+                    <div key={id} className="truncate">{id}</div>
+                  ))
+                ) : (
+                  <span className="text-primary/40">None</span>
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="text-primary/60 mb-1">Module Keys Mapping:</div>
+              <div className="text-primary bg-background/50 p-2 rounded border border-primary/20 max-h-24 overflow-auto">
+                {modules.map((m) => (
+                  <div key={m.id} className="flex justify-between gap-2">
+                    <span className="text-primary/60">{m.key}:</span>
+                    <span className={isModulePurchased(m.id) ? "text-green-400" : "text-red-400"}>
+                      {isModulePurchased(m.id) ? "✓ owned" : "✗ not owned"}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="mt-2 text-xs text-primary/40">
+            Last updated: {new Date().toLocaleTimeString()}
+          </div>
+        </Card>
+
         {/* Reset All Button */}
         <div className="flex justify-center mb-8">
           <AlertDialog>
