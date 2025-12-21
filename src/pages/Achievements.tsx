@@ -1,34 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { getUserAchievements, Achievement, AchievementCategory } from "@/lib/achievements";
+import { getUserAchievements, Achievement, AchievementRarity, rarityColors } from "@/lib/achievements";
 import { AchievementCard } from "@/components/achievements/AchievementCard";
 import { Navigation } from "@/components/Navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Filter, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
+import { Trophy, ChevronDown, Check } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const categories: (AchievementCategory | "All")[] = [
-  "All",
-  "Connection",
-  "GoalsCreation",
-  "Difficulty",
-  "Time",
-  "Pact",
-  "Finance",
-  "Series",
-  "Hidden",
-];
+const rarityOrder: AchievementRarity[] = ["common", "uncommon", "rare", "epic", "mythic", "legendary"];
 
-const categoryLabels: Record<AchievementCategory | "All", string> = {
-  All: "All",
-  Connection: "Connection Rituals",
-  GoalsCreation: "Goal Creation",
-  Difficulty: "Difficulty Mastery",
-  Time: "Temporal Mastery",
-  Pact: "Pact Milestones",
-  Finance: "Financial Wisdom",
-  Series: "Progression",
-  Hidden: "Mystic Secrets",
+const rarityLabels: Record<AchievementRarity, string> = {
+  common: "Common",
+  uncommon: "Uncommon",
+  rare: "Rare",
+  epic: "Epic",
+  mythic: "Mythic",
+  legendary: "Legendary",
 };
 
 export default function Achievements() {
@@ -36,7 +29,7 @@ export default function Achievements() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"all" | "unlocked" | "locked">("all");
-  const [category, setCategory] = useState<AchievementCategory | "All">("All");
+  const [selectedRarity, setSelectedRarity] = useState<AchievementRarity | "all">("all");
 
   useEffect(() => {
     if (user) {
@@ -56,127 +49,127 @@ export default function Achievements() {
     }
   };
 
-  const filteredAchievements = achievements.filter(a => {
-    if (filter === "unlocked" && !a.unlocked) return false;
-    if (filter === "locked" && a.unlocked) return false;
-    if (category !== "All" && a.category !== category) return false;
-    return true;
-  });
+  // Calculate rarity counters
+  const rarityCounts = useMemo(() => {
+    const counts: Record<AchievementRarity, { unlocked: number; total: number }> = {
+      common: { unlocked: 0, total: 0 },
+      uncommon: { unlocked: 0, total: 0 },
+      rare: { unlocked: 0, total: 0 },
+      epic: { unlocked: 0, total: 0 },
+      mythic: { unlocked: 0, total: 0 },
+      legendary: { unlocked: 0, total: 0 },
+    };
+    achievements.forEach((a) => {
+      counts[a.rarity].total++;
+      if (a.unlocked) counts[a.rarity].unlocked++;
+    });
+    return counts;
+  }, [achievements]);
 
-  const unlockedCount = achievements.filter(a => a.unlocked).length;
+  const filteredAchievements = useMemo(() => {
+    return achievements.filter((a) => {
+      if (filter === "unlocked" && !a.unlocked) return false;
+      if (filter === "locked" && a.unlocked) return false;
+      if (selectedRarity !== "all" && a.rarity !== selectedRarity) return false;
+      return true;
+    });
+  }, [achievements, filter, selectedRarity]);
+
+  const unlockedCount = achievements.filter((a) => a.unlocked).length;
   const percentage = achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0;
 
+  const selectedRarityLabel = selectedRarity === "all" ? "All Rarities" : rarityLabels[selectedRarity];
+
   return (
-    <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
-      {/* Deep space background with radial glow */}
+    <div className="min-h-screen pb-20 bg-background relative overflow-hidden">
+      {/* Clean subtle background - no harsh lines */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 left-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[80px]" />
-      </div>
-      
-      {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px'
-        }} />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] bg-accent/3 rounded-full blur-[120px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-8 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8 relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="pt-8"
+          className="text-center"
         >
-          {/* Title Section */}
-          <div className="flex items-center gap-6 mb-8">
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative p-4 rounded-full bg-card/30 backdrop-blur-xl border-2 border-primary/50 shadow-[0_0_30px_rgba(91,180,255,0.3)]">
-                <Trophy className="w-10 h-10 text-primary drop-shadow-[0_0_10px_rgba(91,180,255,0.8)]" />
+          {/* Title */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
+              <div className="relative p-3.5 rounded-full bg-card/40 backdrop-blur-xl border border-primary/40">
+                <Trophy className="w-8 h-8 text-primary" />
               </div>
             </div>
-            <div>
-              <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-shimmer uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron" style={{ backgroundSize: '200% auto' }}>
-                The Pact Achievements
-              </h1>
-              <p className="text-primary/70 font-rajdhani tracking-wide text-lg mt-2">
-                Traces of your inner progress and commitment
-              </p>
-            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground font-orbitron uppercase tracking-wider">
+              Pact Achievements
+            </h1>
           </div>
 
-          {/* Stats HUD Panels */}
-          <div className="grid grid-cols-3 gap-4 max-w-2xl">
-            {/* Unlocked Panel */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden scan-line">
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
-                </div>
-                <div className="relative z-10">
-                  <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Unlocked</div>
-                  <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                    {unlockedCount}
-                  </div>
-                  <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Achievements</div>
-                </div>
+          {/* Stats Cards - Clean Design without scan lines */}
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto mb-8">
+            {/* Unlocked */}
+            <div className="relative bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-4 hover:border-primary/40 transition-all">
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-orbitron mb-1">Unlocked</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary font-orbitron">
+                {unlockedCount}
               </div>
             </div>
 
-            {/* Total Panel */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden scan-line">
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
-                </div>
-                <div className="relative z-10">
-                  <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Total</div>
-                  <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                    {achievements.length}
-                  </div>
-                  <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Available</div>
-                </div>
+            {/* Total */}
+            <div className="relative bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-4 hover:border-primary/40 transition-all">
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-orbitron mb-1">Total</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary font-orbitron">
+                {achievements.length}
               </div>
             </div>
 
-            {/* Completion Panel */}
-            <div className="relative group">
-              <div className="absolute inset-0 bg-primary/10 rounded-lg blur-xl group-hover:blur-2xl transition-all" />
-              <div className="relative bg-card/30 backdrop-blur-xl border-2 border-primary/30 rounded-lg p-4 hover:border-primary/50 transition-all overflow-hidden scan-line">
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
-                </div>
-                <div className="relative z-10">
-                  <div className="text-xs text-primary/70 uppercase tracking-widest font-orbitron mb-2">Completion</div>
-                  <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                    {percentage}%
-                  </div>
-                  <div className="text-xs text-primary/50 uppercase tracking-wider font-rajdhani mt-1">Progress</div>
-                </div>
+            {/* Completion */}
+            <div className="relative bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-4 hover:border-primary/40 transition-all">
+              <div className="text-xs text-muted-foreground uppercase tracking-widest font-orbitron mb-1">Complete</div>
+              <div className="text-2xl sm:text-3xl font-bold text-primary font-orbitron">
+                {percentage}%
               </div>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mt-6 max-w-2xl">
-            <div className="relative h-3 w-full bg-card/20 backdrop-blur rounded-full overflow-hidden border border-primary/20">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% auto' }} />
+          {/* Premium Progress Bar */}
+          <div className="max-w-lg mx-auto">
+            <div className="relative h-4 w-full bg-card/40 backdrop-blur rounded-full overflow-hidden border border-primary/20">
+              {/* Background shimmer */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-cyber-shimmer" style={{ backgroundSize: '200% auto' }} />
+              
+              {/* Progress fill */}
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${percentage}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full bg-gradient-to-r from-primary via-accent to-primary relative shadow-[0_0_20px_rgba(91,180,255,0.6)]"
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full relative"
+                style={{
+                  background: `linear-gradient(90deg, 
+                    hsl(var(--primary)) 0%, 
+                    hsl(var(--accent)) 50%, 
+                    hsl(var(--primary)) 100%)`,
+                  boxShadow: `0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3)`,
+                }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
+                {/* Inner glow */}
+                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/20 to-transparent" />
+                
+                {/* Edge glow */}
+                <div 
+                  className="absolute right-0 top-0 bottom-0 w-2 rounded-r-full"
+                  style={{
+                    background: 'linear-gradient(90deg, transparent, hsl(var(--primary-glow)))',
+                    boxShadow: '0 0 15px hsl(var(--primary))',
+                  }}
+                />
               </motion.div>
+            </div>
+            <div className="mt-2 text-xs text-muted-foreground font-rajdhani">
+              {unlockedCount} of {achievements.length} achievements unlocked
             </div>
           </div>
         </motion.div>
@@ -186,57 +179,87 @@ export default function Achievements() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
-          className="space-y-6"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           {/* Status Filter */}
-          <div className="relative group inline-block">
-            <div className="absolute inset-0 bg-primary/5 rounded-lg blur-lg" />
-            <div className="relative flex items-center gap-3 bg-card/20 backdrop-blur-xl border border-primary/30 rounded-lg p-2">
-              <Filter className="w-4 h-4 text-primary/70 ml-2" />
-              <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
-                <TabsList className="bg-transparent border-0 p-0 gap-1">
-                  <TabsTrigger 
-                    value="all"
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] text-primary/60 font-orbitron text-xs uppercase tracking-wider px-4 py-2 rounded-md transition-all"
+          <div className="flex items-center gap-2 bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-1.5">
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+              <TabsList className="bg-transparent border-0 p-0 gap-1">
+                {["all", "unlocked", "locked"].map((val) => (
+                  <TabsTrigger
+                    key={val}
+                    value={val}
+                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_10px_hsl(var(--primary)/0.3)] text-muted-foreground font-orbitron text-xs uppercase tracking-wider px-4 py-2 rounded-md transition-all"
                   >
-                    All
+                    {val.charAt(0).toUpperCase() + val.slice(1)}
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="unlocked"
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] text-primary/60 font-orbitron text-xs uppercase tracking-wider px-4 py-2 rounded-md transition-all"
-                  >
-                    Unlocked
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="locked"
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] text-primary/60 font-orbitron text-xs uppercase tracking-wider px-4 py-2 rounded-md transition-all"
-                  >
-                    Locked
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+                ))}
+              </TabsList>
+            </Tabs>
           </div>
 
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategory(cat)}
-                className={`relative px-4 py-2 rounded-lg text-sm font-orbitron uppercase tracking-wider transition-all overflow-hidden ${
-                  category === cat
-                    ? "bg-primary/20 text-primary border-2 border-primary/50 shadow-[0_0_20px_rgba(91,180,255,0.3)]"
-                    : "bg-card/20 text-primary/60 border border-primary/20 hover:bg-card/30 hover:border-primary/40"
-                }`}
-              >
-                {category === cat && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% auto' }} />
+          {/* Rarity Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-2 bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg px-4 py-2.5 hover:border-primary/40 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30">
+                <span
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{
+                    backgroundColor: selectedRarity === "all" ? "hsl(var(--primary))" : rarityColors[selectedRarity],
+                  }}
+                />
+                <span className="font-orbitron text-xs uppercase tracking-wider text-foreground">
+                  {selectedRarityLabel}
+                </span>
+                {selectedRarity !== "all" && (
+                  <span className="text-xs text-muted-foreground font-rajdhani">
+                    ({rarityCounts[selectedRarity].unlocked}/{rarityCounts[selectedRarity].total})
+                  </span>
                 )}
-                <span className="relative z-10">{categoryLabels[cat]}</span>
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               </button>
-            ))}
-          </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="center"
+              className="w-56 bg-card/95 backdrop-blur-xl border border-primary/30 z-50"
+            >
+              <DropdownMenuItem
+                onClick={() => setSelectedRarity("all")}
+                className="flex items-center justify-between gap-2 cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+              >
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: "hsl(var(--primary))" }}
+                  />
+                  <span className="font-orbitron text-xs uppercase tracking-wider">All Rarities</span>
+                </div>
+                {selectedRarity === "all" && <Check className="w-4 h-4 text-primary" />}
+              </DropdownMenuItem>
+
+              {rarityOrder.map((rarity) => (
+                <DropdownMenuItem
+                  key={rarity}
+                  onClick={() => setSelectedRarity(rarity)}
+                  className="flex items-center justify-between gap-2 cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full"
+                      style={{ backgroundColor: rarityColors[rarity] }}
+                    />
+                    <span className="font-orbitron text-xs uppercase tracking-wider">
+                      {rarityLabels[rarity]}
+                    </span>
+                    <span className="text-xs text-muted-foreground font-rajdhani">
+                      ({rarityCounts[rarity].unlocked}/{rarityCounts[rarity].total})
+                    </span>
+                  </div>
+                  {selectedRarity === rarity && <Check className="w-4 h-4 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </motion.div>
 
         {/* Achievements Grid */}
@@ -245,10 +268,8 @@ export default function Achievements() {
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-32 bg-card/20 backdrop-blur-sm rounded-lg border border-primary/20 animate-pulse"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-shimmer" style={{ backgroundSize: '200% auto' }} />
-              </div>
+                className="h-36 bg-card/20 backdrop-blur-sm rounded-lg border border-primary/10 animate-pulse"
+              />
             ))}
           </div>
         ) : (
@@ -258,32 +279,36 @@ export default function Achievements() {
             transition={{ delay: 0.3 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-4"
           >
-            {filteredAchievements.map((achievement, index) => (
-              <motion.div
-                key={achievement.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.03 }}
-              >
-                <AchievementCard achievement={achievement} size="medium" />
-              </motion.div>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {filteredAchievements.map((achievement, index) => (
+                <motion.div
+                  key={achievement.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: index * 0.02, duration: 0.2 }}
+                >
+                  <AchievementCard achievement={achievement} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </motion.div>
         )}
 
         {filteredAchievements.length === 0 && !loading && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="text-center py-16"
           >
-            <div className="relative inline-block">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl" />
-              <div className="relative p-6 rounded-full bg-card/30 backdrop-blur-xl border-2 border-primary/30 mb-6">
-                <Sparkles className="w-16 h-16 text-primary/50" />
+            <div className="relative inline-block mb-6">
+              <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl" />
+              <div className="relative p-5 rounded-full bg-card/30 backdrop-blur-xl border border-primary/20">
+                <Trophy className="w-12 h-12 text-muted-foreground/50" />
               </div>
             </div>
-            <p className="text-lg text-primary/60 font-rajdhani tracking-wide">
+            <p className="text-lg text-muted-foreground font-rajdhani tracking-wide">
               No achievements found with current filters
             </p>
           </motion.div>

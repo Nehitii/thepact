@@ -1,14 +1,24 @@
-import { Achievement, rarityColors } from "@/lib/achievements";
+import { Achievement, rarityColors, AchievementRarity } from "@/lib/achievements";
 import { motion } from "framer-motion";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AchievementCardProps {
   achievement: Achievement;
-  size?: "small" | "medium" | "large";
+  compact?: boolean;
 }
 
-export function AchievementCard({ achievement, size = "medium" }: AchievementCardProps) {
+// Particle colors based on rarity for unlocked achievements
+const rarityParticleColors: Record<AchievementRarity, string[]> = {
+  common: ["#9CA3AF", "#D1D5DB", "#E5E7EB"], // neutral/light
+  uncommon: ["#10B981", "#34D399", "#6EE7B7"], // green/teal
+  rare: ["#3B82F6", "#60A5FA", "#93C5FD"], // blue
+  epic: ["#8B5CF6", "#A78BFA", "#C4B5FD"], // purple
+  mythic: ["#DC2626", "#EF4444", "#8B1E3F"], // crimson/arcane
+  legendary: ["#F59E0B", "#FBBF24", "#FCD34D"], // gold/radiant
+};
+
+export function AchievementCard({ achievement, compact = false }: AchievementCardProps) {
   const IconComponent =
     (LucideIcons as any)[
       achievement.icon_key
@@ -20,229 +30,211 @@ export function AchievementCard({ achievement, size = "medium" }: AchievementCar
   const isLocked = !achievement.unlocked;
   const isHidden = achievement.is_hidden && isLocked;
   const color = rarityColors[achievement.rarity];
+  const particleColors = rarityParticleColors[achievement.rarity];
 
-  const sizeClasses = {
-    small: "p-3 gap-2",
-    medium: "p-4 gap-3",
-    large: "p-6 gap-4",
-  };
-
-  const iconSizes = {
-    small: 24,
-    medium: 32,
-    large: 48,
-  };
+  // Check if this is a progress-based achievement
+  const condition = achievement.conditions as any;
+  const isProgressBased = condition?.value && typeof condition.value === "number" && condition.value > 1;
+  const progressValue = achievement.progress || 0;
+  const targetValue = isProgressBased ? condition.value : 0;
+  const remaining = Math.max(0, targetValue - progressValue);
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: isLocked ? 1 : 1.02 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      whileHover={{ scale: isLocked ? 1 : 1.01 }}
       className={cn(
         "relative rounded-lg transition-all duration-300 overflow-hidden",
-        sizeClasses[size],
-        isLocked 
-          ? "bg-card/10 backdrop-blur-sm border border-primary/10" 
-          : "bg-card/30 backdrop-blur-xl border-2 border-primary/30",
+        compact ? "p-3 h-24" : "p-4 h-36",
+        isLocked
+          ? "bg-card/15 backdrop-blur-sm border border-primary/10"
+          : "bg-card/30 backdrop-blur-xl border border-primary/25"
       )}
       style={{
-        boxShadow: isLocked 
-          ? "none" 
-          : `0 0 30px ${color}30, inset 0 0 30px ${color}10, 0 8px 32px rgba(0,5,11,0.4)`,
-        borderColor: isLocked ? undefined : `${color}80`,
+        boxShadow: isLocked
+          ? "none"
+          : `0 0 25px ${color}25, inset 0 0 20px ${color}08`,
+        borderColor: isLocked ? undefined : `${color}50`,
       }}
     >
-      {/* Inner border glow */}
+      {/* Subtle rarity glow for unlocked */}
       {!isLocked && (
-        <div className="absolute inset-[2px] rounded-[6px] border pointer-events-none" style={{ borderColor: `${color}30` }} />
-      )}
-
-      {/* Rarity glow effect */}
-      {!isLocked && (
-        <div 
-          className="absolute inset-0 rounded-lg opacity-20 blur-xl pointer-events-none" 
-          style={{ backgroundColor: color }} 
+        <div
+          className="absolute inset-0 rounded-lg opacity-15 blur-2xl pointer-events-none"
+          style={{ backgroundColor: color }}
         />
       )}
 
-      {/* Scan line effect for unlocked */}
+      {/* Difficulty-colored particles for unlocked achievements */}
       {!isLocked && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
-          <div 
-            className="absolute top-0 left-0 right-0 h-[2px] animate-scan"
-            style={{ 
-              background: `linear-gradient(90deg, transparent, ${color}80, transparent)`,
-              boxShadow: `0 0 10px ${color}60`
-            }}
-          />
-        </div>
-      )}
-
-      <div className="relative flex items-start gap-3 z-10">
-        {/* Icon */}
-        <div
-          className={cn(
-            "rounded-lg p-2.5 flex items-center justify-center shrink-0 transition-all",
-            isLocked ? "bg-card/20" : "bg-card/40 backdrop-blur-sm",
-          )}
-          style={{
-            boxShadow: isLocked ? "none" : `0 0 20px ${color}40, inset 0 0 10px ${color}20`,
-            borderColor: isLocked ? "transparent" : color,
-            borderWidth: 2,
-          }}
-        >
-          <IconComponent 
-            size={iconSizes[size]} 
-            style={{ 
-              color: isLocked ? "hsl(var(--muted-foreground))" : color,
-              filter: isLocked ? "none" : `drop-shadow(0 0 8px ${color})`
-            }} 
-          />
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <h3
-              className={cn(
-                "font-bold leading-tight font-orbitron uppercase tracking-wider",
-                size === "small" ? "text-xs" : size === "medium" ? "text-sm" : "text-base",
-                isLocked ? "text-muted-foreground/60" : "text-foreground",
-              )}
-              style={{
-                textShadow: isLocked ? "none" : `0 0 10px ${color}60`
-              }}
-            >
-              {isHidden ? "???" : achievement.name}
-            </h3>
-
-            {/* Rarity badge */}
-            <span
-              className={cn(
-                "text-[10px] font-bold px-2 py-1 rounded shrink-0 font-orbitron uppercase tracking-wider",
-                isLocked ? "bg-card/30 text-muted-foreground/50" : "bg-card/50 backdrop-blur-sm",
-              )}
-              style={{
-                color: isLocked ? undefined : color,
-                borderColor: isLocked ? "transparent" : `${color}60`,
-                borderWidth: 1,
-                boxShadow: isLocked ? "none" : `0 0 10px ${color}30`
-              }}
-            >
-              {achievement.rarity.toUpperCase()}
-            </span>
-          </div>
-
-          <p className={cn(
-            "text-sm mt-1.5 font-rajdhani tracking-wide leading-relaxed",
-            isLocked ? "text-muted-foreground/40" : "text-muted-foreground"
-          )}>
-            {isHidden ? "Secret achievement - complete hidden objectives to unlock" : achievement.description}
-          </p>
-
-          {achievement.flavor_text && !isHidden && (
-            <p
-              className="text-xs italic mt-2 opacity-80 font-rajdhani"
-              style={{ 
-                color: isLocked ? "hsl(var(--muted-foreground))" : color,
-                textShadow: isLocked ? "none" : `0 0 5px ${color}40`
-              }}
-            >
-              "{achievement.flavor_text}"
-            </p>
-          )}
-
-          {achievement.unlocked && achievement.unlocked_at && (
-            <p className="text-xs text-primary/60 mt-2 font-orbitron tracking-wider uppercase">
-              Unlocked {new Date(achievement.unlocked_at).toLocaleDateString()}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Particle effect for unlocked achievements - reward-style */}
-      {!isLocked && (
-        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-lg">
-          {/* Corner sparkles */}
           {[
-            { x: '10%', y: '15%', delay: 0 },
-            { x: '85%', y: '20%', delay: 1.2 },
-            { x: '15%', y: '75%', delay: 2.4 },
-            { x: '90%', y: '80%', delay: 3.6 },
-            { x: '50%', y: '10%', delay: 4.8 },
-            { x: '45%', y: '85%', delay: 0.6 },
+            { x: "12%", y: "20%", delay: 0 },
+            { x: "88%", y: "25%", delay: 1.5 },
+            { x: "15%", y: "75%", delay: 3 },
+            { x: "85%", y: "70%", delay: 0.8 },
+            { x: "50%", y: "15%", delay: 2.2 },
           ].map((pos, i) => (
             <motion.div
               key={i}
               className="absolute"
-              style={{ 
-                left: pos.x, 
+              style={{
+                left: pos.x,
                 top: pos.y,
-                transform: 'translate(-50%, -50%)'
+                transform: "translate(-50%, -50%)",
               }}
               initial={{ opacity: 0, scale: 0 }}
               animate={{
-                opacity: [0, 0.9, 0.9, 0],
+                opacity: [0, 0.8, 0.8, 0],
                 scale: [0.3, 1, 1, 0.3],
-                y: [0, -8, -12, -16],
+                y: [0, -6, -10, -14],
               }}
               transition={{
-                duration: 4,
+                duration: 4.5,
                 repeat: Infinity,
                 delay: pos.delay,
                 ease: "easeOut",
-                times: [0, 0.15, 0.7, 1]
+                times: [0, 0.15, 0.7, 1],
               }}
             >
-              <div 
+              <div
                 className="w-1.5 h-1.5 rounded-full"
-                style={{ 
-                  backgroundColor: i % 3 === 0 ? '#FFD700' : i % 3 === 1 ? color : '#E8F4FF',
-                  boxShadow: `0 0 6px ${i % 3 === 0 ? '#FFD700' : i % 3 === 1 ? color : '#E8F4FF'}`,
-                  filter: 'blur(0.3px)'
+                style={{
+                  backgroundColor: particleColors[i % particleColors.length],
+                  boxShadow: `0 0 6px ${particleColors[i % particleColors.length]}`,
                 }}
               />
             </motion.div>
           ))}
-          
-          {/* Floating shimmer dots */}
-          {[
-            { x: '25%', y: '40%', delay: 1.5 },
-            { x: '70%', y: '50%', delay: 3 },
-          ].map((pos, i) => (
-            <motion.div
-              key={`shimmer-${i}`}
-              className="absolute w-1 h-1 rounded-full"
-              style={{ 
-                left: pos.x, 
-                top: pos.y,
-                backgroundColor: '#B8E0FF',
-                boxShadow: '0 0 4px #B8E0FF'
-              }}
-              initial={{ opacity: 0 }}
-              animate={{
-                opacity: [0, 0.7, 0],
-                x: [0, i % 2 === 0 ? 6 : -6],
-                y: [0, -10],
-                scale: [0.5, 1, 0.5]
-              }}
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                delay: pos.delay,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
         </div>
       )}
 
-      {/* Shimmer effect on hover for unlocked */}
-      {!isLocked && (
-        <div 
-          className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+      <div className="relative flex items-start gap-3 z-10 h-full">
+        {/* Icon */}
+        <div
+          className={cn(
+            "rounded-lg flex items-center justify-center shrink-0 transition-all",
+            compact ? "p-2" : "p-2.5",
+            isLocked ? "bg-card/20" : "bg-card/40 backdrop-blur-sm"
+          )}
           style={{
-            background: `linear-gradient(135deg, transparent 0%, ${color}10 50%, transparent 100%)`
+            boxShadow: isLocked ? "none" : `0 0 15px ${color}30`,
+            borderColor: isLocked ? "transparent" : color,
+            borderWidth: 1.5,
+          }}
+        >
+          <IconComponent
+            size={28}
+            style={{
+              color: isLocked ? "hsl(var(--muted-foreground))" : color,
+              filter: isLocked ? "none" : `drop-shadow(0 0 6px ${color})`,
+            }}
+          />
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between h-full">
+          <div>
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <h3
+                className={cn(
+                  "font-bold leading-tight font-orbitron uppercase tracking-wider text-sm",
+                  isLocked ? "text-muted-foreground/50" : "text-foreground"
+                )}
+                style={{
+                  textShadow: isLocked ? "none" : `0 0 8px ${color}40`,
+                }}
+              >
+                {isHidden ? "???" : achievement.name}
+              </h3>
+
+              {/* Rarity badge */}
+              <span
+                className={cn(
+                  "text-[10px] font-bold px-2 py-0.5 rounded shrink-0 font-orbitron uppercase tracking-wider",
+                  isLocked ? "bg-card/30 text-muted-foreground/40" : "bg-card/50 backdrop-blur-sm"
+                )}
+                style={{
+                  color: isLocked ? undefined : color,
+                  borderColor: isLocked ? "transparent" : `${color}50`,
+                  borderWidth: 1,
+                }}
+              >
+                {achievement.rarity.toUpperCase()}
+              </span>
+            </div>
+
+            <p
+              className={cn(
+                "text-xs font-rajdhani tracking-wide leading-relaxed line-clamp-2",
+                isLocked ? "text-muted-foreground/35" : "text-muted-foreground"
+              )}
+            >
+              {isHidden ? "Secret achievement - complete hidden objectives to unlock" : achievement.description}
+            </p>
+          </div>
+
+          {/* Bottom section: flavor text, progress, or unlock date */}
+          <div className="mt-auto pt-2">
+            {/* Progress counter for progress-based achievements */}
+            {isProgressBased && !isLocked && (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-card/30 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (progressValue / targetValue) * 100)}%` }}
+                    transition={{ duration: 0.5 }}
+                    className="h-full rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                </div>
+                <span className="text-xs font-orbitron tracking-wider" style={{ color }}>
+                  {progressValue}/{targetValue}
+                </span>
+              </div>
+            )}
+
+            {isProgressBased && isLocked && (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 bg-card/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-muted-foreground/20"
+                    style={{ width: `${Math.min(100, (progressValue / targetValue) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-xs text-muted-foreground/50 font-orbitron tracking-wider">
+                  {remaining} remaining
+                </span>
+              </div>
+            )}
+
+            {/* Flavor text for non-progress achievements */}
+            {!isProgressBased && achievement.flavor_text && !isHidden && !isLocked && (
+              <p
+                className="text-[11px] italic opacity-70 font-rajdhani line-clamp-1"
+                style={{ color }}
+              >
+                "{achievement.flavor_text}"
+              </p>
+            )}
+
+            {/* Unlock date */}
+            {achievement.unlocked && achievement.unlocked_at && !isProgressBased && (
+              <p className="text-[10px] text-muted-foreground/60 font-orbitron tracking-wider uppercase">
+                Unlocked {new Date(achievement.unlocked_at).toLocaleDateString()}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Subtle shimmer on hover for unlocked */}
+      {!isLocked && (
+        <div
+          className="absolute inset-0 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-lg"
+          style={{
+            background: `linear-gradient(135deg, transparent 0%, ${color}08 50%, transparent 100%)`,
           }}
         />
       )}

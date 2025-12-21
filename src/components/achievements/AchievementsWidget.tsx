@@ -120,7 +120,7 @@ export function AchievementsWidget() {
             {stats.recent.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-primary/50 uppercase tracking-wider font-rajdhani">Latest Achievement</h3>
-                <AchievementCard achievement={stats.recent[0]} size="small" />
+                <AchievementCard achievement={stats.recent[0]} compact />
               </div>
             )}
 
