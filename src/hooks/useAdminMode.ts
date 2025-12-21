@@ -174,9 +174,11 @@ export function useAdminForcePurchaseModule() {
         reference_type: "module",
       });
       
-      return true;
+      return { userId, moduleId };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate with user-specific key for proper cache sync
+      queryClient.invalidateQueries({ queryKey: ["user-module-purchases", data.userId] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
       toast({ title: "Module granted (Admin)" });
     },
@@ -211,9 +213,11 @@ export function useAdminResetModule() {
       
       if (error) throw error;
       
-      return true;
+      return { userId, moduleId };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Invalidate with user-specific key for proper cache sync
+      queryClient.invalidateQueries({ queryKey: ["user-module-purchases", data.userId] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
       toast({ title: "Module reset (Admin)" });
     },

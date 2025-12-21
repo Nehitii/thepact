@@ -195,15 +195,15 @@ export default function Home() {
       case 'focus-goals':
         return <FocusGoalsModule goals={focusGoals} navigate={navigate} compact={compact} />;
       case 'the-call':
-        // Only show if purchased
-        if (!isModulePurchased("the_call")) {
-          return <LockedModuleCard name="The Call" moduleKey="the_call" icon={Flame} size={size} navigate={navigate} />;
+        // Only show if purchased - use correct database key "the-call"
+        if (!isModulePurchased("the-call")) {
+          return <LockedModuleCard name="The Call" moduleKey="the-call" icon={Flame} size={size} navigate={navigate} />;
         }
         return <TheCallModule navigate={navigate} size={size} />;
       case 'finance':
-        // Only show if purchased
-        if (!isModulePurchased("track_finance")) {
-          return <LockedModuleCard name="Track Finance" moduleKey="track_finance" icon={() => <span className="text-2xl">💰</span>} size={size} navigate={navigate} />;
+        // Only show if purchased - use correct database key "finance"
+        if (!isModulePurchased("finance")) {
+          return <LockedModuleCard name="Track Finance" moduleKey="finance" icon={() => <span className="text-2xl">💰</span>} size={size} navigate={navigate} />;
         }
         return <FinanceModule navigate={navigate} size={size} />;
       case 'achievements':
