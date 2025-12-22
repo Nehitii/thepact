@@ -731,26 +731,47 @@ export type Database = {
       }
       ranks: {
         Row: {
+          background_opacity: number | null
+          background_url: string | null
           created_at: string
+          frame_color: string | null
+          glow_color: string | null
           id: string
+          logo_url: string | null
+          max_points: number | null
           min_points: number
           name: string
+          quote: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          background_opacity?: number | null
+          background_url?: string | null
           created_at?: string
+          frame_color?: string | null
+          glow_color?: string | null
           id?: string
+          logo_url?: string | null
+          max_points?: number | null
           min_points?: number
           name: string
+          quote?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          background_opacity?: number | null
+          background_url?: string | null
           created_at?: string
+          frame_color?: string | null
+          glow_color?: string | null
           id?: string
+          logo_url?: string | null
+          max_points?: number | null
           min_points?: number
           name?: string
+          quote?: string | null
           updated_at?: string
           user_id?: string
         }

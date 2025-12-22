@@ -6,6 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProfileMenuCard } from "./ProfileMenuCard";
+import { RankBadge } from "@/components/ranks/RankCard";
+import { useRankXP } from "@/hooks/useRankXP";
+import { usePact } from "@/hooks/usePact";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -78,6 +81,8 @@ export function ProfileBoundedProfile({
   onAvatarUrlChange,
 }: ProfileBoundedProfileProps) {
   const { toast } = useToast();
+  const { data: pact } = usePact(userId);
+  const { data: rankData } = useRankXP(userId, pact?.id);
   const [saving, setSaving] = useState(false);
   const [avatarUrlInput, setAvatarUrlInput] = useState("");
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
@@ -294,6 +299,17 @@ export function ProfileBoundedProfile({
           {/* Bottom corner brackets */}
           <div className="absolute bottom-2 left-2 w-4 h-4 border-l-2 border-b-2 border-primary/30" />
           <div className="absolute bottom-2 right-2 w-4 h-4 border-r-2 border-b-2 border-primary/30" />
+          
+          {/* Rank Badge - bottom right */}
+          {rankData?.currentRank && (
+            <div className="absolute bottom-3 right-3">
+              <RankBadge 
+                rank={rankData.currentRank}
+                currentXP={rankData.currentXP}
+                nextRankMinXP={rankData.nextRank?.min_points}
+              />
+            </div>
+          )}
         </div>
       </div>
 
