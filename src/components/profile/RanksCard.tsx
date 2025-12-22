@@ -1,146 +1,144 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PactSettingsCard } from "./PactSettingsCard";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trophy, Plus, Trash2, Edit2, X, Check, Crown, Star, Zap } from "lucide-react";
+import { PactSettingsCard } from "./PactSettingsCard";
+import { RankCard, type Rank } from "@/components/ranks/RankCard";
+import { RankEditor } from "@/components/ranks/RankEditor";
+import { useRankXP } from "@/hooks/useRankXP";
+import { usePact } from "@/hooks/usePact";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { 
+  Trophy, 
+  Plus, 
+  Trash2, 
+  Edit2, 
+  ChevronRight,
+  Sparkles,
+  Target
+} from "lucide-react";
 import { cn } from "@/lib/utils";
-
-interface Rank {
-  id: string;
-  min_points: number;
-  name: string;
-}
+import { motion, AnimatePresence } from "framer-motion";
 
 interface RanksCardProps {
   userId: string;
 }
 
-// Get tier icon based on position
-const getTierIcon = (index: number, total: number) => {
-  const percentage = total > 1 ? index / (total - 1) : 0;
-  if (percentage >= 0.8) return Crown;
-  if (percentage >= 0.5) return Star;
-  return Zap;
-};
-
-// Get tier color based on position
-const getTierColor = (index: number, total: number) => {
-  const percentage = total > 1 ? index / (total - 1) : 0;
-  if (percentage >= 0.8) return "text-yellow-400 border-yellow-400/30 bg-yellow-400/10";
-  if (percentage >= 0.5) return "text-purple-400 border-purple-400/30 bg-purple-400/10";
-  return "text-primary border-primary/30 bg-primary/10";
-};
-
 export function RanksCard({ userId }: RanksCardProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: pact } = usePact(userId);
+  const { data: rankData, isLoading } = useRankXP(userId, pact?.id);
+  
   const [ranks, setRanks] = useState<Rank[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [newRank, setNewRank] = useState({ min_points: "", name: "" });
-  const [editForm, setEditForm] = useState({ min_points: "", name: "" });
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedRank, setSelectedRank] = useState<Rank | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const [isNewRank, setIsNewRank] = useState(false);
 
   useEffect(() => {
-    loadRanks();
-  }, [userId]);
-
-  const loadRanks = async () => {
-    const { data, error } = await supabase
-      .from("ranks")
-      .select("*")
-      .eq("user_id", userId)
-      .order("min_points", { ascending: true });
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load ranks",
-        variant: "destructive",
-      });
-    } else {
-      setRanks(data || []);
+    if (rankData?.ranks) {
+      setRanks(rankData.ranks);
     }
+  }, [rankData?.ranks]);
+
+  const handleAddRank = () => {
+    const newRank: Rank = {
+      id: "new",
+      min_points: ranks.length > 0 
+        ? (ranks[ranks.length - 1].min_points + 500) 
+        : 0,
+      name: "",
+      frame_color: "#5bb4ff",
+      glow_color: "rgba(91,180,255,0.5)",
+    };
+    setSelectedRank(newRank);
+    setIsNewRank(true);
+    setShowEditor(true);
   };
 
-  const handleAdd = async () => {
-    if (!newRank.name.trim() || newRank.min_points === "") {
+  const handleEditRank = (rank: Rank) => {
+    setSelectedRank(rank);
+    setIsNewRank(false);
+    setShowEditor(true);
+  };
+
+  const handleSaveRank = async (rank: Rank) => {
+    if (!rank.name.trim()) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all fields",
+        description: "Please enter a rank name",
         variant: "destructive",
       });
       return;
     }
 
-    setLoading(true);
-    const { error } = await supabase.from("ranks").insert({
-      user_id: userId,
-      min_points: parseInt(newRank.min_points),
-      name: newRank.name.trim(),
-    });
+    if (isNewRank) {
+      const { error } = await supabase.from("ranks").insert({
+        user_id: userId,
+        min_points: rank.min_points,
+        max_points: rank.max_points || null,
+        name: rank.name.trim(),
+        logo_url: rank.logo_url,
+        background_url: rank.background_url,
+        background_opacity: rank.background_opacity,
+        frame_color: rank.frame_color,
+        glow_color: rank.glow_color,
+        quote: rank.quote,
+      });
 
-    if (error) {
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
+        title: "Rank Created",
+        description: `${rank.name} has been added to your progression`,
       });
     } else {
-      toast({
-        title: "Rank Added",
-        description: `${newRank.name} has been added`,
-      });
-      setNewRank({ min_points: "", name: "" });
-      setShowAddForm(false);
-      loadRanks();
-    }
-    setLoading(false);
-  };
+      const { error } = await supabase
+        .from("ranks")
+        .update({
+          min_points: rank.min_points,
+          max_points: rank.max_points || null,
+          name: rank.name.trim(),
+          logo_url: rank.logo_url,
+          background_url: rank.background_url,
+          background_opacity: rank.background_opacity,
+          frame_color: rank.frame_color,
+          glow_color: rank.glow_color,
+          quote: rank.quote,
+        })
+        .eq("id", rank.id);
 
-  const handleEdit = async (id: string) => {
-    if (!editForm.name.trim() || editForm.min_points === "") {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
 
-    setLoading(true);
-    const { error } = await supabase
-      .from("ranks")
-      .update({
-        min_points: parseInt(editForm.min_points),
-        name: editForm.name.trim(),
-      })
-      .eq("id", id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
       toast({
         title: "Rank Updated",
-        description: "Rank has been updated",
+        description: `${rank.name} has been updated`,
       });
-      setEditingId(null);
-      loadRanks();
     }
-    setLoading(false);
+
+    // Refresh data
+    queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the "${name}" rank?`)) return;
+  const handleDeleteRank = async (rank: Rank) => {
+    if (!confirm(`Are you sure you want to delete "${rank.name}"?`)) return;
 
-    setLoading(true);
-    const { error } = await supabase.from("ranks").delete().eq("id", id);
+    const { error } = await supabase.from("ranks").delete().eq("id", rank.id);
 
     if (error) {
       toast({
@@ -151,221 +149,192 @@ export function RanksCard({ userId }: RanksCardProps) {
     } else {
       toast({
         title: "Rank Deleted",
-        description: `${name} has been removed`,
+        description: `${rank.name} has been removed`,
       });
-      loadRanks();
+      queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
     }
-    setLoading(false);
-  };
-
-  const startEdit = (rank: Rank) => {
-    setEditingId(rank.id);
-    setEditForm({ min_points: rank.min_points.toString(), name: rank.name });
-  };
-
-  const cancelEdit = () => {
-    setEditingId(null);
-    setEditForm({ min_points: "", name: "" });
   };
 
   return (
     <PactSettingsCard
       icon={<Trophy className="h-5 w-5 text-primary" />}
       title="Ranks"
-      description="Define progression ranks and point thresholds"
+      description="Configure your progression ranks with custom visuals"
     >
-      {/* Ranks List with ScrollArea */}
+      {/* Current Rank Display */}
+      {rankData?.currentRank && (
+        <div className="mb-4 p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <span className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
+              Current Rank
+            </span>
+          </div>
+          <div className="flex justify-center">
+            <RankCard
+              rank={rankData.currentRank}
+              currentXP={rankData.currentXP}
+              nextRankMinXP={rankData.nextRank?.min_points}
+              totalMaxXP={rankData.totalMaxXP}
+              isActive={true}
+              size="sm"
+            />
+          </div>
+          
+          {/* Global progress */}
+          <div className="mt-4 space-y-1">
+            <div className="flex justify-between text-[10px] font-rajdhani text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Target className="h-3 w-3" />
+                Global Progress
+              </span>
+              <span>{Math.round(rankData.globalProgress)}%</span>
+            </div>
+            <div className="h-1.5 bg-primary/10 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${rankData.globalProgress}%` }}
+                className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-full"
+              />
+            </div>
+            <div className="text-[9px] text-muted-foreground/60 text-center">
+              {rankData.currentXP.toLocaleString()} / {rankData.totalMaxXP.toLocaleString()} XP
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ranks List */}
       <div className="relative">
         {ranks.length === 0 ? (
-          <div className="text-center py-8 text-[#a8c8e8] font-rajdhani border border-dashed border-primary/20 rounded-lg bg-primary/5">
+          <div className="text-center py-8 text-muted-foreground font-rajdhani border border-dashed border-primary/20 rounded-lg bg-primary/5">
             <Trophy className="h-8 w-8 mx-auto mb-2 text-primary/60" />
             <p>No ranks defined yet.</p>
-            <p className="text-xs text-[#7eb3d9] mt-1">Add your first rank below.</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Create your first rank below.</p>
           </div>
         ) : (
-          <ScrollArea className="h-[280px] pr-3">
+          <ScrollArea className="h-[240px] pr-2">
             <div className="space-y-2">
-              {ranks.map((rank, index) => {
-                const TierIcon = getTierIcon(index, ranks.length);
-                const tierColorClass = getTierColor(index, ranks.length);
-                
-                return (
-                  <div
-                    key={rank.id}
-                    className={cn(
-                      "relative group/item flex items-center gap-3 p-3 rounded-lg",
-                      "bg-gradient-to-r from-[#0a1525]/80 to-[#0d1a2d]/80",
-                      "border border-primary/20 hover:border-primary/40",
-                      "transition-all duration-200",
-                      editingId === rank.id && "border-primary/50 bg-primary/5"
-                    )}
-                  >
-                    {/* Tier indicator */}
-                    <div className={cn(
-                      "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border",
-                      tierColorClass
-                    )}>
-                      <TierIcon className="h-4 w-4" />
-                    </div>
+              <AnimatePresence>
+                {ranks.map((rank, index) => {
+                  const isCurrentRank = rankData?.currentRank?.id === rank.id;
+                  
+                  return (
+                    <motion.div
+                      key={rank.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className={cn(
+                        "group relative flex items-center gap-3 p-3 rounded-lg transition-all",
+                        "bg-gradient-to-r from-card/80 to-card/60",
+                        "border hover:border-primary/40",
+                        isCurrentRank 
+                          ? "border-primary/50" 
+                          : "border-primary/20"
+                      )}
+                      style={isCurrentRank ? {
+                        boxShadow: `0 0 15px ${rank.glow_color || 'rgba(91,180,255,0.3)'}`,
+                      } : undefined}
+                    >
+                      {/* Rank preview mini */}
+                      <div 
+                        className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 border"
+                        style={{
+                          borderColor: `${rank.frame_color || '#5bb4ff'}50`,
+                          background: `linear-gradient(135deg, ${rank.frame_color || '#5bb4ff'}10, transparent)`,
+                        }}
+                      >
+                        {rank.logo_url ? (
+                          <img src={rank.logo_url} alt="" className="w-6 h-6 object-contain" />
+                        ) : (
+                          <Trophy className="h-5 w-5" style={{ color: rank.frame_color || '#5bb4ff' }} />
+                        )}
+                      </div>
 
-                    {editingId === rank.id ? (
-                      <>
-                        <div className="flex-1 grid grid-cols-2 gap-2">
-                          <Input
-                            type="number"
-                            placeholder="Points"
-                            value={editForm.min_points}
-                            onChange={(e) =>
-                              setEditForm({ ...editForm, min_points: e.target.value })
-                            }
-                            min="0"
-                            className="h-9 text-sm bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
-                          />
-                          <Input
-                            placeholder="Name"
-                            value={editForm.name}
-                            onChange={(e) =>
-                              setEditForm({ ...editForm, name: e.target.value })
-                            }
-                            maxLength={50}
-                            className="h-9 text-sm bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
-                          />
+                      {/* Rank info */}
+                      <div className="flex-1 min-w-0">
+                        <div 
+                          className="font-orbitron font-semibold text-sm uppercase tracking-wide truncate"
+                          style={{ 
+                            color: rank.frame_color || '#5bb4ff',
+                            textShadow: `0 0 8px ${rank.glow_color || 'rgba(91,180,255,0.3)'}`,
+                          }}
+                        >
+                          {rank.name}
                         </div>
+                        <div className="text-xs text-muted-foreground font-rajdhani">
+                          {rank.min_points.toLocaleString()}+ XP
+                          {isCurrentRank && (
+                            <span className="ml-2 text-primary/70">(Current)</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={() => handleEdit(rank.id)}
-                          disabled={loading}
-                          className="h-9 w-9 text-primary hover:bg-primary/20 flex-shrink-0"
+                          onClick={() => handleEditRank(rank)}
+                          className="h-8 w-8 text-primary/70 hover:text-primary hover:bg-primary/20"
                         >
-                          <Check className="h-4 w-4" />
+                          <Edit2 className="h-3.5 w-3.5" />
                         </Button>
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={cancelEdit}
-                          disabled={loading}
-                          className="h-9 w-9 text-muted-foreground hover:bg-secondary/50 flex-shrink-0"
+                          onClick={() => handleDeleteRank(rank)}
+                          className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/20"
                         >
-                          <X className="h-4 w-4" />
+                          <Trash2 className="h-3.5 w-3.5" />
                         </Button>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-semibold text-[#e0f0ff] font-orbitron uppercase tracking-wide text-sm truncate drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
-                            {rank.name}
-                          </div>
-                          <div className="text-xs text-[#8ACBFF] font-rajdhani font-medium">
-                            {rank.min_points.toLocaleString()} pts
-                          </div>
-                        </div>
-                        <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => startEdit(rank)}
-                            disabled={loading}
-                            className="h-8 w-8 text-primary/70 hover:text-primary hover:bg-primary/20"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            onClick={() => handleDelete(rank.id, rank.name)}
-                            disabled={loading}
-                            className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/20"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
+                      </div>
+
+                      {/* Current indicator */}
+                      {isCurrentRank && (
+                        <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />
+                      )}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
             </div>
           </ScrollArea>
         )}
         
-        {/* Fade indicator at bottom when scrollable */}
-        {ranks.length > 4 && (
-          <div className="absolute bottom-0 left-0 right-3 h-8 bg-gradient-to-t from-[#050d18] to-transparent pointer-events-none rounded-b-lg" />
+        {/* Fade indicator */}
+        {ranks.length > 3 && (
+          <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-card to-transparent pointer-events-none rounded-b-lg" />
         )}
       </div>
 
-      {/* Add New Rank Form */}
-      {showAddForm ? (
-        <div className="p-4 rounded-lg bg-gradient-to-b from-primary/10 to-primary/5 border border-primary/30 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
-                Min Points
-              </label>
-              <Input
-                type="number"
-                placeholder="0"
-                value={newRank.min_points}
-                onChange={(e) =>
-                  setNewRank({ ...newRank, min_points: e.target.value })
-                }
-                min="0"
-                className="h-10 bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
-                Rank Name
-              </label>
-              <Input
-                placeholder="e.g. Warrior"
-                value={newRank.name}
-                onChange={(e) => setNewRank({ ...newRank, name: e.target.value })}
-                maxLength={50}
-                className="h-10 bg-[#0d1a2d]/90 border-primary/40 focus:border-primary/70 text-[#e0f0ff] placeholder:text-[#6b9ec4] shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              onClick={handleAdd} 
-              disabled={loading} 
-              className={cn(
-                "flex-1 h-10 font-orbitron uppercase tracking-wider text-xs",
-                "bg-primary/20 border border-primary/40 rounded-lg",
-                "text-primary hover:bg-primary/30 hover:border-primary/60"
-              )}
-            >
-              <Check className="h-4 w-4 mr-2" />
-              Add Rank
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowAddForm(false);
-                setNewRank({ min_points: "", name: "" });
-              }}
-              disabled={loading}
-              className="h-10 px-4 border border-primary/30 text-muted-foreground hover:bg-primary/10"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <Button
-          onClick={() => setShowAddForm(true)}
-          variant="outline"
-          className={cn(
-            "w-full h-10 font-orbitron uppercase tracking-wider text-xs",
-            "border border-dashed border-primary/40 rounded-lg",
-            "text-primary/70 hover:text-primary hover:border-primary/60 hover:bg-primary/10"
-          )}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Rank
-        </Button>
+      {/* Add Rank Button */}
+      <Button
+        onClick={handleAddRank}
+        variant="outline"
+        className={cn(
+          "w-full h-10 font-orbitron uppercase tracking-wider text-xs mt-4",
+          "border border-dashed border-primary/40 rounded-lg",
+          "text-primary/70 hover:text-primary hover:border-primary/60 hover:bg-primary/10"
+        )}
+      >
+        <Plus className="h-4 w-4 mr-2" />
+        Add New Rank
+      </Button>
+
+      {/* Editor Dialog */}
+      {selectedRank && (
+        <RankEditor
+          rank={selectedRank}
+          open={showEditor}
+          onClose={() => {
+            setShowEditor(false);
+            setSelectedRank(null);
+          }}
+          onSave={handleSaveRank}
+          isNew={isNewRank}
+        />
       )}
     </PactSettingsCard>
   );
