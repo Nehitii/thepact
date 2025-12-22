@@ -182,7 +182,7 @@ export function RanksCard({ userId }: RanksCardProps) {
           </div>
           
           {/* Global progress */}
-          <div className="mt-4 space-y-1">
+          <div className="mt-4 space-y-2">
             <div className="flex justify-between text-[10px] font-rajdhani text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Target className="h-3 w-3" />
@@ -200,6 +200,24 @@ export function RanksCard({ userId }: RanksCardProps) {
             <div className="text-[9px] text-muted-foreground/60 text-center">
               {rankData.currentXP.toLocaleString()} / {rankData.totalMaxXP.toLocaleString()} XP
             </div>
+          </div>
+          
+          {/* Global Max XP Display */}
+          <div className="mt-3 p-2.5 rounded-lg bg-background/50 border border-primary/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="h-3 w-3 text-amber-400" />
+                <span className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-wider">
+                  Maximum XP from Goals
+                </span>
+              </div>
+              <span className="text-xs font-orbitron text-amber-400 font-bold">
+                {rankData.totalMaxXP.toLocaleString()} XP
+              </span>
+            </div>
+            <p className="text-[9px] text-muted-foreground/60 mt-1">
+              Sum of all goal XP values. Use this to define your rank thresholds.
+            </p>
           </div>
         </div>
       )}
@@ -334,6 +352,7 @@ export function RanksCard({ userId }: RanksCardProps) {
           }}
           onSave={handleSaveRank}
           isNew={isNewRank}
+          globalMaxXP={rankData?.totalMaxXP || 0}
         />
       )}
     </PactSettingsCard>
