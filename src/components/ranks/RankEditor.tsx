@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,8 @@ import {
   Trophy,
   Sparkles,
   X,
-  Check
+  Check,
+  AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ interface RankEditorProps {
   onClose: () => void;
   onSave: (rank: Rank) => Promise<void>;
   isNew?: boolean;
+  globalMaxXP?: number;
 }
 
 // Preset color themes
@@ -37,12 +39,41 @@ const colorPresets = [
   { name: "Indigo", frame: "#6366f1", glow: "rgba(99,102,241,0.5)" },
 ];
 
-export function RankEditor({ rank, open, onClose, onSave, isNew }: RankEditorProps) {
+export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0 }: RankEditorProps) {
   const [editedRank, setEditedRank] = useState<Rank>(rank);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<"basics" | "visuals" | "style">("basics");
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Reset state when rank prop changes
+  useEffect(() => {
+    setEditedRank(rank);
+    setValidationError(null);
+  }, [rank]);
+
+  // Validate thresholds against global max XP
+  const validateThresholds = (rankToValidate: Rank): string | null => {
+    if (globalMaxXP > 0) {
+      if (rankToValidate.min_points > globalMaxXP) {
+        return `Min XP (${rankToValidate.min_points.toLocaleString()}) exceeds the maximum obtainable XP (${globalMaxXP.toLocaleString()})`;
+      }
+      if (rankToValidate.max_points && rankToValidate.max_points > globalMaxXP) {
+        return `Max XP (${rankToValidate.max_points.toLocaleString()}) exceeds the maximum obtainable XP (${globalMaxXP.toLocaleString()})`;
+      }
+    }
+    if (rankToValidate.max_points && rankToValidate.max_points <= rankToValidate.min_points) {
+      return "Max XP must be greater than Min XP";
+    }
+    return null;
+  };
 
   const handleSave = async () => {
+    const error = validateThresholds(editedRank);
+    if (error) {
+      setValidationError(error);
+      return;
+    }
+    
     setSaving(true);
     try {
       await onSave(editedRank);
@@ -53,7 +84,10 @@ export function RankEditor({ rank, open, onClose, onSave, isNew }: RankEditorPro
   };
 
   const updateRank = (updates: Partial<Rank>) => {
-    setEditedRank(prev => ({ ...prev, ...updates }));
+    const newRank = { ...editedRank, ...updates };
+    setEditedRank(newRank);
+    // Clear validation error when user makes changes
+    setValidationError(null);
   };
 
   const tabs = [
@@ -138,6 +172,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew }: RankEditorPro
                           value={editedRank.min_points}
                           onChange={(e) => updateRank({ min_points: parseInt(e.target.value) || 0 })}
                           min={0}
+                          max={globalMaxXP > 0 ? globalMaxXP : undefined}
                           className="bg-card/50 border-primary/30 text-primary"
                         />
                       </div>
@@ -150,11 +185,32 @@ export function RankEditor({ rank, open, onClose, onSave, isNew }: RankEditorPro
                           value={editedRank.max_points || ""}
                           onChange={(e) => updateRank({ max_points: parseInt(e.target.value) || 0 })}
                           min={0}
+                          max={globalMaxXP > 0 ? globalMaxXP : undefined}
                           placeholder="Auto"
                           className="bg-card/50 border-primary/30 text-primary"
                         />
                       </div>
                     </div>
+
+                    {/* Global Max XP Reference */}
+                    {globalMaxXP > 0 && (
+                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="h-3 w-3 text-amber-400" />
+                          <span className="text-[10px] font-orbitron text-amber-400 uppercase tracking-wider">
+                            Max XP from Goals: {globalMaxXP.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Validation Error */}
+                    {validationError && (
+                      <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-2">
+                        <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                        <span className="text-xs text-destructive">{validationError}</span>
+                      </div>
+                    )}
 
                     <div className="space-y-2">
                       <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider flex items-center gap-1">
