@@ -1,12 +1,15 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState, useEffect, useRef } from "react";
+import { X } from "lucide-react";
 
 interface DevilNoteModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  showSecretSymbol?: boolean;
 }
 
-export function DevilNoteModal({ open, onOpenChange }: DevilNoteModalProps) {
+export function DevilNoteModal({ open, onOpenChange, showSecretSymbol = false }: DevilNoteModalProps) {
   const [revealed, setRevealed] = useState(false);
   const [textGlitch, setTextGlitch] = useState(false);
   const [breathPhase, setBreathPhase] = useState(0);
@@ -58,11 +61,17 @@ export function DevilNoteModal({ open, onOpenChange }: DevilNoteModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
         ref={containerRef}
-        className="max-w-lg border-0 p-0 overflow-hidden bg-transparent shadow-none"
+        className="max-w-lg border-0 p-0 overflow-hidden bg-transparent shadow-none [&>button]:hidden"
         style={{
           background: 'transparent',
         }}
+        aria-describedby={undefined}
       >
+        {/* Accessibility: Hidden title for screen readers */}
+        <VisuallyHidden>
+          <DialogTitle>Devil Note</DialogTitle>
+        </VisuallyHidden>
+
         {/* Main container - ancient artifact feel */}
         <div 
           className="relative"
@@ -85,6 +94,35 @@ export function DevilNoteModal({ open, onOpenChange }: DevilNoteModalProps) {
             borderRadius: '4px',
           }}
         >
+          {/* Custom close button - styled for dark theme */}
+          <button
+            onClick={() => onOpenChange(false)}
+            className="absolute right-3 top-3 z-20 p-1.5 rounded-sm transition-all duration-300 
+              bg-transparent border-0 outline-none
+              hover:bg-[rgba(80,30,30,0.3)] 
+              focus:outline-none focus:ring-0 focus:bg-[rgba(100,40,40,0.3)]
+              active:bg-[rgba(60,20,20,0.4)]"
+            style={{
+              boxShadow: 'none',
+            }}
+            aria-label="Close"
+          >
+            <X 
+              className="h-4 w-4 transition-all duration-300" 
+              style={{ 
+                color: 'rgba(150, 120, 110, 0.6)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'rgba(180, 140, 130, 0.9)';
+                e.currentTarget.style.filter = 'drop-shadow(0 0 4px rgba(100, 40, 40, 0.5))';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'rgba(150, 120, 110, 0.6)';
+                e.currentTarget.style.filter = 'none';
+              }}
+            />
+          </button>
+
           {/* Cracked stone / burned parchment texture */}
           <div 
             className="absolute inset-0 pointer-events-none"
@@ -164,6 +202,27 @@ export function DevilNoteModal({ open, onOpenChange }: DevilNoteModalProps) {
 
           {/* Content area */}
           <div className="relative z-10 px-8 py-12 min-h-[280px] flex flex-col items-center justify-center">
+            {/* Secret symbol overlay - appears after 3 consecutive opens */}
+            {showSecretSymbol && (
+              <div 
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
+                style={{
+                  animation: 'secretSymbolReveal 2s ease-out forwards',
+                }}
+              >
+                <span 
+                  className="text-4xl"
+                  style={{
+                    color: 'rgba(180, 60, 60, 0.7)',
+                    textShadow: '0 0 20px rgba(180, 60, 60, 0.5), 0 0 40px rgba(120, 30, 30, 0.3)',
+                    fontFamily: 'serif',
+                  }}
+                >
+                  ⛧
+                </span>
+              </div>
+            )}
+
             {/* Main text - "The devil is in the details." */}
             <div 
               className="text-center space-y-8 transition-all duration-1000"
@@ -271,6 +330,25 @@ export function DevilNoteModal({ open, onOpenChange }: DevilNoteModalProps) {
             100% {
               transform: translateY(-25px) translateX(5px) scale(0.4);
               opacity: 0;
+            }
+          }
+          
+          @keyframes secretSymbolReveal {
+            0% {
+              opacity: 0;
+              transform: scale(0.5);
+            }
+            30% {
+              opacity: 1;
+              transform: scale(1.2);
+            }
+            60% {
+              opacity: 0.8;
+              transform: scale(1);
+            }
+            100% {
+              opacity: 0;
+              transform: scale(1.1);
             }
           }
         `}</style>

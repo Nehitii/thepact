@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Navigation } from "@/components/Navigation";
@@ -33,6 +33,34 @@ export default function Profile() {
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+
+  // Devil Note visibility - only show when scrolled to bottom
+  const [isAtBottom, setIsAtBottom] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll detection for Devil Note visibility
+  const handleScroll = useCallback(() => {
+    if (!scrollContainerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+    const threshold = 24; // pixels from bottom
+    
+    setIsAtBottom(distanceFromBottom <= threshold);
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    // Check initial state
+    handleScroll();
+    
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
 
   useEffect(() => {
     if (!user) return;
@@ -79,7 +107,10 @@ export default function Profile() {
   }, [user]);
 
   return (
-    <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
+    <div 
+      ref={scrollContainerRef}
+      className="min-h-screen pb-20 bg-[#00050B] relative overflow-y-auto overflow-x-hidden"
+    >
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
@@ -196,7 +227,7 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Bottom Actions: Legal, Delete Account, Devil Note */}
+        {/* Bottom Actions: Legal, Delete Account */}
         <div className="flex items-center justify-center gap-6 pb-8 animate-fade-in">
           {/* Legal Link */}
           <Link
@@ -220,14 +251,14 @@ export default function Profile() {
               Delete Account
             </span>
           </button>
-
-          {/* Separator */}
-          <span className="text-primary/20">|</span>
-
-          {/* Devil Note */}
-          {user && <ProfileDevilNote />}
         </div>
+
+        {/* Extra space at bottom to allow scrolling to reveal Devil Note */}
+        <div className="h-16" />
       </div>
+
+      {/* Devil Note - Fixed bottom-right, only visible at bottom */}
+      {user && <ProfileDevilNote isVisible={isAtBottom} />}
 
       <Navigation />
     </div>
