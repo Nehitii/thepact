@@ -651,6 +651,7 @@ export type Database = {
           active_frame_id: string | null
           active_title_id: string | null
           age: number | null
+          already_funded: number | null
           avatar_frame: string | null
           avatar_url: string | null
           birthday: string | null
@@ -678,6 +679,7 @@ export type Database = {
           active_frame_id?: string | null
           active_title_id?: string | null
           age?: number | null
+          already_funded?: number | null
           avatar_frame?: string | null
           avatar_url?: string | null
           birthday?: string | null
@@ -705,6 +707,7 @@ export type Database = {
           active_frame_id?: string | null
           active_title_id?: string | null
           age?: number | null
+          already_funded?: number | null
           avatar_frame?: string | null
           avatar_url?: string | null
           birthday?: string | null

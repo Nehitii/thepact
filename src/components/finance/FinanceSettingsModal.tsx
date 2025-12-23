@@ -18,6 +18,7 @@ interface FinanceSettingsModalProps {
     salary_payment_day: number;
     project_funding_target: number;
     project_monthly_allocation: number;
+    already_funded: number;
   };
 }
 
@@ -36,7 +37,7 @@ export function FinanceSettingsModal({
   const [useCustomTarget, setUseCustomTarget] = useState(currentSettings.project_funding_target > 0);
   const [fundingTarget, setFundingTarget] = useState(currentSettings.project_funding_target.toString());
   const [monthlyAllocation, setMonthlyAllocation] = useState(currentSettings.project_monthly_allocation.toString());
-  const [alreadyFunded, setAlreadyFunded] = useState('0');
+  const [alreadyFunded, setAlreadyFunded] = useState(currentSettings.already_funded.toString());
   const [addToRecurring, setAddToRecurring] = useState(false);
 
   // Sync state when modal opens
@@ -46,6 +47,7 @@ export function FinanceSettingsModal({
       setUseCustomTarget(currentSettings.project_funding_target > 0);
       setFundingTarget(currentSettings.project_funding_target.toString());
       setMonthlyAllocation(currentSettings.project_monthly_allocation.toString());
+      setAlreadyFunded(currentSettings.already_funded.toString());
     }
   }, [open, currentSettings]);
 
@@ -66,6 +68,7 @@ export function FinanceSettingsModal({
         salary_payment_day: parseInt(salaryDay) || 1,
         project_funding_target: useCustomTarget ? (parseFloat(fundingTarget) || 0) : 0,
         project_monthly_allocation: allocationAmount,
+        already_funded: parseFloat(alreadyFunded) || 0,
       });
       
       toast.success('Settings saved');
@@ -79,7 +82,7 @@ export function FinanceSettingsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-gradient-to-br from-[#0d1220] to-[#080c14] border-white/[0.08] sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <DialogTitle className="text-lg font-semibold text-white flex items-center gap-2">
             <Settings className="h-5 w-5 text-primary" />
             Finance Settings
           </DialogTitle>
@@ -88,8 +91,8 @@ export function FinanceSettingsModal({
         <div className="space-y-6 pt-2">
           {/* Salary Payment Day */}
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
+            <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-slate-400" />
               Salary Payment Day
             </Label>
             <Input
@@ -98,10 +101,10 @@ export function FinanceSettingsModal({
               max="31"
               value={salaryDay}
               onChange={(e) => setSalaryDay(e.target.value)}
-              className="bg-white/[0.02] border-white/[0.08] focus:border-primary/30 h-11"
+              className="bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500"
               placeholder="1"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500">
               Day of the month when you receive your salary
             </p>
           </div>
@@ -109,8 +112,8 @@ export function FinanceSettingsModal({
           {/* Project Funding Target */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="text-sm text-muted-foreground font-medium flex items-center gap-2">
-                <Target className="h-4 w-4" />
+              <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
+                <Target className="h-4 w-4 text-slate-400" />
                 Project Funding Target
               </Label>
               <div className="flex items-center gap-2">
@@ -118,15 +121,15 @@ export function FinanceSettingsModal({
                   id="customTarget"
                   checked={useCustomTarget}
                   onCheckedChange={(checked) => setUseCustomTarget(checked === true)}
-                  className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
-                <label htmlFor="customTarget" className="text-xs text-muted-foreground cursor-pointer">
+                <label htmlFor="customTarget" className="text-xs text-slate-400 cursor-pointer">
                   Custom
                 </label>
               </div>
             </div>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                 {getCurrencySymbol(currency)}
               </span>
               <Input
@@ -136,13 +139,13 @@ export function FinanceSettingsModal({
                 value={fundingTarget}
                 onChange={(e) => setFundingTarget(e.target.value)}
                 disabled={!useCustomTarget}
-                className={`pl-7 bg-white/[0.02] border-white/[0.08] focus:border-primary/30 h-11 ${
+                className={`pl-7 bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500 ${
                   !useCustomTarget ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 placeholder="0"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500">
               {useCustomTarget 
                 ? 'Enter a custom funding target for your project'
                 : 'Uses total from goal estimated costs'
@@ -152,13 +155,13 @@ export function FinanceSettingsModal({
 
           {/* Monthly Allocation */}
           <div className="space-y-3">
-            <Label className="text-sm text-muted-foreground font-medium flex items-center gap-2">
-              <Wallet className="h-4 w-4" />
+            <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-slate-400" />
               Monthly Allocation
-              <span className="text-xs text-muted-foreground/60">(optional)</span>
+              <span className="text-xs text-slate-500">(optional)</span>
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                 {getCurrencySymbol(currency)}
               </span>
               <Input
@@ -167,7 +170,7 @@ export function FinanceSettingsModal({
                 step="10"
                 value={monthlyAllocation}
                 onChange={(e) => setMonthlyAllocation(e.target.value)}
-                className="pl-7 bg-white/[0.02] border-white/[0.08] focus:border-primary/30 h-11"
+                className="pl-7 bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500"
                 placeholder="0"
               />
             </div>
@@ -177,9 +180,9 @@ export function FinanceSettingsModal({
                   id="addToRecurring"
                   checked={addToRecurring}
                   onCheckedChange={(checked) => setAddToRecurring(checked === true)}
-                  className="border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
-                <label htmlFor="addToRecurring" className="text-xs text-muted-foreground cursor-pointer">
+                <label htmlFor="addToRecurring" className="text-xs text-slate-400 cursor-pointer">
                   Add to recurring expenses automatically
                 </label>
               </div>
@@ -188,13 +191,13 @@ export function FinanceSettingsModal({
 
           {/* Already Funded */}
           <div className="space-y-2">
-            <Label className="text-sm text-muted-foreground font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
+            <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
+              <DollarSign className="h-4 w-4 text-slate-400" />
               Already Funded
-              <span className="text-xs text-muted-foreground/60">(optional)</span>
+              <span className="text-xs text-slate-500">(optional)</span>
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                 {getCurrencySymbol(currency)}
               </span>
               <Input
@@ -203,11 +206,11 @@ export function FinanceSettingsModal({
                 step="100"
                 value={alreadyFunded}
                 onChange={(e) => setAlreadyFunded(e.target.value)}
-                className="pl-7 bg-white/[0.02] border-white/[0.08] focus:border-primary/30 h-11"
+                className="pl-7 bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500"
                 placeholder="0"
               />
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-slate-500">
               Amount you've already set aside for this project
             </p>
           </div>
@@ -216,7 +219,7 @@ export function FinanceSettingsModal({
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-11 border-white/[0.08] hover:bg-white/[0.02]"
+              className="flex-1 h-11 border-white/[0.12] text-slate-300 hover:bg-white/[0.04] hover:text-white"
             >
               Cancel
             </Button>

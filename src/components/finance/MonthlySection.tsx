@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Check, Calendar, ChevronDown, ChevronRight, Edit2, TrendingUp, TrendingDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -39,14 +39,14 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
   const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
 
   // Initialize from validation data
-  useState(() => {
+  useEffect(() => {
     if (currentValidation) {
       setConfirmedExpenses(currentValidation.confirmed_expenses);
       setConfirmedIncome(currentValidation.confirmed_income);
       setUnplannedExpenses(currentValidation.unplanned_expenses?.toString() || '');
       setUnplannedIncome(currentValidation.unplanned_income?.toString() || '');
     }
-  });
+  }, [currentValidation]);
 
   const totalRecurringExpenses = recurringExpenses
     .filter(e => e.is_active)
@@ -146,10 +146,10 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
               <Calendar className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">
+              <h3 className="text-lg font-semibold text-white">
                 {format(parseISO(currentMonth), 'MMMM yyyy')}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-slate-400">
                 Salary day: {salaryPaymentDay}
               </p>
             </div>
@@ -160,7 +160,7 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsEditing(true)}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-slate-400 hover:text-white"
               >
                 <Edit2 className="h-4 w-4 mr-1.5" />
                 Edit
@@ -191,14 +191,14 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
               <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
                 confirmedExpenses 
                   ? 'bg-emerald-500/20 border-emerald-500' 
-                  : 'border-muted-foreground/50'
+                  : 'border-slate-500'
               }`}>
                 {confirmedExpenses && <Check className="h-3 w-3 text-emerald-400" />}
               </div>
               <TrendingDown className="h-4 w-4 text-rose-400" />
-              <span className="text-sm font-medium text-foreground">Expenses Paid</span>
+              <span className="text-sm font-medium text-white">Expenses Paid</span>
             </div>
-            <p className="text-xs text-muted-foreground pl-8">
+            <p className="text-xs text-slate-400 pl-8">
               {formatCurrency(totalRecurringExpenses, currency)} recurring
             </p>
           </button>
@@ -217,14 +217,14 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
               <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
                 confirmedIncome 
                   ? 'bg-emerald-500/20 border-emerald-500' 
-                  : 'border-muted-foreground/50'
+                  : 'border-slate-500'
               }`}>
                 {confirmedIncome && <Check className="h-3 w-3 text-emerald-400" />}
               </div>
               <TrendingUp className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm font-medium text-foreground">Income Received</span>
+              <span className="text-sm font-medium text-white">Income Received</span>
             </div>
-            <p className="text-xs text-muted-foreground pl-8">
+            <p className="text-xs text-slate-400 pl-8">
               {formatCurrency(totalRecurringIncome, currency)} recurring
             </p>
           </button>
@@ -233,11 +233,11 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
         {/* Additional Amounts */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
+            <label className="block text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">
               Additional Expenses
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                 {getCurrencySymbol(currency)}
               </span>
               <Input
@@ -246,7 +246,7 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
                 value={unplannedExpenses}
                 onChange={(e) => setUnplannedExpenses(e.target.value)}
                 disabled={isValidated && !canEdit}
-                className="pl-7 bg-white/[0.02] border-white/[0.08] focus:border-rose-500/30 h-11"
+                className="pl-7 bg-white/[0.04] border-white/[0.12] focus:border-rose-500/50 h-11 text-white placeholder:text-slate-500"
                 min="0"
                 step="0.01"
               />
@@ -254,11 +254,11 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
           </div>
 
           <div>
-            <label className="block text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
+            <label className="block text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">
               Additional Income
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                 {getCurrencySymbol(currency)}
               </span>
               <Input
@@ -267,7 +267,7 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
                 value={unplannedIncome}
                 onChange={(e) => setUnplannedIncome(e.target.value)}
                 disabled={isValidated && !canEdit}
-                className="pl-7 bg-white/[0.02] border-white/[0.08] focus:border-emerald-500/30 h-11"
+                className="pl-7 bg-white/[0.04] border-white/[0.12] focus:border-emerald-500/50 h-11 text-white placeholder:text-slate-500"
                 min="0"
                 step="0.01"
               />
@@ -291,7 +291,7 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
             <Button
               variant="outline"
               onClick={() => setIsEditing(false)}
-              className="flex-1 h-11 border-white/[0.08]"
+              className="flex-1 h-11 border-white/[0.12] text-slate-300 hover:bg-white/[0.04] hover:text-white"
             >
               Cancel
             </Button>
@@ -308,7 +308,7 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
 
       {/* Past Months Archive */}
       <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Monthly History</h3>
+        <h3 className="text-sm font-semibold text-white mb-4">Monthly History</h3>
         
         <div className="space-y-2">
           {pastMonths.map((month) => (
@@ -321,11 +321,11 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
                 <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.08] transition-all">
                   <div className="flex items-center gap-3">
                     {expandedMonths.includes(month.key) ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight className="h-4 w-4 text-slate-400" />
                     )}
-                    <span className="text-sm font-medium text-foreground">{month.label}</span>
+                    <span className="text-sm font-medium text-white">{month.label}</span>
                   </div>
                   {month.validation?.validated_at ? (
                     <div className="flex items-center gap-1.5">
@@ -333,7 +333,7 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
                       <span className="text-xs text-emerald-400">Validated</span>
                     </div>
                   ) : (
-                    <span className="text-xs text-muted-foreground">Not validated</span>
+                    <span className="text-xs text-slate-500">Not validated</span>
                   )}
                 </div>
               </CollapsibleTrigger>
@@ -342,19 +342,19 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
                   {month.validation ? (
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Total Income</p>
+                        <p className="text-xs text-slate-500 mb-1">Total Income</p>
                         <p className="font-semibold text-emerald-400 tabular-nums">
                           {formatCurrency(month.validation.actual_total_income || 0, currency)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Total Expenses</p>
+                        <p className="text-xs text-slate-500 mb-1">Total Expenses</p>
                         <p className="font-semibold text-rose-400 tabular-nums">
                           {formatCurrency(month.validation.actual_total_expenses || 0, currency)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Net Balance</p>
+                        <p className="text-xs text-slate-500 mb-1">Net Balance</p>
                         <p className={`font-semibold tabular-nums ${
                           (month.validation.actual_total_income || 0) - (month.validation.actual_total_expenses || 0) >= 0
                             ? 'text-emerald-400'
@@ -367,14 +367,14 @@ export function MonthlySection({ salaryPaymentDay }: MonthlySectionProps) {
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground mb-1">Unplanned</p>
-                        <p className="text-foreground tabular-nums">
+                        <p className="text-xs text-slate-500 mb-1">Unplanned</p>
+                        <p className="text-white tabular-nums">
                           +{formatCurrency(month.validation.unplanned_income || 0, currency)} / -{formatCurrency(month.validation.unplanned_expenses || 0, currency)}
                         </p>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-sm text-muted-foreground text-center py-2">
+                    <p className="text-sm text-slate-500 text-center py-2">
                       No data recorded for this month
                     </p>
                   )}

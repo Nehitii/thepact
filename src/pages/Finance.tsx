@@ -30,25 +30,41 @@ export default function Finance() {
 
   const projectEndDate = pact?.project_end_date ? parseISO(pact.project_end_date) : null;
 
-  // Calculate totals from goals
-  const { totalEstimatedCost, totalPaid, alreadyFunded } = useMemo(() => {
-    const goalsCost = goals.reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
+  // Calculate totals from goals with CORRECT logic
+  const { totalEstimated, financed, remaining } = useMemo(() => {
+    // Total Estimated = sum of all goals estimated costs
+    const totalGoalsCost = goals.reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
+    
+    // Use custom target if set, otherwise use goals total
     const customTarget = financeSettings?.project_funding_target ?? 0;
-    const total = customTarget > 0 ? customTarget : goalsCost;
-    // For now, paid is 0 - could track actual spending later
+    const total = customTarget > 0 ? customTarget : totalGoalsCost;
+    
+    // Completed goals cost
+    const completedGoalsCost = goals
+      .filter(g => g.status === 'completed' || g.status === 'fully_completed' || g.status === 'validated')
+      .reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
+    
+    // Already funded from settings
+    const alreadyFunded = financeSettings?.already_funded ?? 0;
+    
+    // Financed = completed goals + already funded (clamped to totalEstimated)
+    const financedTotal = Math.min(completedGoalsCost + alreadyFunded, total);
+    
+    // Remaining = total - financed (minimum 0)
+    const remainingAmount = Math.max(total - financedTotal, 0);
+    
     return {
-      totalEstimatedCost: total,
-      totalPaid: 0,
-      alreadyFunded: 0, // Will add field to settings
+      totalEstimated: total,
+      financed: financedTotal,
+      remaining: remainingAmount,
     };
   }, [goals, financeSettings]);
-
-  const totalRemaining = totalEstimatedCost - totalPaid - alreadyFunded;
 
   const settings = {
     salary_payment_day: financeSettings?.salary_payment_day ?? 1,
     project_funding_target: financeSettings?.project_funding_target ?? 0,
     project_monthly_allocation: financeSettings?.project_monthly_allocation ?? 0,
+    already_funded: financeSettings?.already_funded ?? 0,
   };
 
   // Calculate recurring totals
@@ -84,7 +100,7 @@ export default function Finance() {
               variant="ghost" 
               size="sm"
               onClick={() => navigate("/")}
-              className="text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-300"
+              className="text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300"
             >
               <ArrowLeft className="h-4 w-4 mr-1.5" />
               <span className="text-sm font-medium">Back</span>
@@ -94,7 +110,7 @@ export default function Finance() {
             variant="ghost"
             size="sm"
             onClick={() => setSettingsOpen(true)}
-            className="text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all duration-300"
+            className="text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300"
           >
             <Settings className="h-4 w-4" />
           </Button>
@@ -102,10 +118,10 @@ export default function Finance() {
 
         {/* Title */}
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-foreground tracking-tight">
+          <h1 className="text-2xl font-semibold text-white tracking-tight">
             Finance Tracker
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-sm text-slate-400 mt-1">
             Project financing & budget awareness
           </p>
         </div>
@@ -115,21 +131,21 @@ export default function Finance() {
           <TabsList className="w-full bg-white/[0.02] backdrop-blur-sm border border-white/[0.06] rounded-xl p-1 mb-6">
             <TabsTrigger
               value="overview"
-              className="flex-1 data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground font-medium text-sm rounded-lg transition-all duration-300"
+              className="flex-1 data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=active]:shadow-none text-slate-400 font-medium text-sm rounded-lg transition-all duration-300"
             >
               <LayoutDashboard className="h-4 w-4 mr-2" />
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="monthly"
-              className="flex-1 data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground font-medium text-sm rounded-lg transition-all duration-300"
+              className="flex-1 data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=active]:shadow-none text-slate-400 font-medium text-sm rounded-lg transition-all duration-300"
             >
               <FileText className="h-4 w-4 mr-2" />
               Monthly
             </TabsTrigger>
             <TabsTrigger
               value="projections"
-              className="flex-1 data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-none text-muted-foreground font-medium text-sm rounded-lg transition-all duration-300"
+              className="flex-1 data-[state=active]:bg-white/[0.08] data-[state=active]:text-white data-[state=active]:shadow-none text-slate-400 font-medium text-sm rounded-lg transition-all duration-300"
             >
               <TrendingUp className="h-4 w-4 mr-2" />
               Projections
@@ -139,12 +155,12 @@ export default function Finance() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-5 mt-0 animate-fade-in">
             <FinanceOverviewCard
-              totalEstimated={totalEstimatedCost}
-              totalPaid={totalPaid}
-              totalRemaining={totalRemaining}
+              totalEstimated={totalEstimated}
+              totalPaid={financed}
+              totalRemaining={remaining}
             />
             <SmartFinancingPanel
-              totalRemaining={totalRemaining}
+              totalRemaining={remaining}
               projectEndDate={projectEndDate}
               currentMonthlyAllocation={settings.project_monthly_allocation}
             />
@@ -163,7 +179,7 @@ export default function Finance() {
             <ProjectionsPanel
               projectEndDate={projectEndDate}
               monthlyAllocation={settings.project_monthly_allocation}
-              totalRemaining={totalRemaining}
+              totalRemaining={remaining}
               totalRecurringExpenses={totalRecurringExpenses}
               totalRecurringIncome={totalRecurringIncome}
             />

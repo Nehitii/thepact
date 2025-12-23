@@ -133,14 +133,14 @@ export function RecurringManagerPro() {
             <Input
               value={editing.name}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
-              className="flex-1 h-9 text-sm bg-white/[0.02] border-white/[0.08]"
+              className="flex-1 h-9 text-sm bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
               placeholder="Name"
             />
             <Input
               type="number"
               value={editing.amount}
               onChange={(e) => setEditing({ ...editing, amount: e.target.value })}
-              className="w-24 h-9 text-sm bg-white/[0.02] border-white/[0.08]"
+              className="w-24 h-9 text-sm bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
               placeholder="Amount"
             />
             <button
@@ -161,7 +161,7 @@ export function RecurringManagerPro() {
             <div className={`w-8 h-8 rounded-lg bg-${accentColor}-500/10 flex items-center justify-center shrink-0`}>
               <Icon className={`h-4 w-4 text-${accentColor}-400`} />
             </div>
-            <span className="flex-1 text-sm font-medium text-foreground truncate">
+            <span className="flex-1 text-sm font-medium text-white truncate">
               {item.name}
             </span>
             <span className={`font-semibold text-sm tabular-nums ${
@@ -171,13 +171,13 @@ export function RecurringManagerPro() {
             </span>
             <button
               onClick={() => setEditing({ id: item.id, name: item.name, amount: item.amount.toString() })}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/[0.05] transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.05] transition-colors"
             >
               <Edit2 className="h-3.5 w-3.5" />
             </button>
             <button
               onClick={() => onDelete(item.id)}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -192,7 +192,7 @@ export function RecurringManagerPro() {
       {/* Net Balance Summary */}
       <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-foreground">Monthly Balance</h3>
+          <h3 className="text-lg font-semibold text-white">Monthly Balance</h3>
           <span className={`text-xl font-semibold tabular-nums ${netBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {netBalance >= 0 ? '+' : ''}{formatCurrency(netBalance, currency)}
           </span>
@@ -220,15 +220,15 @@ export function RecurringManagerPro() {
             <TrendingDown className="h-4 w-4 text-rose-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-foreground">Recurring Expenses</h3>
-            <p className="text-xs text-muted-foreground">{expenses.length}/30 items</p>
+            <h3 className="text-sm font-semibold text-white">Recurring Expenses</h3>
+            <p className="text-xs text-slate-400">{expenses.length}/30 items</p>
           </div>
         </div>
 
         {/* Add Form */}
         <div className="flex gap-2 mb-4">
           <Select value={newExpense.category} onValueChange={(v) => setNewExpense({ ...newExpense, category: v })}>
-            <SelectTrigger className="w-32 h-10 bg-white/[0.02] border-white/[0.08]">
+            <SelectTrigger className="w-32 h-10 bg-white/[0.04] border-white/[0.12] text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -246,11 +246,11 @@ export function RecurringManagerPro() {
             placeholder="Name"
             value={newExpense.name}
             onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
-            className="flex-1 h-10 bg-white/[0.02] border-white/[0.08]"
+            className="flex-1 h-10 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
             maxLength={50}
           />
           <div className="relative w-28">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
               {getCurrencySymbol(currency)}
             </span>
             <Input
@@ -258,7 +258,7 @@ export function RecurringManagerPro() {
               placeholder="0"
               value={newExpense.amount}
               onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-              className="h-10 pl-6 bg-white/[0.02] border-white/[0.08]"
+              className="h-10 pl-6 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
               min="0"
               step="0.01"
             />
@@ -281,7 +281,7 @@ export function RecurringManagerPro() {
               <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
             </div>
           ) : expenses.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm py-6">No recurring expenses yet</p>
+            <p className="text-center text-slate-500 text-sm py-6">No recurring expenses yet</p>
           ) : (
             expenses.map((expense) =>
               renderItem(
@@ -317,15 +317,15 @@ export function RecurringManagerPro() {
             <TrendingUp className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-foreground">Recurring Income</h3>
-            <p className="text-xs text-muted-foreground">{income.length} items</p>
+            <h3 className="text-sm font-semibold text-white">Recurring Income</h3>
+            <p className="text-xs text-slate-400">{income.length} items</p>
           </div>
         </div>
 
         {/* Add Form */}
         <div className="flex gap-2 mb-4">
           <Select value={newIncome.category} onValueChange={(v) => setNewIncome({ ...newIncome, category: v })}>
-            <SelectTrigger className="w-32 h-10 bg-white/[0.02] border-white/[0.08]">
+            <SelectTrigger className="w-32 h-10 bg-white/[0.04] border-white/[0.12] text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -343,11 +343,11 @@ export function RecurringManagerPro() {
             placeholder="Name"
             value={newIncome.name}
             onChange={(e) => setNewIncome({ ...newIncome, name: e.target.value })}
-            className="flex-1 h-10 bg-white/[0.02] border-white/[0.08]"
+            className="flex-1 h-10 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
             maxLength={50}
           />
           <div className="relative w-28">
-            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
               {getCurrencySymbol(currency)}
             </span>
             <Input
@@ -355,7 +355,7 @@ export function RecurringManagerPro() {
               placeholder="0"
               value={newIncome.amount}
               onChange={(e) => setNewIncome({ ...newIncome, amount: e.target.value })}
-              className="h-10 pl-6 bg-white/[0.02] border-white/[0.08]"
+              className="h-10 pl-6 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
               min="0"
               step="0.01"
             />
@@ -378,7 +378,7 @@ export function RecurringManagerPro() {
               <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
             </div>
           ) : income.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm py-6">No recurring income yet</p>
+            <p className="text-center text-slate-500 text-sm py-6">No recurring income yet</p>
           ) : (
             income.map((inc) =>
               renderItem(
