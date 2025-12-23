@@ -41,6 +41,7 @@ export interface FinanceSettings {
   salary_payment_day: number;
   project_funding_target: number;
   project_monthly_allocation: number;
+  already_funded: number;
 }
 
 // Recurring Expenses hooks
@@ -265,11 +266,16 @@ export function useFinanceSettings(userId?: string) {
       if (!userId) return null;
       const { data, error } = await supabase
         .from('profiles')
-        .select('salary_payment_day, project_funding_target, project_monthly_allocation')
+        .select('salary_payment_day, project_funding_target, project_monthly_allocation, already_funded')
         .eq('id', userId)
         .single();
       if (error) throw error;
-      return data as FinanceSettings;
+      return {
+        salary_payment_day: data.salary_payment_day ?? 1,
+        project_funding_target: data.project_funding_target ?? 0,
+        project_monthly_allocation: data.project_monthly_allocation ?? 0,
+        already_funded: (data as any).already_funded ?? 0,
+      } as FinanceSettings;
     },
     enabled: !!userId,
   });
@@ -286,7 +292,7 @@ export function useUpdateFinanceSettings() {
         .from('profiles')
         .update(settings)
         .eq('id', user.id)
-        .select('salary_payment_day, project_funding_target, project_monthly_allocation')
+        .select('salary_payment_day, project_funding_target, project_monthly_allocation, already_funded')
         .single();
       if (error) throw error;
       return data;

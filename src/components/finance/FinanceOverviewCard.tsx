@@ -26,8 +26,8 @@ export function FinanceOverviewCard({
             <Wallet className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-foreground">Project Financing</h2>
-            <p className="text-xs text-muted-foreground">Budget overview</p>
+            <h2 className="text-lg font-semibold text-white">Project Financing</h2>
+            <p className="text-xs text-slate-400">Budget overview</p>
           </div>
         </div>
 
@@ -35,10 +35,10 @@ export function FinanceOverviewCard({
         <div className="grid grid-cols-3 gap-4 mb-6">
           {/* Total Estimated */}
           <div className="text-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-            <p className="text-xs text-muted-foreground mb-1.5 font-medium uppercase tracking-wide">
+            <p className="text-xs text-slate-400 mb-1.5 font-medium uppercase tracking-wide">
               Total Estimated
             </p>
-            <p className="text-xl font-semibold text-foreground tabular-nums">
+            <p className="text-xl font-semibold text-white tabular-nums">
               {formatCurrency(totalEstimated, currency)}
             </p>
           </div>
@@ -73,8 +73,8 @@ export function FinanceOverviewCard({
         {/* Progress Bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground font-medium">Progress</span>
-            <span className="text-foreground font-semibold tabular-nums">{progressPercentage.toFixed(1)}%</span>
+            <span className="text-slate-400 font-medium">Progress</span>
+            <span className="text-white font-semibold tabular-nums">{progressPercentage.toFixed(1)}%</span>
           </div>
           <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
             <div 

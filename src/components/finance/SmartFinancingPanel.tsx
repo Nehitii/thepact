@@ -26,7 +26,10 @@ export function SmartFinancingPanel({
 
   const today = new Date();
   const maxMonths = 60;
-  const effectiveRemaining = Math.max(0, totalRemaining - existingBalance);
+  
+  // Amount to finance = totalRemaining from Overview (already includes alreadyFunded)
+  // Minus any existing balance user has available
+  const amountToFinance = Math.max(0, totalRemaining - existingBalance);
 
   // Calculate months to deadline
   const monthsToDeadline = projectEndDate ? differenceInMonths(projectEndDate, today) : null;
@@ -34,38 +37,38 @@ export function SmartFinancingPanel({
   // Update monthly amount when months changes
   const updateFromMonths = useCallback((newMonths: number) => {
     setMonths(newMonths);
-    if (effectiveRemaining > 0 && newMonths > 0) {
-      const newAmount = effectiveRemaining / newMonths;
+    if (amountToFinance > 0 && newMonths > 0) {
+      const newAmount = amountToFinance / newMonths;
       setMonthlyAmount(newAmount);
       setManualAmountInput('');
     }
-  }, [effectiveRemaining]);
+  }, [amountToFinance]);
 
   // Update months when amount changes
   const updateFromAmount = useCallback((newAmount: number) => {
     setMonthlyAmount(newAmount);
-    if (effectiveRemaining > 0 && newAmount > 0) {
-      const newMonths = Math.ceil(effectiveRemaining / newAmount);
+    if (amountToFinance > 0 && newAmount > 0) {
+      const newMonths = Math.ceil(amountToFinance / newAmount);
       setMonths(Math.min(newMonths, maxMonths));
       setManualMonthsInput('');
     }
-  }, [effectiveRemaining]);
+  }, [amountToFinance]);
 
   // Initialize from props
   useEffect(() => {
-    if (currentMonthlyAllocation > 0 && effectiveRemaining > 0) {
+    if (currentMonthlyAllocation > 0 && amountToFinance > 0) {
       setMonthlyAmount(currentMonthlyAllocation);
-      const calculatedMonths = Math.ceil(effectiveRemaining / currentMonthlyAllocation);
+      const calculatedMonths = Math.ceil(amountToFinance / currentMonthlyAllocation);
       setMonths(Math.min(calculatedMonths, maxMonths));
-    } else if (effectiveRemaining > 0) {
+    } else if (amountToFinance > 0) {
       updateFromMonths(12);
     }
-  }, [currentMonthlyAllocation, effectiveRemaining]);
+  }, [currentMonthlyAllocation, amountToFinance]);
 
   // Recalculate when existing balance changes
   useEffect(() => {
-    if (effectiveRemaining > 0 && months > 0) {
-      setMonthlyAmount(effectiveRemaining / months);
+    if (amountToFinance > 0 && months > 0) {
+      setMonthlyAmount(amountToFinance / months);
     }
   }, [existingBalance]);
 
@@ -97,19 +100,19 @@ export function SmartFinancingPanel({
           <Calculator className="h-5 w-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-foreground">Smart Financing</h3>
-          <p className="text-xs text-muted-foreground">Adjust your payment plan</p>
+          <h3 className="text-lg font-semibold text-white">Smart Financing</h3>
+          <p className="text-xs text-slate-400">Adjust your payment plan</p>
         </div>
       </div>
 
-      {/* Remaining Amount Focus */}
+      {/* Amount to Finance - synced with Overview Remaining */}
       <div className="text-center mb-6 p-4 rounded-xl bg-primary/[0.05] border border-primary/[0.1]">
-        <p className="text-xs text-muted-foreground mb-1 uppercase tracking-wide font-medium">Amount to Finance</p>
+        <p className="text-xs text-slate-400 mb-1 uppercase tracking-wide font-medium">Amount to Finance</p>
         <p className="text-3xl font-semibold text-primary tabular-nums">
-          {formatCurrency(effectiveRemaining, currency)}
+          {formatCurrency(amountToFinance, currency)}
         </p>
         {existingBalance > 0 && (
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             After {formatCurrency(existingBalance, currency)} existing balance
           </p>
         )}
@@ -117,12 +120,12 @@ export function SmartFinancingPanel({
 
       {/* Existing Balance Input */}
       <div className="mb-6">
-        <label className="block text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
+        <label className="block text-xs text-slate-400 mb-2 font-medium uppercase tracking-wide">
           <Wallet className="h-3 w-3 inline mr-1.5" />
           Existing Balance Available
         </label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
             {getCurrencySymbol(currency)}
           </span>
           <Input
@@ -130,12 +133,12 @@ export function SmartFinancingPanel({
             placeholder="0.00"
             value={existingBalance || ''}
             onChange={(e) => setExistingBalance(parseFloat(e.target.value) || 0)}
-            className="pl-7 bg-white/[0.02] border-white/[0.08] focus:border-primary/30 h-11 text-foreground"
+            className="pl-7 bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500"
             min="0"
             step="100"
           />
         </div>
-        <p className="text-xs text-muted-foreground mt-1.5">
+        <p className="text-xs text-slate-500 mt-1.5">
           Money already set aside for this project
         </p>
       </div>
@@ -143,7 +146,7 @@ export function SmartFinancingPanel({
       {/* Slider Control */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-medium text-foreground">Payment Duration</span>
+          <span className="text-sm font-medium text-white">Payment Duration</span>
           <div className="flex items-center gap-2">
             <Input
               type="number"
@@ -152,11 +155,11 @@ export function SmartFinancingPanel({
               onChange={(e) => setManualMonthsInput(e.target.value)}
               onBlur={handleManualMonthsSubmit}
               onKeyDown={(e) => e.key === 'Enter' && handleManualMonthsSubmit()}
-              className="w-16 h-8 text-center text-sm bg-white/[0.02] border-white/[0.08]"
+              className="w-16 h-8 text-center text-sm bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
               min="1"
               max={maxMonths}
             />
-            <span className="text-sm text-muted-foreground">months</span>
+            <span className="text-sm text-slate-400">months</span>
           </div>
         </div>
         <Slider
@@ -167,7 +170,7 @@ export function SmartFinancingPanel({
           step={1}
           className="w-full"
         />
-        <div className="flex justify-between text-xs text-muted-foreground mt-2">
+        <div className="flex justify-between text-xs text-slate-500 mt-2">
           <span>1 month</span>
           <span>{maxMonths} months</span>
         </div>
@@ -176,9 +179,9 @@ export function SmartFinancingPanel({
       {/* Monthly Payment Display */}
       <div className="mb-6 p-4 rounded-xl bg-white/[0.02] border border-white/[0.06]">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground font-medium">Monthly Payment</span>
+          <span className="text-sm text-slate-400 font-medium">Monthly Payment</span>
           <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
+            <span className="text-slate-400 text-sm">{getCurrencySymbol(currency)}</span>
             <Input
               type="number"
               placeholder={monthlyAmount.toFixed(0)}
@@ -186,14 +189,14 @@ export function SmartFinancingPanel({
               onChange={(e) => setManualAmountInput(e.target.value)}
               onBlur={handleManualAmountSubmit}
               onKeyDown={(e) => e.key === 'Enter' && handleManualAmountSubmit()}
-              className="w-24 h-8 text-right text-sm bg-transparent border-white/[0.08] font-semibold"
+              className="w-24 h-8 text-right text-sm bg-transparent border-white/[0.12] font-semibold text-white placeholder:text-slate-500"
               min="1"
             />
           </div>
         </div>
-        <p className="text-xl font-semibold text-foreground mt-2 tabular-nums">
+        <p className="text-xl font-semibold text-white mt-2 tabular-nums">
           {formatCurrency(monthlyAmount, currency)}
-          <span className="text-sm font-normal text-muted-foreground ml-1">/month</span>
+          <span className="text-sm font-normal text-slate-400 ml-1">/month</span>
         </p>
       </div>
 
@@ -215,7 +218,7 @@ export function SmartFinancingPanel({
               : `Exceeds deadline by ${monthsOverDeadline} month${monthsOverDeadline !== 1 ? 's' : ''}`
             }
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             Completion: {format(completionDate, 'MMM yyyy')}
           </p>
         </div>

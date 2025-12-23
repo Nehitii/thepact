@@ -113,8 +113,8 @@ export function ProjectionsPanel({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-card/95 backdrop-blur-xl border border-white/[0.1] rounded-xl p-3 shadow-xl">
-          <p className="text-xs font-semibold text-foreground mb-2">{label}</p>
+        <div className="bg-[#0d1220]/95 backdrop-blur-xl border border-white/[0.1] rounded-xl p-3 shadow-xl">
+          <p className="text-xs font-semibold text-white mb-2">{label}</p>
           {payload.map((entry: any, index: number) => (
             entry.value !== null && (
               <p key={index} className="text-xs" style={{ color: entry.color }}>
@@ -135,7 +135,7 @@ export function ProjectionsPanel({
         <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="h-4 w-4 text-emerald-400" />
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Savings Rate</span>
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Savings Rate</span>
           </div>
           <p className={`text-2xl font-semibold tabular-nums ${stats.savingsRate >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {stats.savingsRate.toFixed(1)}%
@@ -145,7 +145,7 @@ export function ProjectionsPanel({
         <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <BarChart3 className="h-4 w-4 text-primary" />
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Monthly Net</span>
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Monthly Net</span>
           </div>
           <p className={`text-2xl font-semibold tabular-nums ${stats.monthlyNet >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {stats.monthlyNet >= 0 ? '+' : ''}{formatCurrency(stats.monthlyNet, currency)}
@@ -155,7 +155,7 @@ export function ProjectionsPanel({
         <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="h-4 w-4 text-primary" />
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Yearly Projection</span>
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Yearly Projection</span>
           </div>
           <p className={`text-2xl font-semibold tabular-nums ${stats.yearlyProjection >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {stats.yearlyProjection >= 0 ? '+' : ''}{formatCurrency(stats.yearlyProjection, currency)}
@@ -165,9 +165,9 @@ export function ProjectionsPanel({
         <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Info className="h-4 w-4 text-primary" />
-            <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Months to Goal</span>
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">Months to Goal</span>
           </div>
-          <p className="text-2xl font-semibold text-foreground tabular-nums">
+          <p className="text-2xl font-semibold text-white tabular-nums">
             {stats.monthsToGoal !== null ? stats.monthsToGoal : '—'}
           </p>
         </div>
@@ -180,24 +180,24 @@ export function ProjectionsPanel({
             <TrendingUp className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Balance Evolution</h3>
-            <p className="text-xs text-muted-foreground">12-month projection</p>
+            <h3 className="text-lg font-semibold text-white">Balance Evolution</h3>
+            <p className="text-xs text-slate-400">12-month projection</p>
           </div>
         </div>
 
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground) / 0.1)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
               <XAxis 
                 dataKey="monthLabel" 
-                stroke="hsl(var(--muted-foreground))"
+                stroke="#94a3b8"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis 
-                stroke="hsl(var(--muted-foreground))"
+                stroke="#94a3b8"
                 fontSize={11}
                 tickLine={false}
                 axisLine={false}
@@ -241,11 +241,11 @@ export function ProjectionsPanel({
         <div className="flex items-center justify-center gap-6 mt-4">
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-emerald-500 rounded-full" />
-            <span className="text-xs text-muted-foreground">Actual</span>
+            <span className="text-xs text-slate-400">Actual</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-0.5 bg-primary rounded-full" style={{ background: `repeating-linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary)) 4px, transparent 4px, transparent 8px)` }} />
-            <span className="text-xs text-muted-foreground">Projected</span>
+            <span className="text-xs text-slate-400">Projected</span>
           </div>
         </div>
       </div>
@@ -258,8 +258,8 @@ export function ProjectionsPanel({
               <PieChartIcon className="h-5 w-5 text-rose-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-foreground">Expense Distribution</h3>
-              <p className="text-xs text-muted-foreground">By category</p>
+              <h3 className="text-lg font-semibold text-white">Expense Distribution</h3>
+              <p className="text-xs text-slate-400">By category</p>
             </div>
           </div>
 
@@ -283,9 +283,10 @@ export function ProjectionsPanel({
                   <Tooltip 
                     formatter={(value: number) => formatCurrency(value, currency)}
                     contentStyle={{
-                      backgroundColor: 'hsl(var(--card))',
-                      border: '1px solid hsl(var(--border))',
+                      backgroundColor: '#0d1220',
+                      border: '1px solid rgba(255,255,255,0.1)',
                       borderRadius: '8px',
+                      color: '#fff',
                     }}
                   />
                 </PieChart>
@@ -298,8 +299,8 @@ export function ProjectionsPanel({
             {categoryData.map((cat) => (
               <div key={cat.name} className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: cat.color }} />
-                <span className="text-xs text-muted-foreground capitalize">{cat.name}</span>
-                <span className="text-xs font-medium text-foreground ml-auto tabular-nums">
+                <span className="text-xs text-slate-400 capitalize">{cat.name}</span>
+                <span className="text-xs font-medium text-white ml-auto tabular-nums">
                   {formatCurrency(cat.value, currency)}
                 </span>
               </div>
@@ -326,7 +327,7 @@ export function ProjectionsPanel({
               : 'Negative monthly balance'
             }
           </p>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-slate-400 mt-1">
             {monthlyNetBalance >= 0 
               ? `At this rate, you'll save ${formatCurrency(stats.yearlyProjection, currency)} this year.`
               : `You're spending ${formatCurrency(Math.abs(monthlyNetBalance), currency)} more than you earn monthly.`
