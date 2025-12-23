@@ -18,6 +18,7 @@ import { useRanks, Rank } from "@/hooks/useRanks";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals, Goal } from "@/hooks/useGoals";
 import { useUserShop } from "@/hooks/useShop";
+import { useFinanceSettings } from "@/hooks/useFinance";
 
 export default function Home() {
   const { user } = useAuth();
@@ -29,6 +30,7 @@ export default function Home() {
   const { data: profile } = useProfile(user?.id);
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
+  const { data: financeSettings } = useFinanceSettings(user?.id);
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
@@ -104,12 +106,13 @@ export default function Home() {
 
     const totalCostEngaged = allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
     
-    const totalCostPaid = allGoals.reduce((sum, g) => {
-      const completionRatio = (g.total_steps || 0) > 0 
-        ? (g.validated_steps || 0) / (g.total_steps || 0)
-        : 0;
-      return sum + ((Number(g.estimated_cost) || 0) * completionRatio);
-    }, 0);
+    // Unified calculation: completed goals + already_funded (same as Track Finance)
+    const completedGoalsCost = allGoals
+      .filter(g => g.status === 'completed' || g.status === 'fully_completed' || g.status === 'validated')
+      .reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
+    
+    const alreadyFunded = Number(financeSettings?.already_funded) || 0;
+    const totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
 
     return {
       focusGoals,
@@ -128,7 +131,7 @@ export default function Home() {
         statusCounts,
       },
     };
-  }, [allGoals, ranks]);
+  }, [allGoals, ranks, financeSettings]);
 
   // Redirect to onboarding if no pact (after loading)
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
