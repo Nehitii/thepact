@@ -15,6 +15,7 @@ import NewGoal from "./pages/NewGoal";
 import GoalDetail from "./pages/GoalDetail";
 import StepDetail from "./pages/StepDetail";
 import Finance from "./pages/Finance";
+import Journal from "./pages/Journal";
 import Profile from "./pages/Profile";
 import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
@@ -100,6 +101,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Finance />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/journal"
+                element={
+                  <ProtectedRoute>
+                    <Journal />
                   </ProtectedRoute>
                 }
               />

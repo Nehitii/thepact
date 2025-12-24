@@ -214,7 +214,11 @@ export default function Home() {
       case 'todo-list':
         return <PlaceholderModule name="To Do List" icon={ListTodo} size={size} />;
       case 'journal':
-        return <PlaceholderModule name="Journal" icon={BookOpen} size={size} />;
+        // Only show if purchased - use correct database key "journal"
+        if (!isModulePurchased("journal")) {
+          return <LockedModuleCard name="Journal" moduleKey="journal" icon={BookOpen} size={size} navigate={navigate} />;
+        }
+        return <JournalModule navigate={navigate} size={size} />;
       default:
         return null;
     }
@@ -784,6 +788,47 @@ function FinanceModule({ navigate, size = 'half' }: { navigate: any; size?: Modu
         <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-emerald-500/50 rounded-tr" />
         <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-emerald-500/50 rounded-bl" />
         <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-emerald-500/50 rounded-br" />
+      </button>
+    </div>
+  );
+}
+
+function JournalModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+  const isCompact = size === 'quarter';
+  
+  return (
+    <div className="animate-fade-in relative group h-full">
+      {/* Calm indigo accent glow for Journal */}
+      <div className="absolute inset-0 bg-indigo-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/10 to-indigo-500/5 rounded-lg blur-2xl" />
+      <button
+        onClick={() => navigate("/journal")}
+        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-indigo-950/20 to-card/30 backdrop-blur-xl border-2 border-indigo-500/40 rounded-lg overflow-hidden hover:border-indigo-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(99,102,241,0.4),inset_0_0_30px_rgba(99,102,241,0.1)] group/journal"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-[2px] border border-indigo-500/20 rounded-[6px]" />
+        </div>
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 ${isCompact ? 'flex-col' : ''}`}>
+          <div className="relative">
+            <div className="absolute inset-0 bg-indigo-500/30 blur-lg rounded-full" />
+            <BookOpen className={`text-indigo-400 relative z-10 drop-shadow-[0_0_15px_rgba(99,102,241,0.6)] ${isCompact ? 'w-6 h-6' : 'w-8 h-8'}`} />
+          </div>
+          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
+            <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400 ${isCompact ? 'text-xs' : 'text-lg'}`}>
+              Journal
+            </span>
+            {!isCompact && (
+              <span className="text-xs text-indigo-400/60 font-rajdhani tracking-wide mt-0.5">
+                Your memory timeline
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-indigo-500/50 rounded-tl" />
+        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-indigo-500/50 rounded-tr" />
+        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-indigo-500/50 rounded-bl" />
+        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-indigo-500/50 rounded-br" />
       </button>
     </div>
   );
