@@ -304,8 +304,7 @@ export default function DataPortability() {
 
               <Link to="/legal">
                 <Button
-                  variant="outline"
-                  className="w-full border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary font-rajdhani"
+                  className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
                 >
                   <Scale className="mr-2 h-4 w-4" />
                   View Terms & Legal

@@ -1,8 +1,6 @@
-import { ProfileMenuCard } from "./ProfileMenuCard";
 import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
 import { RanksCard } from "./RanksCard";
-import { Target } from "lucide-react";
 
 interface ProfilePactSettingsProps {
   userId: string;
@@ -34,35 +32,29 @@ export function ProfilePactSettings({
   onCustomDifficultyColorChange,
 }: ProfilePactSettingsProps) {
   return (
-    <ProfileMenuCard
-      icon={<Target className="h-5 w-5 text-primary" />}
-      title="Pact Settings"
-      description="Configure your pact timeline and progression"
-    >
-      <div className="space-y-6">
-        {/* Project Timeline Card */}
-        <ProjectTimelineCard
-          pactId={pactId}
-          projectStartDate={projectStartDate}
-          projectEndDate={projectEndDate}
-          onProjectStartDateChange={onProjectStartDateChange}
-          onProjectEndDateChange={onProjectEndDateChange}
-        />
+    <div className="space-y-6">
+      {/* Project Timeline Card */}
+      <ProjectTimelineCard
+        pactId={pactId}
+        projectStartDate={projectStartDate}
+        projectEndDate={projectEndDate}
+        onProjectStartDateChange={onProjectStartDateChange}
+        onProjectEndDateChange={onProjectEndDateChange}
+      />
 
-        {/* Custom Difficulty Card */}
-        <CustomDifficultyCard
-          userId={userId}
-          customDifficultyName={customDifficultyName}
-          customDifficultyActive={customDifficultyActive}
-          customDifficultyColor={customDifficultyColor}
-          onCustomDifficultyNameChange={onCustomDifficultyNameChange}
-          onCustomDifficultyActiveChange={onCustomDifficultyActiveChange}
-          onCustomDifficultyColorChange={onCustomDifficultyColorChange}
-        />
+      {/* Custom Difficulty Card */}
+      <CustomDifficultyCard
+        userId={userId}
+        customDifficultyName={customDifficultyName}
+        customDifficultyActive={customDifficultyActive}
+        customDifficultyColor={customDifficultyColor}
+        onCustomDifficultyNameChange={onCustomDifficultyNameChange}
+        onCustomDifficultyActiveChange={onCustomDifficultyActiveChange}
+        onCustomDifficultyColorChange={onCustomDifficultyColorChange}
+      />
 
-        {/* Ranks Card */}
-        <RanksCard userId={userId} />
-      </div>
-    </ProfileMenuCard>
+      {/* Ranks Card */}
+      <RanksCard userId={userId} />
+    </div>
   );
 }
