@@ -17,15 +17,19 @@ import {
   Settings,
   Volume2,
   UserCircle,
-  Scale,
+  Bell,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { NotificationBadge } from "@/components/notifications/NotificationBadge";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useMessages } from "@/hooks/useMessages";
 
 const mainNavItems = [
   { to: "/", icon: Home, label: "Home" },
@@ -39,6 +43,7 @@ const profileSubItems = [
   { to: "/profile/bounded", icon: User, label: "Bounded Profile" },
   { to: "/profile/pact-settings", icon: Settings, label: "Pact Settings" },
   { to: "/profile/display-sound", icon: Volume2, label: "Display & Sound" },
+  { to: "/profile/notifications", icon: Bell, label: "Notifications" },
   { to: "/profile/privacy", icon: Shield, label: "Privacy & Control" },
   { to: "/profile/data", icon: Database, label: "Data & Portability" },
 ];
@@ -50,6 +55,10 @@ export function AppSidebar() {
   const [isProfileExpanded, setIsProfileExpanded] = useState(
     location.pathname.startsWith("/profile")
   );
+
+  const { unreadCount } = useNotifications();
+  const { unreadCount: messageUnreadCount } = useMessages();
+  const totalUnread = unreadCount + messageUnreadCount;
 
   // Fetch user profile for avatar and display name
   const { data: profile } = useQuery({
@@ -251,6 +260,7 @@ export function AppSidebar() {
                     {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
+                <NotificationBadge count={totalUnread} size="sm" />
               </div>
               <div className="flex-1 text-left min-w-0">
                 <p className="text-sm font-semibold text-foreground truncate font-rajdhani">
@@ -268,6 +278,19 @@ export function AppSidebar() {
             side="top"
             className="w-56 bg-[#0a1525]/95 backdrop-blur-xl border border-primary/30"
           >
+            <DropdownMenuItem
+              onClick={() => navigate("/profile/notifications")}
+              className="cursor-pointer"
+            >
+              <Bell className="mr-2 h-4 w-4" />
+              <span className="font-rajdhani flex-1">Notifications</span>
+              {totalUnread > 0 && (
+                <span className="ml-2 text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
+                  {totalUnread}
+                </span>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-primary/20" />
             <DropdownMenuItem
               onClick={handleSignOut}
               className="text-destructive hover:text-destructive focus:text-destructive cursor-pointer"
