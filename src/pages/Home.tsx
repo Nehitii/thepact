@@ -100,8 +100,7 @@ export default function Home() {
     const statusCounts = {
       not_started: allGoals.filter(g => g.status === 'not_started').length,
       in_progress: allGoals.filter(g => g.status === 'in_progress').length,
-      validated: allGoals.filter(g => g.status === 'validated').length,
-      fully_completed: allGoals.filter(g => g.status === 'fully_completed').length,
+      fully_completed: allGoals.filter(g => g.status === 'fully_completed' || g.status === 'validated').length,
     };
 
     const totalCostEngaged = allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);

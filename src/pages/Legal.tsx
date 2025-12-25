@@ -1,15 +1,71 @@
-import { ArrowLeft, Shield, FileText, Scale, AlertTriangle, Users, Lock, Mail, Heart } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, Shield, FileText, Scale, AlertTriangle, Users, Lock, Mail, Heart, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 export default function Legal() {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const [showFirstConfirm, setShowFirstConfirm] = useState(false);
+  const [showFinalConfirm, setShowFinalConfirm] = useState(false);
+  const [confirmText, setConfirmText] = useState("");
+  const [deleting, setDeleting] = useState(false);
   
   const handleBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
     } else {
       navigate('/profile');
+    }
+  };
+
+  const handleFirstConfirm = () => {
+    setShowFirstConfirm(false);
+    setShowFinalConfirm(true);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (confirmText !== "DELETE") return;
+    if (!user) return;
+
+    setDeleting(true);
+    try {
+      // Delete user data from all tables
+      await Promise.all([
+        supabase.from('profiles').delete().eq('id', user.id),
+        supabase.from('pacts').delete().eq('user_id', user.id),
+        supabase.from('ranks').delete().eq('user_id', user.id),
+        supabase.from('finance').delete().eq('user_id', user.id),
+        supabase.from('recurring_expenses').delete().eq('user_id', user.id),
+        supabase.from('recurring_income').delete().eq('user_id', user.id),
+        supabase.from('journal_entries').delete().eq('user_id', user.id),
+        supabase.from('user_achievements').delete().eq('user_id', user.id),
+        supabase.from('user_cosmetics').delete().eq('user_id', user.id),
+        supabase.from('user_module_purchases').delete().eq('user_id', user.id),
+        supabase.from('bond_balance').delete().eq('user_id', user.id),
+        supabase.from('bond_transactions').delete().eq('user_id', user.id),
+        supabase.from('achievement_tracking').delete().eq('user_id', user.id),
+        supabase.from('monthly_finance_validations').delete().eq('user_id', user.id),
+        supabase.from('pact_spending').delete().eq('user_id', user.id),
+        supabase.from('user_roles').delete().eq('user_id', user.id),
+      ]);
+
+      // Sign out and redirect
+      await signOut();
+      toast.success("Account deleted successfully");
+      navigate('/auth');
+    } catch (error: any) {
+      toast.error("Failed to delete account: " + (error.message || "Unknown error"));
+    } finally {
+      setDeleting(false);
+      setShowFinalConfirm(false);
+      setConfirmText("");
     }
   };
 
@@ -194,6 +250,18 @@ export default function Legal() {
                       <li>• Some data may be temporarily retained if legally required (e.g. security, fraud prevention)</li>
                     </ul>
                     <p className="mt-2 text-[#ff6b6b]/80 font-medium">Deleted data cannot be recovered.</p>
+                    
+                    {/* Delete Account Button */}
+                    <div className="mt-4 pt-4 border-t border-primary/10">
+                      <Button
+                        onClick={() => setShowFirstConfirm(true)}
+                        variant="outline"
+                        className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300 font-rajdhani"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete My Account
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -294,12 +362,82 @@ export default function Legal() {
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="text-center pt-6 text-xs text-[#6b9ec4]/60 font-rajdhani">
-            Last updated: December 2025
+          {/* Footer with Version Info */}
+          <div className="text-center pt-6 pb-4 space-y-2">
+            <div className="text-xs text-[#6b9ec4]/60 font-rajdhani">
+              Last updated: December 2025
+            </div>
+            <div className="text-[10px] text-[#6b9ec4]/40 font-rajdhani tracking-wider">
+              Version V3.0 — The Pact · Author: G.L
+            </div>
           </div>
         </div>
       </ScrollArea>
+
+      {/* First Confirmation Dialog */}
+      <AlertDialog open={showFirstConfirm} onOpenChange={setShowFirstConfirm}>
+        <AlertDialogContent className="bg-[#0a1525]/95 backdrop-blur-xl border border-primary/20">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#ff6b6b] font-orbitron flex items-center gap-2">
+              <Trash2 className="h-5 w-5" />
+              Delete Account
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#a8c8e8] font-rajdhani space-y-2">
+              <p>You are about to permanently delete your account.</p>
+              <p className="text-[#ff6b6b]/80 font-medium">This action cannot be undone. All your data, goals, journal entries, and progress will be permanently removed.</p>
+              <p>Are you sure you want to continue?</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white font-rajdhani">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleFirstConfirm}
+              className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/20 font-rajdhani"
+            >
+              Yes, Continue
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Final Confirmation Dialog */}
+      <AlertDialog open={showFinalConfirm} onOpenChange={setShowFinalConfirm}>
+        <AlertDialogContent className="bg-[#0a1525]/95 backdrop-blur-xl border border-red-500/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-[#ff6b6b] font-orbitron flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Final Confirmation
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-[#a8c8e8] font-rajdhani space-y-3">
+              <p className="text-[#ff6b6b] font-medium">This is your final chance to cancel.</p>
+              <p>To confirm deletion, type <span className="text-white font-bold">DELETE</span> below:</p>
+              <Input
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
+                placeholder="Type DELETE to confirm"
+                className="bg-[#0d1a2d]/90 border-red-500/30 text-white placeholder:text-[#6b9ec4]/50 font-mono"
+              />
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => setConfirmText("")}
+              className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white font-rajdhani"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <Button
+              onClick={handleDeleteAccount}
+              disabled={confirmText !== "DELETE" || deleting}
+              className="bg-red-500/30 text-red-300 hover:bg-red-500/40 border border-red-500/30 font-rajdhani disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {deleting ? "Deleting..." : "Delete Forever"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

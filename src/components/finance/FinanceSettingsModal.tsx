@@ -68,7 +68,8 @@ export function FinanceSettingsModal({
         salary_payment_day: parseInt(salaryDay) || 1,
         project_funding_target: useCustomTarget ? (parseFloat(fundingTarget) || 0) : 0,
         project_monthly_allocation: allocationAmount,
-        already_funded: parseFloat(alreadyFunded) || 0,
+        // When using custom target, reset already_funded to 0 (standalone target)
+        already_funded: useCustomTarget ? 0 : (parseFloat(alreadyFunded) || 0),
       });
       
       toast.success('Settings saved');
