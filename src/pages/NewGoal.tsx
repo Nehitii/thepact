@@ -249,7 +249,7 @@ export default function NewGoal() {
       setLoading(false);
     }
   };
-  return <div className="min-h-screen relative pb-20" style={{
+  return <div className="min-h-screen relative" style={{
     background: '#00050B'
   }}>
       {/* Ultra-dark background with radial gradient */}

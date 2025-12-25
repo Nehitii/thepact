@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -220,7 +219,7 @@ export default function Goals() {
   }
   return (
     <div
-      className="min-h-screen pb-20 relative"
+      className="min-h-screen relative"
       style={{
         background: "#00050B",
       }}
@@ -943,8 +942,6 @@ export default function Goals() {
           )}
         </div>
       </div>
-
-      <Navigation />
     </div>
   );
 }

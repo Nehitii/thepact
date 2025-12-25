@@ -1,4 +1,3 @@
-import { Navigation } from "@/components/Navigation";
 import { CyberBackground } from "@/components/CyberBackground";
 import { Users, Sparkles } from "lucide-react";
 
@@ -7,7 +6,7 @@ export default function Community() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       <CyberBackground />
       
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pb-24">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4">
         {/* Glowing orb container */}
         <div className="relative mb-8">
           {/* Outer glow */}
@@ -46,8 +45,6 @@ export default function Community() {
           </p>
         </div>
       </div>
-
-      <Navigation />
     </div>
   );
 }

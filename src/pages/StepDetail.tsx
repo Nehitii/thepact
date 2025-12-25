@@ -187,7 +187,7 @@ export default function StepDetail() {
         </div>
       </div>;
   }
-  return <div className="min-h-screen relative pb-20" style={{
+  return <div className="min-h-screen relative" style={{
     background: '#00050B'
   }}>
       {/* Dark sci-fi background gradient */}

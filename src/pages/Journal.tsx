@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, Plus } from "lucide-react";
 import { format } from "date-fns";
@@ -58,7 +57,7 @@ export default function Journal() {
   if (!user) return null;
   
   return (
-    <div className="min-h-screen pb-20 bg-[#050508] relative overflow-hidden">
+    <div className="min-h-screen bg-[#050508] relative overflow-hidden">
       {/* Calm premium background */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Deep dark gradient */}
@@ -190,8 +189,6 @@ export default function Journal() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      
-      <Navigation />
     </div>
   );
 }
