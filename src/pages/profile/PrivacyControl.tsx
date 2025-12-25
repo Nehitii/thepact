@@ -6,6 +6,10 @@ import { Label } from "@/components/ui/label";
 export default function PrivacyControl() {
   const navigate = useNavigate();
 
+  // Luminous label style for consistency and readability
+  const labelStyle = "text-[#e0f0ff] font-rajdhani text-base drop-shadow-[0_0_4px_rgba(224,240,255,0.3)]";
+  const descriptionStyle = "text-sm text-[#8ACBFF]/80 font-rajdhani";
+
   return (
     <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
       {/* Deep space background with radial glow */}
@@ -73,10 +77,10 @@ export default function PrivacyControl() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b border-primary/10">
                   <div className="space-y-1">
-                    <Label className="text-foreground font-rajdhani text-base">
+                    <Label className={labelStyle}>
                       Profile Discoverable
                     </Label>
-                    <p className="text-sm text-muted-foreground font-rajdhani">
+                    <p className={descriptionStyle}>
                       Allow others to find your profile in community
                     </p>
                   </div>
@@ -85,10 +89,10 @@ export default function PrivacyControl() {
 
                 <div className="flex items-center justify-between py-3 border-b border-primary/10">
                   <div className="space-y-1">
-                    <Label className="text-foreground font-rajdhani text-base">
+                    <Label className={labelStyle}>
                       Show Activity Status
                     </Label>
-                    <p className="text-sm text-muted-foreground font-rajdhani">
+                    <p className={descriptionStyle}>
                       Display when you're active
                     </p>
                   </div>
@@ -112,10 +116,10 @@ export default function PrivacyControl() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b border-primary/10">
                   <div className="space-y-1">
-                    <Label className="text-foreground font-rajdhani text-base">
+                    <Label className={labelStyle}>
                       Share Goals Progress
                     </Label>
-                    <p className="text-sm text-muted-foreground font-rajdhani">
+                    <p className={descriptionStyle}>
                       Allow community members to see your goals
                     </p>
                   </div>
@@ -124,10 +128,10 @@ export default function PrivacyControl() {
 
                 <div className="flex items-center justify-between py-3 border-b border-primary/10">
                   <div className="space-y-1">
-                    <Label className="text-foreground font-rajdhani text-base">
+                    <Label className={labelStyle}>
                       Share Achievements
                     </Label>
-                    <p className="text-sm text-muted-foreground font-rajdhani">
+                    <p className={descriptionStyle}>
                       Display earned achievements publicly
                     </p>
                   </div>
@@ -151,10 +155,10 @@ export default function PrivacyControl() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-3 border-b border-primary/10">
                   <div className="space-y-1">
-                    <Label className="text-foreground font-rajdhani text-base">
+                    <Label className={labelStyle}>
                       Community Updates
                     </Label>
-                    <p className="text-sm text-muted-foreground font-rajdhani">
+                    <p className={descriptionStyle}>
                       Receive updates from community members
                     </p>
                   </div>
@@ -163,10 +167,10 @@ export default function PrivacyControl() {
 
                 <div className="flex items-center justify-between py-3">
                   <div className="space-y-1">
-                    <Label className="text-foreground font-rajdhani text-base">
+                    <Label className={labelStyle}>
                       Achievement Celebrations
                     </Label>
-                    <p className="text-sm text-muted-foreground font-rajdhani">
+                    <p className={descriptionStyle}>
                       Get notified of others' achievements
                     </p>
                   </div>
