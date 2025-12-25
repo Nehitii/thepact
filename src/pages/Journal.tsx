@@ -57,58 +57,57 @@ export default function Journal() {
   if (!user) return null;
   
   return (
-    <div className="min-h-screen bg-[#050508] relative overflow-hidden">
-      {/* Calm premium background */}
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0f1a] via-[#0d1220] to-[#080c14] relative overflow-hidden">
+      {/* Banking-grade subtle background - matching Track Finance */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Deep dark gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#08080f] via-[#050508] to-[#030306]" />
-        
-        {/* Very subtle vignette */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.5) 100%)'
+        {/* Subtle gradient orb */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-primary/[0.03] to-transparent rounded-full blur-[100px]" />
+        {/* Subtle grid */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: `
+            linear-gradient(hsl(var(--primary)) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px'
         }} />
-        
-        {/* Minimal grain texture */}
-        <div className="absolute inset-0 opacity-[0.015]" style={{
-          backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")'
-        }} />
-        
-        {/* Soft ambient glow - very muted */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/3 rounded-full blur-[150px]" />
       </div>
       
-      <div className="max-w-3xl mx-auto p-6 relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-12 pt-6">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 relative z-10">
+        {/* Header - matching Track Finance style */}
+        <div className="flex items-center justify-between pt-6 pb-4">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
+            <Button 
+              variant="ghost" 
+              size="sm"
               onClick={() => navigate("/")}
-              className="text-white/40 hover:text-white/70 hover:bg-white/5"
+              className="text-slate-300 hover:text-white hover:bg-white/5 transition-all duration-300"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              <span className="text-sm font-medium">Back</span>
             </Button>
-            <div>
-              <div className="flex items-center gap-3">
-                <BookOpen className="h-6 w-6 text-white/50" />
-                <h1 className="text-3xl font-light text-white/90 tracking-wide">
-                  Journal
-                </h1>
-              </div>
-              <p className="text-white/40 text-sm mt-1 ml-9 font-light">
-                Your cultural memory timeline
-              </p>
-            </div>
           </div>
           
           <Button
             onClick={() => setIsNewEntryOpen(true)}
+            size="sm"
             className="bg-white/5 hover:bg-white/10 text-white/80 border border-white/10 hover:border-white/20"
           >
             <Plus className="h-4 w-4 mr-2" />
             New Entry
           </Button>
+        </div>
+
+        {/* Title - matching Track Finance style */}
+        <div className="mb-6">
+          <div className="flex items-center gap-3">
+            <BookOpen className="h-6 w-6 text-slate-400" />
+            <h1 className="text-2xl font-semibold text-white tracking-tight">
+              Journal
+            </h1>
+          </div>
+          <p className="text-sm text-slate-400 mt-1 ml-9">
+            Your cultural memory timeline
+          </p>
         </div>
         
         {/* Content */}

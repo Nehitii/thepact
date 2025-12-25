@@ -83,8 +83,6 @@ export default function Goals() {
         return "bg-muted text-muted-foreground";
       case "in_progress":
         return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
-      case "validated":
-        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20";
       case "fully_completed":
         return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
       case "paused":
@@ -99,8 +97,6 @@ export default function Goals() {
         return "Not Started";
       case "in_progress":
         return "In Progress";
-      case "validated":
-        return "Validated";
       case "fully_completed":
         return "Completed";
       case "paused":
@@ -149,7 +145,7 @@ export default function Goals() {
       case "name":
         return sorted.sort((a, b) => a.name.localeCompare(b.name) * direction);
       case "status":
-        const statusOrder = ["not_started", "in_progress", "validated", "fully_completed", "paused"];
+        const statusOrder = ["not_started", "in_progress", "fully_completed", "paused"];
         return sorted.sort((a, b) => {
           const indexA = statusOrder.indexOf(a.status);
           const indexB = statusOrder.indexOf(b.status);
@@ -183,11 +179,11 @@ export default function Goals() {
     }
   };
 
-  // Filter goals by active/completed status
+  // Filter goals by active/completed status - exclude validated from active
   const activeGoals = displayGoals.filter(
-    (g) => g.status === "not_started" || g.status === "in_progress" || g.status === "validated",
+    (g) => g.status === "not_started" || g.status === "in_progress",
   );
-  const completedGoals = displayGoals.filter((g) => g.status === "fully_completed");
+  const completedGoals = displayGoals.filter((g) => g.status === "fully_completed" || g.status === "validated");
   const sortedActiveGoals = sortGoals(activeGoals);
   const sortedCompletedGoals = sortGoals(completedGoals);
 

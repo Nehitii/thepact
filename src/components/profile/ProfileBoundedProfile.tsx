@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AvatarFrame, FramePreview } from "@/components/ui/avatar-frame";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RankBadge } from "@/components/ranks/RankCard";
 import { useRankXP } from "@/hooks/useRankXP";
 import { usePact } from "@/hooks/usePact";
@@ -17,7 +18,8 @@ import {
   Sparkles,
   Lock,
   Check,
-  Save
+  Save,
+  Loader2
 } from "lucide-react";
 
 interface CosmeticFrame {
@@ -85,6 +87,8 @@ export function ProfileBoundedProfile({
   const [avatarUrlInput, setAvatarUrlInput] = useState("");
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [showFrameDialog, setShowFrameDialog] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [showBannerDialog, setShowBannerDialog] = useState(false);
   const [showTitleDialog, setShowTitleDialog] = useState(false);
 
@@ -160,6 +164,69 @@ export function ProfileBoundedProfile({
     }
     setShowAvatarDialog(false);
     setAvatarUrlInput("");
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPG, PNG, or WEBP image",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please upload an image under 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}-avatar-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('goal-images')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('goal-images')
+        .getPublicUrl(filePath);
+
+      onAvatarUrlChange(publicUrl);
+      setShowAvatarDialog(false);
+      
+      toast({
+        title: "Avatar uploaded",
+        description: "Your profile image has been updated",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload failed",
+        description: error.message || "Failed to upload image",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
   };
 
   const handleSelectFrame = (frame: CosmeticFrame) => {
@@ -335,26 +402,78 @@ export function ProfileBoundedProfile({
                 <DialogHeader>
                   <DialogTitle className="text-primary font-orbitron">Set Avatar</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-primary/80 font-rajdhani flex items-center gap-2">
-                      <LinkIcon className="h-4 w-4" />
-                      Image URL
-                    </Label>
-                    <Input
-                      placeholder="https://example.com/avatar.png"
-                      value={avatarUrlInput}
-                      onChange={(e) => setAvatarUrlInput(e.target.value)}
-                      className="bg-[#0d1a2d]/90 border-primary/30 text-primary"
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleSaveAvatar}
-                    className="w-full bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary font-orbitron"
-                  >
-                    Save Avatar
-                  </Button>
-                </div>
+                <Tabs defaultValue="upload" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2 bg-[#0d1a2d]/90 border border-primary/20">
+                    <TabsTrigger 
+                      value="upload" 
+                      className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-rajdhani"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="url" 
+                      className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-rajdhani"
+                    >
+                      <LinkIcon className="h-4 w-4 mr-2" />
+                      URL
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="upload" className="space-y-4 mt-4">
+                    <div className="space-y-3">
+                      <Label className="text-primary/80 font-rajdhani">
+                        Upload Image (JPG, PNG, WEBP)
+                      </Label>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                      />
+                      <Button 
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                        className="w-full h-24 bg-[#0d1a2d]/90 border-2 border-dashed border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary font-rajdhani flex flex-col gap-2"
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                            <span>Uploading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6" />
+                            <span>Click to select image</span>
+                            <span className="text-xs text-primary/50">Max 5MB</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="url" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label className="text-primary/80 font-rajdhani flex items-center gap-2">
+                        <LinkIcon className="h-4 w-4" />
+                        Image URL
+                      </Label>
+                      <Input
+                        placeholder="https://example.com/avatar.png"
+                        value={avatarUrlInput}
+                        onChange={(e) => setAvatarUrlInput(e.target.value)}
+                        className="bg-[#0d1a2d]/90 border-primary/30 text-primary"
+                      />
+                    </div>
+                    <Button 
+                      onClick={handleSaveAvatar}
+                      className="w-full bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary font-orbitron"
+                    >
+                      Save Avatar
+                    </Button>
+                  </TabsContent>
+                </Tabs>
               </DialogContent>
             </Dialog>
 

@@ -165,14 +165,11 @@ export default function Profile() {
           </div>
         )}
 
-        {/* Credits */}
-        <div className="text-center py-6 space-y-2 animate-fade-in">
+        {/* Credits - removed version info (moved to Terms & Legal) */}
+        <div className="text-center py-6 animate-fade-in">
           <div className="flex items-center justify-center gap-2 text-sm text-primary/60">
             <Flame className="h-4 w-4 text-primary animate-glow-pulse" />
-            <span className="font-light tracking-wide font-rajdhani">Version: V3.0 – The Pact</span>
-          </div>
-          <div className="text-xs text-primary/40 font-light tracking-wider font-rajdhani">
-            Author: G.L
+            <span className="font-light tracking-wide font-rajdhani">The Pact</span>
           </div>
         </div>
 
