@@ -527,7 +527,7 @@ function StatusSummaryModule({ data, compact = false }: { data: any; compact?: b
             <p className={`text-primary/50 font-rajdhani mt-1 ${compact ? 'text-[10px]' : 'text-xs'}`}>Distribution by current status</p>
           </div>
           <div className={compact ? 'p-4' : 'p-6'}>
-            <div className={`grid gap-3 ${compact ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4 gap-4'}`}>
+            <div className={`grid gap-3 ${compact ? 'grid-cols-3' : 'grid-cols-3 gap-4'}`}>
               {/* Not Started */}
               <div className={`relative text-center rounded-lg bg-card/30 backdrop-blur border border-primary/20 hover:border-primary/40 transition-all overflow-hidden ${compact ? 'p-3' : 'p-4'}`}>
                 <div className="absolute inset-0 pointer-events-none">
@@ -565,27 +565,6 @@ function StatusSummaryModule({ data, compact = false }: { data: any; compact?: b
                   <div className={`text-primary/70 mt-1 font-rajdhani ${compact ? 'text-[10px]' : 'text-xs mt-2'}`}>
                     {data.totalGoals > 0 
                       ? ((data.statusCounts.in_progress / data.totalGoals) * 100).toFixed(0)
-                      : 0}%
-                  </div>
-                </div>
-              </div>
-
-              {/* Validated */}
-              <div className={`relative text-center rounded-lg bg-accent/5 backdrop-blur border border-accent/30 hover:border-accent/50 transition-all overflow-hidden ${compact ? 'p-3' : 'p-4'}`}>
-                <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
-                </div>
-                <div className="relative z-10">
-                  <div className={`flex items-center justify-center gap-2 ${compact ? 'mb-2' : 'mb-3'}`}>
-                    <div className="h-2 w-2 rounded-full bg-accent shadow-[0_0_8px_rgba(122,191,255,0.6)]"></div>
-                    <span className={`font-medium text-accent uppercase tracking-wider font-orbitron ${compact ? 'text-[8px]' : 'text-[10px]'}`}>Validated</span>
-                  </div>
-                  <div className={`font-bold text-accent font-orbitron drop-shadow-[0_0_10px_rgba(122,191,255,0.5)] ${compact ? 'text-2xl' : 'text-4xl'}`}>
-                    {data.statusCounts.validated}
-                  </div>
-                  <div className={`text-accent/70 mt-1 font-rajdhani ${compact ? 'text-[10px]' : 'text-xs mt-2'}`}>
-                    {data.totalGoals > 0 
-                      ? ((data.statusCounts.validated / data.totalGoals) * 100).toFixed(0)
                       : 0}%
                   </div>
                 </div>
