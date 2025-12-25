@@ -5,10 +5,10 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "0.0.0.0", // plus universel que "::" (IPv4, OK pour Lovable)
-    port: 5173, // port par défaut de Vite (tu peux aussi le supprimer)
+    host: "0.0.0.0",
+    port: 8080,
     hmr: {
-      overlay: false, // désactive l’overlay d’erreur plein écran
+      overlay: false,
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

@@ -10,6 +10,15 @@ import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Memoize dust particle positions to prevent re-renders causing jank
+const DUST_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i,
+  left: `${Math.random() * 100}%`,
+  top: `${Math.random() * 100}%`,
+  duration: 8 + Math.random() * 4,
+  delay: Math.random() * 5,
+}));
+
 export default function Journal() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -58,7 +67,7 @@ export default function Journal() {
   if (!user) return null;
   
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{
+    <div className="min-h-screen relative overflow-x-hidden overflow-y-auto" style={{
       background: 'linear-gradient(180deg, #0c1018 0%, #0a0e17 25%, #080b12 50%, #060910 100%)'
     }}>
       {/* Premium cinematic background layers */}
@@ -73,9 +82,9 @@ export default function Journal() {
           style={{ background: 'radial-gradient(ellipse, rgba(139, 92, 246, 0.02) 0%, transparent 70%)' }}
         />
         
-        {/* Film grain texture overlay */}
-        <div className="absolute inset-0 opacity-[0.015]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+        {/* Film grain - static image approach for performance */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAElBMVEUAAAAAAAAAAAAAAAAAAAAAAADgKxmiAAAABnRSTlMFBQUFBQUXpKxOAAAASklEQVQ4y2MYBaNg5ANWZxDFxMRkzMDAwJCV5QAiGCNBJCMjIyNIkpERpISRERlARDMyIgOwaEZGNIBqHgWjYBSMglEwCkbBwAAAqNAGQ0TqpCYAAAAASUVORK5CYII=")',
         }} />
         
         {/* Soft vignette */}
@@ -83,25 +92,25 @@ export default function Journal() {
           background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%)'
         }} />
         
-        {/* Ambient dust particles - barely visible */}
+        {/* Ambient dust particles - memoized positions */}
         <div className="absolute inset-0 opacity-[0.02]">
-          {[...Array(20)].map((_, i) => (
+          {DUST_PARTICLES.map((particle) => (
             <motion.div
-              key={i}
+              key={particle.id}
               className="absolute w-1 h-1 rounded-full bg-white/30"
               style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
+                left: particle.left,
+                top: particle.top,
               }}
               animate={{
                 y: [-20, 20],
                 opacity: [0.1, 0.3, 0.1],
               }}
               transition={{
-                duration: 8 + Math.random() * 4,
+                duration: particle.duration,
                 repeat: Infinity,
                 ease: "easeInOut",
-                delay: Math.random() * 5,
+                delay: particle.delay,
               }}
             />
           ))}
@@ -133,21 +142,21 @@ export default function Journal() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <Button
+            <button
               onClick={() => setIsNewEntryOpen(true)}
-              className="relative overflow-visible group h-10 min-h-[40px] px-5 rounded-full border-0 transition-all duration-500 flex items-center justify-center"
+              className="relative group min-h-[44px] px-6 py-3 rounded-full border-0 transition-all duration-500 inline-flex items-center justify-center"
               style={{
                 background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%)',
                 boxShadow: '0 0 30px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
               }}
             >
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              {/* Glow effect - contained in separate layer */}
+              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                 style={{ boxShadow: '0 0 40px rgba(16, 185, 129, 0.25)' }}
               />
               <Plus className="h-4 w-4 mr-2 text-emerald-400/90 shrink-0" />
-              <span className="text-emerald-300/90 font-light tracking-wide text-sm leading-none">New Entry</span>
-            </Button>
+              <span className="text-emerald-300/90 font-light tracking-wide text-sm normal-case">New Entry</span>
+            </button>
           </motion.div>
         </motion.div>
 
@@ -216,20 +225,20 @@ export default function Journal() {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Button
+              <button
                 onClick={() => setIsNewEntryOpen(true)}
-                className="relative overflow-visible group h-11 min-h-[44px] px-6 rounded-full border-0 transition-all duration-500 flex items-center justify-center"
+                className="relative group min-h-[48px] px-7 py-3 rounded-full border-0 transition-all duration-500 inline-flex items-center justify-center"
                 style={{
                   background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)',
                   boxShadow: '0 0 30px rgba(16, 185, 129, 0.08), inset 0 1px 0 rgba(255,255,255,0.03)'
                 }}
               >
-                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   style={{ boxShadow: '0 0 50px rgba(16, 185, 129, 0.2)' }}
                 />
                 <Plus className="h-4 w-4 mr-2 text-emerald-400/80 shrink-0" />
-                <span className="text-emerald-300/80 font-light tracking-wide leading-none">Write your first entry</span>
-              </Button>
+                <span className="text-emerald-300/80 font-light tracking-wide normal-case">Write your first entry</span>
+              </button>
             </motion.div>
           </motion.div>
         ) : (
