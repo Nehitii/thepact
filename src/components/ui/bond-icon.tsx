@@ -10,7 +10,7 @@ export function BondIcon({ className = "", size = 24 }: BondIconProps) {
     <img 
       src={bondIcon} 
       alt="Bonds" 
-      className={className}
+      className={`inline-block ${className}`}
       style={{ width: size, height: size }}
     />
   );
