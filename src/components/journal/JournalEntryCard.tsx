@@ -119,32 +119,27 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
             </div>
           </div>
           
-          {/* Actions - Fade in on hover */}
-          <motion.div 
-            className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 shrink-0 overflow-visible"
-            initial={false}
+          {/* Actions - Visible on mobile, fade on hover for desktop */}
+          <div 
+            className="flex items-center gap-2 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300"
           >
             {onEdit && (
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={() => onEdit(entry)}
-                className="h-9 w-9 min-h-[36px] min-w-[36px] text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] rounded-xl transition-all duration-300 flex items-center justify-center overflow-visible"
+                className="min-h-[40px] min-w-[40px] h-10 w-10 text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] rounded-xl transition-all duration-300 inline-flex items-center justify-center"
               >
                 <Pencil className="h-4 w-4 shrink-0" />
-              </Button>
+              </button>
             )}
             {onDelete && (
-              <Button
-                variant="ghost"
-                size="icon"
+              <button
                 onClick={() => onDelete(entry.id)}
-                className="h-9 w-9 min-h-[36px] min-w-[36px] text-slate-500 hover:text-red-400/80 hover:bg-red-500/[0.06] rounded-xl transition-all duration-300 flex items-center justify-center overflow-visible"
+                className="min-h-[40px] min-w-[40px] h-10 w-10 text-slate-500 hover:text-red-400/80 hover:bg-red-500/[0.06] rounded-xl transition-all duration-300 inline-flex items-center justify-center"
               >
                 <Trash2 className="h-4 w-4 shrink-0" />
-              </Button>
+              </button>
             )}
-          </motion.div>
+          </div>
         </div>
         
         {/* Main Content */}

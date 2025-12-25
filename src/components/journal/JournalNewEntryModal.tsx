@@ -204,10 +204,10 @@ export function JournalNewEntryModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Button
+              <button
                 onClick={handleSave}
                 disabled={!title.trim() || !content.trim() || isPending}
-                className="relative overflow-hidden px-6 py-2.5 rounded-xl border-0 font-light transition-all duration-400 disabled:opacity-40"
+                className="relative min-h-[44px] px-6 py-3 rounded-xl border-0 font-light transition-all duration-400 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center justify-center"
                 style={{
                   background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%)',
                   color: 'rgba(110, 231, 183, 0.95)',
@@ -224,7 +224,7 @@ export function JournalNewEntryModal({
                     Saving...
                   </span>
                 ) : isEditing ? "Update Entry" : "Save Entry"}
-              </Button>
+              </button>
             </motion.div>
           </div>
         </div>
