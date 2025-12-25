@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
-import { Coins, Sparkles, Gift, Zap } from "lucide-react";
+import { Sparkles, Gift, Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondPacks, useBondBalance, useSpecialOffers } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
+import { BondIcon } from "@/components/ui/bond-icon";
 
 export function BondsShop() {
   const { user } = useAuth();
@@ -16,7 +17,7 @@ export function BondsShop() {
       <div className="text-center">
         <div className="inline-flex items-center gap-4 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 backdrop-blur-xl">
           <div className="relative">
-            <Coins className="w-10 h-10 text-primary" />
+            <BondIcon size={40} />
             <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
           </div>
           <div className="text-left">
@@ -146,9 +147,7 @@ export function BondsShop() {
                 {/* Amount */}
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <Coins className={`w-8 h-8 ${
-                      pack.bonus_percentage >= 30 ? "text-amber-400" : "text-primary"
-                    }`} />
+                    <BondIcon size={32} />
                     <div className={`absolute inset-0 blur-lg rounded-full ${
                       pack.bonus_percentage >= 30 ? "bg-amber-500/30" : "bg-primary/30"
                     }`} />
