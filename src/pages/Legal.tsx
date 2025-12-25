@@ -1,6 +1,5 @@
 import { ArrowLeft, Shield, FileText, Scale } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Navigation } from "@/components/Navigation";
 export default function Legal() {
   const navigate = useNavigate();
   const handleBack = () => {
@@ -11,7 +10,7 @@ export default function Legal() {
       navigate('/profile');
     }
   };
-  return <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
+  return <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />

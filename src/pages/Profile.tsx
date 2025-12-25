@@ -1,16 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { Navigation } from "@/components/Navigation";
-import { Flame, Scale } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Flame } from "lucide-react";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
-import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
-import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
-import { ProfileFinanceSettings } from "@/components/profile/ProfileFinanceSettings";
-import { ProfileDisplaySounds } from "@/components/profile/ProfileDisplaySounds";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
-import { ProfileSignOut } from "@/components/profile/ProfileSignOut";
 
 export default function Profile() {
   const { user } = useAuth();
@@ -104,7 +97,7 @@ export default function Profile() {
 
   return (
     <div 
-      className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden"
+      className="min-h-screen bg-[#00050B] relative overflow-hidden"
     >
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
@@ -169,47 +162,8 @@ export default function Profile() {
               onBirthdayChange={setBirthday}
               onCountryChange={setCountry}
             />
-
-            {/* Bounded Profile */}
-            <ProfileBoundedProfile
-              userId={user.id}
-              displayName={displayName}
-              avatarUrl={avatarUrl}
-              avatarFrame=""
-              personalQuote=""
-              displayedBadges={[]}
-              onAvatarUrlChange={setAvatarUrl}
-              onAvatarFrameChange={() => {}}
-              onPersonalQuoteChange={() => {}}
-              onDisplayedBadgesChange={() => {}}
-            />
-
-            {/* Pact Settings */}
-            <ProfilePactSettings
-              userId={user.id}
-              pactId={pactId}
-              projectStartDate={projectStartDate}
-              projectEndDate={projectEndDate}
-              customDifficultyName={customDifficultyName}
-              customDifficultyActive={customDifficultyActive}
-              customDifficultyColor={customDifficultyColor}
-              onProjectStartDateChange={setProjectStartDate}
-              onProjectEndDateChange={setProjectEndDate}
-              onCustomDifficultyNameChange={setCustomDifficultyName}
-              onCustomDifficultyActiveChange={setCustomDifficultyActive}
-              onCustomDifficultyColorChange={setCustomDifficultyColor}
-            />
-
-            {/* Finance Settings */}
-            <ProfileFinanceSettings />
-
-            {/* Display & Sounds */}
-            <ProfileDisplaySounds />
           </div>
         )}
-
-        {/* Standalone Sign Out Button */}
-        {user && <ProfileSignOut />}
 
         {/* Credits */}
         <div className="text-center py-6 space-y-2 animate-fade-in">
@@ -222,40 +176,12 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* Bottom Actions: Legal, Delete Account */}
-        <div className="flex items-center justify-center gap-6 pb-8 animate-fade-in">
-          {/* Legal Link */}
-          <Link
-            to="/legal"
-            className="inline-flex items-center gap-2 text-xs text-[#6b9ec4]/70 hover:text-[#8ACBFF] transition-colors duration-300 font-rajdhani tracking-wide group"
-          >
-            <Scale className="h-3 w-3 group-hover:drop-shadow-[0_0_6px_rgba(91,180,255,0.5)] transition-all duration-300" />
-            <span className="group-hover:drop-shadow-[0_0_8px_rgba(91,180,255,0.4)]">
-              Terms & Legal
-            </span>
-          </Link>
-
-          {/* Separator */}
-          <span className="text-primary/20">|</span>
-
-          {/* Delete Account */}
-          <button
-            className="inline-flex items-center gap-2 text-xs text-destructive/60 hover:text-destructive transition-colors duration-300 font-rajdhani tracking-wide group"
-          >
-            <span className="group-hover:drop-shadow-[0_0_8px_rgba(239,68,68,0.4)]">
-              Delete Account
-            </span>
-          </button>
-        </div>
-
         {/* Extra space at bottom to allow scrolling to reveal Devil Note */}
         <div className="h-16" />
       </div>
 
       {/* Devil Note - Fixed bottom-right, only visible at bottom */}
       {user && <ProfileDevilNote isVisible={isAtBottom} />}
-
-      <Navigation />
     </div>
   );
 }
