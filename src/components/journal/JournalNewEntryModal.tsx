@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { JournalEntry, JournalMood, MOOD_CONFIG, useCreateJournalEntry, useUpdateJournalEntry } from "@/hooks/useJournal";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface JournalNewEntryModalProps {
   open: boolean;
@@ -23,6 +24,18 @@ const MOODS: JournalMood[] = [
   "grateful",
   "melancholic",
 ];
+
+// Premium mood colors for the modal
+const MOOD_PREMIUM_COLORS: Record<JournalMood, { bg: string; text: string; glow: string }> = {
+  contemplative: { bg: 'rgba(99, 102, 241, 0.15)', text: 'rgba(165, 180, 252, 0.95)', glow: 'rgba(99, 102, 241, 0.3)' },
+  nostalgic: { bg: 'rgba(245, 158, 11, 0.15)', text: 'rgba(252, 211, 77, 0.95)', glow: 'rgba(245, 158, 11, 0.3)' },
+  inspired: { bg: 'rgba(6, 182, 212, 0.15)', text: 'rgba(103, 232, 249, 0.95)', glow: 'rgba(6, 182, 212, 0.3)' },
+  heavy: { bg: 'rgba(100, 116, 139, 0.15)', text: 'rgba(148, 163, 184, 0.95)', glow: 'rgba(100, 116, 139, 0.3)' },
+  calm: { bg: 'rgba(16, 185, 129, 0.15)', text: 'rgba(110, 231, 183, 0.95)', glow: 'rgba(16, 185, 129, 0.3)' },
+  reflective: { bg: 'rgba(139, 92, 246, 0.15)', text: 'rgba(196, 181, 253, 0.95)', glow: 'rgba(139, 92, 246, 0.3)' },
+  grateful: { bg: 'rgba(236, 72, 153, 0.15)', text: 'rgba(249, 168, 212, 0.95)', glow: 'rgba(236, 72, 153, 0.3)' },
+  melancholic: { bg: 'rgba(59, 130, 246, 0.15)', text: 'rgba(147, 197, 253, 0.95)', glow: 'rgba(59, 130, 246, 0.3)' },
+};
 
 export function JournalNewEntryModal({ 
   open, 
@@ -88,73 +101,93 @@ export function JournalNewEntryModal({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl bg-[#0a0a12]/95 backdrop-blur-xl border border-white/10 shadow-2xl">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-light text-white/90 tracking-wide">
+      <DialogContent 
+        className="max-w-2xl border border-white/[0.05] shadow-2xl rounded-2xl overflow-hidden"
+        style={{ 
+          background: 'linear-gradient(180deg, rgba(15, 20, 30, 0.98) 0%, rgba(10, 14, 22, 0.98) 100%)',
+          backdropFilter: 'blur(40px)'
+        }}
+      >
+        {/* Subtle ambient glow */}
+        <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[400px] h-[200px] rounded-full blur-[80px] pointer-events-none"
+          style={{ background: `radial-gradient(ellipse, ${MOOD_PREMIUM_COLORS[mood].glow} 0%, transparent 70%)` }}
+        />
+        
+        <DialogHeader className="relative z-10">
+          <DialogTitle className="text-2xl font-light text-white/90 tracking-tight">
             {isEditing ? "Edit Entry" : "New Entry"}
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 mt-4">
+        <div className="space-y-7 mt-6 relative z-10">
           {/* Title */}
-          <div className="space-y-2">
-            <Label className="text-white/60 text-sm font-light">Title</Label>
+          <div className="space-y-3">
+            <Label className="text-slate-500 text-sm font-light tracking-wide">Title</Label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="What would you like to remember?"
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/20 focus:ring-0"
+              className="bg-white/[0.03] border-white/[0.06] text-white/90 placeholder:text-slate-600 focus:border-white/[0.12] focus:ring-0 rounded-xl h-12 text-base font-light transition-all duration-300"
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             />
           </div>
           
-          {/* Mood Selection */}
+          {/* Mood Selection - Premium Pills */}
           <div className="space-y-3">
-            <Label className="text-white/60 text-sm font-light">Mood</Label>
+            <Label className="text-slate-500 text-sm font-light tracking-wide">Mood</Label>
             <div className="flex flex-wrap gap-2">
-              {MOODS.map((m) => {
-                const config = MOOD_CONFIG[m];
-                const isSelected = mood === m;
-                return (
-                  <button
-                    key={m}
-                    onClick={() => setMood(m)}
-                    className={`
-                      flex items-center gap-2 px-3 py-2 rounded-full text-sm capitalize
-                      transition-all duration-200
-                      ${isSelected 
-                        ? `${config.bgColor} ${config.color} border border-white/20` 
-                        : 'bg-white/5 text-white/50 border border-transparent hover:bg-white/10'}
-                    `}
-                  >
-                    <span>{config.icon}</span>
-                    <span>{m}</span>
-                  </button>
-                );
-              })}
+              <AnimatePresence mode="wait">
+                {MOODS.map((m) => {
+                  const config = MOOD_CONFIG[m];
+                  const premiumColors = MOOD_PREMIUM_COLORS[m];
+                  const isSelected = mood === m;
+                  return (
+                    <motion.button
+                      key={m}
+                      onClick={() => setMood(m)}
+                      className="relative flex items-center gap-2 px-4 py-2.5 rounded-full text-sm capitalize transition-all duration-400"
+                      style={{
+                        background: isSelected ? premiumColors.bg : 'rgba(255,255,255,0.02)',
+                        color: isSelected ? premiumColors.text : 'rgba(148, 163, 184, 0.7)',
+                        border: isSelected ? `1px solid ${premiumColors.text.replace('0.95', '0.2')}` : '1px solid rgba(255,255,255,0.04)',
+                        boxShadow: isSelected ? `0 0 20px ${premiumColors.glow}` : 'none'
+                      }}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      layout
+                    >
+                      <span className="text-base">{config.icon}</span>
+                      <span className="font-light">{m}</span>
+                    </motion.button>
+                  );
+                })}
+              </AnimatePresence>
             </div>
           </div>
           
           {/* Content */}
-          <div className="space-y-2">
-            <Label className="text-white/60 text-sm font-light">Content</Label>
+          <div className="space-y-3">
+            <Label className="text-slate-500 text-sm font-light tracking-wide">Content</Label>
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write your thoughts, memories, reflections..."
-              className="min-h-[200px] bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/20 focus:ring-0 resize-none leading-relaxed"
+              className="min-h-[200px] bg-white/[0.03] border-white/[0.06] text-white/90 placeholder:text-slate-600 focus:border-white/[0.12] focus:ring-0 resize-none leading-[1.8] rounded-xl text-base font-light transition-all duration-300"
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             />
           </div>
           
           {/* Life Context (Optional) */}
-          <div className="space-y-2">
-            <Label className="text-white/60 text-sm font-light">
-              Life Context <span className="text-white/30">(optional)</span>
+          <div className="space-y-3">
+            <Label className="text-slate-500 text-sm font-light tracking-wide">
+              Life Context <span className="text-slate-700">(optional)</span>
             </Label>
             <Input
               value={lifeContext}
               onChange={(e) => setLifeContext(e.target.value)}
               placeholder="e.g., During a period of change..."
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/20 focus:ring-0"
+              className="bg-white/[0.03] border-white/[0.06] text-white/90 placeholder:text-slate-600 focus:border-white/[0.12] focus:ring-0 rounded-xl h-12 text-base font-light italic transition-all duration-300"
+              style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
             />
           </div>
           
@@ -163,17 +196,36 @@ export function JournalNewEntryModal({
             <Button
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              className="text-white/50 hover:text-white/80 hover:bg-white/5"
+              className="text-slate-500 hover:text-slate-300 hover:bg-white/[0.03] rounded-xl px-5 font-light transition-all duration-300"
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!title.trim() || !content.trim() || isPending}
-              className="bg-white/10 hover:bg-white/20 text-white border border-white/10"
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {isPending ? "Saving..." : isEditing ? "Update" : "Save Entry"}
-            </Button>
+              <Button
+                onClick={handleSave}
+                disabled={!title.trim() || !content.trim() || isPending}
+                className="relative overflow-hidden px-6 py-2.5 rounded-xl border-0 font-light transition-all duration-400 disabled:opacity-40"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%)',
+                  color: 'rgba(110, 231, 183, 0.95)',
+                  boxShadow: '0 0 25px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
+                }}
+              >
+                {isPending ? (
+                  <span className="flex items-center gap-2">
+                    <motion.div 
+                      className="w-4 h-4 rounded-full border-2 border-emerald-400/30 border-t-emerald-400/80"
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    />
+                    Saving...
+                  </span>
+                ) : isEditing ? "Update Entry" : "Save Entry"}
+              </Button>
+            </motion.div>
           </div>
         </div>
       </DialogContent>
