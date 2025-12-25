@@ -37,8 +37,6 @@ export default function AdminNotifications() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   // Form state
   const [title, setTitle] = useState("");
@@ -55,7 +53,7 @@ export default function AdminNotifications() {
   const [targetUserId, setTargetUserId] = useState("");
 
   // Check admin status
-  const { data: adminCheck } = useQuery({
+  const { data: adminCheck, isLoading: adminLoading } = useQuery({
     queryKey: ["admin-check", user?.id],
     queryFn: async () => {
       if (!user) return false;
@@ -70,15 +68,13 @@ export default function AdminNotifications() {
     enabled: !!user,
   });
 
-  // Redirect non-admins
-  useState(() => {
-    if (adminCheck === false) {
-      navigate("/");
-    } else if (adminCheck === true) {
-      setIsAdmin(true);
-      setLoading(false);
-    }
-  });
+  // Handle admin check result
+  if (!adminLoading && adminCheck === false) {
+    navigate("/");
+    return null;
+  }
+
+  const isAdminVerified = adminCheck === true;
 
   // Fetch all users for targeting
   const { data: allUsers = [] } = useQuery({
@@ -90,7 +86,7 @@ export default function AdminNotifications() {
         .order("display_name");
       return data || [];
     },
-    enabled: isAdmin,
+    enabled: isAdminVerified,
   });
 
   // Send notification mutation
@@ -163,7 +159,7 @@ export default function AdminNotifications() {
     },
   });
 
-  if (loading || adminCheck === undefined) {
+  if (adminLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-primary animate-pulse font-orbitron">Verifying admin access...</div>
@@ -171,7 +167,7 @@ export default function AdminNotifications() {
     );
   }
 
-  if (!isAdmin && adminCheck === false) {
+  if (!isAdminVerified) {
     return null;
   }
 

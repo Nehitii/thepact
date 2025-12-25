@@ -18,7 +18,6 @@ import {
   Volume2,
   UserCircle,
   Bell,
-  MessageSquare,
   Inbox,
 } from "lucide-react";
 import {
@@ -278,48 +277,24 @@ export function AppSidebar() {
           <DropdownMenuContent
             align="end"
             side="top"
-            className="w-56 bg-[#0a1525]/95 backdrop-blur-xl border border-primary/30"
+            className="w-56 bg-[#0a1525] border border-primary/30 z-50"
           >
             <DropdownMenuItem
               onClick={() => navigate("/inbox")}
-              className="cursor-pointer"
+              className="cursor-pointer text-primary hover:bg-primary/10 focus:bg-primary/10 focus:text-primary"
             >
-              <Inbox className="mr-2 h-4 w-4" />
-              <span className="font-rajdhani flex-1">Inbox</span>
+              <Inbox className="mr-2 h-4 w-4 text-primary" />
+              <span className="font-rajdhani flex-1 text-primary">Inbox</span>
               {totalUnread > 0 && (
                 <span className="ml-2 text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
                   {totalUnread}
                 </span>
               )}
             </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigate("/inbox")}
-              className="cursor-pointer"
-            >
-              <Bell className="mr-2 h-4 w-4" />
-              <span className="font-rajdhani flex-1">Notifications</span>
-              {unreadCount > 0 && (
-                <span className="ml-2 text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
-                  {unreadCount}
-                </span>
-              )}
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => navigate("/inbox")}
-              className="cursor-pointer"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              <span className="font-rajdhani flex-1">Messages</span>
-              {messageUnreadCount > 0 && (
-                <span className="ml-2 text-xs bg-violet-500 text-white px-1.5 py-0.5 rounded-full">
-                  {messageUnreadCount}
-                </span>
-              )}
-            </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-primary/20" />
             <DropdownMenuItem
               onClick={handleSignOut}
-              className="text-destructive hover:text-destructive focus:text-destructive cursor-pointer"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 focus:text-destructive focus:bg-destructive/10 cursor-pointer"
             >
               <LogOut className="mr-2 h-4 w-4" />
               <span className="font-rajdhani">Sign Out</span>
