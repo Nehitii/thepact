@@ -580,6 +580,102 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_settings: {
+        Row: {
+          created_at: string
+          focus_mode: boolean
+          id: string
+          marketing_enabled: boolean
+          progress_enabled: boolean
+          push_enabled: boolean
+          social_enabled: boolean
+          system_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          focus_mode?: boolean
+          id?: string
+          marketing_enabled?: boolean
+          progress_enabled?: boolean
+          push_enabled?: boolean
+          social_enabled?: boolean
+          system_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          focus_mode?: boolean
+          id?: string
+          marketing_enabled?: boolean
+          progress_enabled?: boolean
+          push_enabled?: boolean
+          social_enabled?: boolean
+          system_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          category: Database["public"]["Enums"]["notification_category"]
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          description: string | null
+          expires_at: string | null
+          icon_key: string | null
+          id: string
+          image_url: string | null
+          is_read: boolean
+          module_key: string | null
+          priority: Database["public"]["Enums"]["notification_priority"]
+          reward_amount: number | null
+          reward_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["notification_category"]
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          expires_at?: string | null
+          icon_key?: string | null
+          id?: string
+          image_url?: string | null
+          is_read?: boolean
+          module_key?: string | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          reward_amount?: number | null
+          reward_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["notification_category"]
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          description?: string | null
+          expires_at?: string | null
+          icon_key?: string | null
+          id?: string
+          image_url?: string | null
+          is_read?: boolean
+          module_key?: string | null
+          priority?: Database["public"]["Enums"]["notification_priority"]
+          reward_amount?: number | null
+          reward_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       pact_spending: {
         Row: {
           amount: number
@@ -678,6 +774,33 @@ export type Database = {
         }
         Relationships: []
       }
+      private_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           active_banner_id: string | null
@@ -762,6 +885,77 @@ export type Database = {
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
+        }
+        Relationships: []
+      }
+      promo_code_redemptions: {
+        Row: {
+          id: string
+          promo_code_id: string
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          promo_code_id: string
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          promo_code_id?: string
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_code_redemptions_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          description: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          reward_amount: number
+          reward_type: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          reward_amount?: number
+          reward_type?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          description?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          reward_amount?: number
+          reward_type?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1210,6 +1404,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       user_cosmetics: {
         Row: {
           acquired_at: string
@@ -1329,6 +1544,13 @@ export type Database = {
         | "other"
         | "relationship"
         | "diy"
+      notification_category: "system" | "progress" | "social" | "marketing"
+      notification_priority:
+        | "critical"
+        | "important"
+        | "informational"
+        | "social"
+        | "silent"
       step_status: "pending" | "completed"
       todo_priority: "low" | "medium" | "high"
       todo_status: "active" | "completed" | "postponed"
@@ -1488,6 +1710,14 @@ export const Constants = {
         "other",
         "relationship",
         "diy",
+      ],
+      notification_category: ["system", "progress", "social", "marketing"],
+      notification_priority: [
+        "critical",
+        "important",
+        "informational",
+        "social",
+        "silent",
       ],
       step_status: ["pending", "completed"],
       todo_priority: ["low", "medium", "high"],

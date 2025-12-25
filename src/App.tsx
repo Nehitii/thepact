@@ -22,6 +22,7 @@ import BoundedProfile from "./pages/profile/BoundedProfile";
 import PactSettings from "./pages/profile/PactSettings";
 import DisplaySound from "./pages/profile/DisplaySound";
 import PrivacyControl from "./pages/profile/PrivacyControl";
+import NotificationSettings from "./pages/profile/NotificationSettings";
 import DataPortability from "./pages/profile/DataPortability";
 import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
@@ -165,6 +166,14 @@ const App = () => (
                 element={
                   <ProtectedWithLayout>
                     <PrivacyControl />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/profile/notifications"
+                element={
+                  <ProtectedWithLayout>
+                    <NotificationSettings />
                   </ProtectedWithLayout>
                 }
               />
