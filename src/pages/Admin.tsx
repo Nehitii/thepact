@@ -94,8 +94,8 @@ export default function Admin() {
       available: true,
     },
     {
-      title: "Notifications",
-      description: "Send system notifications to users",
+      title: "Notifications & Messages",
+      description: "Send notifications and messages to users",
       icon: Bell,
       href: "/admin/notifications",
       available: true,
