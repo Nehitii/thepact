@@ -35,7 +35,8 @@ import AdminMoneyManager from "./pages/AdminMoneyManager";
 import AdminMode from "./pages/AdminMode";
 import NotFound from "./pages/NotFound";
 import TodoList from "./pages/TodoList";
-
+import AdminNotifications from "./pages/AdminNotifications";
+import Inbox from "./pages/Inbox";
 const queryClient = new QueryClient();
 
 // Wrapper component that applies AppLayout to protected routes
@@ -262,6 +263,22 @@ const App = () => (
                 element={
                   <ProtectedWithLayout>
                     <TodoList />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/admin/notifications"
+                element={
+                  <ProtectedWithLayout>
+                    <AdminNotifications />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/inbox"
+                element={
+                  <ProtectedWithLayout>
+                    <Inbox />
                   </ProtectedWithLayout>
                 }
               />

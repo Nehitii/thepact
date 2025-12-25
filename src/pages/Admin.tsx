@@ -10,7 +10,8 @@ import {
   Puzzle,
   ChevronRight,
   Lock,
-  Sparkles
+  Sparkles,
+  Bell,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -90,6 +91,13 @@ export default function Admin() {
       description: "Manage purchasable modules",
       icon: Puzzle,
       href: "/admin/modules",
+      available: true,
+    },
+    {
+      title: "Notifications",
+      description: "Send system notifications to users",
+      icon: Bell,
+      href: "/admin/notifications",
       available: true,
     },
     {

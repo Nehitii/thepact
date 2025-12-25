@@ -18,6 +18,8 @@ import {
   Volume2,
   UserCircle,
   Bell,
+  MessageSquare,
+  Inbox,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -279,14 +281,38 @@ export function AppSidebar() {
             className="w-56 bg-[#0a1525]/95 backdrop-blur-xl border border-primary/30"
           >
             <DropdownMenuItem
-              onClick={() => navigate("/profile/notifications")}
+              onClick={() => navigate("/inbox")}
+              className="cursor-pointer"
+            >
+              <Inbox className="mr-2 h-4 w-4" />
+              <span className="font-rajdhani flex-1">Inbox</span>
+              {totalUnread > 0 && (
+                <span className="ml-2 text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
+                  {totalUnread}
+                </span>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigate("/inbox")}
               className="cursor-pointer"
             >
               <Bell className="mr-2 h-4 w-4" />
               <span className="font-rajdhani flex-1">Notifications</span>
-              {totalUnread > 0 && (
+              {unreadCount > 0 && (
                 <span className="ml-2 text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
-                  {totalUnread}
+                  {unreadCount}
+                </span>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => navigate("/inbox")}
+              className="cursor-pointer"
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              <span className="font-rajdhani flex-1">Messages</span>
+              {messageUnreadCount > 0 && (
+                <span className="ml-2 text-xs bg-violet-500 text-white px-1.5 py-0.5 rounded-full">
+                  {messageUnreadCount}
                 </span>
               )}
             </DropdownMenuItem>
