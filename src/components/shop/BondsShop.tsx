@@ -17,7 +17,7 @@ export function BondsShop() {
       <div className="text-center">
         <div className="inline-flex items-center gap-4 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 backdrop-blur-xl">
           <div className="relative">
-            <BondIcon size={40} />
+            <BondIcon size={48} />
             <div className="absolute inset-0 bg-primary/30 blur-xl rounded-full" />
           </div>
           <div className="text-left">
@@ -147,7 +147,7 @@ export function BondsShop() {
                 {/* Amount */}
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <BondIcon size={32} />
+                    <BondIcon size={36} />
                     <div className={`absolute inset-0 blur-lg rounded-full ${
                       pack.bonus_percentage >= 30 ? "bg-amber-500/30" : "bg-primary/30"
                     }`} />

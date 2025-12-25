@@ -5,7 +5,6 @@ import {
   BookOpen, 
   ListTodo, 
   Heart, 
-  Coins, 
   Check, 
   Lock,
   Sparkles
@@ -13,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopModules, useUserModulePurchases, useBondBalance, usePurchaseModule } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
+import { BondIcon } from "@/components/ui/bond-icon";
 
 const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   finance: TrendingUp,
@@ -116,7 +116,7 @@ export function ModulesShop() {
                   ) : (
                     <>
                       <div className="flex items-center gap-2 justify-end">
-                        <Coins className="w-5 h-5 text-primary" />
+                        <BondIcon size={22} />
                         <span className="font-orbitron text-lg text-primary">
                           {module.price_bonds}
                         </span>

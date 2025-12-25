@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Image, Frame, Palette, Check, Lock, Coins } from "lucide-react";
+import { Sparkles, Image, Frame, Palette, Check, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopFrames, useShopBanners, useUserCosmetics, usePurchaseCosmetic, useBondBalance } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
 import { ThemePreviewCard } from "./ThemePreviewCard";
 import { FramePreview } from "@/components/ui/avatar-frame";
+import { BondIcon } from "@/components/ui/bond-icon";
 
 type CosmeticCategory = "themes" | "frames" | "banners";
 
@@ -116,8 +117,8 @@ export function CosmeticShop() {
                       {theme.rarity}
                     </div>
                     <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-1 text-primary font-orbitron text-sm">
-                        <Coins className="w-4 h-4" />
+                      <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
+                        <BondIcon size={18} />
                         {theme.price}
                       </div>
                       <Button
@@ -170,8 +171,8 @@ export function CosmeticShop() {
                       </div>
                     ) : (
                       <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center gap-1 text-primary font-orbitron text-sm">
-                          <Coins className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
+                          <BondIcon size={18} />
                           {frame.price}
                         </div>
                         <Button
@@ -223,8 +224,8 @@ export function CosmeticShop() {
                       </div>
                     ) : (
                       <div className="flex items-center justify-between mt-3">
-                        <div className="flex items-center gap-1 text-primary font-orbitron text-sm">
-                          <Coins className="w-4 h-4" />
+                        <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
+                          <BondIcon size={18} />
                           {banner.price}
                         </div>
                         <Button
