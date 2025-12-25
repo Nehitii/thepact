@@ -135,7 +135,7 @@ export default function Journal() {
           >
             <Button
               onClick={() => setIsNewEntryOpen(true)}
-              className="relative overflow-hidden group px-5 py-2.5 rounded-full border-0 transition-all duration-500"
+              className="relative overflow-visible group h-10 min-h-[40px] px-5 rounded-full border-0 transition-all duration-500 flex items-center justify-center"
               style={{
                 background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%)',
                 boxShadow: '0 0 30px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
@@ -145,8 +145,8 @@ export default function Journal() {
               <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                 style={{ boxShadow: '0 0 40px rgba(16, 185, 129, 0.25)' }}
               />
-              <Plus className="h-4 w-4 mr-2 text-emerald-400/90" />
-              <span className="text-emerald-300/90 font-light tracking-wide text-sm">New Entry</span>
+              <Plus className="h-4 w-4 mr-2 text-emerald-400/90 shrink-0" />
+              <span className="text-emerald-300/90 font-light tracking-wide text-sm leading-none">New Entry</span>
             </Button>
           </motion.div>
         </motion.div>
@@ -218,7 +218,7 @@ export default function Journal() {
             >
               <Button
                 onClick={() => setIsNewEntryOpen(true)}
-                className="relative overflow-hidden group px-6 py-3 rounded-full border-0 transition-all duration-500"
+                className="relative overflow-visible group h-11 min-h-[44px] px-6 rounded-full border-0 transition-all duration-500 flex items-center justify-center"
                 style={{
                   background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)',
                   boxShadow: '0 0 30px rgba(16, 185, 129, 0.08), inset 0 1px 0 rgba(255,255,255,0.03)'
@@ -227,8 +227,8 @@ export default function Journal() {
                 <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                   style={{ boxShadow: '0 0 50px rgba(16, 185, 129, 0.2)' }}
                 />
-                <Plus className="h-4 w-4 mr-2 text-emerald-400/80" />
-                <span className="text-emerald-300/80 font-light tracking-wide">Write your first entry</span>
+                <Plus className="h-4 w-4 mr-2 text-emerald-400/80 shrink-0" />
+                <span className="text-emerald-300/80 font-light tracking-wide leading-none">Write your first entry</span>
               </Button>
             </motion.div>
           </motion.div>

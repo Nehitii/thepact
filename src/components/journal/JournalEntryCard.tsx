@@ -16,7 +16,7 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
   
   return (
     <motion.div 
-      className="group relative rounded-[20px] overflow-hidden transition-all duration-500"
+      className="group relative rounded-[20px] overflow-visible transition-all duration-500"
       style={{
         background: 'linear-gradient(180deg, rgba(20, 26, 38, 0.6) 0%, rgba(15, 20, 30, 0.5) 100%)',
         boxShadow: '0 4px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03)',
@@ -121,7 +121,7 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
           
           {/* Actions - Fade in on hover */}
           <motion.div 
-            className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300"
+            className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all duration-300 shrink-0 overflow-visible"
             initial={false}
           >
             {onEdit && (
@@ -129,9 +129,9 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
                 variant="ghost"
                 size="icon"
                 onClick={() => onEdit(entry)}
-                className="h-9 w-9 text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] rounded-xl transition-all duration-300"
+                className="h-9 w-9 min-h-[36px] min-w-[36px] text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] rounded-xl transition-all duration-300 flex items-center justify-center overflow-visible"
               >
-                <Pencil className="h-4 w-4" />
+                <Pencil className="h-4 w-4 shrink-0" />
               </Button>
             )}
             {onDelete && (
@@ -139,9 +139,9 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
                 variant="ghost"
                 size="icon"
                 onClick={() => onDelete(entry.id)}
-                className="h-9 w-9 text-slate-500 hover:text-red-400/80 hover:bg-red-500/[0.06] rounded-xl transition-all duration-300"
+                className="h-9 w-9 min-h-[36px] min-w-[36px] text-slate-500 hover:text-red-400/80 hover:bg-red-500/[0.06] rounded-xl transition-all duration-300 flex items-center justify-center overflow-visible"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 shrink-0" />
               </Button>
             )}
           </motion.div>
