@@ -3,7 +3,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMessages } from "@/hooks/useMessages";
 import { NotificationCard } from "@/components/notifications/NotificationCard";
-import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -71,7 +70,7 @@ export default function Inbox() {
             variant="outline"
             size="sm"
             onClick={() => navigate("/profile/notifications")}
-            className="border-primary/30"
+            className="border-primary/30 hover:bg-primary/10"
           >
             <Settings className="h-4 w-4 mr-2" />
             Settings
@@ -122,7 +121,7 @@ export default function Inbox() {
                       variant="ghost"
                       size="sm"
                       onClick={() => markAllAsRead.mutate()}
-                      className="text-primary hover:text-primary"
+                      className="text-primary hover:text-primary hover:bg-primary/10"
                     >
                       <CheckCheck className="h-4 w-4 mr-1" />
                       Mark all read
@@ -133,7 +132,7 @@ export default function Inbox() {
                       variant="ghost"
                       size="sm"
                       onClick={() => clearAll.mutate()}
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Clear all
@@ -215,10 +214,10 @@ export default function Inbox() {
                       {conversations.map((conv) => (
                         <Card
                           key={conv.other_user_id}
-                          className={`p-4 border transition-all cursor-pointer hover:bg-primary/5 ${
+                          className={`p-4 border transition-colors duration-200 cursor-pointer ${
                             conv.unread_count > 0
-                              ? "border-violet-500/50 bg-violet-500/5"
-                              : "border-primary/20"
+                              ? "border-violet-500/50 bg-violet-500/5 hover:border-violet-500/70"
+                              : "border-primary/20 hover:border-primary/40"
                           }`}
                         >
                           <div className="flex items-center gap-3">

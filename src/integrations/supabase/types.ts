@@ -634,6 +634,9 @@ export type Database = {
           module_key: string | null
           priority: Database["public"]["Enums"]["notification_priority"]
           reward_amount: number | null
+          reward_claimed: boolean
+          reward_cosmetic_id: string | null
+          reward_cosmetic_type: string | null
           reward_type: string | null
           title: string
           user_id: string
@@ -652,6 +655,9 @@ export type Database = {
           module_key?: string | null
           priority?: Database["public"]["Enums"]["notification_priority"]
           reward_amount?: number | null
+          reward_claimed?: boolean
+          reward_cosmetic_id?: string | null
+          reward_cosmetic_type?: string | null
           reward_type?: string | null
           title: string
           user_id: string
@@ -670,6 +676,9 @@ export type Database = {
           module_key?: string | null
           priority?: Database["public"]["Enums"]["notification_priority"]
           reward_amount?: number | null
+          reward_claimed?: boolean
+          reward_cosmetic_id?: string | null
+          reward_cosmetic_type?: string | null
           reward_type?: string | null
           title?: string
           user_id?: string
