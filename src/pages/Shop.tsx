@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Navigation } from "@/components/Navigation";
 import { CyberBackground } from "@/components/CyberBackground";
 import { ShopTabs } from "@/components/shop/ShopTabs";
 import { ShopBondDisplay } from "@/components/shop/ShopBondDisplay";
@@ -17,7 +16,7 @@ export default function Shop() {
     <div className="min-h-screen bg-background relative overflow-hidden">
       <CyberBackground />
       
-      <div className="relative z-10 px-4 pt-6 pb-24 max-w-5xl mx-auto">
+      <div className="relative z-10 px-4 pt-6 pb-6 max-w-5xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="space-y-1">
@@ -53,8 +52,6 @@ export default function Shop() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      <Navigation />
     </div>
   );
 }

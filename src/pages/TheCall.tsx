@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Flame, Zap, Check, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Navigation } from '@/components/Navigation';
 
 interface PactData {
   id: string;
@@ -833,8 +832,6 @@ export default function TheCall() {
           </Button>
         </div>
       </main>
-
-      <Navigation />
 
       <style>{`
         @keyframes float-particle {

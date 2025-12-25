@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, LayoutDashboard, FileText, TrendingUp, Settings } from "lucide-react";
@@ -77,7 +76,7 @@ export default function Finance() {
     .reduce((sum, i) => sum + i.amount, 0);
 
   return (
-    <div className="min-h-screen pb-24 bg-gradient-to-b from-[#0a0f1a] via-[#0d1220] to-[#080c14] relative overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-b from-[#0a0f1a] via-[#0d1220] to-[#080c14] relative overflow-x-hidden">
       {/* Banking-grade subtle background */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Subtle gradient orb */}
@@ -193,8 +192,6 @@ export default function Finance() {
         onOpenChange={setSettingsOpen}
         currentSettings={settings}
       />
-
-      <Navigation />
     </div>
   );
 }

@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAchievements, Achievement, AchievementRarity, rarityColors } from "@/lib/achievements";
 import { AchievementCard } from "@/components/achievements/AchievementCard";
-import { Navigation } from "@/components/Navigation";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, ChevronDown, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -81,7 +80,7 @@ export default function Achievements() {
   const selectedRarityLabel = selectedRarity === "all" ? "All Rarities" : rarityLabels[selectedRarity];
 
   return (
-    <div className="min-h-screen pb-20 bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Clean subtle background - no harsh lines */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
@@ -314,8 +313,6 @@ export default function Achievements() {
           </motion.div>
         )}
       </div>
-
-      <Navigation />
     </div>
   );
 }
