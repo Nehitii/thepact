@@ -1063,6 +1063,123 @@ export type Database = {
           },
         ]
       }
+      todo_history: {
+        Row: {
+          completed_at: string
+          id: string
+          postpone_count: number
+          priority: Database["public"]["Enums"]["todo_priority"]
+          task_name: string
+          user_id: string
+          was_urgent: boolean
+        }
+        Insert: {
+          completed_at?: string
+          id?: string
+          postpone_count?: number
+          priority: Database["public"]["Enums"]["todo_priority"]
+          task_name: string
+          user_id: string
+          was_urgent?: boolean
+        }
+        Update: {
+          completed_at?: string
+          id?: string
+          postpone_count?: number
+          priority?: Database["public"]["Enums"]["todo_priority"]
+          task_name?: string
+          user_id?: string
+          was_urgent?: boolean
+        }
+        Relationships: []
+      }
+      todo_stats: {
+        Row: {
+          created_at: string
+          current_month: number
+          current_streak: number
+          current_year: number
+          id: string
+          last_completion_date: string | null
+          longest_streak: number
+          score: number
+          tasks_completed_month: number
+          tasks_completed_year: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_month?: number
+          current_streak?: number
+          current_year?: number
+          id?: string
+          last_completion_date?: string | null
+          longest_streak?: number
+          score?: number
+          tasks_completed_month?: number
+          tasks_completed_year?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_month?: number
+          current_streak?: number
+          current_year?: number
+          id?: string
+          last_completion_date?: string | null
+          longest_streak?: number
+          score?: number
+          tasks_completed_month?: number
+          tasks_completed_year?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      todo_tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deadline: string | null
+          id: string
+          is_urgent: boolean
+          name: string
+          postpone_count: number
+          priority: Database["public"]["Enums"]["todo_priority"]
+          status: Database["public"]["Enums"]["todo_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          is_urgent?: boolean
+          name: string
+          postpone_count?: number
+          priority?: Database["public"]["Enums"]["todo_priority"]
+          status?: Database["public"]["Enums"]["todo_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deadline?: string | null
+          id?: string
+          is_urgent?: boolean
+          name?: string
+          postpone_count?: number
+          priority?: Database["public"]["Enums"]["todo_priority"]
+          status?: Database["public"]["Enums"]["todo_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_key: string
@@ -1213,6 +1330,8 @@ export type Database = {
         | "relationship"
         | "diy"
       step_status: "pending" | "completed"
+      todo_priority: "low" | "medium" | "high"
+      todo_status: "active" | "completed" | "postponed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1371,6 +1490,8 @@ export const Constants = {
         "diy",
       ],
       step_status: ["pending", "completed"],
+      todo_priority: ["low", "medium", "high"],
+      todo_status: ["active", "completed", "postponed"],
     },
   },
 } as const

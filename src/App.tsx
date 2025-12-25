@@ -33,6 +33,7 @@ import AdminModuleManager from "./pages/AdminModuleManager";
 import AdminMoneyManager from "./pages/AdminMoneyManager";
 import AdminMode from "./pages/AdminMode";
 import NotFound from "./pages/NotFound";
+import TodoList from "./pages/TodoList";
 
 const queryClient = new QueryClient();
 
@@ -244,6 +245,14 @@ const App = () => (
                 element={
                   <ProtectedWithLayout>
                     <AdminMode />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/todo"
+                element={
+                  <ProtectedWithLayout>
+                    <TodoList />
                   </ProtectedWithLayout>
                 }
               />
