@@ -101,7 +101,5 @@ export default function Legal() {
           Last updated: December 2025
         </div>
       </div>
-
-      <Navigation />
     </div>;
 }

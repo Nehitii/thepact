@@ -416,8 +416,6 @@ export default function Home() {
         onCancel={exitEditMode}
         onReset={resetToDefault}
       />
-
-      <Navigation />
     </div>
   );
 }
