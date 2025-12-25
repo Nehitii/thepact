@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { PactVisual } from "@/components/PactVisual";
 import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
-import { Navigation } from "@/components/Navigation";
+
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Flame, ListTodo, BookOpen, Lock, ShoppingCart } from "lucide-react";
 import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
@@ -225,7 +225,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen pb-20 bg-[#00050B] relative overflow-hidden">
+    <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />

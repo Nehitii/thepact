@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Home from "./pages/Home";
@@ -17,6 +18,11 @@ import StepDetail from "./pages/StepDetail";
 import Finance from "./pages/Finance";
 import Journal from "./pages/Journal";
 import Profile from "./pages/Profile";
+import BoundedProfile from "./pages/profile/BoundedProfile";
+import PactSettings from "./pages/profile/PactSettings";
+import DisplaySound from "./pages/profile/DisplaySound";
+import PrivacyControl from "./pages/profile/PrivacyControl";
+import DataPortability from "./pages/profile/DataPortability";
 import Achievements from "./pages/Achievements";
 import Shop from "./pages/Shop";
 import Community from "./pages/Community";
@@ -29,6 +35,15 @@ import AdminMode from "./pages/AdminMode";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
+
+// Wrapper component that applies AppLayout to protected routes
+function ProtectedWithLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <AppLayout>{children}</AppLayout>
+    </ProtectedRoute>
+  );
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -43,17 +58,17 @@ const App = () => (
               <Route
                 path="/"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Home />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/the-call"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <TheCall />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
@@ -67,129 +82,169 @@ const App = () => (
               <Route
                 path="/goals"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Goals />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/goals/new"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <NewGoal />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/goals/:id"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <GoalDetail />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/step/:stepId"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <StepDetail />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/finance"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Finance />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/journal"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Journal />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/profile"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Profile />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/profile/bounded"
+                element={
+                  <ProtectedWithLayout>
+                    <BoundedProfile />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/profile/pact-settings"
+                element={
+                  <ProtectedWithLayout>
+                    <PactSettings />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/profile/display-sound"
+                element={
+                  <ProtectedWithLayout>
+                    <DisplaySound />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/profile/privacy"
+                element={
+                  <ProtectedWithLayout>
+                    <PrivacyControl />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/profile/data"
+                element={
+                  <ProtectedWithLayout>
+                    <DataPortability />
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/achievements"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Achievements />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/shop"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Shop />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/community"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Community />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/legal"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Legal />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/admin"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <Admin />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/admin/cosmetics"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <AdminCosmeticsManager />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/admin/modules"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <AdminModuleManager />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/admin/money"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <AdminMoneyManager />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route
                 path="/admin/mode"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <AdminMode />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
