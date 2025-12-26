@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
-import { Flame } from "lucide-react";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 
@@ -164,14 +163,6 @@ export default function Profile() {
             />
           </div>
         )}
-
-        {/* Credits - removed version info (moved to Terms & Legal) */}
-        <div className="text-center py-6 animate-fade-in">
-          <div className="flex items-center justify-center gap-2 text-sm text-primary/60">
-            <Flame className="h-4 w-4 text-primary animate-glow-pulse" />
-            <span className="font-light tracking-wide font-rajdhani">The Pact</span>
-          </div>
-        </div>
 
         {/* Extra space at bottom to allow scrolling to reveal Devil Note */}
         <div className="h-16" />
