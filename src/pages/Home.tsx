@@ -211,7 +211,11 @@ export default function Home() {
       case 'achievements':
         return <AchievementsWidget />;
       case 'todo-list':
-        return <PlaceholderModule name="To Do List" icon={ListTodo} size={size} />;
+        // Only show if purchased - use correct database key "todo-list"
+        if (!isModulePurchased("todo-list")) {
+          return <LockedModuleCard name="To-Do List" moduleKey="todo-list" icon={ListTodo} size={size} navigate={navigate} />;
+        }
+        return <TodoListModuleCard navigate={navigate} size={size} />;
       case 'journal':
         // Only show if purchased - use correct database key "journal"
         if (!isModulePurchased("journal")) {
@@ -805,6 +809,47 @@ function JournalModule({ navigate, size = 'half' }: { navigate: any; size?: Modu
         <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-indigo-500/50 rounded-tr" />
         <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-indigo-500/50 rounded-bl" />
         <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-indigo-500/50 rounded-br" />
+      </button>
+    </div>
+  );
+}
+
+function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+  const isCompact = size === 'quarter';
+  
+  return (
+    <div className="animate-fade-in relative group h-full">
+      {/* Cyan accent glow for To-Do List */}
+      <div className="absolute inset-0 bg-cyan-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-teal-500/10 to-cyan-500/5 rounded-lg blur-2xl" />
+      <button
+        onClick={() => navigate("/todo")}
+        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-cyan-950/20 to-card/30 backdrop-blur-xl border-2 border-cyan-500/40 rounded-lg overflow-hidden hover:border-cyan-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(6,182,212,0.4),inset_0_0_30px_rgba(6,182,212,0.1)] group/todo"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-[2px] border border-cyan-500/20 rounded-[6px]" />
+        </div>
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 ${isCompact ? 'flex-col' : ''}`}>
+          <div className="relative">
+            <div className="absolute inset-0 bg-cyan-500/30 blur-lg rounded-full" />
+            <ListTodo className={`text-cyan-400 relative z-10 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)] ${isCompact ? 'w-6 h-6' : 'w-8 h-8'}`} />
+          </div>
+          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
+            <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-400 ${isCompact ? 'text-xs' : 'text-lg'}`}>
+              To-Do List
+            </span>
+            {!isCompact && (
+              <span className="text-xs text-cyan-400/60 font-rajdhani tracking-wide mt-0.5">
+                Execute with clarity
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-cyan-500/50 rounded-tl" />
+        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-cyan-500/50 rounded-tr" />
+        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-cyan-500/50 rounded-bl" />
+        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-cyan-500/50 rounded-br" />
       </button>
     </div>
   );
