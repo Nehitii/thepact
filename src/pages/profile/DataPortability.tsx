@@ -1,5 +1,5 @@
-import { ArrowLeft, Database, Download, BarChart3, Scale } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { Database, Download, BarChart3, Scale } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 export default function DataPortability() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -182,14 +181,6 @@ export default function DataPortability() {
       <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10">
         {/* Header */}
         <div className="pt-8 space-y-4 animate-fade-in">
-          <button
-            onClick={() => navigate("/profile")}
-            className="flex items-center gap-2 text-primary/70 hover:text-primary transition-colors font-rajdhani"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Profile</span>
-          </button>
-
           <div className="flex items-center gap-4">
             <div className="relative">
               <div className="absolute inset-0 bg-primary/30 rounded-xl blur-lg" />

@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
 
 export default function PactSettings() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [pactId, setPactId] = useState<string | null>(null);
   const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
@@ -80,14 +77,6 @@ export default function PactSettings() {
       <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10">
         {/* Header */}
         <div className="pt-8 space-y-4 animate-fade-in">
-          <button
-            onClick={() => navigate("/profile")}
-            className="flex items-center gap-2 text-primary/70 hover:text-primary transition-colors font-rajdhani"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Profile</span>
-          </button>
-
           <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
             Pact Settings
           </h1>
