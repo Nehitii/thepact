@@ -160,7 +160,24 @@ export function ProfileBoundedProfile({
 
   const handleSaveAvatar = async () => {
     if (avatarUrlInput.trim()) {
-      onAvatarUrlChange(avatarUrlInput.trim());
+      const newUrl = avatarUrlInput.trim();
+      // Add cache-busting for URL-based avatars too
+      const urlWithCacheBust = newUrl.includes('?') 
+        ? `${newUrl}&t=${Date.now()}` 
+        : `${newUrl}?t=${Date.now()}`;
+      
+      onAvatarUrlChange(urlWithCacheBust);
+      
+      // Save to profile immediately
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: newUrl })
+        .eq("id", userId);
+      
+      toast({
+        title: "Avatar updated",
+        description: "Your profile image has been saved",
+      });
     }
     setShowAvatarDialog(false);
     setAvatarUrlInput("");
@@ -205,12 +222,24 @@ export function ProfileBoundedProfile({
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      // Use signed URL since bucket is private (expires in 1 year)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('goal-images')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365);
 
-      onAvatarUrlChange(publicUrl);
+      if (signedUrlError) throw signedUrlError;
+
+      // Add cache-busting parameter to force preview refresh
+      const avatarUrlWithCacheBust = `${signedUrlData.signedUrl}&t=${Date.now()}`;
+      
+      onAvatarUrlChange(avatarUrlWithCacheBust);
       setShowAvatarDialog(false);
+      
+      // Also save to profile immediately
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: signedUrlData.signedUrl })
+        .eq("id", userId);
       
       toast({
         title: "Avatar uploaded",
