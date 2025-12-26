@@ -304,7 +304,7 @@ export default function AdminNotifications() {
         </Tabs>
 
         {/* Form */}
-        <Card className="p-6 border border-primary/20 bg-card/50 space-y-6">
+        <Card variant="clean" className="p-6 bg-card/50 space-y-6">
           {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="title" className="text-primary">Title *</Label>
@@ -313,7 +313,6 @@ export default function AdminNotifications() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder={mode === "notification" ? "Notification title..." : "Message subject..."}
-              className="bg-background/50 border-primary/30 focus:border-primary/50"
             />
           </div>
 
@@ -327,7 +326,7 @@ export default function AdminNotifications() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={mode === "notification" ? "Optional description..." : "Write your message..."}
-              className="bg-background/50 border-primary/30 focus:border-primary/50 min-h-[80px]"
+              className="min-h-[80px]"
             />
           </div>
 
@@ -337,7 +336,7 @@ export default function AdminNotifications() {
               <div className="space-y-2">
                 <Label className="text-primary">Category</Label>
                 <Select value={category} onValueChange={(v) => setCategory(v as NotificationCategory)}>
-                  <SelectTrigger className="bg-background/50 border-primary/30">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -351,7 +350,7 @@ export default function AdminNotifications() {
               <div className="space-y-2">
                 <Label className="text-primary">Priority</Label>
                 <Select value={priority} onValueChange={(v) => setPriority(v as NotificationPriority)}>
-                  <SelectTrigger className="bg-background/50 border-primary/30">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -371,7 +370,7 @@ export default function AdminNotifications() {
             <div className="space-y-2">
               <Label className="text-primary">Icon Key</Label>
               <Select value={iconKey} onValueChange={setIconKey}>
-                <SelectTrigger className="bg-background/50 border-primary/30">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -397,7 +396,6 @@ export default function AdminNotifications() {
                   value={ctaLabel}
                   onChange={(e) => setCtaLabel(e.target.value)}
                   placeholder="e.g., View Details"
-                  className="bg-background/50 border-primary/30 focus:border-primary/50"
                 />
               </div>
               <div className="space-y-2">
@@ -406,7 +404,6 @@ export default function AdminNotifications() {
                   value={ctaUrl}
                   onChange={(e) => setCtaUrl(e.target.value)}
                   placeholder="e.g., /shop"
-                  className="bg-background/50 border-primary/30 focus:border-primary/50"
                 />
               </div>
             </div>
@@ -433,7 +430,7 @@ export default function AdminNotifications() {
                     setRewardCosmeticId("");
                     setRewardAmount(0);
                   }}>
-                    <SelectTrigger className="bg-background/50 border-primary/30">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -453,14 +450,13 @@ export default function AdminNotifications() {
                       value={rewardAmount}
                       onChange={(e) => setRewardAmount(Number(e.target.value))}
                       min={0}
-                      className="bg-background/50 border-primary/30 focus:border-primary/50"
                     />
                   </div>
                 ) : (
                   <div className="space-y-2">
                     <Label className="text-primary/70">Select {rewardType}</Label>
                     <Select value={rewardCosmeticId} onValueChange={setRewardCosmeticId}>
-                      <SelectTrigger className="bg-background/50 border-primary/30">
+                      <SelectTrigger>
                         <SelectValue placeholder={`Select a ${rewardType}...`} />
                       </SelectTrigger>
                       <SelectContent>
@@ -493,7 +489,7 @@ export default function AdminNotifications() {
               <div className="space-y-2">
                 <Label className="text-primary/70">Select User</Label>
                 <Select value={targetUserId} onValueChange={setTargetUserId}>
-                  <SelectTrigger className="bg-background/50 border-primary/30">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select a user..." />
                   </SelectTrigger>
                   <SelectContent>

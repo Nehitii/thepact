@@ -108,7 +108,7 @@ export default function Inbox() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications" className="mt-0">
-            <Card className="border border-primary/20 bg-card/30 overflow-hidden">
+            <Card variant="clean" className="bg-card/30 overflow-hidden">
               {/* Actions Bar */}
               <div className="flex items-center justify-between p-4 border-b border-primary/20 bg-primary/5">
                 <span className="text-sm text-muted-foreground font-rajdhani">
@@ -179,7 +179,7 @@ export default function Inbox() {
 
           {/* Messages Tab */}
           <TabsContent value="messages" className="mt-0">
-            <Card className="border border-primary/20 bg-card/30 overflow-hidden">
+            <Card variant="clean" className="bg-card/30 overflow-hidden">
               {/* Actions Bar */}
               <div className="flex items-center justify-between p-4 border-b border-primary/20 bg-violet-500/5">
                 <span className="text-sm text-muted-foreground font-rajdhani">
