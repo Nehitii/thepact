@@ -195,8 +195,9 @@ export function ProfileBoundedProfile({
 
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}-avatar-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileName = `avatar-${Date.now()}.${fileExt}`;
+      // Use userId as folder name to match RLS policy: (auth.uid())::text = (storage.foldername(name))[1]
+      const filePath = `${userId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('goal-images')
