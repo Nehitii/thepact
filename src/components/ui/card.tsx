@@ -1,20 +1,42 @@
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
-const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, ...props }, ref) => (
+const cardVariants = cva(
+  "rounded-md border-2 bg-card/90 text-card-foreground backdrop-blur-xl relative overflow-hidden transition-all duration-300",
+  {
+    variants: {
+      variant: {
+        default: [
+          "border-primary/30",
+          "shadow-[0_8px_32px_rgba(0,5,11,0.4),inset_0_0_20px_rgba(91,180,255,0.05)]",
+          "before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent before:pointer-events-none",
+          "after:absolute after:inset-[-1px] after:rounded-md after:bg-gradient-to-br after:from-transparent after:via-primary/5 after:to-transparent after:pointer-events-none after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300",
+          "hover:border-primary/50 hover:shadow-[0_0_30px_rgba(91,180,255,0.2)]",
+        ],
+        clean: [
+          "border-primary/20",
+          "shadow-none",
+          "hover:border-primary/30",
+        ],
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+);
+
+interface CardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
+
+const Card = React.forwardRef<HTMLDivElement, CardProps>(
+  ({ className, variant, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn(
-        "rounded-md border-2 border-primary/30 bg-card/90 text-card-foreground backdrop-blur-xl",
-        "relative overflow-hidden",
-        "shadow-[0_8px_32px_rgba(0,5,11,0.4),inset_0_0_20px_rgba(91,180,255,0.05)]",
-        "before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent before:pointer-events-none",
-        "after:absolute after:inset-[-1px] after:rounded-md after:bg-gradient-to-br after:from-transparent after:via-primary/5 after:to-transparent after:pointer-events-none after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300",
-        "transition-all duration-300 hover:border-primary/50 hover:shadow-[0_0_30px_rgba(91,180,255,0.2)]",
-        className
-      )}
+      className={cn(cardVariants({ variant }), className)}
       {...props}
     />
   )
