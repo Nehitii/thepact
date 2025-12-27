@@ -94,6 +94,13 @@ export default function Admin() {
       available: true,
     },
     {
+      title: "Promo Codes",
+      description: "Create and manage promotional codes",
+      icon: Sparkles,
+      href: "/admin/promo-codes",
+      available: true,
+    },
+    {
       title: "Notifications & Messages",
       description: "Send notifications and messages to users",
       icon: Bell,
