@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useBondPacks, useBondBalance, useSpecialOffers } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
+import { PromoCodeRedemption } from "./PromoCodeRedemption";
 
 export function BondsShop() {
   const { user } = useAuth();
@@ -13,6 +14,9 @@ export function BondsShop() {
 
   return (
     <div className="space-y-8">
+      {/* Promo Code Redemption */}
+      <PromoCodeRedemption />
+
       {/* Current Balance */}
       <div className="text-center">
         <div className="inline-flex items-center gap-4 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/30 backdrop-blur-xl">

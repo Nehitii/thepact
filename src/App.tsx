@@ -37,6 +37,7 @@ import NotFound from "./pages/NotFound";
 import TodoList from "./pages/TodoList";
 import AdminNotifications from "./pages/AdminNotifications";
 import Inbox from "./pages/Inbox";
+import AdminPromoManager from "./pages/AdminPromoManager";
 const queryClient = new QueryClient();
 
 // Wrapper component that applies AppLayout to protected routes
@@ -279,6 +280,14 @@ const App = () => (
                 element={
                   <ProtectedWithLayout>
                     <Inbox />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/admin/promo-codes"
+                element={
+                  <ProtectedWithLayout>
+                    <AdminPromoManager />
                   </ProtectedWithLayout>
                 }
               />
