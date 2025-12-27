@@ -1,14 +1,21 @@
-import { Database, Download, BarChart3, Scale } from "lucide-react";
+import { useState } from "react";
+import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+
+type ExportCategory = "all" | "goals-steps" | "journal" | "finance";
 
 export default function DataPortability() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [exportCategory, setExportCategory] = useState<ExportCategory>("all");
+  const [isExporting, setIsExporting] = useState(false);
 
   // Fetch user stats
   const { data: stats } = useQuery({
@@ -74,61 +81,136 @@ export default function DataPortability() {
 
   const handleExportData = async () => {
     if (!user?.id) return;
+    setIsExporting(true);
 
     try {
-      // Fetch pact
+      let exportData: Record<string, unknown> = {
+        exportedAt: new Date().toISOString(),
+        category: exportCategory,
+        user: {
+          email: user.email,
+          id: user.id,
+        },
+      };
+
+      // Fetch pact (needed for goals)
       const { data: pact } = await supabase
         .from("pacts")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
 
-      // Fetch goals
-      const { data: goals } = await supabase
-        .from("goals")
-        .select("*")
-        .eq("pact_id", pact?.id || "");
+      if (exportCategory === "all" || exportCategory === "goals-steps") {
+        // Fetch goals
+        const { data: goals } = await supabase
+          .from("goals")
+          .select("*")
+          .eq("pact_id", pact?.id || "");
 
-      // Fetch steps for all goals
-      const goalIds = goals?.map((g) => g.id) || [];
-      const { data: steps } = await supabase
-        .from("steps")
-        .select("*")
-        .in("goal_id", goalIds);
+        // Fetch steps for all goals
+        const goalIds = goals?.map((g) => g.id) || [];
+        const { data: steps } = await supabase
+          .from("steps")
+          .select("*")
+          .in("goal_id", goalIds.length > 0 ? goalIds : ["none"]);
 
-      // Fetch journal entries
-      const { data: journal } = await supabase
-        .from("journal_entries")
-        .select("*")
-        .eq("user_id", user.id);
+        exportData = {
+          ...exportData,
+          goals,
+          steps,
+        };
+      }
 
-      // Fetch profile
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
+      if (exportCategory === "all" || exportCategory === "journal") {
+        // Fetch journal entries
+        const { data: journal } = await supabase
+          .from("journal_entries")
+          .select("*")
+          .eq("user_id", user.id);
 
-      // Fetch achievements
-      const { data: achievements } = await supabase
-        .from("user_achievements")
-        .select("*")
-        .eq("user_id", user.id);
+        exportData = {
+          ...exportData,
+          journalEntries: journal,
+        };
+      }
 
-      const exportData = {
-        exportedAt: new Date().toISOString(),
-        user: {
-          email: user.email,
-          id: user.id,
-        },
-        profile,
-        pact,
-        goals,
-        steps,
-        journalEntries: journal,
-        achievements,
-        stats,
-      };
+      if (exportCategory === "all" || exportCategory === "finance") {
+        // Fetch profile for finance settings
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("project_funding_target, project_monthly_allocation, already_funded, salary_payment_day")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        // Fetch recurring income
+        const { data: recurringIncome } = await supabase
+          .from("recurring_income")
+          .select("*")
+          .eq("user_id", user.id);
+
+        // Fetch recurring expenses
+        const { data: recurringExpenses } = await supabase
+          .from("recurring_expenses")
+          .select("*")
+          .eq("user_id", user.id);
+
+        // Fetch finance records
+        const { data: financeRecords } = await supabase
+          .from("finance")
+          .select("*")
+          .eq("user_id", user.id);
+
+        // Fetch monthly validations
+        const { data: monthlyValidations } = await supabase
+          .from("monthly_finance_validations")
+          .select("*")
+          .eq("user_id", user.id);
+
+        // Fetch pact spending
+        const { data: pactSpending } = await supabase
+          .from("pact_spending")
+          .select("*")
+          .eq("user_id", user.id);
+
+        exportData = {
+          ...exportData,
+          finance: {
+            settings: profile,
+            recurringIncome,
+            recurringExpenses,
+            monthlyRecords: financeRecords,
+            monthlyValidations,
+            pactSpending,
+          },
+        };
+      }
+
+      if (exportCategory === "all") {
+        // Also include profile and achievements for full export
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        const { data: achievements } = await supabase
+          .from("user_achievements")
+          .select("*")
+          .eq("user_id", user.id);
+
+        exportData = {
+          ...exportData,
+          profile,
+          pact,
+          achievements,
+          stats,
+        };
+      }
+
+      // Generate filename based on category
+      const dateStr = new Date().toISOString().split("T")[0].replace(/-/g, "");
+      const categorySlug = exportCategory === "all" ? "all" : exportCategory;
+      const filename = `the-pact-${categorySlug}-${dateStr}.json`;
 
       // Create and download file
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -137,7 +219,7 @@ export default function DataPortability() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `the-pact-data-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = filename;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -145,7 +227,7 @@ export default function DataPortability() {
 
       toast({
         title: "Export Complete",
-        description: "Your data has been exported successfully.",
+        description: `Your ${getCategoryLabel(exportCategory).toLowerCase()} has been exported successfully.`,
       });
     } catch (error) {
       toast({
@@ -153,8 +235,52 @@ export default function DataPortability() {
         description: "There was an error exporting your data.",
         variant: "destructive",
       });
+    } finally {
+      setIsExporting(false);
     }
   };
+
+  const getCategoryLabel = (category: ExportCategory): string => {
+    switch (category) {
+      case "all":
+        return "All Data";
+      case "goals-steps":
+        return "Goals & Steps";
+      case "journal":
+        return "Journal Entries";
+      case "finance":
+        return "Finance Data";
+      default:
+        return "Data";
+    }
+  };
+
+  const exportOptions: { value: ExportCategory; label: string; icon: React.ReactNode; description: string }[] = [
+    {
+      value: "all",
+      label: "All Data",
+      icon: <Database className="h-4 w-4" />,
+      description: "Complete backup of all your data",
+    },
+    {
+      value: "goals-steps",
+      label: "Goals & Steps",
+      icon: <Target className="h-4 w-4" />,
+      description: "Your goals and their steps only",
+    },
+    {
+      value: "journal",
+      label: "Journal",
+      icon: <BookOpen className="h-4 w-4" />,
+      description: "Your journal entries only",
+    },
+    {
+      value: "finance",
+      label: "Finance",
+      icon: <Wallet className="h-4 w-4" />,
+      description: "Your finance module data only",
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
@@ -264,16 +390,61 @@ export default function DataPortability() {
               </div>
 
               <p className="text-muted-foreground font-rajdhani text-sm">
-                Download a complete copy of your data including goals, steps, journal
-                entries, and achievements in JSON format.
+                Download a copy of your data in JSON format. Choose what you want to export:
               </p>
+
+              {/* Category Selector */}
+              <RadioGroup
+                value={exportCategory}
+                onValueChange={(value) => setExportCategory(value as ExportCategory)}
+                className="grid grid-cols-2 gap-3"
+              >
+                {exportOptions.map((option) => (
+                  <Label
+                    key={option.value}
+                    htmlFor={option.value}
+                    className={`
+                      relative flex flex-col gap-2 p-4 rounded-lg cursor-pointer transition-all duration-200
+                      border-2 
+                      ${exportCategory === option.value 
+                        ? "border-primary bg-primary/10 shadow-[0_0_15px_rgba(91,180,255,0.2)]" 
+                        : "border-primary/20 bg-card/10 hover:border-primary/40 hover:bg-primary/5"
+                      }
+                    `}
+                  >
+                    <div className="flex items-center gap-2">
+                      <RadioGroupItem
+                        value={option.value}
+                        id={option.value}
+                        className="border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground"
+                      />
+                      <span className={`text-sm font-orbitron uppercase tracking-wide ${
+                        exportCategory === option.value ? "text-primary" : "text-primary/70"
+                      }`}>
+                        {option.label}
+                      </span>
+                      <span className={`ml-auto ${
+                        exportCategory === option.value 
+                          ? "text-primary drop-shadow-[0_0_6px_rgba(91,180,255,0.6)]" 
+                          : "text-primary/50"
+                      }`}>
+                        {option.icon}
+                      </span>
+                    </div>
+                    <span className="text-xs text-muted-foreground font-rajdhani pl-6">
+                      {option.description}
+                    </span>
+                  </Label>
+                ))}
+              </RadioGroup>
 
               <Button
                 onClick={handleExportData}
-                className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
+                disabled={isExporting}
+                className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider disabled:opacity-50"
               >
                 <Download className="mr-2 h-4 w-4" />
-                Download My Data
+                {isExporting ? "Exporting..." : `Download ${getCategoryLabel(exportCategory)}`}
               </Button>
             </div>
           </div>
