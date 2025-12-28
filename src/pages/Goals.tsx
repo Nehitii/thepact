@@ -202,15 +202,23 @@ export default function Goals() {
     const intensity = getDifficultyIntensity(difficulty);
     const isHighTier = intensity >= 4;
     
+    // Helper to add alpha to color (works with both HSL and hex)
+    const withAlpha = (color: string, alpha: number) => {
+      if (color.startsWith('hsl(')) {
+        return color.replace('hsl(', 'hsla(').replace(')', `, ${alpha})`);
+      }
+      return color;
+    };
+
     // Metallic tier styling
     const getTierBackground = () => {
       switch (difficulty) {
-        case "easy": return `linear-gradient(135deg, ${difficultyColor}90, ${difficultyColor}70)`;
-        case "medium": return `linear-gradient(135deg, ${difficultyColor}95, ${difficultyColor}75)`;
-        case "hard": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}80)`;
-        case "extreme": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}60, ${difficultyColor})`;
+        case "easy": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
+        case "medium": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
+        case "hard": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
+        case "extreme": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
         case "impossible":
-        case "custom": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}70, ${difficultyColor})`;
+        case "custom": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
         default: return difficultyColor;
       }
     };
