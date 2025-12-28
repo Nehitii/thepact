@@ -4,9 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark } from "lucide-react";
+import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark, Zap } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
@@ -749,67 +748,109 @@ export default function Goals() {
             </Button>
           </motion.div>
         ) : (
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "completed")} className="w-full">
-            <motion.div variants={itemVariants}>
-              <TabsList className="grid w-full max-w-sm grid-cols-2 bg-card/80 border border-border p-1">
-                <TabsTrigger value="active" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-rajdhani tracking-wide">
-                  Active ({activeGoals.length})
-                </TabsTrigger>
-                <TabsTrigger value="completed" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-rajdhani tracking-wide">
-                  Completed ({completedGoals.length})
-                </TabsTrigger>
-              </TabsList>
+          <div className="w-full">
+            {/* Custom Tabs matching ShopTabs style */}
+            <motion.div variants={itemVariants} className="flex justify-center mb-6">
+              <div className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl">
+                {[
+                  { id: "active" as const, label: "Active", count: activeGoals.length, icon: Zap },
+                  { id: "completed" as const, label: "Completed", count: completedGoals.length, icon: CheckCircle2 },
+                ].map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  const Icon = tab.icon;
+                  
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`relative flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300 ${
+                        isActive 
+                          ? "text-primary" 
+                          : "text-muted-foreground hover:text-primary/70"
+                      }`}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="goalsActiveTab"
+                          className="absolute inset-0 bg-primary/10 border border-primary/30 rounded-lg"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                      <Icon className="w-4 h-4 relative z-10" />
+                      <span className="relative z-10">{tab.label}</span>
+                      <span className="relative z-10 text-xs opacity-70">({tab.count})</span>
+                    </button>
+                  );
+                })}
+              </div>
             </motion.div>
 
             <AnimatePresence mode="wait">
-              <TabsContent value="active" className="mt-6">
-                {activeGoals.length === 0 ? (
-                  <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
-                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                      <Plus className="h-8 w-8 text-primary" />
+              {activeTab === "active" && (
+                <motion.div
+                  key="active"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {activeGoals.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
+                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Plus className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">NO ACTIVE GOALS</h3>
+                      <p className="text-muted-foreground font-rajdhani mb-4">Start your journey by adding a goal</p>
+                      <Button onClick={() => navigate("/goals/new")} size="sm">
+                        <Plus className="h-4 w-4 mr-2" />Create Goal
+                      </Button>
                     </div>
-                    <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">NO ACTIVE GOALS</h3>
-                    <p className="text-muted-foreground font-rajdhani mb-4">Start your journey by adding a goal</p>
-                    <Button onClick={() => navigate("/goals/new")} size="sm">
-                      <Plus className="h-4 w-4 mr-2" />Create Goal
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <motion.div key="active" initial="hidden" animate="visible" variants={containerVariants} className={getGridClass()}>
-                    {paginatedActiveGoals.map((goal, i) => renderGoalCard(goal, i, false))}
-                    {displayMode === "bar" && renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
-                  </motion.div>
-                )}
-                {displayMode !== "bar" && activeGoals.length > 0 && (
-                  <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                    {renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
-                  </motion.div>
-                )}
-              </TabsContent>
+                  ) : (
+                    <motion.div initial="hidden" animate="visible" variants={containerVariants} className={getGridClass()}>
+                      {paginatedActiveGoals.map((goal, i) => renderGoalCard(goal, i, false))}
+                      {displayMode === "bar" && renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
+                    </motion.div>
+                  )}
+                  {displayMode !== "bar" && activeGoals.length > 0 && (
+                    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                      {renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
 
-              <TabsContent value="completed" className="mt-6">
-                {completedGoals.length === 0 ? (
-                  <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
-                    <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-                      <CheckCircle2 className="h-8 w-8 text-green-400" />
+              {activeTab === "completed" && (
+                <motion.div
+                  key="completed"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {completedGoals.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
+                      <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                        <CheckCircle2 className="h-8 w-8 text-green-400" />
+                      </div>
+                      <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">NO COMPLETED GOALS YET</h3>
+                      <p className="text-muted-foreground font-rajdhani">Complete your first goal to see it here</p>
                     </div>
-                    <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">NO COMPLETED GOALS YET</h3>
-                    <p className="text-muted-foreground font-rajdhani">Complete your first goal to see it here</p>
-                  </motion.div>
-                ) : (
-                  <motion.div key="completed" initial="hidden" animate="visible" variants={containerVariants} className={getGridClass()}>
-                    {paginatedCompletedGoals.map((goal, i) => renderGoalCard(goal, i, true))}
-                    {displayMode === "bar" && renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
-                  </motion.div>
-                )}
-                {displayMode !== "bar" && completedGoals.length > 0 && (
-                  <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                    {renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
-                  </motion.div>
-                )}
-              </TabsContent>
+                  ) : (
+                    <motion.div initial="hidden" animate="visible" variants={containerVariants} className={getGridClass()}>
+                      {paginatedCompletedGoals.map((goal, i) => renderGoalCard(goal, i, true))}
+                      {displayMode === "bar" && renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
+                    </motion.div>
+                  )}
+                  {displayMode !== "bar" && completedGoals.length > 0 && (
+                    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                      {renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
             </AnimatePresence>
-          </Tabs>
+          </div>
         )}
       </motion.div>
     </div>
