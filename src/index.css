@@ -601,6 +601,7 @@ All colors MUST be HSL.
   .difficulty-aura-impossible {
     position: relative;
     isolation: isolate;
+    z-index: 0;
   }
 
   /* Use ::after so we don't conflict with hover-shimmer-wave::before */
