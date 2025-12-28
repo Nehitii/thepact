@@ -587,25 +587,30 @@ All colors MUST be HSL.
     100% { transform: scale(2); opacity: 0; }
   }
 
-  /* Utility classes for difficulty animations */
+  /* Utility classes for difficulty glow - constant radiance on hover */
   .difficulty-aura-easy {
-    animation: difficulty-aura-easy 4s ease-in-out infinite;
+    box-shadow: 0 0 12px var(--aura-color), 0 0 24px color-mix(in srgb, var(--aura-color) 40%, transparent);
+    transition: box-shadow 0.4s ease-out;
   }
 
   .difficulty-aura-medium {
-    animation: difficulty-aura-medium 3s ease-in-out infinite;
+    box-shadow: 0 0 16px var(--aura-color), 0 0 32px color-mix(in srgb, var(--aura-color) 45%, transparent);
+    transition: box-shadow 0.4s ease-out;
   }
 
   .difficulty-aura-hard {
-    animation: difficulty-aura-hard 2.5s ease-in-out infinite;
+    box-shadow: 0 0 20px var(--aura-color), 0 0 40px color-mix(in srgb, var(--aura-color) 50%, transparent);
+    transition: box-shadow 0.4s ease-out;
   }
 
   .difficulty-aura-extreme {
-    animation: difficulty-aura-extreme 2s ease-in-out infinite;
+    box-shadow: 0 0 25px var(--aura-color), 0 0 50px color-mix(in srgb, var(--aura-color) 55%, transparent);
+    transition: box-shadow 0.4s ease-out;
   }
 
   .difficulty-aura-impossible {
-    animation: difficulty-aura-impossible 1.5s ease-in-out infinite;
+    box-shadow: 0 0 30px var(--aura-color), 0 0 60px color-mix(in srgb, var(--aura-color) 60%, transparent);
+    transition: box-shadow 0.4s ease-out;
   }
 
   .badge-shimmer {
