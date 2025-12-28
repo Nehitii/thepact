@@ -32,10 +32,23 @@ const getDifficultyIntensity = (difficulty: string): number => {
   }
 };
 
-// Get border width based on difficulty - refined to be thinner
+// Get aura animation class based on difficulty
+const getAuraClass = (difficulty: string): string => {
+  switch (difficulty) {
+    case "easy": return "difficulty-aura-easy";
+    case "medium": return "difficulty-aura-medium";
+    case "hard": return "difficulty-aura-hard";
+    case "extreme": return "difficulty-aura-extreme";
+    case "impossible":
+    case "custom": return "difficulty-aura-impossible";
+    default: return "difficulty-aura-easy";
+  }
+};
+
+// Get border width based on difficulty
 const getBorderWidth = (difficulty: string): string => {
   const intensity = getDifficultyIntensity(difficulty);
-  return `${0.5 + intensity * 0.2}px`;
+  return `${1 + intensity * 0.4}px`;
 };
 
 export default function Goals() {
@@ -183,28 +196,43 @@ export default function Goals() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const } }
   };
 
-  // Unified Difficulty Badge Component - capsule chip style like Custom Difficulty
+  // Phase 2: Enhanced Difficulty Badge Component
   const DifficultyBadge = ({ difficulty, isCompleted = false }: { difficulty: string; isCompleted?: boolean }) => {
     const difficultyColor = getDifficultyColor(difficulty);
     const intensity = getDifficultyIntensity(difficulty);
     const isHighTier = intensity >= 4;
+    
+    // Metallic tier styling
+    const getTierBackground = () => {
+      switch (difficulty) {
+        case "easy": return `linear-gradient(135deg, ${difficultyColor}90, ${difficultyColor}70)`;
+        case "medium": return `linear-gradient(135deg, ${difficultyColor}95, ${difficultyColor}75)`;
+        case "hard": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}80)`;
+        case "extreme": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}60, ${difficultyColor})`;
+        case "impossible":
+        case "custom": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}70, ${difficultyColor})`;
+        default: return difficultyColor;
+      }
+    };
 
     return (
       <Badge 
         variant="outline" 
-        className="text-xs font-bold font-rajdhani uppercase tracking-wider relative overflow-hidden px-2.5 py-0.5 rounded-full"
+        className={`text-xs font-bold font-rajdhani uppercase tracking-wider relative overflow-hidden ${
+          isHighTier && !isCompleted ? 'badge-pulse' : ''
+        }`}
         style={{ 
-          borderColor: `${difficultyColor}60`,
-          borderWidth: '1px',
-          color: difficultyColor,
-          background: `${difficultyColor}18`,
-          textShadow: isCompleted ? 'none' : `0 0 8px ${difficultyColor}60`
+          borderColor: difficultyColor, 
+          color: "#fff",
+          background: getTierBackground(),
+          boxShadow: isCompleted ? 'none' : `0 0 ${8 + intensity * 3}px ${difficultyColor}50`,
+          textShadow: '0 1px 2px rgba(0,0,0,0.5)'
         }}
       >
         {isHighTier && !isCompleted && (
           <span 
             className="absolute inset-0 badge-shimmer pointer-events-none"
-            style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)', backgroundSize: '200% 100%' }}
+            style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)', backgroundSize: '200% 100%' }}
           />
         )}
         <span className="relative z-10">{getDifficultyLabel(difficulty)}</span>
@@ -278,6 +306,7 @@ export default function Goals() {
     const difficultyColor = getDifficultyColor(goal.difficulty);
     const intensity = getDifficultyIntensity(goal.difficulty);
     const borderWidth = getBorderWidth(goal.difficulty);
+    const auraClass = getAuraClass(goal.difficulty);
 
     // Bar Mode (Default)
     if (displayMode === "bar") {
@@ -286,40 +315,40 @@ export default function Goals() {
           key={goal.id} 
           variants={itemVariants} 
           className="group relative"
-          whileHover={{ scale: 1.005 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
+          whileHover={{ scale: 1.01 }}
+          transition={{ duration: 0.2 }}
         >
-          {/* Static glow on hover - no pulsing, smooth fade-in */}
+          {/* Phase 1: Animated Difficulty Aura */}
           <div
-            className="absolute -inset-px rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none"
+            className={`absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${!isCompleted ? auraClass : ''}`}
             style={{ 
-              boxShadow: isCompleted ? 'none' : `0 0 12px ${difficultyColor}40, 0 0 24px ${difficultyColor}20`,
-              transition: 'opacity 0.3s ease-out',
-              borderRadius: 'inherit'
-            }}
+              '--aura-color': difficultyColor,
+              background: `radial-gradient(ellipse at center, ${difficultyColor}20, transparent 70%)`
+            } as React.CSSProperties}
           />
           <div
             onClick={() => navigate(`/goals/${goal.id}`)}
             className={`relative flex gap-5 p-5 rounded-xl cursor-pointer transition-all duration-300 hover-shimmer-wave ${
               isCompleted 
-                ? "bg-card/40 opacity-75 hover:opacity-90" 
+                ? "bg-card/40 border-border/50 opacity-75 hover:opacity-90" 
                 : "bg-card/80 hover:bg-card/90"
             }`}
             style={{ 
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
+              boxShadow: isCompleted 
+                ? 'inset 0 1px 0 rgba(255,255,255,0.05)' 
+                : `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 ${10 + intensity * 5}px ${difficultyColor}15`,
               borderWidth: borderWidth,
               borderStyle: 'solid',
-              borderColor: isCompleted ? 'hsl(var(--border) / 0.5)' : `${difficultyColor}35`,
-              transition: 'border-color 0.3s ease-out, background-color 0.3s ease-out'
+              borderColor: isCompleted ? 'hsl(var(--border))' : `${difficultyColor}40`,
             }}
           >
-            {/* Difficulty accent line - refined, thinner */}
+            {/* Difficulty accent line - Phase 4 enhanced */}
             <div 
               className="absolute top-0 left-0 right-0 rounded-t-xl" 
               style={{ 
-                height: '2px',
-                background: `linear-gradient(90deg, transparent 5%, ${difficultyColor}80 50%, transparent 95%)`,
-                boxShadow: isCompleted ? 'none' : `0 0 8px ${difficultyColor}50`
+                height: `${2 + intensity * 0.5}px`,
+                background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)`,
+                boxShadow: isCompleted ? 'none' : `0 0 ${8 + intensity * 2}px ${difficultyColor}60`
               }} 
             />
 
@@ -329,10 +358,10 @@ export default function Goals() {
                 <div 
                   className={`relative w-20 h-20 rounded-lg overflow-hidden ${isCompleted ? "grayscale" : ""}`}
                   style={{ 
-                    boxShadow: isCompleted ? 'none' : `0 0 10px ${difficultyColor}30`,
-                    borderWidth: '1px',
+                    boxShadow: `0 0 ${15 + intensity * 5}px ${difficultyColor}40`,
+                    borderWidth: '2px',
                     borderStyle: 'solid',
-                    borderColor: `${difficultyColor}40`
+                    borderColor: `${difficultyColor}60`
                   }}
                 >
                   <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
@@ -341,18 +370,18 @@ export default function Goals() {
                 <div 
                   className="relative w-20 h-20 rounded-lg flex items-center justify-center" 
                   style={{ 
-                    background: `radial-gradient(circle at 30% 30%, ${difficultyColor}20, hsl(var(--card)))`,
-                    borderWidth: '1px',
+                    background: `radial-gradient(circle at 30% 30%, ${difficultyColor}25, hsl(var(--card)))`,
+                    borderWidth: '2px',
                     borderStyle: 'solid',
-                    borderColor: `${difficultyColor}35`
+                    borderColor: `${difficultyColor}50`
                   }}
                 >
-                  <Trophy className="h-8 w-8" style={{ color: difficultyColor, filter: `drop-shadow(0 0 6px ${difficultyColor}80)` }} />
+                  <Trophy className="h-8 w-8" style={{ color: difficultyColor, filter: `drop-shadow(0 0 8px ${difficultyColor})` }} />
                 </div>
               )}
               <button
                 onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                className="absolute -top-2 -right-2 z-20 p-1.5 bg-card rounded-full border border-border hover:scale-110 transition-all shadow-md"
+                className="absolute -top-2 -right-2 z-20 p-1.5 bg-card rounded-full border border-primary/50 hover:scale-110 transition-all shadow-lg"
               >
                 <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
               </button>
@@ -406,54 +435,45 @@ export default function Goals() {
       );
     }
 
-    // Grid Mode (Compact squares) - static glow, no pulsing
+    // Grid Mode (Compact squares)
     if (displayMode === "grid") {
       return (
         <motion.div 
           key={goal.id} 
           variants={itemVariants}
-          whileHover={{ y: -3 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="group relative"
+          whileHover={{ scale: 1.03, y: -4 }}
+          transition={{ duration: 0.2 }}
         >
-          {/* Static glow on hover - no animation loop */}
-          <div
-            className="absolute -inset-px rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none"
-            style={{ 
-              boxShadow: isCompleted ? 'none' : `0 0 12px ${difficultyColor}45, 0 0 20px ${difficultyColor}25`,
-              transition: 'opacity 0.3s ease-out',
-              borderRadius: 'inherit'
-            }}
-          />
           <div
             onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`relative aspect-square rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
+            className={`group relative aspect-square rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
               isCompleted ? "opacity-70 hover:opacity-90" : ""
-            }`}
+            } ${!isCompleted ? auraClass : ''}`}
             style={{ 
+              '--aura-color': difficultyColor,
               borderWidth: borderWidth,
               borderStyle: 'solid',
-              borderColor: `${difficultyColor}40`,
-              transition: 'border-color 0.3s ease-out'
-            }}
+              borderColor: `${difficultyColor}50`,
+              boxShadow: isCompleted ? 'none' : `0 0 ${15 + intensity * 5}px ${difficultyColor}20`
+            } as React.CSSProperties}
           >
             {/* Background Image or Gradient */}
             {goal.image_url ? (
               <img src={goal.image_url} alt={goal.name} className={`absolute inset-0 w-full h-full object-cover ${isCompleted ? "grayscale" : ""}`} />
             ) : (
-              <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}25, hsl(var(--card)))` }} />
+              <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}35, hsl(var(--card)))` }} />
             )}
 
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-            {/* Difficulty accent - thinner, refined */}
+            {/* Difficulty accent - Phase 4 enhanced */}
             <div 
               className="absolute top-0 left-0 right-0" 
               style={{ 
-                height: '2px',
+                height: `${3 + intensity}px`,
                 background: difficultyColor,
-                boxShadow: isCompleted ? 'none' : `0 0 8px ${difficultyColor}80`
+                boxShadow: isCompleted ? 'none' : `0 0 ${10 + intensity * 3}px ${difficultyColor}`
               }} 
             />
 
@@ -483,45 +503,36 @@ export default function Goals() {
       );
     }
 
-    // Bookmark Mode (Vertical strips) - static glow, no pulsing
+    // Bookmark Mode (Vertical strips)
     if (displayMode === "bookmark") {
       return (
         <motion.div 
           key={goal.id} 
           variants={itemVariants}
-          whileHover={{ y: -3 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
-          className="group relative"
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ duration: 0.2 }}
         >
-          {/* Static glow on hover */}
-          <div
-            className="absolute -inset-px rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none"
-            style={{ 
-              boxShadow: isCompleted ? 'none' : `0 0 12px ${difficultyColor}40, 0 0 20px ${difficultyColor}20`,
-              transition: 'opacity 0.3s ease-out',
-              borderRadius: 'inherit'
-            }}
-          />
           <div
             onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`relative h-64 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
+            className={`group relative h-64 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
               isCompleted ? "opacity-70 hover:opacity-90" : ""
             }`}
             style={{ 
               borderWidth: borderWidth,
               borderStyle: 'solid',
-              borderColor: `${difficultyColor}35`,
-              transition: 'border-color 0.3s ease-out'
+              borderColor: `${difficultyColor}40`,
+              boxShadow: isCompleted ? 'none' : `0 4px ${15 + intensity * 5}px ${difficultyColor}15`
             }}
           >
-            {/* Spine accent - thinner, no pulsing */}
+            {/* Spine accent - Phase 4 enhanced */}
             <div 
-              className="absolute top-0 bottom-0 left-0 rounded-l-xl"
+              className={`absolute top-0 bottom-0 left-0 rounded-l-xl ${!isCompleted ? auraClass : ''}`}
               style={{ 
-                width: '3px',
-                background: `linear-gradient(180deg, ${difficultyColor}, ${difficultyColor}70)`,
-                boxShadow: isCompleted ? 'none' : `0 0 8px ${difficultyColor}50`
-              }} 
+                '--aura-color': difficultyColor,
+                width: `${4 + intensity}px`,
+                background: `linear-gradient(180deg, ${difficultyColor}, ${difficultyColor}80)`,
+                boxShadow: isCompleted ? 'none' : `0 0 ${12 + intensity * 3}px ${difficultyColor}60`
+              } as React.CSSProperties} 
             />
 
             {/* Background */}
@@ -652,27 +663,22 @@ export default function Goals() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-rajdhani tracking-wider uppercase text-muted-foreground">Sort</span>
               <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[130px] h-9 bg-card border-border text-foreground font-rajdhani text-sm rounded-lg">
+                <SelectTrigger className="w-[130px] h-9 bg-card/80 border-border text-foreground font-rajdhani text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-border rounded-lg">
-                  <SelectItem value="difficulty" className="text-foreground focus:bg-primary/10 focus:text-foreground">Difficulty</SelectItem>
-                  <SelectItem value="type" className="text-foreground focus:bg-primary/10 focus:text-foreground">Category</SelectItem>
-                  <SelectItem value="points" className="text-foreground focus:bg-primary/10 focus:text-foreground">Points</SelectItem>
-                  <SelectItem value="created" className="text-foreground focus:bg-primary/10 focus:text-foreground">Created</SelectItem>
-                  <SelectItem value="name" className="text-foreground focus:bg-primary/10 focus:text-foreground">Name</SelectItem>
-                  <SelectItem value="status" className="text-foreground focus:bg-primary/10 focus:text-foreground">Status</SelectItem>
-                  <SelectItem value="start" className="text-foreground focus:bg-primary/10 focus:text-foreground">Start Date</SelectItem>
-                  <SelectItem value="progression" className="text-foreground focus:bg-primary/10 focus:text-foreground">Progress</SelectItem>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="difficulty">Difficulty</SelectItem>
+                  <SelectItem value="type">Category</SelectItem>
+                  <SelectItem value="points">Points</SelectItem>
+                  <SelectItem value="created">Created</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="start">Start Date</SelectItem>
+                  <SelectItem value="progression">Progress</SelectItem>
                 </SelectContent>
               </Select>
-              <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} 
-                className="h-9 w-9 bg-card border-border rounded-lg hover:bg-primary/10 hover:border-primary/30 transition-colors"
-              >
-                <ChevronRight className={`h-4 w-4 text-foreground transition-transform duration-200 ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`} />
+              <Button variant="outline" size="icon" onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} className="h-9 w-9 bg-card/80 border-border hover:border-primary/40">
+                <ChevronRight className={`h-4 w-4 text-primary transition-transform duration-200 ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`} />
               </Button>
             </div>
 
@@ -682,14 +688,14 @@ export default function Goals() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-rajdhani text-muted-foreground">Per page</span>
               <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
-                <SelectTrigger className="w-[65px] h-9 bg-card border-border text-foreground font-rajdhani text-sm rounded-lg">
+                <SelectTrigger className="w-[65px] h-9 bg-card/80 border-border text-foreground font-rajdhani text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-border rounded-lg">
-                  <SelectItem value="5" className="text-foreground focus:bg-primary/10 focus:text-foreground">5</SelectItem>
-                  <SelectItem value="10" className="text-foreground focus:bg-primary/10 focus:text-foreground">10</SelectItem>
-                  <SelectItem value="20" className="text-foreground focus:bg-primary/10 focus:text-foreground">20</SelectItem>
-                  <SelectItem value="50" className="text-foreground focus:bg-primary/10 focus:text-foreground">50</SelectItem>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
                 </SelectContent>
               </Select>
             </div>
