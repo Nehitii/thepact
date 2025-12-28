@@ -587,40 +587,47 @@ All colors MUST be HSL.
     100% { transform: scale(2); opacity: 0; }
   }
 
-  /* Utility classes for difficulty glow - constant radiance on hover */
-  .difficulty-aura-easy {
-    transition: box-shadow 0.4s ease-out;
-  }
-  .difficulty-aura-easy:hover {
-    box-shadow: 0 0 12px var(--aura-color), 0 0 24px color-mix(in srgb, var(--aura-color) 40%, transparent);
-  }
+  /* Utility classes for difficulty radiance - fade-in then constant (no pulsing) */
+  .difficulty-aura-easy { --glow-inner: 12px; --glow-outer: 24px; }
+  .difficulty-aura-medium { --glow-inner: 16px; --glow-outer: 32px; }
+  .difficulty-aura-hard { --glow-inner: 20px; --glow-outer: 40px; }
+  .difficulty-aura-extreme { --glow-inner: 25px; --glow-outer: 50px; }
+  .difficulty-aura-impossible { --glow-inner: 30px; --glow-outer: 60px; }
 
-  .difficulty-aura-medium {
-    transition: box-shadow 0.4s ease-out;
-  }
-  .difficulty-aura-medium:hover {
-    box-shadow: 0 0 16px var(--aura-color), 0 0 32px color-mix(in srgb, var(--aura-color) 45%, transparent);
-  }
-
-  .difficulty-aura-hard {
-    transition: box-shadow 0.4s ease-out;
-  }
-  .difficulty-aura-hard:hover {
-    box-shadow: 0 0 20px var(--aura-color), 0 0 40px color-mix(in srgb, var(--aura-color) 50%, transparent);
-  }
-
-  .difficulty-aura-extreme {
-    transition: box-shadow 0.4s ease-out;
-  }
-  .difficulty-aura-extreme:hover {
-    box-shadow: 0 0 25px var(--aura-color), 0 0 50px color-mix(in srgb, var(--aura-color) 55%, transparent);
-  }
-
+  .difficulty-aura-easy,
+  .difficulty-aura-medium,
+  .difficulty-aura-hard,
+  .difficulty-aura-extreme,
   .difficulty-aura-impossible {
-    transition: box-shadow 0.4s ease-out;
+    position: relative;
+    isolation: isolate;
   }
-  .difficulty-aura-impossible:hover {
-    box-shadow: 0 0 30px var(--aura-color), 0 0 60px color-mix(in srgb, var(--aura-color) 60%, transparent);
+
+  /* Use ::after so we don't conflict with hover-shimmer-wave::before */
+  .difficulty-aura-easy::after,
+  .difficulty-aura-medium::after,
+  .difficulty-aura-hard::after,
+  .difficulty-aura-extreme::after,
+  .difficulty-aura-impossible::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 240ms ease-out;
+    box-shadow:
+      0 0 var(--glow-inner) var(--aura-color),
+      0 0 var(--glow-outer) var(--aura-color-soft, var(--aura-color));
+    z-index: -1;
+  }
+
+  .difficulty-aura-easy:hover::after,
+  .difficulty-aura-medium:hover::after,
+  .difficulty-aura-hard:hover::after,
+  .difficulty-aura-extreme:hover::after,
+  .difficulty-aura-impossible:hover::after {
+    opacity: 1;
   }
 
   .badge-shimmer {
