@@ -343,29 +343,22 @@ export default function Goals() {
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.2 }}
         >
-          {/* Phase 1: Animated Difficulty Aura */}
-          <div
-            className={`absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${!isCompleted ? auraClass : ''}`}
-            style={{ 
-              '--aura-color': difficultyColor,
-              background: `radial-gradient(ellipse at center, ${difficultyColor}20, transparent 70%)`
-            } as React.CSSProperties}
-          />
           <div
             onClick={() => navigate(`/goals/${goal.id}`)}
             className={`relative flex gap-5 p-5 rounded-xl cursor-pointer transition-all duration-300 hover-shimmer-wave ${
               isCompleted 
-                ? "bg-card/40 border-border/50 opacity-75 hover:opacity-90" 
+                ? "bg-card/40 opacity-75 hover:opacity-90" 
                 : "bg-card/80 hover:bg-card/90"
-            }`}
+            } ${!isCompleted ? auraClass : ''}`}
             style={{ 
+              '--aura-color': difficultyColor,
               boxShadow: isCompleted 
                 ? 'inset 0 1px 0 rgba(255,255,255,0.05)' 
-                : `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 ${10 + intensity * 5}px ${difficultyColor}15`,
+                : `inset 0 1px 0 rgba(255,255,255,0.05)`,
               borderWidth: borderWidth,
               borderStyle: 'solid',
-              borderColor: isCompleted ? 'hsl(var(--border))' : `${difficultyColor}40`,
-            }}
+              borderColor: isCompleted ? 'hsl(var(--border))' : difficultyColor,
+            } as React.CSSProperties}
           >
             {/* Difficulty accent line - Phase 4 enhanced */}
             <div 
