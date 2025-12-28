@@ -425,6 +425,41 @@ export type Database = {
         }
         Relationships: []
       }
+      goal_cost_items: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          name: string
+          price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_cost_items_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           completion_date: string | null
