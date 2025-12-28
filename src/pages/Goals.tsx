@@ -204,9 +204,26 @@ export default function Goals() {
     
     // Helper to add alpha to color (works with both HSL and hex)
     const withAlpha = (color: string, alpha: number) => {
-      if (color.startsWith('hsl(')) {
-        return color.replace('hsl(', 'hsla(').replace(')', `, ${alpha})`);
+      // Supports modern space-separated HSL: `hsl(280 75% 45%)`
+      // Convert to: `hsl(280 75% 45% / 0.7)`
+      if (color.startsWith("hsl(")) {
+        const inner = color.slice(4, -1).trim();
+        const base = inner.split("/")[0].trim();
+        return `hsl(${base} / ${alpha})`;
       }
+
+      // Hex → rgba
+      if (color.startsWith("#")) {
+        const hex = color.slice(1);
+        const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+        if (full.length === 6) {
+          const r = parseInt(full.slice(0, 2), 16);
+          const g = parseInt(full.slice(2, 4), 16);
+          const b = parseInt(full.slice(4, 6), 16);
+          return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+      }
+
       return color;
     };
 
