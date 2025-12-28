@@ -13,11 +13,43 @@ import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { usePact } from "@/hooks/usePact";
 import { useGoals, Goal } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
-import { motion, AnimatePresence, type Easing } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression";
 type SortDirection = "asc" | "desc";
 type DisplayMode = "bar" | "grid" | "bookmark";
+
+// Helper function to get difficulty intensity level (1-5)
+const getDifficultyIntensity = (difficulty: string): number => {
+  switch (difficulty) {
+    case "easy": return 1;
+    case "medium": return 2;
+    case "hard": return 3;
+    case "extreme": return 4;
+    case "impossible":
+    case "custom": return 5;
+    default: return 1;
+  }
+};
+
+// Get aura animation class based on difficulty
+const getAuraClass = (difficulty: string): string => {
+  switch (difficulty) {
+    case "easy": return "difficulty-aura-easy";
+    case "medium": return "difficulty-aura-medium";
+    case "hard": return "difficulty-aura-hard";
+    case "extreme": return "difficulty-aura-extreme";
+    case "impossible":
+    case "custom": return "difficulty-aura-impossible";
+    default: return "difficulty-aura-easy";
+  }
+};
+
+// Get border width based on difficulty
+const getBorderWidth = (difficulty: string): string => {
+  const intensity = getDifficultyIntensity(difficulty);
+  return `${1 + intensity * 0.4}px`;
+};
 
 export default function Goals() {
   const { user } = useAuth();
@@ -164,41 +196,186 @@ export default function Goals() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const } }
   };
 
+  // Phase 2: Enhanced Difficulty Badge Component
+  const DifficultyBadge = ({ difficulty, isCompleted = false }: { difficulty: string; isCompleted?: boolean }) => {
+    const difficultyColor = getDifficultyColor(difficulty);
+    const intensity = getDifficultyIntensity(difficulty);
+    const isHighTier = intensity >= 4;
+    
+    // Metallic tier styling
+    const getTierBackground = () => {
+      switch (difficulty) {
+        case "easy": return `linear-gradient(135deg, ${difficultyColor}90, ${difficultyColor}70)`;
+        case "medium": return `linear-gradient(135deg, ${difficultyColor}95, ${difficultyColor}75)`;
+        case "hard": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}80)`;
+        case "extreme": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}60, ${difficultyColor})`;
+        case "impossible":
+        case "custom": return `linear-gradient(135deg, ${difficultyColor}, ${difficultyColor}70, ${difficultyColor})`;
+        default: return difficultyColor;
+      }
+    };
+
+    return (
+      <Badge 
+        variant="outline" 
+        className={`text-xs font-bold font-rajdhani uppercase tracking-wider relative overflow-hidden ${
+          isHighTier && !isCompleted ? 'badge-pulse' : ''
+        }`}
+        style={{ 
+          borderColor: difficultyColor, 
+          color: "#fff",
+          background: getTierBackground(),
+          boxShadow: isCompleted ? 'none' : `0 0 ${8 + intensity * 3}px ${difficultyColor}50`,
+          textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+        }}
+      >
+        {isHighTier && !isCompleted && (
+          <span 
+            className="absolute inset-0 badge-shimmer pointer-events-none"
+            style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)', backgroundSize: '200% 100%' }}
+          />
+        )}
+        <span className="relative z-10">{getDifficultyLabel(difficulty)}</span>
+      </Badge>
+    );
+  };
+
+  // Phase 3: Enhanced Progress Bar Component
+  const ProgressBar = ({ progress, difficultyColor, difficulty, isCompleted = false }: { 
+    progress: number; 
+    difficultyColor: string; 
+    difficulty: string;
+    isCompleted?: boolean;
+  }) => {
+    const intensity = getDifficultyIntensity(difficulty);
+    const isHighTier = intensity >= 3;
+    const isComplete = progress >= 100;
+
+    return (
+      <div 
+        className="h-2.5 w-full bg-muted/50 rounded-full overflow-hidden border border-border relative"
+        style={{
+          boxShadow: isComplete && !isCompleted ? `0 0 12px ${difficultyColor}60` : 'none'
+        }}
+      >
+        <motion.div 
+          className={`h-full rounded-full relative ${isHighTier && !isCompleted ? 'progress-shimmer' : ''}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{ 
+            background: isCompleted 
+              ? "hsl(142 70% 45%)" 
+              : `linear-gradient(90deg, hsl(var(--primary)), ${difficultyColor})`,
+            boxShadow: isComplete && !isCompleted 
+              ? `0 0 15px ${difficultyColor}, inset 0 0 10px rgba(255,255,255,0.2)` 
+              : `0 0 ${4 + intensity * 2}px ${difficultyColor}60`
+          }} 
+        >
+          {/* Shimmer effect for high tier difficulties */}
+          {isHighTier && !isCompleted && (
+            <span 
+              className="absolute inset-0 overflow-hidden"
+              style={{
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                animation: 'progress-shimmer 1.5s ease-in-out infinite'
+              }}
+            />
+          )}
+          {/* Sparkle at the edge for extreme+ */}
+          {intensity >= 4 && !isCompleted && progress > 10 && progress < 100 && (
+            <span 
+              className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
+              style={{
+                background: 'white',
+                boxShadow: `0 0 6px white, 0 0 12px ${difficultyColor}`,
+                animation: 'progress-sparkle 1s ease-in-out infinite'
+              }}
+            />
+          )}
+        </motion.div>
+      </div>
+    );
+  };
+
   const renderGoalCard = (goal: Goal, index: number, isCompleted = false) => {
     const isHabitGoal = goal.goal_type === "habit";
     const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
     const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
     const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
     const difficultyColor = getDifficultyColor(goal.difficulty);
+    const intensity = getDifficultyIntensity(goal.difficulty);
+    const borderWidth = getBorderWidth(goal.difficulty);
+    const auraClass = getAuraClass(goal.difficulty);
 
     // Bar Mode (Default)
     if (displayMode === "bar") {
       return (
-        <motion.div key={goal.id} variants={itemVariants} className="group relative">
+        <motion.div 
+          key={goal.id} 
+          variants={itemVariants} 
+          className="group relative"
+          whileHover={{ scale: 1.01 }}
+          transition={{ duration: 0.2 }}
+        >
+          {/* Phase 1: Animated Difficulty Aura */}
           <div
-            className="absolute -inset-0.5 rounded-xl opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-500"
-            style={{ background: `${difficultyColor}15` }}
+            className={`absolute -inset-1 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${!isCompleted ? auraClass : ''}`}
+            style={{ 
+              '--aura-color': difficultyColor,
+              background: `radial-gradient(ellipse at center, ${difficultyColor}20, transparent 70%)`
+            } as React.CSSProperties}
           />
           <div
             onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`relative flex gap-5 p-5 rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.01] ${
+            className={`relative flex gap-5 p-5 rounded-xl cursor-pointer transition-all duration-300 hover-shimmer-wave ${
               isCompleted 
                 ? "bg-card/40 border-border/50 opacity-75 hover:opacity-90" 
-                : "bg-card/80 border-border hover:border-primary/40"
+                : "bg-card/80 hover:bg-card/90"
             }`}
-            style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05)` }}
+            style={{ 
+              boxShadow: isCompleted 
+                ? 'inset 0 1px 0 rgba(255,255,255,0.05)' 
+                : `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 ${10 + intensity * 5}px ${difficultyColor}15`,
+              borderWidth: borderWidth,
+              borderStyle: 'solid',
+              borderColor: isCompleted ? 'hsl(var(--border))' : `${difficultyColor}40`,
+            }}
           >
-            {/* Difficulty accent line */}
-            <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-xl" style={{ background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)` }} />
+            {/* Difficulty accent line - Phase 4 enhanced */}
+            <div 
+              className="absolute top-0 left-0 right-0 rounded-t-xl" 
+              style={{ 
+                height: `${2 + intensity * 0.5}px`,
+                background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)`,
+                boxShadow: isCompleted ? 'none' : `0 0 ${8 + intensity * 2}px ${difficultyColor}60`
+              }} 
+            />
 
             {/* Image */}
             <div className="relative flex-shrink-0">
               {goal.image_url ? (
-                <div className={`relative w-20 h-20 rounded-lg overflow-hidden border border-primary/30 ${isCompleted ? "grayscale" : ""}`} style={{ boxShadow: `0 0 20px ${difficultyColor}30` }}>
+                <div 
+                  className={`relative w-20 h-20 rounded-lg overflow-hidden ${isCompleted ? "grayscale" : ""}`}
+                  style={{ 
+                    boxShadow: `0 0 ${15 + intensity * 5}px ${difficultyColor}40`,
+                    borderWidth: '2px',
+                    borderStyle: 'solid',
+                    borderColor: `${difficultyColor}60`
+                  }}
+                >
                   <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="relative w-20 h-20 rounded-lg border border-primary/30 flex items-center justify-center" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}20, hsl(var(--card)))` }}>
+                <div 
+                  className="relative w-20 h-20 rounded-lg flex items-center justify-center" 
+                  style={{ 
+                    background: `radial-gradient(circle at 30% 30%, ${difficultyColor}25, hsl(var(--card)))`,
+                    borderWidth: '2px',
+                    borderStyle: 'solid',
+                    borderColor: `${difficultyColor}50`
+                  }}
+                >
                   <Trophy className="h-8 w-8" style={{ color: difficultyColor, filter: `drop-shadow(0 0 8px ${difficultyColor})` }} />
                 </div>
               )}
@@ -218,9 +395,7 @@ export default function Goals() {
                     {goal.name}
                   </h3>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant="outline" className="text-xs font-bold font-rajdhani uppercase tracking-wider" style={{ borderColor: difficultyColor, color: difficultyColor, backgroundColor: `${difficultyColor}15` }}>
-                      {getDifficultyLabel(goal.difficulty)}
-                    </Badge>
+                    <DifficultyBadge difficulty={goal.difficulty} isCompleted={isCompleted} />
                     <Badge variant="outline" className="text-xs capitalize font-rajdhani border-border text-muted-foreground">{goal.type}</Badge>
                     {isHabitGoal && <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/40 text-emerald-400 bg-emerald-500/10">Habit</Badge>}
                   </div>
@@ -230,7 +405,7 @@ export default function Goals() {
                 </Badge>
               </div>
 
-              {/* Progress */}
+              {/* Progress - Phase 3 Enhanced */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between text-sm font-rajdhani">
                   <span className="uppercase tracking-wider text-muted-foreground text-xs">{isHabitGoal ? "Days" : "Progress"}</span>
@@ -238,9 +413,7 @@ export default function Goals() {
                     {completedSteps}/{totalSteps} • {progress.toFixed(0)}%
                   </span>
                 </div>
-                <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden border border-border">
-                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${progress}%`, background: isCompleted ? "hsl(142 70% 45%)" : `linear-gradient(90deg, hsl(var(--primary)), ${difficultyColor})` }} />
-                </div>
+                <ProgressBar progress={progress} difficultyColor={difficultyColor} difficulty={goal.difficulty} isCompleted={isCompleted} />
               </div>
 
               {/* Footer */}
@@ -265,29 +438,44 @@ export default function Goals() {
     // Grid Mode (Compact squares)
     if (displayMode === "grid") {
       return (
-        <motion.div key={goal.id} variants={itemVariants}>
+        <motion.div 
+          key={goal.id} 
+          variants={itemVariants}
+          whileHover={{ scale: 1.03, y: -4 }}
+          transition={{ duration: 0.2 }}
+        >
           <div
             onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`group relative aspect-square rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.03] overflow-hidden ${
+            className={`group relative aspect-square rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
               isCompleted ? "opacity-70 hover:opacity-90" : ""
-            }`}
+            } ${!isCompleted ? auraClass : ''}`}
             style={{ 
-              borderColor: `${difficultyColor}40`,
-              boxShadow: `0 0 20px ${difficultyColor}15`
-            }}
+              '--aura-color': difficultyColor,
+              borderWidth: borderWidth,
+              borderStyle: 'solid',
+              borderColor: `${difficultyColor}50`,
+              boxShadow: isCompleted ? 'none' : `0 0 ${15 + intensity * 5}px ${difficultyColor}20`
+            } as React.CSSProperties}
           >
             {/* Background Image or Gradient */}
             {goal.image_url ? (
               <img src={goal.image_url} alt={goal.name} className={`absolute inset-0 w-full h-full object-cover ${isCompleted ? "grayscale" : ""}`} />
             ) : (
-              <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}30, hsl(var(--card)))` }} />
+              <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}35, hsl(var(--card)))` }} />
             )}
 
             {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
 
-            {/* Difficulty accent */}
-            <div className="absolute top-0 left-0 right-0 h-1" style={{ background: difficultyColor }} />
+            {/* Difficulty accent - Phase 4 enhanced */}
+            <div 
+              className="absolute top-0 left-0 right-0" 
+              style={{ 
+                height: `${3 + intensity}px`,
+                background: difficultyColor,
+                boxShadow: isCompleted ? 'none' : `0 0 ${10 + intensity * 3}px ${difficultyColor}`
+              }} 
+            />
 
             {/* Focus Star */}
             <button
@@ -299,10 +487,8 @@ export default function Goals() {
 
             {/* Content at bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-3">
-              <Badge className="mb-2 text-[10px] font-bold font-rajdhani uppercase" style={{ backgroundColor: `${difficultyColor}90`, color: "#fff" }}>
-                {getDifficultyLabel(goal.difficulty)}
-              </Badge>
-              <h3 className="font-bold text-sm leading-tight line-clamp-2 text-white font-rajdhani">
+              <DifficultyBadge difficulty={goal.difficulty} isCompleted={isCompleted} />
+              <h3 className="font-bold text-sm leading-tight line-clamp-2 text-white font-rajdhani mt-2">
                 {goal.name}
               </h3>
               {isCompleted && (
@@ -320,19 +506,34 @@ export default function Goals() {
     // Bookmark Mode (Vertical strips)
     if (displayMode === "bookmark") {
       return (
-        <motion.div key={goal.id} variants={itemVariants}>
+        <motion.div 
+          key={goal.id} 
+          variants={itemVariants}
+          whileHover={{ scale: 1.02, y: -4 }}
+          transition={{ duration: 0.2 }}
+        >
           <div
             onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`group relative h-64 rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.02] overflow-hidden ${
+            className={`group relative h-64 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
               isCompleted ? "opacity-70 hover:opacity-90" : ""
             }`}
             style={{ 
-              borderColor: `${difficultyColor}30`,
-              boxShadow: `0 4px 20px ${difficultyColor}10`
+              borderWidth: borderWidth,
+              borderStyle: 'solid',
+              borderColor: `${difficultyColor}40`,
+              boxShadow: isCompleted ? 'none' : `0 4px ${15 + intensity * 5}px ${difficultyColor}15`
             }}
           >
-            {/* Spine accent */}
-            <div className="absolute top-0 bottom-0 left-0 w-1.5 rounded-l-xl" style={{ background: difficultyColor }} />
+            {/* Spine accent - Phase 4 enhanced */}
+            <div 
+              className={`absolute top-0 bottom-0 left-0 rounded-l-xl ${!isCompleted ? auraClass : ''}`}
+              style={{ 
+                '--aura-color': difficultyColor,
+                width: `${4 + intensity}px`,
+                background: `linear-gradient(180deg, ${difficultyColor}, ${difficultyColor}80)`,
+                boxShadow: isCompleted ? 'none' : `0 0 ${12 + intensity * 3}px ${difficultyColor}60`
+              } as React.CSSProperties} 
+            />
 
             {/* Background */}
             <div className="absolute inset-0 bg-card/90" />
@@ -352,24 +553,20 @@ export default function Goals() {
                 <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
               </button>
 
-              {/* Difficulty Badge */}
-              <Badge variant="outline" className="self-start mb-3 text-[10px] font-bold font-rajdhani uppercase" style={{ borderColor: difficultyColor, color: difficultyColor }}>
-                {getDifficultyLabel(goal.difficulty)}
-              </Badge>
+              {/* Difficulty Badge - Phase 2 Enhanced */}
+              <DifficultyBadge difficulty={goal.difficulty} isCompleted={isCompleted} />
 
               {/* Title */}
-              <h3 className="font-bold text-sm leading-tight line-clamp-3 text-foreground font-rajdhani flex-1">
+              <h3 className="font-bold text-sm leading-tight line-clamp-3 text-foreground font-rajdhani flex-1 mt-3">
                 {goal.name}
               </h3>
 
-              {/* Progress indicator */}
+              {/* Progress indicator - Phase 3 Enhanced */}
               <div className="mt-auto space-y-2">
                 <div className="text-xs font-rajdhani text-muted-foreground">
                   {completedSteps}/{totalSteps} {isHabitGoal ? "days" : "steps"}
                 </div>
-                <div className="h-1.5 w-full bg-muted/50 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${progress}%`, background: isCompleted ? "hsl(142 70% 45%)" : difficultyColor }} />
-                </div>
+                <ProgressBar progress={progress} difficultyColor={difficultyColor} difficulty={goal.difficulty} isCompleted={isCompleted} />
                 {isCompleted && (
                   <div className="flex items-center gap-1 text-green-400 text-xs font-rajdhani">
                     <CheckCircle2 className="h-3 w-3" />

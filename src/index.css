@@ -496,4 +496,177 @@ All colors MUST be HSL.
     0%, 100% { opacity: 0.5; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.1); }
   }
+
+  /* ========== DIFFICULTY GAMIFICATION ANIMATIONS ========== */
+
+  /* Phase 1: Difficulty Aura Pulse - scales with difficulty */
+  @keyframes difficulty-aura-easy {
+    0%, 100% { box-shadow: 0 0 8px var(--aura-color), 0 0 16px transparent; }
+    50% { box-shadow: 0 0 12px var(--aura-color), 0 0 24px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-medium {
+    0%, 100% { box-shadow: 0 0 10px var(--aura-color), 0 0 20px transparent; }
+    50% { box-shadow: 0 0 16px var(--aura-color), 0 0 32px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-hard {
+    0%, 100% { box-shadow: 0 0 12px var(--aura-color), 0 0 24px transparent; }
+    50% { box-shadow: 0 0 20px var(--aura-color), 0 0 40px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-extreme {
+    0%, 100% { box-shadow: 0 0 15px var(--aura-color), 0 0 30px transparent; }
+    50% { box-shadow: 0 0 25px var(--aura-color), 0 0 50px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-impossible {
+    0%, 100% { box-shadow: 0 0 18px var(--aura-color), 0 0 36px transparent; }
+    50% { box-shadow: 0 0 30px var(--aura-color), 0 0 60px var(--aura-color); }
+  }
+
+  /* Phase 2: Badge Shimmer Effect */
+  @keyframes badge-shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.02); filter: brightness(1.15); }
+  }
+
+  /* Phase 3: Progress Bar Animations */
+  @keyframes progress-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
+  @keyframes progress-glow {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 4px currentColor); }
+    50% { filter: brightness(1.2) drop-shadow(0 0 8px currentColor); }
+  }
+
+  @keyframes progress-sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1) rotate(180deg); }
+  }
+
+  @keyframes completion-burst {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 var(--burst-color); }
+    50% { transform: scale(1.05); box-shadow: 0 0 30px 10px var(--burst-color); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+  }
+
+  /* Phase 5: Hover Micro-interactions */
+  @keyframes card-hover-glow {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes shimmer-wave {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(200%) skewX(-15deg); }
+  }
+
+  @keyframes border-breathe {
+    0%, 100% { border-color: var(--border-color-base); }
+    50% { border-color: var(--border-color-glow); }
+  }
+
+  /* Phase 6: Completion Celebration */
+  @keyframes celebration-flash {
+    0% { opacity: 0; transform: scale(0.8); }
+    20% { opacity: 1; transform: scale(1.1); }
+    40% { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.2); }
+  }
+
+  @keyframes celebration-ripple {
+    0% { transform: scale(0.5); opacity: 0.8; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+
+  /* Utility classes for difficulty animations */
+  .difficulty-aura-easy {
+    animation: difficulty-aura-easy 4s ease-in-out infinite;
+  }
+
+  .difficulty-aura-medium {
+    animation: difficulty-aura-medium 3s ease-in-out infinite;
+  }
+
+  .difficulty-aura-hard {
+    animation: difficulty-aura-hard 2.5s ease-in-out infinite;
+  }
+
+  .difficulty-aura-extreme {
+    animation: difficulty-aura-extreme 2s ease-in-out infinite;
+  }
+
+  .difficulty-aura-impossible {
+    animation: difficulty-aura-impossible 1.5s ease-in-out infinite;
+  }
+
+  .badge-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsla(0, 0%, 100%, 0.3) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: badge-shimmer 2s ease-in-out infinite;
+  }
+
+  .badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
+  .progress-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsla(0, 0%, 100%, 0.4) 50%,
+      transparent 100%
+    );
+    animation: progress-shimmer 1.5s ease-in-out infinite;
+  }
+
+  .hover-shimmer-wave {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hover-shimmer-wave::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsla(0, 0%, 100%, 0.1) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%) skewX(-15deg);
+    transition: none;
+  }
+
+  .hover-shimmer-wave:hover::before {
+    animation: shimmer-wave 0.6s ease-out;
+  }
 }
