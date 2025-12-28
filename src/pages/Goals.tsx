@@ -686,12 +686,12 @@ export default function Goals() {
 
             {/* Sort Controls */}
             <div className="flex items-center gap-2">
-              <span className="text-xs font-rajdhani tracking-wider uppercase text-muted-foreground">Sort</span>
+              <span className="text-xs font-rajdhani tracking-wider uppercase text-foreground/60">Sort</span>
               <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[130px] h-9 bg-card/80 border-border text-foreground font-rajdhani text-sm">
+                <SelectTrigger className="w-[130px] h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-border">
+                <SelectContent>
                   <SelectItem value="difficulty">Difficulty</SelectItem>
                   <SelectItem value="type">Category</SelectItem>
                   <SelectItem value="points">Points</SelectItem>
@@ -702,8 +702,13 @@ export default function Goals() {
                   <SelectItem value="progression">Progress</SelectItem>
                 </SelectContent>
               </Select>
-              <Button variant="outline" size="icon" onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} className="h-9 w-9 bg-card/80 border-border hover:border-primary/40">
-                <ChevronRight className={`h-4 w-4 text-primary transition-transform duration-200 ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`} />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} 
+                className="h-9 w-9 rounded-xl border border-border/60 bg-card/90 hover:bg-card hover:border-primary/40 hover:shadow-[0_0_8px_hsl(var(--primary)/0.15)] transition-all duration-200"
+              >
+                <ChevronRight className={`h-4 w-4 text-foreground/70 transition-transform duration-200 ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`} />
               </Button>
             </div>
 
@@ -711,12 +716,12 @@ export default function Goals() {
 
             {/* Per Page */}
             <div className="flex items-center gap-2">
-              <span className="text-xs font-rajdhani text-muted-foreground">Per page</span>
+              <span className="text-xs font-rajdhani text-foreground/60">Per page</span>
               <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
-                <SelectTrigger className="w-[65px] h-9 bg-card/80 border-border text-foreground font-rajdhani text-sm">
+                <SelectTrigger className="w-[65px] h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-border">
+                <SelectContent>
                   <SelectItem value="5">5</SelectItem>
                   <SelectItem value="10">10</SelectItem>
                   <SelectItem value="20">20</SelectItem>
