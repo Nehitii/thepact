@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowRight, CheckCircle2, Star, Sparkles, Trophy, ChevronRight, ChevronLeft } from "lucide-react";
+import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useParticleEffect } from "@/components/ParticleEffect";
@@ -14,9 +13,11 @@ import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { usePact } from "@/hooks/usePact";
 import { useGoals, Goal } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
+import { motion, AnimatePresence, type Easing } from "framer-motion";
 
 type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression";
 type SortDirection = "asc" | "desc";
+type DisplayMode = "bar" | "grid" | "bookmark";
 
 export default function Goals() {
   const { user } = useAuth();
@@ -27,9 +28,9 @@ export default function Goals() {
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [activeCurrentPage, setActiveCurrentPage] = useState(1);
   const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>("bar");
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
-  // Use React Query hooks for cached data
   const { data: pact } = usePact(user?.id);
   const { data: goals = [], isLoading: goalsLoading } = useGoals(pact?.id, { includeStepCounts: true });
   const { data: profile } = useProfile(user?.id);
@@ -38,10 +39,8 @@ export default function Goals() {
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
   const loading = !user || goalsLoading;
 
-  // Local state for optimistic UI updates on focus toggle
   const [localGoals, setLocalGoals] = useState<Goal[]>([]);
   
-  // Sync local goals with fetched goals
   useEffect(() => {
     if (goals.length > 0) {
       setLocalGoals(goals);
@@ -49,108 +48,64 @@ export default function Goals() {
   }, [goals]);
 
   const displayGoals = localGoals.length > 0 ? localGoals : goals;
+
   const toggleFocus = async (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
     e.stopPropagation();
-
-    // Trigger particle effect
     const goal = displayGoals.find((g) => g.id === goalId);
     if (goal) {
       const difficultyColor = getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor);
       triggerParticles(e, difficultyColor);
     }
-    const { error } = await supabase
-      .from("goals")
-      .update({
-        is_focus: !currentFocus,
-      })
-      .eq("id", goalId);
+    const { error } = await supabase.from("goals").update({ is_focus: !currentFocus }).eq("id", goalId);
     if (!error) {
-      setLocalGoals(
-        displayGoals.map((g) =>
-          g.id === goalId
-            ? {
-                ...g,
-                is_focus: !currentFocus,
-              }
-            : g,
-        ),
-      );
+      setLocalGoals(displayGoals.map((g) => g.id === goalId ? { ...g, is_focus: !currentFocus } : g));
     }
   };
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "not_started":
-        return "bg-muted text-muted-foreground";
-      case "in_progress":
-        return "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
-      case "fully_completed":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20";
-      case "paused":
-        return "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20";
-      default:
-        return "bg-muted text-muted-foreground";
+      case "not_started": return "bg-card/80 text-muted-foreground border-border";
+      case "in_progress": return "bg-blue-500/15 text-blue-400 border-blue-500/30";
+      case "fully_completed": return "bg-green-500/15 text-green-400 border-green-500/30";
+      case "paused": return "bg-orange-500/15 text-orange-400 border-orange-500/30";
+      default: return "bg-card/80 text-muted-foreground border-border";
     }
   };
+
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case "not_started":
-        return "Not Started";
-      case "in_progress":
-        return "In Progress";
-      case "fully_completed":
-        return "Completed";
-      case "paused":
-        return "Paused";
-      default:
-        return status;
+      case "not_started": return "Not Started";
+      case "in_progress": return "In Progress";
+      case "fully_completed": return "Completed";
+      case "paused": return "Paused";
+      default: return status;
     }
   };
 
-  // Use unified difficulty color system
-  const getDifficultyColor = (difficulty: string) => {
-    return getUnifiedDifficultyColor(difficulty, customDifficultyColor);
-  };
+  const getDifficultyColor = (difficulty: string) => getUnifiedDifficultyColor(difficulty, customDifficultyColor);
 
-  // Get display label for difficulty
   const getDifficultyLabel = (difficulty: string) => {
-    if (difficulty === "custom" && customDifficultyName) {
-      return customDifficultyName;
-    }
+    if (difficulty === "custom" && customDifficultyName) return customDifficultyName;
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   };
-  const handleSortChange = (newSortBy: SortOption) => {
-    // Just change the sort category, keep the current direction
-    setSortBy(newSortBy);
-  };
-  const handleDirectionChange = (newDirection: SortDirection) => {
-    setSortDirection(newDirection);
-  };
+
+  const handleSortChange = (newSortBy: SortOption) => setSortBy(newSortBy);
+  const handleDirectionChange = (newDirection: SortDirection) => setSortDirection(newDirection);
+
   const sortGoals = (goalsToSort: Goal[]) => {
     const sorted = [...goalsToSort];
     const direction = sortDirection === "asc" ? 1 : -1;
     switch (sortBy) {
       case "difficulty":
         const difficultyOrder = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
-        return sorted.sort((a, b) => {
-          const indexA = difficultyOrder.indexOf(a.difficulty);
-          const indexB = difficultyOrder.indexOf(b.difficulty);
-          return (indexA - indexB) * direction;
-        });
-      case "type":
-        return sorted.sort((a, b) => a.type.localeCompare(b.type) * direction);
-      case "points":
-        return sorted.sort((a, b) => ((a.potential_score || 0) - (b.potential_score || 0)) * direction);
-      case "created":
-        return sorted.sort((a, b) => (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * direction);
-      case "name":
-        return sorted.sort((a, b) => a.name.localeCompare(b.name) * direction);
+        return sorted.sort((a, b) => (difficultyOrder.indexOf(a.difficulty) - difficultyOrder.indexOf(b.difficulty)) * direction);
+      case "type": return sorted.sort((a, b) => a.type.localeCompare(b.type) * direction);
+      case "points": return sorted.sort((a, b) => ((a.potential_score || 0) - (b.potential_score || 0)) * direction);
+      case "created": return sorted.sort((a, b) => (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * direction);
+      case "name": return sorted.sort((a, b) => a.name.localeCompare(b.name) * direction);
       case "status":
         const statusOrder = ["not_started", "in_progress", "fully_completed", "paused"];
-        return sorted.sort((a, b) => {
-          const indexA = statusOrder.indexOf(a.status);
-          const indexB = statusOrder.indexOf(b.status);
-          return (indexA - indexB) * direction;
-        });
+        return sorted.sort((a, b) => (statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status)) * direction);
       case "start":
         return sorted.sort((a, b) => {
           if (!a.start_date) return 1;
@@ -159,785 +114,475 @@ export default function Goals() {
         });
       case "progression":
         return sorted.sort((a, b) => {
-          // Calculate progression percentage for each goal
           const getProgression = (goal: Goal) => {
-            // For habit goals, use habit_checks
             if (goal.goal_type === "habit" && goal.habit_checks && goal.habit_duration_days) {
-              const completedDays = goal.habit_checks.filter(Boolean).length;
-              return (completedDays / goal.habit_duration_days) * 100;
+              return (goal.habit_checks.filter(Boolean).length / goal.habit_duration_days) * 100;
             }
-            // For normal goals, use step counts
             const total = goal.totalStepsCount || goal.total_steps || 0;
             const completed = goal.completedStepsCount || goal.validated_steps || 0;
-            if (total === 0) return 0;
-            return (completed / total) * 100;
+            return total === 0 ? 0 : (completed / total) * 100;
           };
           return (getProgression(a) - getProgression(b)) * direction;
         });
-      default:
-        return sorted;
+      default: return sorted;
     }
   };
 
-  // Filter goals by active/completed status - exclude validated from active
-  const activeGoals = displayGoals.filter(
-    (g) => g.status === "not_started" || g.status === "in_progress",
-  );
+  const activeGoals = displayGoals.filter((g) => g.status === "not_started" || g.status === "in_progress");
   const completedGoals = displayGoals.filter((g) => g.status === "fully_completed" || g.status === "validated");
   const sortedActiveGoals = sortGoals(activeGoals);
   const sortedCompletedGoals = sortGoals(completedGoals);
 
-  // Pagination calculations
   const activeTotalPages = Math.ceil(sortedActiveGoals.length / itemsPerPage);
   const completedTotalPages = Math.ceil(sortedCompletedGoals.length / itemsPerPage);
   
-  const paginatedActiveGoals = sortedActiveGoals.slice(
-    (activeCurrentPage - 1) * itemsPerPage,
-    activeCurrentPage * itemsPerPage
-  );
-  const paginatedCompletedGoals = sortedCompletedGoals.slice(
-    (completedCurrentPage - 1) * itemsPerPage,
-    completedCurrentPage * itemsPerPage
-  );
+  const paginatedActiveGoals = sortedActiveGoals.slice((activeCurrentPage - 1) * itemsPerPage, activeCurrentPage * itemsPerPage);
+  const paginatedCompletedGoals = sortedCompletedGoals.slice((completedCurrentPage - 1) * itemsPerPage, completedCurrentPage * itemsPerPage);
 
-  // Reset to page 1 when items per page changes
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(Number(value));
     setActiveCurrentPage(1);
     setCompletedCurrentPage(1);
   };
+
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
   }
-  return (
-    <div
-      className="min-h-screen relative"
-      style={{
-        background: "#00050B",
-      }}
-    >
-      {/* Ultra-dark background with radial gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#00050B] via-[#050A13] to-[#00050B]" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/5 via-transparent to-transparent" />
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const } }
+  };
+
+  const renderGoalCard = (goal: Goal, index: number, isCompleted = false) => {
+    const isHabitGoal = goal.goal_type === "habit";
+    const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
+    const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
+    const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
+    const difficultyColor = getDifficultyColor(goal.difficulty);
+
+    // Bar Mode (Default)
+    if (displayMode === "bar") {
+      return (
+        <motion.div key={goal.id} variants={itemVariants} className="group relative">
+          <div
+            className="absolute -inset-0.5 rounded-xl opacity-0 group-hover:opacity-100 blur-lg transition-opacity duration-500"
+            style={{ background: `${difficultyColor}15` }}
+          />
+          <div
+            onClick={() => navigate(`/goals/${goal.id}`)}
+            className={`relative flex gap-5 p-5 rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.01] ${
+              isCompleted 
+                ? "bg-card/40 border-border/50 opacity-75 hover:opacity-90" 
+                : "bg-card/80 border-border hover:border-primary/40"
+            }`}
+            style={{ boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05)` }}
+          >
+            {/* Difficulty accent line */}
+            <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-xl" style={{ background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)` }} />
+
+            {/* Image */}
+            <div className="relative flex-shrink-0">
+              {goal.image_url ? (
+                <div className={`relative w-20 h-20 rounded-lg overflow-hidden border border-primary/30 ${isCompleted ? "grayscale" : ""}`} style={{ boxShadow: `0 0 20px ${difficultyColor}30` }}>
+                  <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="relative w-20 h-20 rounded-lg border border-primary/30 flex items-center justify-center" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}20, hsl(var(--card)))` }}>
+                  <Trophy className="h-8 w-8" style={{ color: difficultyColor, filter: `drop-shadow(0 0 8px ${difficultyColor})` }} />
+                </div>
+              )}
+              <button
+                onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                className="absolute -top-2 -right-2 z-20 p-1.5 bg-card rounded-full border border-primary/50 hover:scale-110 transition-all shadow-lg"
+              >
+                <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2 font-orbitron tracking-wide text-foreground">
+                    {goal.name}
+                  </h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs font-bold font-rajdhani uppercase tracking-wider" style={{ borderColor: difficultyColor, color: difficultyColor, backgroundColor: `${difficultyColor}15` }}>
+                      {getDifficultyLabel(goal.difficulty)}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs capitalize font-rajdhani border-border text-muted-foreground">{goal.type}</Badge>
+                    {isHabitGoal && <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/40 text-emerald-400 bg-emerald-500/10">Habit</Badge>}
+                  </div>
+                </div>
+                <Badge className={`${getStatusColor(goal.status)} font-rajdhani font-bold uppercase text-xs tracking-wider shrink-0`}>
+                  {isCompleted ? <><CheckCircle2 className="h-3 w-3 mr-1" />Done</> : getStatusLabel(goal.status)}
+                </Badge>
+              </div>
+
+              {/* Progress */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-sm font-rajdhani">
+                  <span className="uppercase tracking-wider text-muted-foreground text-xs">{isHabitGoal ? "Days" : "Progress"}</span>
+                  <span className="font-bold" style={{ color: isCompleted ? "hsl(var(--muted-foreground))" : difficultyColor }}>
+                    {completedSteps}/{totalSteps} • {progress.toFixed(0)}%
+                  </span>
+                </div>
+                <div className="h-2 w-full bg-muted/50 rounded-full overflow-hidden border border-border">
+                  <div className="h-full rounded-full transition-all duration-700" style={{ width: `${progress}%`, background: isCompleted ? "hsl(142 70% 45%)" : `linear-gradient(90deg, hsl(var(--primary)), ${difficultyColor})` }} />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-1">
+                {goal.potential_score ? (
+                  <div className="flex items-center gap-1.5 font-rajdhani font-bold text-sm">
+                    <Sparkles className="h-4 w-4 text-yellow-400" />
+                    <span className="text-yellow-400">+{goal.potential_score} XP</span>
+                  </div>
+                ) : <div />}
+                <div className="flex items-center text-xs text-primary group-hover:translate-x-1 transition-transform font-rajdhani tracking-wider font-bold uppercase">
+                  <span className="mr-1">View</span>
+                  <ChevronRight className="h-4 w-4" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
+
+    // Grid Mode (Compact squares)
+    if (displayMode === "grid") {
+      return (
+        <motion.div key={goal.id} variants={itemVariants}>
+          <div
+            onClick={() => navigate(`/goals/${goal.id}`)}
+            className={`group relative aspect-square rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.03] overflow-hidden ${
+              isCompleted ? "opacity-70 hover:opacity-90" : ""
+            }`}
+            style={{ 
+              borderColor: `${difficultyColor}40`,
+              boxShadow: `0 0 20px ${difficultyColor}15`
+            }}
+          >
+            {/* Background Image or Gradient */}
+            {goal.image_url ? (
+              <img src={goal.image_url} alt={goal.name} className={`absolute inset-0 w-full h-full object-cover ${isCompleted ? "grayscale" : ""}`} />
+            ) : (
+              <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}30, hsl(var(--card)))` }} />
+            )}
+
+            {/* Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+
+            {/* Difficulty accent */}
+            <div className="absolute top-0 left-0 right-0 h-1" style={{ background: difficultyColor }} />
+
+            {/* Focus Star */}
+            <button
+              onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+              className="absolute top-2 right-2 z-20 p-1.5 bg-black/50 rounded-full backdrop-blur-sm border border-white/20 hover:scale-110 transition-all"
+            >
+              <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`} />
+            </button>
+
+            {/* Content at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <Badge className="mb-2 text-[10px] font-bold font-rajdhani uppercase" style={{ backgroundColor: `${difficultyColor}90`, color: "#fff" }}>
+                {getDifficultyLabel(goal.difficulty)}
+              </Badge>
+              <h3 className="font-bold text-sm leading-tight line-clamp-2 text-white font-rajdhani">
+                {goal.name}
+              </h3>
+              {isCompleted && (
+                <div className="flex items-center gap-1 mt-1 text-green-400 text-xs font-rajdhani">
+                  <CheckCircle2 className="h-3 w-3" />
+                  <span>Completed</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
+
+    // Bookmark Mode (Vertical strips)
+    if (displayMode === "bookmark") {
+      return (
+        <motion.div key={goal.id} variants={itemVariants}>
+          <div
+            onClick={() => navigate(`/goals/${goal.id}`)}
+            className={`group relative h-64 rounded-xl border cursor-pointer transition-all duration-300 hover:scale-[1.02] overflow-hidden ${
+              isCompleted ? "opacity-70 hover:opacity-90" : ""
+            }`}
+            style={{ 
+              borderColor: `${difficultyColor}30`,
+              boxShadow: `0 4px 20px ${difficultyColor}10`
+            }}
+          >
+            {/* Spine accent */}
+            <div className="absolute top-0 bottom-0 left-0 w-1.5 rounded-l-xl" style={{ background: difficultyColor }} />
+
+            {/* Background */}
+            <div className="absolute inset-0 bg-card/90" />
+            {goal.image_url && (
+              <div className="absolute inset-0 opacity-20">
+                <img src={goal.image_url} alt="" className={`w-full h-full object-cover ${isCompleted ? "grayscale" : ""}`} />
+              </div>
+            )}
+
+            {/* Content */}
+            <div className="relative h-full flex flex-col p-4 pl-5">
+              {/* Focus Star */}
+              <button
+                onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
+                className="absolute top-3 right-3 z-20 p-1.5 bg-card/80 rounded-full border border-border hover:scale-110 transition-all"
+              >
+                <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+              </button>
+
+              {/* Difficulty Badge */}
+              <Badge variant="outline" className="self-start mb-3 text-[10px] font-bold font-rajdhani uppercase" style={{ borderColor: difficultyColor, color: difficultyColor }}>
+                {getDifficultyLabel(goal.difficulty)}
+              </Badge>
+
+              {/* Title */}
+              <h3 className="font-bold text-sm leading-tight line-clamp-3 text-foreground font-rajdhani flex-1">
+                {goal.name}
+              </h3>
+
+              {/* Progress indicator */}
+              <div className="mt-auto space-y-2">
+                <div className="text-xs font-rajdhani text-muted-foreground">
+                  {completedSteps}/{totalSteps} {isHabitGoal ? "days" : "steps"}
+                </div>
+                <div className="h-1.5 w-full bg-muted/50 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${progress}%`, background: isCompleted ? "hsl(142 70% 45%)" : difficultyColor }} />
+                </div>
+                {isCompleted && (
+                  <div className="flex items-center gap-1 text-green-400 text-xs font-rajdhani">
+                    <CheckCircle2 className="h-3 w-3" />
+                    <span>Done</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      );
+    }
+
+    return null;
+  };
+
+  const renderPagination = (currentPage: number, totalPages: number, setCurrentPage: (page: number) => void) => {
+    if (totalPages <= 1) return null;
+    return (
+      <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 pt-6">
+        <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))} disabled={currentPage === 1} className="bg-card/80 border-border hover:border-primary/40 disabled:opacity-30">
+          <ChevronLeft className="h-4 w-4 mr-1" />Previous
+        </Button>
+        <div className="flex items-center gap-1.5">
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNum: number;
+            if (totalPages <= 5) pageNum = i + 1;
+            else if (currentPage <= 3) pageNum = i + 1;
+            else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
+            else pageNum = currentPage - 2 + i;
+            return (
+              <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(pageNum)}
+                className={`w-8 h-8 p-0 ${currentPage === pageNum ? "bg-primary/20 border-primary text-primary" : "bg-card/80 border-border hover:border-primary/40"}`}>
+                {pageNum}
+              </Button>
+            );
+          })}
+        </div>
+        <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))} disabled={currentPage === totalPages} className="bg-card/80 border-border hover:border-primary/40 disabled:opacity-30">
+          Next<ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </motion.div>
+    );
+  };
+
+  const getGridClass = () => {
+    if (displayMode === "grid") return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
+    if (displayMode === "bookmark") return "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4";
+    return "flex flex-col gap-4";
+  };
+
+  return (
+    <div className="min-h-screen bg-background relative overflow-hidden">
       <CyberBackground />
       <ParticleEffects />
-      <div className="relative z-10">
-        <div className="max-w-2xl mx-auto p-6 space-y-8">
-          {/* Header */}
-          <div className="flex flex-col gap-6 pt-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                  GOALS
-                </h1>
-                <p className="text-muted-foreground font-rajdhani tracking-wide mt-1">Evolutions of your Pact</p>
-              </div>
-              <Button onClick={() => navigate("/goals/new")} className="relative overflow-hidden group">
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary-glow/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <Plus className="h-4 w-4 mr-2 relative z-10" />
-                <span className="relative z-10">Add Goal</span>
+
+      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-6">
+        {/* Header */}
+        <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold font-orbitron tracking-wider">
+              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(91,180,255,0.4)]">
+                GOALS
+              </span>
+            </h1>
+            <p className="text-muted-foreground font-rajdhani tracking-wide mt-1">Evolutions of your Pact</p>
+          </div>
+          <Button onClick={() => navigate("/goals/new")} className="relative overflow-hidden group self-start">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <Plus className="h-4 w-4 mr-2 relative z-10" />
+            <span className="relative z-10 font-rajdhani tracking-wider">Add Goal</span>
+          </Button>
+        </motion.div>
+
+        {/* Controls Bar */}
+        {displayGoals.length > 0 && (
+          <motion.div variants={itemVariants} className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border">
+            {/* Display Mode Toggle */}
+            <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border">
+              <button onClick={() => setDisplayMode("bar")} className={`p-2 rounded-md transition-all ${displayMode === "bar" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`} title="Bar View">
+                <LayoutList className="h-4 w-4" />
+              </button>
+              <button onClick={() => setDisplayMode("grid")} className={`p-2 rounded-md transition-all ${displayMode === "grid" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`} title="Grid View">
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button onClick={() => setDisplayMode("bookmark")} className={`p-2 rounded-md transition-all ${displayMode === "bookmark" ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"}`} title="Bookmark View">
+                <Bookmark className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="h-6 w-px bg-border hidden md:block" />
+
+            {/* Sort Controls */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-rajdhani tracking-wider uppercase text-muted-foreground">Sort</span>
+              <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
+                <SelectTrigger className="w-[130px] h-9 bg-card/80 border-border text-foreground font-rajdhani text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="difficulty">Difficulty</SelectItem>
+                  <SelectItem value="type">Category</SelectItem>
+                  <SelectItem value="points">Points</SelectItem>
+                  <SelectItem value="created">Created</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                  <SelectItem value="start">Start Date</SelectItem>
+                  <SelectItem value="progression">Progress</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="icon" onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")} className="h-9 w-9 bg-card/80 border-border hover:border-primary/40">
+                <ChevronRight className={`h-4 w-4 text-primary transition-transform duration-200 ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`} />
               </Button>
             </div>
 
-            {/* Sort Controls */}
-            {displayGoals.length > 0 && (
-              <div
-                className="relative overflow-hidden rounded-md border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl p-4 flex items-center gap-4
-              before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary/10 before:via-transparent before:to-transparent before:pointer-events-none
-              after:absolute after:inset-[-1px] after:rounded-md after:bg-gradient-to-br after:from-transparent after:via-primary/5 after:to-transparent after:pointer-events-none after:opacity-0 hover:after:opacity-100 after:transition-opacity after:duration-300
-              transition-all duration-300 hover:border-primary/50
-              shadow-[0_8px_32px_rgba(0,5,11,0.4),inset_0_0_20px_rgba(91,180,255,0.05)]
-              hover:shadow-[0_8px_32px_rgba(0,5,11,0.4),inset_0_0_20px_rgba(91,180,255,0.05),0_0_30px_rgba(91,180,255,0.2)]"
-              >
-                <span className="relative z-10 text-sm font-bold font-orbitron tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary-glow to-primary drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-                  Sort by
-                </span>
-                <Select value={sortBy} onValueChange={(value) => handleSortChange(value as SortOption)}>
-                  <SelectTrigger className="relative z-10 w-[160px] bg-[#00050B]/80 border-primary/30 text-foreground text-gray-100 font-rajdhani tracking-wide transition-all duration-300 hover:border-primary/50 hover:bg-[#00050B]">
-                    <SelectValue placeholder="Sort by..." />
-                  </SelectTrigger>
-                  <SelectContent className="z-50 bg-[#00050B]/95 backdrop-blur-xl border-2 border-primary/30 text-gray-100">
-                    <SelectItem
-                      value="difficulty"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Difficulty
-                    </SelectItem>
-                    <SelectItem
-                      value="type"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Category
-                    </SelectItem>
-                    <SelectItem
-                      value="points"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Points
-                    </SelectItem>
-                    <SelectItem
-                      value="created"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Created Date
-                    </SelectItem>
-                    <SelectItem
-                      value="name"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Name
-                    </SelectItem>
-                    <SelectItem
-                      value="status"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Status
-                    </SelectItem>
-                    <SelectItem
-                      value="start"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Start Date
-                    </SelectItem>
-                    <SelectItem
-                      value="progression"
-                      className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary"
-                    >
-                      Progression
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleDirectionChange(sortDirection === "asc" ? "desc" : "asc")}
-                  aria-label={`Sort ${sortDirection === "asc" ? "descending" : "ascending"}`}
-                  className="relative z-10 h-9 w-9 transition-all duration-300 hover:shadow-[0_0_15px_rgba(91,180,255,0.3)] bg-[#00050B]/80 border-primary/30 hover:border-primary/50 hover:bg-[#00050B]"
-                >
-                  <ChevronRight
-                    className={`h-4 w-4 text-primary transition-transform duration-300 ease-out ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`}
-                  />
-                </Button>
-              </div>
-            )}
-          </div>
+            <div className="flex-1" />
 
-          {/* Goals Tabs */}
-          {displayGoals.length === 0 ? (
-            <Card className="border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl shadow-[0_0_30px_rgba(91,180,255,0.15)]">
-              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(91,180,255,0.2)]">
-                  <Plus className="h-10 w-10 text-primary" />
-                </div>
-                <h3 className="text-xl font-bold font-orbitron tracking-wider text-primary mb-2">NO GOALS YET</h3>
-                <p className="text-muted-foreground font-rajdhani mb-6 max-w-sm">
-                  Start your journey by adding your first Pact evolution
-                </p>
-                <Button onClick={() => navigate("/goals/new")} className="relative overflow-hidden group">
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary-glow/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <Plus className="h-4 w-4 mr-2 relative z-10" />
-                  <span className="relative z-10">Create First Goal</span>
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "completed")} className="w-full">
-              <div className="flex items-center justify-between gap-4 mb-4">
-                <TabsList className="grid w-full grid-cols-2 bg-[#00050B]/80 border border-primary/20 p-1 flex-1">
-                  <TabsTrigger
-                    value="active"
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] font-rajdhani tracking-wide"
-                  >
-                    Active ({activeGoals.length})
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="completed"
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_15px_rgba(91,180,255,0.3)] font-rajdhani tracking-wide"
-                  >
-                    Completed ({completedGoals.length})
-                  </TabsTrigger>
-                </TabsList>
-                
-                {/* Items per page selector */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-rajdhani text-muted-foreground whitespace-nowrap">Per page:</span>
-                  <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
-                    <SelectTrigger className="w-[70px] h-8 bg-[#00050B]/80 border-primary/30 text-foreground text-gray-100 font-rajdhani text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="z-50 bg-[#00050B]/95 backdrop-blur-xl border-2 border-primary/30 text-gray-100">
-                      <SelectItem value="5" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">5</SelectItem>
-                      <SelectItem value="10" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">10</SelectItem>
-                      <SelectItem value="20" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">20</SelectItem>
-                      <SelectItem value="50" className="text-gray-100 hover:text-white focus:text-white data-[state=checked]:text-primary">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+            {/* Per Page */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-rajdhani text-muted-foreground">Per page</span>
+              <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+                <SelectTrigger className="w-[65px] h-9 bg-card/80 border-border text-foreground font-rajdhani text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </motion.div>
+        )}
 
-              <TabsContent value="active" className="space-y-6 mt-8">
+        {/* Content */}
+        {displayGoals.length === 0 ? (
+          <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-20 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
+            <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 shadow-[0_0_30px_rgba(91,180,255,0.2)]">
+              <Plus className="h-10 w-10 text-primary" />
+            </div>
+            <h3 className="text-xl font-bold font-orbitron tracking-wider text-primary mb-2">NO GOALS YET</h3>
+            <p className="text-muted-foreground font-rajdhani mb-6 max-w-sm">Start your journey by adding your first Pact evolution</p>
+            <Button onClick={() => navigate("/goals/new")} className="relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <Plus className="h-4 w-4 mr-2 relative z-10" />
+              <span className="relative z-10">Create First Goal</span>
+            </Button>
+          </motion.div>
+        ) : (
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "active" | "completed")} className="w-full">
+            <motion.div variants={itemVariants}>
+              <TabsList className="grid w-full max-w-sm grid-cols-2 bg-card/80 border border-border p-1">
+                <TabsTrigger value="active" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-rajdhani tracking-wide">
+                  Active ({activeGoals.length})
+                </TabsTrigger>
+                <TabsTrigger value="completed" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-rajdhani tracking-wide">
+                  Completed ({completedGoals.length})
+                </TabsTrigger>
+              </TabsList>
+            </motion.div>
+
+            <AnimatePresence mode="wait">
+              <TabsContent value="active" className="mt-6">
                 {activeGoals.length === 0 ? (
-                  <Card className="border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl shadow-[0_0_30px_rgba(91,180,255,0.15)]">
-                    <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(91,180,255,0.2)]">
-                        <Plus className="h-10 w-10 text-primary" />
-                      </div>
-                      <h3 className="text-xl font-bold font-orbitron tracking-wider text-primary mb-2">
-                        NO ACTIVE GOALS
-                      </h3>
-                      <p className="text-muted-foreground font-rajdhani mb-6 max-w-sm">
-                        Start your journey by adding your first Pact evolution
-                      </p>
-                      <Button onClick={() => navigate("/goals/new")} className="relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary-glow/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                        <Plus className="h-4 w-4 mr-2 relative z-10" />
-                        <span className="relative z-10">Create First Goal</span>
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <>
-                  {paginatedActiveGoals.map((goal) => {
-                    const isHabitGoal = goal.goal_type === "habit";
-                    const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
-                    const completedSteps = isHabitGoal
-                      ? goal.habit_checks?.filter(Boolean).length || 0
-                      : goal.completedStepsCount || 0;
-                    const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
-                    const difficultyColor = getDifficultyColor(goal.difficulty);
-                    return (
-                      <div key={goal.id} className="relative group">
-                        {/* Difficulty color glow behind card */}
-                        <div
-                          className="absolute -inset-1 rounded-lg opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500"
-                          style={{
-                            background: `${difficultyColor}20`,
-                          }}
-                        />
-
-                        <Card
-                          className="relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] border-2 border-primary/30 bg-[#00050B]/95 backdrop-blur-xl shadow-[0_0_20px_rgba(91,180,255,0.1)]"
-                          onClick={() => navigate(`/goals/${goal.id}`)}
-                        >
-                          {/* Difficulty accent bar - top */}
-                          <div
-                            className="absolute top-0 left-0 right-0 h-1"
-                            style={{
-                              background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)`,
-                              boxShadow: `0 0 10px ${difficultyColor}60`,
-                            }}
-                          />
-
-                          {/* Holographic border effect */}
-                          <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
-
-                          <CardContent className="p-6 relative z-10">
-                            <div className="flex gap-5">
-                              {/* Left Section: Image + Focus Star */}
-                              <div className="relative flex-shrink-0">
-                                {goal.image_url ? (
-                                  <div
-                                    className="relative w-24 h-24 rounded-lg overflow-hidden border-2 border-primary/40"
-                                    style={{
-                                      boxShadow: `0 0 20px ${difficultyColor}50, inset 0 0 20px ${difficultyColor}10`,
-                                    }}
-                                  >
-                                    <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
-                                    {/* Difficulty accent overlay */}
-                                    <div
-                                      className="absolute inset-0 pointer-events-none"
-                                      style={{
-                                        background: `linear-gradient(135deg, ${difficultyColor}15, transparent 50%, ${difficultyColor}10)`,
-                                      }}
-                                    />
-                                  </div>
-                                ) : (
-                                  <div
-                                    className="relative w-24 h-24 rounded-lg border-2 border-primary/40 flex items-center justify-center overflow-hidden"
-                                    style={{
-                                      background: `radial-gradient(circle at 30% 30%, ${difficultyColor}20, #00050B)`,
-                                      boxShadow: `0 0 20px ${difficultyColor}50, inset 0 0 20px ${difficultyColor}15`,
-                                    }}
-                                  >
-                                    <Trophy
-                                      className="h-10 w-10 relative z-10"
-                                      style={{
-                                        color: difficultyColor,
-                                        filter: `drop-shadow(0 0 8px ${difficultyColor})`,
-                                      }}
-                                    />
-                                    {/* Animated glow pulse */}
-                                    <div
-                                      className="absolute inset-0 animate-pulse opacity-30"
-                                      style={{
-                                        background: `radial-gradient(circle, ${difficultyColor}40, transparent 70%)`,
-                                      }}
-                                    />
-                                  </div>
-                                )}
-                                {/* Focus Star - positioned above image frame */}
-                                <button
-                                  onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                                  className="absolute -top-3 -right-3 z-30 p-1.5 bg-[#00050B] rounded-full border-2 border-primary/60 hover:scale-110 active:scale-95 transition-all shadow-[0_0_15px_rgba(91,180,255,0.6)] hover:shadow-[0_0_25px_rgba(91,180,255,0.8)]"
-                                  aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
-                                >
-                                  <Star
-                                    className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-primary/70"}`}
-                                    style={{
-                                      filter: goal.is_focus ? "drop-shadow(0 0 4px rgba(250, 204, 21, 0.8))" : "none",
-                                    }}
-                                  />
-                                </button>
-                              </div>
-
-                              {/* Content Section */}
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-4 mb-4">
-                                  <div className="flex-1 min-w-0">
-                                    <h3
-                                      className="font-bold text-xl leading-tight mb-2 line-clamp-2 font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#E7F8FF] via-[#BEEBFF] to-[#E7F8FF]"
-                                      style={{
-                                        textShadow: "0 0 12px rgba(190, 235, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.3)",
-                                        filter: "drop-shadow(0 0 8px rgba(190, 235, 255, 0.4))",
-                                      }}
-                                    >
-                                      {goal.name}
-                                    </h3>
-                                    <div className="flex items-center gap-2 flex-wrap">
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs font-bold font-rajdhani uppercase tracking-wider"
-                                        style={{
-                                          borderColor: difficultyColor,
-                                          color: difficultyColor,
-                                          backgroundColor: `${difficultyColor}15`,
-                                          boxShadow: `0 0 12px ${difficultyColor}50`,
-                                          textShadow: `0 0 8px ${difficultyColor}80`,
-                                        }}
-                                      >
-                                        {getDifficultyLabel(goal.difficulty)}
-                                      </Badge>
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs capitalize font-rajdhani border-primary/30 text-primary"
-                                      >
-                                        {goal.type}
-                                      </Badge>
-                                      {isHabitGoal && (
-                                        <Badge
-                                          variant="outline"
-                                          className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400 bg-emerald-500/10"
-                                        >
-                                          Habit
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <Badge
-                                    className={`${getStatusColor(goal.status)} font-rajdhani font-bold uppercase text-xs tracking-wider`}
-                                  >
-                                    {getStatusLabel(goal.status)}
-                                  </Badge>
-                                </div>
-
-                                {/* Progress Bar - Bright and Visible */}
-                                <div className="space-y-2 mb-3">
-                                  <div className="flex items-center justify-between text-sm font-rajdhani">
-                                    <span
-                                      className="uppercase tracking-wider text-primary/80 font-bold"
-                                      style={{
-                                        textShadow: "0 0 10px rgba(91, 180, 255, 0.4)",
-                                      }}
-                                    >
-                                      {isHabitGoal ? "Days" : "Progress"}
-                                    </span>
-                                    <span
-                                      className="font-bold text-foreground"
-                                      style={{
-                                        color: difficultyColor,
-                                        textShadow: `0 0 10px ${difficultyColor}60`,
-                                      }}
-                                    >
-                                      {completedSteps}/{totalSteps} {isHabitGoal ? "days" : "steps"} •{" "}
-                                      {progress.toFixed(0)}%
-                                    </span>
-                                  </div>
-                                  <div className="h-3 w-full bg-[#050A13] rounded-full overflow-hidden border-2 border-primary/30 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)]">
-                                    <div
-                                      className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
-                                      style={{
-                                        width: `${progress}%`,
-                                        background: `linear-gradient(90deg, #5BB4FF, #7AC5FF, ${difficultyColor})`,
-                                        boxShadow: `0 0 20px ${difficultyColor}80, inset 0 0 10px rgba(255,255,255,0.3)`,
-                                      }}
-                                    >
-                                      {/* Animated shimmer effect */}
-                                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-pulse" />
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Bottom Section: XP Points + View */}
-                            <div className="flex items-center justify-between mt-5 pt-4 border-t border-primary/20">
-                              <div className="flex items-center gap-3">
-                                {goal.potential_score && (
-                                  <div className="flex items-center gap-2 font-rajdhani font-bold">
-                                    <Sparkles
-                                      className="h-5 w-5 text-yellow-400"
-                                      style={{
-                                        filter: "drop-shadow(0 0 6px rgba(250, 204, 21, 0.8))",
-                                      }}
-                                    />
-                                    <span
-                                      className="text-yellow-400 text-base"
-                                      style={{
-                                        textShadow: "0 0 10px rgba(250, 204, 21, 0.6)",
-                                      }}
-                                    >
-                                      +{goal.potential_score} XP
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex items-center text-sm text-primary group-hover:translate-x-1 transition-transform font-rajdhani tracking-wider font-bold uppercase">
-                                <span
-                                  className="mr-1"
-                                  style={{
-                                    textShadow: "0 0 10px rgba(91, 180, 255, 0.5)",
-                                  }}
-                                >
-                                  View Mission
-                                </span>
-                                <ChevronRight
-                                  className="h-5 w-5"
-                                  style={{
-                                    filter: "drop-shadow(0 0 4px rgba(91, 180, 255, 0.6))",
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
-                    );
-                  })}
-                  
-                  {/* Pagination Controls for Active */}
-                  {activeTotalPages > 1 && (
-                    <div className="flex items-center justify-center gap-4 pt-6">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActiveCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={activeCurrentPage === 1}
-                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                      </Button>
-                      <div className="flex items-center gap-2">
-                        {Array.from({ length: Math.min(5, activeTotalPages) }, (_, i) => {
-                          let pageNum: number;
-                          if (activeTotalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (activeCurrentPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (activeCurrentPage >= activeTotalPages - 2) {
-                            pageNum = activeTotalPages - 4 + i;
-                          } else {
-                            pageNum = activeCurrentPage - 2 + i;
-                          }
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={activeCurrentPage === pageNum ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setActiveCurrentPage(pageNum)}
-                              className={`w-8 h-8 p-0 ${
-                                activeCurrentPage === pageNum
-                                  ? "bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(91,180,255,0.3)]"
-                                  : "bg-[#00050B]/80 border-primary/30 hover:border-primary/50"
-                              }`}
-                            >
-                              {pageNum}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setActiveCurrentPage((prev) => Math.min(prev + 1, activeTotalPages))}
-                        disabled={activeCurrentPage === activeTotalPages}
-                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
+                  <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
+                    <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                      <Plus className="h-8 w-8 text-primary" />
                     </div>
-                  )}
-                  </>
+                    <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">NO ACTIVE GOALS</h3>
+                    <p className="text-muted-foreground font-rajdhani mb-4">Start your journey by adding a goal</p>
+                    <Button onClick={() => navigate("/goals/new")} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />Create Goal
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div key="active" initial="hidden" animate="visible" variants={containerVariants} className={getGridClass()}>
+                    {paginatedActiveGoals.map((goal, i) => renderGoalCard(goal, i, false))}
+                    {displayMode === "bar" && renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
+                  </motion.div>
+                )}
+                {displayMode !== "bar" && activeGoals.length > 0 && (
+                  <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                    {renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
+                  </motion.div>
                 )}
               </TabsContent>
 
-              <TabsContent value="completed" className="space-y-6 mt-8">
+              <TabsContent value="completed" className="mt-6">
                 {completedGoals.length === 0 ? (
-                  <Card className="border-2 border-primary/30 bg-[#00050B]/90 backdrop-blur-xl shadow-[0_0_30px_rgba(91,180,255,0.15)]">
-                    <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-                      <div className="h-20 w-20 rounded-full bg-gradient-to-br from-green-500/20 to-green-500/5 flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(34,197,94,0.2)]">
-                        <CheckCircle2 className="h-10 w-10 text-green-400" />
-                      </div>
-                      <h3 className="text-xl font-bold font-orbitron tracking-wider text-primary mb-2">
-                        NO COMPLETED GOALS YET
-                      </h3>
-                      <p className="text-muted-foreground font-rajdhani max-w-sm">
-                        Complete your first goal to see it here
-                      </p>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <>
-                  {paginatedCompletedGoals.map((goal) => {
-                    const isHabitGoal = goal.goal_type === "habit";
-                    const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
-                    const difficultyColor = getDifficultyColor(goal.difficulty);
-                    return (
-                      <Card
-                        key={goal.id}
-                        className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.01] border-2 opacity-70 hover:opacity-85"
-                        style={{
-                          borderLeftWidth: "6px",
-                          borderLeftColor: `${difficultyColor}66`,
-                          background: "linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--muted) / 0.8) 100%)",
-                        }}
-                        onClick={() => navigate(`/goals/${goal.id}`)}
-                      >
-                        {/* Completion Stamp Effect */}
-                        <div className="absolute top-2 right-16 opacity-20 pointer-events-none rotate-12">
-                          <div className="border-4 border-green-500 rounded-lg px-3 py-1">
-                            <span className="text-green-500 font-bold text-xs">COMPLETED</span>
-                          </div>
-                        </div>
-
-                        <CardContent className="p-5 relative">
-                          <div className="flex gap-4">
-                            {/* Left Section: Image + Focus Star */}
-                            <div className="relative flex-shrink-0">
-                              {goal.image_url ? (
-                                <div
-                                  className="relative w-24 h-24 rounded-lg border-2 shadow-lg grayscale"
-                                  style={{
-                                    borderColor: `${difficultyColor}66`,
-                                  }}
-                                >
-                                  <img
-                                    src={goal.image_url}
-                                    alt={goal.name}
-                                    className="w-full h-full object-cover rounded-lg"
-                                  />
-                                  {/* Thin difficulty accent border visible on completed */}
-                                  <div
-                                    className="absolute inset-0 border-2 pointer-events-none rounded-lg"
-                                    style={{
-                                      borderColor: `${difficultyColor}99`,
-                                    }}
-                                  />
-                                </div>
-                              ) : (
-                                <div
-                                  className="relative w-24 h-24 rounded-lg border-2 shadow-lg flex items-center justify-center grayscale"
-                                  style={{
-                                    borderColor: `${difficultyColor}66`,
-                                    background: `linear-gradient(135deg, ${difficultyColor}20, ${difficultyColor}10)`,
-                                  }}
-                                >
-                                  <Trophy
-                                    className="h-10 w-10"
-                                    style={{
-                                      color: `${difficultyColor}99`,
-                                    }}
-                                  />
-                                </div>
-                              )}
-                              {/* Focus Star - positioned above image frame */}
-                              <button
-                                onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                                className="absolute -top-3 -right-3 z-30 p-1.5 bg-card rounded-full shadow-[0_0_15px_rgba(91,180,255,0.4)] hover:shadow-[0_0_25px_rgba(91,180,255,0.6)] hover:scale-110 active:scale-95 transition-all border-2 border-primary/50"
-                                aria-label={goal.is_focus ? "Remove from focus" : "Add to focus"}
-                              >
-                                <Star
-                                  className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`}
-                                  style={{
-                                    filter: goal.is_focus ? "drop-shadow(0 0 4px rgba(250, 204, 21, 0.8))" : "none",
-                                  }}
-                                />
-                              </button>
-                            </div>
-
-                            {/* Middle Section: Content */}
-                            <div className="flex-1 min-w-0 space-y-3">
-                              {/* Title & Badges */}
-                              <div>
-                                <h3
-                                  className="text-lg font-bold mb-2 line-clamp-2 font-orbitron tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#E7F8FF] via-[#BEEBFF] to-[#E7F8FF]"
-                                  style={{
-                                    textShadow: "0 0 12px rgba(190, 235, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.3)",
-                                    filter: "drop-shadow(0 0 8px rgba(190, 235, 255, 0.4))",
-                                  }}
-                                >
-                                  {goal.name}
-                                </h3>
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs font-semibold capitalize px-2.5 py-0.5 opacity-75"
-                                    style={{
-                                      backgroundColor: `${difficultyColor}12`,
-                                      color: `${difficultyColor}B3`,
-                                      borderColor: `${difficultyColor}66`,
-                                      boxShadow: `0 0 6px ${difficultyColor}30`,
-                                    }}
-                                  >
-                                    {getDifficultyLabel(goal.difficulty)}
-                                  </Badge>
-                                  <Badge variant="outline" className="text-xs capitalize border">
-                                    {goal.type}
-                                  </Badge>
-                                  {isHabitGoal && (
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs font-rajdhani border-emerald-500/50 text-emerald-400/70 bg-emerald-500/10"
-                                    >
-                                      Habit
-                                    </Badge>
-                                  )}
-                                  <Badge className={`text-xs border ${getStatusColor(goal.status)}`}>
-                                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                                    Completed
-                                  </Badge>
-                                </div>
-                              </div>
-
-                              {/* Progress Bar - Full with Difficulty Accent */}
-                              <div className="space-y-1.5">
-                                <div className="flex items-center justify-between text-xs">
-                                  <span className="text-muted-foreground font-medium">
-                                    {totalSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"}
-                                  </span>
-                                  <span className="font-bold text-green-600 dark:text-green-400">100%</span>
-                                </div>
-                                <div
-                                  className="h-2.5 bg-muted rounded-full overflow-hidden shadow-inner relative"
-                                  style={{
-                                    border: `2px solid ${difficultyColor}66`,
-                                  }}
-                                >
-                                  <div
-                                    className="h-full transition-all duration-500 rounded-full bg-green-500 relative"
-                                    style={{
-                                      width: "100%",
-                                    }}
-                                  >
-                                    {/* Thin difficulty color accent overlay */}
-                                    <div
-                                      className="absolute inset-0 rounded-full"
-                                      style={{
-                                        background: `linear-gradient(90deg, transparent 0%, ${difficultyColor}40 50%, transparent 100%)`,
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* XP Points Earned */}
-                              {goal.potential_score > 0 && (
-                                <div className="flex items-center gap-1.5 text-xs">
-                                  <Trophy className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                                  <span className="font-bold text-green-600 dark:text-green-400">
-                                    +{goal.potential_score} XP Earned
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Right Section: Arrow */}
-                            <div className="flex items-center justify-center flex-shrink-0 pl-2">
-                              <ArrowRight className="h-6 w-6 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                  
-                  {/* Pagination Controls for Completed */}
-                  {completedTotalPages > 1 && (
-                    <div className="flex items-center justify-center gap-4 pt-6">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCompletedCurrentPage((prev) => Math.max(prev - 1, 1))}
-                        disabled={completedCurrentPage === 1}
-                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
-                      >
-                        <ChevronLeft className="h-4 w-4 mr-1" />
-                        Previous
-                      </Button>
-                      <div className="flex items-center gap-2">
-                        {Array.from({ length: Math.min(5, completedTotalPages) }, (_, i) => {
-                          let pageNum: number;
-                          if (completedTotalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (completedCurrentPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (completedCurrentPage >= completedTotalPages - 2) {
-                            pageNum = completedTotalPages - 4 + i;
-                          } else {
-                            pageNum = completedCurrentPage - 2 + i;
-                          }
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={completedCurrentPage === pageNum ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setCompletedCurrentPage(pageNum)}
-                              className={`w-8 h-8 p-0 ${
-                                completedCurrentPage === pageNum
-                                  ? "bg-primary/20 border-primary text-primary shadow-[0_0_15px_rgba(91,180,255,0.3)]"
-                                  : "bg-[#00050B]/80 border-primary/30 hover:border-primary/50"
-                              }`}
-                            >
-                              {pageNum}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setCompletedCurrentPage((prev) => Math.min(prev + 1, completedTotalPages))}
-                        disabled={completedCurrentPage === completedTotalPages}
-                        className="bg-[#00050B]/80 border-primary/30 hover:border-primary/50 disabled:opacity-30"
-                      >
-                        Next
-                        <ChevronRight className="h-4 w-4 ml-1" />
-                      </Button>
+                  <motion.div variants={itemVariants} className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
+                    <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                      <CheckCircle2 className="h-8 w-8 text-green-400" />
                     </div>
-                  )}
-                  </>
+                    <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">NO COMPLETED GOALS YET</h3>
+                    <p className="text-muted-foreground font-rajdhani">Complete your first goal to see it here</p>
+                  </motion.div>
+                ) : (
+                  <motion.div key="completed" initial="hidden" animate="visible" variants={containerVariants} className={getGridClass()}>
+                    {paginatedCompletedGoals.map((goal, i) => renderGoalCard(goal, i, true))}
+                    {displayMode === "bar" && renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
+                  </motion.div>
+                )}
+                {displayMode !== "bar" && completedGoals.length > 0 && (
+                  <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                    {renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
+                  </motion.div>
                 )}
               </TabsContent>
-            </Tabs>
-          )}
-        </div>
-      </div>
+            </AnimatePresence>
+          </Tabs>
+        )}
+      </motion.div>
     </div>
   );
 }
