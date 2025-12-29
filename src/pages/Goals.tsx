@@ -609,28 +609,46 @@ export default function Goals() {
   const renderPagination = (currentPage: number, totalPages: number, setCurrentPage: (page: number) => void) => {
     if (totalPages <= 1) return null;
     return (
-      <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 pt-6">
-        <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))} disabled={currentPage === 1} className="bg-card/80 border-border hover:border-primary/40 disabled:opacity-30">
-          <ChevronLeft className="h-4 w-4 mr-1" />Previous
-        </Button>
-        <div className="flex items-center gap-1.5">
+      <motion.div variants={itemVariants} className="flex items-center justify-center gap-2 pt-6">
+        <button 
+          onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))} 
+          disabled={currentPage === 1} 
+          className="px-4 py-2 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/20 text-foreground/80 font-rajdhani text-sm font-medium transition-all duration-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_15px_hsl(var(--primary)/0.2)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-primary/20 disabled:hover:bg-card/80 disabled:hover:text-foreground/80 disabled:hover:shadow-none flex items-center gap-1.5"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          <span>Previous</span>
+        </button>
+        <div className="flex items-center gap-1.5 px-2">
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
             let pageNum: number;
             if (totalPages <= 5) pageNum = i + 1;
             else if (currentPage <= 3) pageNum = i + 1;
             else if (currentPage >= totalPages - 2) pageNum = totalPages - 4 + i;
             else pageNum = currentPage - 2 + i;
+            const isActive = currentPage === pageNum;
             return (
-              <Button key={pageNum} variant={currentPage === pageNum ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(pageNum)}
-                className={`w-8 h-8 p-0 ${currentPage === pageNum ? "bg-primary/20 border-primary text-primary" : "bg-card/80 border-border hover:border-primary/40"}`}>
+              <button 
+                key={pageNum} 
+                onClick={() => setCurrentPage(pageNum)}
+                className={`w-9 h-9 rounded-xl font-rajdhani text-sm font-medium transition-all duration-300 flex items-center justify-center ${
+                  isActive 
+                    ? "bg-primary/15 border border-primary/50 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]" 
+                    : "bg-card/80 backdrop-blur-sm border border-primary/20 text-foreground/70 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
+                }`}
+              >
                 {pageNum}
-              </Button>
+              </button>
             );
           })}
         </div>
-        <Button variant="outline" size="sm" onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))} disabled={currentPage === totalPages} className="bg-card/80 border-border hover:border-primary/40 disabled:opacity-30">
-          Next<ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
+        <button 
+          onClick={() => setCurrentPage(Math.min(currentPage + 1, totalPages))} 
+          disabled={currentPage === totalPages} 
+          className="px-4 py-2 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/20 text-foreground/80 font-rajdhani text-sm font-medium transition-all duration-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_15px_hsl(var(--primary)/0.2)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-primary/20 disabled:hover:bg-card/80 disabled:hover:text-foreground/80 disabled:hover:shadow-none flex items-center gap-1.5"
+        >
+          <span>Next</span>
+          <ChevronRight className="h-4 w-4" />
+        </button>
       </motion.div>
     );
   };
@@ -657,11 +675,13 @@ export default function Goals() {
             </h1>
             <p className="text-muted-foreground font-rajdhani tracking-wide mt-1">Evolutions of your Pact</p>
           </div>
-          <Button onClick={() => navigate("/goals/new")} className="relative overflow-hidden group self-start">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            <Plus className="h-4 w-4 mr-2 relative z-10" />
-            <span className="relative z-10 font-rajdhani tracking-wider">Add Goal</span>
-          </Button>
+          <button 
+            onClick={() => navigate("/goals/new")} 
+            className="relative overflow-hidden group self-start px-5 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-rajdhani font-medium tracking-wider transition-all duration-300 hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Goal</span>
+          </button>
         </motion.div>
 
         {/* Controls Bar */}
