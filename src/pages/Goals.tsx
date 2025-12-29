@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark, Zap } from "lucide-react";
+import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark, Zap, List } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
@@ -80,10 +80,11 @@ export default function Goals() {
   const navigate = useNavigate();
   const [sortBy, setSortBy] = useState<SortOption>("created");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-  const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "completed">("active");
   const [itemsPerPage, setItemsPerPage] = useState<number>(10);
   const [activeCurrentPage, setActiveCurrentPage] = useState(1);
   const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
+  const [allCurrentPage, setAllCurrentPage] = useState(1);
   const [displayMode, setDisplayMode] = useState<DisplayMode>("bar");
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
@@ -186,19 +187,24 @@ export default function Goals() {
 
   const activeGoals = displayGoals.filter((g) => g.status === "not_started" || g.status === "in_progress");
   const completedGoals = displayGoals.filter((g) => g.status === "fully_completed" || g.status === "validated");
+  const allGoals = displayGoals;
   const sortedActiveGoals = sortGoals(activeGoals);
   const sortedCompletedGoals = sortGoals(completedGoals);
+  const sortedAllGoals = sortGoals(allGoals);
 
   const activeTotalPages = Math.ceil(sortedActiveGoals.length / itemsPerPage);
   const completedTotalPages = Math.ceil(sortedCompletedGoals.length / itemsPerPage);
+  const allTotalPages = Math.ceil(sortedAllGoals.length / itemsPerPage);
   
   const paginatedActiveGoals = sortedActiveGoals.slice((activeCurrentPage - 1) * itemsPerPage, activeCurrentPage * itemsPerPage);
   const paginatedCompletedGoals = sortedCompletedGoals.slice((completedCurrentPage - 1) * itemsPerPage, completedCurrentPage * itemsPerPage);
+  const paginatedAllGoals = sortedAllGoals.slice((allCurrentPage - 1) * itemsPerPage, allCurrentPage * itemsPerPage);
 
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(Number(value));
     setActiveCurrentPage(1);
     setCompletedCurrentPage(1);
+    setAllCurrentPage(1);
   };
 
   if (loading) {
@@ -744,6 +750,7 @@ export default function Goals() {
             <motion.div variants={itemVariants} className="flex justify-center mb-6">
               <div className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl">
                 {[
+                  { id: "all" as const, label: "All", count: allGoals.length, icon: List },
                   { id: "active" as const, label: "Active", count: activeGoals.length, icon: Zap },
                   { id: "completed" as const, label: "Completed", count: completedGoals.length, icon: CheckCircle2 },
                 ].map((tab) => {
@@ -778,6 +785,42 @@ export default function Goals() {
             </motion.div>
 
             <AnimatePresence mode="wait">
+              {activeTab === "all" && (
+                <motion.div
+                  key="all"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {allGoals.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
+                      <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                        <Plus className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">NO GOALS YET</h3>
+                      <p className="text-muted-foreground font-rajdhani mb-4">Start your journey by adding a goal</p>
+                      <Button onClick={() => navigate("/goals/new")} size="sm">
+                        <Plus className="h-4 w-4 mr-2" />Create Goal
+                      </Button>
+                    </div>
+                  ) : (
+                    <motion.div initial="hidden" animate="visible" variants={containerVariants} className={getGridClass()}>
+                      {paginatedAllGoals.map((goal, i) => {
+                        const isCompleted = goal.status === "fully_completed" || goal.status === "validated";
+                        return renderGoalCard(goal, i, isCompleted);
+                      })}
+                      {displayMode === "bar" && renderPagination(allCurrentPage, allTotalPages, setAllCurrentPage)}
+                    </motion.div>
+                  )}
+                  {displayMode !== "bar" && allGoals.length > 0 && (
+                    <motion.div variants={containerVariants} initial="hidden" animate="visible">
+                      {renderPagination(allCurrentPage, allTotalPages, setAllCurrentPage)}
+                    </motion.div>
+                  )}
+                </motion.div>
+              )}
+
               {activeTab === "active" && (
                 <motion.div
                   key="active"
