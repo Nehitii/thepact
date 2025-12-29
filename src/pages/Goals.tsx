@@ -367,15 +367,6 @@ export default function Goals() {
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
               } as React.CSSProperties}
             >
-              {/* Difficulty accent line - Phase 4 enhanced */}
-              <div 
-                className="absolute top-0 left-0 right-0 rounded-t-xl" 
-                style={{ 
-                  height: `${2 + intensity * 0.5}px`,
-                  background: `linear-gradient(90deg, transparent, ${difficultyColor}, transparent)`,
-                  boxShadow: isCompleted ? 'none' : `0 0 ${8 + intensity * 2}px ${difficultyColor}60`
-                }} 
-              />
 
               {/* Image */}
               <div className="relative flex-shrink-0">
