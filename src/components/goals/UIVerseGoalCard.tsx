@@ -94,10 +94,24 @@ export function UIVerseGoalCard({
     }
   };
 
-  // Card background color - dark with subtle difficulty tint
-  const cardBgColor = "#1b233d";
-  const tintedBg = `linear-gradient(135deg, ${cardBgColor} 0%, ${withAlpha(difficultyColor, 0.08)} 100%)`;
+  // Glossy overlay intensity based on difficulty (0.05 to 0.35)
+  const getGlossIntensity = (): number => {
+    switch (difficulty) {
+      case "easy": return 0.08;
+      case "medium": return 0.14;
+      case "hard": return 0.22;
+      case "extreme": return 0.28;
+      case "impossible": return 0.32;
+      case "custom": return 0.35;
+      default: return 0.08;
+    }
+  };
 
+  const glossIntensity = getGlossIntensity();
+
+  // Card background color - fully opaque dark with subtle difficulty tint
+  const cardBgColor = "#1b233d";
+  const tintedBg = `linear-gradient(135deg, ${cardBgColor} 0%, hsl(230 30% 18%) 50%, ${cardBgColor} 100%)`;
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
@@ -108,27 +122,35 @@ export function UIVerseGoalCard({
       <div
         className="relative overflow-hidden"
         style={{
-          width: "230px",
+          width: "210px",
           borderRadius: "20px",
           background: tintedBg,
           padding: "5px",
-          boxShadow: `${withAlpha(difficultyColor, 0.2)} 0px 7px 20px 0px`,
-          border: `1px solid ${withAlpha(difficultyColor, 0.25)}`,
+          boxShadow: `${withAlpha(difficultyColor, 0.25)} 0px 7px 20px 0px`,
+          border: `1px solid ${withAlpha(difficultyColor, 0.3)}`,
         }}
       >
-        {/* Difficulty Badge - Top Left */}
+        {/* Difficulty Badge - Top Left with Glossy Effect */}
         <Badge
-          className="absolute top-1 left-2 z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1"
+          className="absolute top-1 left-2 z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
           style={{
             borderRadius: "999px",
             color: "white",
             background: getTierBackground(),
-            border: `1px solid ${withAlpha(difficultyColor, 0.5)}`,
+            border: `1px solid ${withAlpha(difficultyColor, 0.6)}`,
             backdropFilter: "blur(10px)",
-            boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(difficultyColor, 0.5)}`,
+            boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(difficultyColor, 0.5)}, inset 0 1px 1px rgba(255,255,255,${glossIntensity})`,
           }}
         >
-          {getDifficultyLabel(difficulty)}
+          {/* Glossy shine overlay */}
+          <span
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(135deg, rgba(255,255,255,${glossIntensity * 1.2}) 0%, rgba(255,255,255,${glossIntensity * 0.3}) 40%, transparent 60%)`,
+              borderRadius: "inherit",
+            }}
+          />
+          <span className="relative z-10">{getDifficultyLabel(difficulty)}</span>
         </Badge>
 
         {/* Focus Star - Top Right (on image section) */}
@@ -150,11 +172,12 @@ export function UIVerseGoalCard({
           />
         </button>
 
-        {/* Top Section - Image Area */}
+        {/* Top Section - Image Area - Fixed height/width */}
         <div
-          className="relative overflow-hidden"
+          className="relative overflow-hidden flex-shrink-0"
           style={{
-            height: "150px",
+            height: "130px",
+            width: "100%",
             borderRadius: "15px",
             background: goal.image_url
               ? undefined
@@ -165,7 +188,7 @@ export function UIVerseGoalCard({
             <img
               src={goal.image_url}
               alt={goal.name}
-              className={`w-full h-full object-cover ${isCompleted ? "grayscale opacity-70" : ""}`}
+              className={`absolute inset-0 w-full h-full object-cover ${isCompleted ? "grayscale opacity-70" : ""}`}
               style={{ borderRadius: "15px" }}
             />
           ) : (
