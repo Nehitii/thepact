@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark, Zap, List } from "lucide-react";
+import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
@@ -526,79 +527,21 @@ export default function Goals() {
       );
     }
 
-    // Bookmark Mode (Vertical strips)
+    // Bookmark Mode (UIVerse Card Design)
     if (displayMode === "bookmark") {
       return (
         <motion.div 
           key={goal.id} 
           variants={itemVariants}
-          whileHover={{ scale: 1.02, y: -4 }}
-          transition={{ duration: 0.2 }}
         >
-          <div
-            onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`group relative h-64 rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
-              isCompleted ? "opacity-70 hover:opacity-90" : ""
-            }`}
-            style={{ 
-              borderWidth: borderWidth,
-              borderStyle: 'solid',
-              borderColor: `${difficultyColor}40`,
-              boxShadow: isCompleted ? 'none' : `0 4px ${15 + intensity * 5}px ${difficultyColor}15`
-            }}
-          >
-            {/* Spine accent - Phase 4 enhanced */}
-            <div 
-              className={`absolute top-0 bottom-0 left-0 rounded-l-xl ${!isCompleted ? auraClass : ''}`}
-              style={{ 
-                '--aura-color': difficultyColor,
-                width: `${4 + intensity}px`,
-                background: `linear-gradient(180deg, ${difficultyColor}, ${difficultyColor}80)`,
-                boxShadow: isCompleted ? 'none' : `0 0 ${12 + intensity * 3}px ${difficultyColor}60`
-              } as React.CSSProperties} 
-            />
-
-            {/* Background */}
-            <div className="absolute inset-0 bg-card/90" />
-            {goal.image_url && (
-              <div className="absolute inset-0 opacity-20">
-                <img src={goal.image_url} alt="" className={`w-full h-full object-cover ${isCompleted ? "grayscale" : ""}`} />
-              </div>
-            )}
-
-            {/* Content */}
-            <div className="relative h-full flex flex-col p-4 pl-5">
-              {/* Focus Star */}
-              <button
-                onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                className="absolute top-3 right-3 z-20 p-1.5 bg-card/80 rounded-full border border-border hover:scale-110 transition-all"
-              >
-                <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
-              </button>
-
-              {/* Difficulty Badge - Phase 2 Enhanced */}
-              <DifficultyBadge difficulty={goal.difficulty} isCompleted={isCompleted} />
-
-              {/* Title */}
-              <h3 className="font-bold text-sm leading-tight line-clamp-3 text-foreground font-rajdhani flex-1 mt-3">
-                {goal.name}
-              </h3>
-
-              {/* Progress indicator - Phase 3 Enhanced */}
-              <div className="mt-auto space-y-2">
-                <div className="text-xs font-rajdhani text-muted-foreground">
-                  {completedSteps}/{totalSteps} {isHabitGoal ? "days" : "steps"}
-                </div>
-                <ProgressBar progress={progress} difficultyColor={difficultyColor} difficulty={goal.difficulty} isCompleted={isCompleted} />
-                {isCompleted && (
-                  <div className="flex items-center gap-1 text-green-400 text-xs font-rajdhani">
-                    <CheckCircle2 className="h-3 w-3" />
-                    <span>Done</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <UIVerseGoalCard
+            goal={goal}
+            isCompleted={isCompleted}
+            customDifficultyName={customDifficultyName}
+            customDifficultyColor={customDifficultyColor}
+            onNavigate={(goalId) => navigate(`/goals/${goalId}`)}
+            onToggleFocus={toggleFocus}
+          />
         </motion.div>
       );
     }
