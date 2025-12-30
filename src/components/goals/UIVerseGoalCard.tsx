@@ -114,15 +114,17 @@ export function UIVerseGoalCard({
   const tintedBg = `linear-gradient(135deg, ${cardBgColor} 0%, hsl(230 30% 18%) 50%, ${cardBgColor} 100%)`;
   return (
     <motion.div
-      whileHover={{ scale: 1.05 }}
-      transition={{ duration: 0.5, type: "spring", stiffness: 200 }}
+      whileHover={{ scale: 1.03 }}
+      transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
       onClick={() => onNavigate(goal.id)}
       className="cursor-pointer"
+      style={{ width: "210px", height: "280px" }}
     >
       <div
-        className="relative overflow-hidden"
+        className="relative overflow-hidden flex flex-col"
         style={{
           width: "210px",
+          height: "280px",
           borderRadius: "20px",
           background: tintedBg,
           padding: "5px",
@@ -253,19 +255,21 @@ export function UIVerseGoalCard({
           />
         </div>
 
-        {/* Bottom Section - Content */}
-        <div className="mt-4 px-2 pb-3">
-          {/* Title */}
-          <h3
-            className="text-center font-bold tracking-widest uppercase line-clamp-2 font-rajdhani"
-            style={{
-              fontSize: "15px",
-              color: "white",
-              letterSpacing: "2px",
-            }}
-          >
-            {goal.name}
-          </h3>
+        {/* Bottom Section - Content - Fixed height */}
+        <div className="mt-3 px-2 pb-2 flex-1 flex flex-col min-h-0">
+          {/* Title - Fixed height container with truncation */}
+          <div className="h-10 flex items-start justify-center overflow-hidden">
+            <h3
+              className="text-center font-bold tracking-widest uppercase line-clamp-2 font-rajdhani leading-tight"
+              style={{
+                fontSize: "13px",
+                color: "white",
+                letterSpacing: "1.5px",
+              }}
+            >
+              {goal.name}
+            </h3>
+          </div>
 
           {/* Steps info + Progress */}
           <div className="mt-4 space-y-2 px-1">

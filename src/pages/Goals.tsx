@@ -598,7 +598,7 @@ export default function Goals() {
 
   const getGridClass = () => {
     if (displayMode === "grid") return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
-    if (displayMode === "bookmark") return "grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4";
+    if (displayMode === "bookmark") return "flex flex-wrap justify-center gap-6";
     return "flex flex-col gap-4";
   };
 
