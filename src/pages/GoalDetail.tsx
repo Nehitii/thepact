@@ -413,7 +413,7 @@ export default function GoalDetail() {
             <div className="flex flex-row md:flex-col gap-2 flex-shrink-0">
               <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-primary/30 hover:bg-primary/10">
+                  <Button variant="hud" size="sm" className="rounded-lg">
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
                   </Button>
@@ -479,14 +479,28 @@ export default function GoalDetail() {
                 </DialogContent>
               </Dialog>
 
-              <Button variant="outline" size="sm" onClick={handleFullyComplete} className="border-primary/30 hover:bg-primary/10" style={{ borderColor: `${difficultyColor}40`, color: difficultyColor }}>
+              <Button 
+                variant="hud" 
+                size="sm" 
+                onClick={handleFullyComplete} 
+                className="rounded-lg"
+                style={{ 
+                  borderColor: `${difficultyColor}50`, 
+                  color: difficultyColor,
+                  boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`
+                }}
+              >
                 <Sparkles className="h-4 w-4 mr-2" />
                 Complete
               </Button>
 
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="border-destructive/30 text-destructive hover:bg-destructive/10">
+                  <Button 
+                    variant="hud" 
+                    size="sm" 
+                    className="rounded-lg border-destructive/40 text-destructive hover:border-destructive/70 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+                  >
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
