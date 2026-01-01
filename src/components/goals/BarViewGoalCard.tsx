@@ -439,7 +439,7 @@ export function BarViewGoalCard({
           background: `radial-gradient(circle at top left, ${withAlpha(difficultyColor, 0.15)}, ${withAlpha(difficultyColor, 0.08)} 50%, rgba(15, 30, 60, 0.95))`,
           top: "-5px",
           zIndex: 1,
-          borderRadius: "0 0 24px 24px",
+          borderRadius: "30px 30px 30px 30px",
           overflow: "hidden",
           alignItems: "center",
           justifyContent: "flex-start",
