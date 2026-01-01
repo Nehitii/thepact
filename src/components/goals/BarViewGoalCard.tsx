@@ -35,18 +35,12 @@ const getDifficultyLabel = (difficulty: string, customName?: string): string => 
 
 const getStatusLabel = (status: string): string => {
   switch (status) {
-    case "not_started":
-      return "Not Started";
-    case "in_progress":
-      return "In Progress";
-    case "fully_completed":
-      return "Completed";
-    case "paused":
-      return "Paused";
-    case "validated":
-      return "Validated";
-    default:
-      return status || "Unknown";
+    case "not_started": return "Not Started";
+    case "in_progress": return "In Progress";
+    case "fully_completed": return "Completed";
+    case "paused": return "Paused";
+    case "validated": return "Validated";
+    default: return status || "Unknown";
   }
 };
 
@@ -67,19 +61,13 @@ const getGoalTypeTags = (type: string): string[] => {
 
 const getDifficultyIntensity = (difficulty: string): number => {
   switch (difficulty) {
-    case "easy":
-      return 1;
-    case "medium":
-      return 2;
-    case "hard":
-      return 3;
-    case "extreme":
-      return 4;
+    case "easy": return 1;
+    case "medium": return 2;
+    case "hard": return 3;
+    case "extreme": return 4;
     case "impossible":
-    case "custom":
-      return 5;
-    default:
-      return 1;
+    case "custom": return 5;
+    default: return 1;
   }
 };
 
@@ -91,13 +79,7 @@ const withAlpha = (color: string, alpha: number): string => {
   }
   if (color.startsWith("#")) {
     const hex = color.slice(1);
-    const full =
-      hex.length === 3
-        ? hex
-            .split("")
-            .map((c) => c + c)
-            .join("")
-        : hex;
+    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
     if (full.length === 6) {
       const r = parseInt(full.slice(0, 2), 16);
       const g = parseInt(full.slice(2, 4), 16);
@@ -120,61 +102,42 @@ const adjustColorBrightness = (color: string, amount: number): string => {
     }
     return color;
   }
-
+  
   if (color.startsWith("#")) {
     const hex = color.slice(1);
-    const full =
-      hex.length === 3
-        ? hex
-            .split("")
-            .map((c) => c + c)
-            .join("")
-        : hex;
+    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
     const r = Math.max(0, Math.min(255, parseInt(full.slice(0, 2), 16) + amount));
     const g = Math.max(0, Math.min(255, parseInt(full.slice(2, 4), 16) + amount));
     const b = Math.max(0, Math.min(255, parseInt(full.slice(4, 6), 16) + amount));
     return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
   }
-
+  
   return color;
 };
 
 // Get tier background gradient for badge (matching UIVerseGoalCard)
 const getTierBackground = (difficulty: string, difficultyColor: string) => {
   switch (difficulty) {
-    case "easy":
-      return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
-    case "medium":
-      return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
-    case "hard":
-      return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
-    case "extreme":
-      return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
+    case "easy": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
+    case "medium": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
+    case "hard": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
+    case "extreme": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
     case "impossible":
-    case "custom":
-      return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
-    default:
-      return difficultyColor;
+    case "custom": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
+    default: return difficultyColor;
   }
 };
 
 // Glossy overlay intensity based on difficulty
 const getGlossIntensity = (difficulty: string): number => {
   switch (difficulty) {
-    case "easy":
-      return 0.08;
-    case "medium":
-      return 0.14;
-    case "hard":
-      return 0.22;
-    case "extreme":
-      return 0.28;
-    case "impossible":
-      return 0.32;
-    case "custom":
-      return 0.35;
-    default:
-      return 0.08;
+    case "easy": return 0.08;
+    case "medium": return 0.14;
+    case "hard": return 0.22;
+    case "extreme": return 0.28;
+    case "impossible": return 0.32;
+    case "custom": return 0.35;
+    default: return 0.08;
   }
 };
 
@@ -187,7 +150,9 @@ export function BarViewGoalCard({
   onToggleFocus,
 }: BarViewGoalCardProps) {
   const difficulty = goal.difficulty || "easy";
-  const difficultyColor = difficulty === "custom" ? customDifficultyColor : getUnifiedDifficultyColor(difficulty);
+  const difficultyColor = difficulty === "custom"
+    ? customDifficultyColor
+    : getUnifiedDifficultyColor(difficulty);
 
   const goalType = goal.goal_type || "standard";
   const isHabitGoal = goalType === "habit";
@@ -233,7 +198,7 @@ export function BarViewGoalCard({
           background: outlineGradient,
           width: "100%",
           height: "140px",
-          borderRadius: "0",
+          borderRadius: "25px",
           transition: "box-shadow 0.5s ease",
           zIndex: 2,
           overflow: "hidden",
@@ -317,7 +282,9 @@ export function BarViewGoalCard({
             borderColor: "rgba(255,255,255,0.2)",
           }}
         >
-          <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`} />
+          <Star
+            className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`}
+          />
         </button>
 
         {/* Difficulty Badge - Same style as UIVerseGoalCard */}
