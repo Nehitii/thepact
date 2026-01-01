@@ -406,13 +406,10 @@ export function BarViewGoalCard({
           zIndex: 1,
           borderRadius: "0 0 25px 25px",
           overflow: "hidden",
-
-          // alignement vertical au centre de la section dépliée
-          display: "flex",
           alignItems: "center",
           justifyContent: "flex-start",
           gap: "20px",
-          padding: "30px 24px", // même espace haut/bas
+          padding: "5px 24px",
         }}
       >
         {/* XP Box - Now in expanded section only, on the left */}
@@ -532,9 +529,20 @@ export function BarViewGoalCard({
           box-shadow: 0 10px 25px ${withAlpha(difficultyColor, 0.55)};
         }
         .${cardId}:hover .${cardId}-detail {
-          display: flex !important;
-          animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
-        }
+  display: flex !important;
+  align-items: center;          /* ✅ centre verticalement dans la zone noire */
+  justify-content: flex-start;
+  gap: 20px;
+
+  /* ✅ même espace en haut et en bas */
+  padding-top: 30px;
+  padding-bottom: 30px;
+  padding-left: 24px;
+  padding-right: 24px;
+
+  animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
+}
+
         .${cardId}:hover .${cardId}-splitline {
           animation: ${cardId}-energy-flow 1.1s linear infinite, ${cardId}-energy-flicker 0.18s infinite alternate;
           box-shadow: 0 0 14px ${withAlpha(difficultyColor, 0.9)}, 0 0 35px ${withAlpha(difficultyColor, 0.7)} !important;
