@@ -530,12 +530,20 @@ export function BarViewGoalCard({
         }
         .${cardId}:hover .${cardId}-detail {
   display: flex !important;
-  align-items: center;           /* CENTRE VERTICALEMENT */
-  justify-content: flex-start;   /* tu peux mettre center si tu veux centrer horizontalement */
+  align-items: center;           /* base */
+  justify-content: flex-start;
   gap: 20px;
-  padding: 20px 24px;            /* padding haut = bas */
+
+  /* ⬇️ NOUVEAU ALIGNEMENT PAR RAPPORT À LA CARTE DU HAUT */
+  padding-top: 45px;             /* 🔥 ajuste ça */
+  padding-bottom: 45px;          /* 🔥 et ça */
+
+  padding-left: 24px;
+  padding-right: 24px;
+
   animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
 }
+
         .${cardId}:hover .${cardId}-splitline {
           animation: ${cardId}-energy-flow 1.1s linear infinite, ${cardId}-energy-flicker 0.18s infinite alternate;
           box-shadow: 0 0 14px ${withAlpha(difficultyColor, 0.9)}, 0 0 35px ${withAlpha(difficultyColor, 0.7)} !important;
