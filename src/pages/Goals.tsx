@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark, Zap, List } from "lucide-react";
+import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark, Zap, List, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -88,7 +89,16 @@ export default function Goals() {
   const [completedCurrentPage, setCompletedCurrentPage] = useState(1);
   const [allCurrentPage, setAllCurrentPage] = useState(1);
   const [displayMode, setDisplayMode] = useState<DisplayMode>("bar");
+  const [searchQuery, setSearchQuery] = useState("");
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
+
+  // Normalize string for accent-insensitive, case-insensitive comparison
+  const normalizeString = (str: string): string => {
+    return str
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+  };
 
   const { data: pact } = usePact(user?.id);
   const { data: goals = [], isLoading: goalsLoading } = useGoals(pact?.id, { includeStepCounts: true });
@@ -187,9 +197,21 @@ export default function Goals() {
     }
   };
 
-  const activeGoals = displayGoals.filter((g) => g.status === "not_started" || g.status === "in_progress");
-  const completedGoals = displayGoals.filter((g) => g.status === "fully_completed" || g.status === "validated");
-  const allGoals = displayGoals;
+  // Filter goals based on search query (accent-insensitive, case-insensitive)
+  const filterGoalsBySearch = (goalsToFilter: Goal[]): Goal[] => {
+    if (!searchQuery.trim()) return goalsToFilter;
+    const normalizedQuery = normalizeString(searchQuery);
+    return goalsToFilter.filter((goal) => {
+      const normalizedName = normalizeString(goal.name);
+      const normalizedType = normalizeString(goal.type || "");
+      return normalizedName.includes(normalizedQuery) || normalizedType.includes(normalizedQuery);
+    });
+  };
+
+  const filteredGoals = filterGoalsBySearch(displayGoals);
+  const activeGoals = filteredGoals.filter((g) => g.status === "not_started" || g.status === "in_progress");
+  const completedGoals = filteredGoals.filter((g) => g.status === "fully_completed" || g.status === "validated");
+  const allGoals = filteredGoals;
   const sortedActiveGoals = sortGoals(activeGoals);
   const sortedCompletedGoals = sortGoals(completedGoals);
   const sortedAllGoals = sortGoals(allGoals);
@@ -574,6 +596,28 @@ export default function Goals() {
               >
                 <ChevronRight className={`h-4 w-4 text-foreground/70 transition-transform duration-200 ${sortDirection === "asc" ? "-rotate-90" : "rotate-90"}`} />
               </Button>
+            </div>
+
+            <div className="h-6 w-px bg-border hidden md:block" />
+
+            {/* Search Bar */}
+            <div className="relative flex items-center">
+              <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                type="text"
+                placeholder="Search goals..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-[180px] h-9 pl-9 pr-8 text-sm rounded-xl"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2 p-1 rounded-full hover:bg-muted/50 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              )}
             </div>
 
             <div className="flex-1" />
