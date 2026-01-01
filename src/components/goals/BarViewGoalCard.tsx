@@ -209,7 +209,7 @@ export function BarViewGoalCard({
   return (
     <motion.div
       className={`${cardId} group`}
-      whileHover={{ scale: 1.01 }}
+      whileHover={{ scale: 1.0 }}
       transition={{ duration: 0.2 }}
       onClick={() => onNavigate(goal.id)}
       style={{
