@@ -409,7 +409,7 @@ export function BarViewGoalCard({
           alignItems: "center",
           justifyContent: "flex-start",
           gap: "20px",
-          padding: "10px 24px",
+          padding: "5px 24px",
         }}
       >
         {/* XP Box - Now in expanded section only, on the left */}
