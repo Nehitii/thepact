@@ -562,7 +562,6 @@ export function BarViewGoalCard({
         }
         .${cardId}:hover .${cardId}-outline {
           box-shadow: 0 10px 25px ${withAlpha(difficultyColor, 0.55)};
-          border-radius: 25px 25px 0 0 !important;
         }
         .${cardId}:hover .${cardId}-detail {
           display: flex !important;
