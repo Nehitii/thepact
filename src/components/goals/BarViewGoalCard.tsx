@@ -392,59 +392,25 @@ export function BarViewGoalCard({
           {getStatusLabel(goal.status || "in_progress")}
         </div>
 
-        {/* Steps Counter - Right side (replaces XP in collapsed view) */}
-        <div
-          className="font-rajdhani"
-          style={{
-            position: "absolute",
-            right: "20px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: "4px",
-          }}
-        >
-          <span
-            style={{
-              fontSize: "11px",
-              color: "#8fb5ff",
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
-            {isHabitGoal ? "Days" : "Steps"}
-          </span>
-          <span
-            style={{
-              fontSize: "18px",
-              fontWeight: 700,
-              color: difficultyColor,
-            }}
-          >
-            {completedSteps}/{totalSteps}
-          </span>
-        </div>
       </div>
 
-      {/* Expandable Detail Section - Lighter tones with difficulty tint */}
+      {/* Expandable Detail Section - Solid darker color with difficulty tint */}
       <div
         className={`${cardId}-detail`}
         style={{
           position: "relative",
           display: "none",
           width: "100%",
-          height: "170px",
-          background: `radial-gradient(circle at top left, ${withAlpha(difficultyColor, 0.15)}, ${withAlpha(difficultyColor, 0.08)} 50%, rgba(15, 30, 60, 0.95))`,
-          top: "-20px",
+          height: "110px",
+          background: adjustColorBrightness(difficultyColor, -60),
+          top: "0",
           zIndex: 1,
           borderRadius: "0 0 25px 25px",
           overflow: "hidden",
-          alignItems: "center",
+          alignItems: "flex-end",
           justifyContent: "flex-start",
           gap: "20px",
-          padding: "0 24px",
+          padding: "0 24px 20px 24px",
         }}
       >
         {/* XP Box - Now in expanded section only, on the left */}
@@ -562,13 +528,14 @@ export function BarViewGoalCard({
         }
         .${cardId}:hover .${cardId}-outline {
           box-shadow: 0 10px 25px ${withAlpha(difficultyColor, 0.55)};
+          border-radius: 25px 25px 0 0 !important;
         }
         .${cardId}:hover .${cardId}-detail {
           display: flex !important;
-          align-items: center;
+          align-items: flex-end;
           justify-content: flex-start;
           gap: 20px;
-          padding: 0 24px;
+          padding: 0 24px 20px 24px;
           animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
         }
         .${cardId}:hover .${cardId}-splitline {
