@@ -52,14 +52,14 @@ const getStatusLabel = (status: string): string => {
 
 const getGoalTypeTags = (type: string): string[] => {
   const typeMap: Record<string, string[]> = {
-    personal: ["Personal", "Growth"],
-    professional: ["Career", "Work"],
-    health: ["Health", "Wellness"],
-    creative: ["Creative", "Art"],
-    financial: ["Finance", "Money"],
-    learning: ["Learning", "Skills"],
-    relationship: ["Social", "Connection"],
-    diy: ["DIY", "Craft"],
+    personal: ["Personal"],
+    professional: ["Career"],
+    health: ["Health"],
+    creative: ["Creative"],
+    financial: ["Finance"],
+    learning: ["Learning"],
+    relationship: ["Social"],
+    diy: ["DIY"],
     other: ["General"],
   };
   return typeMap[type] || [type.charAt(0).toUpperCase() + type.slice(1)];

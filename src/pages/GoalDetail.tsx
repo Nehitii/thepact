@@ -465,7 +465,7 @@ export default function GoalDetail() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Category</Label>
+                        <Label>Tag</Label>
                         <Select value={editType} onValueChange={setEditType}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
                           <SelectContent>

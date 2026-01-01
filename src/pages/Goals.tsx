@@ -557,7 +557,7 @@ export default function Goals() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="difficulty">Difficulty</SelectItem>
-                  <SelectItem value="type">Category</SelectItem>
+                  <SelectItem value="type">Tag</SelectItem>
                   <SelectItem value="points">Points</SelectItem>
                   <SelectItem value="created">Created</SelectItem>
                   <SelectItem value="name">Name</SelectItem>
