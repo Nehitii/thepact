@@ -7,16 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Target, Sparkles, Calendar, ListOrdered, Image, StickyNote, DollarSign, Tag, Zap, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
 import { z } from "zod";
+import { motion } from "framer-motion";
 
 const goalSchema = z.object({
   name: z.string().trim().min(1, { message: "Goal name is required" }).max(100, { message: "Goal name must be less than 100 characters" }),
-  type: z.string(),
+  type: z.array(z.string()).min(1, { message: "At least one tag is required" }),
   difficulty: z.string(),
   goalType: z.enum(["normal", "habit"]),
   stepCount: z.number().int().min(1, { message: "Must have at least 1 step" }).max(20, { message: "Cannot have more than 20 steps" }).optional(),
@@ -24,16 +26,24 @@ const goalSchema = z.object({
   notes: z.string().max(500, { message: "Notes must be less than 500 characters" }).optional()
 });
 
-const goalTypes = [
-  { value: "personal", label: "Personal" },
-  { value: "professional", label: "Professional" },
-  { value: "health", label: "Health" },
-  { value: "creative", label: "Creative" },
-  { value: "financial", label: "Financial" },
-  { value: "learning", label: "Learning" },
-  { value: "relationship", label: "Relationship" },
-  { value: "diy", label: "DIY" },
-  { value: "other", label: "Other" }
+const goalTags = [
+  { value: "personal", label: "Personal", color: "hsl(200 100% 67%)" },
+  { value: "professional", label: "Professional", color: "hsl(45 95% 55%)" },
+  { value: "health", label: "Health", color: "hsl(142 70% 50%)" },
+  { value: "creative", label: "Creative", color: "hsl(280 75% 55%)" },
+  { value: "financial", label: "Financial", color: "hsl(212 90% 55%)" },
+  { value: "learning", label: "Learning", color: "hsl(25 100% 60%)" },
+  { value: "relationship", label: "Relationship", color: "hsl(340 75% 55%)" },
+  { value: "diy", label: "DIY", color: "hsl(175 70% 45%)" },
+  { value: "other", label: "Other", color: "hsl(210 30% 50%)" }
+];
+
+const difficulties = [
+  { value: "easy", label: "Easy", color: "hsl(142 70% 50%)" },
+  { value: "medium", label: "Medium", color: "hsl(45 95% 55%)" },
+  { value: "hard", label: "Hard", color: "hsl(25 100% 60%)" },
+  { value: "extreme", label: "Extreme", color: "hsl(0 90% 65%)" },
+  { value: "impossible", label: "Impossible", color: "hsl(280 75% 45%)" }
 ];
 
 export default function NewGoal() {
@@ -42,7 +52,7 @@ export default function NewGoal() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
-  const [type, setType] = useState("personal");
+  const [selectedTags, setSelectedTags] = useState<string[]>(["personal"]);
   const [difficulty, setDifficulty] = useState("medium");
   const [notes, setNotes] = useState("");
   const [stepCount, setStepCount] = useState(5);
@@ -60,7 +70,7 @@ export default function NewGoal() {
     const loadProfile = async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("custom_difficulty_name, custom_difficulty_active")
+        .select("custom_difficulty_name, custom_difficulty_active, custom_difficulty_color")
         .eq("id", user.id)
         .maybeSingle();
       if (data) {
@@ -71,14 +81,18 @@ export default function NewGoal() {
     loadProfile();
   }, [user]);
 
-  const difficulties = [
-    { value: "easy", label: "Easy" },
-    { value: "medium", label: "Medium" },
-    { value: "hard", label: "Hard" },
-    { value: "extreme", label: "Extreme" },
-    { value: "impossible", label: "Impossible" },
-    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom" }] : [])
+  const allDifficulties = [
+    ...difficulties,
+    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: "hsl(270 90% 65%)" }] : [])
   ];
+
+  const toggleTag = (tagValue: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tagValue) 
+        ? prev.filter(t => t !== tagValue)
+        : [...prev, tagValue]
+    );
+  };
 
   const handleCreate = async () => {
     if (!user) {
@@ -89,7 +103,7 @@ export default function NewGoal() {
     try {
       const validatedData = goalSchema.parse({
         name: name.trim(),
-        type,
+        type: selectedTags,
         difficulty,
         goalType,
         stepCount: goalType === "normal" ? stepCount : undefined,
@@ -111,12 +125,15 @@ export default function NewGoal() {
       const habitChecks = goalType === "habit" ? Array(habitDurationDays).fill(false) : null;
       const totalEstimatedCost = costItems.reduce((sum, item) => sum + (item.price || 0), 0);
 
+      // Use first tag as primary type for DB compatibility
+      const primaryType = selectedTags[0] || "personal";
+
       const { data: goalData, error: goalError } = await supabase
         .from("goals")
         .insert({
           pact_id: pactData.id,
           name: validatedData.name,
-          type: validatedData.type as any,
+          type: primaryType as any,
           difficulty: validatedData.difficulty as any,
           estimated_cost: totalEstimatedCost,
           notes: validatedData.notes || null,
@@ -171,8 +188,10 @@ export default function NewGoal() {
     }
   };
 
+  const selectedDifficulty = allDifficulties.find(d => d.value === difficulty);
+
   return (
-    <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Deep space background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
@@ -180,7 +199,7 @@ export default function NewGoal() {
       </div>
 
       {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
+      <div className="fixed inset-0 pointer-events-none opacity-10">
         <div
           className="absolute inset-0"
           style={{
@@ -193,221 +212,316 @@ export default function NewGoal() {
         />
       </div>
 
-      <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10">
+      <div className="max-w-4xl mx-auto px-6 py-8 relative z-10">
         {/* Header */}
-        <div className="pt-8 space-y-4 animate-fade-in">
+        <motion.div 
+          className="space-y-6 mb-10"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
           <Button
             variant="ghost"
             onClick={() => navigate("/goals")}
-            className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2"
+            className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Goals
           </Button>
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
-            New Goal
-          </h1>
-          <p className="text-primary/70 tracking-wide font-rajdhani">
-            Add an evolution to your Pact
-          </p>
-        </div>
+          
+          <div className="text-center space-y-3">
+            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">
+              Create New Goal
+            </h1>
+            <p className="text-primary/60 tracking-wide font-rajdhani text-lg">
+              Add an evolution to your Pact journey
+            </p>
+          </div>
+        </motion.div>
 
         {/* Form Card */}
-        <div 
-          className="relative rounded-xl border border-primary/20 bg-[#050A13]/80 backdrop-blur-xl p-6 space-y-6 animate-fade-in"
-          style={{ animationDelay: "100ms" }}
+        <motion.div 
+          className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
           {/* Subtle glow effect */}
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-
-          <div className="relative space-y-6">
-            {/* Goal Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                Goal Name *
-              </Label>
-              <Input
-                id="name"
-                placeholder="Learn a new skill"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={100}
-                autoComplete="off"
-                className="bg-[#050A13]/60 border-primary/30 focus:border-primary/60"
-              />
-            </div>
-
-            {/* Type & Difficulty */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="type" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                  Category
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+          
+          <div className="relative p-8 md:p-10 space-y-10">
+            
+            {/* Section 1: Basic Info */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <Target className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Basic Information</h2>
+              </div>
+              
+              {/* Goal Name */}
+              <div className="space-y-3">
+                <Label htmlFor="name" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                  Goal Name <span className="text-destructive">*</span>
                 </Label>
-                <Select value={type} onValueChange={setType}>
-                  <SelectTrigger id="type" className="bg-[#050A13]/60 border-primary/30">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {goalTypes.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  id="name"
+                  placeholder="Enter your goal name..."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={100}
+                  autoComplete="off"
+                  className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/50"
+                />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="difficulty" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
+              {/* Tags Multi-Select */}
+              <div className="space-y-3">
+                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Tags <span className="text-destructive">*</span>
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {goalTags.map((tag) => {
+                    const isSelected = selectedTags.includes(tag.value);
+                    return (
+                      <button
+                        key={tag.value}
+                        type="button"
+                        onClick={() => toggleTag(tag.value)}
+                        className={`
+                          relative px-4 py-2 rounded-xl font-rajdhani text-sm font-medium transition-all duration-200
+                          ${isSelected 
+                            ? 'text-white shadow-lg' 
+                            : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
+                          }
+                        `}
+                        style={isSelected ? { 
+                          background: tag.color,
+                          boxShadow: `0 0 20px ${tag.color}40`
+                        } : {}}
+                      >
+                        <span className="flex items-center gap-1.5">
+                          {isSelected && <Check className="h-3.5 w-3.5" />}
+                          {tag.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-xs text-muted-foreground">Select one or more tags for your goal</p>
+              </div>
+            </div>
+
+            {/* Section 2: Goal Type & Difficulty */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <Zap className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Type & Difficulty</h2>
+              </div>
+
+              {/* Goal Type Selection */}
+              <div className="space-y-3">
+                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
+                  Goal Type
+                </Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setGoalType("normal")}
+                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                      goalType === "normal"
+                        ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(91,180,255,0.2)]"
+                        : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      goalType === "normal" ? "border-primary bg-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {goalType === "normal" && <Check className="h-3 w-3 text-primary-foreground" />}
+                    </div>
+                    <ListOrdered className={`h-7 w-7 mb-3 ${goalType === "normal" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className={`font-rajdhani font-bold text-lg mb-1 ${goalType === "normal" ? "text-primary" : "text-foreground"}`}>
+                      Normal Goal
+                    </div>
+                    <div className="text-sm text-muted-foreground">Track progress with customizable steps</div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setGoalType("habit")}
+                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                      goalType === "habit"
+                        ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(91,180,255,0.2)]"
+                        : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      goalType === "habit" ? "border-primary bg-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {goalType === "habit" && <Check className="h-3 w-3 text-primary-foreground" />}
+                    </div>
+                    <Sparkles className={`h-7 w-7 mb-3 ${goalType === "habit" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className={`font-rajdhani font-bold text-lg mb-1 ${goalType === "habit" ? "text-primary" : "text-foreground"}`}>
+                      Habit Goal
+                    </div>
+                    <div className="text-sm text-muted-foreground">Daily check-ins for a set duration</div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Difficulty Selection */}
+              <div className="space-y-3">
+                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
                   Difficulty
                 </Label>
-                <Select value={difficulty} onValueChange={setDifficulty}>
-                  <SelectTrigger id="difficulty" className="bg-[#050A13]/60 border-primary/30">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {difficulties.map((d) => (
-                      <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-wrap gap-2">
+                  {allDifficulties.map((diff) => {
+                    const isSelected = difficulty === diff.value;
+                    return (
+                      <button
+                        key={diff.value}
+                        type="button"
+                        onClick={() => setDifficulty(diff.value)}
+                        className={`
+                          relative px-5 py-2.5 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200
+                          ${isSelected 
+                            ? 'text-white shadow-lg scale-105' 
+                            : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
+                          }
+                        `}
+                        style={isSelected ? { 
+                          background: diff.color,
+                          boxShadow: `0 0 25px ${diff.color}50`
+                        } : {}}
+                      >
+                        {diff.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Steps / Duration based on goal type */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {goalType === "normal" ? (
+                  <div className="space-y-3">
+                    <Label htmlFor="steps" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                      <ListOrdered className="h-4 w-4" />
+                      Number of Steps
+                    </Label>
+                    <Input
+                      id="steps"
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={stepCount}
+                      onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                      autoComplete="off"
+                      className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary"
+                    />
+                    <p className="text-xs text-muted-foreground">1-20 steps allowed</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <Label htmlFor="habitDays" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Duration (Days)
+                    </Label>
+                    <Input
+                      id="habitDays"
+                      type="number"
+                      min="1"
+                      max="365"
+                      value={habitDurationDays}
+                      onChange={(e) => setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))}
+                      autoComplete="off"
+                      className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                )}
+
+                {/* Start Date */}
+                <div className="space-y-3">
+                  <Label htmlFor="startDate" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Start Date
+                  </Label>
+                  <Input
+                    id="startDate"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Goal Type Selection */}
-            <div className="space-y-2">
-              <Label className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                Goal Type
-              </Label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setGoalType("normal")}
-                  className={`p-4 rounded-xl border transition-all duration-300 text-left ${
-                    goalType === "normal"
-                      ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(91,180,255,0.2)]"
-                      : "border-primary/30 bg-[#050A13]/60 hover:border-primary/50"
-                  }`}
-                >
-                  <div className="font-rajdhani font-bold text-primary mb-1">Normal Goal</div>
-                  <div className="text-xs text-primary/60">Track progress with steps</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setGoalType("habit")}
-                  className={`p-4 rounded-xl border transition-all duration-300 text-left ${
-                    goalType === "habit"
-                      ? "border-primary bg-primary/10 shadow-[0_0_20px_rgba(91,180,255,0.2)]"
-                      : "border-primary/30 bg-[#050A13]/60 hover:border-primary/50"
-                  }`}
-                >
-                  <div className="font-rajdhani font-bold text-primary mb-1">Habit Goal</div>
-                  <div className="text-xs text-primary/60">Daily check-ins for X days</div>
-                </button>
+            {/* Section 3: Cost & Budget */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <DollarSign className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h2>
               </div>
+              
+              <CostItemsEditor items={costItems} onChange={setCostItems} />
             </div>
 
-            {/* Normal Goal: Number of Steps */}
-            {goalType === "normal" && (
-              <div className="space-y-2">
-                <Label htmlFor="steps" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                  Number of Steps (1-20)
-                </Label>
-                <Input
-                  id="steps"
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={stepCount}
-                  onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-                  autoComplete="off"
-                  className="bg-[#050A13]/60 border-primary/30 focus:border-primary/60"
-                />
+            {/* Section 4: Media & Notes */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <Image className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Media & Notes</h2>
               </div>
-            )}
 
-            {/* Habit Goal: Duration in Days */}
-            {goalType === "habit" && (
-              <div className="space-y-2">
-                <Label htmlFor="habitDays" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                  Habit Duration (days)
-                </Label>
-                <Input
-                  id="habitDays"
-                  type="number"
-                  min="1"
-                  max="365"
-                  value={habitDurationDays}
-                  onChange={(e) => setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))}
-                  autoComplete="off"
-                  className="bg-[#050A13]/60 border-primary/30 focus:border-primary/60"
-                />
-                <p className="text-xs text-primary/60">
-                  Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? "s" : ""} to finish this habit
-                </p>
-              </div>
-            )}
-
-            {/* Start Date */}
-            <div className="space-y-2">
-              <Label htmlFor="startDate" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                Start Date
-              </Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="bg-[#050A13]/60 border-primary/30 focus:border-primary/60"
-              />
-            </div>
-
-            {/* Itemized Cost */}
-            <CostItemsEditor items={costItems} onChange={setCostItems} />
-
-            {/* Image Upload */}
-            {user && (
-              <div className="space-y-2">
-                <Label className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                  Goal Image (optional)
-                </Label>
+              {/* Image Upload */}
+              {user && (
                 <GoalImageUpload value={imageUrl} onChange={setImageUrl} userId={user.id} />
-              </div>
-            )}
+              )}
 
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-                Notes (optional)
-              </Label>
-              <Textarea
-                id="notes"
-                placeholder="Additional details about this goal..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={4}
-                maxLength={500}
-                className="bg-[#050A13]/60 border-primary/30 focus:border-primary/60 resize-none"
-              />
+              {/* Notes */}
+              <div className="space-y-3">
+                <Label htmlFor="notes" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                  <StickyNote className="h-4 w-4" />
+                  Notes (optional)
+                </Label>
+                <Textarea
+                  id="notes"
+                  placeholder="Additional details, motivation, or reminders about this goal..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={4}
+                  maxLength={500}
+                  className="resize-none rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary text-base"
+                />
+                <p className="text-xs text-muted-foreground text-right">{notes.length}/500</p>
+              </div>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-primary/20">
               <Button
                 variant="outline"
                 onClick={() => navigate("/goals")}
-                className="flex-1 border-primary/30 hover:bg-primary/10"
+                className="flex-1 h-12 rounded-xl border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 font-rajdhani tracking-wider text-base"
               >
+                <X className="h-4 w-4 mr-2" />
                 Cancel
               </Button>
               <Button
                 onClick={handleCreate}
-                disabled={loading || !name.trim()}
-                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-rajdhani tracking-wider"
+                disabled={loading || !name.trim() || selectedTags.length === 0}
+                className="flex-1 h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-rajdhani tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)] hover:shadow-[0_0_30px_rgba(91,180,255,0.5)] transition-all duration-300"
               >
-                {loading ? "CREATING..." : "CREATE GOAL"}
+                <Sparkles className="h-4 w-4 mr-2" />
+                {loading ? "Creating..." : "Create Goal"}
               </Button>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

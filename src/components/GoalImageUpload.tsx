@@ -94,9 +94,6 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
 
   return (
     <div className="space-y-3">
-      <Label className="cursor-pointer text-sm font-rajdhani tracking-wide uppercase text-primary/90">
-        Goal Image (optional)
-      </Label>
       
       {/* Image preview */}
       {value && (
