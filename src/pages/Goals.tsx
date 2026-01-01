@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, LayoutGrid, LayoutList, Bookmark, Zap, List } from "lucide-react";
 import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
+import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
@@ -342,119 +343,21 @@ export default function Goals() {
     const borderWidth = getBorderWidth(goal.difficulty);
     const auraClass = getAuraClass(goal.difficulty);
 
-    // Bar Mode (Default)
+    // Bar Mode (Default) - New expandable card design
     if (displayMode === "bar") {
       return (
         <motion.div 
           key={goal.id} 
-          variants={itemVariants} 
-          className="group relative"
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.2 }}
+          variants={itemVariants}
         >
-          <div
-            onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`relative rounded-xl cursor-pointer transition-all duration-300 ${!isCompleted ? auraClass : ""}`}
-            style={{
-              '--aura-color': difficultyColor,
-              '--aura-color-soft': withAlphaColor(difficultyColor, 0.35),
-              borderWidth: borderWidth,
-              borderStyle: 'solid',
-              borderColor: isCompleted ? 'hsl(var(--border))' : difficultyColor,
-            } as React.CSSProperties}
-          >
-            <div
-              className={`relative flex gap-5 p-5 transition-all duration-300 hover-shimmer-wave ${
-                isCompleted
-                  ? "bg-card/40 opacity-75 hover:opacity-90"
-                  : "bg-card/80 hover:bg-card/90"
-              }`}
-              style={{
-                borderRadius: "inherit",
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)',
-              } as React.CSSProperties}
-            >
-
-              {/* Image */}
-              <div className="relative flex-shrink-0">
-                {goal.image_url ? (
-                  <div 
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden ${isCompleted ? "grayscale" : ""}`}
-                    style={{ 
-                      boxShadow: `0 0 ${15 + intensity * 5}px ${difficultyColor}40`,
-                      borderWidth: '2px',
-                      borderStyle: 'solid',
-                      borderColor: `${difficultyColor}60`
-                    }}
-                  >
-                    <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
-                  </div>
-                ) : (
-                  <div 
-                    className="relative w-20 h-20 rounded-lg flex items-center justify-center" 
-                    style={{ 
-                      background: `radial-gradient(circle at 30% 30%, ${difficultyColor}25, hsl(var(--card)))`,
-                      borderWidth: '2px',
-                      borderStyle: 'solid',
-                      borderColor: `${difficultyColor}50`
-                    }}
-                  >
-                    <Trophy className="h-8 w-8" style={{ color: difficultyColor, filter: `drop-shadow(0 0 8px ${difficultyColor})` }} />
-                  </div>
-                )}
-                <button
-                  onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-                  className="absolute -top-2 -right-2 z-20 p-1.5 bg-card rounded-full border border-primary/50 hover:scale-110 transition-all shadow-lg"
-                >
-                  <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0 space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-lg leading-tight mb-2 line-clamp-2 font-orbitron tracking-wide text-foreground">
-                      {goal.name}
-                    </h3>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <DifficultyBadge difficulty={goal.difficulty} isCompleted={isCompleted} />
-                      <Badge variant="outline" className="text-xs capitalize font-rajdhani border-border text-muted-foreground">{goal.type}</Badge>
-                      {isHabitGoal && <Badge variant="outline" className="text-xs font-rajdhani border-emerald-500/40 text-emerald-400 bg-emerald-500/10">Habit</Badge>}
-                    </div>
-                  </div>
-                  <Badge className={`${getStatusColor(goal.status)} font-rajdhani font-bold uppercase text-xs tracking-wider shrink-0`}>
-                    {isCompleted ? <><CheckCircle2 className="h-3 w-3 mr-1" />Done</> : getStatusLabel(goal.status)}
-                  </Badge>
-                </div>
-
-                {/* Progress - Phase 3 Enhanced */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-sm font-rajdhani">
-                    <span className="uppercase tracking-wider text-muted-foreground text-xs">{isHabitGoal ? "Days" : "Progress"}</span>
-                    <span className="font-bold" style={{ color: isCompleted ? "hsl(var(--muted-foreground))" : difficultyColor }}>
-                      {completedSteps}/{totalSteps} • {progress.toFixed(0)}%
-                    </span>
-                  </div>
-                  <ProgressBar progress={progress} difficultyColor={difficultyColor} difficulty={goal.difficulty} isCompleted={isCompleted} />
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-between pt-1">
-                  {goal.potential_score ? (
-                    <div className="flex items-center gap-1.5 font-rajdhani font-bold text-sm">
-                      <Sparkles className="h-4 w-4 text-yellow-400" />
-                      <span className="text-yellow-400">+{goal.potential_score} XP</span>
-                    </div>
-                  ) : <div />}
-                  <div className="flex items-center text-xs text-primary group-hover:translate-x-1 transition-transform font-rajdhani tracking-wider font-bold uppercase">
-                    <span className="mr-1">View</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <BarViewGoalCard
+            goal={goal}
+            isCompleted={isCompleted}
+            customDifficultyName={customDifficultyName}
+            customDifficultyColor={customDifficultyColor}
+            onNavigate={(goalId) => navigate(`/goals/${goalId}`)}
+            onToggleFocus={toggleFocus}
+          />
         </motion.div>
       );
     }
