@@ -233,7 +233,7 @@ export function BarViewGoalCard({
           background: outlineGradient,
           width: "100%",
           height: "140px",
-          borderRadius: "50px",
+          borderRadius: "5px",
           transition: "box-shadow 0.5s ease",
           zIndex: 2,
           overflow: "hidden",
