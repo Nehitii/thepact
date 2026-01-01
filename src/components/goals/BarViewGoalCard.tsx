@@ -220,7 +220,7 @@ export function BarViewGoalCard({
         margin: "0 auto",
         borderRadius: "25px",
         overflow: "hidden",
-        background: "#f5f7ff",
+        background: "transparent",
         cursor: "pointer",
         transition: "height 0.5s ease",
       }}
@@ -437,7 +437,7 @@ export function BarViewGoalCard({
           width: "100%",
           height: "110px",
           background: `radial-gradient(circle at top left, ${withAlpha(difficultyColor, 0.15)}, ${withAlpha(difficultyColor, 0.08)} 50%, rgba(15, 30, 60, 0.95))`,
-          top: "-5px",
+          top: "0",
           zIndex: 1,
           borderRadius: "0 0 25px 25px",
           overflow: "hidden",
@@ -562,6 +562,7 @@ export function BarViewGoalCard({
         }
         .${cardId}:hover .${cardId}-outline {
           box-shadow: 0 10px 25px ${withAlpha(difficultyColor, 0.55)};
+          border-radius: 25px 25px 0 0 !important;
         }
         .${cardId}:hover .${cardId}-detail {
           display: flex !important;
