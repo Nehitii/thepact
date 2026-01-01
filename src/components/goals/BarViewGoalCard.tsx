@@ -534,12 +534,6 @@ export function BarViewGoalCard({
   justify-content: flex-start;
   gap: 20px;
 
-  /* ✅ même espace en haut et en bas */
-  padding-top: 30px;
-  padding-bottom: 30px;
-  padding-left: 24px;
-  padding-right: 24px;
-
   animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
 }
 
