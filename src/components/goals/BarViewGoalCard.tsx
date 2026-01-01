@@ -220,7 +220,7 @@ export function BarViewGoalCard({
         margin: "0 auto",
         borderRadius: "25px",
         overflow: "hidden",
-        background: "transparent",
+        background: "#f5f7ff",
         cursor: "pointer",
         transition: "height 0.5s ease",
       }}
