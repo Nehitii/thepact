@@ -530,14 +530,13 @@ export function BarViewGoalCard({
         }
         .${cardId}:hover .${cardId}-detail {
   display: flex !important;
-  align-items: center;           /* base */
+  align-items: center;          /* ✅ centre verticalement dans la zone noire */
   justify-content: flex-start;
   gap: 20px;
 
-  /* ⬇️ NOUVEAU ALIGNEMENT PAR RAPPORT À LA CARTE DU HAUT */
-  padding-top: 45px;             /* 🔥 ajuste ça */
-  padding-bottom: 45px;          /* 🔥 et ça */
-
+  /* ✅ même espace en haut et en bas */
+  padding-top: 30px;
+  padding-bottom: 30px;
   padding-left: 24px;
   padding-right: 24px;
 
