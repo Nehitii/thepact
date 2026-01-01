@@ -401,7 +401,7 @@ export function BarViewGoalCard({
           display: "none",
           width: "100%",
           height: "170px",
-          background: adjustColorBrightness(difficultyColor, -60),
+          background: adjustColorBrightness(difficultyColor, -30),
           top: "-20px",
           zIndex: 1,
           borderRadius: "0 0 25px 25px",
@@ -409,7 +409,7 @@ export function BarViewGoalCard({
           alignItems: "center",
           justifyContent: "flex-start",
           gap: "20px",
-          padding: "30px 24px",
+          padding: "300px 24px",
         }}
       >
         {/* XP Box - Now in expanded section only, on the left */}
