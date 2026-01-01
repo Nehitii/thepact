@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Star, Sparkles, Trophy } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 
 interface Goal {
@@ -44,7 +45,6 @@ const getStatusLabel = (status: string): string => {
 };
 
 const getGoalTypeTags = (type: string): string[] => {
-  // Convert goal type to display tags
   const typeMap: Record<string, string[]> = {
     personal: ["Personal", "Growth"],
     professional: ["Career", "Work"],
@@ -59,23 +59,40 @@ const getGoalTypeTags = (type: string): string[] => {
   return typeMap[type] || [type.charAt(0).toUpperCase() + type.slice(1)];
 };
 
-// Convert difficulty color to gradient components
-const getDifficultyGradient = (difficultyColor: string) => {
-  // Create gradient based on difficulty color
-  return {
-    outline: `linear-gradient(135deg, ${adjustColorBrightness(difficultyColor, -40)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, 20)})`,
-    splitLine: `linear-gradient(90deg, transparent 0%, ${adjustColorBrightness(difficultyColor, 30)}80 15%, ${difficultyColor} 40%, ${adjustColorBrightness(difficultyColor, -20)} 55%, ${difficultyColor} 70%, ${adjustColorBrightness(difficultyColor, 30)}80 85%, transparent 100%)`,
-    avatarBorder: `radial-gradient(circle at 10% 0%, ${adjustColorBrightness(difficultyColor, 30)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, -40)})`,
-    badgeBorder: `${difficultyColor}e6`,
-    badgeBg: `${adjustColorBrightness(difficultyColor, -50)}e6`,
-  };
+const getDifficultyIntensity = (difficulty: string): number => {
+  switch (difficulty) {
+    case "easy": return 1;
+    case "medium": return 2;
+    case "hard": return 3;
+    case "extreme": return 4;
+    case "impossible":
+    case "custom": return 5;
+    default: return 1;
+  }
+};
+
+const withAlpha = (color: string, alpha: number): string => {
+  if (color.startsWith("hsl(")) {
+    const inner = color.slice(4, -1).trim();
+    const base = inner.split("/")[0].trim();
+    return `hsl(${base} / ${alpha})`;
+  }
+  if (color.startsWith("#")) {
+    const hex = color.slice(1);
+    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+    if (full.length === 6) {
+      const r = parseInt(full.slice(0, 2), 16);
+      const g = parseInt(full.slice(2, 4), 16);
+      const b = parseInt(full.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+  }
+  return color;
 };
 
 // Helper to adjust color brightness (works with hex)
 const adjustColorBrightness = (color: string, amount: number): string => {
-  // Handle HSL colors
   if (color.startsWith("hsl(")) {
-    // Parse hsl and adjust lightness
     const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
     if (match) {
       const h = parseInt(match[1]);
@@ -86,7 +103,6 @@ const adjustColorBrightness = (color: string, amount: number): string => {
     return color;
   }
   
-  // Handle hex colors
   if (color.startsWith("#")) {
     const hex = color.slice(1);
     const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
@@ -97,6 +113,32 @@ const adjustColorBrightness = (color: string, amount: number): string => {
   }
   
   return color;
+};
+
+// Get tier background gradient for badge (matching UIVerseGoalCard)
+const getTierBackground = (difficulty: string, difficultyColor: string) => {
+  switch (difficulty) {
+    case "easy": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
+    case "medium": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
+    case "hard": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
+    case "extreme": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
+    case "impossible":
+    case "custom": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
+    default: return difficultyColor;
+  }
+};
+
+// Glossy overlay intensity based on difficulty
+const getGlossIntensity = (difficulty: string): number => {
+  switch (difficulty) {
+    case "easy": return 0.08;
+    case "medium": return 0.14;
+    case "hard": return 0.22;
+    case "extreme": return 0.28;
+    case "impossible": return 0.32;
+    case "custom": return 0.35;
+    default: return 0.08;
+  }
 };
 
 export function BarViewGoalCard({
@@ -118,18 +160,26 @@ export function BarViewGoalCard({
   const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
-  const gradients = getDifficultyGradient(difficultyColor);
   const tags = getGoalTypeTags(goal.type);
+  const intensity = getDifficultyIntensity(difficulty);
+  const glossIntensity = getGlossIntensity(difficulty);
+
+  // Create difficulty-based gradients
+  const outlineGradient = `linear-gradient(135deg, ${adjustColorBrightness(difficultyColor, -40)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, 20)})`;
+  const avatarBorderGradient = `radial-gradient(circle at 10% 0%, ${adjustColorBrightness(difficultyColor, 30)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, -40)})`;
+
+  // Unique ID for scoped CSS keyframes
+  const cardId = `bar-card-${goal.id.slice(0, 8)}`;
 
   return (
     <motion.div
-      className="bar-card-wrapper group"
+      className={`${cardId} group`}
       whileHover={{ scale: 1.01 }}
       transition={{ duration: 0.2 }}
       onClick={() => onNavigate(goal.id)}
       style={{
         position: "relative",
-        height: "150px",
+        height: "140px",
         width: "100%",
         maxWidth: "600px",
         margin: "0 auto",
@@ -142,30 +192,30 @@ export function BarViewGoalCard({
     >
       {/* Main outline card */}
       <div
-        className="bar-card-outline"
+        className={`${cardId}-outline`}
         style={{
           position: "relative",
-          background: gradients.outline,
+          background: outlineGradient,
           width: "100%",
-          height: "150px",
+          height: "140px",
           borderRadius: "25px",
           transition: "box-shadow 0.5s ease",
           zIndex: 2,
           overflow: "hidden",
         }}
       >
-        {/* Split Line - Energy effect */}
+        {/* Split Line - Energy effect with difficulty colors */}
         <div
-          className="bar-card-splitline"
+          className={`${cardId}-splitline`}
           style={{
             position: "absolute",
             width: "calc(100% - 80px)",
-            height: "8px",
-            bottom: "18px",
+            height: "6px",
+            bottom: "14px",
             left: "40px",
             borderRadius: "999px",
-            background: gradients.splitLine,
-            boxShadow: `0 0 10px ${difficultyColor}99, 0 0 25px ${difficultyColor}80`,
+            background: `linear-gradient(90deg, transparent 0%, ${withAlpha(difficultyColor, 0.5)} 15%, ${difficultyColor} 40%, ${adjustColorBrightness(difficultyColor, -20)} 55%, ${difficultyColor} 70%, ${withAlpha(difficultyColor, 0.5)} 85%, transparent 100%)`,
+            boxShadow: `0 0 10px ${withAlpha(difficultyColor, 0.6)}, 0 0 25px ${withAlpha(difficultyColor, 0.5)}`,
             filter: "blur(0.1px)",
             zIndex: 1,
             backgroundSize: "200% 100%",
@@ -177,14 +227,14 @@ export function BarViewGoalCard({
         <div
           style={{
             position: "absolute",
-            top: "20px",
-            left: "24px",
-            width: "88px",
-            height: "88px",
-            borderRadius: "22px",
+            top: "18px",
+            left: "20px",
+            width: "78px",
+            height: "78px",
+            borderRadius: "18px",
             padding: "3px",
-            background: gradients.avatarBorder,
-            boxShadow: `0 0 18px ${difficultyColor}a6`,
+            background: avatarBorderGradient,
+            boxShadow: `0 0 16px ${withAlpha(difficultyColor, 0.65)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -198,7 +248,7 @@ export function BarViewGoalCard({
               style={{
                 width: "100%",
                 height: "100%",
-                borderRadius: "20px",
+                borderRadius: "16px",
                 objectFit: "cover",
               }}
             />
@@ -207,7 +257,7 @@ export function BarViewGoalCard({
               style={{
                 width: "100%",
                 height: "100%",
-                borderRadius: "20px",
+                borderRadius: "16px",
                 background: `radial-gradient(circle at 30% 20%, ${difficultyColor}, #020b1b)`,
                 opacity: 0.95,
                 display: "flex",
@@ -215,7 +265,7 @@ export function BarViewGoalCard({
                 justifyContent: "center",
               }}
             >
-              <Trophy className="h-8 w-8 text-white/80" />
+              <Trophy className="h-7 w-7 text-white/80" />
             </div>
           )}
         </div>
@@ -237,38 +287,43 @@ export function BarViewGoalCard({
           />
         </button>
 
-        {/* Difficulty Badge */}
-        <div
+        {/* Difficulty Badge - Same style as UIVerseGoalCard */}
+        <Badge
+          className="absolute z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
           style={{
-            position: "absolute",
-            top: "26px",
-            left: "128px",
-            padding: "4px 14px",
+            top: "18px",
+            left: "110px",
             borderRadius: "999px",
-            fontWeight: 600,
-            fontSize: "14px",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "#e6f7ff",
-            background: gradients.badgeBg,
-            border: `1px solid ${gradients.badgeBorder}`,
+            color: "white",
+            background: getTierBackground(difficulty, difficultyColor),
+            border: `1px solid ${withAlpha(difficultyColor, 0.6)}`,
+            backdropFilter: "blur(10px)",
+            boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(difficultyColor, 0.5)}, inset 0 1px 1px rgba(255,255,255,${glossIntensity})`,
           }}
         >
-          {getDifficultyLabel(difficulty, customDifficultyName)}
-        </div>
+          {/* Glossy shine overlay */}
+          <span
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: `linear-gradient(135deg, rgba(255,255,255,${glossIntensity * 1.2}) 0%, rgba(255,255,255,${glossIntensity * 0.3}) 40%, transparent 60%)`,
+              borderRadius: "inherit",
+            }}
+          />
+          <span className="relative z-10">{getDifficultyLabel(difficulty, customDifficultyName)}</span>
+        </Badge>
 
-        {/* Goal Name */}
+        {/* Goal Name - Slightly smaller */}
         <h3
           className="font-orbitron"
           style={{
             position: "absolute",
             fontWeight: 700,
             color: "#ffffff",
-            left: "128px",
-            fontSize: "20px",
-            top: "60px",
+            left: "110px",
+            fontSize: "16px",
+            top: "50px",
             margin: 0,
-            maxWidth: "calc(100% - 200px)",
+            maxWidth: "calc(100% - 160px)",
             whiteSpace: "nowrap",
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -282,10 +337,10 @@ export function BarViewGoalCard({
           className="font-rajdhani"
           style={{
             position: "absolute",
-            left: "128px",
-            top: "92px",
+            left: "110px",
+            top: "76px",
             margin: 0,
-            fontSize: "13px",
+            fontSize: "12px",
             color: "#a4c9ff",
             display: "inline-flex",
             alignItems: "center",
@@ -294,39 +349,91 @@ export function BarViewGoalCard({
         >
           <span
             style={{
-              width: "8px",
-              height: "8px",
+              width: "7px",
+              height: "7px",
               borderRadius: "50%",
               background: isCompleted ? "#34c759" : goal.status === "in_progress" ? "#34c759" : "#f5a623",
-              boxShadow: `0 0 8px ${isCompleted || goal.status === "in_progress" ? "rgba(52, 199, 89, 0.9)" : "rgba(245, 166, 35, 0.9)"}`,
+              boxShadow: `0 0 6px ${isCompleted || goal.status === "in_progress" ? "rgba(52, 199, 89, 0.9)" : "rgba(245, 166, 35, 0.9)"}`,
             }}
           />
           {getStatusLabel(goal.status || "in_progress")}
         </div>
 
-        {/* XP Box - Right side */}
+        {/* Steps Counter - Right side (replaces XP in collapsed view) */}
+        <div
+          className="font-rajdhani"
+          style={{
+            position: "absolute",
+            right: "20px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: "4px",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "11px",
+              color: "#8fb5ff",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+            }}
+          >
+            {isHabitGoal ? "Days" : "Steps"}
+          </span>
+          <span
+            style={{
+              fontSize: "18px",
+              fontWeight: 700,
+              color: difficultyColor,
+            }}
+          >
+            {completedSteps}/{totalSteps}
+          </span>
+        </div>
+      </div>
+
+      {/* Expandable Detail Section - Lighter tones with difficulty tint */}
+      <div
+        className={`${cardId}-detail`}
+        style={{
+          position: "relative",
+          display: "none",
+          width: "100%",
+          height: "110px",
+          background: `radial-gradient(circle at top left, ${withAlpha(difficultyColor, 0.15)}, ${withAlpha(difficultyColor, 0.08)} 50%, rgba(15, 30, 60, 0.95))`,
+          top: "-5px",
+          zIndex: 1,
+          borderRadius: "0 0 25px 25px",
+          overflow: "hidden",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          gap: "20px",
+          padding: "0 24px",
+        }}
+      >
+        {/* XP Box - Now in expanded section only, on the left */}
         {goal.potential_score && goal.potential_score > 0 && (
           <div
             style={{
-              position: "absolute",
-              right: "24px",
-              top: "50%",
-              transform: "translateY(-50%)",
               display: "flex",
               alignItems: "center",
-              gap: "12px",
-              padding: "10px 16px",
-              borderRadius: "16px",
-              background: "rgba(6, 28, 70, 0.7)",
-              border: `1px solid ${difficultyColor}99`,
+              gap: "10px",
+              padding: "10px 14px",
+              borderRadius: "14px",
+              background: withAlpha(difficultyColor, 0.15),
+              border: `1px solid ${withAlpha(difficultyColor, 0.4)}`,
+              flexShrink: 0,
             }}
           >
-            <Sparkles className="h-6 w-6 text-yellow-400" />
+            <Sparkles className="h-5 w-5" style={{ color: difficultyColor }} />
             <span
               className="font-rajdhani"
               style={{
                 margin: 0,
-                fontSize: "18px",
+                fontSize: "16px",
                 fontWeight: 800,
                 color: "#e6faff",
               }}
@@ -335,27 +442,7 @@ export function BarViewGoalCard({
             </span>
           </div>
         )}
-      </div>
 
-      {/* Expandable Detail Section */}
-      <div
-        className="bar-card-detail"
-        style={{
-          position: "relative",
-          display: "none",
-          width: "100%",
-          height: "120px",
-          background: "radial-gradient(circle at top left, #0b1f3a, #020714)",
-          top: "-5px",
-          zIndex: 1,
-          borderRadius: "0 0 25px 25px",
-          overflow: "hidden",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          gap: "24px",
-          padding: "0 24px",
-        }}
-      >
         {/* Step Box */}
         <div style={{ flex: 1 }}>
           <div
@@ -363,32 +450,33 @@ export function BarViewGoalCard({
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              marginBottom: "10px",
+              marginBottom: "8px",
             }}
           >
             <span
               className="font-rajdhani"
               style={{
-                letterSpacing: "0.4em",
+                letterSpacing: "0.3em",
                 fontWeight: 800,
-                fontSize: "12px",
+                fontSize: "11px",
                 margin: 0,
-                color: "#8fb5ff",
+                color: withAlpha(difficultyColor, 0.9),
               }}
             >
               {isHabitGoal ? "DAYS" : "STEP"}
             </span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
               {tags.map((tag, index) => (
                 <span
                   key={index}
                   className="font-rajdhani"
                   style={{
-                    fontSize: "11px",
-                    padding: "3px 8px",
+                    fontSize: "10px",
+                    padding: "2px 8px",
                     borderRadius: "999px",
-                    background: "rgba(8, 40, 88, 0.9)",
+                    background: withAlpha(difficultyColor, 0.2),
                     color: "#c6e2ff",
+                    border: `1px solid ${withAlpha(difficultyColor, 0.3)}`,
                   }}
                 >
                   {tag}
@@ -401,9 +489,9 @@ export function BarViewGoalCard({
           <div
             style={{
               width: "100%",
-              height: "10px",
+              height: "8px",
               borderRadius: "999px",
-              background: "rgba(8, 40, 88, 0.9)",
+              background: withAlpha(difficultyColor, 0.15),
               overflow: "hidden",
             }}
           >
@@ -414,6 +502,7 @@ export function BarViewGoalCard({
               style={{
                 height: "100%",
                 background: `linear-gradient(90deg, ${adjustColorBrightness(difficultyColor, 30)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, -20)})`,
+                boxShadow: `0 0 8px ${withAlpha(difficultyColor, 0.6)}`,
               }}
             />
           </div>
@@ -422,46 +511,46 @@ export function BarViewGoalCard({
           <span
             className="font-rajdhani"
             style={{
-              marginTop: "8px",
-              fontSize: "12px",
+              marginTop: "6px",
+              fontSize: "11px",
               color: "#8fb5ff",
               display: "block",
             }}
           >
-            {completedSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"}
+            {completedSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"} • {progress.toFixed(0)}%
           </span>
         </div>
       </div>
 
-      {/* CSS for hover effects */}
+      {/* CSS for hover effects with difficulty-colored animations */}
       <style>{`
-        .bar-card-wrapper:hover {
-          height: 270px !important;
+        .${cardId}:hover {
+          height: 250px !important;
         }
-        .bar-card-wrapper:hover .bar-card-outline {
-          box-shadow: 0 12px 25px ${difficultyColor}8c;
+        .${cardId}:hover .${cardId}-outline {
+          box-shadow: 0 10px 25px ${withAlpha(difficultyColor, 0.55)};
         }
-        .bar-card-wrapper:hover .bar-card-detail {
+        .${cardId}:hover .${cardId}-detail {
           display: flex !important;
           align-items: center;
           justify-content: flex-start;
-          gap: 24px;
+          gap: 20px;
           padding: 0 24px;
-          animation: detail-slide-up 0.35s ease-out forwards;
+          animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
         }
-        .bar-card-wrapper:hover .bar-card-splitline {
-          animation: energy-flow 1.1s linear infinite, energy-flicker 0.18s infinite alternate;
-          box-shadow: 0 0 14px ${difficultyColor}e6, 0 0 35px ${difficultyColor}b3 !important;
+        .${cardId}:hover .${cardId}-splitline {
+          animation: ${cardId}-energy-flow 1.1s linear infinite, ${cardId}-energy-flicker 0.18s infinite alternate;
+          box-shadow: 0 0 14px ${withAlpha(difficultyColor, 0.9)}, 0 0 35px ${withAlpha(difficultyColor, 0.7)} !important;
         }
-        @keyframes detail-slide-up {
+        @keyframes ${cardId}-detail-slide-up {
           0% { transform: translateY(15px); opacity: 0; }
           100% { transform: translateY(0); opacity: 1; }
         }
-        @keyframes energy-flow {
+        @keyframes ${cardId}-energy-flow {
           0% { background-position: 0% 0; }
           100% { background-position: -200% 0; }
         }
-        @keyframes energy-flicker {
+        @keyframes ${cardId}-energy-flicker {
           from { opacity: 0.85; filter: blur(0.2px); }
           to { opacity: 1; filter: blur(0.5px); }
         }
