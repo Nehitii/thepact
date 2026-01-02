@@ -140,6 +140,58 @@ const adjustColorBrightness = (color: string, amount: number): string => {
   return color;
 };
 
+// Helper to desaturate colors for softer card backgrounds
+const desaturateColor = (color: string, amount: number): string => {
+  if (color.startsWith("hsl(")) {
+    const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
+    if (match) {
+      const h = parseInt(match[1]);
+      const s = Math.max(0, Math.min(100, parseInt(match[2]) - amount));
+      const l = parseInt(match[3]);
+      return `hsl(${h} ${s}% ${l}%)`;
+    }
+    return color;
+  }
+  if (color.startsWith("#")) {
+    const hex = color.slice(1);
+    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+    const r = parseInt(full.slice(0, 2), 16);
+    const g = parseInt(full.slice(2, 4), 16);
+    const b = parseInt(full.slice(4, 6), 16);
+    const max = Math.max(r, g, b) / 255;
+    const min = Math.min(r, g, b) / 255;
+    const l = (max + min) / 2;
+    let s = 0;
+    let h = 0;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      s = Math.max(0, s - amount / 100);
+      switch (max) {
+        case r / 255: h = ((g / 255 - b / 255) / d + (g < b ? 6 : 0)) / 6; break;
+        case g / 255: h = ((b / 255 - r / 255) / d + 2) / 6; break;
+        case b / 255: h = ((r / 255 - g / 255) / d + 4) / 6; break;
+      }
+    }
+    return `hsl(${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%)`;
+  }
+  return color;
+};
+
+// Get a contrasting accent color for the split line (shifted hue)
+const getSplitLineAccentColor = (color: string): string => {
+  if (color.startsWith("hsl(")) {
+    const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
+    if (match) {
+      const h = (parseInt(match[1]) + 30) % 360;
+      const s = Math.min(100, parseInt(match[2]) + 10);
+      const l = Math.min(85, parseInt(match[3]) + 15);
+      return `hsl(${h} ${s}% ${l}%)`;
+    }
+  }
+  return adjustColorBrightness(color, 40);
+};
+
 // Get tier background gradient for badge (matching UIVerseGoalCard)
 const getTierBackground = (difficulty: string, difficultyColor: string) => {
   switch (difficulty) {
@@ -200,10 +252,15 @@ export function BarViewGoalCard({
   const intensity = getDifficultyIntensity(difficulty);
   const glossIntensity = getGlossIntensity(difficulty);
 
-  // Create difficulty-based gradients
-  const outlineGradient = `linear-gradient(135deg, ${adjustColorBrightness(difficultyColor, -40)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, 20)})`;
-  const avatarBorderGradient = `radial-gradient(circle at 10% 0%, ${adjustColorBrightness(difficultyColor, 30)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, -40)})`;
-
+  // Create softer, desaturated difficulty-based gradients
+  const softColor = desaturateColor(difficultyColor, 25);
+  const softColorLight = adjustColorBrightness(softColor, 15);
+  const softColorDark = adjustColorBrightness(softColor, -20);
+  const outlineGradient = `linear-gradient(135deg, ${softColorDark}, ${softColor}, ${softColorLight})`;
+  const avatarBorderGradient = `radial-gradient(circle at 10% 0%, ${softColorLight}, ${softColor}, ${softColorDark})`;
+  
+  // Split line uses a contrasting accent color
+  const splitLineAccent = getSplitLineAccentColor(difficultyColor);
   // Unique ID for scoped CSS keyframes
   const cardId = `bar-card-${goal.id.slice(0, 8)}`;
 
@@ -240,22 +297,19 @@ export function BarViewGoalCard({
           overflow: "hidden",
         }}
       >
-        {/* Split Line - Energy effect with difficulty colors */}
+        {/* Split Line - Premium glowing accent line */}
         <div
           className={`${cardId}-splitline`}
           style={{
             position: "absolute",
             width: "calc(100% - 80px)",
-            height: "6px",
-            bottom: "14px",
+            height: "4px",
+            bottom: "16px",
             left: "40px",
             borderRadius: "999px",
-            background: `linear-gradient(90deg, transparent 0%, ${withAlpha(difficultyColor, 0.5)} 15%, ${difficultyColor} 40%, ${adjustColorBrightness(difficultyColor, -20)} 55%, ${difficultyColor} 70%, ${withAlpha(difficultyColor, 0.5)} 85%, transparent 100%)`,
-            boxShadow: `0 0 10px ${withAlpha(difficultyColor, 0.6)}, 0 0 25px ${withAlpha(difficultyColor, 0.5)}`,
-            filter: "blur(0.1px)",
+            background: `linear-gradient(90deg, transparent 0%, ${withAlpha(splitLineAccent, 0.4)} 10%, ${splitLineAccent} 30%, ${withAlpha(splitLineAccent, 0.95)} 50%, ${splitLineAccent} 70%, ${withAlpha(splitLineAccent, 0.4)} 90%, transparent 100%)`,
+            boxShadow: `0 0 8px ${withAlpha(splitLineAccent, 0.5)}, 0 0 16px ${withAlpha(splitLineAccent, 0.35)}, 0 0 24px ${withAlpha(splitLineAccent, 0.2)}, inset 0 0 4px ${withAlpha(splitLineAccent, 0.3)}`,
             zIndex: 1,
-            backgroundSize: "200% 100%",
-            backgroundPosition: "0 0",
           }}
         />
 
@@ -270,7 +324,7 @@ export function BarViewGoalCard({
             borderRadius: "18px",
             padding: "3px",
             background: avatarBorderGradient,
-            boxShadow: `0 0 16px ${withAlpha(difficultyColor, 0.65)}`,
+            boxShadow: `0 0 12px ${withAlpha(softColor, 0.5)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -294,8 +348,8 @@ export function BarViewGoalCard({
                 width: "100%",
                 height: "100%",
                 borderRadius: "16px",
-                background: `radial-gradient(circle at 30% 20%, ${difficultyColor}, #020b1b)`,
-                opacity: 0.95,
+                background: `radial-gradient(circle at 30% 20%, ${softColor}, #020b1b)`,
+                opacity: 0.9,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
