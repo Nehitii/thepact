@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Star, Trophy, Receipt } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Star, Trophy, Receipt, Target, Tag, Zap, ListOrdered, Image, StickyNote, DollarSign, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -53,16 +53,26 @@ interface Step {
   due_date: string | null;
 }
 
-const goalTypes = [
-  { value: "personal", label: "Personal" },
-  { value: "professional", label: "Professional" },
-  { value: "health", label: "Health" },
-  { value: "creative", label: "Creative" },
-  { value: "financial", label: "Financial" },
-  { value: "learning", label: "Learning" },
-  { value: "relationship", label: "Relationship" },
-  { value: "diy", label: "DIY" },
-  { value: "other", label: "Other" }
+// Valid goal tags matching NewGoal.tsx
+const goalTags = [
+  { value: "personal", label: "Personal", color: "hsl(200 100% 67%)" },
+  { value: "professional", label: "Professional", color: "hsl(45 95% 55%)" },
+  { value: "health", label: "Health", color: "hsl(142 70% 50%)" },
+  { value: "creative", label: "Creative", color: "hsl(280 75% 55%)" },
+  { value: "financial", label: "Financial", color: "hsl(212 90% 55%)" },
+  { value: "learning", label: "Learning", color: "hsl(25 100% 60%)" },
+  { value: "relationship", label: "Relationship", color: "hsl(340 75% 55%)" },
+  { value: "diy", label: "DIY", color: "hsl(175 70% 45%)" },
+  { value: "other", label: "Other", color: "hsl(210 30% 50%)" }
+];
+
+// Difficulties matching NewGoal.tsx
+const difficultyOptions = [
+  { value: "easy", label: "Easy", color: "hsl(142 70% 50%)" },
+  { value: "medium", label: "Medium", color: "hsl(45 95% 55%)" },
+  { value: "hard", label: "Hard", color: "hsl(25 100% 60%)" },
+  { value: "extreme", label: "Extreme", color: "hsl(0 90% 65%)" },
+  { value: "impossible", label: "Impossible", color: "hsl(280 75% 45%)" }
 ];
 
 export default function GoalDetail() {
@@ -81,7 +91,7 @@ export default function GoalDetail() {
   const [editCompletionDate, setEditCompletionDate] = useState("");
   const [editImage, setEditImage] = useState("");
   const [editDifficulty, setEditDifficulty] = useState("");
-  const [editType, setEditType] = useState("");
+  const [editTags, setEditTags] = useState<string[]>([]);
   const [editNotes, setEditNotes] = useState("");
   const [editCostItems, setEditCostItems] = useState<CostItemData[]>([]);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
@@ -114,7 +124,9 @@ export default function GoalDetail() {
         setEditCompletionDate(goalData.completion_date?.split("T")[0] || "");
         setEditImage(goalData.image_url || "");
         setEditDifficulty(goalData.difficulty || "medium");
-        setEditType(goalData.type || "other");
+        // Map to valid tags - handle old/invalid tag values
+        const validTag = mapToValidTag(goalData.type || "other");
+        setEditTags([validTag]);
         setEditNotes(goalData.notes || "");
         const { data: stepsData } = await supabase.from("steps").select("*").eq("goal_id", id).order("order", { ascending: true });
         if (stepsData) setSteps(stepsData);
@@ -131,14 +143,38 @@ export default function GoalDetail() {
     }
   }, [costItems]);
 
-  const difficulties = [
-    { value: "easy", label: "Easy" },
-    { value: "medium", label: "Medium" },
-    { value: "hard", label: "Hard" },
-    { value: "extreme", label: "Extreme" },
-    { value: "impossible", label: "Impossible" },
-    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom" }] : [])
+  const allDifficulties = [
+    ...difficultyOptions,
+    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: "hsl(270 90% 65%)" }] : [])
   ];
+
+  // Toggle tag for multi-select
+  const toggleEditTag = (tagValue: string) => {
+    setEditTags(prev => 
+      prev.includes(tagValue) 
+        ? prev.filter(t => t !== tagValue)
+        : [...prev, tagValue]
+    );
+  };
+
+  // Map old/invalid tags to valid ones
+  const mapToValidTag = (tag: string): string => {
+    const validValues = goalTags.map(t => t.value);
+    const lowered = tag.toLowerCase();
+    if (validValues.includes(lowered)) return lowered;
+    // Map old tags like "Growth" to closest valid tag
+    const mapping: Record<string, string> = {
+      "growth": "personal",
+      "career": "professional",
+      "fitness": "health",
+      "art": "creative",
+      "money": "financial",
+      "education": "learning",
+      "social": "relationship",
+      "craft": "diy"
+    };
+    return mapping[lowered] || "other";
+  };
 
   const handleToggleStep = async (stepId: string, currentStatus: string) => {
     if (!goal) return;
@@ -214,7 +250,9 @@ export default function GoalDetail() {
     if (editName !== goal.name) updates.name = editName;
     if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
     if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
-    if (editType !== goal.type) updates.type = editType;
+    // Use first selected tag as primary type for DB compatibility
+    const primaryTag = editTags[0] || "personal";
+    if (primaryTag !== goal.type) updates.type = primaryTag;
     if (editNotes !== (goal.notes || "")) updates.notes = editNotes || null;
     if (editStartDate && editStartDate !== goal.start_date?.split("T")[0]) updates.start_date = new Date(editStartDate).toISOString();
     if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0]) updates.completion_date = new Date(editCompletionDate).toISOString();
@@ -454,63 +492,258 @@ export default function GoalDetail() {
                     Edit
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle className="font-orbitron">Edit Goal</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label>Goal Name</Label>
-                      <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
+                <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl p-0 border-2 border-primary/30 bg-card/95 backdrop-blur-xl rounded-2xl">
+                  {/* Header */}
+                  <div className="sticky top-0 z-10 bg-gradient-to-b from-card via-card to-transparent px-6 pt-6 pb-4">
+                    <DialogHeader>
+                      <DialogTitle className="text-2xl font-orbitron uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary drop-shadow-[0_0_20px_rgba(91,180,255,0.5)]">
+                        Edit Goal
+                      </DialogTitle>
+                      <p className="text-sm text-primary/60 font-rajdhani">Update your evolution</p>
+                    </DialogHeader>
+                  </div>
+                  
+                  <div className="px-6 pb-6 space-y-8">
+                    
+                    {/* Section 1: Basic Info */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                        <Target className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Basic Information</h3>
+                      </div>
+                      
+                      {/* Goal Name */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
+                          Goal Name <span className="text-destructive">*</span>
+                        </Label>
+                        <Input 
+                          value={editName} 
+                          onChange={(e) => setEditName(e.target.value)} 
+                          className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                          maxLength={100}
+                        />
+                      </div>
+
+                      {/* Tags Multi-Select */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
+                          <Tag className="h-3.5 w-3.5" />
+                          Tags <span className="text-destructive">*</span>
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                          {goalTags.map((tag) => {
+                            const isSelected = editTags.includes(tag.value);
+                            return (
+                              <button
+                                key={tag.value}
+                                type="button"
+                                onClick={() => toggleEditTag(tag.value)}
+                                className={`
+                                  relative px-3 py-1.5 rounded-lg font-rajdhani text-xs font-medium transition-all duration-200
+                                  ${isSelected 
+                                    ? 'text-white shadow-md' 
+                                    : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
+                                  }
+                                `}
+                                style={isSelected ? { 
+                                  background: tag.color,
+                                  boxShadow: `0 0 15px ${tag.color}40`
+                                } : {}}
+                              >
+                                <span className="flex items-center gap-1">
+                                  {isSelected && <Check className="h-3 w-3" />}
+                                  {tag.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Select one or more tags</p>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Tag</Label>
-                        <Select value={editType} onValueChange={setEditType}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {goalTypes.map((t) => (<SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
+
+                    {/* Section 2: Type & Difficulty */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                        <Zap className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Type & Difficulty</h3>
                       </div>
+
+                      {/* Goal Type Display (read-only) */}
                       <div className="space-y-2">
-                        <Label>Difficulty</Label>
-                        <Select value={editDifficulty} onValueChange={setEditDifficulty}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            {difficulties.map((d) => (<SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
+                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Goal Type</Label>
+                        <div className="flex gap-3">
+                          <div className={`flex-1 p-3 rounded-xl border-2 text-center ${
+                            goal.goal_type !== "habit" 
+                              ? "border-primary bg-primary/10" 
+                              : "border-border bg-muted/30"
+                          }`}>
+                            <ListOrdered className={`h-5 w-5 mx-auto mb-1 ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`text-xs font-rajdhani font-medium ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`}>
+                              Normal Goal
+                            </span>
+                          </div>
+                          <div className={`flex-1 p-3 rounded-xl border-2 text-center ${
+                            goal.goal_type === "habit" 
+                              ? "border-primary bg-primary/10" 
+                              : "border-border bg-muted/30"
+                          }`}>
+                            <Sparkles className={`h-5 w-5 mx-auto mb-1 ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`text-xs font-rajdhani font-medium ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`}>
+                              Habit Goal
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">Goal type cannot be changed after creation</p>
+                      </div>
+
+                      {/* Difficulty Selection */}
+                      <div className="space-y-2">
+                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Difficulty</Label>
+                        <div className="flex flex-wrap gap-2">
+                          {allDifficulties.map((diff) => {
+                            const isSelected = editDifficulty === diff.value;
+                            return (
+                              <button
+                                key={diff.value}
+                                type="button"
+                                onClick={() => setEditDifficulty(diff.value)}
+                                className={`
+                                  relative px-4 py-2 rounded-lg font-rajdhani font-bold text-xs uppercase tracking-wide transition-all duration-200
+                                  ${isSelected 
+                                    ? 'text-white shadow-md' 
+                                    : 'bg-muted/50 text-muted-foreground hover:bg-muted border border-border'
+                                  }
+                                `}
+                                style={isSelected ? { 
+                                  background: diff.color,
+                                  boxShadow: `0 0 15px ${diff.color}40`
+                                } : {}}
+                              >
+                                {diff.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Number of Steps (only for normal goals) */}
+                      {goal.goal_type !== "habit" && (
+                        <div className="space-y-2">
+                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
+                            <ListOrdered className="h-3.5 w-3.5" />
+                            Number of Steps
+                          </Label>
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            max="20"
+                            value={editSteps} 
+                            onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)} 
+                            className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            Warning: Changing step count may affect existing step data
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Section 3: Dates */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Scheduling</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Start Date</Label>
+                          <Input 
+                            type="date" 
+                            value={editStartDate} 
+                            onChange={(e) => setEditStartDate(e.target.value)} 
+                            className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Completion Date</Label>
+                          <Input 
+                            type="date" 
+                            value={editCompletionDate} 
+                            onChange={(e) => setEditCompletionDate(e.target.value)} 
+                            className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                          />
+                        </div>
                       </div>
                     </div>
-                    {goal.goal_type !== "habit" && (
-                      <div className="space-y-2">
-                        <Label>Number of Steps</Label>
-                        <Input type="number" min="1" value={editSteps} onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)} />
+
+                    {/* Section 4: Budget & Cost */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                        <DollarSign className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h3>
                       </div>
-                    )}
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Start Date</Label>
-                        <Input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
+                      
+                      <CostItemsEditor 
+                        items={editCostItems} 
+                        onChange={setEditCostItems} 
+                        legacyTotal={goal.estimated_cost} 
+                      />
+                    </div>
+
+                    {/* Section 5: Media & Notes */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                        <Image className="h-4 w-4 text-primary" />
+                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Media & Notes</h3>
                       </div>
+                      
+                      {/* Goal Image */}
+                      {user && (
+                        <div className="space-y-2">
+                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Goal Image</Label>
+                          <GoalImageUpload value={editImage} onChange={setEditImage} userId={user.id} />
+                        </div>
+                      )}
+                      
+                      {/* Notes */}
                       <div className="space-y-2">
-                        <Label>Completion Date</Label>
-                        <Input type="date" value={editCompletionDate} onChange={(e) => setEditCompletionDate(e.target.value)} />
+                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
+                          <StickyNote className="h-3.5 w-3.5" />
+                          Notes
+                        </Label>
+                        <Textarea 
+                          value={editNotes} 
+                          onChange={(e) => setEditNotes(e.target.value)} 
+                          rows={4} 
+                          maxLength={500}
+                          placeholder="Add notes about your goal..."
+                          className="rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
+                        />
+                        <p className="text-xs text-muted-foreground text-right">{editNotes.length}/500</p>
                       </div>
                     </div>
-                    <CostItemsEditor items={editCostItems} onChange={setEditCostItems} legacyTotal={goal.estimated_cost} />
-                    {user && (
-                      <div className="space-y-2">
-                        <Label>Goal Image</Label>
-                        <GoalImageUpload value={editImage} onChange={setEditImage} userId={user.id} />
-                      </div>
-                    )}
-                    <div className="space-y-2">
-                      <Label>Notes</Label>
-                      <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} rows={4} maxLength={500} />
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-3 pt-4 border-t border-border">
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setEditDialogOpen(false)}
+                        className="flex-1 h-12 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 font-rajdhani uppercase tracking-wider"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleEditGoal} 
+                        className="flex-1 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider shadow-[0_0_20px_rgba(91,180,255,0.3)]"
+                      >
+                        <Check className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </Button>
                     </div>
-                    <Button onClick={handleEditGoal} className="w-full">Save Changes</Button>
                   </div>
                 </DialogContent>
               </Dialog>
