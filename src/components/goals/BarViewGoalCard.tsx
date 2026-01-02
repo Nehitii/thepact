@@ -50,19 +50,20 @@ const getStatusLabel = (status: string): string => {
   }
 };
 
-const getGoalTypeTags = (type: string): string[] => {
-  const typeMap: Record<string, string[]> = {
-    personal: ["Personal", "Growth"],
-    professional: ["Career", "Work"],
-    health: ["Health", "Wellness"],
-    creative: ["Creative", "Art"],
-    financial: ["Finance", "Money"],
-    learning: ["Learning", "Skills"],
-    relationship: ["Social", "Connection"],
-    diy: ["DIY", "Craft"],
-    other: ["General"],
+// Valid tag labels matching the tag system in NewGoal.tsx
+const getGoalTypeLabel = (type: string): string => {
+  const typeMap: Record<string, string> = {
+    personal: "Personal",
+    professional: "Professional",
+    health: "Health",
+    creative: "Creative",
+    financial: "Financial",
+    learning: "Learning",
+    relationship: "Relationship",
+    diy: "DIY",
+    other: "Other",
   };
-  return typeMap[type] || [type.charAt(0).toUpperCase() + type.slice(1)];
+  return typeMap[type] || type.charAt(0).toUpperCase() + type.slice(1);
 };
 
 const getDifficultyIntensity = (difficulty: string): number => {
@@ -195,7 +196,7 @@ export function BarViewGoalCard({
   const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
-  const tags = getGoalTypeTags(goal.type);
+  const tagLabel = getGoalTypeLabel(goal.type);
   const intensity = getDifficultyIntensity(difficulty);
   const glossIntensity = getGlossIntensity(difficulty);
 
@@ -464,22 +465,19 @@ export function BarViewGoalCard({
               {isHabitGoal ? "DAYS" : "STEP"}
             </span>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-              {tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="font-rajdhani"
-                  style={{
-                    fontSize: "10px",
-                    padding: "2px 8px",
-                    borderRadius: "999px",
-                    background: withAlpha(difficultyColor, 0.2),
-                    color: "#c6e2ff",
-                    border: `1px solid ${withAlpha(difficultyColor, 0.3)}`,
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
+              <span
+                className="font-rajdhani"
+                style={{
+                  fontSize: "10px",
+                  padding: "2px 8px",
+                  borderRadius: "999px",
+                  background: withAlpha(difficultyColor, 0.2),
+                  color: "#c6e2ff",
+                  border: `1px solid ${withAlpha(difficultyColor, 0.3)}`,
+                }}
+              >
+                {tagLabel}
+              </span>
             </div>
           </div>
 

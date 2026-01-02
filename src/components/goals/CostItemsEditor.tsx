@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Receipt } from "lucide-react";
+import { Plus, Trash2, Receipt, ArrowDownToLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,8 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
   const totalCost = items.reduce((sum, item) => sum + (item.price || 0), 0);
   
   // Show legacy total if no items but there's an existing cost
-  const displayTotal = items.length === 0 && legacyTotal ? legacyTotal : totalCost;
+  const hasLegacyCost = items.length === 0 && legacyTotal && legacyTotal > 0;
+  const displayTotal = hasLegacyCost ? legacyTotal : totalCost;
 
   const handleAddItem = () => {
     onChange([...items, { name: "", price: 0 }]);
@@ -46,10 +47,22 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
     onChange(newItems);
   };
 
+  // Convert orphan legacy cost to an itemized cost item
+  const handleConvertLegacyCost = () => {
+    if (legacyTotal && legacyTotal > 0) {
+      onChange([{ name: "Estimated Cost (migrated)", price: legacyTotal }]);
+    }
+  };
+
+  // Clear legacy cost by adding empty items list (will set total to 0)
+  const handleClearLegacyCost = () => {
+    onChange([]);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-rajdhani tracking-wide uppercase text-primary/90 flex items-center gap-2">
+        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
           <Receipt className="h-4 w-4" />
           Estimated Cost (Itemized)
         </Label>
@@ -60,14 +73,14 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
         {items.map((item, index) => (
           <div
             key={index}
-            className="flex items-center gap-3 p-3 rounded-lg border border-primary/20 bg-[#050A13]/60 backdrop-blur-sm animate-fade-in"
+            className="flex items-center gap-3 p-3 rounded-xl border border-primary/20 bg-background/50 backdrop-blur-sm animate-fade-in"
           >
             <div className="flex-1">
               <Input
                 placeholder="Item name (e.g., Materials)"
                 value={item.name}
                 onChange={(e) => handleItemChange(index, "name", e.target.value)}
-                className="bg-transparent border-primary/30 focus:border-primary/60"
+                className="bg-transparent border-primary/30 focus:border-primary/60 rounded-lg"
               />
             </div>
             <div className="w-32 relative">
@@ -81,7 +94,7 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
                 placeholder="0.00"
                 value={item.price || ""}
                 onChange={(e) => handleItemChange(index, "price", e.target.value)}
-                className="pl-7 bg-transparent border-primary/30 focus:border-primary/60"
+                className="pl-7 bg-transparent border-primary/30 focus:border-primary/60 rounded-lg"
               />
             </div>
             <Button
@@ -89,24 +102,52 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
               variant="ghost"
               size="icon"
               onClick={() => handleRemoveItem(index)}
-              className="h-9 w-9 text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+              className="h-9 w-9 text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-lg"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         ))}
 
-        {items.length === 0 && (
-          <div className="text-center py-6 text-primary/50 font-rajdhani border border-dashed border-primary/20 rounded-lg">
-            {legacyTotal && legacyTotal > 0 ? (
-              <p className="text-sm">
-                Current estimated cost: <span className="text-primary font-bold">{formatCurrency(legacyTotal, currency)}</span>
-                <br />
-                <span className="text-xs">Add items to itemize this cost</span>
+        {/* Legacy cost handling */}
+        {hasLegacyCost && (
+          <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
+            <div className="text-center">
+              <p className="text-sm font-rajdhani text-amber-400">
+                Legacy Cost: <span className="font-bold">{formatCurrency(legacyTotal!, currency)}</span>
               </p>
-            ) : (
-              <p className="text-sm">No cost items added yet</p>
-            )}
+              <p className="text-xs text-muted-foreground mt-1">
+                This cost was set before itemization was available
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleConvertLegacyCost}
+                className="flex-1 border-amber-500/30 hover:border-amber-500/50 hover:bg-amber-500/10 text-amber-400 font-rajdhani text-xs"
+              >
+                <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5" />
+                Convert to Item
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleClearLegacyCost}
+                className="flex-1 border-destructive/30 hover:border-destructive/50 hover:bg-destructive/10 text-destructive font-rajdhani text-xs"
+              >
+                <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+                Clear Cost
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {items.length === 0 && !hasLegacyCost && (
+          <div className="text-center py-6 text-muted-foreground font-rajdhani border border-dashed border-primary/20 rounded-xl">
+            <p className="text-sm">No cost items added yet</p>
           </div>
         )}
       </div>
@@ -116,14 +157,14 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
         type="button"
         variant="outline"
         onClick={handleAddItem}
-        className="w-full border-primary/30 border-dashed hover:border-primary/50 hover:bg-primary/5 font-rajdhani tracking-wide"
+        className="w-full border-primary/30 border-dashed hover:border-primary/50 hover:bg-primary/5 font-rajdhani tracking-wide rounded-xl"
       >
         <Plus className="h-4 w-4 mr-2" />
         Add Cost Item
       </Button>
 
       {/* Total display */}
-      <div className="flex items-center justify-between p-4 rounded-lg border border-primary/30 bg-[#050A13]/80 backdrop-blur-sm">
+      <div className="flex items-center justify-between p-4 rounded-xl border border-primary/30 bg-background/80 backdrop-blur-sm">
         <span className="font-rajdhani uppercase tracking-wider text-primary/70 text-sm">
           Total Estimated Cost
         </span>
