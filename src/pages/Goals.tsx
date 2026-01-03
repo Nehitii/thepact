@@ -602,12 +602,13 @@ export default function Goals() {
 
             {/* Search Bar */}
             <div className="relative flex items-center">
-              <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none z-30" />
               <Input
                 type="text"
                 placeholder="Search goals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                variant="light"
                 className="w-[180px] h-9 pl-9 pr-8 text-sm rounded-xl"
               />
               {searchQuery && (

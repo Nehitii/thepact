@@ -80,7 +80,8 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
                 placeholder="Item name (e.g., Materials)"
                 value={item.name}
                 onChange={(e) => handleItemChange(index, "name", e.target.value)}
-                className="bg-transparent border-primary/30 focus:border-primary/60 rounded-lg"
+                variant="light"
+                className="rounded-lg"
               />
             </div>
             <div className="w-32 relative">
@@ -94,7 +95,8 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
                 placeholder="0.00"
                 value={item.price || ""}
                 onChange={(e) => handleItemChange(index, "price", e.target.value)}
-                className="pl-7 bg-transparent border-primary/30 focus:border-primary/60 rounded-lg"
+                variant="light"
+                className="pl-7 rounded-lg"
               />
             </div>
             <Button

@@ -125,6 +125,7 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
           placeholder="https://... or upload an image"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          variant="light"
           className="flex-1"
         />
         <input
