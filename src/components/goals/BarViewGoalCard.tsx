@@ -252,15 +252,13 @@ export function BarViewGoalCard({
   const intensity = getDifficultyIntensity(difficulty);
   const glossIntensity = getGlossIntensity(difficulty);
 
-  // Create softer, desaturated difficulty-based gradients
-  const softColor = desaturateColor(difficultyColor, 25);
-  const softColorLight = adjustColorBrightness(softColor, 15);
-  const softColorDark = adjustColorBrightness(softColor, -20);
-  const outlineGradient = `linear-gradient(135deg, ${softColorDark}, ${softColor}, ${softColorLight})`;
-  const avatarBorderGradient = `radial-gradient(circle at 10% 0%, ${softColorLight}, ${softColor}, ${softColorDark})`;
+  // Create soft, flat solid colors - highly desaturated and lightened for calm aesthetic
+  const softMainColor = adjustColorBrightness(desaturateColor(difficultyColor, 45), 35);
+  const softExpandedColor = adjustColorBrightness(desaturateColor(difficultyColor, 50), 50);
+  const softBorderColor = adjustColorBrightness(desaturateColor(difficultyColor, 35), 20);
   
-  // Split line uses a contrasting accent color
-  const splitLineAccent = getSplitLineAccentColor(difficultyColor);
+  // Split line uses a subtle accent - slightly more saturated than card
+  const splitLineAccent = adjustColorBrightness(desaturateColor(difficultyColor, 25), 30);
   // Unique ID for scoped CSS keyframes
   const cardId = `bar-card-${goal.id.slice(0, 8)}`;
 
@@ -283,32 +281,33 @@ export function BarViewGoalCard({
         transition: "height 0.5s ease",
       }}
     >
-      {/* Main outline card */}
+      {/* Main card - soft flat solid color */}
       <div
         className={`${cardId}-outline`}
         style={{
           position: "relative",
-          background: outlineGradient,
+          background: softMainColor,
           width: "100%",
           height: "140px",
           borderRadius: "25px",
-          transition: "box-shadow 0.5s ease",
+          border: `1px solid ${withAlpha(softBorderColor, 0.4)}`,
+          transition: "box-shadow 0.4s ease",
           zIndex: 2,
           overflow: "hidden",
         }}
       >
-        {/* Split Line - Premium glowing accent line */}
+        {/* Split Line - Subtle elegant accent line */}
         <div
           className={`${cardId}-splitline`}
           style={{
             position: "absolute",
             width: "calc(100% - 80px)",
-            height: "4px",
+            height: "3px",
             bottom: "16px",
             left: "40px",
             borderRadius: "999px",
-            background: `linear-gradient(90deg, transparent 0%, ${withAlpha(splitLineAccent, 0.4)} 10%, ${splitLineAccent} 30%, ${withAlpha(splitLineAccent, 0.95)} 50%, ${splitLineAccent} 70%, ${withAlpha(splitLineAccent, 0.4)} 90%, transparent 100%)`,
-            boxShadow: `0 0 8px ${withAlpha(splitLineAccent, 0.5)}, 0 0 16px ${withAlpha(splitLineAccent, 0.35)}, 0 0 24px ${withAlpha(splitLineAccent, 0.2)}, inset 0 0 4px ${withAlpha(splitLineAccent, 0.3)}`,
+            background: splitLineAccent,
+            boxShadow: `0 0 6px ${withAlpha(splitLineAccent, 0.35)}, 0 0 12px ${withAlpha(splitLineAccent, 0.2)}`,
             zIndex: 1,
           }}
         />
@@ -323,8 +322,8 @@ export function BarViewGoalCard({
             height: "78px",
             borderRadius: "18px",
             padding: "3px",
-            background: avatarBorderGradient,
-            boxShadow: `0 0 12px ${withAlpha(softColor, 0.5)}`,
+            background: softBorderColor,
+            boxShadow: `0 2px 8px ${withAlpha(softBorderColor, 0.3)}`,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -348,14 +347,13 @@ export function BarViewGoalCard({
                 width: "100%",
                 height: "100%",
                 borderRadius: "16px",
-                background: `radial-gradient(circle at 30% 20%, ${softColor}, #020b1b)`,
-                opacity: 0.9,
+                background: adjustColorBrightness(softMainColor, -15),
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <Trophy className="h-7 w-7 text-white/80" />
+              <Trophy className="h-7 w-7" style={{ color: softBorderColor }} />
             </div>
           )}
         </div>
@@ -368,11 +366,11 @@ export function BarViewGoalCard({
           }}
           className="absolute top-3 right-3 z-20 p-1.5 rounded-full border transition-all hover:scale-110"
           style={{
-            background: "rgba(0,0,0,0.5)",
-            borderColor: "rgba(255,255,255,0.2)",
+            background: "rgba(255,255,255,0.9)",
+            borderColor: withAlpha(softBorderColor, 0.3),
           }}
         >
-          <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`} />
+          <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`} />
         </button>
 
         {/* Difficulty Badge - Same style as UIVerseGoalCard */}
@@ -400,13 +398,13 @@ export function BarViewGoalCard({
           <span className="relative z-10">{getDifficultyLabel(difficulty, customDifficultyName)}</span>
         </Badge>
 
-        {/* Goal Name - Slightly smaller */}
+        {/* Goal Name */}
         <h3
           className="font-orbitron"
           style={{
             position: "absolute",
             fontWeight: 700,
-            color: "#ffffff",
+            color: "#1a1a2e",
             left: "110px",
             fontSize: "16px",
             top: "50px",
@@ -429,7 +427,7 @@ export function BarViewGoalCard({
             top: "76px",
             margin: 0,
             fontSize: "12px",
-            color: "#a4c9ff",
+            color: "#4a5568",
             display: "inline-flex",
             alignItems: "center",
             gap: "6px",
@@ -441,14 +439,13 @@ export function BarViewGoalCard({
               height: "7px",
               borderRadius: "50%",
               background: isCompleted ? "#34c759" : goal.status === "in_progress" ? "#34c759" : "#f5a623",
-              boxShadow: `0 0 6px ${isCompleted || goal.status === "in_progress" ? "rgba(52, 199, 89, 0.9)" : "rgba(245, 166, 35, 0.9)"}`,
             }}
           />
           {getStatusLabel(goal.status || "in_progress")}
         </div>
       </div>
 
-      {/* Expandable Detail Section - Solid darker color with difficulty tint */}
+      {/* Expandable Detail Section - Lighter soft color */}
       <div
         className={`${cardId}-detail`}
         style={{
@@ -456,7 +453,8 @@ export function BarViewGoalCard({
           display: "none",
           width: "100%",
           height: "170px",
-          background: adjustColorBrightness(difficultyColor, -30),
+          background: softExpandedColor,
+          borderTop: `1px solid ${withAlpha(softBorderColor, 0.25)}`,
           top: "-20px",
           zIndex: 1,
           borderRadius: "0 0 25px 25px",
@@ -467,7 +465,7 @@ export function BarViewGoalCard({
           padding: "5px 24px",
         }}
       >
-        {/* XP Box - Now in expanded section only, on the left */}
+        {/* XP Box */}
         {goal.potential_score && goal.potential_score > 0 && (
           <div
             style={{
@@ -476,19 +474,19 @@ export function BarViewGoalCard({
               gap: "10px",
               padding: "10px 14px",
               borderRadius: "14px",
-              background: withAlpha(difficultyColor, 0.15),
-              border: `1px solid ${withAlpha(difficultyColor, 0.4)}`,
+              background: "rgba(255,255,255,0.7)",
+              border: `1px solid ${withAlpha(softBorderColor, 0.3)}`,
               flexShrink: 0,
             }}
           >
-            <Sparkles className="h-5 w-5" style={{ color: difficultyColor }} />
+            <Sparkles className="h-5 w-5" style={{ color: softBorderColor }} />
             <span
               className="font-rajdhani"
               style={{
                 margin: 0,
                 fontSize: "16px",
                 fontWeight: 800,
-                color: "#e6faff",
+                color: "#1a1a2e",
               }}
             >
               +{goal.potential_score} XP
@@ -513,7 +511,7 @@ export function BarViewGoalCard({
                 fontWeight: 800,
                 fontSize: "11px",
                 margin: 0,
-                color: withAlpha(difficultyColor, 0.9),
+                color: "#4a5568",
               }}
             >
               {isHabitGoal ? "DAYS" : "STEP"}
@@ -525,9 +523,9 @@ export function BarViewGoalCard({
                   fontSize: "10px",
                   padding: "2px 8px",
                   borderRadius: "999px",
-                  background: withAlpha(difficultyColor, 0.2),
-                  color: "#c6e2ff",
-                  border: `1px solid ${withAlpha(difficultyColor, 0.3)}`,
+                  background: "rgba(255,255,255,0.6)",
+                  color: "#1a1a2e",
+                  border: `1px solid ${withAlpha(softBorderColor, 0.25)}`,
                 }}
               >
                 {tagLabel}
@@ -541,7 +539,7 @@ export function BarViewGoalCard({
               width: "100%",
               height: "8px",
               borderRadius: "999px",
-              background: withAlpha(difficultyColor, 0.15),
+              background: "rgba(255,255,255,0.5)",
               overflow: "hidden",
             }}
           >
@@ -551,8 +549,7 @@ export function BarViewGoalCard({
               transition={{ duration: 0.8, ease: "easeOut" }}
               style={{
                 height: "100%",
-                background: `linear-gradient(90deg, ${adjustColorBrightness(difficultyColor, 30)}, ${difficultyColor}, ${adjustColorBrightness(difficultyColor, -20)})`,
-                boxShadow: `0 0 8px ${withAlpha(difficultyColor, 0.6)}`,
+                background: softBorderColor,
               }}
             />
           </div>
@@ -563,7 +560,7 @@ export function BarViewGoalCard({
             style={{
               marginTop: "6px",
               fontSize: "11px",
-              color: "#8fb5ff",
+              color: "#4a5568",
               display: "block",
             }}
           >
@@ -572,44 +569,31 @@ export function BarViewGoalCard({
         </div>
       </div>
 
-      {/* CSS for hover effects with difficulty-colored animations */}
+      {/* CSS for hover effects - subtle and clean */}
       <style>{`
         .${cardId}:hover {
           height: 250px !important;
         }
         .${cardId}:hover .${cardId}-outline {
-          box-shadow: 0 10px 25px ${withAlpha(difficultyColor, 0.55)};
+          box-shadow: 0 4px 20px ${withAlpha(softBorderColor, 0.25)};
         }
         .${cardId}:hover .${cardId}-detail {
-  display: flex !important;
-  align-items: center;          /* ✅ centre verticalement dans la zone noire */
-  justify-content: flex-start;
-  gap: 20px;
-
-  /* ✅ même espace en haut et en bas */
-  padding-top: 30px;
-  padding-bottom: 30px;
-  padding-left: 24px;
-  padding-right: 24px;
-
-  animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
-}
-
+          display: flex !important;
+          align-items: center;
+          justify-content: flex-start;
+          gap: 20px;
+          padding-top: 30px;
+          padding-bottom: 30px;
+          padding-left: 24px;
+          padding-right: 24px;
+          animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
+        }
         .${cardId}:hover .${cardId}-splitline {
-          animation: ${cardId}-energy-flow 1.1s linear infinite, ${cardId}-energy-flicker 0.18s infinite alternate;
-          box-shadow: 0 0 14px ${withAlpha(difficultyColor, 0.9)}, 0 0 35px ${withAlpha(difficultyColor, 0.7)} !important;
+          box-shadow: 0 0 8px ${withAlpha(splitLineAccent, 0.4)}, 0 0 16px ${withAlpha(splitLineAccent, 0.25)} !important;
         }
         @keyframes ${cardId}-detail-slide-up {
           0% { transform: translateY(15px); opacity: 0; }
           100% { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes ${cardId}-energy-flow {
-          0% { background-position: 0% 0; }
-          100% { background-position: -200% 0; }
-        }
-        @keyframes ${cardId}-energy-flicker {
-          from { opacity: 0.85; filter: blur(0.2px); }
-          to { opacity: 1; filter: blur(0.5px); }
         }
       `}</style>
     </motion.div>
