@@ -270,7 +270,8 @@ export default function NewGoal() {
                   onChange={(e) => setName(e.target.value)}
                   maxLength={100}
                   autoComplete="off"
-                  className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/50"
+                  variant="light"
+                  className="h-12 text-base rounded-xl"
                 />
               </div>
 
@@ -417,7 +418,8 @@ export default function NewGoal() {
                       value={stepCount}
                       onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
                       autoComplete="off"
-                      className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary"
+                      variant="light"
+                      className="h-12 text-base rounded-xl"
                     />
                     <p className="text-xs text-muted-foreground">1-20 steps allowed</p>
                   </div>
@@ -435,7 +437,8 @@ export default function NewGoal() {
                       value={habitDurationDays}
                       onChange={(e) => setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))}
                       autoComplete="off"
-                      className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary"
+                      variant="light"
+                      className="h-12 text-base rounded-xl"
                     />
                     <p className="text-xs text-muted-foreground">
                       Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? "s" : ""}
@@ -454,7 +457,8 @@ export default function NewGoal() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="h-12 text-base rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary"
+                    variant="light"
+                    className="h-12 text-base rounded-xl"
                   />
                 </div>
               </div>
@@ -495,7 +499,8 @@ export default function NewGoal() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={4}
                   maxLength={500}
-                  className="resize-none rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary text-base"
+                  variant="light"
+                  className="resize-none rounded-xl text-base"
                 />
                 <p className="text-xs text-muted-foreground text-right">{notes.length}/500</p>
               </div>

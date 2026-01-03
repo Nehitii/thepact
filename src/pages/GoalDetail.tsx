@@ -520,7 +520,8 @@ export default function GoalDetail() {
                         <Input 
                           value={editName} 
                           onChange={(e) => setEditName(e.target.value)} 
-                          className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                          variant="light"
+                          className="h-11 rounded-xl"
                           maxLength={100}
                         />
                       </div>
@@ -641,7 +642,8 @@ export default function GoalDetail() {
                             max="20"
                             value={editSteps} 
                             onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)} 
-                            className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            variant="light"
+                            className="h-11 rounded-xl"
                           />
                           <p className="text-xs text-muted-foreground">
                             Warning: Changing step count may affect existing step data
@@ -664,7 +666,8 @@ export default function GoalDetail() {
                             type="date" 
                             value={editStartDate} 
                             onChange={(e) => setEditStartDate(e.target.value)} 
-                            className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            variant="light"
+                            className="h-11 rounded-xl"
                           />
                         </div>
                         <div className="space-y-2">
@@ -673,7 +676,8 @@ export default function GoalDetail() {
                             type="date" 
                             value={editCompletionDate} 
                             onChange={(e) => setEditCompletionDate(e.target.value)} 
-                            className="h-11 rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20"
+                            variant="light"
+                            className="h-11 rounded-xl"
                           />
                         </div>
                       </div>
@@ -720,7 +724,8 @@ export default function GoalDetail() {
                           rows={4} 
                           maxLength={500}
                           placeholder="Add notes about your goal..."
-                          className="rounded-xl border-2 border-primary/30 bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
+                          variant="light"
+                          className="rounded-xl resize-none"
                         />
                         <p className="text-xs text-muted-foreground text-right">{editNotes.length}/500</p>
                       </div>
