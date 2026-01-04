@@ -28,13 +28,19 @@ interface UIVerseGoalCardProps {
 
 const getDifficultyIntensity = (difficulty: string): number => {
   switch (difficulty) {
-    case "easy": return 1;
-    case "medium": return 2;
-    case "hard": return 3;
-    case "extreme": return 4;
+    case "easy":
+      return 1;
+    case "medium":
+      return 2;
+    case "hard":
+      return 3;
+    case "extreme":
+      return 4;
     case "impossible":
-    case "custom": return 5;
-    default: return 1;
+    case "custom":
+      return 5;
+    default:
+      return 1;
   }
 };
 
@@ -46,7 +52,13 @@ const withAlpha = (color: string, alpha: number): string => {
   }
   if (color.startsWith("#")) {
     const hex = color.slice(1);
-    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
+    const full =
+      hex.length === 3
+        ? hex
+            .split("")
+            .map((c) => c + c)
+            .join("")
+        : hex;
     if (full.length === 6) {
       const r = parseInt(full.slice(0, 2), 16);
       const g = parseInt(full.slice(2, 4), 16);
@@ -66,10 +78,8 @@ export function UIVerseGoalCard({
   onToggleFocus,
 }: UIVerseGoalCardProps) {
   const difficulty = goal.difficulty || "easy";
-  const difficultyColor = difficulty === "custom" 
-    ? customDifficultyColor 
-    : getUnifiedDifficultyColor(difficulty);
-  
+  const difficultyColor = difficulty === "custom" ? customDifficultyColor : getUnifiedDifficultyColor(difficulty);
+
   const goalType = goal.goal_type || "standard";
   const isHabitGoal = goalType === "habit";
   const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
@@ -84,34 +94,53 @@ export function UIVerseGoalCard({
 
   const getTierBackground = () => {
     switch (difficulty) {
-      case "easy": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
-      case "medium": return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
-      case "hard": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
-      case "extreme": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
+      case "easy":
+        return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
+      case "medium":
+        return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
+      case "hard":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
+      case "extreme":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
       case "impossible":
-      case "custom": return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
-      default: return difficultyColor;
+      case "custom":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
+      default:
+        return difficultyColor;
     }
   };
 
   // Glossy overlay intensity based on difficulty (0.05 to 0.35)
   const getGlossIntensity = (): number => {
     switch (difficulty) {
-      case "easy": return 0.08;
-      case "medium": return 0.14;
-      case "hard": return 0.22;
-      case "extreme": return 0.28;
-      case "impossible": return 0.32;
-      case "custom": return 0.35;
-      default: return 0.08;
+      case "easy":
+        return 0.08;
+      case "medium":
+        return 0.14;
+      case "hard":
+        return 0.22;
+      case "extreme":
+        return 0.28;
+      case "impossible":
+        return 0.32;
+      case "custom":
+        return 0.35;
+      default:
+        return 0.08;
     }
   };
 
   const glossIntensity = getGlossIntensity();
 
-  // Card background color - fully opaque dark with subtle difficulty tint
-  const cardBgColor = "#1b233d";
-  const tintedBg = `linear-gradient(135deg, ${cardBgColor} 0%, hsl(230 30% 18%) 50%, ${cardBgColor} 100%)`;
+  // 🔥 New global card background (Dark Neon Premium)
+  const cardBgColor = "#0f1629"; // base dark
+  const tintedBg = `linear-gradient(
+    145deg,
+    ${cardBgColor} 0%,
+    hsl(230 30% 16%) 40%,
+    ${cardBgColor} 100%
+  )`;
+
   return (
     <motion.div
       whileHover={{ scale: 1.03 }}
@@ -125,11 +154,16 @@ export function UIVerseGoalCard({
         style={{
           width: "210px",
           height: "280px",
-          borderRadius: "20px",
+          borderRadius: "22px",
           background: tintedBg,
           padding: "5px",
-          boxShadow: `${withAlpha(difficultyColor, 0.25)} 0px 7px 20px 0px`,
-          border: `1px solid ${withAlpha(difficultyColor, 0.3)}`,
+          // nouvelle ombre premium
+          boxShadow: `
+            0 14px 40px rgba(0,0,0,.55),
+            0 0 18px ${withAlpha(difficultyColor, 0.25)}
+          `,
+          // fine bordure interne type "device"
+          border: "1px solid rgba(255,255,255,0.06)",
         }}
       >
         {/* Difficulty Badge - Top Left with Glossy Effect */}
@@ -141,14 +175,19 @@ export function UIVerseGoalCard({
             background: getTierBackground(),
             border: `1px solid ${withAlpha(difficultyColor, 0.6)}`,
             backdropFilter: "blur(10px)",
-            boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(difficultyColor, 0.5)}, inset 0 1px 1px rgba(255,255,255,${glossIntensity})`,
+            boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(
+              difficultyColor,
+              0.5,
+            )}, inset 0 1px 1px rgba(255,255,255,${glossIntensity})`,
           }}
         >
           {/* Glossy shine overlay */}
           <span
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: `linear-gradient(135deg, rgba(255,255,255,${glossIntensity * 1.2}) 0%, rgba(255,255,255,${glossIntensity * 0.3}) 40%, transparent 60%)`,
+              background: `linear-gradient(135deg, rgba(255,255,255,${glossIntensity * 1.2}) 0%, rgba(255,255,255,${
+                glossIntensity * 0.3
+              }) 40%, transparent 60%)`,
               borderRadius: "inherit",
             }}
           />
@@ -167,11 +206,7 @@ export function UIVerseGoalCard({
             borderColor: "rgba(255,255,255,0.2)",
           }}
         >
-          <Star
-            className={`h-3.5 w-3.5 ${
-              goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"
-            }`}
-          />
+          <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`} />
         </button>
 
         {/* Top Section - Image Area - Fixed height/width */}
@@ -180,10 +215,13 @@ export function UIVerseGoalCard({
           style={{
             height: "130px",
             width: "100%",
-            borderRadius: "15px",
+            borderRadius: "16px",
             background: goal.image_url
               ? undefined
-              : `linear-gradient(45deg, ${withAlpha(difficultyColor, 0.6)} 0%, ${withAlpha(difficultyColor, 0.9)} 100%)`,
+              : `linear-gradient(45deg, ${withAlpha(
+                  difficultyColor,
+                  0.6,
+                )} 0%, ${withAlpha(difficultyColor, 0.9)} 100%)`,
           }}
         >
           {goal.image_url ? (
@@ -191,16 +229,11 @@ export function UIVerseGoalCard({
               src={goal.image_url}
               alt={goal.name}
               className={`absolute inset-0 w-full h-full object-cover ${isCompleted ? "grayscale opacity-70" : ""}`}
-              style={{ borderRadius: "15px" }}
+              style={{ borderRadius: "16px" }}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 94 94"
-                className="w-12 h-12"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 94 94" className="w-12 h-12">
                 <path
                   fill="white"
                   d="M38.0481 4.82927C38.0481 2.16214 40.018 0 42.4481 0H51.2391C53.6692 0 55.6391 2.16214 55.6391 4.82927V40.1401C55.6391 48.8912 53.2343 55.6657 48.4248 60.4636C43.6153 65.2277 36.7304 67.6098 27.7701 67.6098C18.8099 67.6098 11.925 65.2953 7.11548 60.6663C2.37183 56.0036 3.8147e-06 49.2967 3.8147e-06 40.5456V4.82927C3.8147e-06 2.16213 1.96995 0 4.4 0H13.2405C15.6705 0 17.6405 2.16214 17.6405 4.82927V39.1265C17.6405 43.7892 18.4805 47.2018 20.1605 49.3642C21.8735 51.5267 24.4759 52.6079 27.9678 52.6079C31.4596 52.6079 34.0127 51.5436 35.6268 49.4149C37.241 47.2863 38.0481 43.8399 38.0481 39.0758V4.82927Z"
@@ -274,12 +307,12 @@ export function UIVerseGoalCard({
           {/* Steps info + Progress */}
           <div className="mt-4 space-y-2 px-1">
             <div className="flex items-center justify-between text-xs font-rajdhani">
-              <span style={{ color: "rgba(170, 222, 243, 0.7)" }}>
-                {isHabitGoal ? "Days" : "Steps"}
-              </span>
+              <span style={{ color: "rgba(170, 222, 243, 0.7)" }}>{isHabitGoal ? "Days" : "Steps"}</span>
               <span
                 className="font-bold"
-                style={{ color: isCompleted ? "rgba(170, 222, 243, 0.6)" : difficultyColor }}
+                style={{
+                  color: isCompleted ? "rgba(170, 222, 243, 0.6)" : difficultyColor,
+                }}
               >
                 {completedSteps}/{totalSteps} • {progress.toFixed(0)}%
               </span>
@@ -289,8 +322,9 @@ export function UIVerseGoalCard({
             <div
               className="h-2 w-full rounded-full overflow-hidden"
               style={{
-                background: "rgba(255, 255, 255, 0.1)",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "rgba(255, 255, 255, 0.06)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                boxShadow: "inset 0 0 4px rgba(0,0,0,.5)",
               }}
             >
               <motion.div
