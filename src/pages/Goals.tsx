@@ -524,7 +524,8 @@ export default function Goals() {
   const getGridClass = () => {
     if (displayMode === "grid") return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
     if (displayMode === "bookmark") return "flex flex-wrap justify-center gap-6";
-    return "flex flex-col gap-4";
+    // Bar view: 1 column on mobile, 2 columns on larger screens with centered layout
+    return "grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl mx-auto";
   };
 
   return (
@@ -533,8 +534,8 @@ export default function Goals() {
       <ParticleEffects />
 
       <motion.div initial="hidden" animate="visible" variants={containerVariants} className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-6">
-        {/* Header */}
-        <motion.div variants={itemVariants} className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Header - Centered */}
+        <motion.div variants={itemVariants} className="flex flex-col items-center text-center gap-4">
           <div>
             <h1 className="text-3xl font-bold font-orbitron tracking-wider">
               <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(91,180,255,0.4)]">
@@ -545,7 +546,7 @@ export default function Goals() {
           </div>
           <button 
             onClick={() => navigate("/goals/new")} 
-            className="relative overflow-hidden group self-start px-5 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-rajdhani font-medium tracking-wider transition-all duration-300 hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] flex items-center gap-2"
+            className="relative overflow-hidden group px-5 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-rajdhani font-medium tracking-wider transition-all duration-300 hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
             <span>Add Goal</span>

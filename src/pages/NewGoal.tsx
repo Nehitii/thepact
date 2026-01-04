@@ -64,6 +64,9 @@ export default function NewGoal() {
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
 
+  // Custom difficulty state
+  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+
   // Load custom difficulty settings
   useEffect(() => {
     if (!user) return;
@@ -76,6 +79,9 @@ export default function NewGoal() {
       if (data) {
         setCustomDifficultyName(data.custom_difficulty_name || "Custom");
         setCustomDifficultyActive(data.custom_difficulty_active || false);
+        if (data.custom_difficulty_color) {
+          setCustomDifficultyColor(data.custom_difficulty_color);
+        }
       }
     };
     loadProfile();
@@ -83,7 +89,7 @@ export default function NewGoal() {
 
   const allDifficulties = [
     ...difficulties,
-    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: "hsl(270 90% 65%)" }] : [])
+    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: customDifficultyColor }] : [])
   ];
 
   const toggleTag = (tagValue: string) => {
@@ -212,7 +218,7 @@ export default function NewGoal() {
         />
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-8 relative z-10">
+      <div className="max-w-2xl mx-auto px-6 py-8 relative z-10">
         {/* Header */}
         <motion.div 
           className="space-y-6 mb-10"

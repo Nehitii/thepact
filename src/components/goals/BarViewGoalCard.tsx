@@ -272,8 +272,6 @@ export function BarViewGoalCard({
         position: "relative",
         height: "140px",
         width: "100%",
-        maxWidth: "600px",
-        margin: "0 auto",
         borderRadius: "25px",
         overflow: "hidden",
         background: "transparent",

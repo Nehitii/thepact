@@ -145,7 +145,7 @@ export default function GoalDetail() {
 
   const allDifficulties = [
     ...difficultyOptions,
-    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: "hsl(270 90% 65%)" }] : [])
+    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: customDifficultyColor }] : [])
   ];
 
   // Toggle tag for multi-select
@@ -492,10 +492,10 @@ export default function GoalDetail() {
                     Edit
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto max-w-2xl p-0 border-2 border-primary/30 bg-card/95 backdrop-blur-xl rounded-2xl">
-                  {/* Header */}
-                  <div className="sticky top-0 z-10 bg-gradient-to-b from-card via-card to-transparent px-6 pt-6 pb-4">
-                    <DialogHeader>
+                <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl mx-auto p-0 border-2 border-primary/30 bg-card/95 backdrop-blur-xl rounded-2xl">
+                  {/* Sticky Header */}
+                  <div className="sticky top-0 z-20 bg-card/98 backdrop-blur-xl border-b border-primary/20 px-6 pt-6 pb-4">
+                    <DialogHeader className="text-center">
                       <DialogTitle className="text-2xl font-orbitron uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary drop-shadow-[0_0_20px_rgba(91,180,255,0.5)]">
                         Edit Goal
                       </DialogTitle>
