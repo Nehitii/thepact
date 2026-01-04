@@ -492,44 +492,48 @@ export default function GoalDetail() {
                     Edit
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-y-auto max-w-xl mx-auto p-0 border-2 border-primary/30 bg-card/95 backdrop-blur-xl rounded-2xl">
+                <DialogContent className="max-h-[90vh] overflow-hidden max-w-2xl mx-auto p-0 border-2 border-primary/20 bg-card/80 backdrop-blur-xl rounded-3xl flex flex-col">
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+                  
                   {/* Sticky Header */}
-                  <div className="sticky top-0 z-20 bg-card/98 backdrop-blur-xl border-b border-primary/20 px-6 pt-6 pb-4">
-                    <DialogHeader className="text-center">
-                      <DialogTitle className="text-2xl font-orbitron uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary drop-shadow-[0_0_20px_rgba(91,180,255,0.5)]">
+                  <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-xl border-b border-primary/20 px-8 pt-8 pb-6 flex-shrink-0">
+                    <DialogHeader className="text-center space-y-3">
+                      <DialogTitle className="text-3xl md:text-4xl font-orbitron uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary drop-shadow-[0_0_30px_rgba(91,180,255,0.6)]">
                         Edit Goal
                       </DialogTitle>
-                      <p className="text-sm text-primary/60 font-rajdhani">Update your evolution</p>
+                      <p className="text-primary/60 tracking-wide font-rajdhani text-lg">Update your evolution</p>
                     </DialogHeader>
                   </div>
                   
-                  <div className="px-6 pb-6 space-y-8">
+                  {/* Scrollable Form Content */}
+                  <div className="relative overflow-y-auto flex-1 px-8 md:px-10 pb-8 md:pb-10 pt-6 space-y-10">
                     
                     {/* Section 1: Basic Info */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Target className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Basic Information</h3>
+                        <Target className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Basic Information</h2>
                       </div>
                       
                       {/* Goal Name */}
-                      <div className="space-y-2">
-                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
                           Goal Name <span className="text-destructive">*</span>
                         </Label>
                         <Input 
                           value={editName} 
                           onChange={(e) => setEditName(e.target.value)} 
                           variant="light"
-                          className="h-11 rounded-xl"
+                          className="h-12 text-base rounded-xl"
                           maxLength={100}
                         />
                       </div>
 
                       {/* Tags Multi-Select */}
-                      <div className="space-y-2">
-                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
-                          <Tag className="h-3.5 w-3.5" />
+                      <div className="space-y-3">
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                          <Tag className="h-4 w-4" />
                           Tags <span className="text-destructive">*</span>
                         </Label>
                         <div className="flex flex-wrap gap-2">
@@ -541,57 +545,57 @@ export default function GoalDetail() {
                                 type="button"
                                 onClick={() => toggleEditTag(tag.value)}
                                 className={`
-                                  relative px-3 py-1.5 rounded-lg font-rajdhani text-xs font-medium transition-all duration-200
+                                  relative px-4 py-2 rounded-xl font-rajdhani text-sm font-medium transition-all duration-200
                                   ${isSelected 
-                                    ? 'text-white shadow-md' 
+                                    ? 'text-white shadow-lg' 
                                     : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
                                   }
                                 `}
                                 style={isSelected ? { 
                                   background: tag.color,
-                                  boxShadow: `0 0 15px ${tag.color}40`
+                                  boxShadow: `0 0 20px ${tag.color}40`
                                 } : {}}
                               >
-                                <span className="flex items-center gap-1">
-                                  {isSelected && <Check className="h-3 w-3" />}
+                                <span className="flex items-center gap-1.5">
+                                  {isSelected && <Check className="h-3.5 w-3.5" />}
                                   {tag.label}
                                 </span>
                               </button>
                             );
                           })}
                         </div>
-                        <p className="text-xs text-muted-foreground">Select one or more tags</p>
+                        <p className="text-xs text-muted-foreground">Select one or more tags for your goal</p>
                       </div>
                     </div>
 
                     {/* Section 2: Type & Difficulty */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Zap className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Type & Difficulty</h3>
+                        <Zap className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Type & Difficulty</h2>
                       </div>
 
                       {/* Goal Type Display (read-only) */}
-                      <div className="space-y-2">
-                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Goal Type</Label>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Goal Type</Label>
                         <div className="flex gap-3">
-                          <div className={`flex-1 p-3 rounded-xl border-2 text-center ${
+                          <div className={`flex-1 p-4 rounded-xl border-2 text-center ${
                             goal.goal_type !== "habit" 
                               ? "border-primary bg-primary/10" 
                               : "border-border bg-muted/30"
                           }`}>
-                            <ListOrdered className={`h-5 w-5 mx-auto mb-1 ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`} />
-                            <span className={`text-xs font-rajdhani font-medium ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`}>
+                            <ListOrdered className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`text-sm font-rajdhani font-medium ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`}>
                               Normal Goal
                             </span>
                           </div>
-                          <div className={`flex-1 p-3 rounded-xl border-2 text-center ${
+                          <div className={`flex-1 p-4 rounded-xl border-2 text-center ${
                             goal.goal_type === "habit" 
                               ? "border-primary bg-primary/10" 
                               : "border-border bg-muted/30"
                           }`}>
-                            <Sparkles className={`h-5 w-5 mx-auto mb-1 ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`} />
-                            <span className={`text-xs font-rajdhani font-medium ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`}>
+                            <Sparkles className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`} />
+                            <span className={`text-sm font-rajdhani font-medium ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`}>
                               Habit Goal
                             </span>
                           </div>
@@ -600,8 +604,8 @@ export default function GoalDetail() {
                       </div>
 
                       {/* Difficulty Selection */}
-                      <div className="space-y-2">
-                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Difficulty</Label>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Difficulty</Label>
                         <div className="flex flex-wrap gap-2">
                           {allDifficulties.map((diff) => {
                             const isSelected = editDifficulty === diff.value;
@@ -611,15 +615,15 @@ export default function GoalDetail() {
                                 type="button"
                                 onClick={() => setEditDifficulty(diff.value)}
                                 className={`
-                                  relative px-4 py-2 rounded-lg font-rajdhani font-bold text-xs uppercase tracking-wide transition-all duration-200
+                                  relative px-4 py-2 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200
                                   ${isSelected 
-                                    ? 'text-white shadow-md' 
+                                    ? 'text-white shadow-lg' 
                                     : 'bg-muted/50 text-muted-foreground hover:bg-muted border border-border'
                                   }
                                 `}
                                 style={isSelected ? { 
                                   background: diff.color,
-                                  boxShadow: `0 0 15px ${diff.color}40`
+                                  boxShadow: `0 0 20px ${diff.color}40`
                                 } : {}}
                               >
                                 {diff.label}
@@ -631,9 +635,9 @@ export default function GoalDetail() {
 
                       {/* Number of Steps (only for normal goals) */}
                       {goal.goal_type !== "habit" && (
-                        <div className="space-y-2">
-                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
-                            <ListOrdered className="h-3.5 w-3.5" />
+                        <div className="space-y-3">
+                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                            <ListOrdered className="h-4 w-4" />
                             Number of Steps
                           </Label>
                           <Input 
@@ -643,7 +647,7 @@ export default function GoalDetail() {
                             value={editSteps} 
                             onChange={(e) => setEditSteps(parseInt(e.target.value) || 0)} 
                             variant="light"
-                            className="h-11 rounded-xl"
+                            className="h-12 text-base rounded-xl"
                           />
                           <p className="text-xs text-muted-foreground">
                             Warning: Changing step count may affect existing step data
@@ -653,41 +657,41 @@ export default function GoalDetail() {
                     </div>
 
                     {/* Section 3: Dates */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Calendar className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Scheduling</h3>
+                        <Calendar className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Scheduling</h2>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Start Date</Label>
+                        <div className="space-y-3">
+                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Start Date</Label>
                           <Input 
                             type="date" 
                             value={editStartDate} 
                             onChange={(e) => setEditStartDate(e.target.value)} 
                             variant="light"
-                            className="h-11 rounded-xl"
+                            className="h-12 text-base rounded-xl"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Completion Date</Label>
+                        <div className="space-y-3">
+                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Completion Date</Label>
                           <Input 
                             type="date" 
                             value={editCompletionDate} 
                             onChange={(e) => setEditCompletionDate(e.target.value)} 
                             variant="light"
-                            className="h-11 rounded-xl"
+                            className="h-12 text-base rounded-xl"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Section 4: Budget & Cost */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <DollarSign className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h3>
+                        <DollarSign className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h2>
                       </div>
                       
                       <CostItemsEditor 
@@ -698,24 +702,24 @@ export default function GoalDetail() {
                     </div>
 
                     {/* Section 5: Media & Notes */}
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Image className="h-4 w-4 text-primary" />
-                        <h3 className="text-sm font-orbitron uppercase tracking-wider text-primary">Media & Notes</h3>
+                        <Image className="h-5 w-5 text-primary" />
+                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Media & Notes</h2>
                       </div>
                       
                       {/* Goal Image */}
                       {user && (
-                        <div className="space-y-2">
-                          <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70">Goal Image</Label>
+                        <div className="space-y-3">
+                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Goal Image</Label>
                           <GoalImageUpload value={editImage} onChange={setEditImage} userId={user.id} />
                         </div>
                       )}
                       
                       {/* Notes */}
-                      <div className="space-y-2">
-                        <Label className="text-xs font-rajdhani tracking-wide uppercase text-foreground/70 flex items-center gap-2">
-                          <StickyNote className="h-3.5 w-3.5" />
+                      <div className="space-y-3">
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                          <StickyNote className="h-4 w-4" />
                           Notes
                         </Label>
                         <Textarea 
@@ -725,27 +729,27 @@ export default function GoalDetail() {
                           maxLength={500}
                           placeholder="Add notes about your goal..."
                           variant="light"
-                          className="rounded-xl resize-none"
+                          className="rounded-xl resize-none text-base"
                         />
                         <p className="text-xs text-muted-foreground text-right">{editNotes.length}/500</p>
                       </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-3 pt-4 border-t border-border">
+                    <div className="flex gap-4 pt-6 border-t border-primary/20">
                       <Button 
                         variant="outline" 
                         onClick={() => setEditDialogOpen(false)}
-                        className="flex-1 h-12 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 font-rajdhani uppercase tracking-wider"
+                        className="flex-1 h-14 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 font-rajdhani uppercase tracking-wider text-base"
                       >
-                        <X className="h-4 w-4 mr-2" />
+                        <X className="h-5 w-5 mr-2" />
                         Cancel
                       </Button>
                       <Button 
                         onClick={handleEditGoal} 
-                        className="flex-1 h-12 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider shadow-[0_0_20px_rgba(91,180,255,0.3)]"
+                        className="flex-1 h-14 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)]"
                       >
-                        <Check className="h-4 w-4 mr-2" />
+                        <Check className="h-5 w-5 mr-2" />
                         Save Changes
                       </Button>
                     </div>
