@@ -110,7 +110,6 @@ export function UIVerseGoalCard({
     }
   };
 
-  // Glossy overlay intensity based on difficulty (0.05 to 0.35)
   const getGlossIntensity = (): number => {
     switch (difficulty) {
       case "easy":
@@ -132,14 +131,8 @@ export function UIVerseGoalCard({
 
   const glossIntensity = getGlossIntensity();
 
-  // 🔥 New global card background (Dark Neon Premium)
-  const cardBgColor = "#0f1629"; // base dark
-  const tintedBg = `linear-gradient(
-    145deg,
-    ${cardBgColor} 0%,
-    hsl(230 30% 16%) 40%,
-    ${cardBgColor} 100%
-  )`;
+  // Glass cyber base color (sous le blur)
+  const cardBgBase = "rgba(12, 20, 38, 0.75)";
 
   return (
     <motion.div
@@ -155,18 +148,18 @@ export function UIVerseGoalCard({
           width: "210px",
           height: "280px",
           borderRadius: "22px",
-          background: tintedBg,
+          background: cardBgBase,
           padding: "5px",
-          // nouvelle ombre premium
+          backdropFilter: "blur(16px)", // 👈 effet glass
+          WebkitBackdropFilter: "blur(16px)",
+          border: "1px solid rgba(255,255,255,0.15)", // bordure glass
           boxShadow: `
-            0 14px 40px rgba(0,0,0,.55),
-            0 0 18px ${withAlpha(difficultyColor, 0.25)}
+            0 10px 40px rgba(0,0,0,0.35),
+            0 0 25px ${withAlpha(difficultyColor, 0.3)}
           `,
-          // fine bordure interne type "device"
-          border: "1px solid rgba(255,255,255,0.06)",
         }}
       >
-        {/* Difficulty Badge - Top Left with Glossy Effect */}
+        {/* Difficulty Badge */}
         <Badge
           className="absolute top-1 left-2 z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
           style={{
@@ -174,14 +167,13 @@ export function UIVerseGoalCard({
             color: "white",
             background: getTierBackground(),
             border: `1px solid ${withAlpha(difficultyColor, 0.6)}`,
-            backdropFilter: "blur(10px)",
+            backdropFilter: "blur(12px)",
             boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(
               difficultyColor,
               0.5,
             )}, inset 0 1px 1px rgba(255,255,255,${glossIntensity})`,
           }}
         >
-          {/* Glossy shine overlay */}
           <span
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -194,7 +186,7 @@ export function UIVerseGoalCard({
           <span className="relative z-10">{getDifficultyLabel(difficulty)}</span>
         </Badge>
 
-        {/* Focus Star - Top Right (on image section) */}
+        {/* Focus Star */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -202,14 +194,14 @@ export function UIVerseGoalCard({
           }}
           className="absolute top-3 right-3 z-20 p-1.5 rounded-full border transition-all hover:scale-110"
           style={{
-            background: "rgba(0,0,0,0.5)",
-            borderColor: "rgba(255,255,255,0.2)",
+            background: "rgba(5,8,15,0.7)",
+            borderColor: "rgba(255,255,255,0.25)",
           }}
         >
-          <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`} />
+          <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/80"}`} />
         </button>
 
-        {/* Top Section - Image Area - Fixed height/width */}
+        {/* Top Section - Image */}
         <div
           className="relative overflow-hidden flex-shrink-0"
           style={{
@@ -220,8 +212,8 @@ export function UIVerseGoalCard({
               ? undefined
               : `linear-gradient(45deg, ${withAlpha(
                   difficultyColor,
-                  0.6,
-                )} 0%, ${withAlpha(difficultyColor, 0.9)} 100%)`,
+                  0.55,
+                )} 0%, ${withAlpha(difficultyColor, 0.95)} 100%)`,
           }}
         >
           {goal.image_url ? (
@@ -233,6 +225,7 @@ export function UIVerseGoalCard({
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
+              {/* Icône placeholder */}
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 94 94" className="w-12 h-12">
                 <path
                   fill="white"
@@ -250,16 +243,16 @@ export function UIVerseGoalCard({
             </div>
           )}
 
-          {/* Decorative border shape */}
+          {/* Bordures décoratives (on garde, mais intégrées au style glass) */}
           <div
             className="absolute top-0 left-0"
             style={{
               borderBottomRightRadius: "10px",
               height: "30px",
               width: "130px",
-              background: cardBgColor,
+              background: "rgba(5,10,25,0.9)",
               transform: "skew(-40deg)",
-              boxShadow: `-10px -10px 0 0 ${cardBgColor}`,
+              boxShadow: `-10px -10px 0 0 rgba(5,10,25,0.9)`,
             }}
           />
           <div
@@ -271,7 +264,7 @@ export function UIVerseGoalCard({
               height: "15px",
               background: "transparent",
               borderTopLeftRadius: "10px",
-              boxShadow: `-5px -5px 0 2px ${cardBgColor}`,
+              boxShadow: `-5px -5px 0 2px rgba(5,10,25,0.9)`,
             }}
           />
           <div
@@ -283,20 +276,20 @@ export function UIVerseGoalCard({
               height: "15px",
               background: "transparent",
               borderTopLeftRadius: "15px",
-              boxShadow: `-5px -5px 0 2px ${cardBgColor}`,
+              boxShadow: `-5px -5px 0 2px rgba(5,10,25,0.9)`,
             }}
           />
         </div>
 
-        {/* Bottom Section - Content - Fixed height */}
+        {/* Bottom Section */}
         <div className="mt-3 px-2 pb-2 flex-1 flex flex-col min-h-0">
-          {/* Title - Fixed height container with truncation */}
+          {/* Title */}
           <div className="h-10 flex items-start justify-center overflow-hidden">
             <h3
               className="text-center font-bold tracking-widest uppercase line-clamp-2 font-rajdhani leading-tight"
               style={{
                 fontSize: "13px",
-                color: "white",
+                color: "#f5f7ff",
                 letterSpacing: "1.5px",
               }}
             >
@@ -304,27 +297,27 @@ export function UIVerseGoalCard({
             </h3>
           </div>
 
-          {/* Steps info + Progress */}
+          {/* Steps + Progress */}
           <div className="mt-4 space-y-2 px-1">
             <div className="flex items-center justify-between text-xs font-rajdhani">
-              <span style={{ color: "rgba(170, 222, 243, 0.7)" }}>{isHabitGoal ? "Days" : "Steps"}</span>
+              <span style={{ color: "rgba(200, 225, 255, 0.7)" }}>{isHabitGoal ? "Days" : "Steps"}</span>
               <span
                 className="font-bold"
                 style={{
-                  color: isCompleted ? "rgba(170, 222, 243, 0.6)" : difficultyColor,
+                  color: isCompleted ? "rgba(200, 225, 255, 0.6)" : difficultyColor,
                 }}
               >
                 {completedSteps}/{totalSteps} • {progress.toFixed(0)}%
               </span>
             </div>
 
-            {/* Progress Bar */}
+            {/* Progress Bar glass-like */}
             <div
               className="h-2 w-full rounded-full overflow-hidden"
               style={{
-                background: "rgba(255, 255, 255, 0.06)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                boxShadow: "inset 0 0 4px rgba(0,0,0,.5)",
+                background: "linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+                border: "1px solid rgba(255,255,255,0.18)",
+                boxShadow: "inset 0 0 4px rgba(0,0,0,0.5)",
               }}
             >
               <motion.div
@@ -334,15 +327,20 @@ export function UIVerseGoalCard({
                 transition={{ duration: 0.8, ease: "easeOut" }}
                 style={{
                   background: isCompleted
-                    ? "hsl(142 70% 45%)"
-                    : `linear-gradient(90deg, ${withAlpha(difficultyColor, 0.8)}, ${difficultyColor})`,
-                  boxShadow: `0 0 ${6 + intensity * 2}px ${withAlpha(difficultyColor, 0.6)}`,
+                    ? "linear-gradient(90deg, #4ade80, #22c55e)"
+                    : `linear-gradient(
+                        90deg,
+                        ${withAlpha(difficultyColor, 0.3)},
+                        ${difficultyColor},
+                        ${withAlpha(difficultyColor, 0.8)}
+                      )`,
+                  boxShadow: `0 0 ${6 + intensity * 2}px ${withAlpha(difficultyColor, 0.8)}`,
                 }}
               />
             </div>
 
             {isCompleted && (
-              <div className="flex items-center justify-center gap-1 text-green-400 text-xs font-rajdhani mt-2">
+              <div className="flex items-center justify-center gap-1 text-emerald-300 text-xs font-rajdhani mt-2">
                 <CheckCircle2 className="h-3 w-3" />
                 <span>Completed</span>
               </div>
