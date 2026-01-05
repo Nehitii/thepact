@@ -41,7 +41,7 @@ const getStatusLabel = (status: string) => {
   }
 };
 
-// Thème couleur par difficulté (badge, gradient panel, barre de progression)
+// Thème couleur par difficulté (badge, gradient panel, barre de progression + énergie)
 const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   switch (difficulty) {
     case "easy":
@@ -54,6 +54,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         gradientTo: "#16a34a",
         progressFrom: "#4ade80",
         progressTo: "#16a34a",
+        energyFrom: "#bbf7d0", // spark clair
+        energyTo: "#22c55e",
       };
 
     case "medium":
@@ -66,6 +68,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         gradientTo: "#eab308",
         progressFrom: "#fde047",
         progressTo: "#eab308",
+        energyFrom: "#fef9c3",
+        energyTo: "#facc15",
       };
 
     case "hard":
@@ -78,6 +82,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         gradientTo: "#f97316",
         progressFrom: "#fed7aa",
         progressTo: "#f97316",
+        energyFrom: "#ffedd5",
+        energyTo: "#fb923c",
       };
 
     case "extreme":
@@ -90,6 +96,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         gradientTo: "#dc2626",
         progressFrom: "#fecaca",
         progressTo: "#dc2626",
+        energyFrom: "#fee2e2",
+        energyTo: "#f97373",
       };
 
     case "impossible":
@@ -102,6 +110,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         gradientTo: "#a855f7",
         progressFrom: "#e9d5ff",
         progressTo: "#a855f7",
+        energyFrom: "#f5f3ff",
+        energyTo: "#c4b5fd",
       };
 
     case "custom": {
@@ -115,6 +125,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         gradientTo: base,
         progressFrom: base,
         progressTo: base,
+        energyFrom: "#ffffff",
+        energyTo: base,
       };
     }
 
@@ -128,6 +140,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         gradientTo: "#4b5563",
         progressFrom: "#d1d5db",
         progressTo: "#6b7280",
+        energyFrom: "#f9fafb",
+        energyTo: "#9ca3af",
       };
   }
 };
@@ -174,6 +188,18 @@ export function GridViewGoalCard({
         overflow: "hidden",
       }}
     >
+      {/* keyframes pour l'effet d'énergie */}
+      <style>
+        {`
+          @keyframes energy-move {
+            0% { transform: translateX(-40%); opacity: 0; }
+            15% { opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translateX(140%); opacity: 0; }
+          }
+        `}
+      </style>
+
       <div
         className="card"
         style={{
@@ -215,7 +241,7 @@ export function GridViewGoalCard({
         >
           <p
             style={{
-              fontSize: "22px", // 🔽 réduit pour lisibilité
+              fontSize: "22px",
               fontWeight: 800,
               letterSpacing: "1px",
               background: "linear-gradient(135deg, #ff0f7b, #f89b29)",
@@ -269,7 +295,7 @@ export function GridViewGoalCard({
             <h3
               className="heading"
               style={{
-                fontSize: "20px", // 🔽 réduit pour lisibilité
+                fontSize: "20px",
                 fontWeight: 900,
                 margin: 0,
                 textShadow: "0 6px 18px rgba(0, 0, 0, 0.35)",
@@ -317,7 +343,7 @@ export function GridViewGoalCard({
                 width: "80%",
                 height: "9px",
                 borderRadius: "999px",
-                background: "rgba(255, 255, 255, 0.25)",
+                background: "rgba(255, 255, 255, 0.18)",
                 overflow: "hidden",
               }}
             >
@@ -330,8 +356,28 @@ export function GridViewGoalCard({
                   boxShadow: `0 0 12px ${theme.glow}`,
                   transition: "width 0.3s ease",
                   width: `${progress}%`,
+                  position: "relative",
+                  overflow: "hidden",
                 }}
-              />
+              >
+                {/* Spark d'énergie électrique */}
+                {progress > 0 && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "-40%",
+                      left: 0,
+                      width: "40%",
+                      height: "180%",
+                      background: `linear-gradient(90deg, transparent, ${theme.energyFrom}, ${theme.energyTo}, transparent)`,
+                      filter: "blur(2px)",
+                      opacity: 0.9,
+                      animation: "energy-move 0.7s linear infinite",
+                      pointerEvents: "none",
+                    }}
+                  />
+                )}
+              </div>
             </div>
 
             <div
