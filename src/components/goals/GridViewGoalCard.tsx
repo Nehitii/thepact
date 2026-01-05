@@ -18,7 +18,7 @@ interface GridViewGoalCardProps {
   goal: Goal;
   isCompleted?: boolean;
   customDifficultyName?: string;
-  customDifficultyColor?: string; // non utilisé dans ce design, mais conservé pour compat
+  customDifficultyColor?: string; // conservé pour compat
   onNavigate: (goalId: string) => void;
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
@@ -63,8 +63,29 @@ export function GridViewGoalCard({
   const statusLabel = isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started");
 
   return (
-    <div className="card-container cursor-pointer" onClick={() => onNavigate(goal.id)}>
-      <div className="card">
+    <div
+      className="card-container cursor-pointer"
+      onClick={() => onNavigate(goal.id)}
+      style={{
+        // sécurité au cas où le CSS ne se charge pas
+        width: "300px",
+        height: "300px",
+        position: "relative",
+        borderRadius: "16px",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        className="card"
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+          borderRadius: "inherit",
+          background: "linear-gradient(135deg, #0d1117, #141c27)",
+          boxShadow: "0 12px 28px rgba(0, 0, 0, 0.35)",
+        }}
+      >
         {/* Bouton Focus (étoile) en overlay */}
         <button
           onClick={(e) => {
@@ -82,25 +103,133 @@ export function GridViewGoalCard({
         </button>
 
         {/* FACE AVANT (titre en dégradé) */}
-        <div className="front-content">
-          <p>{goal.name}</p>
+        <div
+          className="front-content"
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <p
+            style={{
+              fontSize: "28px",
+              fontWeight: 800,
+              letterSpacing: "1px",
+              background: "linear-gradient(135deg, #ff0f7b, #f89b29)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+              textShadow: "0 4px 14px rgba(0, 0, 0, 0.3)",
+            }}
+          >
+            {goal.name}
+          </p>
         </div>
 
-        {/* PANEL DÉPLIANT (contenu détaillé) */}
-        <div className="content">
+        {/* PANEL DÉPLIANT */}
+        <div
+          className="content"
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            width: "96%",
+            height: "100%",
+            background: "linear-gradient(-45deg, #ff0f7b, #f89b29)",
+            color: "#fff",
+            padding: "24px 22px",
+            borderRadius: "inherit",
+            transform: "translateX(96%)",
+            transition: "all 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            boxShadow: "inset 0 0 40px rgba(255, 255, 255, 0.1)",
+          }}
+        >
           {/* HEADER */}
-          <div className="panel-header">
-            <h3 className="heading">{goal.name}</h3>
-            <span className="difficulty-badge">{getDifficultyLabel(difficulty)}</span>
+          <div
+            className="panel-header"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <h3
+              className="heading"
+              style={{
+                fontSize: "26px",
+                fontWeight: 900,
+                margin: 0,
+                textShadow: "0 6px 18px rgba(0, 0, 0, 0.35)",
+                textAlign: "center",
+              }}
+            >
+              {goal.name}
+            </h3>
+            <span
+              className="difficulty-badge"
+              style={{
+                padding: "6px 14px",
+                borderRadius: "999px",
+                fontWeight: 700,
+                fontSize: "13px",
+                background: "rgba(255, 255, 255, 0.18)",
+                border: "1px solid rgba(255, 255, 255, 0.45)",
+                backdropFilter: "blur(6px)",
+                boxShadow: "0 4px 18px rgba(0, 0, 0, 0.25)",
+              }}
+            >
+              {getDifficultyLabel(difficulty)}
+            </span>
           </div>
 
           {/* PROGRESSION */}
-          <div className="panel-progress">
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${progress}%` }} />
+          <div
+            className="panel-progress"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            <div
+              className="progress-bar"
+              style={{
+                width: "80%",
+                height: "9px",
+                borderRadius: "999px",
+                background: "rgba(255, 255, 255, 0.25)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                className="progress-fill"
+                style={{
+                  height: "100%",
+                  borderRadius: "inherit",
+                  background: "linear-gradient(90deg, #ff0f7b, #f89b29)",
+                  boxShadow: "0 0 12px rgba(255, 15, 123, 0.6)",
+                  transition: "width 0.3s ease",
+                  width: `${progress}%`,
+                }}
+              />
             </div>
 
-            <div className="steps-text">
+            <div
+              className="steps-text"
+              style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                opacity: 0.95,
+              }}
+            >
               <span>{completedSteps}</span>
               <span>
                 {" "}
@@ -111,8 +240,28 @@ export function GridViewGoalCard({
           </div>
 
           {/* FOOTER / STATUT */}
-          <div className="panel-footer">
-            <p className="status">{statusLabel}</p>
+          <div
+            className="panel-footer"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <p
+              className="status"
+              style={{
+                fontSize: "14px",
+                fontWeight: 600,
+                padding: "6px 14px",
+                borderRadius: "10px",
+                background: "rgba(255, 255, 255, 0.18)",
+                border: "1px solid rgba(255, 255, 255, 0.35)",
+                backdropFilter: "blur(6px)",
+                margin: 0,
+              }}
+            >
+              {statusLabel}
+            </p>
           </div>
         </div>
       </div>
