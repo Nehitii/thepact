@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Star } from "lucide-react";
 
 interface Goal {
@@ -47,12 +48,15 @@ export function GridViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: GridViewGoalCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
   const difficulty = goal.difficulty || "easy";
   const goalType = goal.goal_type || "standard";
 
   const isHabitGoal = goalType === "habit";
   const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
   const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
+
   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
   const getDifficultyLabel = (diff: string): string => {
@@ -66,6 +70,8 @@ export function GridViewGoalCard({
     <div
       className="card-container cursor-pointer"
       onClick={() => onNavigate(goal.id)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{
         width: "300px",
         height: "300px",
@@ -122,6 +128,7 @@ export function GridViewGoalCard({
               backgroundClip: "text",
               color: "transparent",
               textShadow: "0 4px 14px rgba(0, 0, 0, 0.3)",
+              textAlign: "center",
             }}
           >
             {goal.name}
@@ -141,11 +148,12 @@ export function GridViewGoalCard({
             color: "#fff",
             padding: "24px 22px",
             borderRadius: "inherit",
-            // ⚠️ PAS de transform NI de transition ici
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
             boxShadow: "inset 0 0 40px rgba(255, 255, 255, 0.1)",
+            transform: isHovered ? "translateX(0)" : "translateX(96%)",
+            transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
           }}
         >
           {/* HEADER */}
@@ -226,6 +234,7 @@ export function GridViewGoalCard({
                 fontSize: "13px",
                 fontWeight: 600,
                 opacity: 0.95,
+                textAlign: "center",
               }}
             >
               <span>{completedSteps}</span>
