@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 
@@ -36,54 +36,16 @@ const getStatusLabel = (status: string) => {
   }
 };
 
-// Soft, light difficulty colors
-const getSoftDifficultyColors = (difficulty: string, customColor?: string) => {
-  const baseColor = difficulty === "custom" ? customColor : getUnifiedDifficultyColor(difficulty);
+// Vivid, premium difficulty colors (more saturated)
+const getVividDifficultyColor = (difficulty: string, customColor?: string) => {
+  if (difficulty === "custom") return customColor || "hsl(280 70% 55%)";
   
-  // Extract HSL values and create lighter versions
-  const colorMap: Record<string, { main: string; expanded: string; bar: string; text: string; border: string }> = {
-    easy: {
-      main: "hsl(142 45% 92%)",
-      expanded: "hsl(142 50% 96%)",
-      bar: "hsl(142 60% 50%)",
-      text: "hsl(142 50% 25%)",
-      border: "hsl(142 40% 80%)"
-    },
-    medium: {
-      main: "hsl(48 55% 92%)",
-      expanded: "hsl(48 60% 96%)",
-      bar: "hsl(48 80% 50%)",
-      text: "hsl(48 60% 25%)",
-      border: "hsl(48 50% 80%)"
-    },
-    hard: {
-      main: "hsl(25 55% 92%)",
-      expanded: "hsl(25 60% 96%)",
-      bar: "hsl(25 80% 55%)",
-      text: "hsl(25 60% 30%)",
-      border: "hsl(25 45% 80%)"
-    },
-    extreme: {
-      main: "hsl(0 55% 93%)",
-      expanded: "hsl(0 60% 97%)",
-      bar: "hsl(0 70% 55%)",
-      text: "hsl(0 50% 30%)",
-      border: "hsl(0 40% 82%)"
-    },
-    impossible: {
-      main: "hsl(280 45% 93%)",
-      expanded: "hsl(280 50% 97%)",
-      bar: "hsl(280 60% 55%)",
-      text: "hsl(280 45% 30%)",
-      border: "hsl(280 35% 82%)"
-    },
-    custom: {
-      main: "hsl(280 45% 93%)",
-      expanded: "hsl(280 50% 97%)",
-      bar: baseColor || "hsl(280 60% 55%)",
-      text: "hsl(280 45% 30%)",
-      border: "hsl(280 35% 82%)"
-    }
+  const colorMap: Record<string, string> = {
+    easy: "hsl(142 70% 45%)",
+    medium: "hsl(45 90% 50%)",
+    hard: "hsl(25 85% 55%)",
+    extreme: "hsl(0 75% 55%)",
+    impossible: "hsl(280 70% 55%)",
   };
 
   return colorMap[difficulty] || colorMap.easy;
@@ -98,13 +60,13 @@ export function GridViewGoalCard({
   onToggleFocus,
 }: GridViewGoalCardProps) {
   const difficulty = goal.difficulty || "easy";
-  const colors = getSoftDifficultyColors(difficulty, customDifficultyColor);
-  const difficultyColor = difficulty === "custom" ? customDifficultyColor : getUnifiedDifficultyColor(difficulty);
+  const vividColor = getVividDifficultyColor(difficulty, customDifficultyColor);
 
   const goalType = goal.goal_type || "standard";
   const isHabitGoal = goalType === "habit";
   const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
   const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
+  const progress = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
 
   const getDifficultyLabel = (diff: string): string => {
     if (diff === "custom") return customDifficultyName || "Custom";
@@ -113,148 +75,196 @@ export function GridViewGoalCard({
 
   return (
     <div
-      className="card-container group cursor-pointer"
+      className="group cursor-pointer"
       onClick={() => onNavigate(goal.id)}
       style={{
-        width: "280px",
-        height: "280px",
+        width: "200px",
+        height: "200px",
         position: "relative",
-        borderRadius: "16px",
-        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+        borderRadius: "12px",
         overflow: "hidden",
       }}
     >
+      {/* Main card container */}
       <div
-        className="card"
+        className="relative w-full h-full"
         style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "inherit",
-          background: colors.main,
-          border: `1px solid ${colors.border}`,
+          borderRadius: "12px",
+          background: "hsl(var(--card))",
+          border: "1px solid hsl(var(--border) / 0.5)",
+          boxShadow: "0 4px 24px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* Left bar indicator (when closed) */}
+        {/* Colored difficulty bar on the left - vivid, expands on hover */}
         <div
-          className="absolute left-0 top-0 bottom-0 transition-opacity duration-300 group-hover:opacity-0"
+          className="absolute left-0 top-0 bottom-0 z-10 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:w-full"
           style={{
-            width: "4px",
-            background: colors.bar,
-            borderRadius: "16px 0 0 16px",
+            width: "5px",
+            background: `linear-gradient(180deg, ${vividColor}, ${vividColor}dd)`,
+            borderRadius: "12px 0 0 12px",
+            boxShadow: `0 0 12px ${vividColor}60, inset 0 0 8px ${vividColor}30`,
           }}
         />
 
-        {/* Front content */}
-        <div
-          className="front-content absolute inset-0 flex flex-col items-center justify-center p-6 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-[20%] group-hover:opacity-0"
-        >
-          {/* Difficulty Badge - centered at top */}
-          <Badge
-            className="absolute top-4 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1"
+        {/* Background image with overlay */}
+        <div className="absolute inset-0 overflow-hidden rounded-xl">
+          {goal.image_url ? (
+            <>
+              <img 
+                src={goal.image_url} 
+                alt={goal.name} 
+                className={`absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 ${isCompleted ? "grayscale opacity-60" : ""}`}
+              />
+              <div 
+                className="absolute inset-0 transition-opacity duration-500"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--card) / 0.85) 0%, hsl(var(--card) / 0.7) 50%, hsl(var(--card) / 0.6) 100%)",
+                }}
+              />
+            </>
+          ) : (
+            <div 
+              className="absolute inset-0"
+              style={{
+                background: `linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.95) 100%)`,
+              }}
+            />
+          )}
+          {/* Subtle futuristic grid overlay */}
+          <div 
+            className="absolute inset-0 opacity-[0.03]"
             style={{
-              background: colors.bar,
-              color: "white",
-              border: "none",
-              boxShadow: `0 2px 8px ${colors.bar}40`,
+              backgroundImage: `
+                linear-gradient(${vividColor}20 1px, transparent 1px),
+                linear-gradient(90deg, ${vividColor}20 1px, transparent 1px)
+              `,
+              backgroundSize: "20px 20px",
             }}
-          >
-            {getDifficultyLabel(difficulty)}
-          </Badge>
-
-          {/* Focus Star */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFocus(goal.id, goal.is_focus || false, e);
-            }}
-            className="absolute top-4 right-4 z-20 p-1.5 rounded-full transition-all hover:scale-110"
-            style={{
-              background: "rgba(255,255,255,0.9)",
-              border: `1px solid ${colors.border}`,
-            }}
-          >
-            <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
-          </button>
-
-          {/* Goal title */}
-          <h3
-            className="text-center font-bold leading-tight line-clamp-3 mt-8"
-            style={{
-              fontSize: "20px",
-              color: colors.text,
-              maxWidth: "90%",
-            }}
-          >
-            {goal.name}
-          </h3>
+          />
         </div>
 
-        {/* Expanded content (slides in on hover) */}
+        {/* Front content - slides right on hover */}
         <div
-          className="content absolute inset-0 flex flex-col items-center justify-center text-center gap-4 p-6 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] translate-x-[100%] group-hover:translate-x-0"
-          style={{
-            background: colors.expanded,
-            borderRadius: "12px",
-            border: `1px solid ${colors.border}`,
-          }}
+          className="absolute inset-0 z-20 flex flex-col p-3 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-x-[110%] group-hover:opacity-0"
         >
-          {/* Difficulty Badge in expanded view */}
-          <Badge
-            className="text-xs font-semibold px-3 py-1"
-            style={{
-              background: colors.bar,
-              color: "white",
-              border: "none",
-            }}
-          >
-            {getDifficultyLabel(difficulty)}
-          </Badge>
-
-          {/* Goal title */}
-          <h3
-            className="font-bold leading-tight line-clamp-2"
-            style={{
-              fontSize: "18px",
-              color: colors.text,
-            }}
-          >
-            {goal.name}
-          </h3>
-
-          {/* Status */}
-          <div
-            className="text-sm font-medium px-3 py-1.5 rounded-full"
-            style={{
-              background: "rgba(255,255,255,0.8)",
-              color: colors.text,
-              border: `1px solid ${colors.border}`,
-            }}
-          >
-            {getStatusLabel(goal.status || "not_started")}
-          </div>
-
-          {/* Steps remaining */}
-          <div
-            className="text-sm"
-            style={{ color: colors.text }}
-          >
-            <span className="font-semibold">{completedSteps}</span>
-            <span className="opacity-70"> / {totalSteps} </span>
-            <span className="opacity-70">{isHabitGoal ? "days" : "steps"}</span>
-          </div>
-
-          {/* Completed indicator */}
-          {isCompleted && (
-            <div
-              className="text-xs font-medium px-3 py-1 rounded-full"
+          {/* Top row: badge + star */}
+          <div className="flex items-start justify-between">
+            <Badge
+              className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5"
               style={{
-                background: "hsl(142 60% 50%)",
-                color: "white",
+                background: `${vividColor}20`,
+                color: vividColor,
+                border: `1px solid ${vividColor}40`,
+                boxShadow: `0 0 8px ${vividColor}20`,
               }}
             >
-              ✓ Completed
+              {getDifficultyLabel(difficulty)}
+            </Badge>
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFocus(goal.id, goal.is_focus || false, e);
+              }}
+              className="p-1 rounded-full transition-all hover:scale-110 backdrop-blur-sm"
+              style={{
+                background: "hsl(var(--card) / 0.8)",
+                border: "1px solid hsl(var(--border) / 0.5)",
+              }}
+            >
+              <Star className={`h-3 w-3 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"}`} />
+            </button>
+          </div>
+
+          {/* Goal title - centered */}
+          <div className="flex-1 flex items-center justify-center">
+            <h3
+              className="text-center font-bold leading-tight line-clamp-3"
+              style={{
+                fontSize: "13px",
+                color: "hsl(var(--foreground))",
+                textShadow: goal.image_url ? "0 1px 2px rgba(0,0,0,0.3)" : "none",
+              }}
+            >
+              {goal.name}
+            </h3>
+          </div>
+
+          {/* Bottom accent line */}
+          <div 
+            className="h-0.5 rounded-full opacity-50"
+            style={{ background: `linear-gradient(90deg, ${vividColor}, transparent)` }}
+          />
+        </div>
+
+        {/* Expanded content - slides in from left (where the bar is) */}
+        <div
+          className="absolute inset-0 z-30 flex flex-col p-3 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] -translate-x-full opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
+          style={{
+            background: `linear-gradient(135deg, ${vividColor}f0 0%, ${vividColor}dd 100%)`,
+            borderRadius: "12px",
+          }}
+        >
+          {/* Futuristic scan lines overlay */}
+          <div 
+            className="absolute inset-0 pointer-events-none opacity-10"
+            style={{
+              background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)",
+              borderRadius: "12px",
+            }}
+          />
+
+          {/* Content */}
+          <div className="relative z-10 flex flex-col h-full text-white">
+            {/* Header with icon */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <Zap className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-bold uppercase tracking-wider opacity-90">
+                {getDifficultyLabel(difficulty)}
+              </span>
             </div>
-          )}
+
+            {/* Title */}
+            <h3 className="font-bold text-xs leading-tight line-clamp-2 mb-auto">
+              {goal.name}
+            </h3>
+
+            {/* Stats section */}
+            <div className="space-y-2 mt-2">
+              {/* Status */}
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] opacity-80">Status</span>
+                <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/20 backdrop-blur-sm">
+                  {getStatusLabel(goal.status || "not_started")}
+                </span>
+              </div>
+
+              {/* Progress */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="opacity-80">{isHabitGoal ? "Days" : "Steps"}</span>
+                  <span className="font-bold">{completedSteps} / {totalSteps}</span>
+                </div>
+                <div className="h-1 bg-white/20 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ 
+                      width: `${progress}%`,
+                      background: "linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))",
+                      boxShadow: "0 0 8px rgba(255,255,255,0.5)",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Completed badge */}
+              {isCompleted && (
+                <div className="text-center text-[10px] font-bold py-0.5 rounded-full bg-white/25 backdrop-blur-sm">
+                  ✓ Completed
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
