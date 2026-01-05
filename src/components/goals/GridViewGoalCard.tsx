@@ -174,6 +174,12 @@ export function GridViewGoalCard({
 
   const theme = getDifficultyTheme(difficulty, customDifficultyColor);
 
+  // characters pour le fond matrix
+  const MATRIX_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const matrixChars = Array.from({ length: 64 }).map(
+    () => MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)],
+  );
+
   return (
     <div
       className="card-container cursor-pointer"
@@ -188,7 +194,7 @@ export function GridViewGoalCard({
         overflow: "hidden",
       }}
     >
-      {/* keyframes pour l'effet d'énergie */}
+      {/* keyframes énergie + matrix */}
       <style>
         {`
           @keyframes energy-move {
@@ -196,6 +202,66 @@ export function GridViewGoalCard({
             15% { opacity: 1; }
             50% { opacity: 1; }
             100% { transform: translateX(140%); opacity: 0; }
+          }
+
+          .jp-matrix {
+            background-color: #05050a;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
+            grid-auto-rows: 24px;
+            font-size: 14px;
+            color: rgba(0, 150, 255, 0.4);
+            font-family: "Courier New", Courier, monospace;
+          }
+
+          .jp-matrix > span {
+            text-align: center;
+            text-shadow: 0 0 5px rgba(0, 150, 255, 0.5);
+            user-select: none;
+            transition: color 0.5s, text-shadow 0.5s;
+            line-height: 24px;
+          }
+
+          .jp-matrix > span:nth-child(19n + 2) { animation: smooth-pulse 3.5s ease-in-out infinite 0.2s; }
+          .jp-matrix > span:nth-child(29n + 1) { animation: smooth-pulse 4.1s ease-in-out infinite 0.7s; }
+          .jp-matrix > span:nth-child(11n) { color: rgba(100, 200, 255, 0.7); animation: smooth-pulse 2.9s ease-in-out infinite 1.1s; }
+          .jp-matrix > span:nth-child(37n + 10) { animation: smooth-pulse 5.3s ease-in-out infinite 1.5s; }
+          .jp-matrix > span:nth-child(41n + 1) { animation: smooth-pulse 3.9s ease-in-out infinite 0.4s; }
+          .jp-matrix > span:nth-child(17n + 9) { animation: smooth-pulse 2.8s ease-in-out infinite 0.9s; }
+          .jp-matrix > span:nth-child(23n + 18) { animation: smooth-pulse 4.3s ease-in-out infinite 1.3s; }
+          .jp-matrix > span:nth-child(31n + 4) { animation: smooth-pulse 5.6s ease-in-out infinite 0.1s; }
+          .jp-matrix > span:nth-child(43n + 20) { animation: smooth-pulse 3.6s ease-in-out infinite 1.8s; }
+          .jp-matrix > span:nth-child(13n + 6) { animation: smooth-pulse 3.2s ease-in-out infinite 1.2s; }
+          .jp-matrix > span:nth-child(53n + 5) { animation: smooth-pulse 4.9s ease-in-out infinite 0.5s; }
+          .jp-matrix > span:nth-child(47n + 15) { animation: smooth-pulse 5.9s ease-in-out infinite 1s; }
+
+          @keyframes smooth-pulse {
+            0%, 100% {
+              color: rgba(0, 150, 255, 0.4);
+              text-shadow: 0 0 5px rgba(0, 150, 255, 0.5);
+            }
+            30% {
+              color: rgba(100, 200, 255, 1);
+              text-shadow:
+                0 0 10px rgba(100, 200, 255, 1),
+                0 0 15px rgba(100, 200, 255, 1);
+            }
+            50% {
+              color: rgba(255, 105, 180, 1);
+              text-shadow:
+                0 0 10px rgba(255, 105, 180, 1),
+                0 0 15px rgba(255, 105, 180, 1);
+            }
+            70% {
+              color: #ffffff;
+              text-shadow:
+                0 0 10px #fff,
+                0 0 15px #fff,
+                0 0 20px #fff;
+            }
           }
         `}
       </style>
@@ -207,10 +273,34 @@ export function GridViewGoalCard({
           height: "100%",
           position: "relative",
           borderRadius: "inherit",
-          background: "linear-gradient(135deg, #0d1117, #141c27)",
-          boxShadow: "0 12px 28px rgba(0, 0, 0, 0.35)",
+          overflow: "hidden",
         }}
       >
+        {/* Fond matrix */}
+        <div
+          className="jp-matrix"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+          }}
+        >
+          {matrixChars.map((c, i) => (
+            <span key={i}>{c}</span>
+          ))}
+        </div>
+
+        {/* Overlay sombre pour lisibilité */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "linear-gradient(135deg, #0d1117ee, #141c27f0)",
+            zIndex: 2,
+          }}
+        />
+
+        {/* Contenu principal */}
         {/* Bouton Focus */}
         <button
           onClick={(e) => {
@@ -219,6 +309,10 @@ export function GridViewGoalCard({
           }}
           className="absolute top-3 right-3 z-20 p-1.5 rounded-full"
           style={{
+            position: "absolute",
+            top: 12,
+            right: 12,
+            zIndex: 3,
             background: "rgba(0, 0, 0, 0.45)",
             border: "1px solid rgba(255, 255, 255, 0.35)",
             backdropFilter: "blur(4px)",
@@ -231,6 +325,8 @@ export function GridViewGoalCard({
         <div
           className="front-content"
           style={{
+            position: "relative",
+            zIndex: 3,
             width: "100%",
             height: "100%",
             display: "flex",
@@ -280,6 +376,7 @@ export function GridViewGoalCard({
             boxShadow: "inset 0 0 40px rgba(255, 255, 255, 0.1)",
             transform: isHovered ? "translateX(0)" : "translateX(96%)",
             transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
+            zIndex: 4,
           }}
         >
           {/* HEADER */}
@@ -310,7 +407,7 @@ export function GridViewGoalCard({
               {goal.name}
             </h3>
 
-            {/* BADGE DIFFICULTÉ – version plus démarquée */}
+            {/* BADGE DIFFICULTÉ */}
             <span
               className="difficulty-badge"
               style={{
