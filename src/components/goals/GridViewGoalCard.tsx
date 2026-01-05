@@ -18,7 +18,7 @@ interface GridViewGoalCardProps {
   goal: Goal;
   isCompleted?: boolean;
   customDifficultyName?: string;
-  customDifficultyColor?: string; // conservé pour compat
+  customDifficultyColor?: string;
   onNavigate: (goalId: string) => void;
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
@@ -67,7 +67,6 @@ export function GridViewGoalCard({
       className="card-container cursor-pointer"
       onClick={() => onNavigate(goal.id)}
       style={{
-        // sécurité au cas où le CSS ne se charge pas
         width: "300px",
         height: "300px",
         position: "relative",
@@ -86,7 +85,7 @@ export function GridViewGoalCard({
           boxShadow: "0 12px 28px rgba(0, 0, 0, 0.35)",
         }}
       >
-        {/* Bouton Focus (étoile) en overlay */}
+        {/* Bouton Focus */}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -102,7 +101,7 @@ export function GridViewGoalCard({
           <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`} />
         </button>
 
-        {/* FACE AVANT (titre en dégradé) */}
+        {/* FACE AVANT */}
         <div
           className="front-content"
           style={{
@@ -142,8 +141,7 @@ export function GridViewGoalCard({
             color: "#fff",
             padding: "24px 22px",
             borderRadius: "inherit",
-            transform: "translateX(96%)",
-            transition: "all 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
+            // ⚠️ PAS de transform NI de transition ici
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
