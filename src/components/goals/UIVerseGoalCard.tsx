@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Star, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 
@@ -26,66 +26,47 @@ interface UIVerseGoalCardProps {
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
 
-// Get soft, light colors for each difficulty
-const getSoftColors = (difficulty: string, customColor: string) => {
-  const baseColor = difficulty === "custom" ? customColor : getUnifiedDifficultyColor(difficulty);
-  
-  // Parse HSL or use fallback
-  const parseToHSL = (color: string): { h: number; s: number; l: number } => {
-    if (color.startsWith("hsl(")) {
-      const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%/);
-      if (match) {
-        return { h: parseInt(match[1]), s: parseInt(match[2]), l: parseInt(match[3]) };
-      }
-    }
-    // Fallback based on difficulty
-    switch (difficulty) {
-      case "easy": return { h: 142, s: 70, l: 45 };
-      case "medium": return { h: 48, s: 95, l: 50 };
-      case "hard": return { h: 25, s: 95, l: 55 };
-      case "extreme": return { h: 0, s: 85, l: 55 };
-      case "impossible": return { h: 280, s: 85, l: 55 };
-      case "custom": return { h: 270, s: 70, l: 55 };
-      default: return { h: 142, s: 70, l: 45 };
-    }
-  };
-
-  const hsl = parseToHSL(baseColor);
-  
-  return {
-    // Card front background - very light, subtle tint
-    frontBg: `hsl(${hsl.h} ${Math.min(hsl.s, 25)}% 96%)`,
-    // Gradient for expanded content - soft, readable
-    contentGradient: `linear-gradient(135deg, hsl(${hsl.h} ${Math.min(hsl.s, 50)}% 55%) 0%, hsl(${hsl.h} ${Math.min(hsl.s, 60)}% 45%) 100%)`,
-    // Bar/strip color - medium saturation
-    barColor: `hsl(${hsl.h} ${Math.min(hsl.s, 60)}% 50%)`,
-    // Title gradient
-    titleGradient: `linear-gradient(135deg, hsl(${hsl.h} ${Math.min(hsl.s, 70)}% 40%) 0%, hsl(${hsl.h} ${Math.min(hsl.s, 80)}% 35%) 100%)`,
-    // Badge background
-    badgeBg: `hsl(${hsl.h} ${Math.min(hsl.s, 55)}% 50%)`,
-    // Original for reference
-    baseColor,
-  };
+const getDifficultyIntensity = (difficulty: string): number => {
+  switch (difficulty) {
+    case "easy":
+      return 1;
+    case "medium":
+      return 2;
+    case "hard":
+      return 3;
+    case "extreme":
+      return 4;
+    case "impossible":
+    case "custom":
+      return 5;
+    default:
+      return 1;
+  }
 };
 
-const getStatusLabel = (status: string | null | undefined): string => {
-  switch (status) {
-    case "active":
-    case "in_progress":
-      return "In Progress";
-    case "completed":
-    case "validated":
-    case "fully_completed":
-      return "Completed";
-    case "paused":
-      return "Paused";
-    case "cancelled":
-      return "Cancelled";
-    case "not_started":
-      return "Not Started";
-    default:
-      return "Active";
+const withAlpha = (color: string, alpha: number): string => {
+  if (color.startsWith("hsl(")) {
+    const inner = color.slice(4, -1).trim();
+    const base = inner.split("/")[0].trim();
+    return `hsl(${base} / ${alpha})`;
   }
+  if (color.startsWith("#")) {
+    const hex = color.slice(1);
+    const full =
+      hex.length === 3
+        ? hex
+            .split("")
+            .map((c) => c + c)
+            .join("")
+        : hex;
+    if (full.length === 6) {
+      const r = parseInt(full.slice(0, 2), 16);
+      const g = parseInt(full.slice(2, 4), 16);
+      const b = parseInt(full.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+  }
+  return color;
 };
 
 export function UIVerseGoalCard({
@@ -97,140 +78,290 @@ export function UIVerseGoalCard({
   onToggleFocus,
 }: UIVerseGoalCardProps) {
   const difficulty = goal.difficulty || "easy";
-  const colors = getSoftColors(difficulty, customDifficultyColor);
+  const difficultyColor = difficulty === "custom" ? customDifficultyColor : getUnifiedDifficultyColor(difficulty);
 
   const goalType = goal.goal_type || "standard";
   const isHabitGoal = goalType === "habit";
   const totalSteps = isHabitGoal ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
   const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
-  const remainingSteps = totalSteps - completedSteps;
+  const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
+  const intensity = getDifficultyIntensity(difficulty);
 
   const getDifficultyLabel = (diff: string): string => {
     if (diff === "custom") return customDifficultyName || "Custom";
     return diff.charAt(0).toUpperCase() + diff.slice(1);
   };
 
+  const getTierBackground = () => {
+    switch (difficulty) {
+      case "easy":
+        return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
+      case "medium":
+        return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
+      case "hard":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
+      case "extreme":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
+      case "impossible":
+      case "custom":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
+      default:
+        return difficultyColor;
+    }
+  };
+
+  const getGlossIntensity = (): number => {
+    switch (difficulty) {
+      case "easy":
+        return 0.08;
+      case "medium":
+        return 0.14;
+      case "hard":
+        return 0.22;
+      case "extreme":
+        return 0.28;
+      case "impossible":
+        return 0.32;
+      case "custom":
+        return 0.35;
+      default:
+        return 0.08;
+    }
+  };
+
+  const glossIntensity = getGlossIntensity();
+
+  // Gamer contrast: fond très sombre + léger gradient
+  const cardBgColor = "#050814";
+  const tintedBg = `linear-gradient(
+    180deg,
+    #070b16 0%,
+    #050814 40%,
+    #040612 100%
+  )`;
+
   return (
     <motion.div
-      whileHover="hovered"
-      initial="initial"
+      whileHover={{ scale: 1.04 }}
+      transition={{ duration: 0.25, type: "spring", stiffness: 320 }}
       onClick={() => onNavigate(goal.id)}
       className="cursor-pointer"
-      style={{ width: "300px", height: "300px" }}
+      style={{ width: "210px", height: "280px" }}
     >
-      {/* .card-container */}
       <div
-        className="relative overflow-hidden"
+        className="relative overflow-hidden flex flex-col"
         style={{
-          width: "300px",
-          height: "300px",
-          borderRadius: "10px",
-          boxShadow: "0 10px 20px rgba(0, 0, 0, 0.2)",
+          width: "210px",
+          height: "280px",
+          borderRadius: "22px",
+          background: tintedBg,
+          padding: "5px",
+          boxShadow: `
+            0 18px 45px rgba(0,0,0,0.85),
+            0 0 25px ${withAlpha(difficultyColor, 0.35)}
+          `,
+          border: "1px solid rgba(255,255,255,0.04)",
         }}
       >
-        {/* .card */}
-        <div
-          className="w-full h-full"
-          style={{ borderRadius: "inherit" }}
+        {/* Difficulty Badge */}
+        <Badge
+          className="absolute top-1 left-2 z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
+          style={{
+            borderRadius: "999px",
+            color: "white",
+            background: getTierBackground(),
+            border: `1px solid ${withAlpha(difficultyColor, 0.7)}`,
+            boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(
+              difficultyColor,
+              0.7,
+            )}, inset 0 1px 1px rgba(255,255,255,${glossIntensity})`,
+          }}
         >
-          {/* Focus Star - absolute positioned */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFocus(goal.id, goal.is_focus || false, e);
-            }}
-            className="absolute top-3 right-3 z-30 p-1.5 rounded-full border transition-all hover:scale-110"
+          <span
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: "rgba(255,255,255,0.9)",
-              borderColor: "rgba(0,0,0,0.1)",
-            }}
-          >
-            <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-gray-400"}`} />
-          </button>
-
-          {/* .front-content */}
-          <motion.div
-            className="w-full h-full flex flex-col items-center justify-center relative"
-            style={{
-              background: colors.frontBg,
+              background: `linear-gradient(135deg, rgba(255,255,255,${glossIntensity * 1.2}) 0%, rgba(255,255,255,${
+                glossIntensity * 0.3
+              }) 40%, transparent 60%)`,
               borderRadius: "inherit",
             }}
-            variants={{
-              initial: { x: 0 },
-              hovered: { x: "20%" },
-            }}
-            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-          >
-            {/* Difficulty Badge - centered at top */}
-            <Badge
-              className="absolute top-4 left-1/2 -translate-x-1/2 z-10 text-xs uppercase tracking-wide font-semibold px-4 py-1.5"
-              style={{
-                borderRadius: "999px",
-                color: "white",
-                background: colors.badgeBg,
-                boxShadow: `0 2px 8px ${colors.barColor}40`,
-              }}
-            >
-              {getDifficultyLabel(difficulty)}
-            </Badge>
+          />
+          <span className="relative z-10">{getDifficultyLabel(difficulty)}</span>
+        </Badge>
 
-            {/* Goal Title - centered */}
-            <motion.p
-              className="text-2xl font-bold text-center px-6 leading-tight"
+        {/* Focus Star */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFocus(goal.id, goal.is_focus || false, e);
+          }}
+          className="absolute top-3 right-3 z-20 p-1.5 rounded-full border transition-all hover:scale-110"
+          style={{
+            background: "rgba(6,10,22,0.9)",
+            borderColor: "rgba(255,255,255,0.25)",
+          }}
+        >
+          <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/80"}`} />
+        </button>
+
+        {/* Top Section - Image / Header */}
+        <div
+          className="relative overflow-hidden flex-shrink-0"
+          style={{
+            height: "130px",
+            width: "100%",
+            borderRadius: "16px",
+            background: goal.image_url
+              ? undefined
+              : `linear-gradient(45deg, ${withAlpha(difficultyColor, 0.7)} 0%, ${difficultyColor} 40%, ${withAlpha(
+                  difficultyColor,
+                  0.4,
+                )} 100%)`,
+          }}
+        >
+          {goal.image_url ? (
+            <img
+              src={goal.image_url}
+              alt={goal.name}
+              className={`absolute inset-0 w-full h-full object-cover ${isCompleted ? "grayscale opacity-70" : ""}`}
+              style={{ borderRadius: "16px" }}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              {/* Placeholder icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 94 94" className="w-12 h-12">
+                <path
+                  fill="white"
+                  d="M38.0481 4.82927C38.0481 2.16214 40.018 0 42.4481 0H51.2391C53.6692 0 55.6391 2.16214 55.6391 4.82927V40.1401C55.6391 48.8912 53.2343 55.6657 48.4248 60.4636C43.6153 65.2277 36.7304 67.6098 27.7701 67.6098C18.8099 67.6098 11.925 65.2953 7.11548 60.6663C2.37183 56.0036 3.8147e-06 49.2967 3.8147e-06 40.5456V4.82927C3.8147e-06 2.16213 1.96995 0 4.4 0H13.2405C15.6705 0 17.6405 2.16214 17.6405 4.82927V39.1265C17.6405 43.7892 18.4805 47.2018 20.1605 49.3642C21.8735 51.5267 24.4759 52.6079 27.9678 52.6079C31.4596 52.6079 34.0127 51.5436 35.6268 49.4149C37.241 47.2863 38.0481 43.8399 38.0481 39.0758V4.82927Z"
+                />
+                <path
+                  fill="white"
+                  d="M86.9 61.8682C86.9 64.5353 84.9301 66.6975 82.5 66.6975H73.6595C71.2295 66.6975 69.2595 64.5353 69.2595 61.8682V4.82927C69.2595 2.16214 71.2295 0 73.6595 0H82.5C84.9301 0 86.9 2.16214 86.9 4.82927V61.8682Z"
+                />
+                <path
+                  fill="white"
+                  d="M2.86102e-06 83.2195C2.86102e-06 80.5524 1.96995 78.3902 4.4 78.3902H83.6C86.0301 78.3902 88 80.5524 88 83.2195V89.1707C88 91.8379 86.0301 94 83.6 94H4.4C1.96995 94 0 91.8379 0 89.1707L2.86102e-06 83.2195Z"
+                />
+              </svg>
+            </div>
+          )}
+
+          {/* petits accents de découpe comme avant, mais foncés */}
+          <div
+            className="absolute top-0 left-0"
+            style={{
+              borderBottomRightRadius: "10px",
+              height: "30px",
+              width: "130px",
+              background: "#050814",
+              transform: "skew(-40deg)",
+              boxShadow: `-10px -10px 0 0 #050814`,
+            }}
+          />
+          <div
+            className="absolute"
+            style={{
+              top: "0",
+              right: "115px",
+              width: "15px",
+              height: "15px",
+              background: "transparent",
+              borderTopLeftRadius: "10px",
+              boxShadow: `-5px -5px 0 2px #050814`,
+            }}
+          />
+          <div
+            className="absolute"
+            style={{
+              top: "30px",
+              left: "0",
+              width: "15px",
+              height: "15px",
+              background: "transparent",
+              borderTopLeftRadius: "15px",
+              boxShadow: `-5px -5px 0 2px #050814`,
+            }}
+          />
+        </div>
+
+        {/* Séparateur lumineux entre header et contenu */}
+        <div
+          style={{
+            marginTop: "8px",
+            marginBottom: "6px",
+            width: "100%",
+            height: "2px",
+            borderRadius: "999px",
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)",
+            opacity: 0.9,
+          }}
+        />
+
+        {/* Bottom Section */}
+        <div className="px-2 pb-2 flex-1 flex flex-col min-h-0">
+          {/* Title */}
+          <div className="h-10 flex items-start justify-center overflow-hidden">
+            <h3
+              className="text-center font-bold tracking-widest uppercase line-clamp-2 font-rajdhani leading-tight"
               style={{
-                background: colors.titleGradient,
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                maxWidth: "260px",
+                fontSize: "13px",
+                color: "#ffffff",
+                letterSpacing: "1.6px",
               }}
-              variants={{
-                initial: { opacity: 1 },
-                hovered: { opacity: 0 },
-              }}
-              transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
             >
               {goal.name}
-            </motion.p>
-          </motion.div>
+            </h3>
+          </div>
 
-          {/* .content - sliding panel */}
-          <motion.div
-            className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center text-center gap-3 text-white px-6 pointer-events-none"
-            style={{
-              background: colors.contentGradient,
-              borderRadius: "5px",
-              lineHeight: 1.5,
-            }}
-            variants={{
-              initial: { x: "96%" },
-              hovered: { x: 0 },
-            }}
-            transition={{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }}
-          >
-            {/* Heading - Goal name */}
-            <p className="text-2xl font-bold">{goal.name}</p>
-            
-            {/* Status */}
-            <div className="flex items-center gap-2">
-              <span className="text-white/80 text-sm">Status:</span>
-              <span className="font-semibold text-base">{getStatusLabel(goal.status)}</span>
-            </div>
-
-            {/* Remaining steps */}
-            <div className="flex flex-col items-center gap-1 mt-2">
-              <span className="text-white/80 text-sm">{isHabitGoal ? "Days" : "Steps"}</span>
-              <span className="text-xl font-bold">
-                {remainingSteps > 0 
-                  ? `${remainingSteps} remaining`
-                  : "All done!"
-                }
-              </span>
-              <span className="text-white/70 text-sm">
-                {completedSteps} / {totalSteps} completed
+          {/* Steps + Progress */}
+          <div className="mt-3 space-y-2 px-1">
+            <div className="flex items-center justify-between text-xs font-rajdhani">
+              <span style={{ color: "#7f8ca9" }}>{isHabitGoal ? "Days" : "Steps"}</span>
+              <span
+                className="font-bold"
+                style={{
+                  color: isCompleted ? "#9caad4" : difficultyColor,
+                }}
+              >
+                {completedSteps}/{totalSteps} • {progress.toFixed(0)}%
               </span>
             </div>
-          </motion.div>
+
+            {/* Progress Bar – gamer style */}
+            <div
+              className="h-2 w-full rounded-full overflow-hidden"
+              style={{
+                background: "#141827",
+                border: "1px solid rgba(255,255,255,0.05)",
+                boxShadow: "inset 0 0 4px rgba(0,0,0,0.6)",
+              }}
+            >
+              <motion.div
+                className="h-full rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                style={{
+                  background: isCompleted
+                    ? "linear-gradient(90deg, #4ade80, #22c55e)"
+                    : `linear-gradient(
+                        90deg,
+                        ${withAlpha(difficultyColor, 0.2)},
+                        ${difficultyColor},
+                        ${withAlpha(difficultyColor, 0.9)}
+                      )`,
+                  boxShadow: `0 0 ${7 + intensity * 2}px ${withAlpha(difficultyColor, 0.85)}`,
+                }}
+              />
+            </div>
+
+            {isCompleted && (
+              <div className="flex items-center justify-center gap-1 text-emerald-300 text-xs font-rajdhani mt-2">
+                <CheckCircle2 className="h-3 w-3" />
+                <span>Completed</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>
