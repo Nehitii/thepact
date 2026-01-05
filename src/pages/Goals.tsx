@@ -8,6 +8,7 @@ import { Plus, ChevronRight, ChevronLeft, CheckCircle2, Star, Sparkles, Trophy, 
 import { Input } from "@/components/ui/input";
 import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
+import { GridViewGoalCard } from "@/components/goals/GridViewGoalCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
@@ -384,70 +385,21 @@ export default function Goals() {
       );
     }
 
-    // Grid Mode (Compact squares)
+    // Grid Mode - New hover-expand card design
     if (displayMode === "grid") {
       return (
         <motion.div 
           key={goal.id} 
           variants={itemVariants}
-          whileHover={{ scale: 1.03, y: -4 }}
-          transition={{ duration: 0.2 }}
         >
-          <div
-            onClick={() => navigate(`/goals/${goal.id}`)}
-            className={`group relative aspect-square rounded-xl cursor-pointer transition-all duration-300 overflow-hidden hover-shimmer-wave ${
-              isCompleted ? "opacity-70 hover:opacity-90" : ""
-            } ${!isCompleted ? auraClass : ''}`}
-            style={{ 
-              '--aura-color': difficultyColor,
-              borderWidth: borderWidth,
-              borderStyle: 'solid',
-              borderColor: `${difficultyColor}50`,
-              boxShadow: isCompleted ? 'none' : `0 0 ${15 + intensity * 5}px ${difficultyColor}20`
-            } as React.CSSProperties}
-          >
-            {/* Background Image or Gradient */}
-            {goal.image_url ? (
-              <img src={goal.image_url} alt={goal.name} className={`absolute inset-0 w-full h-full object-cover ${isCompleted ? "grayscale" : ""}`} />
-            ) : (
-              <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 30% 30%, ${difficultyColor}35, hsl(var(--card)))` }} />
-            )}
-
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-            {/* Difficulty accent - Phase 4 enhanced */}
-            <div 
-              className="absolute top-0 left-0 right-0" 
-              style={{ 
-                height: `${3 + intensity}px`,
-                background: difficultyColor,
-                boxShadow: isCompleted ? 'none' : `0 0 ${10 + intensity * 3}px ${difficultyColor}`
-              }} 
-            />
-
-            {/* Focus Star */}
-            <button
-              onClick={(e) => toggleFocus(goal.id, goal.is_focus || false, e)}
-              className="absolute top-2 right-2 z-20 p-1.5 bg-black/50 rounded-full backdrop-blur-sm border border-white/20 hover:scale-110 transition-all"
-            >
-              <Star className={`h-3.5 w-3.5 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-white/70"}`} />
-            </button>
-
-            {/* Content at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 p-3">
-              <DifficultyBadge difficulty={goal.difficulty} isCompleted={isCompleted} />
-              <h3 className="font-bold text-sm leading-tight line-clamp-2 text-white font-rajdhani mt-2">
-                {goal.name}
-              </h3>
-              {isCompleted && (
-                <div className="flex items-center gap-1 mt-1 text-green-400 text-xs font-rajdhani">
-                  <CheckCircle2 className="h-3 w-3" />
-                  <span>Completed</span>
-                </div>
-              )}
-            </div>
-          </div>
+          <GridViewGoalCard
+            goal={goal}
+            isCompleted={isCompleted}
+            customDifficultyName={customDifficultyName}
+            customDifficultyColor={customDifficultyColor}
+            onNavigate={(goalId) => navigate(`/goals/${goalId}`)}
+            onToggleFocus={toggleFocus}
+          />
         </motion.div>
       );
     }
@@ -522,7 +474,7 @@ export default function Goals() {
   };
 
   const getGridClass = () => {
-    if (displayMode === "grid") return "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4";
+    if (displayMode === "grid") return "flex flex-wrap justify-center gap-6";
     if (displayMode === "bookmark") return "flex flex-wrap justify-center gap-6";
     // Bar view: 1 column on mobile, 2 columns on larger screens with centered layout
     return "grid grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl mx-auto";
