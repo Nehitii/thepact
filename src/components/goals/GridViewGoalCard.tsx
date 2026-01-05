@@ -57,7 +57,6 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         energyFrom: "#bbf7d0",
         energyTo: "#22c55e",
       };
-
     case "medium":
       return {
         color: "#eab308",
@@ -71,7 +70,6 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         energyFrom: "#fef9c3",
         energyTo: "#facc15",
       };
-
     case "hard":
       return {
         color: "#f97316",
@@ -85,7 +83,6 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         energyFrom: "#ffedd5",
         energyTo: "#fb923c",
       };
-
     case "extreme":
       return {
         color: "#dc2626",
@@ -99,7 +96,6 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         energyFrom: "#fee2e2",
         energyTo: "#f97373",
       };
-
     case "impossible":
       return {
         color: "#a855f7",
@@ -113,7 +109,6 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         energyFrom: "#f5f3ff",
         energyTo: "#c4b5fd",
       };
-
     case "custom": {
       const base = customColor || "#a855f7";
       return {
@@ -129,7 +124,6 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         energyTo: base,
       };
     }
-
     default:
       return {
         color: "#6b7280",
@@ -174,12 +168,6 @@ export function GridViewGoalCard({
 
   const theme = getDifficultyTheme(difficulty, customDifficultyColor);
 
-  // characters pour le fond matrix
-  const MATRIX_CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const matrixChars = Array.from({ length: 64 }).map(
-    () => MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)],
-  );
-
   return (
     <div
       className="card-container cursor-pointer"
@@ -194,7 +182,7 @@ export function GridViewGoalCard({
         overflow: "hidden",
       }}
     >
-      {/* keyframes énergie + matrix */}
+      {/* keyframes pour l'énergie (si tu utilises encore la barre animée) */}
       <style>
         {`
           @keyframes energy-move {
@@ -202,66 +190,6 @@ export function GridViewGoalCard({
             15% { opacity: 1; }
             50% { opacity: 1; }
             100% { transform: translateX(140%); opacity: 0; }
-          }
-
-          .jp-matrix {
-            background-color: #05050a;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(24px, 1fr));
-            grid-auto-rows: 24px;
-            font-size: 14px;
-            color: rgba(0, 150, 255, 0.4);
-            font-family: "Courier New", Courier, monospace;
-          }
-
-          .jp-matrix > span {
-            text-align: center;
-            text-shadow: 0 0 5px rgba(0, 150, 255, 0.5);
-            user-select: none;
-            transition: color 0.5s, text-shadow 0.5s;
-            line-height: 24px;
-          }
-
-          .jp-matrix > span:nth-child(19n + 2) { animation: smooth-pulse 3.5s ease-in-out infinite 0.2s; }
-          .jp-matrix > span:nth-child(29n + 1) { animation: smooth-pulse 4.1s ease-in-out infinite 0.7s; }
-          .jp-matrix > span:nth-child(11n) { color: rgba(100, 200, 255, 0.7); animation: smooth-pulse 2.9s ease-in-out infinite 1.1s; }
-          .jp-matrix > span:nth-child(37n + 10) { animation: smooth-pulse 5.3s ease-in-out infinite 1.5s; }
-          .jp-matrix > span:nth-child(41n + 1) { animation: smooth-pulse 3.9s ease-in-out infinite 0.4s; }
-          .jp-matrix > span:nth-child(17n + 9) { animation: smooth-pulse 2.8s ease-in-out infinite 0.9s; }
-          .jp-matrix > span:nth-child(23n + 18) { animation: smooth-pulse 4.3s ease-in-out infinite 1.3s; }
-          .jp-matrix > span:nth-child(31n + 4) { animation: smooth-pulse 5.6s ease-in-out infinite 0.1s; }
-          .jp-matrix > span:nth-child(43n + 20) { animation: smooth-pulse 3.6s ease-in-out infinite 1.8s; }
-          .jp-matrix > span:nth-child(13n + 6) { animation: smooth-pulse 3.2s ease-in-out infinite 1.2s; }
-          .jp-matrix > span:nth-child(53n + 5) { animation: smooth-pulse 4.9s ease-in-out infinite 0.5s; }
-          .jp-matrix > span:nth-child(47n + 15) { animation: smooth-pulse 5.9s ease-in-out infinite 1s; }
-
-          @keyframes smooth-pulse {
-            0%, 100% {
-              color: rgba(0, 150, 255, 0.4);
-              text-shadow: 0 0 5px rgba(0, 150, 255, 0.5);
-            }
-            30% {
-              color: rgba(100, 200, 255, 1);
-              text-shadow:
-                0 0 10px rgba(100, 200, 255, 1),
-                0 0 15px rgba(100, 200, 255, 1);
-            }
-            50% {
-              color: rgba(255, 105, 180, 1);
-              text-shadow:
-                0 0 10px rgba(255, 105, 180, 1),
-                0 0 15px rgba(255, 105, 180, 1);
-            }
-            70% {
-              color: #ffffff;
-              text-shadow:
-                0 0 10px #fff,
-                0 0 15px #fff,
-                0 0 20px #fff;
-            }
           }
         `}
       </style>
@@ -274,33 +202,35 @@ export function GridViewGoalCard({
           position: "relative",
           borderRadius: "inherit",
           overflow: "hidden",
+          backgroundColor: "#05050a", // fond base sous le pattern
         }}
       >
-        {/* Fond matrix */}
+        {/* ========= FOND JP-MATRIX ========= */}
         <div
           className="jp-matrix"
           style={{
             position: "absolute",
             inset: 0,
-            zIndex: 1,
+            zIndex: 0,
           }}
         >
-          {matrixChars.map((c, i) => (
-            <span key={i}>{c}</span>
-          ))}
+          {/* ⬇⬇⬇ COLLE ICI TON BLOC DE <span>…</span> EN JSX ⬇⬇⬇ */}
+          {/* Exemple de début : */}
+          <span>ア</span>
+          <span>イ</span>
+          <span>ウ</span>
+          <span>エ</span>
+          <span>オ</span>
+          <span>カ</span>
+          <span>キ</span>
+          <span>ク</span>
+          <span>ケ</span>
+          <span>コ</span>
+          {/* … puis tu continues en collant tout ton bloc de spans */}
         </div>
 
-        {/* Overlay sombre pour lisibilité */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(135deg, #0d1117ee, #141c27f0)",
-            zIndex: 2,
-          }}
-        />
+        {/* ========= CONTENU PAR-DESSUS (z-index 1+) ========= */}
 
-        {/* Contenu principal */}
         {/* Bouton Focus */}
         <button
           onClick={(e) => {
@@ -312,7 +242,7 @@ export function GridViewGoalCard({
             position: "absolute",
             top: 12,
             right: 12,
-            zIndex: 3,
+            zIndex: 2,
             background: "rgba(0, 0, 0, 0.45)",
             border: "1px solid rgba(255, 255, 255, 0.35)",
             backdropFilter: "blur(4px)",
@@ -326,7 +256,7 @@ export function GridViewGoalCard({
           className="front-content"
           style={{
             position: "relative",
-            zIndex: 3,
+            zIndex: 1,
             width: "100%",
             height: "100%",
             display: "flex",
@@ -344,7 +274,7 @@ export function GridViewGoalCard({
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               color: "transparent",
-              textShadow: "0 4px 14px rgba(0, 0, 0, 0.3)",
+              textShadow: "0 4px 14px rgba(0, 0, 0, 0.5)",
               textAlign: "center",
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -376,7 +306,7 @@ export function GridViewGoalCard({
             boxShadow: "inset 0 0 40px rgba(255, 255, 255, 0.1)",
             transform: isHovered ? "translateX(0)" : "translateX(96%)",
             transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
-            zIndex: 4,
+            zIndex: 3,
           }}
         >
           {/* HEADER */}
@@ -407,7 +337,6 @@ export function GridViewGoalCard({
               {goal.name}
             </h3>
 
-            {/* BADGE DIFFICULTÉ */}
             <span
               className="difficulty-badge"
               style={{
