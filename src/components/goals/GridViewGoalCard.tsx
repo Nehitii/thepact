@@ -41,7 +41,7 @@ const getStatusLabel = (status: string) => {
   }
 };
 
-// Thème couleur par difficulté (badge, glow)
+// Thème couleur par difficulté (badge, gradient panel, barre de progression)
 const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   switch (difficulty) {
     case "easy":
@@ -50,6 +50,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         glow: "rgba(22,163,74,0.5)",
         background: "rgba(22,163,74,0.18)",
         border: "rgba(22,163,74,0.45)",
+        gradientFrom: "#22c55e",
+        gradientTo: "#16a34a",
+        progressFrom: "#4ade80",
+        progressTo: "#16a34a",
       };
 
     case "medium":
@@ -58,6 +62,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         glow: "rgba(234,179,8,0.5)",
         background: "rgba(234,179,8,0.18)",
         border: "rgba(234,179,8,0.45)",
+        gradientFrom: "#facc15",
+        gradientTo: "#eab308",
+        progressFrom: "#fde047",
+        progressTo: "#eab308",
       };
 
     case "hard":
@@ -66,6 +74,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         glow: "rgba(249,115,22,0.5)",
         background: "rgba(249,115,22,0.18)",
         border: "rgba(249,115,22,0.45)",
+        gradientFrom: "#fb923c",
+        gradientTo: "#f97316",
+        progressFrom: "#fed7aa",
+        progressTo: "#f97316",
       };
 
     case "extreme":
@@ -74,6 +86,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         glow: "rgba(220,38,38,0.55)",
         background: "rgba(220,38,38,0.18)",
         border: "rgba(220,38,38,0.45)",
+        gradientFrom: "#f97373",
+        gradientTo: "#dc2626",
+        progressFrom: "#fecaca",
+        progressTo: "#dc2626",
       };
 
     case "impossible":
@@ -82,6 +98,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         glow: "rgba(168,85,247,0.55)",
         background: "rgba(168,85,247,0.20)",
         border: "rgba(168,85,247,0.45)",
+        gradientFrom: "#c4b5fd",
+        gradientTo: "#a855f7",
+        progressFrom: "#e9d5ff",
+        progressTo: "#a855f7",
       };
 
     case "custom": {
@@ -91,6 +111,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         glow: `${base}80`,
         background: `${base}30`,
         border: `${base}70`,
+        gradientFrom: base,
+        gradientTo: base,
+        progressFrom: base,
+        progressTo: base,
       };
     }
 
@@ -100,6 +124,10 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         glow: "rgba(107,114,128,0.4)",
         background: "rgba(107,114,128,0.18)",
         border: "rgba(107,114,128,0.45)",
+        gradientFrom: "#9ca3af",
+        gradientTo: "#4b5563",
+        progressFrom: "#d1d5db",
+        progressTo: "#6b7280",
       };
   }
 };
@@ -182,11 +210,12 @@ export function GridViewGoalCard({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            padding: "0 18px",
           }}
         >
           <p
             style={{
-              fontSize: "28px",
+              fontSize: "22px", // 🔽 réduit pour lisibilité
               fontWeight: 800,
               letterSpacing: "1px",
               background: "linear-gradient(135deg, #ff0f7b, #f89b29)",
@@ -195,7 +224,12 @@ export function GridViewGoalCard({
               color: "transparent",
               textShadow: "0 4px 14px rgba(0, 0, 0, 0.3)",
               textAlign: "center",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              maxWidth: "100%",
             }}
+            title={goal.name}
           >
             {goal.name}
           </p>
@@ -210,7 +244,7 @@ export function GridViewGoalCard({
             right: 0,
             width: "96%",
             height: "100%",
-            background: "linear-gradient(-45deg, #ff0f7b, #f89b29)",
+            background: `linear-gradient(-45deg, ${theme.gradientFrom}, ${theme.gradientTo})`,
             color: "#fff",
             padding: "24px 22px",
             borderRadius: "inherit",
@@ -235,12 +269,17 @@ export function GridViewGoalCard({
             <h3
               className="heading"
               style={{
-                fontSize: "26px",
+                fontSize: "20px", // 🔽 réduit pour lisibilité
                 fontWeight: 900,
                 margin: 0,
                 textShadow: "0 6px 18px rgba(0, 0, 0, 0.35)",
                 textAlign: "center",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: "100%",
               }}
+              title={goal.name}
             >
               {goal.name}
             </h3>
@@ -287,8 +326,8 @@ export function GridViewGoalCard({
                 style={{
                   height: "100%",
                   borderRadius: "inherit",
-                  background: "linear-gradient(90deg, #ff0f7b, #f89b29)",
-                  boxShadow: "0 0 12px rgba(255, 15, 123, 0.6)",
+                  background: `linear-gradient(90deg, ${theme.progressFrom}, ${theme.progressTo})`,
+                  boxShadow: `0 0 12px ${theme.glow}`,
                   transition: "width 0.3s ease",
                   width: `${progress}%`,
                 }}
