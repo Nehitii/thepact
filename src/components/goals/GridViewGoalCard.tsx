@@ -49,12 +49,12 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         color: "#16a34a",
         glow: "rgba(22,163,74,0.5)",
         background: "rgba(22,163,74,0.18)",
-        border: "rgba(22,163,74,0.45)",
+        border: "rgba(22,163,74,0.75)",
         gradientFrom: "#22c55e",
         gradientTo: "#16a34a",
         progressFrom: "#4ade80",
         progressTo: "#16a34a",
-        energyFrom: "#bbf7d0", // spark clair
+        energyFrom: "#bbf7d0",
         energyTo: "#22c55e",
       };
 
@@ -63,7 +63,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         color: "#eab308",
         glow: "rgba(234,179,8,0.5)",
         background: "rgba(234,179,8,0.18)",
-        border: "rgba(234,179,8,0.45)",
+        border: "rgba(234,179,8,0.75)",
         gradientFrom: "#facc15",
         gradientTo: "#eab308",
         progressFrom: "#fde047",
@@ -77,7 +77,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         color: "#f97316",
         glow: "rgba(249,115,22,0.5)",
         background: "rgba(249,115,22,0.18)",
-        border: "rgba(249,115,22,0.45)",
+        border: "rgba(249,115,22,0.8)",
         gradientFrom: "#fb923c",
         gradientTo: "#f97316",
         progressFrom: "#fed7aa",
@@ -91,7 +91,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         color: "#dc2626",
         glow: "rgba(220,38,38,0.55)",
         background: "rgba(220,38,38,0.18)",
-        border: "rgba(220,38,38,0.45)",
+        border: "rgba(220,38,38,0.8)",
         gradientFrom: "#f97373",
         gradientTo: "#dc2626",
         progressFrom: "#fecaca",
@@ -105,7 +105,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         color: "#a855f7",
         glow: "rgba(168,85,247,0.55)",
         background: "rgba(168,85,247,0.20)",
-        border: "rgba(168,85,247,0.45)",
+        border: "rgba(168,85,247,0.85)",
         gradientFrom: "#c4b5fd",
         gradientTo: "#a855f7",
         progressFrom: "#e9d5ff",
@@ -120,7 +120,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         color: base,
         glow: `${base}80`,
         background: `${base}30`,
-        border: `${base}70`,
+        border: `${base}D9`,
         gradientFrom: base,
         gradientTo: base,
         progressFrom: base,
@@ -135,7 +135,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
         color: "#6b7280",
         glow: "rgba(107,114,128,0.4)",
         background: "rgba(107,114,128,0.18)",
-        border: "rgba(107,114,128,0.45)",
+        border: "rgba(107,114,128,0.8)",
         gradientFrom: "#9ca3af",
         gradientTo: "#4b5563",
         progressFrom: "#d1d5db",
@@ -309,18 +309,27 @@ export function GridViewGoalCard({
             >
               {goal.name}
             </h3>
+
+            {/* BADGE DIFFICULTÉ – version plus démarquée */}
             <span
               className="difficulty-badge"
               style={{
-                padding: "6px 14px",
+                padding: "7px 18px",
                 borderRadius: "999px",
-                fontWeight: 700,
-                fontSize: "13px",
-                color: "white",
-                background: theme.background,
+                fontWeight: 800,
+                fontSize: "11px",
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+                color: "#ffffff",
+                background: `linear-gradient(135deg, rgba(255,255,255,0.28), ${theme.background})`,
                 border: `1px solid ${theme.border}`,
-                backdropFilter: "blur(6px)",
-                boxShadow: `0 4px 18px ${theme.glow}`,
+                backdropFilter: "blur(10px)",
+                boxShadow: `
+                  0 0 0 1px rgba(0,0,0,0.2),
+                  0 0 10px ${theme.glow},
+                  0 0 22px ${theme.glow}
+                `,
+                textShadow: "0 1px 4px rgba(0, 0, 0, 0.6)",
               }}
             >
               {getDifficultyLabel(difficulty)}
