@@ -47,7 +47,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
     case "easy":
       return {
         color: "#16a34a",
-        glow: "rgba(22,163,74,0.5)",
+        glow: "rgba(22,163,74,0.65)",
         background: "rgba(22,163,74,0.18)",
         border: "rgba(22,163,74,0.45)",
         gradientFrom: "#22c55e",
@@ -59,7 +59,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
     case "medium":
       return {
         color: "#eab308",
-        glow: "rgba(234,179,8,0.5)",
+        glow: "rgba(234,179,8,0.65)",
         background: "rgba(234,179,8,0.18)",
         border: "rgba(234,179,8,0.45)",
         gradientFrom: "#facc15",
@@ -71,7 +71,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
     case "hard":
       return {
         color: "#f97316",
-        glow: "rgba(249,115,22,0.5)",
+        glow: "rgba(249,115,22,0.65)",
         background: "rgba(249,115,22,0.18)",
         border: "rgba(249,115,22,0.45)",
         gradientFrom: "#fb923c",
@@ -83,7 +83,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
     case "extreme":
       return {
         color: "#dc2626",
-        glow: "rgba(220,38,38,0.55)",
+        glow: "rgba(220,38,38,0.7)",
         background: "rgba(220,38,38,0.18)",
         border: "rgba(220,38,38,0.45)",
         gradientFrom: "#f97373",
@@ -95,7 +95,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
     case "impossible":
       return {
         color: "#a855f7",
-        glow: "rgba(168,85,247,0.55)",
+        glow: "rgba(168,85,247,0.7)",
         background: "rgba(168,85,247,0.20)",
         border: "rgba(168,85,247,0.45)",
         gradientFrom: "#c4b5fd",
@@ -108,7 +108,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
       const base = customColor || "#a855f7";
       return {
         color: base,
-        glow: `${base}80`,
+        glow: `${base}B3`, // ~70% opacity
         background: `${base}30`,
         border: `${base}70`,
         gradientFrom: base,
@@ -121,7 +121,7 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
     default:
       return {
         color: "#6b7280",
-        glow: "rgba(107,114,128,0.4)",
+        glow: "rgba(107,114,128,0.6)",
         background: "rgba(107,114,128,0.18)",
         border: "rgba(107,114,128,0.45)",
         gradientFrom: "#9ca3af",
@@ -181,8 +181,8 @@ export function GridViewGoalCard({
           height: "100%",
           position: "relative",
           borderRadius: "inherit",
-          background: "linear-gradient(135deg, #0d1117, #141c27)",
-          boxShadow: "0 12px 28px rgba(0, 0, 0, 0.35)",
+          background: "linear-gradient(135deg, #05070d, #0d1117)",
+          boxShadow: `0 12px 28px rgba(0, 0, 0, 0.45), 0 0 22px ${theme.glow}`,
         }}
       >
         {/* Bouton Focus */}
@@ -193,7 +193,7 @@ export function GridViewGoalCard({
           }}
           className="absolute top-3 right-3 z-20 p-1.5 rounded-full"
           style={{
-            background: "rgba(0, 0, 0, 0.45)",
+            background: "rgba(0, 0, 0, 0.55)",
             border: "1px solid rgba(255, 255, 255, 0.35)",
             backdropFilter: "blur(4px)",
           }}
@@ -215,14 +215,14 @@ export function GridViewGoalCard({
         >
           <p
             style={{
-              fontSize: "28px",
+              fontSize: "22px", // 🔹 réduit
               fontWeight: 800,
-              letterSpacing: "1px",
-              background: "linear-gradient(135deg, #ff0f7b, #f89b29)",
+              letterSpacing: "0.8px",
+              background: "linear-gradient(135deg, #ffedd5, #fed7aa)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               color: "transparent",
-              textShadow: "0 4px 14px rgba(0, 0, 0, 0.3)",
+              textShadow: "0 0 8px rgba(248,148,69,0.65), 0 0 18px rgba(255,111,145,0.8), 0 0 32px rgba(0,0,0,0.6)",
               textAlign: "center",
               whiteSpace: "nowrap",
               overflow: "hidden",
@@ -251,7 +251,7 @@ export function GridViewGoalCard({
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            boxShadow: "inset 0 0 40px rgba(255, 255, 255, 0.1)",
+            boxShadow: `inset 0 0 40px rgba(255, 255, 255, 0.15), 0 0 26px ${theme.glow}`,
             transform: isHovered ? "translateX(0)" : "translateX(96%)",
             transition: "transform 0.5s cubic-bezier(0.23, 1, 0.32, 1)",
           }}
@@ -269,10 +269,10 @@ export function GridViewGoalCard({
             <h3
               className="heading"
               style={{
-                fontSize: "26px",
-                fontWeight: 900,
+                fontSize: "20px", // 🔹 réduit
+                fontWeight: 800,
                 margin: 0,
-                textShadow: "0 6px 18px rgba(0, 0, 0, 0.35)",
+                textShadow: "0 0 10px rgba(0,0,0,0.7), 0 0 18px rgba(0,0,0,0.9), 0 0 32px rgba(0,0,0,0.9)",
                 textAlign: "center",
                 whiteSpace: "nowrap",
                 overflow: "hidden",
@@ -294,7 +294,7 @@ export function GridViewGoalCard({
                 background: theme.background,
                 border: `1px solid ${theme.border}`,
                 backdropFilter: "blur(6px)",
-                boxShadow: `0 4px 18px ${theme.glow}`,
+                boxShadow: `0 4px 18px ${theme.glow}, 0 0 18px ${theme.glow}`,
               }}
             >
               {getDifficultyLabel(difficulty)}
@@ -327,7 +327,7 @@ export function GridViewGoalCard({
                   height: "100%",
                   borderRadius: "inherit",
                   background: `linear-gradient(90deg, ${theme.progressFrom}, ${theme.progressTo})`,
-                  boxShadow: `0 0 12px ${theme.glow}`,
+                  boxShadow: `0 0 14px ${theme.glow}`,
                   transition: "width 0.3s ease",
                   width: `${progress}%`,
                 }}
@@ -371,6 +371,7 @@ export function GridViewGoalCard({
                 border: "1px solid rgba(255, 255, 255, 0.35)",
                 backdropFilter: "blur(6px)",
                 margin: 0,
+                boxShadow: `0 0 14px rgba(0,0,0,0.5)`,
               }}
             >
               {statusLabel}
