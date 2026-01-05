@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Star } from "lucide-react";
 
 interface Goal {
@@ -41,10 +41,74 @@ const getStatusLabel = (status: string) => {
   }
 };
 
+// Thème couleur par difficulté (badge, glow)
+const getDifficultyTheme = (difficulty: string, customColor?: string) => {
+  switch (difficulty) {
+    case "easy":
+      return {
+        color: "#16a34a",
+        glow: "rgba(22,163,74,0.5)",
+        background: "rgba(22,163,74,0.18)",
+        border: "rgba(22,163,74,0.45)",
+      };
+
+    case "medium":
+      return {
+        color: "#eab308",
+        glow: "rgba(234,179,8,0.5)",
+        background: "rgba(234,179,8,0.18)",
+        border: "rgba(234,179,8,0.45)",
+      };
+
+    case "hard":
+      return {
+        color: "#f97316",
+        glow: "rgba(249,115,22,0.5)",
+        background: "rgba(249,115,22,0.18)",
+        border: "rgba(249,115,22,0.45)",
+      };
+
+    case "extreme":
+      return {
+        color: "#dc2626",
+        glow: "rgba(220,38,38,0.55)",
+        background: "rgba(220,38,38,0.18)",
+        border: "rgba(220,38,38,0.45)",
+      };
+
+    case "impossible":
+      return {
+        color: "#a855f7",
+        glow: "rgba(168,85,247,0.55)",
+        background: "rgba(168,85,247,0.20)",
+        border: "rgba(168,85,247,0.45)",
+      };
+
+    case "custom": {
+      const base = customColor || "#a855f7";
+      return {
+        color: base,
+        glow: `${base}80`,
+        background: `${base}30`,
+        border: `${base}70`,
+      };
+    }
+
+    default:
+      return {
+        color: "#6b7280",
+        glow: "rgba(107,114,128,0.4)",
+        background: "rgba(107,114,128,0.18)",
+        border: "rgba(107,114,128,0.45)",
+      };
+  }
+};
+
 export function GridViewGoalCard({
   goal,
   isCompleted = false,
   customDifficultyName = "",
+  customDifficultyColor,
   onNavigate,
   onToggleFocus,
 }: GridViewGoalCardProps) {
@@ -65,6 +129,8 @@ export function GridViewGoalCard({
   };
 
   const statusLabel = isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started");
+
+  const theme = getDifficultyTheme(difficulty, customDifficultyColor);
 
   return (
     <div
@@ -185,10 +251,11 @@ export function GridViewGoalCard({
                 borderRadius: "999px",
                 fontWeight: 700,
                 fontSize: "13px",
-                background: "rgba(255, 255, 255, 0.18)",
-                border: "1px solid rgba(255, 255, 255, 0.45)",
+                color: "white",
+                background: theme.background,
+                border: `1px solid ${theme.border}`,
                 backdropFilter: "blur(6px)",
-                boxShadow: "0 4px 18px rgba(0, 0, 0, 0.25)",
+                boxShadow: `0 4px 18px ${theme.glow}`,
               }}
             >
               {getDifficultyLabel(difficulty)}
