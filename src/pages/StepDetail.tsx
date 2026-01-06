@@ -7,9 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, History } from "lucide-react";
+import { ArrowLeft, Target, Check, StickyNote, ListOrdered } from "lucide-react";
 import { format } from "date-fns";
 import { CyberBackground } from "@/components/CyberBackground";
 import { motion } from "framer-motion";
@@ -29,28 +28,17 @@ interface Step {
   updated_at: string;
 }
 
-interface StatusHistory {
-  id: string;
-  old_status?: string;
-  new_status: string;
-  changed_at: string;
-}
-
 export default function StepDetail() {
   const { stepId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [step, setStep] = useState<Step | null>(null);
-  const [statusHistory, setStatusHistory] = useState<StatusHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("pending");
-  const [dueDate, setDueDate] = useState("");
-  const [completionDate, setCompletionDate] = useState("");
 
   useEffect(() => {
     if (user && stepId) {
@@ -65,15 +53,8 @@ export default function StepDetail() {
       if (stepError) throw stepError;
       setStep(stepData);
       setTitle(stepData.title);
-      setDescription(stepData.description || "");
       setNotes(stepData.notes || "");
       setStatus(stepData.status);
-      setDueDate(stepData.due_date || "");
-      setCompletionDate(stepData.completion_date ? format(new Date(stepData.completion_date), "yyyy-MM-dd'T'HH:mm") : "");
-
-      const { data: historyData, error: historyError } = await supabase.from("step_status_history").select("*").eq("step_id", stepId).order("changed_at", { ascending: false });
-      if (historyError) throw historyError;
-      setStatusHistory(historyData || []);
     } catch (error: any) {
       console.error("Error loading step:", error);
       toast({ title: "Error", description: "Failed to load step details", variant: "destructive" });
@@ -88,19 +69,13 @@ export default function StepDetail() {
       setSaving(true);
       const updates: any = {
         title,
-        description,
         notes,
         status,
-        due_date: dueDate || null,
-        completion_date: completionDate ? new Date(completionDate).toISOString() : null,
         updated_at: new Date().toISOString()
       };
 
-      if (status === "completed" && !completionDate) {
-        updates.completion_date = new Date().toISOString();
-        updates.validated_at = new Date().toISOString();
-      }
       if (status === "completed" && !step.validated_at) {
+        updates.completion_date = new Date().toISOString();
         updates.validated_at = new Date().toISOString();
       }
 
@@ -150,8 +125,8 @@ export default function StepDetail() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground mb-4">Step not found</p>
-          <Button onClick={() => navigate(-1)}>Go Back</Button>
+          <p className="text-muted-foreground mb-4 font-rajdhani">Step not found</p>
+          <Button onClick={() => navigate(-1)} className="rounded-xl">Go Back</Button>
         </div>
       </div>
     );
@@ -169,123 +144,172 @@ export default function StepDetail() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      <CyberBackground />
+      {/* Deep space background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Sci-fi grid overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-10">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: "50px 50px",
+          }}
+        />
+      </div>
       
-      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="relative z-10 max-w-2xl mx-auto p-6 space-y-6">
+      <motion.div initial="hidden" animate="visible" variants={containerVariants} className="relative z-10 max-w-2xl mx-auto px-6 py-8 space-y-6">
         {/* Header */}
-        <motion.div variants={itemVariants} className="flex items-center gap-4 pt-8">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => step && navigate(`/goals/${step.goal_id}`)} 
+        <motion.div variants={itemVariants} className="space-y-6">
+          <Button
+            variant="ghost"
+            onClick={() => step && navigate(`/goals/${step.goal_id}`)}
             disabled={!step}
-            className="border border-border hover:bg-card hover:border-primary/40 transition-all"
+            className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Goal
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold font-orbitron tracking-wider">
-              <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                EDIT STEP
-              </span>
+          
+          <div className="text-center space-y-3">
+            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">
+              Edit Step
             </h1>
-            <p className="text-sm text-muted-foreground mt-1 font-rajdhani">
+            <p className="text-primary/60 tracking-wide font-rajdhani text-lg">
               Created {format(new Date(step.created_at), "MMM d, yyyy")}
             </p>
+            <Badge className={`${getStatusColor(step.status)} font-rajdhani`}>
+              {step.status.replace("_", " ")}
+            </Badge>
           </div>
-          <Badge className={getStatusColor(step.status)}>
-            {step.status.replace("_", " ")}
-          </Badge>
         </motion.div>
 
         {/* Form Card */}
-        <motion.div variants={itemVariants} className="relative rounded-xl border border-border bg-card/80 backdrop-blur-sm p-6 space-y-6">
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+        <motion.div 
+          variants={itemVariants} 
+          className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden"
+        >
+          {/* Subtle glow effect */}
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
 
-          <div className="relative space-y-5">
-            {/* Step Name */}
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-rajdhani tracking-wide uppercase text-muted-foreground">
-                Step Name *
-              </Label>
-              <Input 
-                id="title" 
-                value={title} 
-                onChange={e => setTitle(e.target.value)} 
-                placeholder="Enter step name" 
-                className="bg-card/60 border-border focus:border-primary/60" 
-              />
+          <div className="relative p-8 md:p-10 space-y-10">
+            
+            {/* Section 1: Basic Info */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <Target className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Step Information</h2>
+              </div>
+
+              {/* Step Name */}
+              <div className="space-y-3">
+                <Label htmlFor="title" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                  Step Name <span className="text-destructive">*</span>
+                </Label>
+                <Input 
+                  id="title" 
+                  value={title} 
+                  onChange={e => setTitle(e.target.value)} 
+                  placeholder="Enter step name"
+                  variant="light"
+                  className="h-12 text-base rounded-xl"
+                />
+              </div>
+
+              {/* Status Selection */}
+              <div className="space-y-3">
+                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                  <ListOrdered className="h-4 w-4" />
+                  Status
+                </Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setStatus("pending")}
+                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                      status === "pending"
+                        ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(91,180,255,0.2)]"
+                        : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      status === "pending" ? "border-primary bg-primary" : "border-muted-foreground/30"
+                    }`}>
+                      {status === "pending" && <Check className="h-3 w-3 text-primary-foreground" />}
+                    </div>
+                    <div className={`font-rajdhani font-bold text-lg ${status === "pending" ? "text-primary" : "text-foreground"}`}>
+                      Pending
+                    </div>
+                    <div className="text-sm text-muted-foreground">Step is not yet complete</div>
+                  </button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => setStatus("completed")}
+                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                      status === "completed"
+                        ? "border-green-500 bg-green-500/10 shadow-[0_0_30px_rgba(34,197,94,0.2)]"
+                        : "border-border bg-muted/30 hover:border-green-500/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      status === "completed" ? "border-green-500 bg-green-500" : "border-muted-foreground/30"
+                    }`}>
+                      {status === "completed" && <Check className="h-3 w-3 text-white" />}
+                    </div>
+                    <div className={`font-rajdhani font-bold text-lg ${status === "completed" ? "text-green-400" : "text-foreground"}`}>
+                      Completed
+                    </div>
+                    <div className="text-sm text-muted-foreground">Step has been finished</div>
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* Notes */}
-            <div className="space-y-2">
-              <Label htmlFor="notes" className="text-sm font-rajdhani tracking-wide uppercase text-muted-foreground">
-                Notes
-              </Label>
-              <Textarea 
-                id="notes" 
-                value={notes} 
-                onChange={e => setNotes(e.target.value)} 
-                placeholder="Additional notes or context" 
-                rows={5} 
-                className="bg-card/60 border-border focus:border-primary/60 resize-none" 
-              />
+            {/* Section 2: Notes */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <StickyNote className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Notes</h2>
+              </div>
+              
+              <div className="space-y-3">
+                <Label htmlFor="notes" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
+                  Step Notes
+                </Label>
+                <Textarea 
+                  id="notes" 
+                  value={notes} 
+                  onChange={e => setNotes(e.target.value)} 
+                  placeholder="Add notes or context for this step..."
+                  rows={5}
+                  maxLength={500}
+                  variant="light"
+                  className="rounded-xl resize-none text-base"
+                />
+                <p className="text-xs text-muted-foreground text-right">{notes.length}/500</p>
+              </div>
             </div>
 
-            {/* Status */}
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-sm font-rajdhani tracking-wide uppercase text-muted-foreground">
-                Status
-              </Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger id="status" className="bg-card/60 border-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border">
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button onClick={handleSave} disabled={saving} className="w-full mt-4">
-              <span className="font-rajdhani tracking-wider">
+            {/* Save Button */}
+            <div className="pt-6 border-t border-primary/20">
+              <Button 
+                onClick={handleSave} 
+                disabled={saving}
+                className="w-full h-14 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)]"
+              >
+                <Check className="h-5 w-5 mr-2" />
                 {saving ? "SAVING..." : "SAVE CHANGES"}
-              </span>
-            </Button>
+              </Button>
+            </div>
           </div>
         </motion.div>
-
-        {/* Status History */}
-        {statusHistory.length > 0 && (
-          <motion.div variants={itemVariants} className="relative rounded-xl border border-border bg-card/80 backdrop-blur-sm p-6">
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-4">
-                <History className="h-4 w-4 text-primary" />
-                <span className="font-orbitron text-sm tracking-wider">Status History</span>
-              </div>
-              <div className="space-y-2">
-                {statusHistory.map((entry) => (
-                  <div key={entry.id} className="flex items-center justify-between text-sm p-3 rounded-lg bg-muted/30 border border-border">
-                    <div className="flex items-center gap-2 font-rajdhani">
-                      {entry.old_status && (
-                        <>
-                          <span className="text-muted-foreground capitalize">{entry.old_status}</span>
-                          <span className="text-muted-foreground">→</span>
-                        </>
-                      )}
-                      <span className="capitalize text-foreground">{entry.new_status}</span>
-                    </div>
-                    <span className="text-muted-foreground text-xs font-rajdhani">
-                      {format(new Date(entry.changed_at), "MMM d, yyyy HH:mm")}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-        )}
       </motion.div>
     </div>
   );

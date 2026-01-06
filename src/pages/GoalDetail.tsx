@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Star, Trophy, Receipt, Target, Tag, Zap, ListOrdered, Image, StickyNote, DollarSign, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Star, Trophy, Receipt, Target, Tag, Zap, ListOrdered, Image, StickyNote, DollarSign, X, MessageSquare } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -51,6 +52,7 @@ interface Step {
   order: number;
   status: string;
   due_date: string | null;
+  notes?: string | null;
 }
 
 // Valid goal tags matching NewGoal.tsx
@@ -839,20 +841,31 @@ export default function GoalDetail() {
                   </Badge>
                 </div>
                 <div className="space-y-3">
-                  {steps.map((step) => (
-                    <div 
-                      key={step.id} 
-                      className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-200 ${step.status === "completed" ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`} 
-                      onClick={() => navigate(`/step/${step.id}`)}
-                    >
-                      <div onClick={(e) => e.stopPropagation()}>
-                        <Checkbox checked={step.status === "completed"} onCheckedChange={() => handleToggleStep(step.id, step.status)} className="border-primary/50" />
-                      </div>
-                      <span className={`flex-1 font-rajdhani ${step.status === "completed" ? "text-primary" : "text-muted-foreground"}`}>{step.title}</span>
-                      {step.status === "completed" && <Check className="h-4 w-4" style={{ color: difficultyColor }} />}
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  ))}
+                  <TooltipProvider delayDuration={300}>
+                    {steps.map((step) => (
+                      <Tooltip key={step.id}>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-200 ${step.status === "completed" ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`} 
+                            onClick={() => navigate(`/step/${step.id}`)}
+                          >
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <Checkbox checked={step.status === "completed"} onCheckedChange={() => handleToggleStep(step.id, step.status)} className="border-primary/50" />
+                            </div>
+                            <span className={`flex-1 font-rajdhani ${step.status === "completed" ? "text-primary" : "text-muted-foreground"}`}>{step.title}</span>
+                            {step.notes && <MessageSquare className="h-4 w-4 text-primary/50" />}
+                            {step.status === "completed" && <Check className="h-4 w-4" style={{ color: difficultyColor }} />}
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </TooltipTrigger>
+                        {step.notes && (
+                          <TooltipContent side="top" className="max-w-[300px] p-3 bg-card border-primary/30">
+                            <p className="text-sm font-rajdhani text-foreground/90 whitespace-pre-wrap">{step.notes}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    ))}
+                  </TooltipProvider>
                 </div>
               </div>
             </div>
