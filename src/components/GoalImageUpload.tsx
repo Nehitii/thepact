@@ -95,13 +95,13 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
   return (
     <div className="space-y-3">
       
-      {/* Image preview */}
+      {/* Image preview - Square format */}
       {value && (
-        <div className="relative w-full h-40 rounded-lg overflow-hidden border-2 border-primary/30 bg-[#050A13]">
+        <div className="relative w-full aspect-square max-w-[280px] mx-auto rounded-xl overflow-hidden border-2 border-primary/30 bg-card/50">
           <img
             src={value}
             alt="Goal preview"
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "";
               (e.target as HTMLImageElement).style.display = "none";
@@ -151,14 +151,14 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
         </Button>
       </div>
 
-      {/* Empty state placeholder */}
+      {/* Empty state placeholder - Square format */}
       {!value && (
         <div 
-          className="flex flex-col items-center justify-center w-full h-32 rounded-lg border-2 border-dashed border-primary/20 bg-[#050A13]/50 cursor-pointer hover:border-primary/40 transition-colors"
+          className="flex flex-col items-center justify-center w-full aspect-square max-w-[280px] mx-auto rounded-xl border-2 border-dashed border-primary/20 bg-card/30 cursor-pointer hover:border-primary/40 transition-colors"
           onClick={() => fileInputRef.current?.click()}
         >
-          <ImageIcon className="h-8 w-8 text-primary/40 mb-2" />
-          <p className="text-xs text-muted-foreground">Click to upload or paste URL above</p>
+          <ImageIcon className="h-10 w-10 text-primary/40 mb-3" />
+          <p className="text-sm text-muted-foreground">Click to upload or paste URL above</p>
         </div>
       )}
     </div>

@@ -580,7 +580,7 @@ export default function Goals() {
             <div className="flex items-center gap-2">
               <span className="text-xs font-rajdhani text-foreground/60">Per page</span>
               <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
-                <SelectTrigger className="w-[65px] h-9 text-sm">
+                <SelectTrigger className="w-[70px] h-9 text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -588,6 +588,8 @@ export default function Goals() {
                   <SelectItem value="10">10</SelectItem>
                   <SelectItem value="20">20</SelectItem>
                   <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                  <SelectItem value="200">200</SelectItem>
                 </SelectContent>
               </Select>
             </div>
