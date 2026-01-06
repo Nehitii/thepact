@@ -205,17 +205,6 @@ export function GridViewGoalCard({
           backgroundColor: "#05050a", // fond base sous le pattern
         }}
       >
-        <style>
-          {`
-    .jp-matrix > span {
-      text-align: center;
-      text-shadow: 0 0 5px rgba(0, 150, 255, 0.5);
-      user-select: none;
-      transition: color 0.5s, text-shadow 0.5s;
-      line-height: 1;
-    }
-
-        </style>
         {/* ========= FOND JP-MATRIX ========= */}
         <div
           className="jp-matrix"
