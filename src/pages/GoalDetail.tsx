@@ -24,7 +24,7 @@ import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
 import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
 import { CyberBackground } from "@/components/CyberBackground";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Goal {
   id: string;
@@ -487,29 +487,248 @@ export default function GoalDetail() {
 
             {/* Actions */}
             <div className="flex flex-row md:flex-col gap-2 flex-shrink-0">
-              <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="hud" size="sm" className="rounded-lg">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
+              <Button variant="hud" size="sm" className="rounded-lg" onClick={() => setEditDialogOpen(true)}>
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+
+              <Button 
+                variant="hud" 
+                size="sm" 
+                onClick={handleFullyComplete} 
+                className="rounded-lg"
+                style={{ 
+                  borderColor: `${difficultyColor}50`, 
+                  color: difficultyColor,
+                  boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`
+                }}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Complete
+              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="hud" 
+                    size="sm" 
+                    className="rounded-lg border-destructive/40 text-destructive hover:border-destructive/70 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="max-h-[90vh] overflow-hidden max-w-2xl mx-auto p-0 border-2 border-primary/20 bg-card/80 backdrop-blur-xl rounded-3xl flex flex-col">
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Goal?</AlertDialogTitle>
+                    <AlertDialogDescription>This action cannot be undone. This will permanently delete this goal and all its steps.</AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteGoal} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Steps or Habit Tracking */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+        >
+          {isHabitGoal ? (
+            <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl">
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+              <div className="relative p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <Calendar className="h-5 w-5" style={{ color: difficultyColor }} />
+                  <span className="font-orbitron font-bold tracking-wider">Habit Tracking</span>
+                  <Badge variant="outline" className="ml-auto font-rajdhani text-sm" style={{ borderColor: difficultyColor, color: difficultyColor }}>
+                    {completedStepsCount}/{goal.habit_duration_days} days
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-7 gap-2">
+                  {goal.habit_checks?.map((checked, index) => (
+                    <div key={index} onClick={() => handleToggleHabitCheck(index)} className={`relative flex flex-col items-center justify-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${checked ? "border-primary/60 bg-primary/10" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`} style={{ boxShadow: checked ? `0 0 20px ${difficultyColor}30` : undefined }}>
+                      <span className="text-xs text-muted-foreground mb-1 font-rajdhani uppercase">Day</span>
+                      <span className={`text-lg font-bold font-orbitron ${checked ? "" : "text-muted-foreground"}`} style={{ color: checked ? difficultyColor : undefined }}>{index + 1}</span>
+                      {checked && <Check className="absolute top-1 right-1 h-3 w-3" style={{ color: difficultyColor }} />}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-4 text-center font-rajdhani">Tap a day to mark it as complete</p>
+              </div>
+            </div>
+          ) : (
+            <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl">
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+              <div className="relative p-6">
+                <div className="flex items-center gap-3 mb-6">
+                  <Check className="h-5 w-5" style={{ color: difficultyColor }} />
+                  <span className="font-orbitron font-bold tracking-wider">Steps</span>
+                  <Badge variant="outline" className="ml-auto font-rajdhani text-sm" style={{ borderColor: difficultyColor, color: difficultyColor }}>
+                    {completedStepsCount}/{totalStepsCount}
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  <TooltipProvider delayDuration={300}>
+                    {steps.map((step) => (
+                      <Tooltip key={step.id}>
+                        <TooltipTrigger asChild>
+                          <div 
+                            className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-200 ${step.status === "completed" ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`} 
+                            onClick={() => navigate(`/step/${step.id}`)}
+                          >
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <Checkbox checked={step.status === "completed"} onCheckedChange={() => handleToggleStep(step.id, step.status)} className="border-primary/50" />
+                            </div>
+                            <span className={`flex-1 font-rajdhani ${step.status === "completed" ? "text-primary" : "text-muted-foreground"}`}>{step.title}</span>
+                            {step.notes && <MessageSquare className="h-4 w-4 text-primary/50" />}
+                            {step.status === "completed" && <Check className="h-4 w-4" style={{ color: difficultyColor }} />}
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        </TooltipTrigger>
+                        {step.notes && (
+                          <TooltipContent side="top" className="max-w-[300px] p-3 bg-card border-primary/30">
+                            <p className="text-sm font-rajdhani text-foreground/90 whitespace-pre-wrap">{step.notes}</p>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    ))}
+                  </TooltipProvider>
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+
+        {/* Details & Cost Items */}
+        {(goal.notes || goal.estimated_cost > 0 || costItems.length > 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.3 }}
+            className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl"
+          >
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+            <div className="relative p-6 space-y-6">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-5 w-5" style={{ color: difficultyColor }} />
+                <span className="font-orbitron font-bold tracking-wider">Details</span>
+              </div>
+
+              {(goal.estimated_cost > 0 || costItems.length > 0) && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-rajdhani uppercase tracking-wider text-primary/70">
+                    <Receipt className="h-4 w-4" />
+                    Estimated Cost
+                  </div>
+                  {costItems.length > 0 ? (
+                    <div className="space-y-2">
+                      {costItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
+                          <span className="font-rajdhani text-foreground/90">{item.name}</span>
+                          <span className="font-orbitron font-bold" style={{ color: difficultyColor }}>{formatCurrency(item.price, currency)}</span>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between p-3 rounded-lg border border-primary/30 bg-primary/5">
+                        <span className="font-rajdhani uppercase tracking-wider text-primary/70">Total</span>
+                        <span className="font-orbitron font-bold text-lg text-primary">{formatCurrency(goal.estimated_cost, currency)}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-lg border border-border bg-muted/30">
+                      <p className="text-2xl font-bold font-orbitron" style={{ color: difficultyColor }}>{formatCurrency(goal.estimated_cost, currency)}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {goal.notes && (
+                <div className="space-y-2">
+                  <p className="text-sm font-rajdhani uppercase tracking-wider text-primary/70">Notes</p>
+                  <div className="p-4 rounded-lg border border-border bg-muted/30">
+                    <p className="text-sm font-rajdhani leading-relaxed text-foreground/90">{goal.notes}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </motion.div>
+
+      {/* Full-Page Edit Goal Overlay */}
+      <AnimatePresence>
+        {editDialogOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-50 bg-background overflow-hidden"
+          >
+            {/* Deep space background - matching NewGoal.tsx */}
+            <div className="fixed inset-0 pointer-events-none">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
+              <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
+            </div>
+
+            {/* Sci-fi grid overlay */}
+            <div className="fixed inset-0 pointer-events-none opacity-10">
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
+                  `,
+                  backgroundSize: "50px 50px",
+                }}
+              />
+            </div>
+
+            <div className="relative z-10 h-full overflow-y-auto">
+              <div className="max-w-2xl mx-auto px-6 py-8">
+                {/* Header */}
+                <motion.div 
+                  className="space-y-6 mb-10"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Button
+                    variant="ghost"
+                    onClick={() => setEditDialogOpen(false)}
+                    className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back to Goal
+                  </Button>
+                  
+                  <div className="text-center space-y-3">
+                    <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">
+                      Edit Goal
+                    </h1>
+                    <p className="text-primary/60 tracking-wide font-rajdhani text-lg">
+                      Update your evolution
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* Form Card */}
+                <motion.div 
+                  className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
                   {/* Subtle glow effect */}
                   <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
                   
-                  {/* Sticky Header */}
-                  <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-xl border-b border-primary/20 px-8 pt-8 pb-6 flex-shrink-0">
-                    <DialogHeader className="text-center space-y-3">
-                      <DialogTitle className="text-3xl md:text-4xl font-orbitron uppercase tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary drop-shadow-[0_0_30px_rgba(91,180,255,0.6)]">
-                        Edit Goal
-                      </DialogTitle>
-                      <p className="text-primary/60 tracking-wide font-rajdhani text-lg">Update your evolution</p>
-                    </DialogHeader>
-                  </div>
-                  
-                  {/* Scrollable Form Content */}
-                  <div className="relative overflow-y-auto flex-1 px-8 md:px-10 pb-8 md:pb-10 pt-6 space-y-10">
+                  <div className="relative p-8 md:p-10 space-y-10">
                     
                     {/* Section 1: Basic Info */}
                     <div className="space-y-6">
@@ -756,176 +975,12 @@ export default function GoalDetail() {
                       </Button>
                     </div>
                   </div>
-                </DialogContent>
-              </Dialog>
-
-              <Button 
-                variant="hud" 
-                size="sm" 
-                onClick={handleFullyComplete} 
-                className="rounded-lg"
-                style={{ 
-                  borderColor: `${difficultyColor}50`, 
-                  color: difficultyColor,
-                  boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`
-                }}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Complete
-              </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="hud" 
-                    size="sm" 
-                    className="rounded-lg border-destructive/40 text-destructive hover:border-destructive/70 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Goal?</AlertDialogTitle>
-                    <AlertDialogDescription>This action cannot be undone. This will permanently delete this goal and all its steps.</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteGoal} className="bg-destructive text-destructive-foreground">Delete</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Steps or Habit Tracking */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
-          {isHabitGoal ? (
-            <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-              <div className="relative p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <Calendar className="h-5 w-5" style={{ color: difficultyColor }} />
-                  <span className="font-orbitron font-bold tracking-wider">Habit Tracking</span>
-                  <Badge variant="outline" className="ml-auto font-rajdhani text-sm" style={{ borderColor: difficultyColor, color: difficultyColor }}>
-                    {completedStepsCount}/{goal.habit_duration_days} days
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-7 gap-2">
-                  {goal.habit_checks?.map((checked, index) => (
-                    <div key={index} onClick={() => handleToggleHabitCheck(index)} className={`relative flex flex-col items-center justify-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${checked ? "border-primary/60 bg-primary/10" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`} style={{ boxShadow: checked ? `0 0 20px ${difficultyColor}30` : undefined }}>
-                      <span className="text-xs text-muted-foreground mb-1 font-rajdhani uppercase">Day</span>
-                      <span className={`text-lg font-bold font-orbitron ${checked ? "" : "text-muted-foreground"}`} style={{ color: checked ? difficultyColor : undefined }}>{index + 1}</span>
-                      {checked && <Check className="absolute top-1 right-1 h-3 w-3" style={{ color: difficultyColor }} />}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-4 text-center font-rajdhani">Tap a day to mark it as complete</p>
+                </motion.div>
               </div>
-            </div>
-          ) : (
-            <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-              <div className="relative p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <Check className="h-5 w-5" style={{ color: difficultyColor }} />
-                  <span className="font-orbitron font-bold tracking-wider">Steps</span>
-                  <Badge variant="outline" className="ml-auto font-rajdhani text-sm" style={{ borderColor: difficultyColor, color: difficultyColor }}>
-                    {completedStepsCount}/{totalStepsCount}
-                  </Badge>
-                </div>
-                <div className="space-y-3">
-                  <TooltipProvider delayDuration={300}>
-                    {steps.map((step) => (
-                      <Tooltip key={step.id}>
-                        <TooltipTrigger asChild>
-                          <div 
-                            className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-200 ${step.status === "completed" ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`} 
-                            onClick={() => navigate(`/step/${step.id}`)}
-                          >
-                            <div onClick={(e) => e.stopPropagation()}>
-                              <Checkbox checked={step.status === "completed"} onCheckedChange={() => handleToggleStep(step.id, step.status)} className="border-primary/50" />
-                            </div>
-                            <span className={`flex-1 font-rajdhani ${step.status === "completed" ? "text-primary" : "text-muted-foreground"}`}>{step.title}</span>
-                            {step.notes && <MessageSquare className="h-4 w-4 text-primary/50" />}
-                            {step.status === "completed" && <Check className="h-4 w-4" style={{ color: difficultyColor }} />}
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </TooltipTrigger>
-                        {step.notes && (
-                          <TooltipContent side="top" className="max-w-[300px] p-3 bg-card border-primary/30">
-                            <p className="text-sm font-rajdhani text-foreground/90 whitespace-pre-wrap">{step.notes}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    ))}
-                  </TooltipProvider>
-                </div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Details & Cost Items */}
-        {(goal.notes || goal.estimated_cost > 0 || costItems.length > 0) && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-            className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl"
-          >
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-            <div className="relative p-6 space-y-6">
-              <div className="flex items-center gap-3">
-                <Sparkles className="h-5 w-5" style={{ color: difficultyColor }} />
-                <span className="font-orbitron font-bold tracking-wider">Details</span>
-              </div>
-
-              {(goal.estimated_cost > 0 || costItems.length > 0) && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-rajdhani uppercase tracking-wider text-primary/70">
-                    <Receipt className="h-4 w-4" />
-                    Estimated Cost
-                  </div>
-                  {costItems.length > 0 ? (
-                    <div className="space-y-2">
-                      {costItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
-                          <span className="font-rajdhani text-foreground/90">{item.name}</span>
-                          <span className="font-orbitron font-bold" style={{ color: difficultyColor }}>{formatCurrency(item.price, currency)}</span>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between p-3 rounded-lg border border-primary/30 bg-primary/5">
-                        <span className="font-rajdhani uppercase tracking-wider text-primary/70">Total</span>
-                        <span className="font-orbitron font-bold text-lg text-primary">{formatCurrency(goal.estimated_cost, currency)}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-4 rounded-lg border border-border bg-muted/30">
-                      <p className="text-2xl font-bold font-orbitron" style={{ color: difficultyColor }}>{formatCurrency(goal.estimated_cost, currency)}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {goal.notes && (
-                <div className="space-y-2">
-                  <p className="text-sm font-rajdhani uppercase tracking-wider text-primary/70">Notes</p>
-                  <div className="p-4 rounded-lg border border-border bg-muted/30">
-                    <p className="text-sm font-rajdhani leading-relaxed text-foreground/90">{goal.notes}</p>
-                  </div>
-                </div>
-              )}
             </div>
           </motion.div>
         )}
-      </motion.div>
+      </AnimatePresence>
     </div>
   );
 }
