@@ -1303,29 +1303,35 @@ export type Database = {
       }
       todo_history: {
         Row: {
+          category: string | null
           completed_at: string
           id: string
           postpone_count: number
           priority: Database["public"]["Enums"]["todo_priority"]
           task_name: string
+          task_type: string | null
           user_id: string
           was_urgent: boolean
         }
         Insert: {
+          category?: string | null
           completed_at?: string
           id?: string
           postpone_count?: number
           priority: Database["public"]["Enums"]["todo_priority"]
           task_name: string
+          task_type?: string | null
           user_id: string
           was_urgent?: boolean
         }
         Update: {
+          category?: string | null
           completed_at?: string
           id?: string
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
           task_name?: string
+          task_type?: string | null
           user_id?: string
           was_urgent?: boolean
         }
@@ -1378,6 +1384,7 @@ export type Database = {
       }
       todo_tasks: {
         Row: {
+          category: string | null
           completed_at: string | null
           created_at: string
           deadline: string | null
@@ -1387,10 +1394,12 @@ export type Database = {
           postpone_count: number
           priority: Database["public"]["Enums"]["todo_priority"]
           status: Database["public"]["Enums"]["todo_status"]
+          task_type: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          category?: string | null
           completed_at?: string | null
           created_at?: string
           deadline?: string | null
@@ -1400,10 +1409,12 @@ export type Database = {
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
           status?: Database["public"]["Enums"]["todo_status"]
+          task_type?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          category?: string | null
           completed_at?: string | null
           created_at?: string
           deadline?: string | null
@@ -1413,6 +1424,7 @@ export type Database = {
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
           status?: Database["public"]["Enums"]["todo_status"]
+          task_type?: string | null
           updated_at?: string
           user_id?: string
         }
