@@ -325,6 +325,42 @@ export function useTodoList() {
     },
   });
 
+  // Update task mutation
+  const updateTask = useMutation({
+    mutationFn: async (input: {
+      id: string;
+      name: string;
+      deadline: string | null;
+      priority: TodoPriority;
+      is_urgent: boolean;
+      category: string;
+      task_type: string;
+    }) => {
+      if (!userId) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('todo_tasks')
+        .update({
+          name: input.name,
+          deadline: input.deadline,
+          priority: input.priority,
+          is_urgent: input.is_urgent,
+          category: input.category,
+          task_type: input.task_type,
+        })
+        .eq('id', input.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
+      toast.success('Task updated');
+    },
+    onError: () => {
+      toast.error('Failed to update task');
+    },
+  });
+
   // Clear history mutation
   const clearHistory = useMutation({
     mutationFn: async () => {
@@ -363,6 +399,7 @@ export function useTodoList() {
     completeTask,
     postponeTask,
     deleteTask,
+    updateTask,
     clearHistory,
   };
 }

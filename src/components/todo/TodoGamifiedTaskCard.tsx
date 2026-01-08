@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Clock, Trash2, AlertTriangle, Calendar, Tag, Briefcase, Heart, BookOpen, Cog, User, Sparkles } from 'lucide-react';
+import { Check, Clock, Trash2, AlertTriangle, Calendar, Tag, Briefcase, Heart, BookOpen, Cog, User, Sparkles, Pencil } from 'lucide-react';
 import { format, isPast, isToday, isTomorrow, addDays } from 'date-fns';
 import { TodoTask } from '@/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ interface TodoGamifiedTaskCardProps {
   onComplete: () => void;
   onPostpone: (newDeadline: string) => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
 // Priority styles with game-like colors
@@ -72,7 +73,7 @@ const taskTypeConfig: Record<string, { label: string; icon: React.ElementType; c
   flexible: { label: 'Flexible', icon: Sparkles, color: 'bg-cyan-500/20 text-cyan-300' },
 };
 
-export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete }: TodoGamifiedTaskCardProps) {
+export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, onEdit }: TodoGamifiedTaskCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const { trigger, ParticleEffects } = useParticleEffect();
@@ -238,6 +239,16 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete }:
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {/* Edit button */}
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10"
+                        onClick={onEdit}
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+
                       {/* Postpone dropdown */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
