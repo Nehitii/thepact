@@ -1,14 +1,15 @@
-import { useState } from 'react';
-import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Filter } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Filter, Pencil } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useTodoList } from '@/hooks/useTodoList';
+import { useTodoList, TodoTask } from '@/hooks/useTodoList';
 import { TodoGamifiedHeader } from '@/components/todo/TodoGamifiedHeader';
 import { TodoGamifiedTaskCard } from '@/components/todo/TodoGamifiedTaskCard';
 import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
 import { TodoAdvancedStats } from '@/components/todo/TodoAdvancedStats';
 import { TodoHistoryPanel } from '@/components/todo/TodoHistoryPanel';
 import { TodoCalendarView } from '@/components/todo/TodoCalendarView';
-import { TodoCategoryFilter } from '@/components/todo/TodoCategoryFilter';
+import { TodoFilterSort, SortField, SortDirection } from '@/components/todo/TodoFilterSort';
+import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,15 +17,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-type ActivePanel = 'none' | 'create' | 'stats' | 'history' | 'calendar';
+type ActivePanel = 'none' | 'create' | 'stats' | 'history' | 'calendar' | 'edit';
 
 export default function TodoList() {
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTaskType, setSelectedTaskType] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortField, setSortField] = useState<SortField>('created_at');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [editingTask, setEditingTask] = useState<TodoTask | null>(null);
   
   const { 
     tasks, 
@@ -39,6 +42,7 @@ export default function TodoList() {
     completeTask,
     postponeTask,
     deleteTask,
+    updateTask,
   } = useTodoList();
 
   const handleCreateTask = (input: Parameters<typeof createTask.mutate>[0]) => {
@@ -47,16 +51,68 @@ export default function TodoList() {
     });
   };
 
-  // Filter tasks based on selected category and task type
-  const filteredTasks = tasks.filter(task => {
-    if (selectedCategory && task.category !== selectedCategory) return false;
-    if (selectedTaskType && task.task_type !== selectedTaskType) return false;
-    return true;
-  });
+  const handleEditTask = (task: TodoTask) => {
+    setEditingTask(task);
+    setActivePanel('edit');
+  };
 
-  // Calculate level from score
-  const level = Math.floor((stats?.score || 0) / 100) + 1;
-  const xpProgress = ((stats?.score || 0) % 100);
+  const handleUpdateTask = (input: UpdateTaskInput) => {
+    updateTask.mutate(input, {
+      onSuccess: () => {
+        setActivePanel('none');
+        setEditingTask(null);
+      },
+    });
+  };
+
+  const handleSortChange = (field: SortField, direction: SortDirection) => {
+    setSortField(field);
+    setSortDirection(direction);
+  };
+
+  // Filter and sort tasks
+  const filteredAndSortedTasks = useMemo(() => {
+    let result = tasks.filter(task => {
+      if (selectedCategory && task.category !== selectedCategory) return false;
+      if (selectedTaskType && task.task_type !== selectedTaskType) return false;
+      return true;
+    });
+
+    // Sort tasks
+    result.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortField) {
+        case 'created_at':
+          comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          break;
+        case 'deadline':
+          // Tasks without deadline go last
+          if (!a.deadline && !b.deadline) comparison = 0;
+          else if (!a.deadline) comparison = 1;
+          else if (!b.deadline) comparison = -1;
+          else comparison = new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
+          break;
+        case 'priority':
+          const priorityOrder = { high: 3, medium: 2, low: 1 };
+          comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
+          break;
+        case 'name':
+          comparison = a.name.localeCompare(b.name);
+          break;
+        case 'category':
+          comparison = (a.category || 'general').localeCompare(b.category || 'general');
+          break;
+        case 'is_urgent':
+          comparison = (a.is_urgent ? 1 : 0) - (b.is_urgent ? 1 : 0);
+          break;
+      }
+      
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    return result;
+  }, [tasks, selectedCategory, selectedTaskType, sortField, sortDirection]);
 
   if (isLoading) {
     return (
@@ -116,7 +172,7 @@ export default function TodoList() {
               className={showFilters ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}
             >
               <Filter className="w-4 h-4 mr-1.5" />
-              Filters
+              Filters & Sort
             </Button>
           </div>
           
@@ -159,7 +215,7 @@ export default function TodoList() {
           </div>
         </motion.div>
 
-        {/* Category Filters */}
+        {/* Filter & Sort Panel */}
         <AnimatePresence>
           {showFilters && (
             <motion.div
@@ -167,11 +223,14 @@ export default function TodoList() {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
             >
-              <TodoCategoryFilter
+              <TodoFilterSort
                 selectedCategory={selectedCategory}
                 selectedTaskType={selectedTaskType}
+                sortField={sortField}
+                sortDirection={sortDirection}
                 onCategoryChange={setSelectedCategory}
                 onTaskTypeChange={setSelectedTaskType}
+                onSortChange={handleSortChange}
               />
             </motion.div>
           )}
@@ -215,7 +274,7 @@ export default function TodoList() {
         {/* Tasks list */}
         <div className="space-y-3">
           <AnimatePresence mode="popLayout">
-            {filteredTasks.length === 0 ? (
+            {filteredAndSortedTasks.length === 0 ? (
               <motion.div 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -235,13 +294,14 @@ export default function TodoList() {
                 </Button>
               </motion.div>
             ) : (
-              filteredTasks.map((task) => (
+              filteredAndSortedTasks.map((task) => (
                 <TodoGamifiedTaskCard
                   key={task.id}
                   task={task}
                   onComplete={() => completeTask.mutate(task.id)}
                   onPostpone={(newDeadline) => postponeTask.mutate({ taskId: task.id, newDeadline })}
                   onDelete={() => deleteTask.mutate(task.id)}
+                  onEdit={() => handleEditTask(task)}
                 />
               ))
             )}
@@ -263,6 +323,37 @@ export default function TodoList() {
             onCancel={() => setActivePanel('none')}
             isLoading={createTask.isPending}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Task Dialog */}
+      <Dialog 
+        open={activePanel === 'edit' && editingTask !== null} 
+        onOpenChange={(open) => {
+          if (!open) {
+            setActivePanel('none');
+            setEditingTask(null);
+          }
+        }}
+      >
+        <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
+              <Pencil className="w-5 h-5 text-primary" />
+              Edit Quest
+            </DialogTitle>
+          </DialogHeader>
+          {editingTask && (
+            <TodoEditForm
+              task={editingTask}
+              onSubmit={handleUpdateTask}
+              onCancel={() => {
+                setActivePanel('none');
+                setEditingTask(null);
+              }}
+              isLoading={updateTask.isPending}
+            />
+          )}
         </DialogContent>
       </Dialog>
 
