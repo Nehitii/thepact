@@ -83,15 +83,14 @@ export const ParticleEffect = ({ x, y, color = 'hsl(195 100% 55%)', count = 12 }
 
 // Hook to trigger particle effects
 export const useParticleEffect = () => {
-  const [effects, setEffects] = useState<Array<{ id: number; x: number; y: number; color: string }>>([]);
+  const [effects, setEffects] = useState<Array<{ id: number; x: number; y: number; color: string; count: number }>>([]);
 
-  const trigger = (event: React.MouseEvent, color = 'hsl(195 100% 55%)') => {
-    const rect = event.currentTarget.getBoundingClientRect();
+  const trigger = (event: React.MouseEvent, color = 'hsl(195 100% 55%)', count = 12) => {
     const x = event.clientX;
     const y = event.clientY;
     
     const id = Date.now();
-    setEffects((prev) => [...prev, { id, x, y, color }]);
+    setEffects((prev) => [...prev, { id, x, y, color, count }]);
     
     setTimeout(() => {
       setEffects((prev) => prev.filter((e) => e.id !== id));
@@ -106,6 +105,7 @@ export const useParticleEffect = () => {
           x={effect.x}
           y={effect.y}
           color={effect.color}
+          count={effect.count}
         />
       ))}
     </>
