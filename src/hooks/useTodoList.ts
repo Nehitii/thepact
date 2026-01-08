@@ -19,6 +19,8 @@ export interface TodoTask {
   completed_at: string | null;
   created_at: string;
   updated_at: string;
+  category: string | null;
+  task_type: string | null;
 }
 
 export interface TodoStats {
@@ -42,6 +44,8 @@ export interface TodoHistory {
   was_urgent: boolean;
   completed_at: string;
   postpone_count: number;
+  category: string | null;
+  task_type: string | null;
 }
 
 export interface CreateTaskInput {
@@ -49,6 +53,8 @@ export interface CreateTaskInput {
   deadline?: string | null;
   priority: TodoPriority;
   is_urgent: boolean;
+  category?: string;
+  task_type?: string;
 }
 
 const MAX_ACTIVE_TASKS = 30;
@@ -147,6 +153,8 @@ export function useTodoList() {
           deadline: input.deadline || null,
           priority: input.priority,
           is_urgent: input.is_urgent,
+          category: input.category || 'general',
+          task_type: input.task_type || 'flexible',
         })
         .select()
         .single();
@@ -198,6 +206,8 @@ export function useTodoList() {
           priority: task.priority,
           was_urgent: task.is_urgent,
           postpone_count: task.postpone_count,
+          category: task.category || 'general',
+          task_type: task.task_type || 'flexible',
         });
       
       if (historyError) throw historyError;
