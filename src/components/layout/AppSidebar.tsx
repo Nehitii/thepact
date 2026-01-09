@@ -3,6 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useQuery } from "@tanstack/react-query";
+import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
 import {
   Home,
   Target,
@@ -19,6 +20,11 @@ import {
   UserCircle,
   Bell,
   Inbox,
+  Puzzle,
+  ListTodo,
+  BookOpen,
+  Wallet,
+  Trophy,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -49,6 +55,14 @@ const profileSubItems = [
   { to: "/profile/data", icon: Database, label: "Data & Portability" },
 ];
 
+// Map module keys to icons and routes
+const moduleConfig: Record<string, { icon: typeof ListTodo; route: string; label: string }> = {
+  todo_list: { icon: ListTodo, route: "/todo", label: "Todo List" },
+  journal: { icon: BookOpen, route: "/journal", label: "Journal" },
+  finance: { icon: Wallet, route: "/finance", label: "Finance" },
+  achievements: { icon: Trophy, route: "/achievements", label: "Achievements" },
+};
+
 export function AppSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
@@ -56,10 +70,26 @@ export function AppSidebar() {
   const [isProfileExpanded, setIsProfileExpanded] = useState(
     location.pathname.startsWith("/profile")
   );
+  const [isModulesExpanded, setIsModulesExpanded] = useState(
+    Object.values(moduleConfig).some(m => location.pathname.startsWith(m.route))
+  );
 
   const { unreadCount } = useNotifications();
   const { unreadCount: messageUnreadCount } = useMessages();
   const totalUnread = unreadCount + messageUnreadCount;
+
+  // Fetch user's purchased modules
+  const { data: allModules = [] } = useShopModules();
+  const { data: purchasedModuleIds = [] } = useUserModulePurchases(user?.id);
+  
+  // Get purchased modules with their details
+  const purchasedModules = allModules
+    .filter(m => purchasedModuleIds.includes(m.id))
+    .filter(m => moduleConfig[m.key]) // Only show modules with defined routes
+    .map(m => ({
+      ...m,
+      config: moduleConfig[m.key],
+    }));
 
   // Fetch user profile for avatar and display name
   const { data: profile } = useQuery({
@@ -174,6 +204,67 @@ export function AppSidebar() {
             </NavLink>
           );
         })}
+
+        {/* Modules Section - Only show if user has purchased modules */}
+        {purchasedModules.length > 0 && (
+          <div className="pt-2">
+            <button
+              onClick={() => setIsModulesExpanded(!isModulesExpanded)}
+              className={`group w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-300 relative ${
+                isModulesExpanded && purchasedModules.some(m => location.pathname.startsWith(m.config.route))
+                  ? "text-primary bg-primary/15"
+                  : "text-muted-foreground/80 hover:text-primary/90 hover:bg-primary/5"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Puzzle
+                  className={`h-5 w-5 transition-all duration-300 ${
+                    isModulesExpanded && purchasedModules.some(m => location.pathname.startsWith(m.config.route))
+                      ? "drop-shadow-[0_0_8px_rgba(91,180,255,0.8)]"
+                      : "group-hover:drop-shadow-[0_0_6px_rgba(91,180,255,0.5)]"
+                  }`}
+                />
+                <span className="font-rajdhani text-sm tracking-wide font-medium">
+                  Modules
+                </span>
+              </div>
+              {isModulesExpanded ? (
+                <ChevronDown className="h-4 w-4 transition-transform duration-300" />
+              ) : (
+                <ChevronRight className="h-4 w-4 transition-transform duration-300" />
+              )}
+            </button>
+
+            {/* Modules Submenu */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ${
+                isModulesExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+              }`}
+            >
+              <div className="ml-4 pl-4 border-l border-primary/20 mt-1 space-y-1">
+                {purchasedModules.map((module) => {
+                  const Icon = module.config.icon;
+                  return (
+                    <NavLink
+                      key={module.id}
+                      to={module.config.route}
+                      className={({ isActive }) =>
+                        `group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-300 text-sm ${
+                          isActive
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground/70 hover:text-primary/80 hover:bg-primary/5"
+                        }`
+                      }
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="font-rajdhani tracking-wide">{module.config.label}</span>
+                    </NavLink>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Profile Section with Submenu */}
         <div className="pt-2">
