@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Filter, Pencil } from 'lucide-react';
+import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Pencil } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useTodoList, TodoTask } from '@/hooks/useTodoList';
 import { TodoGamifiedHeader } from '@/components/todo/TodoGamifiedHeader';
@@ -22,9 +22,7 @@ type ActivePanel = 'none' | 'create' | 'stats' | 'history' | 'calendar' | 'edit'
 
 export default function TodoList() {
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTaskType, setSelectedTaskType] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [editingTask, setEditingTask] = useState<TodoTask | null>(null);
@@ -73,7 +71,6 @@ export default function TodoList() {
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
     let result = tasks.filter(task => {
-      if (selectedCategory && task.category !== selectedCategory) return false;
       if (selectedTaskType && task.task_type !== selectedTaskType) return false;
       return true;
     });
@@ -112,7 +109,7 @@ export default function TodoList() {
     });
 
     return result;
-  }, [tasks, selectedCategory, selectedTaskType, sortField, sortDirection]);
+  }, [tasks, selectedTaskType, sortField, sortDirection]);
 
   if (isLoading) {
     return (
@@ -161,20 +158,9 @@ export default function TodoList() {
           transition={{ delay: 0.2 }}
           className="flex items-center justify-between flex-wrap gap-3"
         >
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              {activeTaskCount} / {maxTasks} active quests
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFilters(!showFilters)}
-              className={showFilters ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}
-            >
-              <Filter className="w-4 h-4 mr-1.5" />
-              Filters & Sort
-            </Button>
-          </div>
+          <span className="text-sm text-muted-foreground">
+            {activeTaskCount} / {maxTasks} active quests
+          </span>
           
           <div className="flex items-center gap-2">
             <Button
@@ -207,7 +193,7 @@ export default function TodoList() {
             <Button
               onClick={() => setActivePanel('create')}
               disabled={!canAddTask}
-              className="bg-gradient-to-r from-primary/20 to-accent/20 hover:from-primary/30 hover:to-accent/30 text-primary border border-primary/30"
+              className="bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
             >
               <Plus className="w-4 h-4 mr-1.5" />
               New Quest
@@ -215,26 +201,14 @@ export default function TodoList() {
           </div>
         </motion.div>
 
-        {/* Filter & Sort Panel */}
-        <AnimatePresence>
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              <TodoFilterSort
-                selectedCategory={selectedCategory}
-                selectedTaskType={selectedTaskType}
-                sortField={sortField}
-                sortDirection={sortDirection}
-                onCategoryChange={setSelectedCategory}
-                onTaskTypeChange={setSelectedTaskType}
-                onSortChange={handleSortChange}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {/* Filter & Sort Panel - Always visible */}
+        <TodoFilterSort
+          selectedTaskType={selectedTaskType}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onTaskTypeChange={setSelectedTaskType}
+          onSortChange={handleSortChange}
+        />
 
         {/* Insights */}
         <AnimatePresence>
