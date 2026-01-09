@@ -82,16 +82,19 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Task name */}
-      <div className="space-y-2">
-        <Label htmlFor="edit-task-name" className="text-sm text-muted-foreground">
-          Quest Name <span className="text-red-400">*</span>
+      <div className="space-y-3">
+        <Label htmlFor="edit-task-name" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+          Quest Name <span className="text-destructive">*</span>
         </Label>
         <Input
           id="edit-task-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="What needs to be conquered?"
-          className="bg-background border-border focus:border-primary/50 rounded-xl h-12 text-foreground placeholder:text-muted-foreground"
+          variant="light"
+          className="h-12 text-base rounded-xl"
+          maxLength={100}
+          autoComplete="off"
           autoFocus
         />
       </div>
