@@ -91,7 +91,7 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="What needs to be conquered?"
-          className="bg-card/50 border-border/50 focus:border-primary/50 rounded-xl h-12"
+          className="bg-background border-border focus:border-primary/50 rounded-xl h-12 text-foreground placeholder:text-muted-foreground"
           autoFocus
         />
       </div>
