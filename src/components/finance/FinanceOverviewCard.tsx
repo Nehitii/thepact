@@ -6,12 +6,14 @@ interface FinanceOverviewCardProps {
   totalEstimated: number;
   totalPaid: number;
   totalRemaining: number;
+  isCustomMode?: boolean;
 }
 
 export function FinanceOverviewCard({ 
   totalEstimated, 
   totalPaid, 
-  totalRemaining 
+  totalRemaining,
+  isCustomMode = false,
 }: FinanceOverviewCardProps) {
   const { currency } = useCurrency();
   const progressPercentage = totalEstimated > 0 ? (totalPaid / totalEstimated) * 100 : 0;
@@ -31,30 +33,37 @@ export function FinanceOverviewCard({
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        {/* Stats Grid - 2 cols in custom mode, 3 cols in linked mode */}
+        <div className={`grid gap-4 mb-6 ${isCustomMode ? 'grid-cols-2' : 'grid-cols-3'}`}>
           {/* Total Estimated */}
           <div className="text-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
             <p className="text-xs text-slate-400 mb-1.5 font-medium uppercase tracking-wide">
-              Total Estimated
+              {isCustomMode ? 'Custom Target' : 'Total Estimated'}
             </p>
             <p className="text-xl font-semibold text-white tabular-nums">
               {formatCurrency(totalEstimated, currency)}
             </p>
+            {isCustomMode && (
+              <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide">
+                Not linked to goals
+              </p>
+            )}
           </div>
 
-          {/* Paid / Financed */}
-          <div className="text-center p-4 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/[0.1]">
-            <div className="flex items-center justify-center gap-1 mb-1.5">
-              <TrendingUp className="h-3 w-3 text-emerald-400" />
-              <p className="text-xs text-emerald-400 font-medium uppercase tracking-wide">
-                Financed
+          {/* Paid / Financed - Hidden in custom mode */}
+          {!isCustomMode && (
+            <div className="text-center p-4 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/[0.1]">
+              <div className="flex items-center justify-center gap-1 mb-1.5">
+                <TrendingUp className="h-3 w-3 text-emerald-400" />
+                <p className="text-xs text-emerald-400 font-medium uppercase tracking-wide">
+                  Financed
+                </p>
+              </div>
+              <p className="text-xl font-semibold text-emerald-400 tabular-nums">
+                {formatCurrency(totalPaid, currency)}
               </p>
             </div>
-            <p className="text-xl font-semibold text-emerald-400 tabular-nums">
-              {formatCurrency(totalPaid, currency)}
-            </p>
-          </div>
+          )}
 
           {/* Remaining */}
           <div className="text-center p-4 rounded-xl bg-amber-500/[0.05] border border-amber-500/[0.1]">

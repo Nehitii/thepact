@@ -29,6 +29,9 @@ export default function Finance() {
 
   const projectEndDate = pact?.project_end_date ? parseISO(pact.project_end_date) : null;
 
+  // Determine if custom target mode is active
+  const isCustomMode = (financeSettings?.project_funding_target ?? 0) > 0;
+
   // Calculate totals from goals with CORRECT logic
   const { totalEstimated, financed, remaining } = useMemo(() => {
     // Total Estimated = sum of all goals estimated costs
@@ -38,16 +41,19 @@ export default function Finance() {
     const customTarget = financeSettings?.project_funding_target ?? 0;
     const total = customTarget > 0 ? customTarget : totalGoalsCost;
     
-    // Completed goals cost
-    const completedGoalsCost = goals
-      .filter(g => g.status === 'completed' || g.status === 'fully_completed' || g.status === 'validated')
-      .reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
-    
-    // Already funded from settings
-    const alreadyFunded = financeSettings?.already_funded ?? 0;
-    
-    // Financed = completed goals + already funded (clamped to totalEstimated)
-    const financedTotal = Math.min(completedGoalsCost + alreadyFunded, total);
+    // In custom mode: Financed is always 0 (not linked to goals)
+    // In linked mode: Financed = completed goals cost + already funded
+    let financedTotal = 0;
+    if (customTarget === 0) {
+      // Linked mode - calculate from completed goals
+      const completedGoalsCost = goals
+        .filter(g => g.status === 'completed' || g.status === 'fully_completed' || g.status === 'validated')
+        .reduce((sum, g) => sum + (g.estimated_cost || 0), 0);
+      
+      const alreadyFunded = financeSettings?.already_funded ?? 0;
+      financedTotal = Math.min(completedGoalsCost + alreadyFunded, total);
+    }
+    // In custom mode (customTarget > 0), financedTotal stays 0
     
     // Remaining = total - financed (minimum 0)
     const remainingAmount = Math.max(total - financedTotal, 0);
@@ -157,6 +163,7 @@ export default function Finance() {
               totalEstimated={totalEstimated}
               totalPaid={financed}
               totalRemaining={remaining}
+              isCustomMode={isCustomMode}
             />
             <SmartFinancingPanel
               totalRemaining={remaining}

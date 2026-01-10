@@ -103,15 +103,26 @@ export default function Home() {
       fully_completed: allGoals.filter(g => g.status === 'fully_completed' || g.status === 'validated').length,
     };
 
-    const totalCostEngaged = allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
+    // Determine if custom mode is active
+    const customTarget = Number(financeSettings?.project_funding_target) || 0;
+    const isCustomMode = customTarget > 0;
     
-    // Unified calculation: completed goals + already_funded (same as Track Finance)
-    const completedGoalsCost = allGoals
-      .filter(g => g.status === 'completed' || g.status === 'fully_completed' || g.status === 'validated')
-      .reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
+    // In linked mode: use goals total; in custom mode: use custom target
+    const totalCostEngaged = isCustomMode 
+      ? customTarget 
+      : allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
     
-    const alreadyFunded = Number(financeSettings?.already_funded) || 0;
-    const totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
+    // In custom mode: Financed is always 0 (not linked to goals)
+    // In linked mode: Financed = completed goals cost + already funded
+    let totalCostPaid = 0;
+    if (!isCustomMode) {
+      const completedGoalsCost = allGoals
+        .filter(g => g.status === 'completed' || g.status === 'fully_completed' || g.status === 'validated')
+        .reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
+      
+      const alreadyFunded = Number(financeSettings?.already_funded) || 0;
+      totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
+    }
 
     return {
       focusGoals,
@@ -128,6 +139,7 @@ export default function Home() {
         goalsCompleted,
         totalGoals: totalGoalsCount,
         statusCounts,
+        isCustomMode,
       },
     };
   }, [allGoals, ranks, financeSettings]);
@@ -192,6 +204,7 @@ export default function Home() {
             totalCostEngaged={dashboardData.totalCostEngaged}
             totalCostPaid={dashboardData.totalCostPaid}
             compact={compact}
+            isCustomMode={dashboardData.isCustomMode}
           />
         );
       case 'focus-goals':
