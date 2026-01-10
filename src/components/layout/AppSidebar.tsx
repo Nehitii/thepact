@@ -24,7 +24,8 @@ import {
   ListTodo,
   BookOpen,
   Wallet,
-  Trophy,
+  Zap,
+  Heart,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -55,12 +56,13 @@ const profileSubItems = [
   { to: "/profile/data", icon: Database, label: "Data & Portability" },
 ];
 
-// Map module keys to icons and routes
+// Map module keys to icons and routes (keys match shop_modules.key in database)
 const moduleConfig: Record<string, { icon: typeof ListTodo; route: string; label: string }> = {
-  todo_list: { icon: ListTodo, route: "/todo", label: "Todo List" },
-  journal: { icon: BookOpen, route: "/journal", label: "Journal" },
-  finance: { icon: Wallet, route: "/finance", label: "Finance" },
-  achievements: { icon: Trophy, route: "/achievements", label: "Achievements" },
+  "todo-list": { icon: ListTodo, route: "/todo", label: "To-Do List" },
+  "journal": { icon: BookOpen, route: "/journal", label: "Journal" },
+  "finance": { icon: Wallet, route: "/finance", label: "Finance" },
+  "the-call": { icon: Zap, route: "/the-call", label: "The Call" },
+  "track-health": { icon: Heart, route: "/health", label: "Track Health" },
 };
 
 export function AppSidebar() {
