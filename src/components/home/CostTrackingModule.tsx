@@ -6,12 +6,14 @@ interface CostTrackingModuleProps {
   totalCostEngaged: number;
   totalCostPaid: number;
   compact?: boolean;
+  isCustomMode?: boolean;
 }
 
 export function CostTrackingModule({
   totalCostEngaged,
   totalCostPaid,
   compact = false,
+  isCustomMode = false,
 }: CostTrackingModuleProps) {
   const { currency } = useCurrency();
   const totalCostRemaining = totalCostEngaged - totalCostPaid;
@@ -40,17 +42,26 @@ export function CostTrackingModule({
             <div className={`space-y-3 ${compact ? '' : 'space-y-4'}`}>
               <div className={`space-y-2 ${compact ? 'space-y-1.5' : ''}`}>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-primary/50 uppercase tracking-wider font-rajdhani">Total Estimated</span>
+                  <span className="text-primary/50 uppercase tracking-wider font-rajdhani">
+                    {isCustomMode ? 'Custom Target' : 'Total Estimated'}
+                  </span>
                   <span className={`font-bold text-foreground font-orbitron ${compact ? 'text-xs' : ''}`}>{formatCurrency(totalCostEngaged, currency)}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-primary/50 uppercase tracking-wider font-rajdhani">Paid / Financed</span>
-                  <span className={`font-bold text-primary font-orbitron ${compact ? 'text-xs' : ''}`}>{formatCurrency(totalCostPaid, currency)}</span>
-                </div>
+                {!isCustomMode && (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-primary/50 uppercase tracking-wider font-rajdhani">Paid / Financed</span>
+                    <span className={`font-bold text-primary font-orbitron ${compact ? 'text-xs' : ''}`}>{formatCurrency(totalCostPaid, currency)}</span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-primary/50 uppercase tracking-wider font-rajdhani">Remaining</span>
                   <span className={`font-bold text-foreground font-orbitron ${compact ? 'text-xs' : ''}`}>{formatCurrency(totalCostRemaining, currency)}</span>
                 </div>
+                {isCustomMode && (
+                  <div className="text-[9px] text-primary/40 uppercase tracking-wider font-rajdhani text-center mt-1">
+                    Custom mode • Not linked to goals
+                  </div>
+                )}
               </div>
               <div className="relative h-2 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
                 <div
