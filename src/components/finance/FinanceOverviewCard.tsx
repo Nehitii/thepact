@@ -1,6 +1,6 @@
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, Target, Info } from 'lucide-react';
 
 interface FinanceOverviewCardProps {
   totalEstimated: number;
@@ -19,77 +19,90 @@ export function FinanceOverviewCard({
   const progressPercentage = totalEstimated > 0 ? (totalPaid / totalEstimated) * 100 : 0;
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Main Card */}
-      <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-6 transition-all duration-500">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Wallet className="h-5 w-5 text-primary" />
+    <div className="finance-card h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Wallet className="h-6 w-6 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">Project Financing</h2>
-            <p className="text-xs text-slate-400">Budget overview</p>
+            <h2 className="text-lg font-semibold text-white tracking-tight">Project Financing</h2>
+            <p className="text-sm text-slate-500">Budget overview</p>
           </div>
         </div>
-
-        {/* Stats Grid - 2 cols in custom mode, 3 cols in linked mode */}
-        <div className={`grid gap-4 mb-6 ${isCustomMode ? 'grid-cols-2' : 'grid-cols-3'}`}>
-          {/* Total Estimated */}
-          <div className="text-center p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-            <p className="text-xs text-slate-400 mb-1.5 font-medium uppercase tracking-wide">
-              {isCustomMode ? 'Custom Target' : 'Total Estimated'}
-            </p>
-            <p className="text-xl font-semibold text-white tabular-nums">
-              {formatCurrency(totalEstimated, currency)}
-            </p>
-            {isCustomMode && (
-              <p className="text-[10px] text-slate-500 mt-1 uppercase tracking-wide">
-                Not linked to goals
-              </p>
-            )}
+        {isCustomMode && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+            <Target className="h-3.5 w-3.5 text-amber-400" />
+            <span className="text-xs font-medium text-amber-400">Custom</span>
           </div>
+        )}
+      </div>
 
-          {/* Paid / Financed - Hidden in custom mode */}
-          {!isCustomMode && (
-            <div className="text-center p-4 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/[0.1]">
-              <div className="flex items-center justify-center gap-1 mb-1.5">
-                <TrendingUp className="h-3 w-3 text-emerald-400" />
-                <p className="text-xs text-emerald-400 font-medium uppercase tracking-wide">
-                  Financed
-                </p>
-              </div>
-              <p className="text-xl font-semibold text-emerald-400 tabular-nums">
-                {formatCurrency(totalPaid, currency)}
-              </p>
+      {/* Stats Grid */}
+      <div className={`grid gap-4 mb-8 ${isCustomMode ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
+        {/* Total Target */}
+        <div className="finance-stat-card">
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="h-4 w-4 text-slate-400" />
+            <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+              {isCustomMode ? 'Custom Target' : 'Total Target'}
+            </span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-semibold text-white tabular-nums tracking-tight">
+            {formatCurrency(totalEstimated, currency)}
+          </p>
+          {isCustomMode && (
+            <div className="flex items-center gap-1.5 mt-2">
+              <Info className="h-3 w-3 text-slate-500" />
+              <span className="text-xs text-slate-500">Not linked to goals</span>
             </div>
           )}
-
-          {/* Remaining */}
-          <div className="text-center p-4 rounded-xl bg-amber-500/[0.05] border border-amber-500/[0.1]">
-            <div className="flex items-center justify-center gap-1 mb-1.5">
-              <TrendingDown className="h-3 w-3 text-amber-400" />
-              <p className="text-xs text-amber-400 font-medium uppercase tracking-wide">
-                Remaining
-              </p>
-            </div>
-            <p className="text-xl font-semibold text-amber-400 tabular-nums">
-              {formatCurrency(totalRemaining, currency)}
-            </p>
-          </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs">
-            <span className="text-slate-400 font-medium">Progress</span>
-            <span className="text-white font-semibold tabular-nums">{progressPercentage.toFixed(1)}%</span>
+        {/* Financed - Hidden in custom mode */}
+        {!isCustomMode && (
+          <div className="finance-stat-card bg-emerald-500/[0.03] border-emerald-500/10">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="h-4 w-4 text-emerald-400" />
+              <span className="text-xs text-emerald-400/80 font-medium uppercase tracking-wider">
+                Financed
+              </span>
+            </div>
+            <p className="text-2xl sm:text-3xl font-semibold text-emerald-400 tabular-nums tracking-tight">
+              {formatCurrency(totalPaid, currency)}
+            </p>
           </div>
-          <div className="h-2 bg-white/[0.04] rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${Math.min(progressPercentage, 100)}%` }}
-            />
+        )}
+
+        {/* Remaining */}
+        <div className="finance-stat-card bg-amber-500/[0.03] border-amber-500/10">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingDown className="h-4 w-4 text-amber-400" />
+            <span className="text-xs text-amber-400/80 font-medium uppercase tracking-wider">
+              Remaining
+            </span>
+          </div>
+          <p className="text-2xl sm:text-3xl font-semibold text-amber-400 tabular-nums tracking-tight">
+            {formatCurrency(totalRemaining, currency)}
+          </p>
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-slate-400 font-medium">Progress</span>
+          <span className="text-sm text-white font-semibold tabular-nums">
+            {progressPercentage.toFixed(1)}%
+          </span>
+        </div>
+        <div className="h-2.5 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.06]">
+          <div 
+            className="h-full bg-gradient-to-r from-primary/80 via-primary to-primary/90 rounded-full transition-all duration-1000 ease-out relative"
+            style={{ width: `${Math.min(progressPercentage, 100)}%` }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
           </div>
         </div>
       </div>

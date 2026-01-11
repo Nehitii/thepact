@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Trash2, Edit2, Check, X, TrendingDown, TrendingUp, Home, Car, Utensils, Wifi, Heart, ShoppingBag, Zap, DollarSign, Briefcase, Gift } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, TrendingDown, TrendingUp, Home, Car, Utensils, Wifi, Heart, ShoppingBag, Zap, DollarSign, Briefcase, Gift, PiggyBank, Landmark, GraduationCap, Gamepad2, Wrench, CreditCard, Receipt, Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,22 +21,25 @@ import {
 import { toast } from 'sonner';
 
 const EXPENSE_CATEGORIES = [
-  { value: 'housing', label: 'Housing', icon: Home },
-  { value: 'transport', label: 'Transport', icon: Car },
-  { value: 'food', label: 'Food & Dining', icon: Utensils },
-  { value: 'utilities', label: 'Utilities', icon: Wifi },
-  { value: 'health', label: 'Health', icon: Heart },
-  { value: 'shopping', label: 'Shopping', icon: ShoppingBag },
-  { value: 'entertainment', label: 'Entertainment', icon: Zap },
-  { value: 'other', label: 'Other', icon: DollarSign },
+  { value: 'housing', label: 'Housing', icon: Home, color: 'text-rose-400', bg: 'bg-rose-500/10' },
+  { value: 'utilities', label: 'Utilities', icon: Wifi, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+  { value: 'food', label: 'Food', icon: Utensils, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+  { value: 'transport', label: 'Transport', icon: Car, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+  { value: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  { value: 'health', label: 'Health', icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500/10' },
+  { value: 'leisure', label: 'Leisure', icon: Gamepad2, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
+  { value: 'savings', label: 'Savings', icon: PiggyBank, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+  { value: 'taxes', label: 'Taxes', icon: Landmark, color: 'text-red-400', bg: 'bg-red-500/10' },
+  { value: 'other', label: 'Other', icon: Receipt, color: 'text-slate-400', bg: 'bg-slate-500/10' },
 ];
 
 const INCOME_CATEGORIES = [
-  { value: 'salary', label: 'Salary', icon: Briefcase },
-  { value: 'freelance', label: 'Freelance', icon: DollarSign },
-  { value: 'investment', label: 'Investment', icon: TrendingUp },
-  { value: 'gift', label: 'Gift', icon: Gift },
-  { value: 'other', label: 'Other', icon: DollarSign },
+  { value: 'salary', label: 'Salary', icon: Briefcase, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+  { value: 'freelance', label: 'Freelance', icon: Zap, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+  { value: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-500/10' },
+  { value: 'rental', label: 'Rental', icon: Home, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+  { value: 'gift', label: 'Gift', icon: Gift, color: 'text-pink-400', bg: 'bg-pink-500/10' },
+  { value: 'other', label: 'Other', icon: DollarSign, color: 'text-slate-400', bg: 'bg-slate-500/10' },
 ];
 
 interface EditingItem {
@@ -101,10 +104,9 @@ export function RecurringManagerPro() {
     }
   };
 
-  const getCategoryIcon = (categoryValue: string, type: 'expense' | 'income') => {
+  const getCategoryDetails = (categoryValue: string, type: 'expense' | 'income') => {
     const categories = type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
-    const category = categories.find(c => c.value === categoryValue);
-    return category?.icon || DollarSign;
+    return categories.find(c => c.value === categoryValue) || categories[categories.length - 1];
   };
 
   const renderItem = (
@@ -116,8 +118,8 @@ export function RecurringManagerPro() {
     onDelete: (id: string) => void
   ) => {
     const isEditing = editing?.id === item.id;
-    const Icon = getCategoryIcon('other', type);
-    const accentColor = type === 'expense' ? 'rose' : 'emerald';
+    const categoryDetails = getCategoryDetails('other', type);
+    const Icon = categoryDetails.icon;
     
     return (
       <div 
@@ -133,14 +135,15 @@ export function RecurringManagerPro() {
             <Input
               value={editing.name}
               onChange={(e) => setEditing({ ...editing, name: e.target.value })}
-              className="flex-1 h-9 text-sm bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
+              className="flex-1 h-9 text-sm finance-input"
               placeholder="Name"
             />
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={editing.amount}
-              onChange={(e) => setEditing({ ...editing, amount: e.target.value })}
-              className="w-24 h-9 text-sm bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
+              onChange={(e) => setEditing({ ...editing, amount: e.target.value.replace(/[^0-9.]/g, '') })}
+              className="w-24 h-9 text-sm finance-input"
               placeholder="Amount"
             />
             <button
@@ -158,8 +161,8 @@ export function RecurringManagerPro() {
           </>
         ) : (
           <>
-            <div className={`w-8 h-8 rounded-lg bg-${accentColor}-500/10 flex items-center justify-center shrink-0`}>
-              <Icon className={`h-4 w-4 text-${accentColor}-400`} />
+            <div className={`w-8 h-8 rounded-lg ${categoryDetails.bg} flex items-center justify-center shrink-0`}>
+              <Icon className={`h-4 w-4 ${categoryDetails.color}`} />
             </div>
             <span className="flex-1 text-sm font-medium text-white truncate">
               {item.name}
@@ -188,24 +191,24 @@ export function RecurringManagerPro() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Net Balance Summary */}
-      <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Monthly Balance</h3>
+      <div className="finance-card">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-base font-semibold text-white">Monthly Balance</h3>
           <span className={`text-xl font-semibold tabular-nums ${netBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
             {netBalance >= 0 ? '+' : ''}{formatCurrency(netBalance, currency)}
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-3 rounded-xl bg-emerald-500/[0.05] border border-emerald-500/[0.1]">
-            <p className="text-xs text-emerald-400 font-medium mb-1 uppercase tracking-wide">Total Income</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="p-4 rounded-xl bg-emerald-500/[0.04] border border-emerald-500/10">
+            <p className="text-xs text-emerald-400/80 font-medium mb-1.5 uppercase tracking-wider">Income</p>
             <p className="text-lg font-semibold text-emerald-400 tabular-nums">
               +{formatCurrency(totalIncome, currency)}
             </p>
           </div>
-          <div className="p-3 rounded-xl bg-rose-500/[0.05] border border-rose-500/[0.1]">
-            <p className="text-xs text-rose-400 font-medium mb-1 uppercase tracking-wide">Total Expenses</p>
+          <div className="p-4 rounded-xl bg-rose-500/[0.04] border border-rose-500/10">
+            <p className="text-xs text-rose-400/80 font-medium mb-1.5 uppercase tracking-wider">Expenses</p>
             <p className="text-lg font-semibold text-rose-400 tabular-nums">
               -{formatCurrency(totalExpenses, currency)}
             </p>
@@ -214,39 +217,24 @@ export function RecurringManagerPro() {
       </div>
 
       {/* Recurring Expenses */}
-      <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center">
+      <div className="finance-card">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
             <TrendingDown className="h-4 w-4 text-rose-400" />
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-semibold text-white">Recurring Expenses</h3>
-            <p className="text-xs text-slate-400">{expenses.length}/30 items</p>
+            <p className="text-xs text-slate-500">{expenses.length}/30</p>
           </div>
         </div>
 
         {/* Add Form */}
         <div className="flex gap-2 mb-4">
-          <Select value={newExpense.category} onValueChange={(v) => setNewExpense({ ...newExpense, category: v })}>
-            <SelectTrigger className="w-32 h-10 bg-white/[0.04] border-white/[0.12] text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {EXPENSE_CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  <div className="flex items-center gap-2">
-                    <cat.icon className="h-3.5 w-3.5" />
-                    {cat.label}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <Input
-            placeholder="Name"
+            placeholder="Expense name"
             value={newExpense.name}
             onChange={(e) => setNewExpense({ ...newExpense, name: e.target.value })}
-            className="flex-1 h-10 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
+            className="flex-1 h-10 finance-input"
             maxLength={50}
           />
           <div className="relative w-28">
@@ -254,13 +242,12 @@ export function RecurringManagerPro() {
               {getCurrencySymbol(currency)}
             </span>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder="0"
               value={newExpense.amount}
-              onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
-              className="h-10 pl-6 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
-              min="0"
-              step="0.01"
+              onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value.replace(/[^0-9.]/g, '') })}
+              className="h-10 pl-6 finance-input"
             />
           </div>
           <Button
@@ -275,13 +262,13 @@ export function RecurringManagerPro() {
         </div>
 
         {/* List */}
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-2 max-h-[280px] overflow-y-auto scrollbar-thin">
           {expensesLoading ? (
             <div className="py-8 text-center">
               <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
             </div>
           ) : expenses.length === 0 ? (
-            <p className="text-center text-slate-500 text-sm py-6">No recurring expenses yet</p>
+            <p className="text-center text-slate-500 text-sm py-8">No recurring expenses yet</p>
           ) : (
             expenses.map((expense) =>
               renderItem(
@@ -311,39 +298,24 @@ export function RecurringManagerPro() {
       </div>
 
       {/* Recurring Income */}
-      <div className="bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-5">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+      <div className="finance-card">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
             <TrendingUp className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="flex-1">
             <h3 className="text-sm font-semibold text-white">Recurring Income</h3>
-            <p className="text-xs text-slate-400">{income.length} items</p>
+            <p className="text-xs text-slate-500">{income.length} sources</p>
           </div>
         </div>
 
         {/* Add Form */}
         <div className="flex gap-2 mb-4">
-          <Select value={newIncome.category} onValueChange={(v) => setNewIncome({ ...newIncome, category: v })}>
-            <SelectTrigger className="w-32 h-10 bg-white/[0.04] border-white/[0.12] text-white">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {INCOME_CATEGORIES.map((cat) => (
-                <SelectItem key={cat.value} value={cat.value}>
-                  <div className="flex items-center gap-2">
-                    <cat.icon className="h-3.5 w-3.5" />
-                    {cat.label}
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
           <Input
-            placeholder="Name"
+            placeholder="Income source"
             value={newIncome.name}
             onChange={(e) => setNewIncome({ ...newIncome, name: e.target.value })}
-            className="flex-1 h-10 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
+            className="flex-1 h-10 finance-input"
             maxLength={50}
           />
           <div className="relative w-28">
@@ -351,13 +323,12 @@ export function RecurringManagerPro() {
               {getCurrencySymbol(currency)}
             </span>
             <Input
-              type="number"
+              type="text"
+              inputMode="decimal"
               placeholder="0"
               value={newIncome.amount}
-              onChange={(e) => setNewIncome({ ...newIncome, amount: e.target.value })}
-              className="h-10 pl-6 bg-white/[0.04] border-white/[0.12] text-white placeholder:text-slate-500"
-              min="0"
-              step="0.01"
+              onChange={(e) => setNewIncome({ ...newIncome, amount: e.target.value.replace(/[^0-9.]/g, '') })}
+              className="h-10 pl-6 finance-input"
             />
           </div>
           <Button
@@ -372,13 +343,13 @@ export function RecurringManagerPro() {
         </div>
 
         {/* List */}
-        <div className="space-y-2 max-h-60 overflow-y-auto">
+        <div className="space-y-2 max-h-[280px] overflow-y-auto scrollbar-thin">
           {incomeLoading ? (
             <div className="py-8 text-center">
               <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto" />
             </div>
           ) : income.length === 0 ? (
-            <p className="text-center text-slate-500 text-sm py-6">No recurring income yet</p>
+            <p className="text-center text-slate-500 text-sm py-8">No recurring income yet</p>
           ) : (
             income.map((inc) =>
               renderItem(

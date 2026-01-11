@@ -40,7 +40,6 @@ export function FinanceSettingsModal({
   const [alreadyFunded, setAlreadyFunded] = useState(currentSettings.already_funded.toString());
   const [addToRecurring, setAddToRecurring] = useState(false);
 
-  // Sync state when modal opens
   useEffect(() => {
     if (open) {
       setSalaryDay(currentSettings.salary_payment_day.toString());
@@ -53,7 +52,6 @@ export function FinanceSettingsModal({
 
   const handleSave = async () => {
     try {
-      // Check if monthly allocation should be added to recurring expenses
       const allocationAmount = parseFloat(monthlyAllocation) || 0;
       const existingProjectAllocation = expenses.find(e => e.name === 'Project Allocation');
       
@@ -68,7 +66,6 @@ export function FinanceSettingsModal({
         salary_payment_day: parseInt(salaryDay) || 1,
         project_funding_target: useCustomTarget ? (parseFloat(fundingTarget) || 0) : 0,
         project_monthly_allocation: allocationAmount,
-        // When using custom target, reset already_funded to 0 (standalone target)
         already_funded: useCustomTarget ? 0 : (parseFloat(alreadyFunded) || 0),
       });
       
@@ -81,32 +78,39 @@ export function FinanceSettingsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-gradient-to-br from-[#0d1220] to-[#080c14] border-white/[0.08] sm:max-w-md">
+      <DialogContent className="bg-gradient-to-br from-[#0d1220] to-[#080c14] border-white/[0.08] sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold text-white flex items-center gap-2">
-            <Settings className="h-5 w-5 text-primary" />
+          <DialogTitle className="text-xl font-semibold text-white flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <Settings className="h-5 w-5 text-primary" />
+            </div>
             Finance Settings
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6 pt-2">
+        <div className="space-y-6 pt-4">
           {/* Salary Payment Day */}
-          <div className="space-y-2">
+          <div className="space-y-3">
             <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
               <Calendar className="h-4 w-4 text-slate-400" />
               Salary Payment Day
             </Label>
             <Input
-              type="number"
-              min="1"
-              max="31"
+              type="text"
+              inputMode="numeric"
               value={salaryDay}
-              onChange={(e) => setSalaryDay(e.target.value)}
-              className="bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500"
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9]/g, '');
+                const num = parseInt(val);
+                if (val === '' || (num >= 1 && num <= 31)) {
+                  setSalaryDay(val);
+                }
+              }}
+              className="finance-input h-12"
               placeholder="1"
             />
             <p className="text-xs text-slate-500">
-              Day of the month when you receive your salary
+              Day of the month when you receive your salary (1-31)
             </p>
           </div>
 
@@ -124,7 +128,7 @@ export function FinanceSettingsModal({
                   onCheckedChange={(checked) => setUseCustomTarget(checked === true)}
                   className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
-                <label htmlFor="customTarget" className="text-xs text-slate-400 cursor-pointer">
+                <label htmlFor="customTarget" className="text-sm text-slate-400 cursor-pointer">
                   Custom
                 </label>
               </div>
@@ -134,15 +138,12 @@ export function FinanceSettingsModal({
                 {getCurrencySymbol(currency)}
               </span>
               <Input
-                type="number"
-                min="0"
-                step="100"
+                type="text"
+                inputMode="decimal"
                 value={fundingTarget}
-                onChange={(e) => setFundingTarget(e.target.value)}
+                onChange={(e) => setFundingTarget(e.target.value.replace(/[^0-9.]/g, ''))}
                 disabled={!useCustomTarget}
-                className={`pl-7 bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500 ${
-                  !useCustomTarget ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className={`pl-7 finance-input h-12 ${!useCustomTarget ? 'opacity-50 cursor-not-allowed' : ''}`}
                 placeholder="0"
               />
             </div>
@@ -166,12 +167,11 @@ export function FinanceSettingsModal({
                 {getCurrencySymbol(currency)}
               </span>
               <Input
-                type="number"
-                min="0"
-                step="10"
+                type="text"
+                inputMode="decimal"
                 value={monthlyAllocation}
-                onChange={(e) => setMonthlyAllocation(e.target.value)}
-                className="pl-7 bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500"
+                onChange={(e) => setMonthlyAllocation(e.target.value.replace(/[^0-9.]/g, ''))}
+                className="pl-7 finance-input h-12"
                 placeholder="0"
               />
             </div>
@@ -183,51 +183,52 @@ export function FinanceSettingsModal({
                   onCheckedChange={(checked) => setAddToRecurring(checked === true)}
                   className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
-                <label htmlFor="addToRecurring" className="text-xs text-slate-400 cursor-pointer">
+                <label htmlFor="addToRecurring" className="text-sm text-slate-400 cursor-pointer">
                   Add to recurring expenses automatically
                 </label>
               </div>
             )}
           </div>
 
-          {/* Already Funded */}
-          <div className="space-y-2">
-            <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-slate-400" />
-              Already Funded
-              <span className="text-xs text-slate-500">(optional)</span>
-            </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                {getCurrencySymbol(currency)}
-              </span>
-              <Input
-                type="number"
-                min="0"
-                step="100"
-                value={alreadyFunded}
-                onChange={(e) => setAlreadyFunded(e.target.value)}
-                className="pl-7 bg-white/[0.04] border-white/[0.12] focus:border-primary/50 h-11 text-white placeholder:text-slate-500"
-                placeholder="0"
-              />
+          {/* Already Funded - only show when NOT in custom mode */}
+          {!useCustomTarget && (
+            <div className="space-y-3">
+              <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4 text-slate-400" />
+                Already Funded
+                <span className="text-xs text-slate-500">(optional)</span>
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  {getCurrencySymbol(currency)}
+                </span>
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  value={alreadyFunded}
+                  onChange={(e) => setAlreadyFunded(e.target.value.replace(/[^0-9.]/g, ''))}
+                  className="pl-7 finance-input h-12"
+                  placeholder="0"
+                />
+              </div>
+              <p className="text-xs text-slate-500">
+                Amount you've already set aside for this project
+              </p>
             </div>
-            <p className="text-xs text-slate-500">
-              Amount you've already set aside for this project
-            </p>
-          </div>
+          )}
 
-          <div className="flex gap-3 pt-2">
+          <div className="flex gap-4 pt-4">
             <Button
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="flex-1 h-11 border-white/[0.12] text-slate-300 hover:bg-white/[0.04] hover:text-white"
+              className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] hover:text-white text-base"
             >
               Cancel
             </Button>
             <Button
               onClick={handleSave}
               disabled={updateSettings.isPending}
-              className="flex-1 h-11"
+              className="flex-1 h-12 text-base"
             >
               {updateSettings.isPending ? 'Saving...' : 'Save Settings'}
             </Button>
