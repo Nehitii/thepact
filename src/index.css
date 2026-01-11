@@ -692,4 +692,51 @@ All colors MUST be HSL.
   .hover-shimmer-wave:hover::before {
     animation: shimmer-wave 0.6s ease-out;
   }
+
+  /* Finance Dashboard Styles */
+  .finance-card {
+    @apply bg-gradient-to-br from-white/[0.04] to-white/[0.01] backdrop-blur-sm border border-white/[0.08] rounded-2xl p-6 transition-all duration-300;
+  }
+
+  .finance-stat-card {
+    @apply p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] transition-all duration-200;
+  }
+
+  .finance-input {
+    @apply bg-white/[0.04] border-white/[0.1] focus:border-primary/50 text-white placeholder:text-slate-500 transition-all duration-200;
+  }
+
+  /* Hide number input spinners globally in finance module */
+  .finance-input::-webkit-outer-spin-button,
+  .finance-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .finance-input[type=number] {
+    -moz-appearance: textfield;
+  }
+
+  /* Custom scrollbar for finance lists */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 2px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.3);
+  }
 }
