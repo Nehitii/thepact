@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,48 +11,37 @@ import {
   Lock,
   Sparkles,
   Bell,
+  AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 
 export default function Admin() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
+  
+  // Server-side admin verification
+  const { data: adminCheck, isLoading, error } = useServerAdminCheck(!!user);
 
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+    // Only redirect after server verification completes
+    if (!isLoading && adminCheck && !adminCheck.isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You need admin privileges to access this page",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [user, adminCheck, isLoading, navigate, toast]);
 
-      if (!data) {
-        toast({
-          title: "Access Denied",
-          description: "You need admin privileges to access this page",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      setLoading(false);
-    };
-
-    checkAdmin();
-  }, [user, navigate, toast]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#00050B] flex items-center justify-center">
         <div className="text-primary animate-pulse font-orbitron">Verifying access...</div>
@@ -61,7 +49,22 @@ export default function Admin() {
     );
   }
 
-  if (!isAdmin) return null;
+  if (error) {
+    return (
+      <div className="min-h-screen bg-[#00050B] flex items-center justify-center">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
+          <div className="text-destructive font-orbitron mb-2">Verification Failed</div>
+          <p className="text-muted-foreground mb-4">Unable to verify admin status</p>
+          <Button onClick={() => navigate("/")} variant="outline">
+            Return Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminCheck?.isAdmin) return null;
 
   const menuItems = [
     {
@@ -148,6 +151,11 @@ export default function Admin() {
           <p className="text-primary/60 font-rajdhani">
             Manage your application
           </p>
+          {adminCheck?.verifiedAt && (
+            <p className="text-xs text-primary/40 mt-2 font-mono">
+              Server verified
+            </p>
+          )}
         </div>
 
         {/* Menu Grid */}
