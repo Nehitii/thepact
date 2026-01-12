@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,6 +38,7 @@ import {
   Users,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 import {
   usePromoCodes,
   useCreatePromoCode,
@@ -51,8 +51,6 @@ export default function AdminPromoManager() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Form state
@@ -68,36 +66,24 @@ export default function AdminPromoManager() {
   const updatePromoCode = useUpdatePromoCode();
   const deletePromoCode = useDeletePromoCode();
 
+  // Server-side admin verification
+  const { data: adminCheck, isLoading, error } = useServerAdminCheck(!!user);
+
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (!data) {
-        toast({
-          title: "Access Denied",
-          description: "You need admin privileges to access this page",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      setLoading(false);
-    };
-
-    checkAdmin();
-  }, [user, navigate, toast]);
+    if (!isLoading && adminCheck && !adminCheck.isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You need admin privileges to access this page",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [user, adminCheck, isLoading, navigate, toast]);
 
   const generateRandomCode = () => {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -158,7 +144,7 @@ export default function AdminPromoManager() {
     });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#00050B] flex items-center justify-center">
         <div className="text-primary animate-pulse font-orbitron">
@@ -168,7 +154,7 @@ export default function AdminPromoManager() {
     );
   }
 
-  if (!isAdmin) return null;
+  if (error || !adminCheck?.isAdmin) return null;
 
   return (
     <div className="min-h-screen bg-[#00050B] relative">

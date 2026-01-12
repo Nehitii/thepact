@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 import { 
   Coins,
   Gift,
@@ -50,45 +51,36 @@ export default function AdminMoneyManager() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
   
   const [packs, setPacks] = useState<BondPack[]>([]);
   const [offers, setOffers] = useState<SpecialOffer[]>([]);
   const [editingPack, setEditingPack] = useState<Partial<BondPack> | null>(null);
   const [editingOffer, setEditingOffer] = useState<Partial<SpecialOffer> | null>(null);
 
+  // Server-side admin verification
+  const { data: adminCheck, isLoading, error } = useServerAdminCheck(!!user);
+
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+    if (!isLoading && adminCheck && !adminCheck.isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You need admin privileges to access this page",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [user, adminCheck, isLoading, navigate, toast]);
 
-      if (!data) {
-        toast({
-          title: "Access Denied",
-          description: "You need admin privileges to access this page",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      setLoading(false);
+  useEffect(() => {
+    if (adminCheck?.isAdmin) {
       loadData();
-    };
-
-    checkAdmin();
-  }, [user, navigate, toast]);
+    }
+  }, [adminCheck]);
 
   const loadData = async () => {
     const [packsRes, offersRes] = await Promise.all([
@@ -165,7 +157,7 @@ export default function AdminMoneyManager() {
     loadData();
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#00050B] flex items-center justify-center">
         <div className="text-primary animate-pulse font-orbitron">Verifying access...</div>
@@ -173,7 +165,7 @@ export default function AdminMoneyManager() {
     );
   }
 
-  if (!isAdmin) return null;
+  if (error || !adminCheck?.isAdmin) return null;
 
   return (
     <div className="min-h-screen bg-[#00050B] relative">

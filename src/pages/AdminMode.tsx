@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +17,7 @@ import {
   AlertTriangle
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 import { 
   useShopModules, 
   useUserModulePurchases,
@@ -48,8 +48,6 @@ export default function AdminMode() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   // Shop data
   const { data: modules = [] } = useShopModules();
@@ -65,38 +63,26 @@ export default function AdminMode() {
   const resetModule = useAdminResetModule();
   const resetAll = useAdminResetAll();
 
+  // Server-side admin verification
+  const { data: adminCheck, isLoading, error } = useServerAdminCheck(!!user);
+
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+    if (!isLoading && adminCheck && !adminCheck.isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "Admin Mode requires admin privileges",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [user, adminCheck, isLoading, navigate, toast]);
 
-      if (!data) {
-        toast({
-          title: "Access Denied",
-          description: "Admin Mode requires admin privileges",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      setLoading(false);
-    };
-
-    checkAdmin();
-  }, [user, navigate, toast]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-primary animate-pulse font-orbitron">Verifying admin access...</div>
@@ -104,7 +90,7 @@ export default function AdminMode() {
     );
   }
 
-  if (!isAdmin) return null;
+  if (error || !adminCheck?.isAdmin) return null;
 
   const isModulePurchased = (moduleId: string) => purchasedModuleIds.includes(moduleId);
   const isFrameOwned = (frameId: string) => userCosmetics?.frames.includes(frameId) ?? false;

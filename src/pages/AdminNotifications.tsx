@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +34,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 
 type NotificationCategory = "system" | "progress" | "social" | "marketing";
 type NotificationPriority = "critical" | "important" | "informational" | "social" | "silent";
@@ -75,29 +76,26 @@ export default function AdminNotifications() {
   const [targetAll, setTargetAll] = useState(true);
   const [targetUserId, setTargetUserId] = useState("");
 
-  // Check admin status
-  const { data: adminCheck, isLoading: adminLoading } = useQuery({
-    queryKey: ["admin-check", user?.id],
-    queryFn: async () => {
-      if (!user) return false;
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      return !!data;
-    },
-    enabled: !!user,
-  });
+  // Server-side admin verification
+  const { data: adminCheck, isLoading: adminLoading, error: adminError } = useServerAdminCheck(!!user);
 
-  // Handle admin check result
-  if (!adminLoading && adminCheck === false) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
 
-  const isAdminVerified = adminCheck === true;
+    if (!adminLoading && adminCheck && !adminCheck.isAdmin) {
+      toast({
+        title: "Access Denied",
+        description: "You need admin privileges to access this page",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [user, adminCheck, adminLoading, navigate, toast]);
+
+  const isAdminVerified = adminCheck?.isAdmin === true;
 
   // Fetch all users for targeting
   const { data: allUsers = [] } = useQuery({
@@ -232,7 +230,7 @@ export default function AdminNotifications() {
     );
   }
 
-  if (!isAdminVerified) {
+  if (adminError || !isAdminVerified) {
     return null;
   }
 
