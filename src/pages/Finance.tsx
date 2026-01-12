@@ -9,8 +9,7 @@ import { useGoals } from "@/hooks/useGoals";
 import { useFinanceSettings, useRecurringExpenses, useRecurringIncome } from "@/hooks/useFinance";
 import { FinanceOverviewCard } from "@/components/finance/FinanceOverviewCard";
 import { SmartFinancingPanel } from "@/components/finance/SmartFinancingPanel";
-import { RecurringManagerPro } from "@/components/finance/RecurringManagerPro";
-import { MonthlySection } from "@/components/finance/MonthlySection";
+import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard";
 import { ProjectionsPanel } from "@/components/finance/ProjectionsPanel";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
 import { parseISO } from "date-fns";
@@ -101,7 +100,7 @@ export default function Finance() {
             </Button>
             <div className="hidden sm:block h-6 w-px bg-white/[0.08]" />
             <div>
-              <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-semibold text-white tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', textTransform: 'none', letterSpacing: '-0.02em' }}>
                 Finance Dashboard
               </h1>
               <p className="text-sm text-slate-500 mt-0.5 hidden sm:block">
@@ -163,16 +162,9 @@ export default function Finance() {
             </div>
           </TabsContent>
 
-          {/* Monthly Tab */}
-          <TabsContent value="monthly" className="mt-0 animate-fade-in">
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-              <div className="xl:col-span-2">
-                <MonthlySection salaryPaymentDay={settings.salary_payment_day} />
-              </div>
-              <div className="xl:col-span-1">
-                <RecurringManagerPro />
-              </div>
-            </div>
+          {/* Monthly Tab - NEW PREMIUM DESIGN */}
+          <TabsContent value="monthly" className="mt-0 animate-fade-in pb-8">
+            <MonthlyDashboard salaryPaymentDay={settings.salary_payment_day} />
           </TabsContent>
 
           {/* Projections Tab */}
