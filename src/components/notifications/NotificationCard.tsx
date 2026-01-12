@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { 
   Bell, Gift, Trophy, MessageSquare, Megaphone, X, ExternalLink, 
   Star, Zap, Heart, Info, AlertTriangle, Check, Loader2 
@@ -11,6 +12,35 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { Notification } from "@/hooks/useNotifications";
+
+/**
+ * Validates a CTA URL to prevent open redirect attacks.
+ * Only allows relative paths starting with "/" (internal navigation).
+ * Rejects external URLs, javascript:, data:, and other dangerous protocols.
+ */
+function isValidInternalUrl(url: string): boolean {
+  if (!url || typeof url !== "string") return false;
+  
+  const trimmedUrl = url.trim();
+  
+  // Only allow relative paths starting with /
+  // This prevents external redirects and dangerous protocols
+  if (!trimmedUrl.startsWith("/")) return false;
+  
+  // Reject protocol-relative URLs (//example.com)
+  if (trimmedUrl.startsWith("//")) return false;
+  
+  // Additional check: ensure it's a clean relative path
+  try {
+    // Create a URL with a dummy base to validate the path
+    const testUrl = new URL(trimmedUrl, "https://internal.app");
+    // Ensure the hostname matches our dummy base (wasn't overridden)
+    if (testUrl.hostname !== "internal.app") return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 interface NotificationCardProps {
   notification: Notification;
@@ -41,6 +71,7 @@ const priorityStyles: Record<string, string> = {
 
 export function NotificationCard({ notification, onMarkAsRead, onDelete }: NotificationCardProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [claiming, setClaiming] = useState(false);
@@ -150,7 +181,13 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
       onMarkAsRead(notification.id);
     }
     if (notification.cta_url) {
-      window.location.href = notification.cta_url;
+      // Only navigate to validated internal URLs to prevent open redirect attacks
+      if (isValidInternalUrl(notification.cta_url)) {
+        navigate(notification.cta_url);
+      } else {
+        // Log invalid URL attempts for security monitoring (without exposing to user)
+        console.warn("Blocked invalid notification CTA URL");
+      }
     }
   };
 
