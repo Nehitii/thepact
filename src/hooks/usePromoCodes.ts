@@ -150,104 +150,37 @@ export function useDeletePromoCode() {
   });
 }
 
-// User: Redeem a promo code
+// User: Redeem a promo code securely via server-side RPC
 export function useRedeemPromoCode() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
     mutationFn: async ({ userId, code }: { userId: string; code: string }) => {
-      // 1. Find the promo code
-      const { data: promoCode, error: findError } = await supabase
-        .from("promo_codes")
-        .select("*")
-        .eq("code", code.toUpperCase())
-        .eq("is_active", true)
-        .maybeSingle();
+      // Call secure server-side RPC function that handles all validation atomically
+      const { data, error } = await supabase.rpc('redeem_promo_code', { 
+        p_code: code 
+      });
 
-      if (findError) throw findError;
-      if (!promoCode) throw new Error("Invalid promo code");
-
-      // 2. Check if expired
-      if (promoCode.expires_at && new Date(promoCode.expires_at) < new Date()) {
-        throw new Error("This promo code has expired");
-      }
-
-      // 3. Check max uses
-      if (promoCode.max_uses && promoCode.current_uses >= promoCode.max_uses) {
-        throw new Error("This promo code has reached its maximum uses");
-      }
-
-      // 4. Check if user already redeemed
-      const { data: existingRedemption } = await supabase
-        .from("promo_code_redemptions")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("promo_code_id", promoCode.id)
-        .maybeSingle();
-
-      if (existingRedemption) {
-        throw new Error("You have already redeemed this code");
-      }
-
-      // 5. Create redemption record
-      const { error: redeemError } = await supabase
-        .from("promo_code_redemptions")
-        .insert({
-          user_id: userId,
-          promo_code_id: promoCode.id,
-        });
-
-      if (redeemError) throw redeemError;
-
-      // 6. Increment current_uses - this needs admin privileges, so we'll do it via RPC or update
-      // For now, we update via the admin policy (if admin) or we skip if user
-      // Since promo_codes has admin-only update policy, we need to handle this differently
-      // The current_uses should ideally be updated by a trigger or edge function
-      // For MVP, we'll let admins see redemptions count from the redemptions table
+      if (error) throw error;
       
-      // 7. Award the reward based on type
-      if (promoCode.reward_type === "bonds") {
-        // Check if user has a bond balance
-        const { data: existingBalance } = await supabase
-          .from("bond_balance")
-          .select("*")
-          .eq("user_id", userId)
-          .maybeSingle();
-
-        if (existingBalance) {
-          // Update existing balance
-          await supabase
-            .from("bond_balance")
-            .update({
-              balance: existingBalance.balance + promoCode.reward_amount,
-              total_earned: existingBalance.total_earned + promoCode.reward_amount,
-            })
-            .eq("user_id", userId);
-        } else {
-          // Create new balance
-          await supabase.from("bond_balance").insert({
-            user_id: userId,
-            balance: promoCode.reward_amount,
-            total_earned: promoCode.reward_amount,
-          });
-        }
-
-        // Create transaction record
-        await supabase.from("bond_transactions").insert({
-          user_id: userId,
-          amount: promoCode.reward_amount,
-          transaction_type: "promo_code",
-          description: `Promo code: ${promoCode.code}`,
-          reference_id: promoCode.id,
-          reference_type: "promo_code",
-        });
+      // The RPC returns a jsonb object with success status
+      const result = data as { 
+        success: boolean; 
+        error?: string; 
+        reward_type?: string; 
+        reward_amount?: number; 
+        code?: string;
+      };
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to redeem code');
       }
 
       return {
-        promoCode,
-        rewardType: promoCode.reward_type,
-        rewardAmount: promoCode.reward_amount,
+        rewardType: result.reward_type,
+        rewardAmount: result.reward_amount,
+        code: result.code,
       };
     },
     onSuccess: (data) => {

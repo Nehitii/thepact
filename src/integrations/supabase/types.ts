@@ -1571,6 +1571,7 @@ export type Database = {
         Args: { p_field: string; p_increment?: number; p_user_id: string }
         Returns: undefined
       }
+      redeem_promo_code: { Args: { p_code: string }; Returns: Json }
     }
     Enums: {
       app_role: "user" | "admin"
