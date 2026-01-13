@@ -1054,6 +1054,7 @@ export type Database = {
       recurring_expenses: {
         Row: {
           amount: number
+          category: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -1063,6 +1064,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          category?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -1072,6 +1074,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          category?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -1084,6 +1087,7 @@ export type Database = {
       recurring_income: {
         Row: {
           amount: number
+          category: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -1093,6 +1097,7 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          category?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -1102,6 +1107,7 @@ export type Database = {
         }
         Update: {
           amount?: number
+          category?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
