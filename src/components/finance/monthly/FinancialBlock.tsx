@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -21,6 +21,7 @@ interface Item {
   name: string;
   amount: number;
   is_active: boolean;
+  category?: string | null;
 }
 
 interface FinancialBlockProps {
@@ -29,22 +30,20 @@ interface FinancialBlockProps {
   items: Item[];
   categories: Category[];
   isLoading: boolean;
-  onAdd: (name: string, amount: number) => Promise<void>;
-  onUpdate: (id: string, name: string, amount: number) => Promise<void>;
+  onAdd: (name: string, amount: number, category?: string) => Promise<void>;
+  onUpdate: (id: string, name: string, amount: number, category?: string) => Promise<void>;
   onDelete: (id: string) => void;
   isPending?: boolean;
 }
 
-// Helper to detect category from item name
+// Helper to detect category from item name (fallback when no category is set)
 function detectCategory(itemName: string, categories: Category[]): Category {
   const lowerName = itemName.toLowerCase();
   
-  // Category keyword mappings
   const keywordMap: Record<string, string[]> = {
-    // Expense categories
     'housing': ['rent', 'mortgage', 'housing', 'apartment', 'lease', 'hoa'],
     'utilities': ['electric', 'water', 'gas', 'utility', 'internet', 'wifi', 'phone', 'mobile', 'cable'],
-    'transport': ['car', 'auto', 'gas', 'fuel', 'transport', 'metro', 'bus', 'uber', 'lyft', 'parking', 'insurance'],
+    'transport': ['car', 'auto', 'fuel', 'transport', 'metro', 'bus', 'uber', 'lyft', 'parking'],
     'food': ['food', 'grocery', 'groceries', 'restaurant', 'dining', 'meal', 'lunch', 'dinner', 'breakfast'],
     'health': ['health', 'medical', 'doctor', 'dentist', 'pharmacy', 'medicine', 'gym', 'fitness'],
     'subscriptions': ['netflix', 'spotify', 'subscription', 'streaming', 'premium', 'plus', 'membership'],
@@ -54,18 +53,17 @@ function detectCategory(itemName: string, categories: Category[]): Category {
     'savings': ['saving', 'investment', 'invest', '401k', 'ira', 'retirement'],
     'debt': ['debt', 'loan', 'credit', 'payment', 'interest'],
     'insurance': ['insurance', 'policy', 'coverage'],
-    'childcare': ['child', 'daycare', 'babysit', 'kid', 'school'],
+    'childcare': ['child', 'daycare', 'babysit', 'kid'],
     'pets': ['pet', 'dog', 'cat', 'vet', 'animal'],
     'gifts': ['gift', 'donation', 'charity', 'present'],
     'taxes': ['tax', 'irs', 'federal', 'state'],
-    // Income categories
     'salary': ['salary', 'paycheck', 'wage', 'pay'],
     'freelance': ['freelance', 'contract', 'consulting', 'gig'],
     'business': ['business', 'profit', 'revenue', 'sales'],
-    'investments': ['dividend', 'investment', 'stock', 'bond', 'interest', 'capital'],
-    'rental': ['rental', 'rent', 'tenant', 'property'],
+    'investments': ['dividend', 'investment', 'stock', 'bond', 'capital'],
+    'rental': ['rental', 'tenant', 'property'],
     'bonus': ['bonus', 'commission', 'incentive'],
-    'pension': ['pension', 'retirement', 'social security'],
+    'pension': ['pension', 'social security'],
     'benefits': ['benefit', 'subsidy', 'allowance', 'stipend'],
     'royalties': ['royalty', 'royalties', 'licensing'],
     'refunds': ['refund', 'rebate', 'cashback', 'return'],
@@ -79,27 +77,37 @@ function detectCategory(itemName: string, categories: Category[]): Category {
     }
   }
 
-  // Return "other" category or first available
   return categories.find(c => c.value === 'other') || categories[0];
+}
+
+// Get category for an item - use stored category or fall back to auto-detection
+function getItemCategory(item: Item, categories: Category[]): Category {
+  if (item.category) {
+    const found = categories.find(c => c.value === item.category);
+    if (found) return found;
+  }
+  return detectCategory(item.name, categories);
 }
 
 interface CategoryGroupProps {
   category: Category;
   items: Item[];
+  allCategories: Category[];
   isExpense: boolean;
   currency: string;
   editingId: string | null;
-  editingData: { name: string; amount: string };
+  editingData: { name: string; amount: string; category: string };
   onStartEdit: (item: Item) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
-  onEditDataChange: (data: { name: string; amount: string }) => void;
+  onEditDataChange: (data: { name: string; amount: string; category: string }) => void;
   onDelete: (id: string) => void;
 }
 
 function CategoryGroup({
   category,
   items,
+  allCategories,
   isExpense,
   currency,
   editingId,
@@ -162,32 +170,58 @@ function CategoryGroup({
                   }`}
                 >
                   {editingId === item.id ? (
-                    <>
-                      <Input
-                        value={editingData.name}
-                        onChange={(e) => onEditDataChange({ ...editingData, name: e.target.value })}
-                        className="flex-1 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
-                      />
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        value={editingData.amount}
-                        onChange={(e) => onEditDataChange({ ...editingData, amount: e.target.value.replace(/[^0-9.]/g, '') })}
-                        className="w-20 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
-                      />
-                      <button
-                        onClick={onSaveEdit}
-                        className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={onCancelEdit}
-                        className="p-1.5 rounded-lg bg-slate-500/15 text-slate-400 hover:bg-slate-500/25 transition-colors"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </>
+                    <div className="flex-1 flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={editingData.category}
+                          onValueChange={(val) => onEditDataChange({ ...editingData, category: val })}
+                        >
+                          <SelectTrigger className="w-[130px] h-8 text-xs bg-slate-800 border-white/[0.08] text-white">
+                            <SelectValue placeholder="Category" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-white/10 z-50">
+                            {allCategories.map(cat => (
+                              <SelectItem 
+                                key={cat.value} 
+                                value={cat.value}
+                                className="text-white hover:bg-white/10 focus:bg-white/10 text-xs"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <cat.icon className="w-3 h-3" style={{ color: cat.color }} />
+                                  <span>{cat.label}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          value={editingData.name}
+                          onChange={(e) => onEditDataChange({ ...editingData, name: e.target.value })}
+                          className="flex-1 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
+                          placeholder="Name"
+                        />
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={editingData.amount}
+                          onChange={(e) => onEditDataChange({ ...editingData, amount: e.target.value.replace(/[^0-9.]/g, '') })}
+                          className="w-20 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
+                          placeholder="Amount"
+                        />
+                        <button
+                          onClick={onSaveEdit}
+                          className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={onCancelEdit}
+                          className="p-1.5 rounded-lg bg-slate-500/15 text-slate-400 hover:bg-slate-500/25 transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <>
                       <span className="flex-1 text-sm text-white/80 truncate">
@@ -236,18 +270,18 @@ export function FinancialBlock({
   const { currency } = useCurrency();
   const [newItem, setNewItem] = useState({ name: '', amount: '', category: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingData, setEditingData] = useState({ name: '', amount: '' });
+  const [editingData, setEditingData] = useState({ name: '', amount: '', category: '' });
   const [isExpanded, setIsExpanded] = useState(true);
 
   const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
   const isExpense = type === 'expense';
 
-  // Group items by detected category
+  // Group items by category (stored or auto-detected)
   const groupedItems = useMemo(() => {
     const groups = new Map<string, { category: Category; items: Item[] }>();
     
     items.forEach(item => {
-      const category = detectCategory(item.name, categories);
+      const category = getItemCategory(item, categories);
       const existing = groups.get(category.value);
       if (existing) {
         existing.items.push(item);
@@ -256,7 +290,6 @@ export function FinancialBlock({
       }
     });
 
-    // Sort groups by total amount (highest first)
     return Array.from(groups.values()).sort((a, b) => {
       const totalA = a.items.reduce((sum, i) => sum + i.amount, 0);
       const totalB = b.items.reduce((sum, i) => sum + i.amount, 0);
@@ -266,19 +299,24 @@ export function FinancialBlock({
 
   const handleAdd = async () => {
     if (!newItem.name.trim() || !newItem.amount) return;
-    await onAdd(newItem.name.trim(), parseFloat(newItem.amount));
+    await onAdd(newItem.name.trim(), parseFloat(newItem.amount), newItem.category || undefined);
     setNewItem({ name: '', amount: '', category: '' });
   };
 
   const handleSaveEdit = async () => {
     if (!editingId || !editingData.name.trim() || !editingData.amount) return;
-    await onUpdate(editingId, editingData.name.trim(), parseFloat(editingData.amount));
+    await onUpdate(editingId, editingData.name.trim(), parseFloat(editingData.amount), editingData.category || undefined);
     setEditingId(null);
   };
 
   const startEdit = (item: Item) => {
+    const itemCategory = getItemCategory(item, categories);
     setEditingId(item.id);
-    setEditingData({ name: item.name, amount: item.amount.toString() });
+    setEditingData({ 
+      name: item.name, 
+      amount: item.amount.toString(),
+      category: item.category || itemCategory.value
+    });
   };
 
   const DefaultIcon = categories[0]?.icon;
@@ -341,10 +379,10 @@ export function FinancialBlock({
                   value={newItem.category}
                   onValueChange={(val) => setNewItem({ ...newItem, category: val })}
                 >
-                  <SelectTrigger className="w-[140px] h-10 bg-white/[0.03] border-white/[0.08] text-white">
+                  <SelectTrigger className="w-[140px] h-10 bg-slate-800 border-white/[0.08] text-white">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-white/10">
+                  <SelectContent className="bg-slate-800 border-white/10 z-50">
                     {categories.map(cat => (
                       <SelectItem 
                         key={cat.value} 
@@ -414,6 +452,7 @@ export function FinancialBlock({
                       <CategoryGroup
                         category={category}
                         items={groupItems}
+                        allCategories={categories}
                         isExpense={isExpense}
                         currency={currency}
                         editingId={editingId}

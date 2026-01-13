@@ -8,6 +8,7 @@ export interface RecurringExpense {
   name: string;
   amount: number;
   is_active: boolean;
+  category?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -18,6 +19,7 @@ export interface RecurringIncome {
   name: string;
   amount: number;
   is_active: boolean;
+  category?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -67,7 +69,7 @@ export function useAddRecurringExpense() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (expense: { name: string; amount: number }) => {
+    mutationFn: async (expense: { name: string; amount: number; category?: string }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('recurring_expenses')
@@ -87,7 +89,7 @@ export function useUpdateRecurringExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string }) => {
       const { data, error } = await supabase
         .from('recurring_expenses')
         .update(updates)
@@ -143,7 +145,7 @@ export function useAddRecurringIncome() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (income: { name: string; amount: number }) => {
+    mutationFn: async (income: { name: string; amount: number; category?: string }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('recurring_income')
@@ -163,7 +165,7 @@ export function useUpdateRecurringIncome() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string }) => {
       const { data, error } = await supabase
         .from('recurring_income')
         .update(updates)

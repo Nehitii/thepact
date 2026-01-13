@@ -63,40 +63,40 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const totalExpenses = expenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = income.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
 
-  const handleAddExpense = async (name: string, amount: number) => {
+  const handleAddExpense = async (name: string, amount: number, category?: string) => {
     if (expenses.length >= 30) {
       toast.error('Maximum 30 recurring expenses allowed');
       return;
     }
     try {
-      await addExpense.mutateAsync({ name, amount });
+      await addExpense.mutateAsync({ name, amount, category });
       toast.success('Expense added');
     } catch (e) {
       toast.error('Failed to add expense');
     }
   };
 
-  const handleAddIncome = async (name: string, amount: number) => {
+  const handleAddIncome = async (name: string, amount: number, category?: string) => {
     try {
-      await addIncome.mutateAsync({ name, amount });
+      await addIncome.mutateAsync({ name, amount, category });
       toast.success('Income added');
     } catch (e) {
       toast.error('Failed to add income');
     }
   };
 
-  const handleUpdateExpense = async (id: string, name: string, amount: number) => {
+  const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string) => {
     try {
-      await updateExpense.mutateAsync({ id, name, amount });
+      await updateExpense.mutateAsync({ id, name, amount, category });
       toast.success('Expense updated');
     } catch (e) {
       toast.error('Failed to update expense');
     }
   };
 
-  const handleUpdateIncome = async (id: string, name: string, amount: number) => {
+  const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string) => {
     try {
-      await updateIncome.mutateAsync({ id, name, amount });
+      await updateIncome.mutateAsync({ id, name, amount, category });
       toast.success('Income updated');
     } catch (e) {
       toast.error('Failed to update income');
