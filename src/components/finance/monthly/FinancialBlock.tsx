@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
 import type { LucideIcon } from 'lucide-react';
@@ -34,6 +35,193 @@ interface FinancialBlockProps {
   isPending?: boolean;
 }
 
+// Helper to detect category from item name
+function detectCategory(itemName: string, categories: Category[]): Category {
+  const lowerName = itemName.toLowerCase();
+  
+  // Category keyword mappings
+  const keywordMap: Record<string, string[]> = {
+    // Expense categories
+    'housing': ['rent', 'mortgage', 'housing', 'apartment', 'lease', 'hoa'],
+    'utilities': ['electric', 'water', 'gas', 'utility', 'internet', 'wifi', 'phone', 'mobile', 'cable'],
+    'transport': ['car', 'auto', 'gas', 'fuel', 'transport', 'metro', 'bus', 'uber', 'lyft', 'parking', 'insurance'],
+    'food': ['food', 'grocery', 'groceries', 'restaurant', 'dining', 'meal', 'lunch', 'dinner', 'breakfast'],
+    'health': ['health', 'medical', 'doctor', 'dentist', 'pharmacy', 'medicine', 'gym', 'fitness'],
+    'subscriptions': ['netflix', 'spotify', 'subscription', 'streaming', 'premium', 'plus', 'membership'],
+    'entertainment': ['entertainment', 'movie', 'game', 'concert', 'event', 'hobby'],
+    'education': ['education', 'course', 'school', 'college', 'tuition', 'book', 'learning'],
+    'shopping': ['shopping', 'clothes', 'amazon', 'retail', 'purchase'],
+    'savings': ['saving', 'investment', 'invest', '401k', 'ira', 'retirement'],
+    'debt': ['debt', 'loan', 'credit', 'payment', 'interest'],
+    'insurance': ['insurance', 'policy', 'coverage'],
+    'childcare': ['child', 'daycare', 'babysit', 'kid', 'school'],
+    'pets': ['pet', 'dog', 'cat', 'vet', 'animal'],
+    'gifts': ['gift', 'donation', 'charity', 'present'],
+    'taxes': ['tax', 'irs', 'federal', 'state'],
+    // Income categories
+    'salary': ['salary', 'paycheck', 'wage', 'pay'],
+    'freelance': ['freelance', 'contract', 'consulting', 'gig'],
+    'business': ['business', 'profit', 'revenue', 'sales'],
+    'investments': ['dividend', 'investment', 'stock', 'bond', 'interest', 'capital'],
+    'rental': ['rental', 'rent', 'tenant', 'property'],
+    'bonus': ['bonus', 'commission', 'incentive'],
+    'pension': ['pension', 'retirement', 'social security'],
+    'benefits': ['benefit', 'subsidy', 'allowance', 'stipend'],
+    'royalties': ['royalty', 'royalties', 'licensing'],
+    'refunds': ['refund', 'rebate', 'cashback', 'return'],
+    'other': ['other', 'misc', 'miscellaneous'],
+  };
+
+  for (const [categoryValue, keywords] of Object.entries(keywordMap)) {
+    if (keywords.some(keyword => lowerName.includes(keyword))) {
+      const found = categories.find(c => c.value === categoryValue);
+      if (found) return found;
+    }
+  }
+
+  // Return "other" category or first available
+  return categories.find(c => c.value === 'other') || categories[0];
+}
+
+interface CategoryGroupProps {
+  category: Category;
+  items: Item[];
+  isExpense: boolean;
+  currency: string;
+  editingId: string | null;
+  editingData: { name: string; amount: string };
+  onStartEdit: (item: Item) => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onEditDataChange: (data: { name: string; amount: string }) => void;
+  onDelete: (id: string) => void;
+}
+
+function CategoryGroup({
+  category,
+  items,
+  isExpense,
+  currency,
+  editingId,
+  editingData,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onEditDataChange,
+  onDelete,
+}: CategoryGroupProps) {
+  const [isOpen, setIsOpen] = useState(true);
+  const categoryTotal = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+  const Icon = category.icon;
+
+  return (
+    <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] overflow-hidden">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors"
+      >
+        <motion.div
+          animate={{ rotate: isOpen ? 0 : -90 }}
+          transition={{ duration: 0.15 }}
+        >
+          <ChevronDown className="w-4 h-4 text-slate-500" />
+        </motion.div>
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
+          style={{ backgroundColor: category.bg }}
+        >
+          <Icon className="w-3.5 h-3.5" style={{ color: category.color }} />
+        </div>
+        <span className="flex-1 text-left text-sm font-medium text-white/90">
+          {category.label}
+        </span>
+        <span className="text-xs text-slate-500 mr-2">{items.length}</span>
+        <span className={`text-sm font-semibold tabular-nums ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
+          {isExpense ? '-' : '+'}{formatCurrency(categoryTotal, currency)}
+        </span>
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <div className="px-3 pb-3 space-y-1.5">
+              {items.map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={`group flex items-center gap-2.5 p-2.5 pl-10 rounded-lg transition-all duration-200 ${
+                    item.is_active
+                      ? 'hover:bg-white/[0.03]'
+                      : 'opacity-40'
+                  }`}
+                >
+                  {editingId === item.id ? (
+                    <>
+                      <Input
+                        value={editingData.name}
+                        onChange={(e) => onEditDataChange({ ...editingData, name: e.target.value })}
+                        className="flex-1 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
+                      />
+                      <Input
+                        type="text"
+                        inputMode="decimal"
+                        value={editingData.amount}
+                        onChange={(e) => onEditDataChange({ ...editingData, amount: e.target.value.replace(/[^0-9.]/g, '') })}
+                        className="w-20 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
+                      />
+                      <button
+                        onClick={onSaveEdit}
+                        className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={onCancelEdit}
+                        className="p-1.5 rounded-lg bg-slate-500/15 text-slate-400 hover:bg-slate-500/25 transition-colors"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="flex-1 text-sm text-white/80 truncate">
+                        {item.name}
+                      </span>
+                      <span className={`font-medium text-sm tabular-nums ${
+                        isExpense ? 'text-rose-400/80' : 'text-emerald-400/80'
+                      }`}>
+                        {formatCurrency(item.amount, currency)}
+                      </span>
+                      <button
+                        onClick={() => onStartEdit(item)}
+                        className="p-1 rounded text-slate-500 opacity-0 group-hover:opacity-100 hover:text-white hover:bg-white/[0.05] transition-all"
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(item.id)}
+                        className="p-1 rounded text-slate-500 opacity-0 group-hover:opacity-100 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </>
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export function FinancialBlock({
   title,
   type,
@@ -46,19 +234,40 @@ export function FinancialBlock({
   isPending,
 }: FinancialBlockProps) {
   const { currency } = useCurrency();
-  const [newItem, setNewItem] = useState({ name: '', amount: '' });
+  const [newItem, setNewItem] = useState({ name: '', amount: '', category: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingData, setEditingData] = useState({ name: '', amount: '' });
   const [isExpanded, setIsExpanded] = useState(true);
 
   const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
   const isExpense = type === 'expense';
-  const accentColor = isExpense ? 'rose' : 'emerald';
+
+  // Group items by detected category
+  const groupedItems = useMemo(() => {
+    const groups = new Map<string, { category: Category; items: Item[] }>();
+    
+    items.forEach(item => {
+      const category = detectCategory(item.name, categories);
+      const existing = groups.get(category.value);
+      if (existing) {
+        existing.items.push(item);
+      } else {
+        groups.set(category.value, { category, items: [item] });
+      }
+    });
+
+    // Sort groups by total amount (highest first)
+    return Array.from(groups.values()).sort((a, b) => {
+      const totalA = a.items.reduce((sum, i) => sum + i.amount, 0);
+      const totalB = b.items.reduce((sum, i) => sum + i.amount, 0);
+      return totalB - totalA;
+    });
+  }, [items, categories]);
 
   const handleAdd = async () => {
     if (!newItem.name.trim() || !newItem.amount) return;
     await onAdd(newItem.name.trim(), parseFloat(newItem.amount));
-    setNewItem({ name: '', amount: '' });
+    setNewItem({ name: '', amount: '', category: '' });
   };
 
   const handleSaveEdit = async () => {
@@ -79,7 +288,7 @@ export function FinancialBlock({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className={`relative rounded-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-800/30 border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03)] overflow-hidden`}
+      className="relative rounded-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-800/30 border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03)] overflow-hidden"
     >
       {/* Header */}
       <button
@@ -87,17 +296,21 @@ export function FinancialBlock({
         className="w-full flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors"
       >
         <div className="flex items-center gap-4">
-          <div className={`w-11 h-11 rounded-xl bg-${accentColor}-500/10 border border-${accentColor}-500/20 flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]`}
+          <div 
+            className="w-11 h-11 rounded-xl flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
             style={{
               backgroundColor: isExpense ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)',
               borderColor: isExpense ? 'rgba(244,63,94,0.2)' : 'rgba(16,185,129,0.2)',
+              borderWidth: 1,
             }}
           >
             {DefaultIcon && <DefaultIcon className={`w-5 h-5 ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`} />}
           </div>
           <div className="text-left">
             <h3 className="text-base font-semibold text-white">{title}</h3>
-            <p className="text-sm text-slate-500">{items.length} items</p>
+            <p className="text-sm text-slate-500">
+              {groupedItems.length} {groupedItems.length === 1 ? 'category' : 'categories'} · {items.length} items
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -124,6 +337,28 @@ export function FinancialBlock({
             <div className="px-5 pb-5 space-y-4">
               {/* Add Form */}
               <div className="flex gap-2 p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
+                <Select
+                  value={newItem.category}
+                  onValueChange={(val) => setNewItem({ ...newItem, category: val })}
+                >
+                  <SelectTrigger className="w-[140px] h-10 bg-white/[0.03] border-white/[0.08] text-white">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-white/10">
+                    {categories.map(cat => (
+                      <SelectItem 
+                        key={cat.value} 
+                        value={cat.value}
+                        className="text-white hover:bg-white/10 focus:bg-white/10"
+                      >
+                        <div className="flex items-center gap-2">
+                          <cat.icon className="w-3.5 h-3.5" style={{ color: cat.color }} />
+                          <span>{cat.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Input
                   placeholder={`New ${type}...`}
                   value={newItem.name}
@@ -158,87 +393,37 @@ export function FinancialBlock({
                 </Button>
               </div>
 
-              {/* Items List */}
-              <div className="space-y-2 max-h-[320px] overflow-y-auto scrollbar-thin">
+              {/* Category Groups */}
+              <div className="space-y-2 max-h-[400px] overflow-y-auto scrollbar-thin pr-1">
                 {isLoading ? (
                   <div className="py-8 flex justify-center">
                     <div className="w-6 h-6 border-2 border-slate-600 border-t-slate-400 rounded-full animate-spin" />
                   </div>
-                ) : items.length === 0 ? (
+                ) : groupedItems.length === 0 ? (
                   <p className="text-center text-slate-500 text-sm py-8">
                     No recurring {type}s yet
                   </p>
                 ) : (
-                  items.map((item, index) => (
+                  groupedItems.map(({ category, items: groupItems }, index) => (
                     <motion.div
-                      key={item.id}
+                      key={category.value}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.03 }}
-                      className={`group flex items-center gap-3 p-3.5 rounded-xl border transition-all duration-200 ${
-                        item.is_active
-                          ? 'bg-white/[0.02] border-white/[0.05] hover:border-white/[0.1] hover:bg-white/[0.03]'
-                          : 'bg-white/[0.01] border-white/[0.02] opacity-50'
-                      }`}
+                      transition={{ delay: index * 0.05 }}
                     >
-                      {editingId === item.id ? (
-                        <>
-                          <Input
-                            value={editingData.name}
-                            onChange={(e) => setEditingData({ ...editingData, name: e.target.value })}
-                            className="flex-1 h-9 text-sm bg-white/[0.03] border-white/[0.08] text-white"
-                          />
-                          <Input
-                            type="text"
-                            inputMode="decimal"
-                            value={editingData.amount}
-                            onChange={(e) => setEditingData({ ...editingData, amount: e.target.value.replace(/[^0-9.]/g, '') })}
-                            className="w-24 h-9 text-sm bg-white/[0.03] border-white/[0.08] text-white"
-                          />
-                          <button
-                            onClick={handleSaveEdit}
-                            className="p-2 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
-                          >
-                            <Check className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="p-2 rounded-lg bg-slate-500/15 text-slate-400 hover:bg-slate-500/25 transition-colors"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0`}
-                            style={{
-                              backgroundColor: isExpense ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)',
-                            }}
-                          >
-                            {DefaultIcon && <DefaultIcon className={`h-4 w-4 ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`} />}
-                          </div>
-                          <span className="flex-1 text-sm font-medium text-white truncate">
-                            {item.name}
-                          </span>
-                          <span className={`font-semibold text-sm tabular-nums ${
-                            isExpense ? 'text-rose-400' : 'text-emerald-400'
-                          }`}>
-                            {isExpense ? '-' : '+'}{formatCurrency(item.amount, currency)}
-                          </span>
-                          <button
-                            onClick={() => startEdit(item)}
-                            className="p-1.5 rounded-lg text-slate-500 opacity-0 group-hover:opacity-100 hover:text-white hover:bg-white/[0.05] transition-all"
-                          >
-                            <Edit2 className="h-3.5 w-3.5" />
-                          </button>
-                          <button
-                            onClick={() => onDelete(item.id)}
-                            className="p-1.5 rounded-lg text-slate-500 opacity-0 group-hover:opacity-100 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
-                        </>
-                      )}
+                      <CategoryGroup
+                        category={category}
+                        items={groupItems}
+                        isExpense={isExpense}
+                        currency={currency}
+                        editingId={editingId}
+                        editingData={editingData}
+                        onStartEdit={startEdit}
+                        onSaveEdit={handleSaveEdit}
+                        onCancelEdit={() => setEditingId(null)}
+                        onEditDataChange={setEditingData}
+                        onDelete={onDelete}
+                      />
                     </motion.div>
                   ))
                 )}
