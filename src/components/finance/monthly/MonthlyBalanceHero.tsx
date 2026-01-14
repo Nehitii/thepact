@@ -3,13 +3,44 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Scale } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+
+interface CategoryData {
+  name: string;
+  value: number;
+  color: string;
+}
 
 interface MonthlyBalanceHeroProps {
   totalIncome: number;
   totalExpenses: number;
+  expensesByCategory?: CategoryData[];
+  incomeByCategory?: CategoryData[];
 }
 
-export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanceHeroProps) {
+const RADIAN = Math.PI / 180;
+
+const CustomTooltip = ({ active, payload, currency }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-slate-800/95 backdrop-blur-sm border border-white/10 rounded-lg px-3 py-2 shadow-xl">
+        <p className="text-xs text-slate-300 font-medium">{data.name}</p>
+        <p className="text-sm font-semibold text-white">
+          {formatCurrency(data.value, currency)}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+export function MonthlyBalanceHero({ 
+  totalIncome, 
+  totalExpenses,
+  expensesByCategory = [],
+  incomeByCategory = []
+}: MonthlyBalanceHeroProps) {
   const { currency } = useCurrency();
   const netBalance = totalIncome - totalExpenses;
   const isPositive = netBalance >= 0;
@@ -18,6 +49,9 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
     if (totalIncome === 0) return 0;
     return Math.round((netBalance / totalIncome) * 100);
   }, [netBalance, totalIncome]);
+
+  const hasExpenseData = expensesByCategory.length > 0;
+  const hasIncomeData = incomeByCategory.length > 0;
 
   return (
     <motion.div
@@ -75,7 +109,7 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
             )}
           </motion.div>
 
-          {/* Income / Expenses Split */}
+          {/* Income / Expenses Split with Pie Charts */}
           <div className="grid grid-cols-2 gap-4 md:gap-6">
             {/* Income */}
             <motion.div
@@ -90,9 +124,60 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
                 </div>
                 <span className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">Income</span>
               </div>
-              <p className="text-2xl md:text-3xl font-semibold text-emerald-400 tabular-nums">
+              <p className="text-2xl md:text-3xl font-semibold text-emerald-400 tabular-nums mb-4">
                 +{formatCurrency(totalIncome, currency)}
               </p>
+              
+              {/* Income Pie Chart */}
+              {hasIncomeData && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                  className="h-32"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={incomeByCategory}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={30}
+                        outerRadius={50}
+                        paddingAngle={2}
+                        dataKey="value"
+                        animationBegin={400}
+                        animationDuration={800}
+                      >
+                        {incomeByCategory.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip currency={currency} />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </motion.div>
+              )}
+              
+              {/* Legend */}
+              {hasIncomeData && (
+                <div className="mt-2 space-y-1 max-h-20 overflow-y-auto">
+                  {incomeByCategory.slice(0, 4).map((cat, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                        <span className="text-slate-400 truncate max-w-[80px]">{cat.name}</span>
+                      </div>
+                      <span className="text-slate-300 tabular-nums">
+                        {Math.round((cat.value / totalIncome) * 100)}%
+                      </span>
+                    </div>
+                  ))}
+                  {incomeByCategory.length > 4 && (
+                    <p className="text-[10px] text-slate-500">+{incomeByCategory.length - 4} more</p>
+                  )}
+                </div>
+              )}
             </motion.div>
 
             {/* Expenses */}
@@ -108,9 +193,60 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
                 </div>
                 <span className="text-xs font-medium text-rose-400/80 uppercase tracking-wider">Expenses</span>
               </div>
-              <p className="text-2xl md:text-3xl font-semibold text-rose-400 tabular-nums">
+              <p className="text-2xl md:text-3xl font-semibold text-rose-400 tabular-nums mb-4">
                 -{formatCurrency(totalExpenses, currency)}
               </p>
+              
+              {/* Expenses Pie Chart */}
+              {hasExpenseData && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.5, duration: 0.4 }}
+                  className="h-32"
+                >
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={expensesByCategory}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={30}
+                        outerRadius={50}
+                        paddingAngle={2}
+                        dataKey="value"
+                        animationBegin={400}
+                        animationDuration={800}
+                      >
+                        {expensesByCategory.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<CustomTooltip currency={currency} />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </motion.div>
+              )}
+              
+              {/* Legend */}
+              {hasExpenseData && (
+                <div className="mt-2 space-y-1 max-h-20 overflow-y-auto">
+                  {expensesByCategory.slice(0, 4).map((cat, i) => (
+                    <div key={i} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
+                        <span className="text-slate-400 truncate max-w-[80px]">{cat.name}</span>
+                      </div>
+                      <span className="text-slate-300 tabular-nums">
+                        {Math.round((cat.value / totalExpenses) * 100)}%
+                      </span>
+                    </div>
+                  ))}
+                  {expensesByCategory.length > 4 && (
+                    <p className="text-[10px] text-slate-500">+{expensesByCategory.length - 4} more</p>
+                  )}
+                </div>
+              )}
             </motion.div>
           </div>
         </div>

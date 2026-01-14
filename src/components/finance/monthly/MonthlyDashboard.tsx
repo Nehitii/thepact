@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingDown, TrendingUp, Home, Car, Utensils, Wifi, Heart, ShoppingBag, PiggyBank, Landmark, GraduationCap, Gamepad2, Wrench, CreditCard, Receipt, Plane, Zap, DollarSign, Briefcase, Gift } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -47,6 +48,33 @@ interface MonthlyDashboardProps {
   salaryPaymentDay: number;
 }
 
+// Category color mapping for charts
+const EXPENSE_COLORS: Record<string, string> = {
+  housing: '#fb7185',
+  utilities: '#fb923c',
+  food: '#facc15',
+  transport: '#60a5fa',
+  subscriptions: '#c084fc',
+  health: '#f472b6',
+  leisure: '#22d3ee',
+  savings: '#34d399',
+  taxes: '#f87171',
+  education: '#818cf8',
+  travel: '#38bdf8',
+  shopping: '#a78bfa',
+  maintenance: '#fbbf24',
+  other: '#94a3b8',
+};
+
+const INCOME_COLORS: Record<string, string> = {
+  salary: '#34d399',
+  freelance: '#facc15',
+  investment: '#4ade80',
+  rental: '#60a5fa',
+  gift: '#f472b6',
+  other: '#94a3b8',
+};
+
 export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const { user } = useAuth();
   
@@ -62,6 +90,44 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
 
   const totalExpenses = expenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = income.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+
+  // Compute expenses by category for pie chart
+  const expensesByCategory = useMemo(() => {
+    const activeExpenses = expenses.filter(e => e.is_active);
+    const categoryTotals: Record<string, number> = {};
+    
+    activeExpenses.forEach(exp => {
+      const cat = exp.category || 'other';
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
+    });
+    
+    return Object.entries(categoryTotals)
+      .map(([name, value]) => ({
+        name: EXPENSE_CATEGORIES.find(c => c.value === name)?.label || name,
+        value,
+        color: EXPENSE_COLORS[name] || EXPENSE_COLORS.other,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [expenses]);
+
+  // Compute income by category for pie chart
+  const incomeByCategory = useMemo(() => {
+    const activeIncome = income.filter(i => i.is_active);
+    const categoryTotals: Record<string, number> = {};
+    
+    activeIncome.forEach(inc => {
+      const cat = inc.category || 'other';
+      categoryTotals[cat] = (categoryTotals[cat] || 0) + inc.amount;
+    });
+    
+    return Object.entries(categoryTotals)
+      .map(([name, value]) => ({
+        name: INCOME_CATEGORIES.find(c => c.value === name)?.label || name,
+        value,
+        color: INCOME_COLORS[name] || INCOME_COLORS.other,
+      }))
+      .sort((a, b) => b.value - a.value);
+  }, [income]);
 
   const handleAddExpense = async (name: string, amount: number, category?: string) => {
     if (expenses.length >= 30) {
@@ -105,12 +171,13 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
 
   return (
     <div className="space-y-8">
-      {/* Hero: Monthly Balance */}
+      {/* Hero: Monthly Balance with Pie Charts */}
       <MonthlyBalanceHero 
         totalIncome={totalIncome} 
-        totalExpenses={totalExpenses} 
+        totalExpenses={totalExpenses}
+        expensesByCategory={expensesByCategory}
+        incomeByCategory={incomeByCategory}
       />
-
       {/* Two Column Layout: Expenses | Income */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Expenses Block */}
