@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Trash2, Edit2, Check, X, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -89,6 +89,28 @@ function getItemCategory(item: Item, categories: Category[]): Category {
   return detectCategory(item.name, categories);
 }
 
+// Get hex color from category
+function getCategoryHexColor(category: Category): string {
+  const colorMap: Record<string, string> = {
+    'text-rose-400': '#fb7185',
+    'text-orange-400': '#fb923c',
+    'text-yellow-400': '#facc15',
+    'text-blue-400': '#60a5fa',
+    'text-purple-400': '#c084fc',
+    'text-pink-400': '#f472b6',
+    'text-cyan-400': '#22d3ee',
+    'text-emerald-400': '#34d399',
+    'text-red-400': '#f87171',
+    'text-indigo-400': '#818cf8',
+    'text-sky-400': '#38bdf8',
+    'text-violet-400': '#a78bfa',
+    'text-amber-400': '#fbbf24',
+    'text-slate-400': '#94a3b8',
+    'text-green-400': '#4ade80',
+  };
+  return colorMap[category.color] || '#94a3b8';
+}
+
 interface CategoryGroupProps {
   category: Category;
   items: Item[];
@@ -121,30 +143,41 @@ function CategoryGroup({
   const [isOpen, setIsOpen] = useState(true);
   const categoryTotal = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
   const Icon = category.icon;
+  const hexColor = getCategoryHexColor(category);
 
   return (
-    <div className="rounded-xl border border-white/[0.04] bg-white/[0.01] overflow-hidden">
+    <motion.div 
+      className="category-pill overflow-hidden"
+      style={{ '--category-color': hexColor } as React.CSSProperties}
+      layout
+    >
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 p-3 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center gap-3 p-4 hover:bg-white/[0.02] transition-all duration-200"
       >
         <motion.div
-          animate={{ rotate: isOpen ? 0 : -90 }}
+          animate={{ rotate: isOpen ? 90 : 0 }}
           transition={{ duration: 0.15 }}
+          className="text-slate-500"
         >
-          <ChevronDown className="w-4 h-4 text-slate-500" />
+          <ChevronRight className="w-4 h-4" />
         </motion.div>
         <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-          style={{ backgroundColor: category.bg }}
+          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
+          style={{ 
+            backgroundColor: `${hexColor}15`,
+            boxShadow: `0 0 20px ${hexColor}20`
+          }}
         >
-          <Icon className="w-3.5 h-3.5" style={{ color: category.color }} />
+          <Icon className="w-4 h-4" style={{ color: hexColor }} />
         </div>
-        <span className="flex-1 text-left text-sm font-medium text-white/90">
+        <span className="flex-1 text-left text-sm font-semibold text-white/90">
           {category.label}
         </span>
-        <span className="text-xs text-slate-500 mr-2">{items.length}</span>
-        <span className={`text-sm font-semibold tabular-nums ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
+        <span className="text-xs text-slate-500 px-2 py-0.5 rounded-full bg-white/[0.03]">
+          {items.length}
+        </span>
+        <span className={`text-sm font-bold tabular-nums ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
           {isExpense ? '-' : '+'}{formatCurrency(categoryTotal, currency)}
         </span>
       </button>
@@ -155,39 +188,40 @@ function CategoryGroup({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="px-3 pb-3 space-y-1.5">
-              {items.map((item) => (
+            <div className="px-4 pb-4 space-y-2">
+              {items.map((item, index) => (
                 <motion.div
                   key={item.id}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className={`group flex items-center gap-2.5 p-2.5 pl-10 rounded-lg transition-all duration-200 ${
-                    item.is_active
-                      ? 'hover:bg-white/[0.03]'
-                      : 'opacity-40'
-                  }`}
+                  transition={{ delay: index * 0.03 }}
+                  className={`group relative flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                    editingId === item.id 
+                      ? 'neu-inset bg-white/[0.02]' 
+                      : 'hover:bg-white/[0.03]'
+                  } ${!item.is_active ? 'opacity-40' : ''}`}
                 >
                   {editingId === item.id ? (
-                    <div className="flex-1 flex flex-col gap-2">
+                    <div className="flex-1 flex flex-col gap-3">
                       <div className="flex items-center gap-2">
                         <Select
                           value={editingData.category}
                           onValueChange={(val) => onEditDataChange({ ...editingData, category: val })}
                         >
-                          <SelectTrigger className="w-[130px] h-8 text-xs bg-slate-800 border-white/[0.08] text-white">
+                          <SelectTrigger className="w-[130px] h-9 text-xs bg-slate-800/80 border-white/[0.1] text-white rounded-lg">
                             <SelectValue placeholder="Category" />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-800 border-white/10 z-50">
+                          <SelectContent className="bg-slate-800 border-white/10 z-50 rounded-xl">
                             {allCategories.map(cat => (
                               <SelectItem 
                                 key={cat.value} 
                                 value={cat.value}
-                                className="text-white hover:bg-white/10 focus:bg-white/10 text-xs"
+                                className="text-white hover:bg-white/10 focus:bg-white/10 text-xs rounded-lg"
                               >
                                 <div className="flex items-center gap-2">
-                                  <cat.icon className="w-3 h-3" style={{ color: cat.color }} />
+                                  <cat.icon className="w-3 h-3" style={{ color: getCategoryHexColor(cat) }} />
                                   <span>{cat.label}</span>
                                 </div>
                               </SelectItem>
@@ -197,7 +231,7 @@ function CategoryGroup({
                         <Input
                           value={editingData.name}
                           onChange={(e) => onEditDataChange({ ...editingData, name: e.target.value })}
-                          className="flex-1 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
+                          className="flex-1 h-9 text-sm bg-white/[0.03] border-white/[0.1] text-white rounded-lg"
                           placeholder="Name"
                         />
                         <Input
@@ -205,45 +239,55 @@ function CategoryGroup({
                           inputMode="decimal"
                           value={editingData.amount}
                           onChange={(e) => onEditDataChange({ ...editingData, amount: e.target.value.replace(/[^0-9.]/g, '') })}
-                          className="w-20 h-8 text-sm bg-white/[0.03] border-white/[0.08] text-white"
+                          className="w-24 h-9 text-sm bg-white/[0.03] border-white/[0.1] text-white rounded-lg"
                           placeholder="Amount"
                         />
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={onSaveEdit}
-                          className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
+                          className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors shadow-[0_0_15px_hsla(160,80%,50%,0.2)]"
                         >
-                          <Check className="h-3.5 w-3.5" />
-                        </button>
-                        <button
+                          <Check className="h-4 w-4" />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={onCancelEdit}
-                          className="p-1.5 rounded-lg bg-slate-500/15 text-slate-400 hover:bg-slate-500/25 transition-colors"
+                          className="p-2 rounded-lg bg-slate-500/20 text-slate-400 hover:bg-slate-500/30 transition-colors"
                         >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
+                          <X className="h-4 w-4" />
+                        </motion.button>
                       </div>
                     </div>
                   ) : (
                     <>
-                      <span className="flex-1 text-sm text-white/80 truncate">
+                      <span className="flex-1 text-sm text-white/80 truncate pl-8">
                         {item.name}
                       </span>
-                      <span className={`font-medium text-sm tabular-nums ${
-                        isExpense ? 'text-rose-400/80' : 'text-emerald-400/80'
+                      <span className={`font-semibold text-sm tabular-nums ${
+                        isExpense ? 'text-rose-400/90' : 'text-emerald-400/90'
                       }`}>
                         {formatCurrency(item.amount, currency)}
                       </span>
-                      <button
-                        onClick={() => onStartEdit(item)}
-                        className="p-1 rounded text-slate-500 opacity-0 group-hover:opacity-100 hover:text-white hover:bg-white/[0.05] transition-all"
-                      >
-                        <Edit2 className="h-3 w-3" />
-                      </button>
-                      <button
-                        onClick={() => onDelete(item.id)}
-                        className="p-1 rounded text-slate-500 opacity-0 group-hover:opacity-100 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </button>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => onStartEdit(item)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/[0.05] transition-all"
+                        >
+                          <Edit2 className="h-3.5 w-3.5" />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => onDelete(item.id)}
+                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </motion.button>
+                      </div>
                     </>
                   )}
                 </motion.div>
@@ -252,7 +296,7 @@ function CategoryGroup({
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 
@@ -272,6 +316,7 @@ export function FinancialBlock({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingData, setEditingData] = useState({ name: '', amount: '', category: '' });
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
   const isExpense = type === 'expense';
@@ -301,6 +346,7 @@ export function FinancialBlock({
     if (!newItem.name.trim() || !newItem.amount) return;
     await onAdd(newItem.name.trim(), parseFloat(newItem.amount), newItem.category || undefined);
     setNewItem({ name: '', amount: '', category: '' });
+    setShowAddForm(false);
   };
 
   const handleSaveEdit = async () => {
@@ -325,41 +371,52 @@ export function FinancialBlock({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      className="relative rounded-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-800/30 border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03)] overflow-hidden"
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="neu-card overflow-hidden"
     >
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-5 hover:bg-white/[0.02] transition-colors"
+        className="w-full flex items-center justify-between p-6 hover:bg-white/[0.01] transition-colors"
       >
         <div className="flex items-center gap-4">
           <div 
-            className="w-11 h-11 rounded-xl flex items-center justify-center shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
             style={{
-              backgroundColor: isExpense ? 'rgba(244,63,94,0.1)' : 'rgba(16,185,129,0.1)',
-              borderColor: isExpense ? 'rgba(244,63,94,0.2)' : 'rgba(16,185,129,0.2)',
-              borderWidth: 1,
+              background: isExpense 
+                ? 'linear-gradient(135deg, rgba(244,63,94,0.15) 0%, rgba(244,63,94,0.05) 100%)'
+                : 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.05) 100%)',
+              border: `1px solid ${isExpense ? 'rgba(244,63,94,0.25)' : 'rgba(16,185,129,0.25)'}`,
+              boxShadow: isExpense 
+                ? '0 0 30px rgba(244,63,94,0.15)' 
+                : '0 0 30px rgba(16,185,129,0.15)',
             }}
           >
             {DefaultIcon && <DefaultIcon className={`w-5 h-5 ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`} />}
           </div>
           <div className="text-left">
-            <h3 className="text-base font-semibold text-white">{title}</h3>
+            <h3 className="text-lg font-bold text-white">{title}</h3>
             <p className="text-sm text-slate-500">
               {groupedItems.length} {groupedItems.length === 1 ? 'category' : 'categories'} · {items.length} items
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
-          <span className={`text-xl font-semibold tabular-nums ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}>
+        <div className="flex items-center gap-5">
+          <span className={`text-2xl font-bold tabular-nums ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`}
+            style={{ 
+              textShadow: isExpense 
+                ? '0 0 30px rgba(244,63,94,0.3)' 
+                : '0 0 30px rgba(16,185,129,0.3)' 
+            }}
+          >
             {isExpense ? '-' : '+'}{formatCurrency(totalAmount, currency)}
           </span>
           <motion.div
             animate={{ rotate: isExpanded ? 180 : 0 }}
             transition={{ duration: 0.2 }}
+            className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center"
           >
-            <ChevronDown className="w-5 h-5 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           </motion.div>
         </div>
       </button>
@@ -370,82 +427,129 @@ export function FinancialBlock({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="px-5 pb-5 space-y-4">
-              {/* Add Form */}
-              <div className="flex gap-2 p-4 rounded-xl bg-white/[0.02] border border-white/[0.04]">
-                <Select
-                  value={newItem.category}
-                  onValueChange={(val) => setNewItem({ ...newItem, category: val })}
-                >
-                  <SelectTrigger className="w-[140px] h-10 bg-slate-800 border-white/[0.08] text-white">
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-white/10 z-50">
-                    {categories.map(cat => (
-                      <SelectItem 
-                        key={cat.value} 
-                        value={cat.value}
-                        className="text-white hover:bg-white/10 focus:bg-white/10"
+            <div className="px-6 pb-6 space-y-4">
+              {/* Add Button / Form */}
+              <AnimatePresence mode="wait">
+                {showAddForm ? (
+                  <motion.div
+                    key="form"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="neu-inset rounded-xl p-4 space-y-3"
+                  >
+                    <div className="flex gap-2">
+                      <Select
+                        value={newItem.category}
+                        onValueChange={(val) => setNewItem({ ...newItem, category: val })}
                       >
-                        <div className="flex items-center gap-2">
-                          <cat.icon className="w-3.5 h-3.5" style={{ color: cat.color }} />
-                          <span>{cat.label}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  placeholder={`New ${type}...`}
-                  value={newItem.name}
-                  onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                  className="flex-1 h-10 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 focus:border-white/20"
-                  maxLength={50}
-                />
-                <div className="relative w-28">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
-                    {getCurrencySymbol(currency)}
-                  </span>
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    placeholder="0"
-                    value={newItem.amount}
-                    onChange={(e) => setNewItem({ ...newItem, amount: e.target.value.replace(/[^0-9.]/g, '') })}
-                    className="h-10 pl-6 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 focus:border-white/20"
-                  />
-                </div>
-                <Button
-                  size="sm"
-                  onClick={handleAdd}
-                  disabled={!newItem.name.trim() || !newItem.amount || isPending}
-                  className={`h-10 px-4 ${
-                    isExpense 
-                      ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/20' 
-                      : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20'
-                  } transition-all`}
-                >
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </div>
+                        <SelectTrigger className="w-[140px] h-11 bg-slate-800/60 border-white/[0.08] text-white rounded-lg">
+                          <SelectValue placeholder="Category" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-white/10 z-50 rounded-xl">
+                          {categories.map(cat => (
+                            <SelectItem 
+                              key={cat.value} 
+                              value={cat.value}
+                              className="text-white hover:bg-white/10 focus:bg-white/10 rounded-lg"
+                            >
+                              <div className="flex items-center gap-2">
+                                <cat.icon className="w-3.5 h-3.5" style={{ color: getCategoryHexColor(cat) }} />
+                                <span>{cat.label}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        placeholder={`New ${type}...`}
+                        value={newItem.name}
+                        onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
+                        className="flex-1 h-11 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 rounded-lg"
+                        maxLength={50}
+                      />
+                      <div className="relative w-28">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                          {getCurrencySymbol(currency)}
+                        </span>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          placeholder="0"
+                          value={newItem.amount}
+                          onChange={(e) => setNewItem({ ...newItem, amount: e.target.value.replace(/[^0-9.]/g, '') })}
+                          className="h-11 pl-7 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 rounded-lg"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAddForm(false)}
+                        className="text-slate-400 hover:text-white"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleAdd}
+                        disabled={!newItem.name.trim() || !newItem.amount || isPending}
+                        className={`${
+                          isExpense 
+                            ? 'bg-rose-500/20 hover:bg-rose-500/30 text-rose-400' 
+                            : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400'
+                        }`}
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="button"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowAddForm(true)}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    className={`w-full p-4 rounded-xl border-2 border-dashed transition-all duration-200 flex items-center justify-center gap-2 ${
+                      isExpense 
+                        ? 'border-rose-500/20 hover:border-rose-500/40 text-rose-400/70 hover:text-rose-400 hover:bg-rose-500/[0.03]' 
+                        : 'border-emerald-500/20 hover:border-emerald-500/40 text-emerald-400/70 hover:text-emerald-400 hover:bg-emerald-500/[0.03]'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span className="text-sm font-medium">Add {type}</span>
+                  </motion.button>
+                )}
+              </AnimatePresence>
 
               {/* Category Groups */}
-              <div className="space-y-2 max-h-[400px] overflow-y-auto scrollbar-thin pr-1">
+              <div className="space-y-3 max-h-[450px] overflow-y-auto scrollbar-thin pr-1">
                 {isLoading ? (
-                  <div className="py-8 flex justify-center">
-                    <div className="w-6 h-6 border-2 border-slate-600 border-t-slate-400 rounded-full animate-spin" />
+                  <div className="py-12 flex justify-center">
+                    <div className="w-8 h-8 border-2 border-slate-600 border-t-primary rounded-full animate-spin" />
                   </div>
                 ) : groupedItems.length === 0 ? (
-                  <p className="text-center text-slate-500 text-sm py-8">
-                    No recurring {type}s yet
-                  </p>
+                  <div className="py-12 text-center">
+                    <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 ${
+                      isExpense ? 'bg-rose-500/10' : 'bg-emerald-500/10'
+                    }`}>
+                      {DefaultIcon && <DefaultIcon className={`w-8 h-8 ${isExpense ? 'text-rose-400/50' : 'text-emerald-400/50'}`} />}
+                    </div>
+                    <p className="text-slate-500 text-sm">No recurring {type}s yet</p>
+                    <p className="text-slate-600 text-xs mt-1">Click above to add your first one</p>
+                  </div>
                 ) : (
                   groupedItems.map(({ category, items: groupItems }, index) => (
                     <motion.div
                       key={category.value}
-                      initial={{ opacity: 0, y: 10 }}
+                      initial={{ opacity: 0, y: 15 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >

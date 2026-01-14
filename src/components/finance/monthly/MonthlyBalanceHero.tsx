@@ -1,6 +1,6 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Scale } from 'lucide-react';
+import { TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
@@ -18,22 +18,102 @@ interface MonthlyBalanceHeroProps {
   incomeByCategory?: CategoryData[];
 }
 
-const RADIAN = Math.PI / 180;
-
 const CustomTooltip = ({ active, payload, currency }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-800/95 backdrop-blur-sm border border-white/10 rounded-lg px-3 py-2 shadow-xl">
-        <p className="text-xs text-slate-300 font-medium">{data.name}</p>
-        <p className="text-sm font-semibold text-white">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="glass-modal rounded-xl px-4 py-3 shadow-2xl"
+      >
+        <p className="text-xs text-slate-400 font-medium mb-1">{data.name}</p>
+        <p className="text-base font-semibold text-white tabular-nums">
           {formatCurrency(data.value, currency)}
         </p>
-      </div>
+      </motion.div>
     );
   }
   return null;
 };
+
+// Animated number component
+function AnimatedNumber({ value, currency, isPositive }: { value: number; currency: string; isPositive: boolean }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  
+  useEffect(() => {
+    const duration = 1000;
+    const steps = 60;
+    const stepValue = value / steps;
+    let current = 0;
+    
+    const timer = setInterval(() => {
+      current += stepValue;
+      if (current >= value) {
+        setDisplayValue(value);
+        clearInterval(timer);
+      } else {
+        setDisplayValue(current);
+      }
+    }, duration / steps);
+    
+    return () => clearInterval(timer);
+  }, [value]);
+  
+  return (
+    <span className={`neu-hero-balance ${!isPositive ? 'negative' : ''}`}>
+      {isPositive ? '+' : ''}{formatCurrency(displayValue, currency)}
+    </span>
+  );
+}
+
+// Savings Rate Ring
+function SavingsRateRing({ rate, size = 80 }: { rate: number; size?: number }) {
+  const normalizedRate = Math.min(Math.max(rate, -100), 100);
+  const isPositive = rate >= 0;
+  const strokeWidth = 6;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (Math.abs(normalizedRate) / 100) * circumference;
+  
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="transform -rotate-90">
+        {/* Track */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          className="savings-ring-track"
+          strokeWidth={strokeWidth}
+        />
+        {/* Progress */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={isPositive ? '#34d399' : '#fb7185'}
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          className="savings-ring-progress"
+          style={{ '--progress': progress } as React.CSSProperties}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className={`text-lg font-bold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+          {Math.abs(rate)}%
+        </span>
+        <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+          {isPositive ? 'saved' : 'deficit'}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export function MonthlyBalanceHero({ 
   totalIncome, 
@@ -55,198 +135,246 @@ export function MonthlyBalanceHero({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="relative overflow-hidden"
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      className="relative"
     >
-      {/* Neumorphic Card */}
-      <div className="relative rounded-3xl p-8 md:p-10 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-800/40 border border-white/[0.08] shadow-[0_8px_32px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.05)]">
-        {/* Subtle glow effect */}
-        <div className={`absolute inset-0 rounded-3xl opacity-30 blur-3xl ${isPositive ? 'bg-emerald-500/20' : 'bg-rose-500/20'}`} />
+      {/* Main Neumorphic Card */}
+      <div className="neu-card p-8 md:p-12 relative overflow-hidden">
+        {/* Ambient glow effect */}
+        <div 
+          className={`absolute inset-0 opacity-40 blur-[100px] transition-colors duration-1000 ${
+            isPositive ? 'bg-emerald-500/20' : 'bg-rose-500/20'
+          }`} 
+        />
+        
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 mesh-gradient-bg opacity-50" />
         
         {/* Content */}
         <div className="relative z-10">
-          {/* Label */}
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Scale className="w-5 h-5 text-slate-400" />
-            <span className="text-sm font-medium tracking-wide text-slate-400 uppercase">
-              Monthly Balance
-            </span>
-          </div>
-
-          {/* Main Balance */}
-          <motion.div
-            initial={{ scale: 0.95 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center mb-8"
-          >
-            <span className={`text-5xl md:text-6xl lg:text-7xl font-semibold tracking-tight tabular-nums ${
-              isPositive ? 'text-emerald-400' : 'text-rose-400'
-            }`}>
-              {isPositive ? '+' : ''}{formatCurrency(netBalance, currency)}
-            </span>
+          {/* Header with savings ring */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <span className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                  Monthly Balance
+                </span>
+                <p className="text-xs text-slate-600">Current period</p>
+              </div>
+            </div>
             
-            {/* Savings Rate Badge */}
             {totalIncome > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="mt-4"
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
               >
-                <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium ${
-                  savingsRate >= 20 
-                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                    : savingsRate >= 0
-                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                    : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                }`}>
-                  {savingsRate >= 0 ? 'Saving' : 'Deficit'} {Math.abs(savingsRate)}%
-                </span>
+                <SavingsRateRing rate={savingsRate} />
               </motion.div>
             )}
+          </div>
+
+          {/* Main Balance Display */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center mb-10"
+          >
+            <div className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+              <AnimatedNumber value={netBalance} currency={currency} isPositive={isPositive} />
+            </div>
           </motion.div>
 
-          {/* Income / Expenses Split with Pie Charts */}
-          <div className="grid grid-cols-2 gap-4 md:gap-6">
-            {/* Income */}
+          {/* Income / Expenses Cards with Pie Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Income Card */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className="relative p-5 rounded-2xl bg-gradient-to-br from-emerald-500/[0.08] to-emerald-500/[0.02] border border-emerald-500/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="neu-inset p-6 rounded-2xl relative overflow-hidden"
             >
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+              {/* Subtle emerald glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.08] to-transparent" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center shadow-[0_0_20px_hsla(160,80%,50%,0.2)]">
+                    <TrendingUp className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">Income</span>
+                    <p className="text-2xl font-bold text-emerald-400 tabular-nums">
+                      +{formatCurrency(totalIncome, currency)}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs font-medium text-emerald-400/80 uppercase tracking-wider">Income</span>
-              </div>
-              <p className="text-2xl md:text-3xl font-semibold text-emerald-400 tabular-nums mb-4">
-                +{formatCurrency(totalIncome, currency)}
-              </p>
-              
-              {/* Income Pie Chart */}
-              {hasIncomeData && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5, duration: 0.4 }}
-                  className="h-32"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={incomeByCategory}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={30}
-                        outerRadius={50}
-                        paddingAngle={2}
-                        dataKey="value"
-                        animationBegin={400}
-                        animationDuration={800}
-                      >
-                        {incomeByCategory.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip currency={currency} />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </motion.div>
-              )}
-              
-              {/* Legend */}
-              {hasIncomeData && (
-                <div className="mt-2 space-y-1 max-h-20 overflow-y-auto">
-                  {incomeByCategory.slice(0, 4).map((cat, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                        <span className="text-slate-400 truncate max-w-[80px]">{cat.name}</span>
-                      </div>
-                      <span className="text-slate-300 tabular-nums">
-                        {Math.round((cat.value / totalIncome) * 100)}%
-                      </span>
+                
+                {/* Pie Chart */}
+                {hasIncomeData && (
+                  <div className="mt-4">
+                    <div className="h-36">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <defs>
+                            {incomeByCategory.map((entry, index) => (
+                              <linearGradient key={`income-gradient-${index}`} id={`income-gradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor={entry.color} stopOpacity={1} />
+                                <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
+                              </linearGradient>
+                            ))}
+                          </defs>
+                          <Pie
+                            data={incomeByCategory}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={35}
+                            outerRadius={55}
+                            paddingAngle={3}
+                            dataKey="value"
+                            animationBegin={500}
+                            animationDuration={1000}
+                          >
+                            {incomeByCategory.map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={`url(#income-gradient-${index})`}
+                                stroke={entry.color}
+                                strokeWidth={1}
+                                strokeOpacity={0.3}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip currency={currency} />} />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
-                  ))}
-                  {incomeByCategory.length > 4 && (
-                    <p className="text-[10px] text-slate-500">+{incomeByCategory.length - 4} more</p>
-                  )}
-                </div>
-              )}
+                    
+                    {/* Legend */}
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {incomeByCategory.slice(0, 4).map((cat, i) => (
+                        <motion.div 
+                          key={i}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.6 + i * 0.1 }}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <div 
+                            className="w-2 h-2 rounded-full shadow-sm" 
+                            style={{ backgroundColor: cat.color, boxShadow: `0 0 8px ${cat.color}40` }} 
+                          />
+                          <span className="text-slate-400 truncate flex-1">{cat.name}</span>
+                          <span className="text-slate-300 tabular-nums font-medium">
+                            {Math.round((cat.value / totalIncome) * 100)}%
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                    {incomeByCategory.length > 4 && (
+                      <p className="text-[10px] text-slate-600 mt-2">+{incomeByCategory.length - 4} more categories</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </motion.div>
 
-            {/* Expenses */}
+            {/* Expenses Card */}
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3, duration: 0.4 }}
-              className="relative p-5 rounded-2xl bg-gradient-to-br from-rose-500/[0.08] to-rose-500/[0.02] border border-rose-500/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]"
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="neu-inset p-6 rounded-2xl relative overflow-hidden"
             >
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-8 h-8 rounded-xl bg-rose-500/15 flex items-center justify-center">
-                  <TrendingDown className="w-4 h-4 text-rose-400" />
+              {/* Subtle rose glow */}
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/[0.08] to-transparent" />
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/25 flex items-center justify-center shadow-[0_0_20px_hsla(350,80%,60%,0.2)]">
+                    <TrendingDown className="w-5 h-5 text-rose-400" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-medium text-rose-400/80 uppercase tracking-wider">Expenses</span>
+                    <p className="text-2xl font-bold text-rose-400 tabular-nums">
+                      -{formatCurrency(totalExpenses, currency)}
+                    </p>
+                  </div>
                 </div>
-                <span className="text-xs font-medium text-rose-400/80 uppercase tracking-wider">Expenses</span>
-              </div>
-              <p className="text-2xl md:text-3xl font-semibold text-rose-400 tabular-nums mb-4">
-                -{formatCurrency(totalExpenses, currency)}
-              </p>
-              
-              {/* Expenses Pie Chart */}
-              {hasExpenseData && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.5, duration: 0.4 }}
-                  className="h-32"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={expensesByCategory}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={30}
-                        outerRadius={50}
-                        paddingAngle={2}
-                        dataKey="value"
-                        animationBegin={400}
-                        animationDuration={800}
-                      >
-                        {expensesByCategory.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CustomTooltip currency={currency} />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </motion.div>
-              )}
-              
-              {/* Legend */}
-              {hasExpenseData && (
-                <div className="mt-2 space-y-1 max-h-20 overflow-y-auto">
-                  {expensesByCategory.slice(0, 4).map((cat, i) => (
-                    <div key={i} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                        <span className="text-slate-400 truncate max-w-[80px]">{cat.name}</span>
-                      </div>
-                      <span className="text-slate-300 tabular-nums">
-                        {Math.round((cat.value / totalExpenses) * 100)}%
-                      </span>
+                
+                {/* Pie Chart */}
+                {hasExpenseData && (
+                  <div className="mt-4">
+                    <div className="h-36">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <defs>
+                            {expensesByCategory.map((entry, index) => (
+                              <linearGradient key={`expense-gradient-${index}`} id={`expense-gradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0%" stopColor={entry.color} stopOpacity={1} />
+                                <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
+                              </linearGradient>
+                            ))}
+                          </defs>
+                          <Pie
+                            data={expensesByCategory}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={35}
+                            outerRadius={55}
+                            paddingAngle={3}
+                            dataKey="value"
+                            animationBegin={500}
+                            animationDuration={1000}
+                          >
+                            {expensesByCategory.map((entry, index) => (
+                              <Cell 
+                                key={`cell-${index}`} 
+                                fill={`url(#expense-gradient-${index})`}
+                                stroke={entry.color}
+                                strokeWidth={1}
+                                strokeOpacity={0.3}
+                              />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip currency={currency} />} />
+                        </PieChart>
+                      </ResponsiveContainer>
                     </div>
-                  ))}
-                  {expensesByCategory.length > 4 && (
-                    <p className="text-[10px] text-slate-500">+{expensesByCategory.length - 4} more</p>
-                  )}
-                </div>
-              )}
+                    
+                    {/* Legend */}
+                    <div className="mt-3 grid grid-cols-2 gap-2">
+                      {expensesByCategory.slice(0, 4).map((cat, i) => (
+                        <motion.div 
+                          key={i}
+                          initial={{ opacity: 0, x: 10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.6 + i * 0.1 }}
+                          className="flex items-center gap-2 text-xs"
+                        >
+                          <div 
+                            className="w-2 h-2 rounded-full shadow-sm" 
+                            style={{ backgroundColor: cat.color, boxShadow: `0 0 8px ${cat.color}40` }} 
+                          />
+                          <span className="text-slate-400 truncate flex-1">{cat.name}</span>
+                          <span className="text-slate-300 tabular-nums font-medium">
+                            {Math.round((cat.value / totalExpenses) * 100)}%
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
+                    {expensesByCategory.length > 4 && (
+                      <p className="text-[10px] text-slate-600 mt-2">+{expensesByCategory.length - 4} more categories</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </motion.div>
           </div>
         </div>
