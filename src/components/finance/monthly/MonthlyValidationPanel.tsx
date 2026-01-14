@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, Check, Edit2, AlertCircle, Sparkles } from 'lucide-react';
+import { Calendar, Check, Edit2, AlertCircle, Sparkles, X, ArrowRight, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useCurrency } from '@/contexts/CurrencyContext';
@@ -111,8 +111,8 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl bg-gradient-to-br from-slate-900/70 to-slate-800/30 border border-white/[0.06] p-8 flex items-center justify-center min-h-[200px]">
-        <div className="w-8 h-8 border-2 border-slate-600 border-t-slate-400 rounded-full animate-spin" />
+      <div className="neu-card p-8 flex items-center justify-center min-h-[200px]">
+        <div className="w-8 h-8 border-2 border-slate-600 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -121,18 +121,18 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: 0.1 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
       className="space-y-4"
     >
       {/* Current Month Status Card */}
-      <div className="rounded-2xl bg-gradient-to-br from-slate-900/70 via-slate-900/50 to-slate-800/30 border border-white/[0.06] shadow-[0_4px_24px_rgba(0,0,0,0.2),inset_0_1px_0_rgba(255,255,255,0.03)] overflow-hidden">
-        <div className="p-5 flex items-center justify-between border-b border-white/[0.04]">
+      <div className={`neu-card overflow-hidden ${isValidated ? 'validation-complete' : isNearDeadline ? 'validation-pending' : ''}`}>
+        <div className="p-6 flex items-center justify-between border-b border-white/[0.04]">
           <div className="flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/25 flex items-center justify-center shadow-[0_0_30px_hsla(200,100%,60%,0.15)]">
               <Calendar className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-white">
+              <h3 className="text-lg font-bold text-white">
                 {format(parseISO(currentMonth), 'MMMM yyyy')}
               </h3>
               <p className="text-sm text-slate-500">
@@ -153,103 +153,121 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
               </Button>
             )}
             {isValidated && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
-                <Check className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="text-xs font-medium text-emerald-400">Validated</span>
-              </div>
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 shadow-[0_0_20px_hsla(160,80%,50%,0.15)]"
+              >
+                <Check className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-semibold text-emerald-400">Validated</span>
+              </motion.div>
             )}
           </div>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-6 space-y-6">
           {/* Validation Action - Prominent when near deadline */}
           {isNearDeadline && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/5 border border-primary/30"
+              className="relative overflow-hidden rounded-2xl p-5"
+              style={{
+                background: 'linear-gradient(135deg, hsla(200,100%,60%,0.15) 0%, hsla(200,100%,50%,0.05) 100%)',
+                border: '1px solid hsla(200,100%,60%,0.3)',
+                boxShadow: '0 0 40px hsla(200,100%,60%,0.15)',
+              }}
             >
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(56,189,248,0.15),transparent_70%)]" />
-              <div className="relative flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-                    <Sparkles className="w-5 h-5 text-primary" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,hsla(200,100%,60%,0.2),transparent_70%)]" />
+              <div className="relative flex items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.1, 1] }}
+                      transition={{ duration: 2, repeat: Infinity }}
+                    >
+                      <Sparkles className="w-6 h-6 text-primary" />
+                    </motion.div>
                   </div>
                   <div>
-                    <p className="font-medium text-white">Time to validate!</p>
+                    <p className="font-bold text-white text-lg">Time to validate!</p>
                     <p className="text-sm text-slate-400">{daysUntilDeadline} days until salary day</p>
                   </div>
                 </div>
                 <Button
                   onClick={() => setShowValidationFlow(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-3 h-auto shadow-[0_0_30px_hsla(200,100%,60%,0.3)]"
                 >
                   Validate Month
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </motion.div>
           )}
 
-          {/* Confirmation Toggles */}
+          {/* Toggle Switches */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Confirm Expenses */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => !isValidated || canEdit ? setConfirmedExpenses(!confirmedExpenses) : null}
               disabled={isValidated && !canEdit}
-              className={`p-4 rounded-xl border transition-all duration-200 text-left ${
+              className={`neu-toggle p-5 rounded-2xl border transition-all duration-300 text-left ${
                 confirmedExpenses
-                  ? 'bg-emerald-500/[0.08] border-emerald-500/20'
-                  : 'bg-white/[0.02] border-white/[0.05] hover:border-white/[0.1]'
+                  ? 'active border-emerald-500/30'
+                  : 'border-white/[0.05]'
               } ${isValidated && !canEdit ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+              <div className="flex items-center gap-4 mb-3">
+                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${
                   confirmedExpenses 
-                    ? 'bg-emerald-500/20 border-emerald-500' 
+                    ? 'bg-emerald-500/30 border-emerald-500 shadow-[0_0_15px_hsla(160,80%,50%,0.4)]' 
                     : 'border-slate-500'
                 }`}>
-                  {confirmedExpenses && <Check className="h-3 w-3 text-emerald-400" />}
+                  {confirmedExpenses && <Check className="h-4 w-4 text-emerald-400" />}
                 </div>
-                <span className="text-sm font-medium text-white">Expenses Paid</span>
+                <span className="text-base font-semibold text-white">Expenses Paid</span>
               </div>
-              <p className="text-sm text-slate-400 pl-8">
+              <p className="text-sm text-slate-400 pl-10">
                 {formatCurrency(totalRecurringExpenses, currency)} recurring
               </p>
-            </button>
+            </motion.button>
 
             {/* Confirm Income */}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
               onClick={() => !isValidated || canEdit ? setConfirmedIncome(!confirmedIncome) : null}
               disabled={isValidated && !canEdit}
-              className={`p-4 rounded-xl border transition-all duration-200 text-left ${
+              className={`neu-toggle p-5 rounded-2xl border transition-all duration-300 text-left ${
                 confirmedIncome
-                  ? 'bg-emerald-500/[0.08] border-emerald-500/20'
-                  : 'bg-white/[0.02] border-white/[0.05] hover:border-white/[0.1]'
+                  ? 'active border-emerald-500/30'
+                  : 'border-white/[0.05]'
               } ${isValidated && !canEdit ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
             >
-              <div className="flex items-center gap-3 mb-2">
-                <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+              <div className="flex items-center gap-4 mb-3">
+                <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${
                   confirmedIncome 
-                    ? 'bg-emerald-500/20 border-emerald-500' 
+                    ? 'bg-emerald-500/30 border-emerald-500 shadow-[0_0_15px_hsla(160,80%,50%,0.4)]' 
                     : 'border-slate-500'
                 }`}>
-                  {confirmedIncome && <Check className="h-3 w-3 text-emerald-400" />}
+                  {confirmedIncome && <Check className="h-4 w-4 text-emerald-400" />}
                 </div>
-                <span className="text-sm font-medium text-white">Income Received</span>
+                <span className="text-base font-semibold text-white">Income Received</span>
               </div>
-              <p className="text-sm text-slate-400 pl-8">
+              <p className="text-sm text-slate-400 pl-10">
                 {formatCurrency(totalRecurringIncome, currency)} recurring
               </p>
-            </button>
+            </motion.button>
           </div>
 
           {/* Additional Amounts */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Additional Expenses */}
             <div className="space-y-2">
               <label className="text-sm text-slate-400 font-medium">Additional Expenses</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                   {getCurrencySymbol(currency)}
                 </span>
                 <Input
@@ -259,16 +277,15 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
                   value={unplannedExpenses}
                   onChange={(e) => setUnplannedExpenses(e.target.value.replace(/[^0-9.]/g, ''))}
                   disabled={isValidated && !canEdit}
-                  className="pl-7 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 focus:border-white/20"
+                  className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 rounded-xl"
                 />
               </div>
             </div>
 
-            {/* Additional Income */}
             <div className="space-y-2">
               <label className="text-sm text-slate-400 font-medium">Additional Income</label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                   {getCurrencySymbol(currency)}
                 </span>
                 <Input
@@ -278,7 +295,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
                   value={unplannedIncome}
                   onChange={(e) => setUnplannedIncome(e.target.value.replace(/[^0-9.]/g, ''))}
                   disabled={isValidated && !canEdit}
-                  className="pl-7 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 focus:border-white/20"
+                  className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 rounded-xl"
                 />
               </div>
             </div>
@@ -289,7 +306,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
             <Button
               onClick={handleValidate}
               disabled={!confirmedExpenses || !confirmedIncome || upsertValidation.isPending}
-              className="w-full h-11 text-sm font-medium"
+              className="w-full h-12 text-sm font-semibold rounded-xl"
             >
               {upsertValidation.isPending ? 'Validating...' : 'Validate This Month'}
             </Button>
@@ -300,14 +317,14 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
               <Button
                 variant="outline"
                 onClick={() => setIsEditing(false)}
-                className="flex-1 h-11 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] hover:text-white"
+                className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] hover:text-white rounded-xl"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdate}
                 disabled={upsertValidation.isPending}
-                className="flex-1 h-11"
+                className="flex-1 h-12 rounded-xl"
               >
                 {upsertValidation.isPending ? 'Saving...' : 'Save Changes'}
               </Button>
@@ -316,12 +333,16 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
 
           {/* Tip */}
           {!isValidated && (!confirmedExpenses || !confirmedIncome) && !isNearDeadline && (
-            <div className="flex items-start gap-2 p-3 rounded-xl bg-slate-800/50 border border-slate-700/50">
-              <AlertCircle className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-slate-400">
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-3 p-4 rounded-xl neu-inset"
+            >
+              <AlertCircle className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" />
+              <p className="text-sm text-slate-400">
                 Confirm both your recurring expenses and income before validating.
               </p>
-            </div>
+            </motion.div>
           )}
         </div>
       </div>
@@ -390,6 +411,9 @@ function ValidationFlowModal({
   const totalExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
 
+  const steps = ['expenses', 'income', 'extras', 'confirm'] as const;
+  const currentStepIndex = steps.indexOf(step);
+
   const handleNext = () => {
     if (step === 'expenses') setStep('income');
     else if (step === 'income') setStep('extras');
@@ -407,138 +431,176 @@ function ValidationFlowModal({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 glass-overlay"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0, y: 20 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg rounded-2xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-800/90 border border-white/[0.08] shadow-2xl overflow-hidden"
+        className="w-full max-w-lg glass-modal rounded-3xl overflow-hidden"
       >
         {/* Header */}
-        <div className="p-5 border-b border-white/[0.06]">
-          <h2 className="text-lg font-semibold text-white">Monthly Validation</h2>
-          <div className="flex gap-1 mt-3">
-            {['expenses', 'income', 'extras', 'confirm'].map((s, i) => (
-              <div
+        <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-white">Monthly Validation</h2>
+            <p className="text-sm text-slate-500 mt-1">Step {currentStepIndex + 1} of {steps.length}</p>
+          </div>
+          <button 
+            onClick={onClose}
+            className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="px-6 pt-4">
+          <div className="flex gap-2">
+            {steps.map((s, i) => (
+              <motion.div
                 key={s}
-                className={`h-1 flex-1 rounded-full transition-colors ${
-                  ['expenses', 'income', 'extras', 'confirm'].indexOf(step) >= i
-                    ? 'bg-primary'
-                    : 'bg-white/10'
-                }`}
-              />
+                className="h-1.5 flex-1 rounded-full overflow-hidden bg-white/[0.05]"
+              >
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: currentStepIndex >= i ? '100%' : '0%' }}
+                  transition={{ duration: 0.3, delay: i * 0.1 }}
+                  className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full"
+                  style={{ boxShadow: '0 0 10px hsla(200,100%,60%,0.5)' }}
+                />
+              </motion.div>
             ))}
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-5 min-h-[300px]">
+        <div className="p-6 min-h-[320px]">
           <AnimatePresence mode="wait">
             {step === 'expenses' && (
               <motion.div
                 key="expenses"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.25 }}
+                className="space-y-5"
               >
-                <h3 className="text-base font-medium text-white">Review Recurring Expenses</h3>
-                <p className="text-sm text-slate-400">Confirm all expenses were paid as expected.</p>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Review Recurring Expenses</h3>
+                  <p className="text-sm text-slate-400 mt-1">Confirm all expenses were paid as expected.</p>
+                </div>
+                <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
                   {recurringExpenses.filter(e => e.is_active).map((expense) => (
-                    <div key={expense.id} className="flex justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                    <motion.div 
+                      key={expense.id} 
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-between p-4 rounded-xl neu-inset"
+                    >
                       <span className="text-sm text-white">{expense.name}</span>
-                      <span className="text-sm text-rose-400">{formatCurrency(expense.amount, currency)}</span>
-                    </div>
+                      <span className="text-sm font-semibold text-rose-400">{formatCurrency(expense.amount, currency)}</span>
+                    </motion.div>
                   ))}
                 </div>
                 <div className="pt-2 flex justify-between items-center">
                   <span className="text-sm text-slate-400">Total:</span>
-                  <span className="text-lg font-semibold text-rose-400">{formatCurrency(totalExpenses, currency)}</span>
+                  <span className="text-xl font-bold text-rose-400">{formatCurrency(totalExpenses, currency)}</span>
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setConfirmedExpenses(!confirmedExpenses)}
-                  className={`w-full p-4 rounded-xl border transition-all ${
+                  className={`w-full p-5 rounded-2xl neu-toggle border transition-all ${
                     confirmedExpenses
-                      ? 'bg-emerald-500/10 border-emerald-500/30'
-                      : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.1]'
+                      ? 'active border-emerald-500/30'
+                      : 'border-white/[0.06]'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${
-                      confirmedExpenses ? 'bg-emerald-500/20 border-emerald-500' : 'border-slate-500'
+                  <div className="flex items-center gap-4">
+                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                      confirmedExpenses ? 'bg-emerald-500/30 border-emerald-500' : 'border-slate-500'
                     }`}>
-                      {confirmedExpenses && <Check className="h-3 w-3 text-emerald-400" />}
+                      {confirmedExpenses && <Check className="h-4 w-4 text-emerald-400" />}
                     </div>
                     <span className="text-sm font-medium text-white">All expenses paid correctly</span>
                   </div>
-                </button>
+                </motion.button>
               </motion.div>
             )}
 
             {step === 'income' && (
               <motion.div
                 key="income"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-4"
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.25 }}
+                className="space-y-5"
               >
-                <h3 className="text-base font-medium text-white">Review Recurring Income</h3>
-                <p className="text-sm text-slate-400">Confirm all income was received as expected.</p>
-                <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Review Recurring Income</h3>
+                  <p className="text-sm text-slate-400 mt-1">Confirm all income was received as expected.</p>
+                </div>
+                <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
                   {recurringIncome.filter(i => i.is_active).map((income) => (
-                    <div key={income.id} className="flex justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
+                    <motion.div 
+                      key={income.id}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-between p-4 rounded-xl neu-inset"
+                    >
                       <span className="text-sm text-white">{income.name}</span>
-                      <span className="text-sm text-emerald-400">{formatCurrency(income.amount, currency)}</span>
-                    </div>
+                      <span className="text-sm font-semibold text-emerald-400">{formatCurrency(income.amount, currency)}</span>
+                    </motion.div>
                   ))}
                 </div>
                 <div className="pt-2 flex justify-between items-center">
                   <span className="text-sm text-slate-400">Total:</span>
-                  <span className="text-lg font-semibold text-emerald-400">{formatCurrency(totalIncome, currency)}</span>
+                  <span className="text-xl font-bold text-emerald-400">{formatCurrency(totalIncome, currency)}</span>
                 </div>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => setConfirmedIncome(!confirmedIncome)}
-                  className={`w-full p-4 rounded-xl border transition-all ${
+                  className={`w-full p-5 rounded-2xl neu-toggle border transition-all ${
                     confirmedIncome
-                      ? 'bg-emerald-500/10 border-emerald-500/30'
-                      : 'bg-white/[0.02] border-white/[0.06] hover:border-white/[0.1]'
+                      ? 'active border-emerald-500/30'
+                      : 'border-white/[0.06]'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center ${
-                      confirmedIncome ? 'bg-emerald-500/20 border-emerald-500' : 'border-slate-500'
+                  <div className="flex items-center gap-4">
+                    <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
+                      confirmedIncome ? 'bg-emerald-500/30 border-emerald-500' : 'border-slate-500'
                     }`}>
-                      {confirmedIncome && <Check className="h-3 w-3 text-emerald-400" />}
+                      {confirmedIncome && <Check className="h-4 w-4 text-emerald-400" />}
                     </div>
                     <span className="text-sm font-medium text-white">All income received correctly</span>
                   </div>
-                </button>
+                </motion.button>
               </motion.div>
             )}
 
             {step === 'extras' && (
               <motion.div
                 key="extras"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.25 }}
                 className="space-y-6"
               >
                 <div>
-                  <h3 className="text-base font-medium text-white mb-1">Additional Transactions</h3>
-                  <p className="text-sm text-slate-400">Add any unexpected expenses or income.</p>
+                  <h3 className="text-lg font-semibold text-white">Additional Transactions</h3>
+                  <p className="text-sm text-slate-400 mt-1">Add any unexpected expenses or income.</p>
                 </div>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm text-slate-400">Extra Expenses</label>
+                    <label className="text-sm text-slate-400 font-medium">Extra Expenses</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                         {getCurrencySymbol(currency)}
                       </span>
                       <Input
@@ -547,14 +609,14 @@ function ValidationFlowModal({
                         placeholder="0"
                         value={unplannedExpenses}
                         onChange={(e) => setUnplannedExpenses(e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="pl-7 bg-white/[0.03] border-white/[0.08] text-white"
+                        className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] text-white rounded-xl"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm text-slate-400">Extra Income</label>
+                    <label className="text-sm text-slate-400 font-medium">Extra Income</label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
                         {getCurrencySymbol(currency)}
                       </span>
                       <Input
@@ -563,7 +625,7 @@ function ValidationFlowModal({
                         placeholder="0"
                         value={unplannedIncome}
                         onChange={(e) => setUnplannedIncome(e.target.value.replace(/[^0-9.]/g, ''))}
-                        className="pl-7 bg-white/[0.03] border-white/[0.08] text-white"
+                        className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] text-white rounded-xl"
                       />
                     </div>
                   </div>
@@ -574,31 +636,47 @@ function ValidationFlowModal({
             {step === 'confirm' && (
               <motion.div
                 key="confirm"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 30 }}
                 animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.25 }}
                 className="space-y-6"
               >
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Check className="w-8 h-8 text-primary" />
-                  </div>
-                  <h3 className="text-lg font-medium text-white mb-2">Ready to Validate</h3>
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', delay: 0.2 }}
+                    className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 border border-primary/30 flex items-center justify-center shadow-[0_0_40px_hsla(200,100%,60%,0.3)]"
+                  >
+                    <PartyPopper className="w-10 h-10 text-primary" />
+                  </motion.div>
+                  <h3 className="text-xl font-bold text-white mb-2">Ready to Validate</h3>
                   <p className="text-sm text-slate-400">Review your monthly summary before confirming.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                    <p className="text-xs text-emerald-400/80 mb-1">Total Income</p>
-                    <p className="text-xl font-semibold text-emerald-400">
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25"
+                  >
+                    <p className="text-xs text-emerald-400/80 mb-2 uppercase tracking-wider font-medium">Total Income</p>
+                    <p className="text-2xl font-bold text-emerald-400">
                       {formatCurrency(totalIncome + (parseFloat(unplannedIncome) || 0), currency)}
                     </p>
-                  </div>
-                  <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
-                    <p className="text-xs text-rose-400/80 mb-1">Total Expenses</p>
-                    <p className="text-xl font-semibold text-rose-400">
+                  </motion.div>
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/25"
+                  >
+                    <p className="text-xs text-rose-400/80 mb-2 uppercase tracking-wider font-medium">Total Expenses</p>
+                    <p className="text-2xl font-bold text-rose-400">
                       {formatCurrency(totalExpenses + (parseFloat(unplannedExpenses) || 0), currency)}
                     </p>
-                  </div>
+                  </motion.div>
                 </div>
               </motion.div>
             )}
@@ -606,12 +684,12 @@ function ValidationFlowModal({
         </div>
 
         {/* Footer */}
-        <div className="p-5 border-t border-white/[0.06] flex gap-3">
+        <div className="p-6 border-t border-white/[0.06] flex gap-3">
           {step !== 'expenses' && (
             <Button
               variant="outline"
               onClick={handleBack}
-              className="flex-1 border-white/[0.1] text-slate-300 hover:bg-white/[0.04]"
+              className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] rounded-xl"
             >
               Back
             </Button>
@@ -620,7 +698,7 @@ function ValidationFlowModal({
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-white/[0.1] text-slate-300 hover:bg-white/[0.04]"
+              className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] rounded-xl"
             >
               Cancel
             </Button>
@@ -632,17 +710,19 @@ function ValidationFlowModal({
                 (step === 'expenses' && !confirmedExpenses) ||
                 (step === 'income' && !confirmedIncome)
               }
-              className="flex-1"
+              className="flex-1 h-12 rounded-xl"
             >
               Continue
+              <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
             <Button
               onClick={onValidate}
               disabled={isPending}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500"
+              className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-[0_0_30px_hsla(160,80%,50%,0.3)]"
             >
               {isPending ? 'Validating...' : 'Confirm & Validate'}
+              <Check className="w-4 h-4 ml-2" />
             </Button>
           )}
         </div>
