@@ -11,12 +11,14 @@ import {
   useUpdateRecurringIncome,
   useDeleteRecurringExpense,
   useDeleteRecurringIncome,
+  useMonthlyValidations,
 } from '@/hooks/useFinance';
 import { toast } from 'sonner';
 import { MonthlyBalanceHero } from './MonthlyBalanceHero';
 import { FinancialBlock } from './FinancialBlock';
 import { MonthlyValidationPanel } from './MonthlyValidationPanel';
 import { MonthlyHistory } from './MonthlyHistory';
+import { format, subMonths, parseISO } from 'date-fns';
 
 const EXPENSE_CATEGORIES = [
   { value: 'housing', label: 'Housing', icon: Home, color: 'text-rose-400', bg: 'bg-rose-500/10' },
@@ -80,6 +82,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   
   const { data: expenses = [], isLoading: expensesLoading } = useRecurringExpenses(user?.id);
   const { data: income = [], isLoading: incomeLoading } = useRecurringIncome(user?.id);
+  const { data: validations = [] } = useMonthlyValidations(user?.id);
   
   const addExpense = useAddRecurringExpense();
   const addIncome = useAddRecurringIncome();
@@ -90,6 +93,48 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
 
   const totalExpenses = expenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = income.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+
+  // Compute 6-month balance trend from validations
+  const balanceTrend = useMemo(() => {
+    const now = new Date();
+    const months: { month: string; label: string }[] = [];
+    
+    // Generate last 6 months (including current)
+    for (let i = 5; i >= 0; i--) {
+      const date = subMonths(now, i);
+      months.push({
+        month: format(date, 'yyyy-MM'),
+        label: format(date, 'MMM'),
+      });
+    }
+    
+    // Map validations to trend data
+    return months.map(m => {
+      const validation = validations.find(v => v.month === m.month);
+      if (validation && validation.validated_at) {
+        const balance = (validation.actual_total_income || 0) - (validation.actual_total_expenses || 0);
+        return {
+          month: m.month,
+          label: m.label,
+          balance,
+        };
+      }
+      // For current month or unvalidated months, use current recurring totals as estimate
+      if (m.month === format(now, 'yyyy-MM')) {
+        return {
+          month: m.month,
+          label: m.label,
+          balance: totalIncome - totalExpenses,
+        };
+      }
+      // For past unvalidated months, skip or show null
+      return {
+        month: m.month,
+        label: m.label,
+        balance: 0,
+      };
+    });
+  }, [validations, totalIncome, totalExpenses]);
 
   // Compute expenses by category for pie chart
   const expensesByCategory = useMemo(() => {
@@ -171,12 +216,13 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
 
   return (
     <div className="space-y-8">
-      {/* Hero: Monthly Balance with Pie Charts */}
+      {/* Hero: Monthly Balance with Pie Charts and Trend */}
       <MonthlyBalanceHero 
         totalIncome={totalIncome} 
         totalExpenses={totalExpenses}
         expensesByCategory={expensesByCategory}
         incomeByCategory={incomeByCategory}
+        balanceTrend={balanceTrend}
       />
       {/* Two Column Layout: Expenses | Income */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

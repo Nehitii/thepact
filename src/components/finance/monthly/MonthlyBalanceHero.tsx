@@ -1,9 +1,9 @@
 import { useMemo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
+import { TrendingUp, TrendingDown, Sparkles, Activity } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis } from 'recharts';
 
 interface CategoryData {
   name: string;
@@ -11,11 +11,18 @@ interface CategoryData {
   color: string;
 }
 
+interface TrendDataPoint {
+  month: string;
+  balance: number;
+  label: string;
+}
+
 interface MonthlyBalanceHeroProps {
   totalIncome: number;
   totalExpenses: number;
   expensesByCategory?: CategoryData[];
   incomeByCategory?: CategoryData[];
+  balanceTrend?: TrendDataPoint[];
 }
 
 const CustomTooltip = ({ active, payload, currency }: any) => {
@@ -115,11 +122,134 @@ function SavingsRateRing({ rate, size = 80 }: { rate: number; size?: number }) {
   );
 }
 
+// Sparkline Tooltip
+const SparklineTooltip = ({ active, payload, currency }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-modal rounded-lg px-3 py-2 shadow-xl"
+      >
+        <p className="text-[10px] text-slate-400 font-medium">{data.label}</p>
+        <p className={`text-sm font-bold tabular-nums ${data.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+          {data.balance >= 0 ? '+' : ''}{formatCurrency(data.balance, currency)}
+        </p>
+      </motion.div>
+    );
+  }
+  return null;
+};
+
+// Balance Trend Sparkline
+function BalanceTrendSparkline({ data, currency }: { data: TrendDataPoint[]; currency: string }) {
+  if (data.length < 2) return null;
+  
+  const minBalance = Math.min(...data.map(d => d.balance));
+  const maxBalance = Math.max(...data.map(d => d.balance));
+  const hasPositive = maxBalance > 0;
+  const hasNegative = minBalance < 0;
+  
+  // Calculate trend
+  const firstBalance = data[0]?.balance || 0;
+  const lastBalance = data[data.length - 1]?.balance || 0;
+  const trendPercent = firstBalance !== 0 
+    ? Math.round(((lastBalance - firstBalance) / Math.abs(firstBalance)) * 100)
+    : lastBalance > 0 ? 100 : lastBalance < 0 ? -100 : 0;
+  const isUpward = trendPercent >= 0;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.5, duration: 0.5 }}
+      className="mt-8"
+    >
+      <div className="neu-inset p-5 rounded-2xl relative overflow-hidden">
+        {/* Subtle gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent" />
+        
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+                <Activity className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">6-Month Trend</span>
+              </div>
+            </div>
+            
+            {/* Trend indicator */}
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+              isUpward 
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25' 
+                : 'bg-rose-500/15 text-rose-400 border border-rose-500/25'
+            }`}>
+              {isUpward ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+              <span className="tabular-nums">{isUpward ? '+' : ''}{trendPercent}%</span>
+            </div>
+          </div>
+          
+          {/* Sparkline Chart */}
+          <div className="h-24">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="sparklineGradientPositive" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#34d399" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#34d399" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="sparklineGradientNegative" x1="0" y1="1" x2="0" y2="0">
+                    <stop offset="0%" stopColor="#fb7185" stopOpacity={0.4} />
+                    <stop offset="100%" stopColor="#fb7185" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="sparklineStroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor={hasNegative ? '#fb7185' : '#34d399'} />
+                    <stop offset="100%" stopColor={hasPositive ? '#34d399' : '#fb7185'} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="label" hide />
+                <YAxis domain={['dataMin', 'dataMax']} hide />
+                <Tooltip content={<SparklineTooltip currency={currency} />} cursor={false} />
+                <Area
+                  type="monotone"
+                  dataKey="balance"
+                  stroke="url(#sparklineStroke)"
+                  strokeWidth={2.5}
+                  fill={hasPositive ? "url(#sparklineGradientPositive)" : "url(#sparklineGradientNegative)"}
+                  animationDuration={1500}
+                  animationBegin={600}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Month Labels */}
+          <div className="flex justify-between mt-2 px-1">
+            {data.map((point, i) => (
+              <span 
+                key={i} 
+                className="text-[10px] text-slate-600 font-medium"
+              >
+                {point.label}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 export function MonthlyBalanceHero({ 
   totalIncome, 
   totalExpenses,
   expensesByCategory = [],
-  incomeByCategory = []
+  incomeByCategory = [],
+  balanceTrend = []
 }: MonthlyBalanceHeroProps) {
   const { currency } = useCurrency();
   const netBalance = totalIncome - totalExpenses;
@@ -132,6 +262,7 @@ export function MonthlyBalanceHero({
 
   const hasExpenseData = expensesByCategory.length > 0;
   const hasIncomeData = incomeByCategory.length > 0;
+  const hasTrendData = balanceTrend.length >= 2;
 
   return (
     <motion.div
@@ -377,6 +508,11 @@ export function MonthlyBalanceHero({
               </div>
             </motion.div>
           </div>
+
+          {/* Balance Trend Sparkline */}
+          {hasTrendData && (
+            <BalanceTrendSparkline data={balanceTrend} currency={currency} />
+          )}
         </div>
       </div>
     </motion.div>
