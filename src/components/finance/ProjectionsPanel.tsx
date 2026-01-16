@@ -4,11 +4,14 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { addMonths, format } from 'date-fns';
-import { TrendingUp, TrendingDown, PieChart as PieChartIcon, BarChart3, Target, 
-  Home, Car, Utensils, Wifi, Heart, ShoppingBag, PiggyBank, Landmark, GraduationCap, 
-  Gamepad2, Wrench, CreditCard, Receipt, Plane } from 'lucide-react';
+import { TrendingUp, TrendingDown, PieChart as PieChartIcon, BarChart3, Target, Receipt } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMonthlyValidations, useRecurringExpenses } from '@/hooks/useFinance';
+import { 
+  EXPENSE_CATEGORIES,
+  getCategoryByValue,
+  getCategoryTotals,
+} from '@/lib/financeCategories';
 
 interface ProjectionsPanelProps {
   projectEndDate: Date | null;
@@ -17,25 +20,6 @@ interface ProjectionsPanelProps {
   totalRecurringExpenses: number;
   totalRecurringIncome: number;
 }
-
-// Category config
-const CATEGORY_CONFIG: Record<string, { icon: typeof Home; color: string; chartColor: string }> = {
-  housing: { icon: Home, color: 'text-rose-400', chartColor: '#f43f5e' },
-  utilities: { icon: Wifi, color: 'text-orange-400', chartColor: '#f97316' },
-  food: { icon: Utensils, color: 'text-yellow-400', chartColor: '#eab308' },
-  transport: { icon: Car, color: 'text-blue-400', chartColor: '#3b82f6' },
-  subscriptions: { icon: CreditCard, color: 'text-purple-400', chartColor: '#a855f7' },
-  health: { icon: Heart, color: 'text-pink-400', chartColor: '#ec4899' },
-  leisure: { icon: Gamepad2, color: 'text-cyan-400', chartColor: '#06b6d4' },
-  savings: { icon: PiggyBank, color: 'text-emerald-400', chartColor: '#10b981' },
-  investments: { icon: TrendingUp, color: 'text-green-400', chartColor: '#22c55e' },
-  taxes: { icon: Landmark, color: 'text-red-400', chartColor: '#ef4444' },
-  education: { icon: GraduationCap, color: 'text-indigo-400', chartColor: '#6366f1' },
-  travel: { icon: Plane, color: 'text-sky-400', chartColor: '#0ea5e9' },
-  shopping: { icon: ShoppingBag, color: 'text-violet-400', chartColor: '#8b5cf6' },
-  maintenance: { icon: Wrench, color: 'text-amber-400', chartColor: '#f59e0b' },
-  other: { icon: Receipt, color: 'text-slate-400', chartColor: '#64748b' },
-};
 
 export function ProjectionsPanel({
   projectEndDate,
@@ -85,25 +69,11 @@ export function ProjectionsPanel({
     return data;
   }, [validations, monthlyNetBalance]);
 
-  // Category distribution using stored categories
-  const categoryData = useMemo(() => {
-    const categories: Record<string, number> = {};
-    
-    recurringExpenses.filter(e => e.is_active).forEach(expense => {
-      const cat = expense.category || 'other';
-      categories[cat] = (categories[cat] || 0) + expense.amount;
-    });
-
-    return Object.entries(categories)
-      .map(([name, value]) => ({
-        name,
-        label: name.charAt(0).toUpperCase() + name.slice(1),
-        value,
-        color: CATEGORY_CONFIG[name]?.chartColor || '#64748b',
-        icon: CATEGORY_CONFIG[name]?.icon || Receipt,
-      }))
-      .sort((a, b) => b.value - a.value);
-  }, [recurringExpenses]);
+  // Category distribution using shared utility
+  const categoryData = useMemo(() => 
+    getCategoryTotals(recurringExpenses, EXPENSE_CATEGORIES),
+    [recurringExpenses]
+  );
 
   // Stats summary
   const stats = useMemo(() => {

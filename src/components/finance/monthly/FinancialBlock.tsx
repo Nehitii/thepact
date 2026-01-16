@@ -6,29 +6,18 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
-import type { LucideIcon } from 'lucide-react';
-
-interface Category {
-  value: string;
-  label: string;
-  icon: LucideIcon;
-  color: string;
-  bg: string;
-}
-
-interface Item {
-  id: string;
-  name: string;
-  amount: number;
-  is_active: boolean;
-  category?: string | null;
-}
+import { 
+  type FinanceCategory,
+  getItemCategory,
+  groupItemsByCategory,
+} from '@/lib/financeCategories';
+import type { FinancialItem } from '@/types/finance';
 
 interface FinancialBlockProps {
   title: string;
   type: 'expense' | 'income';
-  items: Item[];
-  categories: Category[];
+  items: FinancialItem[];
+  categories: FinanceCategory[];
   isLoading: boolean;
   onAdd: (name: string, amount: number, category?: string) => Promise<void>;
   onUpdate: (id: string, name: string, amount: number, category?: string) => Promise<void>;
@@ -36,90 +25,15 @@ interface FinancialBlockProps {
   isPending?: boolean;
 }
 
-// Helper to detect category from item name (fallback when no category is set)
-function detectCategory(itemName: string, categories: Category[]): Category {
-  const lowerName = itemName.toLowerCase();
-  
-  const keywordMap: Record<string, string[]> = {
-    'housing': ['rent', 'mortgage', 'housing', 'apartment', 'lease', 'hoa'],
-    'utilities': ['electric', 'water', 'gas', 'utility', 'internet', 'wifi', 'phone', 'mobile', 'cable'],
-    'transport': ['car', 'auto', 'fuel', 'transport', 'metro', 'bus', 'uber', 'lyft', 'parking'],
-    'food': ['food', 'grocery', 'groceries', 'restaurant', 'dining', 'meal', 'lunch', 'dinner', 'breakfast'],
-    'health': ['health', 'medical', 'doctor', 'dentist', 'pharmacy', 'medicine', 'gym', 'fitness'],
-    'subscriptions': ['netflix', 'spotify', 'subscription', 'streaming', 'premium', 'plus', 'membership'],
-    'entertainment': ['entertainment', 'movie', 'game', 'concert', 'event', 'hobby'],
-    'education': ['education', 'course', 'school', 'college', 'tuition', 'book', 'learning'],
-    'shopping': ['shopping', 'clothes', 'amazon', 'retail', 'purchase'],
-    'savings': ['saving', 'investment', 'invest', '401k', 'ira', 'retirement'],
-    'debt': ['debt', 'loan', 'credit', 'payment', 'interest'],
-    'insurance': ['insurance', 'policy', 'coverage'],
-    'childcare': ['child', 'daycare', 'babysit', 'kid'],
-    'pets': ['pet', 'dog', 'cat', 'vet', 'animal'],
-    'gifts': ['gift', 'donation', 'charity', 'present'],
-    'taxes': ['tax', 'irs', 'federal', 'state'],
-    'salary': ['salary', 'paycheck', 'wage', 'pay'],
-    'freelance': ['freelance', 'contract', 'consulting', 'gig'],
-    'business': ['business', 'profit', 'revenue', 'sales'],
-    'investments': ['dividend', 'investment', 'stock', 'bond', 'capital'],
-    'rental': ['rental', 'tenant', 'property'],
-    'bonus': ['bonus', 'commission', 'incentive'],
-    'pension': ['pension', 'social security'],
-    'benefits': ['benefit', 'subsidy', 'allowance', 'stipend'],
-    'royalties': ['royalty', 'royalties', 'licensing'],
-    'refunds': ['refund', 'rebate', 'cashback', 'return'],
-    'other': ['other', 'misc', 'miscellaneous'],
-  };
-
-  for (const [categoryValue, keywords] of Object.entries(keywordMap)) {
-    if (keywords.some(keyword => lowerName.includes(keyword))) {
-      const found = categories.find(c => c.value === categoryValue);
-      if (found) return found;
-    }
-  }
-
-  return categories.find(c => c.value === 'other') || categories[0];
-}
-
-// Get category for an item - use stored category or fall back to auto-detection
-function getItemCategory(item: Item, categories: Category[]): Category {
-  if (item.category) {
-    const found = categories.find(c => c.value === item.category);
-    if (found) return found;
-  }
-  return detectCategory(item.name, categories);
-}
-
-// Get hex color from category
-function getCategoryHexColor(category: Category): string {
-  const colorMap: Record<string, string> = {
-    'text-rose-400': '#fb7185',
-    'text-orange-400': '#fb923c',
-    'text-yellow-400': '#facc15',
-    'text-blue-400': '#60a5fa',
-    'text-purple-400': '#c084fc',
-    'text-pink-400': '#f472b6',
-    'text-cyan-400': '#22d3ee',
-    'text-emerald-400': '#34d399',
-    'text-red-400': '#f87171',
-    'text-indigo-400': '#818cf8',
-    'text-sky-400': '#38bdf8',
-    'text-violet-400': '#a78bfa',
-    'text-amber-400': '#fbbf24',
-    'text-slate-400': '#94a3b8',
-    'text-green-400': '#4ade80',
-  };
-  return colorMap[category.color] || '#94a3b8';
-}
-
 interface CategoryGroupProps {
-  category: Category;
-  items: Item[];
-  allCategories: Category[];
+  category: FinanceCategory;
+  items: FinancialItem[];
+  allCategories: FinanceCategory[];
   isExpense: boolean;
   currency: string;
   editingId: string | null;
   editingData: { name: string; amount: string; category: string };
-  onStartEdit: (item: Item) => void;
+  onStartEdit: (item: FinancialItem) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onEditDataChange: (data: { name: string; amount: string; category: string }) => void;
@@ -143,7 +57,7 @@ function CategoryGroup({
   const [isOpen, setIsOpen] = useState(true);
   const categoryTotal = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
   const Icon = category.icon;
-  const hexColor = getCategoryHexColor(category);
+  const hexColor = category.hexColor;
 
   return (
     <motion.div 
@@ -221,7 +135,7 @@ function CategoryGroup({
                                 className="text-white hover:bg-white/10 focus:bg-white/10 text-xs rounded-lg"
                               >
                                 <div className="flex items-center gap-2">
-                                  <cat.icon className="w-3 h-3" style={{ color: getCategoryHexColor(cat) }} />
+                                  <cat.icon className="w-3 h-3" style={{ color: cat.hexColor }} />
                                   <span>{cat.label}</span>
                                 </div>
                               </SelectItem>
@@ -321,20 +235,10 @@ export function FinancialBlock({
   const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
   const isExpense = type === 'expense';
 
-  // Group items by category (stored or auto-detected)
+  // Group items by category using shared utility
   const groupedItems = useMemo(() => {
-    const groups = new Map<string, { category: Category; items: Item[] }>();
+    const groups = groupItemsByCategory(items, categories);
     
-    items.forEach(item => {
-      const category = getItemCategory(item, categories);
-      const existing = groups.get(category.value);
-      if (existing) {
-        existing.items.push(item);
-      } else {
-        groups.set(category.value, { category, items: [item] });
-      }
-    });
-
     return Array.from(groups.values()).sort((a, b) => {
       const totalA = a.items.reduce((sum, i) => sum + i.amount, 0);
       const totalB = b.items.reduce((sum, i) => sum + i.amount, 0);
@@ -355,7 +259,7 @@ export function FinancialBlock({
     setEditingId(null);
   };
 
-  const startEdit = (item: Item) => {
+  const startEdit = (item: FinancialItem) => {
     const itemCategory = getItemCategory(item, categories);
     setEditingId(item.id);
     setEditingData({ 
@@ -456,7 +360,7 @@ export function FinancialBlock({
                               className="text-white hover:bg-white/10 focus:bg-white/10 rounded-lg"
                             >
                               <div className="flex items-center gap-2">
-                                <cat.icon className="w-3.5 h-3.5" style={{ color: getCategoryHexColor(cat) }} />
+                                <cat.icon className="w-3.5 h-3.5" style={{ color: cat.hexColor }} />
                                 <span>{cat.label}</span>
                               </div>
                             </SelectItem>
