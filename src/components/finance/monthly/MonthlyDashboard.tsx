@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { TrendingDown, TrendingUp, Home, Car, Utensils, Wifi, Heart, ShoppingBag, PiggyBank, Landmark, GraduationCap, Gamepad2, Wrench, CreditCard, Receipt, Plane, Zap, DollarSign, Briefcase, Gift } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {
   useRecurringExpenses,
@@ -18,64 +17,17 @@ import { MonthlyBalanceHero } from './MonthlyBalanceHero';
 import { FinancialBlock } from './FinancialBlock';
 import { MonthlyValidationPanel } from './MonthlyValidationPanel';
 import { MonthlyHistory } from './MonthlyHistory';
-import { format, subMonths, parseISO } from 'date-fns';
-
-const EXPENSE_CATEGORIES = [
-  { value: 'housing', label: 'Housing', icon: Home, color: 'text-rose-400', bg: 'bg-rose-500/10' },
-  { value: 'utilities', label: 'Utilities', icon: Wifi, color: 'text-orange-400', bg: 'bg-orange-500/10' },
-  { value: 'food', label: 'Food', icon: Utensils, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-  { value: 'transport', label: 'Transport', icon: Car, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-  { value: 'subscriptions', label: 'Subscriptions', icon: CreditCard, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-  { value: 'health', label: 'Health', icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500/10' },
-  { value: 'leisure', label: 'Leisure', icon: Gamepad2, color: 'text-cyan-400', bg: 'bg-cyan-500/10' },
-  { value: 'savings', label: 'Savings', icon: PiggyBank, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  { value: 'taxes', label: 'Taxes', icon: Landmark, color: 'text-red-400', bg: 'bg-red-500/10' },
-  { value: 'education', label: 'Education', icon: GraduationCap, color: 'text-indigo-400', bg: 'bg-indigo-500/10' },
-  { value: 'travel', label: 'Travel', icon: Plane, color: 'text-sky-400', bg: 'bg-sky-500/10' },
-  { value: 'shopping', label: 'Shopping', icon: ShoppingBag, color: 'text-violet-400', bg: 'bg-violet-500/10' },
-  { value: 'maintenance', label: 'Maintenance', icon: Wrench, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-  { value: 'other', label: 'Other', icon: Receipt, color: 'text-slate-400', bg: 'bg-slate-500/10' },
-];
-
-const INCOME_CATEGORIES = [
-  { value: 'salary', label: 'Salary', icon: Briefcase, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-  { value: 'freelance', label: 'Freelance', icon: Zap, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-  { value: 'investment', label: 'Investment', icon: TrendingUp, color: 'text-green-400', bg: 'bg-green-500/10' },
-  { value: 'rental', label: 'Rental', icon: Home, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-  { value: 'gift', label: 'Gift', icon: Gift, color: 'text-pink-400', bg: 'bg-pink-500/10' },
-  { value: 'other', label: 'Other', icon: DollarSign, color: 'text-slate-400', bg: 'bg-slate-500/10' },
-];
+import { format, subMonths } from 'date-fns';
+import { 
+  EXPENSE_CATEGORIES, 
+  INCOME_CATEGORIES,
+  getCategoryTotals,
+  calculateActiveTotal,
+} from '@/lib/financeCategories';
 
 interface MonthlyDashboardProps {
   salaryPaymentDay: number;
 }
-
-// Category color mapping for charts
-const EXPENSE_COLORS: Record<string, string> = {
-  housing: '#fb7185',
-  utilities: '#fb923c',
-  food: '#facc15',
-  transport: '#60a5fa',
-  subscriptions: '#c084fc',
-  health: '#f472b6',
-  leisure: '#22d3ee',
-  savings: '#34d399',
-  taxes: '#f87171',
-  education: '#818cf8',
-  travel: '#38bdf8',
-  shopping: '#a78bfa',
-  maintenance: '#fbbf24',
-  other: '#94a3b8',
-};
-
-const INCOME_COLORS: Record<string, string> = {
-  salary: '#34d399',
-  freelance: '#facc15',
-  investment: '#4ade80',
-  rental: '#60a5fa',
-  gift: '#f472b6',
-  other: '#94a3b8',
-};
 
 export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const { user } = useAuth();
@@ -91,8 +43,8 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const deleteExpense = useDeleteRecurringExpense();
   const deleteIncome = useDeleteRecurringIncome();
 
-  const totalExpenses = expenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
-  const totalIncome = income.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+  const totalExpenses = calculateActiveTotal(expenses);
+  const totalIncome = calculateActiveTotal(income);
 
   // Compute 6-month balance trend from validations
   const balanceTrend = useMemo(() => {
@@ -136,43 +88,17 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
     });
   }, [validations, totalIncome, totalExpenses]);
 
-  // Compute expenses by category for pie chart
-  const expensesByCategory = useMemo(() => {
-    const activeExpenses = expenses.filter(e => e.is_active);
-    const categoryTotals: Record<string, number> = {};
-    
-    activeExpenses.forEach(exp => {
-      const cat = exp.category || 'other';
-      categoryTotals[cat] = (categoryTotals[cat] || 0) + exp.amount;
-    });
-    
-    return Object.entries(categoryTotals)
-      .map(([name, value]) => ({
-        name: EXPENSE_CATEGORIES.find(c => c.value === name)?.label || name,
-        value,
-        color: EXPENSE_COLORS[name] || EXPENSE_COLORS.other,
-      }))
-      .sort((a, b) => b.value - a.value);
-  }, [expenses]);
+  // Compute expenses by category for pie chart using shared utility
+  const expensesByCategory = useMemo(() => 
+    getCategoryTotals(expenses, EXPENSE_CATEGORIES), 
+    [expenses]
+  );
 
-  // Compute income by category for pie chart
-  const incomeByCategory = useMemo(() => {
-    const activeIncome = income.filter(i => i.is_active);
-    const categoryTotals: Record<string, number> = {};
-    
-    activeIncome.forEach(inc => {
-      const cat = inc.category || 'other';
-      categoryTotals[cat] = (categoryTotals[cat] || 0) + inc.amount;
-    });
-    
-    return Object.entries(categoryTotals)
-      .map(([name, value]) => ({
-        name: INCOME_CATEGORIES.find(c => c.value === name)?.label || name,
-        value,
-        color: INCOME_COLORS[name] || INCOME_COLORS.other,
-      }))
-      .sort((a, b) => b.value - a.value);
-  }, [income]);
+  // Compute income by category for pie chart using shared utility
+  const incomeByCategory = useMemo(() => 
+    getCategoryTotals(income, INCOME_CATEGORIES), 
+    [income]
+  );
 
   const handleAddExpense = async (name: string, amount: number, category?: string) => {
     if (expenses.length >= 30) {
