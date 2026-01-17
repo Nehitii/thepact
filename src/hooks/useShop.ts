@@ -218,6 +218,34 @@ export function useShopBanners() {
   });
 }
 
+// Fetch active cosmetic titles
+export interface CosmeticTitle {
+  id: string;
+  title_text: string;
+  rarity: string;
+  glow_color: string | null;
+  text_color: string | null;
+  is_active: boolean;
+  is_default: boolean;
+  price: number;
+}
+
+export function useShopTitles() {
+  return useQuery({
+    queryKey: ["shop-titles"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cosmetic_titles")
+        .select("*")
+        .eq("is_active", true)
+        .order("price");
+      
+      if (error) throw error;
+      return data as CosmeticTitle[];
+    },
+  });
+}
+
 // Fetch user's owned cosmetics
 export function useUserCosmetics(userId: string | undefined) {
   return useQuery({

@@ -1,26 +1,25 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Image, Frame, Palette, Check, Lock } from "lucide-react";
+import { Image, Frame, Crown, Check, Lock, Type } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useShopFrames, useShopBanners, useUserCosmetics, usePurchaseCosmetic, useBondBalance } from "@/hooks/useShop";
+import { 
+  useShopFrames, 
+  useShopBanners, 
+  useShopTitles,
+  useUserCosmetics, 
+  usePurchaseCosmetic, 
+  useBondBalance 
+} from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
-import { ThemePreviewCard } from "./ThemePreviewCard";
 import { FramePreview } from "@/components/ui/avatar-frame";
 import { BondIcon } from "@/components/ui/bond-icon";
 
-type CosmeticCategory = "themes" | "frames" | "banners";
+type CosmeticCategory = "frames" | "banners" | "titles";
 
 const categories = [
-  { id: "themes" as const, label: "Themes", icon: Palette },
   { id: "frames" as const, label: "Frames", icon: Frame },
   { id: "banners" as const, label: "Banners", icon: Image },
-];
-
-const themesData = [
-  { id: "1", name: "Neon Cyber", bg: "#0a0f1a", accent: "#5BB4FF", glow: "#5BB4FF", rarity: "common", price: 1600 },
-  { id: "2", name: "Crimson Edge", bg: "#1a0a0f", accent: "#FF5B5B", glow: "#FF5B5B", rarity: "rare", price: 1600 },
-  { id: "3", name: "Void Purple", bg: "#0f0a1a", accent: "#A855F7", glow: "#A855F7", rarity: "epic", price: 1600 },
-  { id: "4", name: "Golden Dawn", bg: "#1a150a", accent: "#FBB034", glow: "#FBB034", rarity: "legendary", price: 1600 },
+  { id: "titles" as const, label: "Titles", icon: Crown },
 ];
 
 const rarityColors: Record<string, { border: string; bg: string; text: string; glow: string }> = {
@@ -32,15 +31,16 @@ const rarityColors: Record<string, { border: string; bg: string; text: string; g
 
 export function CosmeticShop() {
   const { user } = useAuth();
-  const [activeCategory, setActiveCategory] = useState<CosmeticCategory>("themes");
+  const [activeCategory, setActiveCategory] = useState<CosmeticCategory>("frames");
   
   const { data: frames = [] } = useShopFrames();
   const { data: banners = [] } = useShopBanners();
+  const { data: titles = [] } = useShopTitles();
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
   const { data: balance } = useBondBalance(user?.id);
   const purchaseCosmetic = usePurchaseCosmetic();
 
-  const handlePurchase = (cosmeticId: string, type: "frame" | "banner", price: number) => {
+  const handlePurchase = (cosmeticId: string, type: "frame" | "banner" | "title", price: number) => {
     if (!user?.id) return;
     purchaseCosmetic.mutate({
       userId: user.id,
@@ -50,11 +50,11 @@ export function CosmeticShop() {
     });
   };
 
-  const isOwned = (id: string, type: "frame" | "banner") => {
+  const isOwned = (id: string, type: "frame" | "banner" | "title") => {
     if (!ownedCosmetics) return false;
-    return type === "frame" 
-      ? ownedCosmetics.frames.includes(id)
-      : ownedCosmetics.banners.includes(id);
+    if (type === "frame") return ownedCosmetics.frames.includes(id);
+    if (type === "banner") return ownedCosmetics.banners.includes(id);
+    return ownedCosmetics.titles.includes(id);
   };
 
   return (
@@ -85,8 +85,8 @@ export function CosmeticShop() {
         })}
       </div>
 
-      {/* Right panel - Items */}
-      <div className="flex-1 overflow-y-auto">
+      {/* Right panel - Items (hidden scrollbar) */}
+      <div className="flex-1 overflow-y-auto hide-scrollbar">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeCategory}
@@ -96,45 +96,7 @@ export function CosmeticShop() {
             transition={{ duration: 0.2 }}
             className="grid grid-cols-2 lg:grid-cols-3 gap-4"
           >
-            {activeCategory === "themes" && themesData.map((theme) => {
-              const rarity = rarityColors[theme.rarity];
-              return (
-                <div
-                  key={theme.id}
-                  className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} ${rarity.glow} backdrop-blur-sm transition-all hover:scale-[1.02]`}
-                >
-                  <div className="mb-3">
-                    <ThemePreviewCard
-                      name={theme.name}
-                      bgColor={theme.bg}
-                      accentColor={theme.accent}
-                      glowColor={theme.glow}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="font-rajdhani font-semibold text-foreground">{theme.name}</h4>
-                    <div className={`text-xs uppercase tracking-wider ${rarity.text}`}>
-                      {theme.rarity}
-                    </div>
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
-                        <BondIcon size={18} />
-                        {theme.price}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled
-                        className="text-xs opacity-60"
-                      >
-                        Soon
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
+            {/* Frames */}
             {activeCategory === "frames" && frames.map((frame) => {
               const owned = isOwned(frame.id, "frame") || frame.is_default;
               const rarity = rarityColors[frame.rarity] || rarityColors.common;
@@ -143,7 +105,7 @@ export function CosmeticShop() {
               return (
                 <div
                   key={frame.id}
-                  className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} ${rarity.glow} backdrop-blur-sm transition-all hover:scale-[1.02]`}
+                  className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
                 >
                   {/* Frame preview using proper layered component */}
                   <div className="flex justify-center mb-4">
@@ -191,6 +153,7 @@ export function CosmeticShop() {
               );
             })}
 
+            {/* Banners */}
             {activeCategory === "banners" && banners.map((banner) => {
               const owned = isOwned(banner.id, "banner") || banner.is_default;
               const rarity = rarityColors[banner.rarity] || rarityColors.common;
@@ -199,7 +162,7 @@ export function CosmeticShop() {
               return (
                 <div
                   key={banner.id}
-                  className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} ${rarity.glow} backdrop-blur-sm transition-all hover:scale-[1.02]`}
+                  className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
                 >
                   {/* Banner preview */}
                   <div 
@@ -243,6 +206,84 @@ export function CosmeticShop() {
                 </div>
               );
             })}
+
+            {/* Titles */}
+            {activeCategory === "titles" && titles.map((title) => {
+              const owned = isOwned(title.id, "title") || title.is_default;
+              const rarity = rarityColors[title.rarity] || rarityColors.common;
+              const canAfford = (balance?.balance || 0) >= title.price;
+              
+              return (
+                <div
+                  key={title.id}
+                  className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
+                >
+                  {/* Title preview */}
+                  <div className="flex justify-center items-center h-16 mb-4">
+                    <span
+                      className="font-orbitron text-lg font-bold tracking-wider"
+                      style={{
+                        color: title.text_color || '#5bb4ff',
+                        textShadow: title.glow_color 
+                          ? `0 0 10px ${title.glow_color}, 0 0 20px ${title.glow_color}` 
+                          : undefined,
+                      }}
+                    >
+                      {title.title_text}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-center">
+                    <div className={`text-xs uppercase tracking-wider ${rarity.text}`}>
+                      {title.rarity}
+                    </div>
+                    
+                    {owned ? (
+                      <div className="flex items-center justify-center gap-1 text-green-400 text-sm mt-3">
+                        <Check className="w-4 h-4" />
+                        Owned
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between mt-3">
+                        <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
+                          <BondIcon size={18} />
+                          {title.price}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={!canAfford || purchaseCosmetic.isPending}
+                          onClick={() => handlePurchase(title.id, "title", title.price)}
+                          className="text-xs border-primary/30 hover:bg-primary/10"
+                        >
+                          {canAfford ? "Buy" : <Lock className="w-3 h-3" />}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Empty state */}
+            {activeCategory === "frames" && frames.length === 0 && (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <Frame className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="font-rajdhani">No frames available yet</p>
+              </div>
+            )}
+            {activeCategory === "banners" && banners.length === 0 && (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <Image className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="font-rajdhani">No banners available yet</p>
+              </div>
+            )}
+            {activeCategory === "titles" && titles.length === 0 && (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                <Crown className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                <p className="font-rajdhani">No titles available yet</p>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
