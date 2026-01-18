@@ -1,3 +1,4 @@
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { 
   TrendingUp, 
@@ -10,17 +11,20 @@ import {
   Sparkles,
   Zap,
   BarChart3,
-  Calendar,
   Bell,
   Shield,
   Target,
   Brain,
-  Flame
+  Flame,
+  Search
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShopModules, useUserModulePurchases, useBondBalance, usePurchaseModule } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
+import { Input } from "@/components/ui/input";
+import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
+import { ShopLoadingState } from "./ShopLoadingState";
 
 const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   finance: TrendingUp,
@@ -30,7 +34,6 @@ const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> =
   "track-health": Heart,
 };
 
-// Module-specific features for enhanced descriptions
 const moduleFeatures: Record<string, string[]> = {
   finance: [
     "Track income & expenses monthly",
@@ -110,21 +113,58 @@ const rarityColors: Record<string, { border: string; bg: string; text: string; g
 
 export function ModulesShop() {
   const { user } = useAuth();
-  const { data: modules = [] } = useShopModules();
+  const { data: modules = [], isLoading } = useShopModules();
   const { data: purchasedModuleIds = [] } = useUserModulePurchases(user?.id);
   const { data: balance } = useBondBalance(user?.id);
   const purchaseModule = usePurchaseModule();
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const [purchaseItem, setPurchaseItem] = useState<PurchaseItem | null>(null);
 
-  const handlePurchase = (moduleId: string, price: number) => {
-    if (!user?.id) return;
+  const handlePurchaseClick = (module: typeof modules[0]) => {
+    const Icon = moduleIcons[module.key] || Sparkles;
+    const rarity = rarityColors[module.rarity] || rarityColors.common;
+    
+    setPurchaseItem({
+      id: module.id,
+      name: module.name,
+      type: "module",
+      price: module.price_bonds,
+      rarity: module.rarity,
+      previewElement: (
+        <div className={`w-12 h-12 rounded-xl ${rarity.bg} border ${rarity.border} flex items-center justify-center`}>
+          <Icon className={`w-6 h-6 ${rarity.text}`} />
+        </div>
+      ),
+    });
+  };
+
+  const handleConfirmPurchase = () => {
+    if (!user?.id || !purchaseItem) return;
     purchaseModule.mutate({
       userId: user.id,
-      moduleId,
-      price,
+      moduleId: purchaseItem.id,
+      price: purchaseItem.price,
+    }, {
+      onSuccess: () => setPurchaseItem(null),
     });
   };
 
   const isOwned = (moduleId: string) => purchasedModuleIds.includes(moduleId);
+
+  const filteredModules = useMemo(() => {
+    if (!searchQuery) return modules;
+    const query = searchQuery.toLowerCase();
+    return modules.filter(m => 
+      m.name.toLowerCase().includes(query) ||
+      m.description?.toLowerCase().includes(query) ||
+      moduleFeatures[m.key]?.some(f => f.toLowerCase().includes(query))
+    );
+  }, [modules, searchQuery]);
+
+  if (isLoading) {
+    return <ShopLoadingState type="modules" count={3} />;
+  }
 
   return (
     <div className="space-y-8">
@@ -142,9 +182,20 @@ export function ModulesShop() {
         </p>
       </div>
 
+      {/* Search */}
+      <div className="relative max-w-md mx-auto">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="Search modules..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10 bg-card/50 border-primary/20 font-rajdhani"
+        />
+      </div>
+
       {/* Modules Grid */}
       <div className="space-y-6">
-        {modules.map((module, index) => {
+        {filteredModules.map((module, index) => {
           const owned = isOwned(module.id);
           const rarity = rarityColors[module.rarity] || rarityColors.common;
           const canAfford = (balance?.balance || 0) >= module.price_bonds;
@@ -160,20 +211,16 @@ export function ModulesShop() {
               transition={{ delay: index * 0.1 }}
               className={`relative rounded-2xl border-2 ${rarity.border} ${rarity.bg} ${rarity.glow} backdrop-blur-xl overflow-hidden premium-card`}
             >
-              {/* Background gradient accent */}
               <div className={`absolute inset-0 bg-gradient-to-br ${rarity.accent} pointer-events-none`} />
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
               
               <div className="relative p-6">
-                {/* Top Row: Icon, Title, Category Badge, Status */}
                 <div className="flex items-start gap-5 mb-5">
-                  {/* Large Icon Container */}
                   <div className={`w-20 h-20 rounded-2xl ${rarity.bg} border-2 ${rarity.border} flex items-center justify-center flex-shrink-0 relative`}>
                     <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl" />
                     <Icon className={`w-10 h-10 ${rarity.text}`} />
                   </div>
 
-                  {/* Title & Category */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center flex-wrap gap-2 mb-2">
                       <h3 className="font-orbitron text-xl text-foreground tracking-wide">
@@ -189,7 +236,6 @@ export function ModulesShop() {
                       )}
                     </div>
                     
-                    {/* Category Tag */}
                     {category && (
                       <div className="flex items-center gap-1.5 text-muted-foreground text-sm mb-3">
                         <category.icon className="w-3.5 h-3.5" />
@@ -197,13 +243,11 @@ export function ModulesShop() {
                       </div>
                     )}
                     
-                    {/* Description */}
                     <p className="text-sm text-muted-foreground font-rajdhani leading-relaxed">
                       {module.description}
                     </p>
                   </div>
 
-                  {/* Price & Action - Right Side */}
                   <div className="flex-shrink-0 text-right min-w-[140px]">
                     {owned ? (
                       <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400">
@@ -229,20 +273,15 @@ export function ModulesShop() {
                           </div>
                         )}
                         <Button
-                          disabled={!canAfford || purchaseModule.isPending}
-                          onClick={() => handlePurchase(module.id, module.price_bonds)}
+                          disabled={!canAfford}
+                          onClick={() => handlePurchaseClick(module)}
                           className={`w-full mt-2 font-rajdhani font-semibold ${
                             canAfford 
                               ? "bg-primary/20 border-2 border-primary/40 hover:bg-primary/30 hover:border-primary/60 text-primary" 
                               : "bg-muted/30 border border-muted/50 text-muted-foreground"
                           }`}
                         >
-                          {purchaseModule.isPending ? (
-                            <span className="flex items-center gap-2">
-                              <Flame className="w-4 h-4 animate-pulse" />
-                              Processing...
-                            </span>
-                          ) : canAfford ? (
+                          {canAfford ? (
                             <span className="flex items-center gap-2">
                               <Zap className="w-4 h-4" />
                               Unlock Module
@@ -259,7 +298,6 @@ export function ModulesShop() {
                   </div>
                 </div>
 
-                {/* Features Section */}
                 {features.length > 0 && (
                   <div className="pt-4 border-t border-primary/10">
                     <div className="flex items-center gap-2 mb-3">
@@ -287,15 +325,30 @@ export function ModulesShop() {
       </div>
 
       {/* Empty State */}
-      {modules.length === 0 && (
+      {filteredModules.length === 0 && (
         <div className="text-center py-16">
           <Sparkles className="w-16 h-16 mx-auto mb-4 text-primary/30" />
-          <h3 className="font-orbitron text-lg text-muted-foreground mb-2">No Modules Available</h3>
+          <h3 className="font-orbitron text-lg text-muted-foreground mb-2">
+            {modules.length === 0 ? "No Modules Available" : "No modules match your search"}
+          </h3>
           <p className="text-sm text-muted-foreground/60 font-rajdhani">
-            Check back soon for new modules to unlock!
+            {modules.length === 0 
+              ? "Check back soon for new modules to unlock!"
+              : "Try a different search term"
+            }
           </p>
         </div>
       )}
+
+      {/* Purchase Confirmation Modal */}
+      <PurchaseConfirmModal
+        open={!!purchaseItem}
+        onOpenChange={(open) => !open && setPurchaseItem(null)}
+        item={purchaseItem}
+        currentBalance={balance?.balance || 0}
+        onConfirm={handleConfirmPurchase}
+        isPending={purchaseModule.isPending}
+      />
     </div>
   );
 }
