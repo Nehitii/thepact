@@ -1117,6 +1117,90 @@ export type Database = {
         }
         Relationships: []
       }
+      shop_bundles: {
+        Row: {
+          created_at: string
+          description: string | null
+          discount_percentage: number | null
+          display_order: number | null
+          ends_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          items: Json
+          name: string
+          original_price_bonds: number | null
+          price_bonds: number
+          rarity: string
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          display_order?: number | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          items?: Json
+          name: string
+          original_price_bonds?: number | null
+          price_bonds?: number
+          rarity?: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          discount_percentage?: number | null
+          display_order?: number | null
+          ends_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          items?: Json
+          name?: string
+          original_price_bonds?: number | null
+          price_bonds?: number
+          rarity?: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shop_daily_deals: {
+        Row: {
+          created_at: string
+          deal_date: string
+          discount_percentage: number
+          id: string
+          is_active: boolean
+          item_id: string
+          item_type: string
+        }
+        Insert: {
+          created_at?: string
+          deal_date?: string
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          item_id: string
+          item_type: string
+        }
+        Update: {
+          created_at?: string
+          deal_date?: string
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          item_id?: string
+          item_type?: string
+        }
+        Relationships: []
+      }
       shop_modules: {
         Row: {
           created_at: string
@@ -1162,6 +1246,30 @@ export type Database = {
           price_eur?: number | null
           rarity?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      shop_wishlist: {
+        Row: {
+          added_at: string
+          id: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          id?: string
+          item_id: string
+          item_type: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          id?: string
+          item_id?: string
+          item_type?: string
+          user_id?: string
         }
         Relationships: []
       }
