@@ -25,6 +25,8 @@ import { BondIcon } from "@/components/ui/bond-icon";
 import { Input } from "@/components/ui/input";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { ShopLoadingState } from "./ShopLoadingState";
+import { WishlistButton } from "./WishlistButton";
+import { UnlockAnimation } from "./UnlockAnimation";
 
 const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   finance: TrendingUp,
@@ -120,6 +122,8 @@ export function ModulesShop() {
   
   const [searchQuery, setSearchQuery] = useState("");
   const [purchaseItem, setPurchaseItem] = useState<PurchaseItem | null>(null);
+  const [showUnlock, setShowUnlock] = useState(false);
+  const [unlockedItem, setUnlockedItem] = useState<{ name: string; rarity: string } | null>(null);
 
   const handlePurchaseClick = (module: typeof modules[0]) => {
     const Icon = moduleIcons[module.key] || Sparkles;
@@ -146,7 +150,11 @@ export function ModulesShop() {
       moduleId: purchaseItem.id,
       price: purchaseItem.price,
     }, {
-      onSuccess: () => setPurchaseItem(null),
+      onSuccess: () => {
+        setUnlockedItem({ name: purchaseItem.name, rarity: purchaseItem.rarity || "common" });
+        setShowUnlock(true);
+        setPurchaseItem(null);
+      },
     });
   };
 
@@ -213,6 +221,13 @@ export function ModulesShop() {
             >
               <div className={`absolute inset-0 bg-gradient-to-br ${rarity.accent} pointer-events-none`} />
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-3xl rounded-full pointer-events-none" />
+              
+              {/* Wishlist button */}
+              {!owned && !module.is_coming_soon && (
+                <div className="absolute top-4 right-4 z-10">
+                  <WishlistButton itemId={module.id} itemType="module" />
+                </div>
+              )}
               
               <div className="relative p-6">
                 <div className="flex items-start gap-5 mb-5">
@@ -349,6 +364,20 @@ export function ModulesShop() {
         onConfirm={handleConfirmPurchase}
         isPending={purchaseModule.isPending}
       />
+
+      {/* Unlock Animation */}
+      {unlockedItem && (
+        <UnlockAnimation
+          isOpen={showUnlock}
+          onComplete={() => {
+            setShowUnlock(false);
+            setUnlockedItem(null);
+          }}
+          itemName={unlockedItem.name}
+          itemType="module"
+          rarity={unlockedItem.rarity}
+        />
+      )}
     </div>
   );
 }

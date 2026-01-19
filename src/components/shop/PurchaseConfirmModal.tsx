@@ -15,19 +15,23 @@ import { BondIcon } from "@/components/ui/bond-icon";
 export interface PurchaseItem {
   id: string;
   name: string;
-  type: "frame" | "banner" | "title" | "module";
+  type: "frame" | "banner" | "title" | "module" | "bundle" | "cosmetic";
   price: number;
   rarity?: string;
   previewElement?: React.ReactNode;
+  originalPrice?: number;
 }
 
 interface PurchaseConfirmModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onClose?: () => void;
   item: PurchaseItem | null;
   currentBalance: number;
   onConfirm: () => void;
-  isPending: boolean;
+  isPending?: boolean;
+  isPurchasing?: boolean;
 }
 
 const rarityGradients: Record<string, string> = {
@@ -46,13 +50,24 @@ const rarityBorders: Record<string, string> = {
 
 export function PurchaseConfirmModal({
   open,
+  isOpen,
   onOpenChange,
+  onClose,
   item,
   currentBalance,
   onConfirm,
   isPending,
+  isPurchasing,
 }: PurchaseConfirmModalProps) {
   const [isAnimating, setIsAnimating] = useState(false);
+  
+  // Support both prop naming conventions
+  const isDialogOpen = open ?? isOpen ?? false;
+  const handleOpenChange = (value: boolean) => {
+    if (onOpenChange) onOpenChange(value);
+    if (!value && onClose) onClose();
+  };
+  const isLoading = isPending ?? isPurchasing ?? false;
   
   if (!item) return null;
   
@@ -65,8 +80,10 @@ export function PurchaseConfirmModal({
     onConfirm();
   };
 
+  const hasDiscount = item.originalPrice && item.originalPrice > item.price;
+
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
+    <AlertDialog open={isDialogOpen} onOpenChange={handleOpenChange}>
       <AlertDialogContent className={`max-w-md border-2 ${rarityBorders[rarity]} bg-gradient-to-br ${rarityGradients[rarity]} backdrop-blur-xl`}>
         <AlertDialogHeader>
           <AlertDialogTitle className="font-orbitron text-xl flex items-center gap-2">
@@ -114,10 +131,18 @@ export function PurchaseConfirmModal({
             </div>
             <div className="flex items-center justify-between text-sm font-rajdhani">
               <span className="text-muted-foreground">Item Cost</span>
-              <div className="flex items-center gap-1.5 text-red-400">
-                <span>-</span>
-                <BondIcon size={16} />
-                <span className="font-medium">{item.price.toLocaleString()}</span>
+              <div className="flex items-center gap-1.5">
+                {hasDiscount && (
+                  <span className="text-muted-foreground line-through text-xs flex items-center gap-1">
+                    <BondIcon size={12} />
+                    {item.originalPrice?.toLocaleString()}
+                  </span>
+                )}
+                <span className={`flex items-center gap-1 ${hasDiscount ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span>-</span>
+                  <BondIcon size={16} />
+                  <span className="font-medium">{item.price.toLocaleString()}</span>
+                </span>
               </div>
             </div>
             <div className="h-px bg-primary/20" />
@@ -149,19 +174,19 @@ export function PurchaseConfirmModal({
         <AlertDialogFooter className="gap-3">
           <Button
             variant="ghost"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             className="font-rajdhani"
-            disabled={isPending}
+            disabled={isLoading}
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={!canAfford || isPending}
+            disabled={!canAfford || isLoading}
             className="font-rajdhani font-semibold bg-primary/20 border-2 border-primary/40 hover:bg-primary/30 hover:border-primary/60 text-primary min-w-[120px]"
           >
             <AnimatePresence mode="wait">
-              {isPending ? (
+              {isLoading ? (
                 <motion.span
                   key="loading"
                   initial={{ opacity: 0 }}

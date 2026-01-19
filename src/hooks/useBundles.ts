@@ -33,15 +33,21 @@ export function useShopBundles() {
         .from("shop_bundles")
         .select("*")
         .eq("is_active", true)
-        .or(`starts_at.is.null,starts_at.lte.${now}`)
-        .or(`ends_at.is.null,ends_at.gte.${now}`)
         .order("display_order");
       
       if (error) throw error;
-      return (data || []).map(bundle => ({
+      
+      // Filter by date in JS to avoid complex OR queries
+      const filtered = (data || []).filter(bundle => {
+        const startsOk = !bundle.starts_at || new Date(bundle.starts_at) <= new Date(now);
+        const endsOk = !bundle.ends_at || new Date(bundle.ends_at) >= new Date(now);
+        return startsOk && endsOk;
+      });
+      
+      return filtered.map(bundle => ({
         ...bundle,
-        items: Array.isArray(bundle.items) ? bundle.items : []
-      })) as ShopBundle[];
+        items: Array.isArray(bundle.items) ? (bundle.items as unknown as BundleItem[]) : []
+      })) as unknown as ShopBundle[];
     },
   });
 }
