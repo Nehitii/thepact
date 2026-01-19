@@ -1,16 +1,31 @@
 import { useState } from "react";
 import { CyberBackground } from "@/components/CyberBackground";
-import { ShopTabs } from "@/components/shop/ShopTabs";
+import { ShopTabs, ShopTab } from "@/components/shop/ShopTabs";
 import { ShopBondDisplay } from "@/components/shop/ShopBondDisplay";
 import { CosmeticShop } from "@/components/shop/CosmeticShop";
 import { ModulesShop } from "@/components/shop/ModulesShop";
 import { BondsShop } from "@/components/shop/BondsShop";
+import { WishlistPanel } from "@/components/shop/WishlistPanel";
+import { PurchaseHistory } from "@/components/shop/PurchaseHistory";
+import { DailyDealsSection } from "@/components/shop/DailyDealsSection";
+import { BundlesSection } from "@/components/shop/BundlesSection";
 import { motion, AnimatePresence } from "framer-motion";
-
-type ShopTab = "cosmetics" | "modules" | "bonds";
+import { useAuth } from "@/contexts/AuthContext";
+import { useWishlist } from "@/hooks/useWishlist";
 
 export default function Shop() {
   const [activeTab, setActiveTab] = useState<ShopTab>("cosmetics");
+  const { user } = useAuth();
+  const { data: wishlist = [] } = useWishlist(user?.id);
+
+  const handlePurchaseFromWishlist = (item: any, itemType: string) => {
+    // Switch to appropriate tab and let the shop handle the purchase
+    if (itemType === "module") {
+      setActiveTab("modules");
+    } else {
+      setActiveTab("cosmetics");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -34,7 +49,11 @@ export default function Shop() {
 
         {/* Tabs */}
         <div className="mb-6">
-          <ShopTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <ShopTabs 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab} 
+            wishlistCount={wishlist.length}
+          />
         </div>
 
         {/* Content */}
@@ -46,9 +65,19 @@ export default function Shop() {
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            {activeTab === "cosmetics" && <CosmeticShop />}
+            {activeTab === "cosmetics" && (
+              <div className="space-y-8">
+                <DailyDealsSection />
+                <BundlesSection />
+                <CosmeticShop />
+              </div>
+            )}
             {activeTab === "modules" && <ModulesShop />}
             {activeTab === "bonds" && <BondsShop />}
+            {activeTab === "wishlist" && (
+              <WishlistPanel onPurchaseItem={handlePurchaseFromWishlist} />
+            )}
+            {activeTab === "history" && <PurchaseHistory />}
           </motion.div>
         </AnimatePresence>
       </div>

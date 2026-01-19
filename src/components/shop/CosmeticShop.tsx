@@ -16,6 +16,8 @@ import { BondIcon } from "@/components/ui/bond-icon";
 import { ShopFilters, ShopFilterState, applyShopFilters } from "./ShopFilters";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { ShopLoadingState } from "./ShopLoadingState";
+import { WishlistButton } from "./WishlistButton";
+import { UnlockAnimation } from "./UnlockAnimation";
 
 type CosmeticCategory = "frames" | "banners" | "titles";
 
@@ -36,6 +38,8 @@ export function CosmeticShop() {
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState<CosmeticCategory>("frames");
   const [purchaseItem, setPurchaseItem] = useState<PurchaseItem | null>(null);
+  const [showUnlock, setShowUnlock] = useState(false);
+  const [unlockedItem, setUnlockedItem] = useState<{ name: string; rarity: string } | null>(null);
   const [filters, setFilters] = useState<ShopFilterState>({
     search: "",
     sort: "price-asc",
@@ -65,7 +69,11 @@ export function CosmeticShop() {
       cosmeticType: purchaseItem.type as "frame" | "banner" | "title",
       price: purchaseItem.price,
     }, {
-      onSuccess: () => setPurchaseItem(null),
+      onSuccess: () => {
+        setUnlockedItem({ name: purchaseItem.name, rarity: purchaseItem.rarity || "common" });
+        setShowUnlock(true);
+        setPurchaseItem(null);
+      },
     });
   };
 
@@ -171,6 +179,11 @@ export function CosmeticShop() {
                       key={frame.id}
                       className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
                     >
+                      {!owned && (
+                        <div className="absolute top-2 right-2 z-10">
+                          <WishlistButton itemId={frame.id} itemType="cosmetic" size="sm" />
+                        </div>
+                      )}
                       <div className="flex justify-center mb-4">
                         <FramePreview
                           size="lg"
@@ -241,7 +254,12 @@ export function CosmeticShop() {
                       key={banner.id}
                       className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
                     >
-                      <div 
+                      {!owned && (
+                        <div className="absolute top-2 right-2 z-10">
+                          <WishlistButton itemId={banner.id} itemType="cosmetic" size="sm" />
+                        </div>
+                      )}
+                      <div
                         className="w-full h-16 rounded-lg mb-4"
                         style={{
                           background: banner.banner_url
@@ -310,6 +328,11 @@ export function CosmeticShop() {
                       key={title.id}
                       className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
                     >
+                      {!owned && (
+                        <div className="absolute top-2 right-2 z-10">
+                          <WishlistButton itemId={title.id} itemType="cosmetic" size="sm" />
+                        </div>
+                      )}
                       <div className="flex justify-center items-center h-16 mb-4">
                         <span
                           className="font-orbitron text-lg font-bold tracking-wider"
@@ -415,6 +438,20 @@ export function CosmeticShop() {
         onConfirm={handleConfirmPurchase}
         isPending={purchaseCosmetic.isPending}
       />
+
+      {/* Unlock Animation */}
+      {unlockedItem && (
+        <UnlockAnimation
+          isOpen={showUnlock}
+          onComplete={() => {
+            setShowUnlock(false);
+            setUnlockedItem(null);
+          }}
+          itemName={unlockedItem.name}
+          itemType="cosmetic"
+          rarity={unlockedItem.rarity}
+        />
+      )}
     </div>
   );
 }
