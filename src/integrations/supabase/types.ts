@@ -251,6 +251,124 @@ export type Database = {
         }
         Relationships: []
       }
+      community_posts: {
+        Row: {
+          content: string
+          created_at: string
+          goal_id: string | null
+          id: string
+          is_public: boolean
+          post_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          is_public?: boolean
+          post_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          goal_id?: string | null
+          id?: string
+          is_public?: boolean
+          post_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_reactions: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string | null
+          reaction_type: string
+          reel_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          reaction_type: string
+          reel_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          reaction_type?: string
+          reel_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_reel_id"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "victory_reels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_replies: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          post_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          post_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_replies_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cosmetic_banners: {
         Row: {
           banner_url: string | null
@@ -1668,6 +1786,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      victory_reels: {
+        Row: {
+          caption: string | null
+          created_at: string
+          duration_seconds: number
+          goal_id: string
+          id: string
+          is_public: boolean
+          thumbnail_url: string | null
+          updated_at: string
+          user_id: string
+          video_url: string
+          view_count: number
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          duration_seconds: number
+          goal_id: string
+          id?: string
+          is_public?: boolean
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+          video_url: string
+          view_count?: number
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          duration_seconds?: number
+          goal_id?: string
+          id?: string
+          is_public?: boolean
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+          video_url?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "victory_reels_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
