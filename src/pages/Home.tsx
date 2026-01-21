@@ -6,7 +6,7 @@ import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Flame, ListTodo, BookOpen, Lock, ShoppingCart } from "lucide-react";
+import { TrendingUp, Flame, ListTodo, BookOpen, Lock, ShoppingCart, Heart } from "lucide-react";
 import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
 import { ModuleGrid } from "@/components/home/ModuleGrid";
@@ -235,6 +235,12 @@ export default function Home() {
           return <LockedModuleCard name="Journal" moduleKey="journal" icon={BookOpen} size={size} navigate={navigate} />;
         }
         return <JournalModule navigate={navigate} size={size} />;
+      case 'track-health':
+        // Only show if purchased - use correct database key "track-health"
+        if (!isModulePurchased("track-health")) {
+          return <LockedModuleCard name="Track Health" moduleKey="track-health" icon={Heart} size={size} navigate={navigate} />;
+        }
+        return <HealthModule navigate={navigate} size={size} />;
       default:
         return null;
     }
@@ -863,6 +869,47 @@ function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?:
         <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-cyan-500/50 rounded-tr" />
         <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-cyan-500/50 rounded-bl" />
         <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-cyan-500/50 rounded-br" />
+      </button>
+    </div>
+  );
+}
+
+function HealthModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+  const isCompact = size === 'quarter';
+  
+  return (
+    <div className="animate-fade-in relative group h-full">
+      {/* Calm teal/mint accent glow for Health */}
+      <div className="absolute inset-0 bg-teal-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-emerald-500/10 to-teal-500/5 rounded-lg blur-2xl" />
+      <button
+        onClick={() => navigate("/health")}
+        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-teal-950/20 to-card/30 backdrop-blur-xl border-2 border-teal-500/40 rounded-lg overflow-hidden hover:border-teal-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(20,184,166,0.4),inset_0_0_30px_rgba(20,184,166,0.1)] group/health"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-[2px] border border-teal-500/20 rounded-[6px]" />
+        </div>
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 ${isCompact ? 'flex-col' : ''}`}>
+          <div className="relative">
+            <div className="absolute inset-0 bg-teal-500/30 blur-lg rounded-full" />
+            <Heart className={`text-teal-400 relative z-10 drop-shadow-[0_0_15px_rgba(20,184,166,0.6)] ${isCompact ? 'w-6 h-6' : 'w-8 h-8'}`} />
+          </div>
+          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
+            <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-400 ${isCompact ? 'text-xs' : 'text-lg'}`}>
+              Track Health
+            </span>
+            {!isCompact && (
+              <span className="text-xs text-teal-400/60 font-rajdhani tracking-wide mt-0.5">
+                Balance & awareness
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-teal-500/50 rounded-tl" />
+        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-teal-500/50 rounded-tr" />
+        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-teal-500/50 rounded-bl" />
+        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-teal-500/50 rounded-br" />
       </button>
     </div>
   );
