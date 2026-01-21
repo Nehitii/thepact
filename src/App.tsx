@@ -39,6 +39,7 @@ import AdminNotifications from "./pages/AdminNotifications";
 import Inbox from "./pages/Inbox";
 import AdminPromoManager from "./pages/AdminPromoManager";
 import Health from "./pages/Health";
+import Wishlist from "./pages/Wishlist";
 const queryClient = new QueryClient();
 
 // Wrapper component that applies AppLayout to protected routes
@@ -297,6 +298,14 @@ const App = () => (
                 element={
                   <ProtectedWithLayout>
                     <Health />
+                  </ProtectedWithLayout>
+                }
+              />
+              <Route
+                path="/wishlist"
+                element={
+                  <ProtectedWithLayout>
+                    <Wishlist />
                   </ProtectedWithLayout>
                 }
               />
