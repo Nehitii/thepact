@@ -655,6 +655,114 @@ export type Database = {
           },
         ]
       }
+      health_data: {
+        Row: {
+          activity_level: number | null
+          created_at: string
+          entry_date: string
+          hydration_glasses: number | null
+          id: string
+          meal_balance: number | null
+          mental_load: number | null
+          movement_minutes: number | null
+          notes: string | null
+          sleep_hours: number | null
+          sleep_quality: number | null
+          stress_level: number | null
+          updated_at: string
+          user_id: string
+          wake_energy: number | null
+        }
+        Insert: {
+          activity_level?: number | null
+          created_at?: string
+          entry_date?: string
+          hydration_glasses?: number | null
+          id?: string
+          meal_balance?: number | null
+          mental_load?: number | null
+          movement_minutes?: number | null
+          notes?: string | null
+          sleep_hours?: number | null
+          sleep_quality?: number | null
+          stress_level?: number | null
+          updated_at?: string
+          user_id: string
+          wake_energy?: number | null
+        }
+        Update: {
+          activity_level?: number | null
+          created_at?: string
+          entry_date?: string
+          hydration_glasses?: number | null
+          id?: string
+          meal_balance?: number | null
+          mental_load?: number | null
+          movement_minutes?: number | null
+          notes?: string | null
+          sleep_hours?: number | null
+          sleep_quality?: number | null
+          stress_level?: number | null
+          updated_at?: string
+          user_id?: string
+          wake_energy?: number | null
+        }
+        Relationships: []
+      }
+      health_settings: {
+        Row: {
+          activity_goal_minutes: number | null
+          created_at: string
+          height_cm: number | null
+          hydration_goal_glasses: number | null
+          id: string
+          show_activity: boolean
+          show_bmi: boolean
+          show_hydration: boolean
+          show_nutrition: boolean
+          show_sleep: boolean
+          show_stress: boolean
+          sleep_goal_hours: number | null
+          updated_at: string
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          activity_goal_minutes?: number | null
+          created_at?: string
+          height_cm?: number | null
+          hydration_goal_glasses?: number | null
+          id?: string
+          show_activity?: boolean
+          show_bmi?: boolean
+          show_hydration?: boolean
+          show_nutrition?: boolean
+          show_sleep?: boolean
+          show_stress?: boolean
+          sleep_goal_hours?: number | null
+          updated_at?: string
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          activity_goal_minutes?: number | null
+          created_at?: string
+          height_cm?: number | null
+          hydration_goal_glasses?: number | null
+          id?: string
+          show_activity?: boolean
+          show_bmi?: boolean
+          show_hydration?: boolean
+          show_nutrition?: boolean
+          show_sleep?: boolean
+          show_stress?: boolean
+          sleep_goal_hours?: number | null
+          updated_at?: string
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           content: string
