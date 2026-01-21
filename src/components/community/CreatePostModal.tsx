@@ -127,12 +127,12 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
               <Target className="w-4 h-4" />
               Link to a goal (optional)
             </Label>
-            <Select value={selectedGoalId} onValueChange={setSelectedGoalId}>
+            <Select value={selectedGoalId || "none"} onValueChange={(val) => setSelectedGoalId(val === "none" ? "" : val)}>
               <SelectTrigger className="bg-muted/30">
                 <SelectValue placeholder="Select a goal..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No goal linked</SelectItem>
+                <SelectItem value="none">No goal linked</SelectItem>
                 {activeGoals.map((goal) => (
                   <SelectItem key={goal.id} value={goal.id}>
                     {goal.name}
