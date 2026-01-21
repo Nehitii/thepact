@@ -1945,6 +1945,59 @@ export type Database = {
           },
         ]
       }
+      wishlist_items: {
+        Row: {
+          acquired: boolean
+          acquired_at: string | null
+          category: string | null
+          created_at: string
+          estimated_cost: number
+          goal_id: string | null
+          id: string
+          item_type: string
+          name: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          acquired?: boolean
+          acquired_at?: string | null
+          category?: string | null
+          created_at?: string
+          estimated_cost?: number
+          goal_id?: string | null
+          id?: string
+          item_type?: string
+          name: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          acquired?: boolean
+          acquired_at?: string | null
+          category?: string | null
+          created_at?: string
+          estimated_cost?: number
+          goal_id?: string | null
+          id?: string
+          item_type?: string
+          name?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_items_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

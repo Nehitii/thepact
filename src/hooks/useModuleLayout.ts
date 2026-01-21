@@ -38,6 +38,7 @@ const DEFAULT_MODULES: ModuleConfig[] = [
   { id: 'todo-list', name: 'To Do List', enabled: true, order: 10, size: 'quarter', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
   { id: 'journal', name: 'Journal', enabled: true, order: 11, size: 'quarter', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
   { id: 'track-health', name: 'Track Health', enabled: true, order: 12, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
+  { id: 'wishlist', name: 'Wishlist', enabled: true, order: 13, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
 ];
 
 const STORAGE_KEY = 'home-module-layout-v2';
