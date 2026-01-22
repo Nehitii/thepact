@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
 import {
@@ -20,7 +21,9 @@ import {
   usePactWishlistItems,
   useUpdatePactWishlistItem,
 } from "@/hooks/usePactWishlist";
-import { ArrowLeft, Plus, ShoppingBag, Target, Trash2 } from "lucide-react";
+import { usePact } from "@/hooks/usePact";
+import { useGoals } from "@/hooks/useGoals";
+import { ArrowLeft, Check, Edit, Plus, ShoppingBag, Target, Trash2 } from "lucide-react";
 
 export default function Wishlist() {
   const navigate = useNavigate();
@@ -40,6 +43,56 @@ export default function Wishlist() {
   const [newCost, setNewCost] = useState<string>("");
   const [newType, setNewType] = useState<PactWishlistItemType>("optional");
   const [newCategory, setNewCategory] = useState<string>("");
+
+  const { data: pact } = usePact(user?.id);
+  const { data: goals = [] } = useGoals(pact?.id);
+
+  const [editOpen, setEditOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editCost, setEditCost] = useState<string>("");
+  const [editType, setEditType] = useState<PactWishlistItemType>("optional");
+  const [editNotes, setEditNotes] = useState("");
+  const [editGoalId, setEditGoalId] = useState<string>("none");
+
+  const editingItem = useMemo(
+    () => (editId ? items.find((i) => i.id === editId) ?? null : null),
+    [editId, items]
+  );
+
+  const openEdit = (item: (typeof items)[number]) => {
+    setEditId(item.id);
+    setEditName(item.name);
+    setEditCategory(item.category ?? "");
+    setEditCost(String(item.estimated_cost ?? 0));
+    setEditType(item.item_type);
+    setEditNotes(item.notes ?? "");
+    setEditGoalId(item.goal_id ?? "none");
+    setEditOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!user || !editId) return;
+    const trimmed = editName.trim();
+    if (!trimmed) return;
+    const parsedCost = Number((editCost || "0").replace(",", "."));
+
+    await updateItem.mutateAsync({
+      userId: user.id,
+      id: editId,
+      patch: {
+        name: trimmed,
+        category: editCategory.trim() || null,
+        estimated_cost: Number.isFinite(parsedCost) ? parsedCost : 0,
+        item_type: editType,
+        notes: editNotes.trim() || null,
+        goal_id: editGoalId === "none" ? null : editGoalId,
+      },
+    });
+
+    setEditOpen(false);
+  };
 
   const derived = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
@@ -106,6 +159,94 @@ export default function Wishlist() {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <CyberBackground />
+
+      {/* Edit modal (single instance for smooth UX) */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="animate-enter">
+          <DialogHeader>
+            <DialogTitle>Edit wishlist item</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Name</Label>
+              <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="e.g. Running shoes" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Estimated cost</Label>
+                <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder="0" inputMode="decimal" />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} placeholder="e.g. Equipment" />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border border-border p-3">
+              <div className="space-y-0.5">
+                <p className="text-sm font-medium">Required for Pact</p>
+                <p className="text-xs text-muted-foreground">Mark necessities that support goal completion.</p>
+              </div>
+              <Switch checked={editType === "required"} onCheckedChange={(v) => setEditType(v ? "required" : "optional")} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Link to Goal (optional)</Label>
+              <Select value={editGoalId} onValueChange={setEditGoalId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a goal" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No goal</SelectItem>
+                  {goals.map((g) => (
+                    <SelectItem key={g.id} value={g.id}>
+                      {g.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {editingItem?.goal?.name && (
+                <p className="text-xs text-muted-foreground">
+                  Currently linked: <span className="text-foreground/80">{editingItem.goal.name}</span>
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label>Notes</Label>
+              <Textarea
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                placeholder="Why is this needed? When do you want it?"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditOpen(false);
+                }}
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSaveEdit}
+                disabled={!editName.trim() || updateItem.isPending}
+                className="flex-1"
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center justify-between gap-4">
@@ -246,7 +387,7 @@ export default function Wishlist() {
                   return (
                     <div
                       key={item.id}
-                      className="rounded-xl border border-border bg-muted/20 p-4 flex flex-col md:flex-row md:items-center gap-3"
+                      className="rounded-xl border border-border bg-muted/20 p-4 flex flex-col md:flex-row md:items-center gap-3 animate-fade-in"
                     >
                       <div className="flex-1 min-w-0 space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -275,7 +416,7 @@ export default function Wishlist() {
                         <div className="text-right">
                           <p className="text-sm font-semibold">{formatCurrency(Number(item.estimated_cost || 0), currency)}</p>
                           <div className="flex items-center gap-2 justify-end mt-1">
-                            <Label className="text-xs text-muted-foreground">Acquired</Label>
+                            <Label className="text-xs text-muted-foreground">Already acquired?</Label>
                             <Switch
                               checked={item.acquired}
                               onCheckedChange={(v) => {
@@ -289,6 +430,15 @@ export default function Wishlist() {
                             />
                           </div>
                         </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => openEdit(item)}
+                          className="text-primary/70 hover:text-primary"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
 
                         <Button
                           variant="ghost"
