@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, Trash2, Receipt, ArrowDownToLine } from "lucide-react";
+import { Plus, Trash2, Receipt, ArrowDownToLine, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,9 +16,10 @@ interface CostItemsEditorProps {
   items: CostItemData[];
   onChange: (items: CostItemData[]) => void;
   legacyTotal?: number; // For goals that have estimated_cost but no items yet
+  onAddToWishlist?: (item: CostItemData) => void;
 }
 
-export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEditorProps) {
+export function CostItemsEditor({ items, onChange, legacyTotal, onAddToWishlist }: CostItemsEditorProps) {
   const { currency } = useCurrency();
   const currencySymbol = getCurrencySymbol(currency);
 
@@ -99,6 +100,18 @@ export function CostItemsEditor({ items, onChange, legacyTotal }: CostItemsEdito
                 className="pl-7 rounded-lg"
               />
             </div>
+            {onAddToWishlist && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => onAddToWishlist(item)}
+                className="h-9 w-9 text-primary/70 hover:text-primary hover:bg-primary/10 rounded-lg"
+                title="Add to Wishlist"
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
