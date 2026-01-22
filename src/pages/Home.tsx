@@ -169,6 +169,9 @@ export default function Home() {
 
   const progressPercentage = Number(pact.global_progress) || 0;
   const sortedModules = getAllModules();
+  const visibleModules = sortedModules.filter(
+    (m) => m.id !== "wishlist" || isModulePurchased("wishlist")
+  );
 
   // Module rendering map with compact support
   const renderModule = (moduleId: string, size: ModuleSize) => {
@@ -241,6 +244,10 @@ export default function Home() {
           return <LockedModuleCard name="Track Health" moduleKey="track-health" icon={Heart} size={size} navigate={navigate} />;
         }
         return <HealthModule navigate={navigate} size={size} />;
+      case 'wishlist':
+        // Full purchase gating: hide completely if not purchased
+        if (!isModulePurchased("wishlist")) return null;
+        return <WishlistModule navigate={navigate} size={size} />;
       default:
         return null;
     }
@@ -406,11 +413,11 @@ export default function Home() {
 
         {/* ===== MODULAR SECTION ===== */}
         <ModuleGrid 
-          modules={sortedModules} 
+          modules={visibleModules} 
           isEditMode={isEditMode} 
           onReorder={reorderModules}
         >
-          {sortedModules.map((module) => (
+          {visibleModules.map((module) => (
             <ModuleCard
               key={module.id}
               id={module.id}
@@ -910,6 +917,47 @@ function HealthModule({ navigate, size = 'half' }: { navigate: any; size?: Modul
         <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-teal-500/50 rounded-tr" />
         <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-teal-500/50 rounded-bl" />
         <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-teal-500/50 rounded-br" />
+      </button>
+    </div>
+  );
+}
+
+function WishlistModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+  const isCompact = size === 'quarter';
+
+  return (
+    <div className="animate-fade-in relative group h-full">
+      <div className="absolute inset-0 bg-primary/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/10 to-primary/5 rounded-lg blur-2xl" />
+      <button
+        onClick={() => navigate("/wishlist")}
+        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-primary/10 to-card/30 backdrop-blur-xl border-2 border-primary/40 rounded-lg overflow-hidden hover:border-primary/60 transition-all duration-500 hover:shadow-[0_0_40px_hsl(var(--primary)/0.35),inset_0_0_30px_hsl(var(--primary)/0.12)] group/wishlist"
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
+        </div>
+
+        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 ${isCompact ? 'flex-col' : ''}`}>
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/25 blur-lg rounded-full" />
+            <ShoppingCart className={`text-primary relative z-10 drop-shadow-[0_0_15px_hsl(var(--primary)/0.6)] ${isCompact ? 'w-6 h-6' : 'w-8 h-8'}`} />
+          </div>
+          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
+            <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary ${isCompact ? 'text-xs' : 'text-lg'}`}>
+              Wishlist
+            </span>
+            {!isCompact && (
+              <span className="text-xs text-primary/60 font-rajdhani tracking-wide mt-0.5">
+                Plan what you truly need
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-primary/50 rounded-tl" />
+        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-primary/50 rounded-tr" />
+        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-primary/50 rounded-bl" />
+        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-primary/50 rounded-br" />
       </button>
     </div>
   );

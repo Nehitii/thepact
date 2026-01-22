@@ -8,6 +8,7 @@ import {
   Home,
   Target,
   ShoppingBag,
+  ShoppingCart,
   Users,
   User,
   LogOut,
@@ -63,6 +64,7 @@ const moduleConfig: Record<string, { icon: typeof ListTodo; route: string; label
   "finance": { icon: Wallet, route: "/finance", label: "Finance" },
   "the-call": { icon: Zap, route: "/the-call", label: "The Call" },
   "track-health": { icon: Heart, route: "/health", label: "Track Health" },
+  "wishlist": { icon: ShoppingCart, route: "/wishlist", label: "Wishlist" },
 };
 
 export function AppSidebar() {

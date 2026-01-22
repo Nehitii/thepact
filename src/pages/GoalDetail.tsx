@@ -23,6 +23,8 @@ import { formatCurrency } from "@/lib/currency";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
 import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
+import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
+import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -83,6 +85,8 @@ export default function GoalDetail() {
   const { currency } = useCurrency();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isModulePurchased } = useUserShop(user?.id);
+  const createWishlistItem = useCreatePactWishlistItem();
   const [goal, setGoal] = useState<Goal | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
@@ -919,6 +923,30 @@ export default function GoalDetail() {
                         items={editCostItems} 
                         onChange={setEditCostItems} 
                         legacyTotal={goal.estimated_cost} 
+                        onAddToWishlist={
+                          isModulePurchased("wishlist")
+                            ? (item: CostItemData) => {
+                                if (!user?.id) return;
+                                const name = (item.name || "").trim();
+                                if (!name) {
+                                  toast({
+                                    title: "Name required",
+                                    description: "Give this cost item a name first.",
+                                    variant: "destructive",
+                                  });
+                                  return;
+                                }
+                                createWishlistItem.mutate({
+                                  userId: user.id,
+                                  name,
+                                  estimatedCost: Number(item.price) || 0,
+                                  itemType: "required",
+                                  category: goal.type ?? null,
+                                  goalId: goal.id,
+                                });
+                              }
+                            : undefined
+                        }
                       />
                     </div>
 
