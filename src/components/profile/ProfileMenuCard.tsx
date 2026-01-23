@@ -30,7 +30,7 @@ export function ProfileMenuCard({
     default: {
       glow: "bg-primary/5",
       border: "border-primary/30 hover:border-primary/50",
-      bg: "bg-card/30",
+      bg: "bg-card/70",
       title: "text-primary",
       desc: "text-primary/60",
       shadow: "drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]",

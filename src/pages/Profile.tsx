@@ -4,6 +4,8 @@ import { supabase } from "@/lib/supabase";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
+import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
+import { User } from "lucide-react";
 
 export default function Profile() {
   const { t } = useTranslation();
@@ -97,81 +99,34 @@ export default function Profile() {
   }, [user]);
 
   return (
-    <div 
-      className="min-h-screen bg-[#00050B] relative overflow-hidden"
+    <ProfileSettingsShell
+      title={t("profile.title")}
+      subtitle={t("profile.subtitle")}
+      icon={<User className="h-7 w-7 text-primary" />}
+      floating={user ? <ProfileDevilNote isVisible={isAtBottom} /> : null}
+      containerClassName="max-w-2xl"
     >
-      {/* Deep space background with radial glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 left-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[100px]" />
-      </div>
-
-      {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px'
-        }} />
-      </div>
-
-      {/* Floating particles */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-primary/30 rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              animationDuration: `${4 + Math.random() * 4}s`,
-            }}
+      {user ? (
+        <div className="space-y-4">
+          <ProfileAccountSettings
+            userId={user.id}
+            email={user.email || ""}
+            displayName={displayName}
+            timezone={timezone}
+            language={language}
+            currency={currency}
+            birthday={birthday}
+            country={country}
+            onDisplayNameChange={setDisplayName}
+            onTimezoneChange={setTimezone}
+            onLanguageChange={setLanguage}
+            onCurrencyChange={setCurrency}
+            onBirthdayChange={setBirthday}
+            onCountryChange={setCountry}
           />
-        ))}
-      </div>
-
-      <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10">
-        {/* Header */}
-        <div className="pt-8 text-center space-y-3 animate-fade-in">
-          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
-            {t("profile.title")}
-          </h1>
-          <p className="text-primary/70 tracking-wide font-rajdhani">{t("profile.subtitle")}</p>
         </div>
-
-        {/* Menu Cards */}
-        {user && (
-          <div className="space-y-4">
-            {/* Account Information */}
-            <ProfileAccountSettings
-              userId={user.id}
-              email={user.email || ""}
-              displayName={displayName}
-              timezone={timezone}
-              language={language}
-              currency={currency}
-              birthday={birthday}
-              country={country}
-              onDisplayNameChange={setDisplayName}
-              onTimezoneChange={setTimezone}
-              onLanguageChange={setLanguage}
-              onCurrencyChange={setCurrency}
-              onBirthdayChange={setBirthday}
-              onCountryChange={setCountry}
-            />
-          </div>
-        )}
-
-        {/* Extra space at bottom to allow scrolling to reveal Devil Note */}
-        <div className="h-16" />
-      </div>
-
-      {/* Devil Note - Fixed bottom-right, only visible at bottom */}
-      {user && <ProfileDevilNote isVisible={isAtBottom} />}
-    </div>
+      ) : null}
+      <div className="h-16" />
+    </ProfileSettingsShell>
   );
 }
