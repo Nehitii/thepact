@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
+import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
+import { ScrollText } from "lucide-react";
 
 export default function PactSettings() {
   const { user } = useAuth();
@@ -53,54 +55,26 @@ export default function PactSettings() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
-      {/* Deep space background with radial glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-      </div>
-
-      {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
-      <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10">
-        {/* Header */}
-        <div className="pt-8 space-y-4 animate-fade-in">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
-            Pact Settings
-          </h1>
-          <p className="text-primary/70 tracking-wide font-rajdhani">
-            Configure your pact timeline and custom difficulty
-          </p>
-        </div>
-
-        {/* Content */}
-        <ProfilePactSettings
-          userId={user.id}
-          pactId={pactId}
-          projectStartDate={projectStartDate}
-          projectEndDate={projectEndDate}
-          customDifficultyName={customDifficultyName}
-          customDifficultyActive={customDifficultyActive}
-          customDifficultyColor={customDifficultyColor}
-          onProjectStartDateChange={setProjectStartDate}
-          onProjectEndDateChange={setProjectEndDate}
-          onCustomDifficultyNameChange={setCustomDifficultyName}
-          onCustomDifficultyActiveChange={setCustomDifficultyActive}
-          onCustomDifficultyColorChange={setCustomDifficultyColor}
-        />
-      </div>
-    </div>
+    <ProfileSettingsShell
+      title="Pact Settings"
+      subtitle="Configure your pact timeline and custom difficulty"
+      icon={<ScrollText className="h-7 w-7 text-primary" />}
+      containerClassName="max-w-2xl"
+    >
+      <ProfilePactSettings
+        userId={user.id}
+        pactId={pactId}
+        projectStartDate={projectStartDate}
+        projectEndDate={projectEndDate}
+        customDifficultyName={customDifficultyName}
+        customDifficultyActive={customDifficultyActive}
+        customDifficultyColor={customDifficultyColor}
+        onProjectStartDateChange={setProjectStartDate}
+        onProjectEndDateChange={setProjectEndDate}
+        onCustomDifficultyNameChange={setCustomDifficultyName}
+        onCustomDifficultyActiveChange={setCustomDifficultyActive}
+        onCustomDifficultyColorChange={setCustomDifficultyColor}
+      />
+    </ProfileSettingsShell>
   );
 }
