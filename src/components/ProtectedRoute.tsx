@@ -1,8 +1,11 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTwoFactor } from "@/hooks/useTwoFactor";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
+  const twoFactor = useTwoFactor();
 
   if (loading) {
     return (
@@ -19,5 +22,18 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
+  // Gate the entire app when 2FA is enabled and required.
+  // Allow the /two-factor route itself to render to avoid redirect loops.
+  if (location.pathname !== "/two-factor" && twoFactor.isRequired) {
+    return (
+      <Navigate
+        to="/two-factor"
+        replace
+        state={{ from: location.pathname + location.search + location.hash }}
+      />
+    );
+  }
+
   return <>{children}</>;
 }
+
