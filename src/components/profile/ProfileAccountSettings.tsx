@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
 interface ProfileAccountSettingsProps {
   userId: string;
@@ -30,31 +32,31 @@ interface ProfileAccountSettingsProps {
 }
 
 const timezones = [
-  { value: "UTC", label: "UTC (GMT+0)" },
-  { value: "Europe/Paris", label: "Europe/Paris (GMT+1)" },
-  { value: "Europe/London", label: "Europe/London (GMT+0)" },
-  { value: "America/New_York", label: "America/New York (GMT-5)" },
-  { value: "America/Los_Angeles", label: "America/Los Angeles (GMT-8)" },
-  { value: "Asia/Tokyo", label: "Asia/Tokyo (GMT+9)" },
-  { value: "Asia/Shanghai", label: "Asia/Shanghai (GMT+8)" },
-  { value: "Australia/Sydney", label: "Australia/Sydney (GMT+11)" },
-];
+  { value: "UTC" },
+  { value: "Europe/Paris" },
+  { value: "Europe/London" },
+  { value: "America/New_York" },
+  { value: "America/Los_Angeles" },
+  { value: "Asia/Tokyo" },
+  { value: "Asia/Shanghai" },
+  { value: "Australia/Sydney" },
+] as const;
 
 const countries = [
-  { value: "us", label: "United States" },
-  { value: "uk", label: "United Kingdom" },
-  { value: "fr", label: "France" },
-  { value: "de", label: "Germany" },
-  { value: "jp", label: "Japan" },
-  { value: "cn", label: "China" },
-  { value: "au", label: "Australia" },
-  { value: "ca", label: "Canada" },
-  { value: "es", label: "Spain" },
-  { value: "it", label: "Italy" },
-  { value: "br", label: "Brazil" },
-  { value: "in", label: "India" },
-  { value: "other", label: "Other" },
-];
+  { value: "us" },
+  { value: "uk" },
+  { value: "fr" },
+  { value: "de" },
+  { value: "jp" },
+  { value: "cn" },
+  { value: "au" },
+  { value: "ca" },
+  { value: "es" },
+  { value: "it" },
+  { value: "br" },
+  { value: "in" },
+  { value: "other" },
+] as const;
 
 export function ProfileAccountSettings({
   userId,
@@ -72,9 +74,28 @@ export function ProfileAccountSettings({
   onBirthdayChange,
   onCountryChange,
 }: ProfileAccountSettingsProps) {
+  const { t, i18n } = useTranslation();
+  const dateLocale = useDateFnsLocale();
   const { toast } = useToast();
   const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
   const [saving, setSaving] = useState(false);
+
+  const persistLanguage = async (nextLanguage: string) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ language: nextLanguage })
+      .eq("id", userId);
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.warn("[i18n] Failed to persist language", error);
+    }
+  };
+
+  const handleLanguageChange = async (next: string) => {
+    onLanguageChange(next);
+    await i18n.changeLanguage(next);
+    await persistLanguage(next);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -93,7 +114,7 @@ export function ProfileAccountSettings({
 
     if (error) {
       toast({
-        title: "Error",
+        title: t("common.error"),
         description: error.message,
         variant: "destructive",
       });
@@ -101,8 +122,8 @@ export function ProfileAccountSettings({
       updateGlobalCurrency(currency);
       await refreshCurrency();
       toast({
-        title: "Account Updated",
-        description: "Your account information has been saved",
+        title: t("profile.updatedTitle"),
+        description: t("profile.updatedDesc"),
       });
     }
 
@@ -129,7 +150,7 @@ export function ProfileAccountSettings({
       {/* Email (disabled) */}
       <div className="space-y-2">
         <Label htmlFor="email" className={labelStyle}>
-          Email
+          {t("common.email")}
         </Label>
         <Input 
           id="email" 
@@ -137,17 +158,17 @@ export function ProfileAccountSettings({
           disabled 
           className="bg-[#0d1a2d]/70 border-[#3a5f8a]/40 text-[#6b9ec4] font-orbitron cursor-not-allowed shadow-[inset_0_1px_4px_rgba(0,0,0,0.3)]" 
         />
-        <p className="text-xs text-[#6b9ec4]/80 font-rajdhani">Email cannot be changed</p>
+        <p className="text-xs text-[#6b9ec4]/80 font-rajdhani">{t("profile.emailCantChange")}</p>
       </div>
 
       {/* Display Name */}
       <div className="space-y-2">
         <Label htmlFor="displayName" className={labelStyle}>
-          Display Name
+          {t("profile.displayName")}
         </Label>
         <Input
           id="displayName"
-          placeholder="Your name"
+          placeholder={t("profile.displayNamePlaceholder")}
           value={displayName}
           onChange={(e) => onDisplayNameChange(e.target.value)}
           maxLength={100}
@@ -158,7 +179,7 @@ export function ProfileAccountSettings({
       {/* Birthday */}
       <div className="space-y-2">
         <Label className={labelStyle}>
-          Birthday Date
+          {t("profile.birthday")}
         </Label>
         <Popover>
           <PopoverTrigger asChild>
@@ -172,9 +193,9 @@ export function ProfileAccountSettings({
             >
               <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF]" />
               {birthday ? (
-                <span className="text-[#e0f0ff]">{format(birthday, "PPP")}</span>
+                  <span className="text-[#e0f0ff]">{format(birthday, "PPP", { locale: dateLocale })}</span>
               ) : (
-                <span className="text-[#6b9ec4]">Select your birthday</span>
+                  <span className="text-[#6b9ec4]">{t("profile.birthdayPlaceholder")}</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -196,16 +217,16 @@ export function ProfileAccountSettings({
       {/* Country */}
       <div className="space-y-2">
         <Label htmlFor="country" className={labelStyle}>
-          Country
+          {t("profile.country")}
         </Label>
         <Select value={country} onValueChange={onCountryChange}>
           <SelectTrigger id="country" className={selectTriggerStyle}>
-            <SelectValue placeholder="Select country" className="text-[#6b9ec4]" />
+            <SelectValue placeholder={t("profile.countryPlaceholder")} className="text-[#6b9ec4]" />
           </SelectTrigger>
           <SelectContent className={selectContentStyle}>
             {countries.map((c) => (
               <SelectItem key={c.value} value={c.value} className={selectItemStyle}>
-                {c.label}
+                {t(`profile.countries.${c.value}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -215,16 +236,16 @@ export function ProfileAccountSettings({
       {/* Time Zone */}
       <div className="space-y-2">
         <Label htmlFor="timezone" className={labelStyle}>
-          Time Zone
+          {t("profile.timezone")}
         </Label>
         <Select value={timezone} onValueChange={onTimezoneChange}>
           <SelectTrigger id="timezone" className={selectTriggerStyle}>
-            <SelectValue placeholder="Select timezone" className="text-[#6b9ec4]" />
+            <SelectValue placeholder={t("profile.timezonePlaceholder")} className="text-[#6b9ec4]" />
           </SelectTrigger>
           <SelectContent className={selectContentStyle}>
             {timezones.map((tz) => (
               <SelectItem key={tz.value} value={tz.value} className={selectItemStyle}>
-                {tz.label}
+                {t(`profile.timezones.${tz.value}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -234,15 +255,15 @@ export function ProfileAccountSettings({
       {/* Language */}
       <div className="space-y-2">
         <Label htmlFor="language" className={labelStyle}>
-          Language
+          {t("profile.language")}
         </Label>
-        <Select value={language} onValueChange={onLanguageChange}>
+        <Select value={language} onValueChange={handleLanguageChange}>
           <SelectTrigger id="language" className={selectTriggerStyle}>
-            <SelectValue placeholder="Select language" className="text-[#6b9ec4]" />
+            <SelectValue placeholder={t("profile.languagePlaceholder")} className="text-[#6b9ec4]" />
           </SelectTrigger>
           <SelectContent className={selectContentStyle}>
-            <SelectItem value="en" className={selectItemStyle}>English</SelectItem>
-            <SelectItem value="fr" className={selectItemStyle}>Français</SelectItem>
+            <SelectItem value="en" className={selectItemStyle}>{t("profile.languages.en")}</SelectItem>
+            <SelectItem value="fr" className={selectItemStyle}>{t("profile.languages.fr")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -250,15 +271,15 @@ export function ProfileAccountSettings({
       {/* Currency */}
       <div className="space-y-2">
         <Label htmlFor="currency" className={labelStyle}>
-          Currency
+          {t("profile.currency")}
         </Label>
         <Select value={currency} onValueChange={onCurrencyChange}>
           <SelectTrigger id="currency" className={selectTriggerStyle}>
-            <SelectValue placeholder="Select currency" className="text-[#6b9ec4]" />
+            <SelectValue placeholder={t("profile.currencyPlaceholder")} className="text-[#6b9ec4]" />
           </SelectTrigger>
           <SelectContent className={selectContentStyle}>
-            <SelectItem value="eur" className={selectItemStyle}>Euros (€)</SelectItem>
-            <SelectItem value="usd" className={selectItemStyle}>Dollars ($)</SelectItem>
+            <SelectItem value="eur" className={selectItemStyle}>{t("profile.currencies.eur")}</SelectItem>
+            <SelectItem value="usd" className={selectItemStyle}>{t("profile.currencies.usd")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -269,7 +290,7 @@ export function ProfileAccountSettings({
         disabled={saving}
         className="w-full bg-[#1a3352]/80 border-2 border-[#8ACBFF]/40 hover:border-[#8ACBFF]/70 hover:bg-[#1a3352] text-[#e0f0ff] font-orbitron uppercase tracking-wider shadow-[0_0_12px_rgba(138,203,255,0.2)] hover:shadow-[0_0_20px_rgba(138,203,255,0.4)] transition-all duration-300"
       >
-        {saving ? "SAVING..." : "SAVE CHANGES"}
+        {saving ? t("common.saving") : t("common.saveChanges")}
       </Button>
     </div>
   );
