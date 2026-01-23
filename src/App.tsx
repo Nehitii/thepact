@@ -40,6 +40,7 @@ import Inbox from "./pages/Inbox";
 import AdminPromoManager from "./pages/AdminPromoManager";
 import Health from "./pages/Health";
 import Wishlist from "./pages/Wishlist";
+import TwoFactor from "./pages/TwoFactor";
 const queryClient = new QueryClient();
 
 // Wrapper component that applies AppLayout to protected routes
@@ -61,6 +62,14 @@ const App = () => (
           <CurrencyProvider>
             <Routes>
               <Route path="/auth" element={<Auth />} />
+              <Route
+                path="/two-factor"
+                element={
+                  <ProtectedRoute>
+                    <TwoFactor />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/"
                 element={
