@@ -1,0 +1,207 @@
+{
+  "common": {
+    "loading": "Loading…",
+    "email": "Email",
+    "password": "Password",
+    "cancel": "Cancel",
+    "close": "Close",
+    "saveChanges": "Save changes",
+    "saving": "Saving…",
+    "error": "Error",
+    "success": "Success!",
+    "daysShort": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "auth": {
+    "brand": "Pact",
+    "welcomeBack": "Welcome back to your commitment",
+    "beginJourney": "Begin your journey",
+    "validationError": "Validation error",
+    "processing": "Processing…",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "toggleToSignup": "Need an account? Sign up",
+    "toggleToLogin": "Already have an account? Sign in",
+    "loginFailed": "Login failed",
+    "invalidCredentials": "Invalid email or password. Please try again.",
+    "accountExists": "Account already exists",
+    "emailAlreadyRegistered": "This email is already registered. Please sign in instead.",
+    "accountCreated": "Account created. You can now sign in.",
+    "invalidEmail": "Invalid email address",
+    "passwordMin": "Password must be at least 6 characters",
+    "emailPlaceholder": "your@email.com"
+  },
+  "twoFactor": {
+    "title": "Two-factor verification",
+    "subtitle": "Enter the code from your authenticator app, or use a recovery code.",
+    "useRecovery": "Use recovery code",
+    "recoveryHint": "Single-use backup code",
+    "authenticatorCode": "Authenticator code",
+    "otpHint": "6 digits · refreshes every 30 seconds",
+    "recoveryCode": "Recovery code",
+    "recoveryPlaceholder": "XXXX-XXXX-XX",
+    "trustDevice": "Trust this device",
+    "trustHint": "Skip 2FA for 30 days",
+    "verify": "Verify",
+    "verifying": "Verifying…",
+    "verifiedTitle": "Verified",
+    "verifiedDesc": "Two-factor check completed.",
+    "failedTitle": "Verification failed",
+    "failedDesc": "Invalid code. Please try again."
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Your identity console",
+    "emailCantChange": "Email cannot be changed",
+    "displayName": "Display name",
+    "displayNamePlaceholder": "Your name",
+    "birthday": "Birthday",
+    "birthdayPlaceholder": "Select your birthday",
+    "country": "Country",
+    "countryPlaceholder": "Select country",
+    "timezone": "Time zone",
+    "timezonePlaceholder": "Select timezone",
+    "language": "Language",
+    "languagePlaceholder": "Select language",
+    "currency": "Currency",
+    "currencyPlaceholder": "Select currency",
+    "updatedTitle": "Account updated",
+    "updatedDesc": "Your account information has been saved",
+    "languages": {
+      "en": "English (EN)",
+      "fr": "French (FR)"
+    },
+    "countries": {
+      "us": "United States",
+      "uk": "United Kingdom",
+      "fr": "France",
+      "de": "Germany",
+      "jp": "Japan",
+      "cn": "China",
+      "au": "Australia",
+      "ca": "Canada",
+      "es": "Spain",
+      "it": "Italy",
+      "br": "Brazil",
+      "in": "India",
+      "other": "Other"
+    },
+    "timezones": {
+      "UTC": "UTC (GMT+0)",
+      "Europe/Paris": "Europe/Paris (GMT+1)",
+      "Europe/London": "Europe/London (GMT+0)",
+      "America/New_York": "America/New York (GMT-5)",
+      "America/Los_Angeles": "America/Los Angeles (GMT-8)",
+      "Asia/Tokyo": "Asia/Tokyo (GMT+9)",
+      "Asia/Shanghai": "Asia/Shanghai (GMT+8)",
+      "Australia/Sydney": "Australia/Sydney (GMT+11)"
+    },
+    "currencies": {
+      "eur": "Euros (€)",
+      "usd": "Dollars ($)"
+    }
+  },
+  "todo": {
+    "loadingQuests": "Loading quests…",
+    "activeQuestsCount": "{{count}} / {{max}} active quests",
+    "calendar": "Calendar",
+    "history": "History",
+    "stats": "Stats",
+    "newQuest": "New quest",
+    "noActiveQuests": "No active quests",
+    "noActiveQuestsDesc": "Begin your journey by creating a new quest",
+    "questLogFull": "Quest log full! Complete existing quests to unlock new ones.",
+    "questAnalytics": "Quest analytics",
+    "questHistory": "Quest history",
+    "questCalendar": "Quest calendar",
+    "editQuest": "Edit quest",
+
+    "filters": {
+      "sort": "Sort",
+      "sortOptions": {
+        "created_at": "Date created",
+        "deadline": "Deadline",
+        "priority": "Priority",
+        "name": "Name",
+        "category": "Category",
+        "is_urgent": "Urgency"
+      },
+      "types": {
+        "all": "All",
+        "flexible": "Flexible",
+        "deadline": "Deadline",
+        "appointment": "Appointment"
+      }
+    },
+
+    "create": {
+      "title": "New quest",
+      "questName": "Quest name",
+      "questPlaceholder": "What needs to be conquered?",
+      "category": "Category",
+      "taskType": "Task type",
+      "difficulty": "Difficulty",
+      "deadline": "Deadline (optional)",
+      "pickDate": "Pick a date",
+      "clearDate": "Clear date",
+      "markUrgent": "Mark as urgent",
+      "urgentHint": "This task needs immediate attention",
+      "creating": "Creating…",
+      "createQuest": "Create quest"
+    },
+
+    "historyPanel": {
+      "loading": "Loading history…",
+      "empty": "No completed tasks yet.",
+      "clear": "Clear history",
+      "urgent": "Urgent",
+      "postponedX": "Postponed {{count}}×",
+      "confirmTitle": "Clear task history?",
+      "confirmDesc": "This will clear your task history. Your score will not be affected."
+    },
+
+    "taskCard": {
+      "urgent": "URGENT",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "postponeTo": "Postpone to…",
+      "deleteTitle": "Delete task?",
+      "deleteDesc": "This will permanently remove the task. This action cannot be undone.",
+      "delete": "Delete"
+    },
+
+    "calendarView": {
+      "title": "Task calendar",
+      "today": "Today",
+      "more": "+{{count}} more",
+      "noTasksForDay": "No tasks scheduled for this day"
+    },
+
+    "advanced": {
+      "totalScore": "Total score",
+      "currentStreak": "Current streak",
+      "bestStreak": "Best streak",
+      "thisMonth": "This month",
+      "tasksCompletedYear": "Tasks completed this year",
+      "last30Days": "Last 30 days",
+      "activity30": "30-day activity",
+      "monthlyCompletions": "Monthly completions",
+      "mostProductiveDays": "Most productive days",
+      "difficultyDistribution": "Difficulty distribution",
+      "categoryBreakdown": "Category breakdown",
+      "productivityByTime": "Productivity by time of day",
+      "completeToSee": "Complete tasks to see your detailed statistics here."
+    },
+
+    "header": {
+      "lvl": "LVL",
+      "levelProgress": "Level progress",
+      "score": "Score",
+      "streak": "Streak",
+      "best": "Best",
+      "tasks": "Tasks",
+      "days": "days",
+      "xp": "{{value}}/100 XP",
+      "streakBonus": "Streak bonus active!"
+    }
+  }
+}

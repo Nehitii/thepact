@@ -3,8 +3,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
+import { useTranslation } from "react-i18next";
 
 export default function Profile() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   
   // Account settings
@@ -136,9 +138,9 @@ export default function Profile() {
         {/* Header */}
         <div className="pt-8 text-center space-y-3 animate-fade-in">
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
-            Profile
+            {t("profile.title")}
           </h1>
-          <p className="text-primary/70 tracking-wide font-rajdhani">Your identity console</p>
+          <p className="text-primary/70 tracking-wide font-rajdhani">{t("profile.subtitle")}</p>
         </div>
 
         {/* Menu Cards */}

@@ -1,0 +1,207 @@
+{
+  "common": {
+    "loading": "Chargement…",
+    "email": "Email",
+    "password": "Mot de passe",
+    "cancel": "Annuler",
+    "close": "Fermer",
+    "saveChanges": "Enregistrer",
+    "saving": "Enregistrement…",
+    "error": "Erreur",
+    "success": "Succès !",
+    "daysShort": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
+  },
+  "auth": {
+    "brand": "Pact",
+    "welcomeBack": "Heureux de te revoir. Reprenons ton engagement.",
+    "beginJourney": "Commence ton parcours",
+    "validationError": "Erreur de validation",
+    "processing": "Traitement…",
+    "signIn": "Se connecter",
+    "createAccount": "Créer un compte",
+    "toggleToSignup": "Pas encore de compte ? Inscris-toi",
+    "toggleToLogin": "Déjà un compte ? Connecte-toi",
+    "loginFailed": "Connexion échouée",
+    "invalidCredentials": "Email ou mot de passe incorrect. Réessaie.",
+    "accountExists": "Compte déjà existant",
+    "emailAlreadyRegistered": "Cet email est déjà enregistré. Connecte-toi.",
+    "accountCreated": "Compte créé. Tu peux maintenant te connecter.",
+    "invalidEmail": "Adresse email invalide",
+    "passwordMin": "Le mot de passe doit contenir au moins 6 caractères",
+    "emailPlaceholder": "toi@email.com"
+  },
+  "twoFactor": {
+    "title": "Vérification en deux étapes",
+    "subtitle": "Saisis le code de ton application d’authentification, ou utilise un code de secours.",
+    "useRecovery": "Utiliser un code de secours",
+    "recoveryHint": "Code unique, utilisable une seule fois",
+    "authenticatorCode": "Code d’authentification",
+    "otpHint": "6 chiffres · se renouvelle toutes les 30 secondes",
+    "recoveryCode": "Code de secours",
+    "recoveryPlaceholder": "XXXX-XXXX-XX",
+    "trustDevice": "Faire confiance à cet appareil",
+    "trustHint": "Ignorer la 2FA pendant 30 jours",
+    "verify": "Vérifier",
+    "verifying": "Vérification…",
+    "verifiedTitle": "Vérifié",
+    "verifiedDesc": "Vérification terminée.",
+    "failedTitle": "Échec de la vérification",
+    "failedDesc": "Code invalide. Réessaie."
+  },
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Ton console d’identité",
+    "emailCantChange": "L’email ne peut pas être modifié",
+    "displayName": "Nom d’affichage",
+    "displayNamePlaceholder": "Ton nom",
+    "birthday": "Date de naissance",
+    "birthdayPlaceholder": "Choisir ta date",
+    "country": "Pays",
+    "countryPlaceholder": "Choisir un pays",
+    "timezone": "Fuseau horaire",
+    "timezonePlaceholder": "Choisir un fuseau",
+    "language": "Langue",
+    "languagePlaceholder": "Choisir une langue",
+    "currency": "Devise",
+    "currencyPlaceholder": "Choisir une devise",
+    "updatedTitle": "Compte mis à jour",
+    "updatedDesc": "Tes informations ont bien été enregistrées",
+    "languages": {
+      "en": "Anglais (EN)",
+      "fr": "Français (FR)"
+    },
+    "countries": {
+      "us": "États-Unis",
+      "uk": "Royaume-Uni",
+      "fr": "France",
+      "de": "Allemagne",
+      "jp": "Japon",
+      "cn": "Chine",
+      "au": "Australie",
+      "ca": "Canada",
+      "es": "Espagne",
+      "it": "Italie",
+      "br": "Brésil",
+      "in": "Inde",
+      "other": "Autre"
+    },
+    "timezones": {
+      "UTC": "UTC (GMT+0)",
+      "Europe/Paris": "Europe/Paris (GMT+1)",
+      "Europe/London": "Europe/Londres (GMT+0)",
+      "America/New_York": "Amérique/New York (GMT-5)",
+      "America/Los_Angeles": "Amérique/Los Angeles (GMT-8)",
+      "Asia/Tokyo": "Asie/Tokyo (GMT+9)",
+      "Asia/Shanghai": "Asie/Shanghai (GMT+8)",
+      "Australia/Sydney": "Australie/Sydney (GMT+11)"
+    },
+    "currencies": {
+      "eur": "Euros (€)",
+      "usd": "Dollars ($)"
+    }
+  },
+  "todo": {
+    "loadingQuests": "Chargement des quêtes…",
+    "activeQuestsCount": "{{count}} / {{max}} quêtes actives",
+    "calendar": "Calendrier",
+    "history": "Historique",
+    "stats": "Stats",
+    "newQuest": "Nouvelle quête",
+    "noActiveQuests": "Aucune quête active",
+    "noActiveQuestsDesc": "Lance-toi en créant ta prochaine quête",
+    "questLogFull": "Journal de quêtes plein ! Termine des quêtes pour en débloquer de nouvelles.",
+    "questAnalytics": "Analyse des quêtes",
+    "questHistory": "Historique des quêtes",
+    "questCalendar": "Calendrier des quêtes",
+    "editQuest": "Modifier la quête",
+
+    "filters": {
+      "sort": "Trier",
+      "sortOptions": {
+        "created_at": "Date de création",
+        "deadline": "Échéance",
+        "priority": "Priorité",
+        "name": "Nom",
+        "category": "Catégorie",
+        "is_urgent": "Urgence"
+      },
+      "types": {
+        "all": "Toutes",
+        "flexible": "Flexible",
+        "deadline": "Échéance",
+        "appointment": "Rendez-vous"
+      }
+    },
+
+    "create": {
+      "title": "Nouvelle quête",
+      "questName": "Nom de la quête",
+      "questPlaceholder": "Qu’est-ce qu’on conquiert aujourd’hui ?",
+      "category": "Catégorie",
+      "taskType": "Type de tâche",
+      "difficulty": "Difficulté",
+      "deadline": "Échéance (optionnel)",
+      "pickDate": "Choisir une date",
+      "clearDate": "Effacer la date",
+      "markUrgent": "Marquer comme urgente",
+      "urgentHint": "Cette tâche demande une attention immédiate",
+      "creating": "Création…",
+      "createQuest": "Créer la quête"
+    },
+
+    "historyPanel": {
+      "loading": "Chargement de l’historique…",
+      "empty": "Aucune tâche terminée pour l’instant.",
+      "clear": "Vider l’historique",
+      "urgent": "Urgent",
+      "postponedX": "Reportée {{count}}×",
+      "confirmTitle": "Vider l’historique des tâches ?",
+      "confirmDesc": "Cela supprimera l’historique. Ton score ne changera pas."
+    },
+
+    "taskCard": {
+      "urgent": "URGENT",
+      "today": "Aujourd’hui",
+      "tomorrow": "Demain",
+      "postponeTo": "Reporter à…",
+      "deleteTitle": "Supprimer la tâche ?",
+      "deleteDesc": "La tâche sera supprimée définitivement. Cette action est irréversible.",
+      "delete": "Supprimer"
+    },
+
+    "calendarView": {
+      "title": "Calendrier des tâches",
+      "today": "Aujourd’hui",
+      "more": "+{{count}} de plus",
+      "noTasksForDay": "Aucune tâche prévue ce jour-là"
+    },
+
+    "advanced": {
+      "totalScore": "Score total",
+      "currentStreak": "Série en cours",
+      "bestStreak": "Meilleure série",
+      "thisMonth": "Ce mois-ci",
+      "tasksCompletedYear": "Tâches terminées cette année",
+      "last30Days": "30 derniers jours",
+      "activity30": "Activité sur 30 jours",
+      "monthlyCompletions": "Achèvements mensuels",
+      "mostProductiveDays": "Jours les plus productifs",
+      "difficultyDistribution": "Répartition des difficultés",
+      "categoryBreakdown": "Répartition par catégories",
+      "productivityByTime": "Productivité selon l’heure",
+      "completeToSee": "Termine des tâches pour afficher des statistiques détaillées ici."
+    },
+
+    "header": {
+      "lvl": "NIV",
+      "levelProgress": "Progression",
+      "score": "Score",
+      "streak": "Série",
+      "best": "Record",
+      "tasks": "Tâches",
+      "days": "jours",
+      "xp": "{{value}}/100 XP",
+      "streakBonus": "Bonus de série actif !"
+    }
+  }
+}

@@ -8,19 +8,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Flame } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
-
-const authSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+import { useTranslation } from "react-i18next";
 
 export default function Auth() {
+  const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const authSchema = z.object({
+    email: z.string().email(t("auth.invalidEmail")),
+    password: z.string().min(6, t("auth.passwordMin")),
+  });
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +32,7 @@ export default function Auth() {
     const validation = authSchema.safeParse({ email, password });
     if (!validation.success) {
       toast({
-        title: "Validation Error",
+        title: t("auth.validationError"),
         description: validation.error.errors[0].message,
         variant: "destructive",
       });
@@ -48,13 +50,13 @@ export default function Auth() {
         if (error) {
           if (error.message.includes("Invalid login credentials")) {
             toast({
-              title: "Login Failed",
-              description: "Invalid email or password. Please try again.",
+              title: t("auth.loginFailed"),
+              description: t("auth.invalidCredentials"),
               variant: "destructive",
             });
           } else {
             toast({
-              title: "Error",
+              title: t("common.error"),
               description: error.message,
               variant: "destructive",
             });
@@ -74,29 +76,29 @@ export default function Auth() {
         if (error) {
           if (error.message.includes("already registered")) {
             toast({
-              title: "Account Exists",
-              description: "This email is already registered. Please login instead.",
+              title: t("auth.accountExists"),
+              description: t("auth.emailAlreadyRegistered"),
               variant: "destructive",
             });
           } else {
             toast({
-              title: "Error",
+              title: t("common.error"),
               description: error.message,
               variant: "destructive",
             });
           }
         } else {
           toast({
-            title: "Success!",
-            description: "Account created. You can now sign in.",
+            title: t("common.success"),
+            description: t("auth.accountCreated"),
           });
           setIsLogin(true);
         }
       }
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred",
+        title: t("common.error"),
+        description: error.message || t("common.error"),
         variant: "destructive",
       });
     } finally {
@@ -113,19 +115,19 @@ export default function Auth() {
               <Flame className="h-12 w-12 text-primary animate-glow-pulse" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-bold">Pacte</CardTitle>
+          <CardTitle className="text-3xl font-bold">{t("auth.brand")}</CardTitle>
           <CardDescription className="text-base">
-            {isLogin ? "Welcome back to your commitment" : "Begin your journey"}
+            {isLogin ? t("auth.welcomeBack") : t("auth.beginJourney")}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleAuth} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t("common.email")}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder={t("auth.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -133,7 +135,7 @@ export default function Auth() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("common.password")}</Label>
               <Input
                 id="password"
                 type="password"
@@ -145,7 +147,7 @@ export default function Auth() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Processing..." : isLogin ? "Sign In" : "Create Account"}
+              {loading ? t("auth.processing") : isLogin ? t("auth.signIn") : t("auth.createAccount")}
             </Button>
           </form>
           <div className="mt-4 text-center">
@@ -155,7 +157,7 @@ export default function Auth() {
               className="text-sm text-primary hover:underline"
               disabled={loading}
             >
-              {isLogin ? "Need an account? Sign up" : "Already have an account? Sign in"}
+              {isLogin ? t("auth.toggleToSignup") : t("auth.toggleToLogin")}
             </button>
           </div>
         </CardContent>

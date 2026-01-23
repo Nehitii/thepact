@@ -9,6 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { setTrustedDeviceToken, useTwoFactor } from "@/hooks/useTwoFactor";
+import { useTranslation } from "react-i18next";
 
 type FromState = {
   from?: string;
@@ -28,6 +29,7 @@ export default function TwoFactor() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const twoFactor = useTwoFactor();
 
   const from = useMemo(() => {
@@ -72,12 +74,12 @@ export default function TwoFactor() {
       }
 
       twoFactor.setSessionVerified(true);
-      toast({ title: "Verified", description: "Two-factor check completed." });
+      toast({ title: t("twoFactor.verifiedTitle"), description: t("twoFactor.verifiedDesc") });
       navigate(from, { replace: true });
     } catch (e: any) {
       toast({
-        title: "Verification failed",
-        description: e?.message || "Invalid code. Please try again.",
+        title: t("twoFactor.failedTitle"),
+        description: e?.message || t("twoFactor.failedDesc"),
         variant: "destructive",
       });
     } finally {
@@ -89,16 +91,16 @@ export default function TwoFactor() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-secondary">
       <Card className="w-full max-w-md border-2 shadow-xl">
         <CardHeader className="space-y-2">
-          <CardTitle className="text-2xl font-semibold">Two-factor verification</CardTitle>
+          <CardTitle className="text-2xl font-semibold">{t("twoFactor.title")}</CardTitle>
           <CardDescription>
-            Enter the code from your authenticator app, or use a recovery code.
+            {t("twoFactor.subtitle")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
             <div className="space-y-0.5">
               <p className="text-sm font-medium">Use recovery code</p>
-              <p className="text-xs text-muted-foreground">Single-use backup code</p>
+              <p className="text-xs text-muted-foreground">{t("twoFactor.recoveryHint")}</p>
             </div>
             <Switch
               checked={mode === "recovery"}
@@ -108,7 +110,7 @@ export default function TwoFactor() {
 
           {mode === "totp" ? (
             <div className="space-y-3">
-              <Label>Authenticator code</Label>
+              <Label>{t("twoFactor.authenticatorCode")}</Label>
               <div className="flex justify-center">
                 <InputOTP maxLength={6} value={otp} onChange={setOtp}>
                   <InputOTPGroup>
@@ -121,16 +123,16 @@ export default function TwoFactor() {
                   </InputOTPGroup>
                 </InputOTP>
               </div>
-              <p className="text-xs text-muted-foreground text-center">6 digits · refreshes every 30 seconds</p>
+              <p className="text-xs text-muted-foreground text-center">{t("twoFactor.otpHint")}</p>
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="recovery">Recovery code</Label>
+              <Label htmlFor="recovery">{t("twoFactor.recoveryCode")}</Label>
               <Input
                 id="recovery"
                 value={recoveryCode}
                 onChange={(e) => setRecoveryCode(e.target.value)}
-                placeholder="XXXX-XXXX-XX"
+                placeholder={t("twoFactor.recoveryPlaceholder")}
                 autoCapitalize="characters"
                 autoComplete="one-time-code"
               />
@@ -139,14 +141,14 @@ export default function TwoFactor() {
 
           <div className="flex items-center justify-between rounded-lg border bg-card px-4 py-3">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Trust this device</p>
-              <p className="text-xs text-muted-foreground">Skip 2FA for 30 days</p>
+              <p className="text-sm font-medium">{t("twoFactor.trustDevice")}</p>
+              <p className="text-xs text-muted-foreground">{t("twoFactor.trustHint")}</p>
             </div>
             <Switch checked={trustDevice} onCheckedChange={setTrustDevice} />
           </div>
 
           <Button className="w-full" onClick={handleVerify} disabled={loading}>
-            {loading ? "Verifying…" : "Verify"}
+            {loading ? t("twoFactor.verifying") : t("twoFactor.verify")}
           </Button>
         </CardContent>
       </Card>

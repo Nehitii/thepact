@@ -11,6 +11,7 @@ import { TodoCalendarView } from '@/components/todo/TodoCalendarView';
 import { TodoFilterSort, SortField, SortDirection } from '@/components/todo/TodoFilterSort';
 import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -21,6 +22,7 @@ import {
 type ActivePanel = 'none' | 'create' | 'stats' | 'history' | 'calendar' | 'edit';
 
 export default function TodoList() {
+  const { t } = useTranslation();
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
   const [selectedTaskType, setSelectedTaskType] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('created_at');
@@ -120,7 +122,7 @@ export default function TodoList() {
           className="flex flex-col items-center gap-4"
         >
           <div className="w-12 h-12 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground">Loading quests...</p>
+          <p className="text-muted-foreground">{t('todo.loadingQuests')}</p>
         </motion.div>
       </div>
     );
@@ -159,7 +161,7 @@ export default function TodoList() {
           className="flex items-center justify-between flex-wrap gap-3"
         >
           <span className="text-sm text-muted-foreground">
-            {activeTaskCount} / {maxTasks} active quests
+            {t('todo.activeQuestsCount', { count: activeTaskCount, max: maxTasks })}
           </span>
           
           <div className="flex items-center gap-2">
@@ -170,7 +172,7 @@ export default function TodoList() {
               className="text-muted-foreground hover:text-foreground"
             >
               <CalendarIcon className="w-4 h-4 mr-1.5" />
-              Calendar
+              {t('todo.calendar')}
             </Button>
             <Button
               variant="ghost"
@@ -179,7 +181,7 @@ export default function TodoList() {
               className="text-muted-foreground hover:text-foreground"
             >
               <History className="w-4 h-4 mr-1.5" />
-              History
+              {t('todo.history')}
             </Button>
             <Button
               variant="ghost"
@@ -188,7 +190,7 @@ export default function TodoList() {
               className="text-muted-foreground hover:text-foreground"
             >
               <BarChart3 className="w-4 h-4 mr-1.5" />
-              Stats
+              {t('todo.stats')}
             </Button>
             <Button
               onClick={() => setActivePanel('create')}
@@ -196,7 +198,7 @@ export default function TodoList() {
               className="bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
             >
               <Plus className="w-4 h-4 mr-1.5" />
-              New Quest
+              {t('todo.newQuest')}
             </Button>
           </div>
         </motion.div>
@@ -241,7 +243,7 @@ export default function TodoList() {
             animate={{ opacity: 1, scale: 1 }}
             className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm"
           >
-            ⚠️ Quest log full! Complete existing quests to unlock new ones.
+            ⚠️ {t('todo.questLogFull')}
           </motion.div>
         )}
 
@@ -258,13 +260,13 @@ export default function TodoList() {
                   <CheckSquare className="w-10 h-10 text-muted-foreground" />
                 </div>
                 <h3 className="text-xl font-light text-foreground mb-2">No active quests</h3>
-                <p className="text-sm text-muted-foreground mb-6">Begin your journey by creating a new quest</p>
+                <p className="text-sm text-muted-foreground mb-6">{t('todo.noActiveQuestsDesc')}</p>
                 <Button
                   onClick={() => setActivePanel('create')}
                   className="bg-gradient-to-r from-primary/20 to-accent/20 hover:from-primary/30 hover:to-accent/30 text-primary border border-primary/30"
                 >
                   <Plus className="w-4 h-4 mr-1.5" />
-                  New Quest
+                  {t('todo.newQuest')}
                 </Button>
               </motion.div>
             ) : (
@@ -289,7 +291,7 @@ export default function TodoList() {
           <DialogHeader>
             <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
               <Plus className="w-5 h-5 text-primary" />
-              New Quest
+              {t('todo.create.title')}
             </DialogTitle>
           </DialogHeader>
           <TodoGamifiedCreateForm
@@ -314,7 +316,7 @@ export default function TodoList() {
           <DialogHeader>
             <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
               <Pencil className="w-5 h-5 text-primary" />
-              Edit Quest
+              {t('todo.editQuest')}
             </DialogTitle>
           </DialogHeader>
           {editingTask && (
@@ -337,7 +339,7 @@ export default function TodoList() {
           <DialogHeader>
             <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary" />
-              Quest Analytics
+              {t('todo.questAnalytics')}
             </DialogTitle>
           </DialogHeader>
           <TodoAdvancedStats />
@@ -350,7 +352,7 @@ export default function TodoList() {
           <DialogHeader>
             <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
               <History className="w-5 h-5 text-primary" />
-              Quest History
+              {t('todo.questHistory')}
             </DialogTitle>
           </DialogHeader>
           <TodoHistoryPanel />
@@ -363,7 +365,7 @@ export default function TodoList() {
           <DialogHeader>
             <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
               <CalendarIcon className="w-5 h-5 text-primary" />
-              Quest Calendar
+              {t('todo.questCalendar')}
             </DialogTitle>
           </DialogHeader>
           <TodoCalendarView tasks={tasks} />
