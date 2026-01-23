@@ -130,20 +130,12 @@ export function ProfileAccountSettings({
     setSaving(false);
   };
 
-  // Luminous label style for consistency
-  const labelStyle = "text-[#8ACBFF] font-rajdhani uppercase tracking-wide text-sm drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]";
-  
-  // Input field style with improved readability
-  const inputStyle = "bg-[#0d1a2d]/90 border-[#3a5f8a]/50 text-[#e0f0ff] placeholder:text-[#6b9ec4] font-orbitron focus:border-[#8ACBFF]/70 focus:ring-1 focus:ring-[#8ACBFF]/30 shadow-[inset_0_1px_4px_rgba(0,0,0,0.3),0_0_8px_rgba(138,203,255,0.1)]";
-  
-  // Select trigger style
-  const selectTriggerStyle = "bg-[#0d1a2d]/90 border-[#3a5f8a]/50 text-[#e0f0ff] font-orbitron focus:border-[#8ACBFF]/70 hover:border-[#8ACBFF]/50 hover:bg-[#0d1a2d] shadow-[inset_0_1px_4px_rgba(0,0,0,0.3),0_0_8px_rgba(138,203,255,0.1)]";
-  
-  // Select content style
-  const selectContentStyle = "bg-[#0a1628]/98 backdrop-blur-xl border-[#3a5f8a]/60 shadow-[0_0_20px_rgba(138,203,255,0.15)]";
-  
-  // Select item style
-  const selectItemStyle = "text-[#c8e0f4] font-rajdhani hover:bg-[#1a3352]/60 focus:bg-[#1a3352]/60 focus:text-[#e0f0ff]";
+  // Shop-aligned, lighter glass styles (semantic tokens only)
+  const labelStyle = "text-primary/80 font-rajdhani uppercase tracking-wide text-sm";
+  const inputStyle = "bg-card/60 border-primary/20 text-foreground placeholder:text-muted-foreground font-rajdhani focus-visible:ring-1 focus-visible:ring-primary/30";
+  const selectTriggerStyle = "bg-card/60 border-primary/20 text-foreground font-rajdhani hover:border-primary/40 hover:bg-card/70 focus:ring-1 focus:ring-primary/30";
+  const selectContentStyle = "bg-popover/95 backdrop-blur-xl border-primary/20";
+  const selectItemStyle = "text-foreground font-rajdhani focus:bg-primary/10 focus:text-foreground";
 
   return (
     <div className="space-y-6">
@@ -156,9 +148,9 @@ export function ProfileAccountSettings({
           id="email" 
           value={email} 
           disabled 
-          className="bg-[#0d1a2d]/70 border-[#3a5f8a]/40 text-[#6b9ec4] font-orbitron cursor-not-allowed shadow-[inset_0_1px_4px_rgba(0,0,0,0.3)]" 
+          className="bg-card/40 border-primary/15 text-muted-foreground font-rajdhani cursor-not-allowed" 
         />
-        <p className="text-xs text-[#6b9ec4]/80 font-rajdhani">{t("profile.emailCantChange")}</p>
+        <p className="text-xs text-muted-foreground font-rajdhani">{t("profile.emailCantChange")}</p>
       </div>
 
       {/* Display Name */}
@@ -188,14 +180,14 @@ export function ProfileAccountSettings({
               className={cn(
                 "w-full justify-start text-left font-normal",
                 selectTriggerStyle,
-                !birthday && "text-[#6b9ec4]"
+                !birthday && "text-muted-foreground"
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF]" />
+              <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
               {birthday ? (
-                  <span className="text-[#e0f0ff]">{format(birthday, "PPP", { locale: dateLocale })}</span>
+                  <span className="text-foreground">{format(birthday, "PPP", { locale: dateLocale })}</span>
               ) : (
-                  <span className="text-[#6b9ec4]">{t("profile.birthdayPlaceholder")}</span>
+                  <span className="text-muted-foreground">{t("profile.birthdayPlaceholder")}</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -208,7 +200,7 @@ export function ProfileAccountSettings({
               captionLayout="dropdown-buttons"
               fromYear={1920}
               toYear={new Date().getFullYear()}
-              className="pointer-events-auto [&_.rdp-caption_select]:bg-[#0d1a2d] [&_.rdp-caption_select]:text-[#e0f0ff] [&_.rdp-caption_select]:border-[#3a5f8a]/50 [&_.rdp-day]:text-[#c8e0f4] [&_.rdp-day_button:hover]:bg-[#1a3352] [&_.rdp-day_button.rdp-day_selected]:bg-[#8ACBFF]/30 [&_.rdp-day_button.rdp-day_selected]:text-[#e0f0ff] [&_.rdp-head_cell]:text-[#8ACBFF] [&_.rdp-nav_button]:text-[#8ACBFF] [&_.rdp-nav_button:hover]:bg-[#1a3352]"
+              className="pointer-events-auto [&_.rdp-caption_select]:bg-card [&_.rdp-caption_select]:text-foreground [&_.rdp-caption_select]:border-primary/20 [&_.rdp-day]:text-foreground [&_.rdp-day_button:hover]:bg-primary/10 [&_.rdp-day_button.rdp-day_selected]:bg-primary/20 [&_.rdp-day_button.rdp-day_selected]:text-foreground [&_.rdp-head_cell]:text-primary/80 [&_.rdp-nav_button]:text-primary [&_.rdp-nav_button:hover]:bg-primary/10"
             />
           </PopoverContent>
         </Popover>
@@ -288,7 +280,7 @@ export function ProfileAccountSettings({
       <Button
         onClick={handleSave}
         disabled={saving}
-        className="w-full bg-[#1a3352]/80 border-2 border-[#8ACBFF]/40 hover:border-[#8ACBFF]/70 hover:bg-[#1a3352] text-[#e0f0ff] font-orbitron uppercase tracking-wider shadow-[0_0_12px_rgba(138,203,255,0.2)] hover:shadow-[0_0_20px_rgba(138,203,255,0.4)] transition-all duration-300"
+        className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider transition-all duration-300"
       >
         {saving ? t("common.saving") : t("common.saveChanges")}
       </Button>

@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useSoundSettings } from "@/hooks/useSoundSettings";
 import { useToast } from "@/hooks/use-toast";
+import { Card } from "@/components/ui/card";
 
 export function ProfileDisplaySounds() {
   const { user } = useAuth();
@@ -42,11 +43,10 @@ export function ProfileDisplaySounds() {
   return (
     <div className="space-y-6">
       {/* Visual Settings Section */}
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-        <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-4">
+      <Card variant="clean" className="shop-card bg-card/70 border-primary/20">
+        <div className="p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <Palette className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
+            <Palette className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-orbitron font-semibold text-primary">
               Visual Settings
             </h2>
@@ -61,24 +61,20 @@ export function ProfileDisplaySounds() {
             <div className="relative">
               <div className="absolute inset-0 blur-lg bg-primary/20 rounded-full" />
               <span 
-                className="relative text-sm font-orbitron font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#5bb4ff] via-[#8ACBFF] to-[#5bb4ff] uppercase tracking-widest"
-                style={{
-                  textShadow: '0 0 20px rgba(91, 180, 255, 0.4)'
-                }}
+                className="relative text-sm font-orbitron font-semibold text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-primary uppercase tracking-widest"
               >
                 Coming Soon
               </span>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Sound Settings Section */}
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-        <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-4">
+      <Card variant="clean" className="shop-card bg-card/70 border-primary/20">
+        <div className="p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <Volume2 className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
+            <Volume2 className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-orbitron font-semibold text-primary">
               Sound Settings
             </h2>
@@ -91,7 +87,7 @@ export function ProfileDisplaySounds() {
           {/* Controls */}
           <div className="space-y-5">
             {/* Master toggle */}
-            <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-background/10">
+            <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="min-w-0">
                 <p className="text-sm font-orbitron text-foreground">Master Sound</p>
                 <p className="text-xs text-muted-foreground font-rajdhani">
@@ -107,7 +103,7 @@ export function ProfileDisplaySounds() {
             </div>
 
             {/* Volume */}
-            <div className="space-y-3 p-4 rounded-xl border border-primary/15 bg-background/10">
+            <div className="space-y-3 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-orbitron text-foreground">Volume</p>
                 <span className="text-xs text-muted-foreground font-rajdhani">
@@ -128,7 +124,7 @@ export function ProfileDisplaySounds() {
 
             {/* Category toggles */}
             <div className="grid gap-3">
-              <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-background/10">
+              <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
                 <div className="min-w-0">
                   <p className="text-sm font-orbitron text-foreground">UI Sounds</p>
                   <p className="text-xs text-muted-foreground font-rajdhani">Buttons, toggles, tabs, dialogs.</p>
@@ -140,7 +136,7 @@ export function ProfileDisplaySounds() {
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-background/10">
+              <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
                 <div className="min-w-0">
                   <p className="text-sm font-orbitron text-foreground">Success / Validation</p>
                   <p className="text-xs text-muted-foreground font-rajdhani">Confirmations and meaningful completions.</p>
@@ -152,7 +148,7 @@ export function ProfileDisplaySounds() {
                 />
               </div>
 
-              <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-background/10">
+              <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
                 <div className="min-w-0">
                   <p className="text-sm font-orbitron text-foreground">Progress / Gamification</p>
                   <p className="text-xs text-muted-foreground font-rajdhani">XP, streaks, milestones, unlocks.</p>
@@ -172,14 +168,13 @@ export function ProfileDisplaySounds() {
             )}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Effects Settings Section */}
-      <div className="relative group">
-        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-        <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-4">
+      <Card variant="clean" className="shop-card bg-card/70 border-primary/20">
+        <div className="p-6 space-y-4">
           <div className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
+            <Sparkles className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-orbitron font-semibold text-primary">
               Particle Effects
             </h2>
@@ -194,20 +189,17 @@ export function ProfileDisplaySounds() {
             <div className="relative">
               <div className="absolute inset-0 blur-lg bg-primary/20 rounded-full" />
               <span 
-                className="relative text-sm font-orbitron font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#5bb4ff] via-[#8ACBFF] to-[#5bb4ff] uppercase tracking-widest"
-                style={{
-                  textShadow: '0 0 20px rgba(91, 180, 255, 0.4)'
-                }}
+                className="relative text-sm font-orbitron font-semibold text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-primary uppercase tracking-widest"
               >
                 Coming Soon
               </span>
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Info Note */}
-      <p className="text-center text-sm text-primary/50 font-rajdhani">
+      <p className="text-center text-sm text-muted-foreground font-rajdhani">
         These features are in development. Stay tuned for updates.
       </p>
     </div>
