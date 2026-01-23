@@ -311,7 +311,7 @@ export function ProfileBoundedProfile({
       {/* Identity Card Preview */}
       <div className="relative group">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-        <div className="relative rounded-2xl overflow-hidden border border-primary/20 bg-[#0a1525]/80 shadow-[0_0_30px_rgba(91,180,255,0.15)]">
+        <div className="relative rounded-2xl overflow-hidden border border-primary/20 bg-card/70 backdrop-blur-xl shop-card">
           {/* Banner Background */}
           <div 
             className="relative h-32 overflow-hidden"
@@ -322,7 +322,7 @@ export function ProfileBoundedProfile({
             }}
           >
             {/* Banner overlay effects */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0a1525] via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-cyber-shimmer" />
             
             {/* Scan lines */}
@@ -336,7 +336,7 @@ export function ProfileBoundedProfile({
           </div>
 
           {/* Main Card Content */}
-          <div className="relative px-6 pb-6 pt-2 bg-gradient-to-b from-[#0a1525]/95 to-[#0a1525]">
+          <div className="relative px-6 pb-6 pt-2 bg-gradient-to-b from-card/90 to-card">
             {/* Left side: Avatar with Frame - positioned to overlap banner */}
             <div className="flex items-start gap-6">
               {/* Avatar with Frame - using layered AvatarFrame component */}
@@ -410,7 +410,7 @@ export function ProfileBoundedProfile({
       {/* Customization Controls */}
       <div className="relative group">
         <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-        <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6">
+        <div className="relative bg-card/70 backdrop-blur-xl border border-primary/20 rounded-xl p-6 shop-card">
           <h3 className="text-lg font-orbitron text-primary mb-4 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
             Customize Identity
@@ -422,18 +422,18 @@ export function ProfileBoundedProfile({
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-auto py-3 flex flex-col items-center gap-1 bg-[#0a1525]/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
+                  className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
                 >
                   <Upload className="h-4 w-4" />
                   <span className="text-xs font-rajdhani">Edit Avatar</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-[#0a1525] border-primary/30">
+              <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30">
                 <DialogHeader>
                   <DialogTitle className="text-primary font-orbitron">Set Avatar</DialogTitle>
                 </DialogHeader>
                 <Tabs defaultValue="upload" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 bg-[#0d1a2d]/90 border border-primary/20">
+                  <TabsList className="grid w-full grid-cols-2 bg-card/60 border border-primary/20">
                     <TabsTrigger 
                       value="upload" 
                       className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary font-rajdhani"
@@ -512,13 +512,13 @@ export function ProfileBoundedProfile({
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-auto py-3 flex flex-col items-center gap-1 bg-[#0a1525]/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
+                  className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
                 >
                   <Sparkles className="h-4 w-4" />
                   <span className="text-xs font-rajdhani">Select Frame</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-[#0a1525] border-primary/30 max-w-md">
+              <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30 max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-primary font-orbitron">Avatar Frames</DialogTitle>
                 </DialogHeader>
@@ -537,8 +537,8 @@ export function ProfileBoundedProfile({
                           active 
                             ? "border-primary bg-primary/10" 
                             : owned 
-                              ? "border-primary/30 hover:border-primary/50 bg-[#0a1525]/50" 
-                              : "border-primary/10 bg-[#0a1525]/30 opacity-60"
+                              ? "border-primary/30 hover:border-primary/50 bg-card/50" 
+                              : "border-primary/10 bg-card/30 opacity-60"
                         }`}
                       >
                         {/* Frame preview using proper component */}
@@ -561,7 +561,7 @@ export function ProfileBoundedProfile({
                         )}
                         {active && owned && (
                           <div className="absolute top-2 right-2">
-                            <Check className="h-4 w-4 text-green-400" />
+                            <Check className="h-4 w-4 text-health" />
                           </div>
                         )}
                       </button>
@@ -576,13 +576,13 @@ export function ProfileBoundedProfile({
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-auto py-3 flex flex-col items-center gap-1 bg-[#0a1525]/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
+                  className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
                 >
                   <ImageIcon className="h-4 w-4" />
                   <span className="text-xs font-rajdhani">Select Banner</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-[#0a1525] border-primary/30 max-w-md">
+              <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30 max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-primary font-orbitron">Profile Banners</DialogTitle>
                 </DialogHeader>
@@ -601,8 +601,8 @@ export function ProfileBoundedProfile({
                           active 
                             ? "border-primary bg-primary/10" 
                             : owned 
-                              ? "border-primary/30 hover:border-primary/50 bg-[#0a1525]/50" 
-                              : "border-primary/10 bg-[#0a1525]/30 opacity-60"
+                              ? "border-primary/30 hover:border-primary/50 bg-card/50" 
+                              : "border-primary/10 bg-card/30 opacity-60"
                         }`}
                       >
                         {/* Banner preview */}
@@ -625,7 +625,7 @@ export function ProfileBoundedProfile({
                         )}
                         {active && owned && (
                           <div className="absolute top-2 right-2">
-                            <Check className="h-4 w-4 text-green-400" />
+                            <Check className="h-4 w-4 text-health" />
                           </div>
                         )}
                       </button>
@@ -640,13 +640,13 @@ export function ProfileBoundedProfile({
               <DialogTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-auto py-3 flex flex-col items-center gap-1 bg-[#0a1525]/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
+                  className="h-auto py-3 flex flex-col items-center gap-1 bg-card/50 border-primary/30 hover:border-primary/50 hover:bg-primary/10 text-primary"
                 >
                   <Crown className="h-4 w-4" />
                   <span className="text-xs font-rajdhani">Select Title</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="bg-[#0a1525] border-primary/30 max-w-md">
+              <DialogContent className="bg-card/95 backdrop-blur-xl border-primary/30 max-w-md">
                 <DialogHeader>
                   <DialogTitle className="text-primary font-orbitron">Profile Titles</DialogTitle>
                 </DialogHeader>
@@ -665,8 +665,8 @@ export function ProfileBoundedProfile({
                           active 
                             ? "border-primary bg-primary/10" 
                             : owned 
-                              ? "border-primary/30 hover:border-primary/50 bg-[#0a1525]/50" 
-                              : "border-primary/10 bg-[#0a1525]/30 opacity-60"
+                              ? "border-primary/30 hover:border-primary/50 bg-card/50" 
+                              : "border-primary/10 bg-card/30 opacity-60"
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -686,7 +686,7 @@ export function ProfileBoundedProfile({
                           
                           {/* Lock or check indicator */}
                           {!owned && <Lock className="h-4 w-4 text-primary/40" />}
-                          {active && owned && <Check className="h-4 w-4 text-green-400" />}
+                          {active && owned && <Check className="h-4 w-4 text-health" />}
                         </div>
                       </button>
                     );
