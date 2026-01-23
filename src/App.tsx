@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { I18nProvider } from "@/contexts/I18nProvider";
+import { SoundProvider } from "@/contexts/SoundContext";
+import { SoundSettingsSync } from "@/components/sound/SoundSettingsSync";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Auth from "./pages/Auth";
@@ -61,8 +63,10 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <I18nProvider>
-            <CurrencyProvider>
-              <Routes>
+            <SoundProvider>
+              <SoundSettingsSync />
+              <CurrencyProvider>
+                <Routes>
               <Route path="/auth" element={<Auth />} />
               <Route
                 path="/two-factor"
@@ -322,8 +326,9 @@ const App = () => (
               />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-              </Routes>
-            </CurrencyProvider>
+                </Routes>
+              </CurrencyProvider>
+            </SoundProvider>
           </I18nProvider>
         </AuthProvider>
       </BrowserRouter>

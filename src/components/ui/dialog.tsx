@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useSound } from "@/contexts/SoundContext";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -33,6 +34,26 @@ const DialogContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
+    <DialogContentWithSound className={className} ref={ref} {...props}>
+      {children}
+    </DialogContentWithSound>
+  </DialogPortal>
+));
+
+const DialogContentWithSound = React.forwardRef<
+  React.ElementRef<typeof DialogPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+>(({ className, children, ...props }, ref) => {
+  const sound = useSound();
+  React.useEffect(() => {
+    sound.play("ui", "soft");
+    return () => {
+      sound.play("ui", "soft");
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
@@ -47,8 +68,9 @@ const DialogContent = React.forwardRef<
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
-  </DialogPortal>
-));
+  );
+});
+DialogContentWithSound.displayName = "DialogContentWithSound";
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
