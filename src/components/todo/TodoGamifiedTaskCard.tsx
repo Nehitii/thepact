@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { useParticleEffect } from '@/components/ParticleEffect';
+import { useTranslation } from 'react-i18next';
 
 interface TodoGamifiedTaskCardProps {
   task: TodoTask & { category?: string; task_type?: string };
@@ -67,13 +68,14 @@ const categoryConfig: Record<string, { icon: React.ElementType; color: string }>
 };
 
 // Task type badges
-const taskTypeConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  appointment: { label: 'Appointment', icon: Calendar, color: 'bg-purple-500/20 text-purple-300' },
-  deadline: { label: 'Deadline', icon: Clock, color: 'bg-red-500/20 text-red-300' },
-  flexible: { label: 'Flexible', icon: Sparkles, color: 'bg-cyan-500/20 text-cyan-300' },
+const taskTypeConfig: Record<string, { icon: React.ElementType; color: string; labelKey: string }> = {
+  appointment: { icon: Calendar, color: 'bg-purple-500/20 text-purple-300', labelKey: 'todo.taskTypes.appointment' },
+  deadline: { icon: Clock, color: 'bg-red-500/20 text-red-300', labelKey: 'todo.taskTypes.deadline' },
+  flexible: { icon: Sparkles, color: 'bg-cyan-500/20 text-cyan-300', labelKey: 'todo.taskTypes.flexible' },
 };
 
 export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, onEdit }: TodoGamifiedTaskCardProps) {
+  const { t } = useTranslation();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const { trigger, ParticleEffects } = useParticleEffect();
@@ -91,15 +93,15 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
   
   const formatDeadline = () => {
     if (!deadlineDate) return null;
-    if (isToday(deadlineDate)) return 'Today';
-    if (isTomorrow(deadlineDate)) return 'Tomorrow';
+    if (isToday(deadlineDate)) return t('todo.taskCard.today');
+    if (isTomorrow(deadlineDate)) return t('todo.taskCard.tomorrow');
     return format(deadlineDate, 'MMM d');
   };
 
   const postponeOptions = [
-    { label: 'Tomorrow', date: addDays(new Date(), 1) },
-    { label: 'In 3 days', date: addDays(new Date(), 3) },
-    { label: 'Next week', date: addDays(new Date(), 7) },
+    { label: t('todo.taskCard.tomorrow'), date: addDays(new Date(), 1) },
+    { label: t('todo.taskCard.in3Days', { defaultValue: 'In 3 days' }), date: addDays(new Date(), 3) },
+    { label: t('todo.taskCard.nextWeek', { defaultValue: 'Next week' }), date: addDays(new Date(), 7) },
   ];
 
   const handleComplete = useCallback((e: React.MouseEvent) => {
@@ -189,13 +191,13 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                         {/* Category badge */}
                         <span className={cn('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-card/50 border border-border/50', categoryColor)}>
                           <CategoryIcon className="w-3 h-3" />
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
+                          {t(`todo.categories.${category}`)}
                         </span>
                         
                         {/* Task type badge */}
                         <span className={cn('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border border-transparent', typeConfig.color)}>
                           <TypeIcon className="w-3 h-3" />
-                          {typeConfig.label}
+                          {t(typeConfig.labelKey)}
                         </span>
                         
                         {/* Priority badge */}
@@ -211,7 +213,7 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                             className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/20 text-red-300 text-xs font-medium border border-red-500/30"
                           >
                             <AlertTriangle className="w-3 h-3" />
-                            URGENT
+                            {t('todo.taskCard.urgent')}
                           </motion.span>
                         )}
                         
@@ -261,7 +263,7 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur-xl border-border">
-                          <div className="px-2 py-1.5 text-xs text-muted-foreground">Postpone to...</div>
+                          <div className="px-2 py-1.5 text-xs text-muted-foreground">{t('todo.taskCard.postponeTo')}</div>
                           {postponeOptions.map((option) => (
                             <DropdownMenuItem
                               key={option.label}
@@ -296,18 +298,18 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent className="bg-card/95 backdrop-blur-xl border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete task?</AlertDialogTitle>
+            <AlertDialogTitle>{t('todo.taskCard.deleteTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove the task. This action cannot be undone.
+              {t('todo.taskCard.deleteDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-muted text-foreground border-border">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="bg-muted text-foreground border-border">{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={onDelete}
               className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30"
             >
-              Delete
+              {t('todo.taskCard.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

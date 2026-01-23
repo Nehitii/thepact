@@ -149,6 +149,25 @@
       "createQuest": "Create quest"
     },
 
+    "categories": {
+      "work": "Work",
+      "health": "Health",
+      "personal": "Personal",
+      "study": "Study",
+      "admin": "Admin",
+      "general": "General"
+    },
+    "taskTypes": {
+      "flexible": "Flexible",
+      "deadline": "Deadline",
+      "appointment": "Appointment"
+    },
+    "difficulty": {
+      "low": "Easy",
+      "medium": "Medium",
+      "high": "Hard"
+    },
+
     "historyPanel": {
       "loading": "Loading history…",
       "empty": "No completed tasks yet.",
@@ -163,6 +182,8 @@
       "urgent": "URGENT",
       "today": "Today",
       "tomorrow": "Tomorrow",
+      "in3Days": "In 3 days",
+      "nextWeek": "Next week",
       "postponeTo": "Postpone to…",
       "deleteTitle": "Delete task?",
       "deleteDesc": "This will permanently remove the task. This action cannot be undone.",
@@ -189,7 +210,8 @@
       "difficultyDistribution": "Difficulty distribution",
       "categoryBreakdown": "Category breakdown",
       "productivityByTime": "Productivity by time of day",
-      "completeToSee": "Complete tasks to see your detailed statistics here."
+      "completeToSee": "Complete tasks to see your detailed statistics here.",
+      "tasksTooltip": "{{count}} tasks"
     },
 
     "header": {

@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTranslation } from 'react-i18next';
 
 export type SortField = 'created_at' | 'deadline' | 'priority' | 'name' | 'category' | 'is_urgent';
 export type SortDirection = 'asc' | 'desc';
@@ -24,20 +25,20 @@ interface TodoFilterSortProps {
   onSortChange: (field: SortField, direction: SortDirection) => void;
 }
 
-const sortOptions: { field: SortField; label: string }[] = [
-  { field: 'created_at', label: 'Date Created' },
-  { field: 'deadline', label: 'Deadline' },
-  { field: 'priority', label: 'Priority' },
-  { field: 'name', label: 'Name' },
-  { field: 'category', label: 'Category' },
-  { field: 'is_urgent', label: 'Urgency' },
+const sortOptions: { field: SortField }[] = [
+  { field: 'created_at' },
+  { field: 'deadline' },
+  { field: 'priority' },
+  { field: 'name' },
+  { field: 'category' },
+  { field: 'is_urgent' },
 ];
 
 const taskTypeFilters = [
-  { id: null, label: 'All', icon: List },
-  { id: 'flexible', label: 'Flexible', icon: Sparkles },
-  { id: 'deadline', label: 'Deadline', icon: Clock },
-  { id: 'appointment', label: 'Appointment', icon: Calendar },
+  { id: null as string | null, labelKey: 'todo.filters.types.all', icon: List },
+  { id: 'flexible', labelKey: 'todo.filters.types.flexible', icon: Sparkles },
+  { id: 'deadline', labelKey: 'todo.filters.types.deadline', icon: Clock },
+  { id: 'appointment', labelKey: 'todo.filters.types.appointment', icon: Calendar },
 ];
 
 export function TodoFilterSort({ 
@@ -47,6 +48,7 @@ export function TodoFilterSort({
   onTaskTypeChange,
   onSortChange,
 }: TodoFilterSortProps) {
+  const { t } = useTranslation();
   const toggleDirection = () => {
     onSortChange(sortField, sortDirection === 'asc' ? 'desc' : 'asc');
   };
@@ -59,7 +61,7 @@ export function TodoFilterSort({
     >
       {/* Sort Controls - matching /goals style */}
       <div className="flex items-center gap-2">
-        <span className="text-xs font-rajdhani tracking-wider uppercase text-foreground/60">Sort</span>
+        <span className="text-xs font-rajdhani tracking-wider uppercase text-foreground/60">{t('todo.filters.sort')}</span>
         <Select 
           value={sortField} 
           onValueChange={(value) => onSortChange(value as SortField, sortDirection)}
@@ -70,7 +72,7 @@ export function TodoFilterSort({
           <SelectContent>
             {sortOptions.map((option) => (
               <SelectItem key={option.field} value={option.field}>
-                {option.label}
+                {t(`todo.filters.sortOptions.${option.field}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -116,7 +118,7 @@ export function TodoFilterSort({
                 />
               )}
               <Icon className="w-4 h-4 relative z-10" />
-              <span className="relative z-10 hidden sm:inline">{type.label}</span>
+              <span className="relative z-10 hidden sm:inline">{t(type.labelKey)}</span>
             </button>
           );
         })}

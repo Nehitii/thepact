@@ -149,6 +149,25 @@
       "createQuest": "Créer la quête"
     },
 
+    "categories": {
+      "work": "Travail",
+      "health": "Santé",
+      "personal": "Personnel",
+      "study": "Études",
+      "admin": "Admin",
+      "general": "Général"
+    },
+    "taskTypes": {
+      "flexible": "Flexible",
+      "deadline": "Échéance",
+      "appointment": "Rendez-vous"
+    },
+    "difficulty": {
+      "low": "Facile",
+      "medium": "Moyenne",
+      "high": "Difficile"
+    },
+
     "historyPanel": {
       "loading": "Chargement de l’historique…",
       "empty": "Aucune tâche terminée pour l’instant.",
@@ -163,6 +182,8 @@
       "urgent": "URGENT",
       "today": "Aujourd’hui",
       "tomorrow": "Demain",
+      "in3Days": "Dans 3 jours",
+      "nextWeek": "La semaine prochaine",
       "postponeTo": "Reporter à…",
       "deleteTitle": "Supprimer la tâche ?",
       "deleteDesc": "La tâche sera supprimée définitivement. Cette action est irréversible.",
@@ -189,7 +210,8 @@
       "difficultyDistribution": "Répartition des difficultés",
       "categoryBreakdown": "Répartition par catégories",
       "productivityByTime": "Productivité selon l’heure",
-      "completeToSee": "Termine des tâches pour afficher des statistiques détaillées ici."
+      "completeToSee": "Termine des tâches pour afficher des statistiques détaillées ici.",
+      "tasksTooltip": "{{count}} tâches"
     },
 
     "header": {

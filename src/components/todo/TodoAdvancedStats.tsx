@@ -21,6 +21,8 @@ import {
   Radar,
 } from 'recharts';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 const PRIORITY_COLORS = {
   low: '#10b981',
@@ -37,10 +39,12 @@ const CATEGORY_COLORS: Record<string, string> = {
   general: '#8b5cf6',
 };
 
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 export function TodoAdvancedStats() {
+  const { t } = useTranslation();
+  const dateLocale = useDateFnsLocale();
   const { stats, history, tasks } = useTodoList();
+
+  const dayNames = (t('common.daysShort', { returnObjects: true }) as unknown as string[]) || ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
   // Monthly completion data (last 6 months)
   const monthlyData = useMemo(() => {
@@ -57,7 +61,7 @@ export function TodoAdvancedStats() {
       }).length;
       
       return {
-        month: format(month, 'MMM'),
+        month: format(month, 'MMM', { locale: dateLocale }),
         completed: count,
       };
     });
@@ -71,11 +75,11 @@ export function TodoAdvancedStats() {
     });
     
     return [
-      { name: 'Easy', value: counts.low, color: PRIORITY_COLORS.low },
-      { name: 'Medium', value: counts.medium, color: PRIORITY_COLORS.medium },
-      { name: 'Hard', value: counts.high, color: PRIORITY_COLORS.high },
+      { name: t('todo.difficulty.low'), value: counts.low, color: PRIORITY_COLORS.low },
+      { name: t('todo.difficulty.medium'), value: counts.medium, color: PRIORITY_COLORS.medium },
+      { name: t('todo.difficulty.high'), value: counts.high, color: PRIORITY_COLORS.high },
     ].filter((d) => d.value > 0);
-  }, [history]);
+  }, [history, t]);
 
   // Category distribution
   const categoryData = useMemo(() => {
@@ -86,11 +90,11 @@ export function TodoAdvancedStats() {
     });
     
     return Object.entries(counts).map(([name, value]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
+      name: t(`todo.categories.${name}`),
       value,
       color: CATEGORY_COLORS[name] || '#8b5cf6',
     }));
-  }, [history]);
+  }, [history, t]);
 
   // Day of week analysis
   const dayOfWeekData = useMemo(() => {
@@ -100,27 +104,32 @@ export function TodoAdvancedStats() {
       counts[day]++;
     });
     
-    return DAY_NAMES.map((name, i) => ({
+    return dayNames.map((name, i) => ({
       day: name,
-      tasks: counts[i],
+      tasks: counts[i] ?? 0,
     }));
-  }, [history]);
+  }, [history, dayNames]);
 
   // Time of day analysis
   const timeOfDayData = useMemo(() => {
     const periods = {
-      'Morning (6-12)': 0,
-      'Afternoon (12-18)': 0,
-      'Evening (18-24)': 0,
-      'Night (0-6)': 0,
+      [t('todo.advanced.morning', { defaultValue: 'Morning (6-12)' })]: 0,
+      [t('todo.advanced.afternoon', { defaultValue: 'Afternoon (12-18)' })]: 0,
+      [t('todo.advanced.evening', { defaultValue: 'Evening (18-24)' })]: 0,
+      [t('todo.advanced.night', { defaultValue: 'Night (0-6)' })]: 0,
     };
     
     history.forEach((h) => {
       const hour = getHours(new Date(h.completed_at));
-      if (hour >= 6 && hour < 12) periods['Morning (6-12)']++;
-      else if (hour >= 12 && hour < 18) periods['Afternoon (12-18)']++;
-      else if (hour >= 18) periods['Evening (18-24)']++;
-      else periods['Night (0-6)']++;
+      const keys = Object.keys(periods);
+      const morning = keys[0];
+      const afternoon = keys[1];
+      const evening = keys[2];
+      const night = keys[3];
+      if (hour >= 6 && hour < 12) (periods as any)[morning]++;
+      else if (hour >= 12 && hour < 18) (periods as any)[afternoon]++;
+      else if (hour >= 18) (periods as any)[evening]++;
+      else (periods as any)[night]++;
     });
     
     return Object.entries(periods).map(([period, count]) => ({
@@ -128,7 +137,7 @@ export function TodoAdvancedStats() {
       tasks: count,
       fullMark: Math.max(...Object.values(periods)) + 5,
     }));
-  }, [history]);
+  }, [history, t]);
 
   // 30-day activity grid
   const activityGrid = useMemo(() => {
@@ -172,25 +181,25 @@ export function TodoAdvancedStats() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           icon={<Target className="w-5 h-5 text-primary" />}
-          label="Total Score"
+          label={t('todo.advanced.totalScore')}
           value={stats?.score ?? 0}
           color="primary"
         />
         <StatCard
           icon={<Flame className="w-5 h-5 text-orange-400" />}
-          label="Current Streak"
-          value={`${stats?.current_streak ?? 0} days`}
+          label={t('todo.advanced.currentStreak')}
+          value={`${stats?.current_streak ?? 0} ${t('todo.header.days')}`}
           color="orange"
         />
         <StatCard
           icon={<Trophy className="w-5 h-5 text-amber-400" />}
-          label="Best Streak"
-          value={`${stats?.longest_streak ?? 0} days`}
+          label={t('todo.advanced.bestStreak')}
+          value={`${stats?.longest_streak ?? 0} ${t('todo.header.days')}`}
           color="amber"
         />
         <StatCard
           icon={<CheckCircle2 className="w-5 h-5 text-emerald-400" />}
-          label="This Month"
+          label={t('todo.advanced.thisMonth')}
           value={stats?.tasks_completed_month ?? 0}
           color="emerald"
         />
@@ -207,12 +216,12 @@ export function TodoAdvancedStats() {
             <Calendar className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <span className="text-sm text-muted-foreground">Tasks completed this year</span>
+            <span className="text-sm text-muted-foreground">{t('todo.advanced.tasksCompletedYear')}</span>
             <div className="text-2xl font-bold text-foreground">{stats?.tasks_completed_year ?? 0}</div>
           </div>
         </div>
         <div className="text-right">
-          <span className="text-sm text-muted-foreground">Last 30 days</span>
+          <span className="text-sm text-muted-foreground">{t('todo.advanced.last30Days')}</span>
           <div className="text-xl font-semibold text-foreground">{completionRate}</div>
         </div>
       </motion.div>
@@ -226,7 +235,7 @@ export function TodoAdvancedStats() {
       >
         <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <TrendingUp className="w-4 h-4" />
-          30-Day Activity
+          {t('todo.advanced.activity30')}
         </h3>
         <div className="flex gap-1 flex-wrap">
           {activityGrid.map((day, i) => (
@@ -242,7 +251,7 @@ export function TodoAdvancedStats() {
                 day.count === 2 && 'bg-primary/40 text-primary',
                 day.count >= 3 && 'bg-primary/60 text-primary-foreground'
               )}
-              title={`${day.date}: ${day.count} tasks`}
+              title={`${day.date}: ${t('todo.advanced.tasksTooltip', { count: day.count })}`}
             >
               {day.day}
             </motion.div>
@@ -262,7 +271,7 @@ export function TodoAdvancedStats() {
           >
             <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
-              Monthly Completions
+              {t('todo.advanced.monthlyCompletions')}
             </h3>
             <div className="h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -316,7 +325,7 @@ export function TodoAdvancedStats() {
           >
             <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Calendar className="w-4 h-4" />
-              Most Productive Days
+              {t('todo.advanced.mostProductiveDays')}
             </h3>
             <div className="h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -362,7 +371,7 @@ export function TodoAdvancedStats() {
           >
             <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <PieChartIcon className="w-4 h-4" />
-              Difficulty Distribution
+              {t('todo.advanced.difficultyDistribution')}
             </h3>
             <div className="flex items-center gap-4">
               <div className="w-32 h-32">
@@ -407,7 +416,7 @@ export function TodoAdvancedStats() {
           >
             <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <PieChartIcon className="w-4 h-4" />
-              Category Breakdown
+              {t('todo.advanced.categoryBreakdown')}
             </h3>
             <div className="flex items-center gap-4">
               <div className="w-32 h-32">
@@ -452,7 +461,7 @@ export function TodoAdvancedStats() {
           >
             <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="w-4 h-4" />
-              Productivity by Time of Day
+              {t('todo.advanced.productivityByTime')}
             </h3>
             <div className="h-48 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -478,7 +487,7 @@ export function TodoAdvancedStats() {
 
       {history.length === 0 && (
         <div className="text-center py-12 text-muted-foreground text-sm">
-          Complete tasks to see your detailed statistics here.
+          {t('todo.advanced.completeToSee')}
         </div>
       )}
     </div>
