@@ -14,6 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
+import { useToast } from "@/hooks/use-toast";
 import {
   PactWishlistItemType,
   useCreatePactWishlistItem,
@@ -24,11 +25,38 @@ import {
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { ArrowLeft, Check, Edit, Plus, ShoppingBag, Target, Trash2 } from "lucide-react";
+import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/wishlist/DuplicateMergeDialog";
+
+function normalizeWishlistName(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function findDuplicateByNameAndGoal(opts: {
+  items: Array<{ id: string; name: string; goal_id: string | null }>;
+  name: string;
+  goalId: string | null;
+  excludeId?: string | null;
+}) {
+  const needle = normalizeWishlistName(opts.name);
+  const goalKey = opts.goalId ?? null;
+  return (
+    opts.items.find(
+      (i) =>
+        i.id !== (opts.excludeId ?? null) &&
+        normalizeWishlistName(i.name) === needle &&
+        (i.goal_id ?? null) === goalKey
+    ) ?? null
+  );
+}
 
 export default function Wishlist() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currency } = useCurrency();
+  const { toast } = useToast();
 
   const { data: items = [], isLoading } = usePactWishlistItems(user?.id);
   const createItem = useCreatePactWishlistItem();
@@ -43,6 +71,7 @@ export default function Wishlist() {
   const [newCost, setNewCost] = useState<string>("");
   const [newType, setNewType] = useState<PactWishlistItemType>("optional");
   const [newCategory, setNewCategory] = useState<string>("");
+  const [newOpen, setNewOpen] = useState(false);
 
   const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
@@ -55,6 +84,13 @@ export default function Wishlist() {
   const [editType, setEditType] = useState<PactWishlistItemType>("optional");
   const [editNotes, setEditNotes] = useState("");
   const [editGoalId, setEditGoalId] = useState<string>("none");
+
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeBusy, setMergeBusy] = useState(false);
+  const [mergeMode, setMergeMode] = useState<"create" | "edit" | null>(null);
+  const [mergeDuplicateId, setMergeDuplicateId] = useState<string | null>(null);
+  const [mergeExistingPreview, setMergeExistingPreview] = useState<DuplicateMergePreview | null>(null);
+  const [mergeIncomingPreview, setMergeIncomingPreview] = useState<DuplicateMergePreview | null>(null);
 
   const editingItem = useMemo(
     () => (editId ? items.find((i) => i.id === editId) ?? null : null),
@@ -72,11 +108,46 @@ export default function Wishlist() {
     setEditOpen(true);
   };
 
-  const handleSaveEdit = async () => {
+  const saveEdit = async (opts?: { skipDuplicateCheck?: boolean }) => {
     if (!user || !editId) return;
     const trimmed = editName.trim();
     if (!trimmed) return;
     const parsedCost = Number((editCost || "0").replace(",", "."));
+    const nextGoalId = editGoalId === "none" ? null : editGoalId;
+
+    if (!opts?.skipDuplicateCheck) {
+      const dupe = findDuplicateByNameAndGoal({
+        items,
+        name: trimmed,
+        goalId: nextGoalId,
+        excludeId: editId,
+      });
+      if (dupe) {
+        const dupeFull = items.find((i) => i.id === dupe.id);
+        setMergeMode("edit");
+        setMergeDuplicateId(dupe.id);
+        setMergeExistingPreview({
+          name: dupeFull?.name ?? dupe.name,
+          goalId: dupeFull?.goal_id ?? null,
+          goalName: dupeFull?.goal?.name ?? null,
+          category: dupeFull?.category ?? null,
+          estimatedCost: Number(dupeFull?.estimated_cost ?? 0),
+          itemType: (dupeFull?.item_type ?? "optional") as any,
+          notes: dupeFull?.notes ?? null,
+        });
+        setMergeIncomingPreview({
+          name: trimmed,
+          goalId: nextGoalId,
+          goalName: nextGoalId ? goals.find((g) => g.id === nextGoalId)?.name ?? null : null,
+          category: editCategory.trim() || null,
+          estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
+          itemType: editType,
+          notes: editNotes.trim() || null,
+        });
+        setMergeOpen(true);
+        return;
+      }
+    }
 
     await updateItem.mutateAsync({
       userId: user.id,
@@ -87,7 +158,7 @@ export default function Wishlist() {
         estimated_cost: Number.isFinite(parsedCost) ? parsedCost : 0,
         item_type: editType,
         notes: editNotes.trim() || null,
-        goal_id: editGoalId === "none" ? null : editGoalId,
+        goal_id: nextGoalId,
       },
     });
 
@@ -135,12 +206,41 @@ export default function Wishlist() {
     };
   }, [items, filterType, sortBy, search]);
 
-  const handleCreate = async () => {
+  const createNew = async (opts?: { skipDuplicateCheck?: boolean }) => {
     if (!user) return;
     const trimmed = newName.trim();
     if (!trimmed) return;
 
     const parsedCost = Number((newCost || "0").replace(",", "."));
+
+    if (!opts?.skipDuplicateCheck) {
+      const dupe = findDuplicateByNameAndGoal({ items, name: trimmed, goalId: null });
+      if (dupe) {
+        const dupeFull = items.find((i) => i.id === dupe.id);
+        setMergeMode("create");
+        setMergeDuplicateId(dupe.id);
+        setMergeExistingPreview({
+          name: dupeFull?.name ?? dupe.name,
+          goalId: dupeFull?.goal_id ?? null,
+          goalName: dupeFull?.goal?.name ?? null,
+          category: dupeFull?.category ?? null,
+          estimatedCost: Number(dupeFull?.estimated_cost ?? 0),
+          itemType: (dupeFull?.item_type ?? "optional") as any,
+          notes: dupeFull?.notes ?? null,
+        });
+        setMergeIncomingPreview({
+          name: trimmed,
+          goalId: null,
+          goalName: null,
+          category: newCategory.trim() || null,
+          estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
+          itemType: newType,
+          notes: null,
+        });
+        setMergeOpen(true);
+        return;
+      }
+    }
 
     await createItem.mutateAsync({
       userId: user.id,
@@ -154,11 +254,87 @@ export default function Wishlist() {
     setNewCost("");
     setNewCategory("");
     setNewType("optional");
+    setNewOpen(false);
+  };
+
+  const performMerge = async () => {
+    if (!user || !mergeMode || !mergeDuplicateId || !mergeExistingPreview || !mergeIncomingPreview) return;
+    try {
+      setMergeBusy(true);
+
+      const dupeItem = items.find((i) => i.id === mergeDuplicateId);
+      const currentItem = editId ? items.find((i) => i.id === editId) : null;
+
+      const mergedCost = Number(dupeItem?.estimated_cost ?? 0) + Number(mergeIncomingPreview.estimatedCost ?? 0);
+      const mergedType: PactWishlistItemType =
+        (dupeItem?.item_type === "required" || mergeIncomingPreview.itemType === "required") ? "required" : "optional";
+      const mergedCategory = (dupeItem?.category ?? "").trim() || (mergeIncomingPreview.category ?? "").trim() || null;
+      const mergedNotes =
+        [dupeItem?.notes?.trim(), mergeIncomingPreview.notes?.trim()].filter(Boolean).join("\n\n") || null;
+
+      await updateItem.mutateAsync({
+        userId: user.id,
+        id: mergeDuplicateId,
+        patch: {
+          name: dupeItem?.name ?? mergeIncomingPreview.name,
+          goal_id: dupeItem?.goal_id ?? mergeIncomingPreview.goalId ?? null,
+          estimated_cost: mergedCost,
+          item_type: mergedType,
+          category: mergedCategory,
+          notes: mergedNotes,
+        },
+      });
+
+      if (mergeMode === "edit" && currentItem && currentItem.id !== mergeDuplicateId) {
+        await deleteItem.mutateAsync({ userId: user.id, id: currentItem.id });
+        setEditOpen(false);
+      }
+
+      toast({
+        title: "Merged",
+        description: "Duplicates combined into a single wishlist item.",
+      });
+
+      setMergeOpen(false);
+      setMergeMode(null);
+      setMergeDuplicateId(null);
+      setMergeExistingPreview(null);
+      setMergeIncomingPreview(null);
+      setNewOpen(false);
+    } finally {
+      setMergeBusy(false);
+    }
+  };
+
+  const keepBoth = async () => {
+    if (!mergeMode) return;
+    setMergeOpen(false);
+    if (mergeMode === "create") {
+      await createNew({ skipDuplicateCheck: true });
+      return;
+    }
+    await saveEdit({ skipDuplicateCheck: true });
   };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <CyberBackground />
+
+      <DuplicateMergeDialog
+        open={mergeOpen}
+        onOpenChange={setMergeOpen}
+        existing={
+          mergeExistingPreview ??
+          ({ name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any)
+        }
+        incoming={
+          mergeIncomingPreview ??
+          ({ name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any)
+        }
+        isBusy={mergeBusy}
+        onMerge={performMerge}
+        onKeepBoth={keepBoth}
+      />
 
       {/* Edit modal (single instance for smooth UX) */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
@@ -236,7 +412,7 @@ export default function Wishlist() {
                 Cancel
               </Button>
               <Button
-                onClick={handleSaveEdit}
+                onClick={() => saveEdit()}
                 disabled={!editName.trim() || updateItem.isPending}
                 className="flex-1"
               >
@@ -258,7 +434,7 @@ export default function Wishlist() {
             <span>Back</span>
           </button>
 
-          <Dialog>
+          <Dialog open={newOpen} onOpenChange={setNewOpen}>
             <DialogTrigger asChild>
               <Button variant="hud" className="rounded-xl">
                 <Plus className="h-4 w-4 mr-2" />
@@ -296,7 +472,7 @@ export default function Wishlist() {
                   <Switch checked={newType === "required"} onCheckedChange={(v) => setNewType(v ? "required" : "optional")} />
                 </div>
 
-                <Button onClick={handleCreate} disabled={!newName.trim() || createItem.isPending}>
+                <Button onClick={() => createNew()} disabled={!newName.trim() || createItem.isPending}>
                   Save
                 </Button>
               </div>
