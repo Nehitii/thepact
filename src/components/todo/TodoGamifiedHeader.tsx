@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { Flame, Trophy, Target, Zap, Star, TrendingUp } from 'lucide-react';
 import { TodoStats } from '@/hooks/useTodoList';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface TodoGamifiedHeaderProps {
   stats: TodoStats | null;
@@ -10,6 +11,7 @@ interface TodoGamifiedHeaderProps {
 }
 
 export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGamifiedHeaderProps) {
+  const { t } = useTranslation();
   const score = stats?.score ?? 0;
   const streak = stats?.current_streak ?? 0;
   const longestStreak = stats?.longest_streak ?? 0;
@@ -62,7 +64,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4 text-amber-400" />
-                  <span className="text-sm text-muted-foreground">Level Progress</span>
+                  <span className="text-sm text-muted-foreground">{t('todo.header.levelProgress')}</span>
                 </div>
                 <div className="w-32 h-2 rounded-full bg-muted/30 overflow-hidden">
                   <motion.div 
@@ -72,7 +74,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
                     transition={{ duration: 1, ease: "easeOut" }}
                   />
                 </div>
-                <span className="text-xs text-muted-foreground">{progressToNextLevel}/100 XP</span>
+                <span className="text-xs text-muted-foreground">{t('todo.header.xp', { value: progressToNextLevel })}</span>
               </div>
             </div>
             
@@ -81,7 +83,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
               {/* Score */}
               <StatBadge
                 icon={<Target className="w-4 h-4" />}
-                label="Score"
+                label={t('todo.header.score')}
                 value={score}
                 color="primary"
               />
@@ -89,9 +91,9 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
               {/* Current Streak */}
               <StatBadge
                 icon={<Flame className="w-4 h-4" />}
-                label="Streak"
+                label={t('todo.header.streak')}
                 value={streak}
-                suffix="days"
+                suffix={t('todo.header.days')}
                 color="orange"
                 highlight={streak >= 7}
               />
@@ -99,16 +101,16 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
               {/* Best Streak */}
               <StatBadge
                 icon={<Trophy className="w-4 h-4" />}
-                label="Best"
+                label={t('todo.header.best')}
                 value={longestStreak}
-                suffix="days"
+                suffix={t('todo.header.days')}
                 color="amber"
               />
               
               {/* Tasks */}
               <StatBadge
                 icon={<Zap className="w-4 h-4" />}
-                label="Tasks"
+                label={t('todo.header.tasks')}
                 value={`${activeTaskCount}/${maxTasks}`}
                 color="cyan"
               />
@@ -122,7 +124,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
                 className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30"
               >
                 <TrendingUp className="w-4 h-4 text-amber-400" />
-                <span className="text-xs font-medium text-amber-300">Streak Bonus Active!</span>
+                <span className="text-xs font-medium text-amber-300">{t('todo.header.streakBonus')}</span>
               </motion.div>
             )}
           </div>

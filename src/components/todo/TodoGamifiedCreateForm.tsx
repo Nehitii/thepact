@@ -14,6 +14,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 interface TodoGamifiedCreateFormProps {
   onSubmit: (input: CreateTaskInput & { category: string; task_type: string }) => void;
@@ -22,27 +24,29 @@ interface TodoGamifiedCreateFormProps {
 }
 
 const categories = [
-  { id: 'work', label: 'Work', icon: Briefcase, color: 'text-blue-400 border-blue-500/30 bg-blue-500/10' },
-  { id: 'health', label: 'Health', icon: Heart, color: 'text-red-400 border-red-500/30 bg-red-500/10' },
-  { id: 'personal', label: 'Personal', icon: User, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10' },
-  { id: 'study', label: 'Study', icon: BookOpen, color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' },
-  { id: 'admin', label: 'Admin', icon: Cog, color: 'text-gray-400 border-gray-500/30 bg-gray-500/10' },
-  { id: 'general', label: 'General', icon: Tag, color: 'text-muted-foreground border-border bg-muted/30' },
-];
+  { id: 'work', icon: Briefcase, color: 'text-blue-400 border-blue-500/30 bg-blue-500/10' },
+  { id: 'health', icon: Heart, color: 'text-red-400 border-red-500/30 bg-red-500/10' },
+  { id: 'personal', icon: User, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10' },
+  { id: 'study', icon: BookOpen, color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10' },
+  { id: 'admin', icon: Cog, color: 'text-gray-400 border-gray-500/30 bg-gray-500/10' },
+  { id: 'general', icon: Tag, color: 'text-muted-foreground border-border bg-muted/30' },
+] as const;
 
 const taskTypes = [
-  { id: 'flexible', label: 'Flexible', icon: Sparkles, color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10', description: 'Do whenever' },
-  { id: 'deadline', label: 'Deadline', icon: Clock, color: 'text-red-400 border-red-500/30 bg-red-500/10', description: 'Must be done by date' },
-  { id: 'appointment', label: 'Appointment', icon: Calendar, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10', description: 'Specific time slot' },
-];
+  { id: 'flexible', icon: Sparkles, color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10' },
+  { id: 'deadline', icon: Clock, color: 'text-red-400 border-red-500/30 bg-red-500/10' },
+  { id: 'appointment', icon: Calendar, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10' },
+] as const;
 
 const priorities = [
-  { id: 'low', label: 'Easy', color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20' },
-  { id: 'medium', label: 'Medium', color: 'text-blue-400 border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20' },
-  { id: 'high', label: 'Hard', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20' },
-];
+  { id: 'low', color: 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20' },
+  { id: 'medium', color: 'text-blue-400 border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20' },
+  { id: 'high', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20' },
+] as const;
 
 export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGamifiedCreateFormProps) {
+  const { t } = useTranslation();
+  const dateLocale = useDateFnsLocale();
   const [name, setName] = useState('');
   const [deadline, setDeadline] = useState<Date | undefined>();
   const [priority, setPriority] = useState<TodoPriority>('medium');
@@ -70,13 +74,13 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
       {/* Task name */}
       <div className="space-y-3">
         <Label htmlFor="task-name" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-          Quest Name <span className="text-destructive">*</span>
+          {t('todo.create.questName')} <span className="text-destructive">*</span>
         </Label>
         <Input
           id="task-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="What needs to be conquered?"
+          placeholder={t('todo.create.questPlaceholder')}
           variant="light"
           className="h-12 text-base rounded-xl"
           maxLength={100}
@@ -87,7 +91,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
 
       {/* Category selection */}
       <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">Category</Label>
+        <Label className="text-sm text-muted-foreground">{t('todo.create.category')}</Label>
         <div className="grid grid-cols-3 gap-2">
           {categories.map((cat) => {
             const Icon = cat.icon;
@@ -107,7 +111,9 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
                 )}
               >
                 <Icon className={cn('w-4 h-4', isSelected ? '' : 'text-muted-foreground')} />
-                <span className={cn('text-sm font-medium', isSelected ? '' : 'text-muted-foreground')}>{cat.label}</span>
+                  <span className={cn('text-sm font-medium', isSelected ? '' : 'text-muted-foreground')}>
+                    {t(`todo.categories.${cat.id}`)}
+                  </span>
               </motion.button>
             );
           })}
@@ -116,7 +122,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
 
       {/* Task type */}
       <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">Task Type</Label>
+        <Label className="text-sm text-muted-foreground">{t('todo.create.taskType')}</Label>
         <div className="grid grid-cols-3 gap-2">
           {taskTypes.map((type) => {
             const Icon = type.icon;
@@ -136,7 +142,9 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
                 )}
               >
                 <Icon className={cn('w-5 h-5', isSelected ? '' : 'text-muted-foreground')} />
-                <span className={cn('text-xs font-medium', isSelected ? '' : 'text-muted-foreground')}>{type.label}</span>
+                  <span className={cn('text-xs font-medium', isSelected ? '' : 'text-muted-foreground')}>
+                    {t(`todo.taskTypes.${type.id}`)}
+                  </span>
               </motion.button>
             );
           })}
@@ -145,7 +153,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
 
       {/* Priority / Difficulty */}
       <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">Difficulty</Label>
+        <Label className="text-sm text-muted-foreground">{t('todo.create.difficulty')}</Label>
         <div className="flex gap-2">
           {priorities.map((p) => {
             const isSelected = priority === p.id;
@@ -163,7 +171,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
                     : 'border-border/50 bg-card/30 text-muted-foreground hover:bg-card/50'
                 )}
               >
-                {p.label}
+                {t(`todo.difficulty.${p.id}`)}
               </motion.button>
             );
           })}
@@ -172,7 +180,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
 
       {/* Deadline */}
       <div className="space-y-2">
-        <Label className="text-sm text-muted-foreground">Deadline (optional)</Label>
+        <Label className="text-sm text-muted-foreground">{t('todo.create.deadline')}</Label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
@@ -184,7 +192,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {deadline ? format(deadline, 'PPP') : 'Pick a date'}
+              {deadline ? format(deadline, 'PPP', { locale: dateLocale }) : t('todo.create.pickDate')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 bg-card/95 backdrop-blur-xl border-border" align="start">
@@ -204,7 +212,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
                   onClick={() => setDeadline(undefined)}
                   className="w-full text-muted-foreground"
                 >
-                  Clear date
+                  {t('todo.create.clearDate')}
                 </Button>
               </div>
             )}
@@ -227,8 +235,8 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
           htmlFor="urgent" 
           className="text-sm text-foreground cursor-pointer select-none flex-1"
         >
-          <span className="font-medium">Mark as Urgent</span>
-          <p className="text-xs text-muted-foreground mt-0.5">This task needs immediate attention</p>
+          <span className="font-medium">{t('todo.create.markUrgent')}</span>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('todo.create.urgentHint')}</p>
         </Label>
       </motion.div>
 
@@ -241,14 +249,14 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
           disabled={isLoading}
           className="text-muted-foreground rounded-xl"
         >
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           type="submit"
           disabled={!name.trim() || isLoading}
           className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground border-0 rounded-xl px-6"
         >
-          {isLoading ? 'Creating...' : 'Create Quest'}
+          {isLoading ? t('todo.create.creating') : t('todo.create.createQuest')}
         </Button>
       </div>
     </form>

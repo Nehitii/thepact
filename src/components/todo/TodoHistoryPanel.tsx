@@ -14,6 +14,8 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 const priorityBadge = {
   low: 'bg-muted text-muted-foreground',
@@ -22,6 +24,8 @@ const priorityBadge = {
 };
 
 export function TodoHistoryPanel() {
+  const { t } = useTranslation();
+  const dateLocale = useDateFnsLocale();
   const { history, clearHistory, historyLoading } = useTodoList();
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
@@ -33,7 +37,7 @@ export function TodoHistoryPanel() {
   if (historyLoading) {
     return (
       <div className="py-8 text-center text-muted-foreground">
-        Loading history...
+        {t('todo.historyPanel.loading')}
       </div>
     );
   }
@@ -44,7 +48,7 @@ export function TodoHistoryPanel() {
         <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-card/50 border border-border/50 flex items-center justify-center">
           <Clock className="w-6 h-6 text-muted-foreground" />
         </div>
-        <p className="text-muted-foreground">No completed tasks yet.</p>
+        <p className="text-muted-foreground">{t('todo.historyPanel.empty')}</p>
       </div>
     );
   }
@@ -60,7 +64,7 @@ export function TodoHistoryPanel() {
           className="text-muted-foreground hover:text-red-400"
         >
           <Trash2 className="w-4 h-4 mr-1.5" />
-          Clear History
+          {t('todo.historyPanel.clear')}
         </Button>
       </div>
 
@@ -80,18 +84,18 @@ export function TodoHistoryPanel() {
                 {item.was_urgent && (
                   <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-red-500/20 text-red-300 text-xs">
                     <AlertTriangle className="w-3 h-3" />
-                    Urgent
+                    {t('todo.historyPanel.urgent')}
                   </span>
                 )}
                 {item.postpone_count > 0 && (
                   <span className="text-xs text-muted-foreground">
-                    Postponed {item.postpone_count}×
+                    {t('todo.historyPanel.postponedX', { count: item.postpone_count })}
                   </span>
                 )}
               </div>
             </div>
             <div className="text-xs text-muted-foreground whitespace-nowrap">
-              {format(new Date(item.completed_at), 'MMM d, HH:mm')}
+              {format(new Date(item.completed_at), 'PP p', { locale: dateLocale })}
             </div>
           </div>
         ))}
@@ -101,18 +105,18 @@ export function TodoHistoryPanel() {
       <AlertDialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle>Clear task history?</AlertDialogTitle>
+            <AlertDialogTitle>{t('todo.historyPanel.confirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              This will clear your task history. Your score will not be affected.
+              {t('todo.historyPanel.confirmDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="bg-muted text-foreground border-border">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="bg-muted text-foreground border-border">{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleClearHistory}
               className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30"
             >
-              Clear History
+              {t('todo.historyPanel.clear')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

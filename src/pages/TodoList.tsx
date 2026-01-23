@@ -259,7 +259,7 @@ export default function TodoList() {
                 <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-card/50 to-card/30 border border-border/50 flex items-center justify-center">
                   <CheckSquare className="w-10 h-10 text-muted-foreground" />
                 </div>
-                <h3 className="text-xl font-light text-foreground mb-2">No active quests</h3>
+                <h3 className="text-xl font-light text-foreground mb-2">{t('todo.noActiveQuests')}</h3>
                 <p className="text-sm text-muted-foreground mb-6">{t('todo.noActiveQuestsDesc')}</p>
                 <Button
                   onClick={() => setActivePanel('create')}

@@ -18,6 +18,8 @@ import {
 import { TodoTask } from '@/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 interface TodoCalendarViewProps {
   tasks: (TodoTask & { category?: string; task_type?: string })[];
@@ -39,11 +41,13 @@ const priorityDot: Record<string, string> = {
   high: 'bg-amber-400',
 };
 
-const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
 export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) {
+  const { t } = useTranslation();
+  const dateLocale = useDateFnsLocale();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+
+  const dayNames = (t('common.daysShort', { returnObjects: true }) as unknown as string[]) || [];
 
   const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentMonth));
@@ -81,7 +85,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
           <Calendar className="w-5 h-5 text-primary" />
-          Task Calendar
+          {t('todo.calendarView.title')}
         </h3>
         <div className="flex items-center gap-2">
           <Button
@@ -93,7 +97,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
             <ChevronLeft className="w-4 h-4" />
           </Button>
           <span className="text-sm font-medium text-foreground min-w-[120px] text-center">
-            {format(currentMonth, 'MMMM yyyy')}
+            {format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}
           </span>
           <Button
             variant="ghost"
@@ -114,7 +118,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
       >
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-border/50">
-          {DAY_NAMES.map((day) => (
+          {(dayNames.length ? dayNames : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']).map((day) => (
             <div
               key={day}
               className="p-3 text-center text-xs font-medium text-muted-foreground bg-card/50"
@@ -155,7 +159,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                 )}>
                   {format(day, 'd')}
                   {isTodayDate && (
-                    <span className="ml-1 text-[10px] text-primary">(Today)</span>
+                    <span className="ml-1 text-[10px] text-primary">({t('todo.calendarView.today')})</span>
                   )}
                 </div>
 
@@ -185,7 +189,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                   })}
                   {dayTasks.length > 3 && (
                     <div className="text-[10px] text-muted-foreground px-1.5">
-                      +{dayTasks.length - 3} more
+                      {t('todo.calendarView.more', { count: dayTasks.length - 3 })}
                     </div>
                   )}
                 </div>
@@ -219,7 +223,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
             <div className="rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm p-4">
               <div className="flex items-center justify-between mb-4">
                 <h4 className="font-medium text-foreground">
-                  {format(selectedDay, 'EEEE, MMMM d, yyyy')}
+                  {format(selectedDay, 'PPPP', { locale: dateLocale })}
                 </h4>
                 <Button
                   variant="ghost"
@@ -227,13 +231,13 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                   onClick={() => setSelectedDay(null)}
                   className="text-muted-foreground text-xs"
                 >
-                  Close
+                  {t('common.close')}
                 </Button>
               </div>
 
               {selectedDayTasks.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
-                  No tasks scheduled for this day
+                  {t('todo.calendarView.noTasksForDay')}
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -270,7 +274,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                             {task.is_urgent && (
                               <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px]">
                                 <AlertTriangle className="w-2.5 h-2.5" />
-                                URGENT
+                                {t('todo.taskCard.urgent')}
                               </span>
                             )}
                           </div>
