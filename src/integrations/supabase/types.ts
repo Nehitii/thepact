@@ -1096,6 +1096,11 @@ export type Database = {
           project_funding_target: number | null
           project_monthly_allocation: number | null
           salary_payment_day: number | null
+          sound_master_enabled: boolean
+          sound_progress_enabled: boolean
+          sound_success_enabled: boolean
+          sound_ui_enabled: boolean
+          sound_volume: number
           timezone: string | null
           updated_at: string | null
           weight: number | null
@@ -1124,6 +1129,11 @@ export type Database = {
           project_funding_target?: number | null
           project_monthly_allocation?: number | null
           salary_payment_day?: number | null
+          sound_master_enabled?: boolean
+          sound_progress_enabled?: boolean
+          sound_success_enabled?: boolean
+          sound_ui_enabled?: boolean
+          sound_volume?: number
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
@@ -1152,6 +1162,11 @@ export type Database = {
           project_funding_target?: number | null
           project_monthly_allocation?: number | null
           salary_payment_day?: number | null
+          sound_master_enabled?: boolean
+          sound_progress_enabled?: boolean
+          sound_success_enabled?: boolean
+          sound_ui_enabled?: boolean
+          sound_volume?: number
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null

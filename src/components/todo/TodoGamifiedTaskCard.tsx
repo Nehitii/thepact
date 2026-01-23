@@ -23,6 +23,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useParticleEffect } from '@/components/ParticleEffect';
 import { useTranslation } from 'react-i18next';
+import { useSound } from '@/contexts/SoundContext';
 
 interface TodoGamifiedTaskCardProps {
   task: TodoTask & { category?: string; task_type?: string };
@@ -76,6 +77,7 @@ const taskTypeConfig: Record<string, { icon: React.ElementType; color: string; l
 
 export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, onEdit }: TodoGamifiedTaskCardProps) {
   const { t } = useTranslation();
+  const sound = useSound();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
   const { trigger, ParticleEffects } = useParticleEffect();
@@ -106,6 +108,9 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
 
   const handleComplete = useCallback((e: React.MouseEvent) => {
     setIsCompleting(true);
+
+    // Reward cue (separate from UI click)
+    sound.play('success', 'reward');
     
     // Trigger particle effect based on priority
     const particleCount = task.priority === 'high' ? 30 : task.priority === 'medium' ? 20 : 15;
@@ -115,7 +120,7 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
     setTimeout(() => {
       onComplete();
     }, 400);
-  }, [onComplete, trigger, config.accent, task.priority]);
+  }, [onComplete, trigger, config.accent, sound, task.priority]);
 
   return (
     <>
