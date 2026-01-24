@@ -30,6 +30,7 @@ import {
 import { useCreatePost, CommunityPost, useCompletedGoals } from "@/hooks/useCommunity";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -52,6 +53,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
   
   const createPost = useCreatePost();
   const { data: completedGoals } = useCompletedGoals();
+  const { profile } = useProfileSettings();
   
   // Use completed goals for linking - they represent user's goals
   const activeGoals = completedGoals || [];
@@ -63,6 +65,11 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
     }
     
     try {
+      if (selectedGoalId && (profile?.share_goals_progress ?? true) === false) {
+        toast.error("Your privacy settings prevent sharing goal-linked posts.");
+        return;
+      }
+
       await createPost.mutateAsync({
         content: content.trim(),
         post_type: postType,
@@ -127,7 +134,18 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
               <Target className="w-4 h-4" />
               Link to a goal (optional)
             </Label>
-            <Select value={selectedGoalId || "none"} onValueChange={(val) => setSelectedGoalId(val === "none" ? "" : val)}>
+            <Select
+              value={selectedGoalId || "none"}
+              onValueChange={(val) => {
+                const next = val === "none" ? "" : val;
+                if (next && (profile?.share_goals_progress ?? true) === false) {
+                  toast.error("Enable 'Share Goals Progress' in Privacy to link goals.");
+                  setSelectedGoalId("");
+                  return;
+                }
+                setSelectedGoalId(next);
+              }}
+            >
               <SelectTrigger className="bg-muted/30">
                 <SelectValue placeholder="Select a goal..." />
               </SelectTrigger>

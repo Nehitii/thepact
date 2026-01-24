@@ -1,4 +1,4 @@
-import { Volume2, Palette, Sparkles } from "lucide-react";
+import { Volume2, Palette, Sparkles, Moon, Sun, Laptop } from "lucide-react";
 import { useEffect, useMemo, useRef } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
@@ -7,6 +7,8 @@ import { useSound } from "@/contexts/SoundContext";
 import { useSoundSettings } from "@/hooks/useSoundSettings";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
+import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
+import { useTheme } from "next-themes";
 
 export function ProfileDisplaySounds() {
   const { user } = useAuth();
@@ -14,6 +16,9 @@ export function ProfileDisplaySounds() {
   const sound = useSound();
   const { settings, isLoading, save } = useSoundSettings();
   const saveTimer = useRef<number | null>(null);
+
+  const { profile, isLoading: profileLoading, updateProfile } = useProfileSettings();
+  const { setTheme } = useTheme();
 
   // Hydrate global SoundProvider from persisted settings.
   useEffect(() => {
@@ -51,20 +56,91 @@ export function ProfileDisplaySounds() {
               Visual Settings
             </h2>
           </div>
-          
+
           <p className="text-sm text-muted-foreground font-rajdhani">
-            Customize themes, animations, and visual effects.
+            Personalize the interface without changing gameplay or data.
           </p>
-          
-          {/* Coming Soon Indicator */}
-          <div className="flex items-center justify-center py-6">
-            <div className="relative">
-              <div className="absolute inset-0 blur-lg bg-primary/20 rounded-full" />
-              <span 
-                className="relative text-sm font-orbitron font-semibold text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-primary uppercase tracking-widest"
-              >
-                Coming Soon
-              </span>
+
+          <div className="space-y-5">
+            {/* Theme */}
+            <div className="space-y-3 p-4 rounded-xl border border-primary/15 bg-card/50">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-orbitron text-foreground">Theme</p>
+                  <p className="text-xs text-muted-foreground font-rajdhani">
+                    System, light, or dark — synced across devices.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    { value: "system" as const, label: "System", icon: Laptop },
+                    { value: "light" as const, label: "Light", icon: Sun },
+                    { value: "dark" as const, label: "Dark", icon: Moon },
+                  ] as const
+                ).map((opt) => {
+                  const Icon = opt.icon;
+                  const selected = (profile?.theme_preference ?? "system") === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => {
+                        const next = opt.value as ThemePreference;
+                        setTheme(next);
+                        updateProfile.mutate(
+                          { theme_preference: next } as any,
+                          {
+                            onSuccess: () =>
+                              toast({
+                                title: "Theme updated",
+                                description: "Your theme preference has been saved.",
+                              }),
+                          }
+                        );
+                      }}
+                      disabled={profileLoading || updateProfile.isPending}
+                      className={
+                        "flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-orbitron transition-colors " +
+                        (selected
+                          ? "border-primary/40 bg-primary/10 text-primary"
+                          : "border-border/50 bg-muted/30 text-muted-foreground hover:border-primary/30")
+                      }
+                    >
+                      <Icon className="h-4 w-4" />
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Reduce motion */}
+            <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
+              <div className="min-w-0">
+                <p className="text-sm font-orbitron text-foreground">Reduce Motion</p>
+                <p className="text-xs text-muted-foreground font-rajdhani">
+                  Minimizes animations and transitions.
+                </p>
+              </div>
+              <Switch
+                checked={profile?.reduce_motion ?? false}
+                onCheckedChange={(v) =>
+                  updateProfile.mutate(
+                    { reduce_motion: v } as any,
+                    {
+                      onSuccess: () =>
+                        toast({
+                          title: "Updated",
+                          description: "Motion preference saved.",
+                        }),
+                    }
+                  )
+                }
+                disabled={profileLoading || updateProfile.isPending}
+              />
             </div>
           </div>
         </div>
@@ -179,29 +255,61 @@ export function ProfileDisplaySounds() {
               Particle Effects
             </h2>
           </div>
-          
+
           <p className="text-sm text-muted-foreground font-rajdhani">
-            Adjust particle density, glow intensity, and special effects.
+            Particle bursts for rewards and celebrations.
           </p>
-          
-          {/* Coming Soon Indicator */}
-          <div className="flex items-center justify-center py-6">
-            <div className="relative">
-              <div className="absolute inset-0 blur-lg bg-primary/20 rounded-full" />
-              <span 
-                className="relative text-sm font-orbitron font-semibold text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-primary uppercase tracking-widest"
-              >
-                Coming Soon
-              </span>
+
+          <div className="space-y-5">
+            <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
+              <div className="min-w-0">
+                <p className="text-sm font-orbitron text-foreground">Enable Particles</p>
+                <p className="text-xs text-muted-foreground font-rajdhani">
+                  Disabling removes particle bursts across the app.
+                </p>
+              </div>
+              <Switch
+                checked={profile?.particles_enabled ?? true}
+                onCheckedChange={(v) =>
+                  updateProfile.mutate(
+                    { particles_enabled: v } as any,
+                    {
+                      onSuccess: () =>
+                        toast({ title: "Updated", description: "Particle setting saved." }),
+                    }
+                  )
+                }
+                disabled={profileLoading || updateProfile.isPending}
+              />
+            </div>
+
+            <div className="space-y-3 p-4 rounded-xl border border-primary/15 bg-card/50">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-orbitron text-foreground">Intensity</p>
+                <span className="text-xs text-muted-foreground font-rajdhani">
+                  {Math.round(((profile?.particles_intensity ?? 1) as number) * 100)}%
+                </span>
+              </div>
+              <Slider
+                value={[Math.round(((profile?.particles_intensity ?? 1) as number) * 100)]}
+                max={100}
+                step={1}
+                onValueChange={(v) =>
+                  updateProfile.mutate({ particles_intensity: (v[0] ?? 100) / 100 } as any)
+                }
+                disabled={
+                  profileLoading ||
+                  updateProfile.isPending ||
+                  !(profile?.particles_enabled ?? true)
+                }
+              />
+              <p className="text-xs text-muted-foreground font-rajdhani">
+                Controls how many particles spawn in bursts.
+              </p>
             </div>
           </div>
         </div>
       </Card>
-
-      {/* Info Note */}
-      <p className="text-center text-sm text-muted-foreground font-rajdhani">
-        These features are in development. Stay tuned for updates.
-      </p>
     </div>
   );
 }

@@ -37,9 +37,37 @@ export interface NotificationSettings {
   updated_at: string;
 }
 
+type EnabledCategoryMap = Record<NotificationCategory, boolean>;
+
+function buildEnabledMap(settings: NotificationSettings | null | undefined): EnabledCategoryMap {
+  return {
+    system: settings?.system_enabled ?? true,
+    progress: settings?.progress_enabled ?? true,
+    social: settings?.social_enabled ?? true,
+    marketing: settings?.marketing_enabled ?? true,
+  };
+}
+
 export function useNotifications() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  // Fetch notification settings for filtering (enforceable scope: categories only)
+  const { data: settings } = useQuery({
+    queryKey: ["notification-settings", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data, error } = await supabase
+        .from("notification_settings")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as NotificationSettings | null;
+    },
+    enabled: !!user?.id,
+    staleTime: 30 * 1000,
+  });
 
   // Fetch all notifications
   const { data: notifications = [], isLoading } = useQuery({
@@ -58,11 +86,14 @@ export function useNotifications() {
     staleTime: 30 * 1000,
   });
 
+  const enabled = buildEnabledMap(settings);
+  const filteredNotifications = notifications.filter((n) => enabled[n.category]);
+
   // Unread count
-  const unreadCount = notifications.filter((n) => !n.is_read).length;
+  const unreadCount = filteredNotifications.filter((n) => !n.is_read).length;
 
   // Unread by module (for badge display)
-  const unreadByModule = notifications.reduce((acc, n) => {
+  const unreadByModule = filteredNotifications.reduce((acc, n) => {
     if (!n.is_read && n.module_key) {
       acc[n.module_key] = (acc[n.module_key] || 0) + 1;
     }
@@ -146,7 +177,8 @@ export function useNotifications() {
   });
 
   return {
-    notifications,
+    notifications: filteredNotifications,
+    settings,
     unreadCount,
     unreadByModule,
     isLoading,

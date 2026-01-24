@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 interface Particle {
   id: number;
@@ -85,31 +86,42 @@ export const ParticleEffect = ({ x, y, color = 'hsl(195 100% 55%)', count = 12 }
 export const useParticleEffect = () => {
   const [effects, setEffects] = useState<Array<{ id: number; x: number; y: number; color: string; count: number }>>([]);
 
+  const { profile } = useProfileSettings();
+  const enabled = profile?.particles_enabled ?? true;
+  const intensity = typeof profile?.particles_intensity === "number" ? profile!.particles_intensity : 1;
+
   const trigger = (event: React.MouseEvent, color = 'hsl(195 100% 55%)', count = 12) => {
+    if (!enabled) return;
     const x = event.clientX;
     const y = event.clientY;
+
+    const scaledCount = Math.max(0, Math.round(count * Math.max(0, Math.min(1, intensity))));
+    if (scaledCount <= 0) return;
     
     const id = Date.now();
-    setEffects((prev) => [...prev, { id, x, y, color, count }]);
+    setEffects((prev) => [...prev, { id, x, y, color, count: scaledCount }]);
     
     setTimeout(() => {
       setEffects((prev) => prev.filter((e) => e.id !== id));
     }, 500);
   };
 
-  const ParticleEffects = () => (
-    <>
-      {effects.map((effect) => (
-        <ParticleEffect
-          key={effect.id}
-          x={effect.x}
-          y={effect.y}
-          color={effect.color}
-          count={effect.count}
-        />
-      ))}
-    </>
-  );
+  const ParticleEffects = () => {
+    if (!enabled) return null;
+    return (
+      <>
+        {effects.map((effect) => (
+          <ParticleEffect
+            key={effect.id}
+            x={effect.x}
+            y={effect.y}
+            color={effect.color}
+            count={effect.count}
+          />
+        ))}
+      </>
+    );
+  };
 
   return { trigger, ParticleEffects };
 };
