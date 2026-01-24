@@ -1073,6 +1073,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          achievement_celebrations_enabled: boolean
           active_banner_id: string | null
           active_frame_id: string | null
           active_title_id: string | null
@@ -1081,6 +1082,8 @@ export type Database = {
           avatar_frame: string | null
           avatar_url: string | null
           birthday: string | null
+          community_profile_discoverable: boolean
+          community_updates_enabled: boolean
           country: string | null
           created_at: string | null
           currency: string | null
@@ -1092,20 +1095,28 @@ export type Database = {
           height: number | null
           id: string
           language: string | null
+          particles_enabled: boolean
+          particles_intensity: number
           personal_quote: string | null
           project_funding_target: number | null
           project_monthly_allocation: number | null
+          reduce_motion: boolean
           salary_payment_day: number | null
+          share_achievements: boolean
+          share_goals_progress: boolean
+          show_activity_status: boolean
           sound_master_enabled: boolean
           sound_progress_enabled: boolean
           sound_success_enabled: boolean
           sound_ui_enabled: boolean
           sound_volume: number
+          theme_preference: string
           timezone: string | null
           updated_at: string | null
           weight: number | null
         }
         Insert: {
+          achievement_celebrations_enabled?: boolean
           active_banner_id?: string | null
           active_frame_id?: string | null
           active_title_id?: string | null
@@ -1114,6 +1125,8 @@ export type Database = {
           avatar_frame?: string | null
           avatar_url?: string | null
           birthday?: string | null
+          community_profile_discoverable?: boolean
+          community_updates_enabled?: boolean
           country?: string | null
           created_at?: string | null
           currency?: string | null
@@ -1125,20 +1138,28 @@ export type Database = {
           height?: number | null
           id: string
           language?: string | null
+          particles_enabled?: boolean
+          particles_intensity?: number
           personal_quote?: string | null
           project_funding_target?: number | null
           project_monthly_allocation?: number | null
+          reduce_motion?: boolean
           salary_payment_day?: number | null
+          share_achievements?: boolean
+          share_goals_progress?: boolean
+          show_activity_status?: boolean
           sound_master_enabled?: boolean
           sound_progress_enabled?: boolean
           sound_success_enabled?: boolean
           sound_ui_enabled?: boolean
           sound_volume?: number
+          theme_preference?: string
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
         }
         Update: {
+          achievement_celebrations_enabled?: boolean
           active_banner_id?: string | null
           active_frame_id?: string | null
           active_title_id?: string | null
@@ -1147,6 +1168,8 @@ export type Database = {
           avatar_frame?: string | null
           avatar_url?: string | null
           birthday?: string | null
+          community_profile_discoverable?: boolean
+          community_updates_enabled?: boolean
           country?: string | null
           created_at?: string | null
           currency?: string | null
@@ -1158,15 +1181,22 @@ export type Database = {
           height?: number | null
           id?: string
           language?: string | null
+          particles_enabled?: boolean
+          particles_intensity?: number
           personal_quote?: string | null
           project_funding_target?: number | null
           project_monthly_allocation?: number | null
+          reduce_motion?: boolean
           salary_payment_day?: number | null
+          share_achievements?: boolean
+          share_goals_progress?: boolean
+          show_activity_status?: boolean
           sound_master_enabled?: boolean
           sound_progress_enabled?: boolean
           sound_success_enabled?: boolean
           sound_ui_enabled?: boolean
           sound_volume?: number
+          theme_preference?: string
           timezone?: string | null
           updated_at?: string | null
           weight?: number | null
