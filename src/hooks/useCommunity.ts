@@ -14,6 +14,8 @@ export interface CommunityPost {
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
+    community_profile_discoverable?: boolean | null;
+    share_goals_progress?: boolean | null;
   };
   goal?: {
     name: string;
@@ -38,6 +40,7 @@ export interface CommunityReply {
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
+    community_profile_discoverable?: boolean | null;
   };
 }
 
@@ -55,6 +58,8 @@ export interface VictoryReel {
   profile?: {
     display_name: string | null;
     avatar_url: string | null;
+    community_profile_discoverable?: boolean | null;
+    share_goals_progress?: boolean | null;
   };
   goal?: {
     name: string;
@@ -106,7 +111,10 @@ export function useCommunityPosts() {
       const postIds = posts.map((p: any) => p.id) as string[];
 
       const [profilesRes, goalsRes, reactionsRes, repliesRes, userReactionsRes] = await Promise.all([
-        supabase.from("profiles").select("id, display_name, avatar_url").in("id", userIds) as any,
+        supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url, community_profile_discoverable, share_goals_progress")
+          .in("id", userIds) as any,
         goalIds.length > 0 
           ? (supabase.from("goals").select("id, name, type, difficulty").in("id", goalIds) as any)
           : Promise.resolve({ data: [], error: null }),
@@ -182,7 +190,7 @@ export function usePostReplies(postId: string | undefined) {
       const userIds = [...new Set(replies.map((r: any) => r.user_id))] as string[];
       const { data: profiles } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url")
+        .select("id, display_name, avatar_url, community_profile_discoverable")
         .in("id", userIds);
 
       const profilesMap = new Map<string, any>();
@@ -357,7 +365,10 @@ export function useVictoryReels() {
       const reelIds = reels.map((r: any) => r.id) as string[];
 
       const [profilesRes, goalsRes, reactionsRes, userReactionsRes] = await Promise.all([
-        supabase.from("profiles").select("id, display_name, avatar_url").in("id", userIds) as any,
+        supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url, community_profile_discoverable, share_goals_progress")
+          .in("id", userIds) as any,
         supabase.from("goals").select("id, name, type, start_date, completion_date").in("id", goalIds) as any,
         supabase.from("community_reactions" as any).select("reel_id, reaction_type").in("reel_id", reelIds) as any,
         user 

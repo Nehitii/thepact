@@ -77,8 +77,11 @@ export function VictoryReelCard({ reel, isActive }: VictoryReelCardProps) {
     }
   };
   
-  const displayName = reel.profile?.display_name || "Anonymous";
+  const isDiscoverable = reel.profile?.community_profile_discoverable ?? true;
+  const canShowGoals = reel.profile?.share_goals_progress ?? true;
+  const displayName = isDiscoverable ? (reel.profile?.display_name || "Anonymous") : "Anonymous";
   const initials = displayName.slice(0, 2).toUpperCase();
+  const avatarUrl = isDiscoverable ? reel.profile?.avatar_url || undefined : undefined;
   
   // Calculate pact duration
   const pactDuration = reel.goal?.start_date && reel.goal?.completion_date
@@ -119,11 +122,13 @@ export function VictoryReelCard({ reel, isActive }: VictoryReelCardProps) {
         <div className="space-y-3 mb-4">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-white text-lg">{reel.goal?.name || "Goal Achieved"}</span>
+            <span className="font-semibold text-white text-lg">
+              {canShowGoals ? (reel.goal?.name || "Goal Achieved") : "Goal Achieved"}
+            </span>
           </div>
           
           <div className="flex items-center gap-3 flex-wrap">
-            {reel.goal?.type && (
+            {canShowGoals && reel.goal?.type && (
               <Badge variant="secondary" className="bg-white/20 text-white border-0">
                 {reel.goal.type}
               </Badge>
@@ -144,7 +149,7 @@ export function VictoryReelCard({ reel, isActive }: VictoryReelCardProps) {
         {/* User info */}
         <div className="flex items-center gap-3">
           <Avatar className="w-9 h-9 ring-2 ring-white/30">
-            <AvatarImage src={reel.profile?.avatar_url || undefined} />
+            <AvatarImage src={avatarUrl} />
             <AvatarFallback className="bg-primary/20 text-white text-sm">
               {initials}
             </AvatarFallback>

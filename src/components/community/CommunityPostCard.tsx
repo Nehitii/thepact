@@ -52,8 +52,11 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
     );
   };
   
-  const displayName = post.profile?.display_name || "Anonymous";
+  const isDiscoverable = post.profile?.community_profile_discoverable ?? true;
+  const canShowGoals = post.profile?.share_goals_progress ?? true;
+  const displayName = isDiscoverable ? (post.profile?.display_name || "Anonymous") : "Anonymous";
   const initials = displayName.slice(0, 2).toUpperCase();
+  const avatarUrl = isDiscoverable ? post.profile?.avatar_url || undefined : undefined;
   
   return (
     <motion.div
@@ -66,7 +69,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
           {/* Header */}
           <div className="flex items-start gap-3 mb-4">
             <Avatar className="w-10 h-10 ring-2 ring-primary/20">
-              <AvatarImage src={post.profile?.avatar_url || undefined} />
+              <AvatarImage src={avatarUrl} />
               <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
                 {initials}
               </AvatarFallback>
@@ -84,7 +87,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
           </div>
           
           {/* Goal link */}
-          {post.goal && (
+          {post.goal && canShowGoals && (
             <div className="mb-3 flex items-center gap-2 p-2 rounded-lg bg-muted/50 border border-border/50">
               <Target className="w-4 h-4 text-primary" />
               <span className="text-sm text-muted-foreground">Linked to:</span>

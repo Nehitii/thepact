@@ -3,12 +3,30 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { Card } from "@/components/ui/card";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { toast } from "@/hooks/use-toast";
 
 export default function PrivacyControl() {
+
+  const { profile, isLoading, updateProfile } = useProfileSettings();
 
   // Luminous label style for consistency and readability
   const labelStyle = "text-foreground font-rajdhani text-base";
   const descriptionStyle = "text-sm text-muted-foreground font-rajdhani";
+
+  const toggle = (key: "community_profile_discoverable" | "show_activity_status" | "share_goals_progress" | "share_achievements" | "community_updates_enabled" | "achievement_celebrations_enabled", value: boolean) => {
+    updateProfile.mutate(
+      { [key]: value } as any,
+      {
+        onSuccess: () => {
+          toast({
+            title: "Privacy updated",
+            description: "Your privacy preferences have been saved.",
+          });
+        },
+      }
+    );
+  };
 
   return (
     <ProfileSettingsShell
@@ -30,14 +48,22 @@ export default function PrivacyControl() {
                   <Label className={labelStyle}>Profile Discoverable</Label>
                   <p className={descriptionStyle}>Allow others to find your profile in community</p>
                 </div>
-                <Switch disabled />
+                <Switch
+                  checked={profile?.community_profile_discoverable ?? true}
+                  onCheckedChange={(v) => toggle("community_profile_discoverable", v)}
+                  disabled={isLoading || updateProfile.isPending}
+                />
               </div>
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1">
                   <Label className={labelStyle}>Show Activity Status</Label>
                   <p className={descriptionStyle}>Display when you're active</p>
                 </div>
-                <Switch disabled />
+                <Switch
+                  checked={profile?.show_activity_status ?? true}
+                  onCheckedChange={(v) => toggle("show_activity_status", v)}
+                  disabled={isLoading || updateProfile.isPending}
+                />
               </div>
             </div>
           </div>
@@ -55,14 +81,22 @@ export default function PrivacyControl() {
                   <Label className={labelStyle}>Share Goals Progress</Label>
                   <p className={descriptionStyle}>Allow community members to see your goals</p>
                 </div>
-                <Switch disabled />
+                <Switch
+                  checked={profile?.share_goals_progress ?? true}
+                  onCheckedChange={(v) => toggle("share_goals_progress", v)}
+                  disabled={isLoading || updateProfile.isPending}
+                />
               </div>
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1">
                   <Label className={labelStyle}>Share Achievements</Label>
                   <p className={descriptionStyle}>Display earned achievements publicly</p>
                 </div>
-                <Switch disabled />
+                <Switch
+                  checked={(profile as any)?.share_achievements ?? true}
+                  onCheckedChange={(v) => toggle("share_achievements" as any, v)}
+                  disabled={isLoading || updateProfile.isPending}
+                />
               </div>
             </div>
           </div>
@@ -80,22 +114,26 @@ export default function PrivacyControl() {
                   <Label className={labelStyle}>Community Updates</Label>
                   <p className={descriptionStyle}>Receive updates from community members</p>
                 </div>
-                <Switch disabled />
+                <Switch
+                  checked={(profile as any)?.community_updates_enabled ?? true}
+                  onCheckedChange={(v) => toggle("community_updates_enabled" as any, v)}
+                  disabled={isLoading || updateProfile.isPending}
+                />
               </div>
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1">
                   <Label className={labelStyle}>Achievement Celebrations</Label>
                   <p className={descriptionStyle}>Get notified of others' achievements</p>
                 </div>
-                <Switch disabled />
+                <Switch
+                  checked={(profile as any)?.achievement_celebrations_enabled ?? true}
+                  onCheckedChange={(v) => toggle("achievement_celebrations_enabled" as any, v)}
+                  disabled={isLoading || updateProfile.isPending}
+                />
               </div>
             </div>
           </div>
         </Card>
-
-        <div className="text-center py-2 text-sm text-muted-foreground font-rajdhani">
-          <p>These features are coming soon. Settings will be saved when available.</p>
-        </div>
       </div>
     </ProfileSettingsShell>
   );

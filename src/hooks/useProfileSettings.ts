@@ -14,10 +14,13 @@ export type ProfileSettings = {
   community_profile_discoverable: boolean;
   show_activity_status: boolean;
   share_goals_progress: boolean;
+  share_achievements: boolean;
+  community_updates_enabled: boolean;
+  achievement_celebrations_enabled: boolean;
 };
 
 const PROFILE_SETTINGS_SELECT =
-  "id, theme_preference, reduce_motion, particles_enabled, particles_intensity, community_profile_discoverable, show_activity_status, share_goals_progress";
+  "id, theme_preference, reduce_motion, particles_enabled, particles_intensity, community_profile_discoverable, show_activity_status, share_goals_progress, share_achievements, community_updates_enabled, achievement_celebrations_enabled";
 
 export function useProfileSettings() {
   const { user } = useAuth();

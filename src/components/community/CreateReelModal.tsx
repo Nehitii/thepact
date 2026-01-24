@@ -22,6 +22,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 interface CreateReelModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ interface CreateReelModalProps {
 
 export function CreateReelModal({ isOpen, onClose }: CreateReelModalProps) {
   const { user } = useAuth();
+  const { profile } = useProfileSettings();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoPreviewRef = useRef<HTMLVideoElement>(null);
   
@@ -78,6 +80,10 @@ export function CreateReelModal({ isOpen, onClose }: CreateReelModalProps) {
   };
   
   const handleSubmit = async () => {
+    if ((profile?.share_goals_progress ?? true) === false) {
+      toast.error("Your privacy settings prevent sharing victory reels.");
+      return;
+    }
     if (!user || !videoFile || !selectedGoalId) {
       toast.error("Please select a goal and upload a video");
       return;

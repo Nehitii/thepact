@@ -1,4 +1,4 @@
-import { Bell, Volume2, MessageSquare, Gift, Zap, Moon } from "lucide-react";
+import { Bell, Volume2, MessageSquare, Gift, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useNotificationSettings } from "@/hooks/useNotifications";
@@ -31,28 +31,6 @@ export default function NotificationSettings() {
       containerClassName="max-w-2xl"
     >
       <div className="space-y-6">
-        <Card variant="clean" className="shop-card bg-card/70 border-primary/20">
-          <div className="p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <Moon className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">Focus Mode</h2>
-            </div>
-            <div className="flex items-center justify-between py-3">
-              <div className="space-y-1">
-                <Label className={labelStyle}>Enable Focus Mode</Label>
-                <p className={descriptionStyle}>
-                  Only critical notifications will come through. Everything else queues silently.
-                </p>
-              </div>
-              <Switch
-                checked={settings?.focus_mode ?? false}
-                onCheckedChange={(checked) => handleToggle("focus_mode", checked)}
-                disabled={isLoading || updateSettings.isPending}
-              />
-            </div>
-          </div>
-        </Card>
-
         <Card variant="clean" className="shop-card bg-card/70 border-primary/20">
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
@@ -128,42 +106,6 @@ export default function NotificationSettings() {
             </div>
           </div>
         </Card>
-
-        <Card variant="clean" className="shop-card bg-card/70 border-primary/20">
-          <div className="p-6 space-y-6">
-            <div className="flex items-center gap-3">
-              <Volume2 className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">
-                Delivery Channels
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-3 border-b border-primary/10">
-                <div className="space-y-1">
-                  <Label className={labelStyle}>In-App Notifications</Label>
-                  <p className={descriptionStyle}>Always enabled — badges and hub entries</p>
-                </div>
-                <Switch checked disabled className="opacity-50" />
-              </div>
-
-              <div className="flex items-center justify-between py-3">
-                <div className="space-y-1">
-                  <Label className={labelStyle}>Push Notifications</Label>
-                  <p className={descriptionStyle}>Receive notifications on your device</p>
-                </div>
-                <Switch
-                  checked={settings?.push_enabled ?? false}
-                  onCheckedChange={(checked) => handleToggle("push_enabled", checked)}
-                  disabled={isLoading || updateSettings.isPending}
-                />
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        <div className="text-center py-2 text-sm text-muted-foreground font-rajdhani">
-          <p>Email notifications for security events will be added in a future update.</p>
-        </div>
       </div>
     </ProfileSettingsShell>
   );
