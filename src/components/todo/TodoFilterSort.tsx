@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { 
-  Calendar, Clock, Sparkles, Tag, ArrowUpDown, ChevronRight,
-  Zap, List
+  Calendar, Clock, Sparkles, ChevronRight,
+  List, Hourglass, CalendarClock
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -34,11 +34,13 @@ const sortOptions: { field: SortField }[] = [
   { field: 'is_urgent' },
 ];
 
+// Updated task type filters with new types
 const taskTypeFilters = [
   { id: null as string | null, labelKey: 'todo.filters.types.all', icon: List },
   { id: 'flexible', labelKey: 'todo.filters.types.flexible', icon: Sparkles },
+  { id: 'waiting', labelKey: 'todo.filters.types.waiting', icon: Hourglass },
+  { id: 'rendezvous', labelKey: 'todo.filters.types.rendezvous', icon: CalendarClock },
   { id: 'deadline', labelKey: 'todo.filters.types.deadline', icon: Clock },
-  { id: 'appointment', labelKey: 'todo.filters.types.appointment', icon: Calendar },
 ];
 
 export function TodoFilterSort({ 
@@ -93,7 +95,7 @@ export function TodoFilterSort({
       <div className="h-6 w-px bg-border hidden md:block" />
 
       {/* Task Type Segmented Filter - matching /goals tabs style */}
-      <div className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl">
+      <div className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl overflow-x-auto">
         {taskTypeFilters.map((type) => {
           const isActive = selectedTaskType === type.id;
           const Icon = type.icon;
@@ -103,7 +105,7 @@ export function TodoFilterSort({
               key={type.id ?? 'all'}
               onClick={() => onTaskTypeChange(type.id)}
               className={cn(
-                "relative flex items-center justify-center gap-2 py-2 px-4 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300",
+                "relative flex items-center justify-center gap-2 py-2 px-3 sm:px-4 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300 whitespace-nowrap",
                 isActive 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-primary/70"

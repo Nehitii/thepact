@@ -6,6 +6,8 @@ import { toast } from 'sonner';
 // Types
 export type TodoPriority = 'low' | 'medium' | 'high';
 export type TodoStatus = 'active' | 'completed' | 'postponed';
+export type TodoTaskType = 'flexible' | 'waiting' | 'rendezvous' | 'deadline';
+export type ReminderFrequency = 'weekly' | 'monthly' | 'bimonthly' | 'semiannual' | 'yearly';
 
 export interface TodoTask {
   id: string;
@@ -21,6 +23,12 @@ export interface TodoTask {
   updated_at: string;
   category: string | null;
   task_type: string | null;
+  // New fields
+  reminder_enabled: boolean;
+  reminder_frequency: ReminderFrequency | null;
+  reminder_last_sent: string | null;
+  location: string | null;
+  appointment_time: string | null;
 }
 
 export interface TodoStats {
@@ -46,6 +54,8 @@ export interface TodoHistory {
   postpone_count: number;
   category: string | null;
   task_type: string | null;
+  reminder_frequency: string | null;
+  location: string | null;
 }
 
 export interface CreateTaskInput {
@@ -54,7 +64,11 @@ export interface CreateTaskInput {
   priority: TodoPriority;
   is_urgent: boolean;
   category?: string;
-  task_type?: string;
+  task_type?: TodoTaskType;
+  reminder_enabled?: boolean;
+  reminder_frequency?: ReminderFrequency | null;
+  location?: string | null;
+  appointment_time?: string | null;
 }
 
 const MAX_ACTIVE_TASKS = 30;
@@ -155,6 +169,10 @@ export function useTodoList() {
           is_urgent: input.is_urgent,
           category: input.category || 'general',
           task_type: input.task_type || 'flexible',
+          reminder_enabled: input.reminder_enabled || false,
+          reminder_frequency: input.reminder_frequency || null,
+          location: input.location || null,
+          appointment_time: input.appointment_time || null,
         })
         .select()
         .single();
@@ -208,6 +226,8 @@ export function useTodoList() {
           postpone_count: task.postpone_count,
           category: task.category || 'general',
           task_type: task.task_type || 'flexible',
+          reminder_frequency: task.reminder_frequency,
+          location: task.location,
         });
       
       if (historyError) throw historyError;
@@ -335,6 +355,10 @@ export function useTodoList() {
       is_urgent: boolean;
       category: string;
       task_type: string;
+      reminder_enabled?: boolean;
+      reminder_frequency?: ReminderFrequency | null;
+      location?: string | null;
+      appointment_time?: string | null;
     }) => {
       if (!userId) throw new Error('Not authenticated');
 
@@ -347,6 +371,10 @@ export function useTodoList() {
           is_urgent: input.is_urgent,
           category: input.category,
           task_type: input.task_type,
+          reminder_enabled: input.reminder_enabled ?? false,
+          reminder_frequency: input.reminder_frequency ?? null,
+          location: input.location ?? null,
+          appointment_time: input.appointment_time ?? null,
         })
         .eq('id', input.id);
       
