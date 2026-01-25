@@ -207,7 +207,7 @@ export function FramePreview({
  * Inline frame preview for admin tool - matches exact container size for WYSIWYG
  */
 export interface InlineFramePreviewProps {
-  frameImage: string;
+  frameImage?: string | null;
   frameScale?: number;
   frameOffsetX?: number;
   frameOffsetY?: number;
@@ -235,13 +235,15 @@ export function InlineFramePreview({
     frameOffsetY,
   });
 
+  const hasValidFrameImage = frameImage && !frameError;
+
   return (
     <div className="flex flex-col items-center gap-1">
       {label && (
         <span className="text-[10px] text-primary/50 uppercase tracking-wider">{label}</span>
       )}
       <div 
-        className="relative flex items-center justify-center"
+        className="relative flex items-center justify-center rounded-full overflow-hidden"
         style={{ width: containerSize, height: containerSize }}
       >
         {/* Glow */}
@@ -262,7 +264,7 @@ export function InlineFramePreview({
         </div>
         
         {/* Frame overlay */}
-        {!frameError && (
+        {hasValidFrameImage && (
           <img
             src={frameImage}
             alt="Frame preview"
@@ -270,6 +272,15 @@ export function InlineFramePreview({
             style={frameTransform}
             onError={() => setFrameError(true)}
           />
+        )}
+        
+        {/* No image placeholder */}
+        {!hasValidFrameImage && (
+          <div 
+            className="absolute inset-0 rounded-full border-2 border-dashed border-primary/30 z-20 flex items-center justify-center"
+          >
+            <span className="text-[8px] text-primary/30 uppercase">No image</span>
+          </div>
         )}
         
         {/* Crosshair guides */}
