@@ -365,12 +365,25 @@ export default function AdminCosmeticsManager() {
                     <>
                       <div>
                         <Label className="text-primary/80">Frame Image URL</Label>
-                        <Input
-                          placeholder="https://example.com/frame.png"
-                          value={editingFrame?.preview_url || ""}
-                          onChange={(e) => setEditingFrame({ ...editingFrame, preview_url: e.target.value })}
-                          className="bg-card/50 border-primary/30 text-primary"
-                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="https://example.com/frame.png"
+                            value={editingFrame?.preview_url || ""}
+                            onChange={(e) => setEditingFrame({ ...editingFrame, preview_url: e.target.value })}
+                            className="bg-card/50 border-primary/30 text-primary flex-1"
+                          />
+                          {editingFrame?.preview_url && (
+                            <a
+                              href={editingFrame.preview_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center px-3 rounded-md bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-colors"
+                              title="Preview image in new tab"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </a>
+                          )}
+                        </div>
                       </div>
                       
                       {/* Frame Alignment Tool - only show for image frames */}
