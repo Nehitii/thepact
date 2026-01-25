@@ -154,6 +154,7 @@ export default function TodoList() {
         />
 
         {/* Action bar */}
+        {/* Contextual stats based on selected filter */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,7 +162,13 @@ export default function TodoList() {
           className="flex items-center justify-between flex-wrap gap-3"
         >
           <span className="text-sm text-muted-foreground">
-            {t('todo.activeQuestsCount', { count: activeTaskCount, max: maxTasks })}
+            {selectedTaskType 
+              ? t('todo.filteredQuestsCount', { 
+                  count: filteredAndSortedTasks.length, 
+                  type: t(`todo.filters.types.${selectedTaskType}`)
+                })
+              : t('todo.activeQuestsCount', { count: activeTaskCount, max: maxTasks })
+            }
           </span>
           
           <div className="flex items-center gap-2">

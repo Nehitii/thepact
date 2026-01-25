@@ -103,6 +103,7 @@
   "todo": {
     "loadingQuests": "Loading quests…",
     "activeQuestsCount": "{{count}} / {{max}} active quests",
+    "filteredQuestsCount": "{{count}} {{type}} quests",
     "calendar": "Calendar",
     "history": "History",
     "stats": "Stats",
@@ -128,8 +129,9 @@
       "types": {
         "all": "All",
         "flexible": "Flexible",
-        "deadline": "Deadline",
-        "appointment": "Appointment"
+        "waiting": "Waiting",
+        "rendezvous": "Appointment",
+        "deadline": "Deadline"
       }
     },
 
@@ -140,13 +142,30 @@
       "category": "Category",
       "taskType": "Task type",
       "difficulty": "Difficulty",
-      "deadline": "Deadline (optional)",
+      "deadline": "Deadline",
+      "deadlineOptional": "Deadline (optional)",
+      "dueDate": "Due date",
       "pickDate": "Pick a date",
+      "pickDateTime": "Pick date & time",
       "clearDate": "Clear date",
       "markUrgent": "Mark as urgent",
       "urgentHint": "This task needs immediate attention",
       "creating": "Creating…",
-      "createQuest": "Create quest"
+      "createQuest": "Create quest",
+      "location": "Location",
+      "locationPlaceholder": "Where is this appointment?",
+      "appointmentTime": "Time",
+      "reminder": "Reminder",
+      "reminderEnabled": "Enable reminders",
+      "reminderHint": "Get periodic reminders while waiting",
+      "reminderFrequency": "Reminder frequency",
+      "frequencies": {
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+        "bimonthly": "Every 2 months",
+        "semiannual": "Every 6 months",
+        "yearly": "Yearly"
+      }
     },
 
     "categories": {
@@ -159,8 +178,15 @@
     },
     "taskTypes": {
       "flexible": "Flexible",
-      "deadline": "Deadline",
-      "appointment": "Appointment"
+      "waiting": "Waiting",
+      "rendezvous": "Appointment",
+      "deadline": "Deadline"
+    },
+    "taskTypeHints": {
+      "flexible": "No deadline required",
+      "waiting": "Waiting for a response",
+      "rendezvous": "Date & time required",
+      "deadline": "Due date required"
     },
     "difficulty": {
       "low": "Easy",
@@ -187,7 +213,8 @@
       "postponeTo": "Postpone to…",
       "deleteTitle": "Delete task?",
       "deleteDesc": "This will permanently remove the task. This action cannot be undone.",
-      "delete": "Delete"
+      "delete": "Delete",
+      "reminderActive": "Reminder active"
     },
 
     "calendarView": {

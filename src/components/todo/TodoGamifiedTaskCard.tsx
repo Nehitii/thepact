@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Clock, Trash2, AlertTriangle, Calendar, Tag, Briefcase, Heart, BookOpen, Cog, User, Sparkles, Pencil } from 'lucide-react';
+import { Check, Clock, Trash2, AlertTriangle, Tag, Briefcase, Heart, BookOpen, Cog, User, Sparkles, Pencil, Hourglass, CalendarClock, MapPin, Bell } from 'lucide-react';
 import { format, isPast, isToday, isTomorrow, addDays } from 'date-fns';
 import { TodoTask } from '@/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ import { useTranslation } from 'react-i18next';
 import { useSound } from '@/contexts/SoundContext';
 
 interface TodoGamifiedTaskCardProps {
-  task: TodoTask & { category?: string; task_type?: string };
+  task: TodoTask;
   onComplete: () => void;
   onPostpone: (newDeadline: string) => void;
   onDelete: () => void;
@@ -68,11 +68,12 @@ const categoryConfig: Record<string, { icon: React.ElementType; color: string }>
   general: { icon: Tag, color: 'text-muted-foreground' },
 };
 
-// Task type badges
+// Task type badges - updated with new types
 const taskTypeConfig: Record<string, { icon: React.ElementType; color: string; labelKey: string }> = {
-  appointment: { icon: Calendar, color: 'bg-purple-500/20 text-purple-300', labelKey: 'todo.taskTypes.appointment' },
+  rendezvous: { icon: CalendarClock, color: 'bg-purple-500/20 text-purple-300', labelKey: 'todo.taskTypes.rendezvous' },
   deadline: { icon: Clock, color: 'bg-red-500/20 text-red-300', labelKey: 'todo.taskTypes.deadline' },
   flexible: { icon: Sparkles, color: 'bg-cyan-500/20 text-cyan-300', labelKey: 'todo.taskTypes.flexible' },
+  waiting: { icon: Hourglass, color: 'bg-amber-500/20 text-amber-300', labelKey: 'todo.taskTypes.waiting' },
 };
 
 export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, onEdit }: TodoGamifiedTaskCardProps) {
@@ -192,6 +193,14 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                     <div className="flex-1">
                       <p className="text-foreground font-semibold text-base leading-snug">{task.name}</p>
                       
+                      {/* Location for rendezvous */}
+                      {task.location && taskType === 'rendezvous' && (
+                        <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
+                          <MapPin className="w-3 h-3" />
+                          <span>{task.location}</span>
+                        </div>
+                      )}
+                      
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
                         {/* Category badge */}
                         <span className={cn('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-card/50 border border-border/50', categoryColor)}>
@@ -209,6 +218,14 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                         <span className={cn('px-2 py-1 rounded-lg text-xs font-medium border', config.badge)}>
                           {task.priority.toUpperCase()}
                         </span>
+                        
+                        {/* Reminder active badge - for waiting type */}
+                        {task.reminder_enabled && taskType === 'waiting' && (
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-xs font-medium border border-amber-500/30">
+                            <Bell className="w-3 h-3" />
+                            {t('todo.taskCard.reminderActive')}
+                          </span>
+                        )}
                         
                         {/* Urgent badge */}
                         {task.is_urgent && (
@@ -232,6 +249,7 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                           )}>
                             <Clock className="w-3 h-3" />
                             {formatDeadline()}
+                            {task.appointment_time && ` • ${task.appointment_time}`}
                           </span>
                         )}
                         

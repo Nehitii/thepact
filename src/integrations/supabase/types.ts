@@ -1718,8 +1718,10 @@ export type Database = {
           category: string | null
           completed_at: string
           id: string
+          location: string | null
           postpone_count: number
           priority: Database["public"]["Enums"]["todo_priority"]
+          reminder_frequency: string | null
           task_name: string
           task_type: string | null
           user_id: string
@@ -1729,8 +1731,10 @@ export type Database = {
           category?: string | null
           completed_at?: string
           id?: string
+          location?: string | null
           postpone_count?: number
           priority: Database["public"]["Enums"]["todo_priority"]
+          reminder_frequency?: string | null
           task_name: string
           task_type?: string | null
           user_id: string
@@ -1740,8 +1744,10 @@ export type Database = {
           category?: string | null
           completed_at?: string
           id?: string
+          location?: string | null
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
+          reminder_frequency?: string | null
           task_name?: string
           task_type?: string | null
           user_id?: string
@@ -1796,45 +1802,60 @@ export type Database = {
       }
       todo_tasks: {
         Row: {
+          appointment_time: string | null
           category: string | null
           completed_at: string | null
           created_at: string
           deadline: string | null
           id: string
           is_urgent: boolean
+          location: string | null
           name: string
           postpone_count: number
           priority: Database["public"]["Enums"]["todo_priority"]
+          reminder_enabled: boolean | null
+          reminder_frequency: string | null
+          reminder_last_sent: string | null
           status: Database["public"]["Enums"]["todo_status"]
           task_type: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          appointment_time?: string | null
           category?: string | null
           completed_at?: string | null
           created_at?: string
           deadline?: string | null
           id?: string
           is_urgent?: boolean
+          location?: string | null
           name: string
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
+          reminder_enabled?: boolean | null
+          reminder_frequency?: string | null
+          reminder_last_sent?: string | null
           status?: Database["public"]["Enums"]["todo_status"]
           task_type?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          appointment_time?: string | null
           category?: string | null
           completed_at?: string | null
           created_at?: string
           deadline?: string | null
           id?: string
           is_urgent?: boolean
+          location?: string | null
           name?: string
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
+          reminder_enabled?: boolean | null
+          reminder_frequency?: string | null
+          reminder_last_sent?: string | null
           status?: Database["public"]["Enums"]["todo_status"]
           task_type?: string | null
           updated_at?: string

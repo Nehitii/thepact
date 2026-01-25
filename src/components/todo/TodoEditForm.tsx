@@ -1,19 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarIcon, Briefcase, Heart, BookOpen, Cog, User, Tag, Calendar, Clock, Sparkles, Pencil } from 'lucide-react';
+import { CalendarIcon, Briefcase, Heart, BookOpen, Cog, User, Tag, Clock, Sparkles, Hourglass, CalendarClock, MapPin, Bell } from 'lucide-react';
 import { format } from 'date-fns';
-import { TodoPriority, TodoTask } from '@/hooks/useTodoList';
+import { TodoPriority, TodoTask, TodoTaskType, ReminderFrequency } from '@/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
 
 export interface UpdateTaskInput {
   id: string;
@@ -23,6 +33,10 @@ export interface UpdateTaskInput {
   is_urgent: boolean;
   category: string;
   task_type: string;
+  reminder_enabled?: boolean;
+  reminder_frequency?: ReminderFrequency | null;
+  location?: string | null;
+  appointment_time?: string | null;
 }
 
 interface TodoEditFormProps {
@@ -41,10 +55,11 @@ const categories = [
   { id: 'general', label: 'General', icon: Tag, color: 'text-muted-foreground border-border bg-muted/30' },
 ];
 
-const taskTypes = [
+const taskTypes: { id: TodoTaskType; label: string; icon: typeof Sparkles; color: string }[] = [
   { id: 'flexible', label: 'Flexible', icon: Sparkles, color: 'text-cyan-400 border-cyan-500/30 bg-cyan-500/10' },
+  { id: 'waiting', label: 'Waiting', icon: Hourglass, color: 'text-amber-400 border-amber-500/30 bg-amber-500/10' },
+  { id: 'rendezvous', label: 'Appointment', icon: CalendarClock, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10' },
   { id: 'deadline', label: 'Deadline', icon: Clock, color: 'text-red-400 border-red-500/30 bg-red-500/10' },
-  { id: 'appointment', label: 'Appointment', icon: Calendar, color: 'text-purple-400 border-purple-500/30 bg-purple-500/10' },
 ];
 
 const priorities = [
@@ -53,20 +68,41 @@ const priorities = [
   { id: 'high', label: 'Hard', color: 'text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20' },
 ];
 
+const reminderFrequencies: ReminderFrequency[] = ['weekly', 'monthly', 'bimonthly', 'semiannual', 'yearly'];
+
 export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFormProps) {
+  const { t } = useTranslation();
+  const dateLocale = useDateFnsLocale();
+  
   const [name, setName] = useState(task.name);
   const [deadline, setDeadline] = useState<Date | undefined>(
     task.deadline ? new Date(task.deadline) : undefined
   );
+  const [appointmentTime, setAppointmentTime] = useState(task.appointment_time || '');
   const [priority, setPriority] = useState<TodoPriority>(task.priority);
   const [category, setCategory] = useState(task.category || 'general');
-  const [taskType, setTaskType] = useState(task.task_type || 'flexible');
+  const [taskType, setTaskType] = useState<TodoTaskType>((task.task_type as TodoTaskType) || 'flexible');
   const [isUrgent, setIsUrgent] = useState(task.is_urgent);
+  const [location, setLocation] = useState(task.location || '');
+  const [reminderEnabled, setReminderEnabled] = useState(task.reminder_enabled || false);
+  const [reminderFrequency, setReminderFrequency] = useState<ReminderFrequency>((task.reminder_frequency as ReminderFrequency) || 'weekly');
+
+  // Reset deadline when switching to flexible type
+  useEffect(() => {
+    if (taskType === 'flexible') {
+      setDeadline(undefined);
+      setAppointmentTime('');
+    }
+  }, [taskType]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim()) return;
+    
+    // Validate required fields based on task type
+    if (taskType === 'deadline' && !deadline) return;
+    if (taskType === 'rendezvous' && !deadline) return;
 
     onSubmit({
       id: task.id,
@@ -76,21 +112,32 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
       is_urgent: isUrgent,
       category,
       task_type: taskType,
+      reminder_enabled: taskType === 'waiting' ? reminderEnabled : false,
+      reminder_frequency: taskType === 'waiting' && reminderEnabled ? reminderFrequency : null,
+      location: taskType === 'rendezvous' ? location || null : null,
+      appointment_time: taskType === 'rendezvous' && appointmentTime ? appointmentTime : null,
     });
   };
 
+  // Determine if deadline is required
+  const isDeadlineRequired = taskType === 'deadline' || taskType === 'rendezvous';
+  const showDeadline = taskType !== 'flexible';
+  const showLocation = taskType === 'rendezvous';
+  const showTime = taskType === 'rendezvous';
+  const showReminder = taskType === 'waiting';
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5 max-h-[70vh] overflow-y-auto pr-1">
       {/* Task name */}
       <div className="space-y-3">
         <Label htmlFor="edit-task-name" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-          Quest Name <span className="text-destructive">*</span>
+          {t('todo.create.questName')} <span className="text-destructive">*</span>
         </Label>
         <Input
           id="edit-task-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="What needs to be conquered?"
+          placeholder={t('todo.create.questPlaceholder')}
           variant="light"
           className="h-12 text-base rounded-xl"
           maxLength={100}
@@ -101,7 +148,7 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
 
       {/* Category selection */}
       <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">Category</Label>
+        <Label className="text-sm text-muted-foreground">{t('todo.create.category')}</Label>
         <div className="grid grid-cols-3 gap-2">
           {categories.map((cat) => {
             const Icon = cat.icon;
@@ -121,7 +168,9 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
                 )}
               >
                 <Icon className={cn('w-4 h-4', isSelected ? '' : 'text-muted-foreground')} />
-                <span className={cn('text-sm font-medium', isSelected ? '' : 'text-muted-foreground')}>{cat.label}</span>
+                <span className={cn('text-sm font-medium', isSelected ? '' : 'text-muted-foreground')}>
+                  {t(`todo.categories.${cat.id}`)}
+                </span>
               </motion.button>
             );
           })}
@@ -130,8 +179,8 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
 
       {/* Task type */}
       <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">Task Type</Label>
-        <div className="grid grid-cols-3 gap-2">
+        <Label className="text-sm text-muted-foreground">{t('todo.create.taskType')}</Label>
+        <div className="grid grid-cols-2 gap-2">
           {taskTypes.map((type) => {
             const Icon = type.icon;
             const isSelected = taskType === type.id;
@@ -150,7 +199,12 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
                 )}
               >
                 <Icon className={cn('w-5 h-5', isSelected ? '' : 'text-muted-foreground')} />
-                <span className={cn('text-xs font-medium', isSelected ? '' : 'text-muted-foreground')}>{type.label}</span>
+                <span className={cn('text-xs font-medium', isSelected ? '' : 'text-muted-foreground')}>
+                  {t(`todo.taskTypes.${type.id}`)}
+                </span>
+                <span className="text-[10px] text-muted-foreground/70">
+                  {t(`todo.taskTypeHints.${type.id}`)}
+                </span>
               </motion.button>
             );
           })}
@@ -159,7 +213,7 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
 
       {/* Priority / Difficulty */}
       <div className="space-y-3">
-        <Label className="text-sm text-muted-foreground">Difficulty</Label>
+        <Label className="text-sm text-muted-foreground">{t('todo.create.difficulty')}</Label>
         <div className="flex gap-2">
           {priorities.map((p) => {
             const isSelected = priority === p.id;
@@ -177,53 +231,135 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
                     : 'border-border/50 bg-card/30 text-muted-foreground hover:bg-card/50'
                 )}
               >
-                {p.label}
+                {t(`todo.difficulty.${p.id}`)}
               </motion.button>
             );
           })}
         </div>
       </div>
 
-      {/* Deadline */}
-      <div className="space-y-2">
-        <Label className="text-sm text-muted-foreground">Deadline (optional)</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              type="button"
-              className={cn(
-                'w-full justify-start text-left font-normal bg-card/50 border-border/50 rounded-xl h-12',
-                !deadline && 'text-muted-foreground'
+      {/* Deadline - conditionally shown */}
+      {showDeadline && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground flex items-center gap-1">
+            {taskType === 'deadline' ? t('todo.create.dueDate') : t('todo.create.deadline')}
+            {isDeadlineRequired && <span className="text-destructive">*</span>}
+          </Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                type="button"
+                className={cn(
+                  'w-full justify-start text-left font-normal bg-card/50 border-border/50 rounded-xl h-12',
+                  !deadline && 'text-muted-foreground'
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {deadline ? format(deadline, 'PPP', { locale: dateLocale }) : t('todo.create.pickDate')}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 bg-card/95 backdrop-blur-xl border-border" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={deadline}
+                onSelect={setDeadline}
+                initialFocus
+                className="pointer-events-auto"
+              />
+              {deadline && !isDeadlineRequired && (
+                <div className="p-3 border-t border-border">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    type="button"
+                    onClick={() => setDeadline(undefined)}
+                    className="w-full text-muted-foreground"
+                  >
+                    {t('todo.create.clearDate')}
+                  </Button>
+                </div>
               )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {deadline ? format(deadline, 'PPP') : 'Pick a date'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 bg-card/95 backdrop-blur-xl border-border" align="start">
-            <CalendarComponent
-              mode="single"
-              selected={deadline}
-              onSelect={setDeadline}
-              initialFocus
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+
+      {/* Time - for rendezvous only */}
+      {showTime && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground">{t('todo.create.appointmentTime')}</Label>
+          <Input
+            type="time"
+            value={appointmentTime}
+            onChange={(e) => setAppointmentTime(e.target.value)}
+            className="h-12 rounded-xl bg-card/50 border-border/50"
+          />
+        </div>
+      )}
+
+      {/* Location - for rendezvous only */}
+      {showLocation && (
+        <div className="space-y-2">
+          <Label className="text-sm text-muted-foreground flex items-center gap-2">
+            <MapPin className="w-3.5 h-3.5" />
+            {t('todo.create.location')}
+          </Label>
+          <Input
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder={t('todo.create.locationPlaceholder')}
+            className="h-12 rounded-xl bg-card/50 border-border/50"
+            maxLength={200}
+          />
+        </div>
+      )}
+
+      {/* Reminder settings - for waiting only */}
+      {showReminder && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="space-y-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bell className="w-4 h-4 text-amber-400" />
+              <Label htmlFor="edit-reminder-toggle" className="text-sm font-medium cursor-pointer">
+                {t('todo.create.reminderEnabled')}
+              </Label>
+            </div>
+            <Switch
+              id="edit-reminder-toggle"
+              checked={reminderEnabled}
+              onCheckedChange={setReminderEnabled}
             />
-            {deadline && (
-              <div className="p-3 border-t border-border">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  type="button"
-                  onClick={() => setDeadline(undefined)}
-                  className="w-full text-muted-foreground"
-                >
-                  Clear date
-                </Button>
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-      </div>
+          </div>
+          <p className="text-xs text-muted-foreground">{t('todo.create.reminderHint')}</p>
+          
+          {reminderEnabled && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-2 pt-2"
+            >
+              <Label className="text-sm text-muted-foreground">{t('todo.create.reminderFrequency')}</Label>
+              <Select value={reminderFrequency} onValueChange={(v) => setReminderFrequency(v as ReminderFrequency)}>
+                <SelectTrigger className="h-10 rounded-xl bg-card/50 border-border/50">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {reminderFrequencies.map((freq) => (
+                    <SelectItem key={freq} value={freq}>
+                      {t(`todo.create.frequencies.${freq}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </motion.div>
+          )}
+        </motion.div>
+      )}
 
       {/* Urgent checkbox */}
       <motion.div 
@@ -240,13 +376,13 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
           htmlFor="edit-urgent" 
           className="text-sm text-foreground cursor-pointer select-none flex-1"
         >
-          <span className="font-medium">Mark as Urgent</span>
-          <p className="text-xs text-muted-foreground mt-0.5">This task needs immediate attention</p>
+          <span className="font-medium">{t('todo.create.markUrgent')}</span>
+          <p className="text-xs text-muted-foreground mt-0.5">{t('todo.create.urgentHint')}</p>
         </Label>
       </motion.div>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pt-2">
+      <div className="flex items-center justify-end gap-3 pt-2 sticky bottom-0 bg-gradient-to-t from-card via-card to-transparent pb-1">
         <Button
           type="button"
           variant="ghost"
@@ -254,14 +390,14 @@ export function TodoEditForm({ task, onSubmit, onCancel, isLoading }: TodoEditFo
           disabled={isLoading}
           className="text-muted-foreground rounded-xl"
         >
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           type="submit"
-          disabled={!name.trim() || isLoading}
+          disabled={!name.trim() || isLoading || (isDeadlineRequired && !deadline)}
           className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground border-0 rounded-xl px-6"
         >
-          {isLoading ? 'Saving...' : 'Save Changes'}
+          {isLoading ? t('common.saving') : t('common.saveChanges')}
         </Button>
       </div>
     </form>
