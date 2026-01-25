@@ -1079,4 +1079,203 @@ All colors MUST be HSL.
     color: hsl(var(--primary));
     font-size: 0.875rem;
   }
+
+  /* ========== MODULE CARD - NEW DESIGN ========== */
+  
+  /* Grid container for module cards */
+  .modules-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+  }
+  
+  @media (min-width: 768px) {
+    .modules-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .modules-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* Module card wrapper */
+  .module-card-wrapper {
+    --hue: 200;
+    --saturation: 82%;
+    --lightness: 51%;
+  }
+
+  /* Module card base */
+  .module-card {
+    --flow-space: 0.5em;
+    position: relative;
+    padding: 1.5em;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr;
+    align-items: start;
+    gap: 1em;
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.3);
+    border-radius: 1rem;
+    transition: all ease-in-out 0.3s;
+    overflow: hidden;
+  }
+
+  /* Module card header with icon */
+  .module-card__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .module-card__icon {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: hsl(var(--hue) var(--saturation) var(--lightness) / 0.15);
+    border: 1px solid hsl(var(--hue) var(--saturation) var(--lightness) / 0.3);
+    color: hsl(var(--hue) var(--saturation) var(--lightness));
+    flex-shrink: 0;
+  }
+
+  /* Module card heading */
+  .module-card__heading {
+    font-size: 1.1em;
+    font-weight: 600;
+    font-family: var(--font-orbitron), ui-sans-serif, system-ui;
+    letter-spacing: 0.025em;
+  }
+
+  /* Module card price */
+  .module-card__price {
+    font-size: 1.5em;
+    font-weight: 700;
+    font-family: var(--font-orbitron), ui-sans-serif, system-ui;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: hsl(var(--primary));
+  }
+
+  /* Module card bullets (features list) */
+  .module-card__bullets {
+    line-height: 1.5;
+    padding-left: 1.25em;
+    list-style: none;
+    font-family: var(--font-rajdhani), ui-sans-serif, system-ui;
+    color: hsl(var(--muted-foreground));
+    font-size: 0.9em;
+  }
+
+  .module-card__bullets li {
+    position: relative;
+    padding-left: 0.25em;
+    margin-top: 0.5em;
+  }
+
+  .module-card__bullets li::before {
+    content: '▹';
+    position: absolute;
+    left: -1.25em;
+    color: hsl(var(--hue) var(--saturation) var(--lightness));
+    font-weight: bold;
+  }
+
+  /* Flow utility for spacing */
+  .module-card__bullets.flow > * + * {
+    margin-top: var(--flow-space, 0.5em);
+  }
+
+  /* Module card CTA button */
+  .module-card__cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: end;
+    margin: 0.5em 0 0 0;
+    text-align: center;
+    text-decoration: none;
+    color: hsl(var(--foreground));
+    background-color: transparent;
+    outline: 1px solid hsl(var(--border));
+    padding: 0.7em 1em;
+    border-radius: 0.625rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: var(--font-rajdhani), ui-sans-serif, system-ui;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+  }
+
+  .module-card__cta:hover:not(:disabled) {
+    outline: none;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+  }
+
+  .module-card__cta--owned {
+    background-color: hsl(142 70% 45% / 0.15);
+    color: hsl(142 70% 45%);
+    outline-color: hsl(142 70% 45% / 0.3);
+    cursor: default;
+  }
+
+  .module-card__cta--coming-soon {
+    background-color: hsl(45 95% 55% / 0.15);
+    color: hsl(45 95% 55%);
+    outline-color: hsl(45 95% 55% / 0.3);
+    cursor: default;
+  }
+
+  .module-card__cta--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Module card overlay */
+  .module-card__overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  /* Hover effect - glassmorphism with neon glow */
+  .module-card:hover {
+    background: hsl(var(--card) / 0.9);
+    backdrop-filter: blur(12px);
+    outline: 1px solid hsl(var(--hue) var(--saturation) 80% / 0.5);
+    box-shadow:
+      inset 0 0 60px hsl(var(--background) / 0.8),
+      inset 15px 0 60px hsl(280 80% 60% / 0.15),
+      inset -15px 0 60px hsl(180 80% 60% / 0.15),
+      inset 15px 0 200px hsl(280 80% 60% / 0.1),
+      inset -15px 0 200px hsl(180 80% 60% / 0.1),
+      0 0 30px hsl(var(--background) / 0.5),
+      -8px 0 50px hsl(280 80% 60% / 0.15),
+      8px 0 50px hsl(180 80% 60% / 0.15);
+  }
+
+  .dark .module-card:hover {
+    background: hsl(var(--card) / 0.95);
+    box-shadow:
+      inset 0 0 80px hsl(var(--background) / 0.9),
+      inset 20px 0 80px hsl(300 80% 50% / 0.25),
+      inset -20px 0 80px hsl(180 100% 50% / 0.25),
+      inset 20px 0 300px hsl(300 80% 50% / 0.15),
+      inset -20px 0 300px hsl(180 100% 50% / 0.15),
+      0 0 50px hsl(var(--background) / 0.8),
+      -10px 0 80px hsl(300 80% 50% / 0.25),
+      10px 0 80px hsl(180 100% 50% / 0.25);
+  }
 }
