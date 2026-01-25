@@ -305,33 +305,45 @@ export default function AdminCosmeticsManager() {
                   </DialogTitle>
                 </DialogHeader>
                 
-                {/* Creation Mode Toggle */}
-                {!editingFrame?.id && (
-                  <div className="flex gap-2 p-1 rounded-lg bg-card/50 border border-primary/20">
-                    <button
-                      onClick={() => setFrameCreationMode("classic")}
-                      className={`flex-1 py-2 px-4 rounded-md text-sm font-rajdhani transition-all ${
-                        frameCreationMode === "classic" 
-                          ? "bg-primary/20 text-primary" 
-                          : "text-muted-foreground hover:text-primary"
-                      }`}
-                    >
-                      <Sparkles className="h-4 w-4 inline mr-2" />
-                      Classic
-                    </button>
-                    <button
-                      onClick={() => setFrameCreationMode("image")}
-                      className={`flex-1 py-2 px-4 rounded-md text-sm font-rajdhani transition-all ${
-                        frameCreationMode === "image" 
-                          ? "bg-primary/20 text-primary" 
-                          : "text-muted-foreground hover:text-primary"
-                      }`}
-                    >
-                      <LinkIcon className="h-4 w-4 inline mr-2" />
-                      Pre-made Image
-                    </button>
-                  </div>
-                )}
+                {/* Creation Mode Toggle - show for new frames or allow switching for existing */}
+                {(() => {
+                  // For existing frames, determine mode based on whether it has a preview_url
+                  const effectiveMode = editingFrame?.id 
+                    ? (editingFrame?.preview_url ? "image" : "classic")
+                    : frameCreationMode;
+                  
+                  return (
+                    <div className="flex gap-2 p-1 rounded-lg bg-card/50 border border-primary/20">
+                      <button
+                        onClick={() => {
+                          setFrameCreationMode("classic");
+                          if (editingFrame?.id) {
+                            setEditingFrame({ ...editingFrame, preview_url: null });
+                          }
+                        }}
+                        className={`flex-1 py-2 px-4 rounded-md text-sm font-rajdhani transition-all ${
+                          effectiveMode === "classic" 
+                            ? "bg-primary/20 text-primary" 
+                            : "text-muted-foreground hover:text-primary"
+                        }`}
+                      >
+                        <Sparkles className="h-4 w-4 inline mr-2" />
+                        Classic
+                      </button>
+                      <button
+                        onClick={() => setFrameCreationMode("image")}
+                        className={`flex-1 py-2 px-4 rounded-md text-sm font-rajdhani transition-all ${
+                          effectiveMode === "image" 
+                            ? "bg-primary/20 text-primary" 
+                            : "text-muted-foreground hover:text-primary"
+                        }`}
+                      >
+                        <LinkIcon className="h-4 w-4 inline mr-2" />
+                        Pre-made Image
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                   <div>
@@ -361,7 +373,7 @@ export default function AdminCosmeticsManager() {
                     </Select>
                   </div>
 
-                  {frameCreationMode === "image" ? (
+                  {(frameCreationMode === "image" || (editingFrame?.id && editingFrame?.preview_url)) ? (
                     <>
                       <div>
                         <Label className="text-primary/80">Frame Image URL</Label>
