@@ -429,6 +429,7 @@ export type Database = {
           preview_url: string | null
           price: number
           rarity: string
+          transform_version: number | null
           updated_at: string
         }
         Insert: {
@@ -445,6 +446,7 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          transform_version?: number | null
           updated_at?: string
         }
         Update: {
@@ -461,6 +463,7 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          transform_version?: number | null
           updated_at?: string
         }
         Relationships: []

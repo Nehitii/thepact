@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { cn } from "@/lib/utils";
+import { computeFrameTransform } from "./unified-frame-renderer";
 
 export interface AvatarFrameProps {
   avatarUrl?: string | null;
@@ -11,8 +12,11 @@ export interface AvatarFrameProps {
   glowColor?: string;
   className?: string;
   showFallbackOnError?: boolean;
+  /** Scale multiplier for the frame (1.0 = 100%) */
   frameScale?: number;
+  /** Horizontal offset as percentage of container width */
   frameOffsetX?: number;
+  /** Vertical offset as percentage of container height */
   frameOffsetY?: number;
 }
 
@@ -30,6 +34,8 @@ const sizeClasses = {
  * - Container (relative positioning)
  * - Avatar image (z-index: 1, slightly inset)
  * - Frame overlay (z-index: 2, may extend beyond avatar)
+ * 
+ * Transform model uses percentage-based offsets for consistency across all sizes.
  */
 export function AvatarFrame({
   avatarUrl,
@@ -50,12 +56,16 @@ export function AvatarFrame({
   // If frame image fails to load, fall back to border-based frame
   const hasValidFrameImage = frameImage && !frameError;
 
+  // Use unified transform calculation - no hardcoded multipliers
+  const frameTransform = computeFrameTransform({
+    frameScale,
+    frameOffsetX,
+    frameOffsetY,
+  });
+
   return (
     <div 
-      className={cn("relative flex items-center justify-center", className)}
-      style={{ 
-        width: sizeConfig.frame.replace('w-', '').replace('h-', ''),
-      }}
+      className={cn("relative flex items-center justify-center", sizeConfig.frame, className)}
     >
       {/* Glow effect - bottom layer */}
       <div 
@@ -94,9 +104,7 @@ export function AvatarFrame({
       {hasValidFrameImage && (
         <div 
           className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center"
-          style={{ 
-            transform: `scale(${1.15 * frameScale}) translate(${frameOffsetX}px, ${frameOffsetY}px)`,
-          }}
+          style={frameTransform}
         >
           <img
             src={frameImage}
@@ -126,6 +134,8 @@ export function AvatarFrame({
 /**
  * Simple frame preview for shop displays
  * Shows just the frame without an avatar
+ * 
+ * Uses the same unified transform model as AvatarFrame for consistency.
  */
 export function FramePreview({
   frameImage,
@@ -147,6 +157,13 @@ export function FramePreview({
   
   const hasValidFrameImage = frameImage && !frameError;
 
+  // Use unified transform calculation
+  const frameTransform = computeFrameTransform({
+    frameScale,
+    frameOffsetX,
+    frameOffsetY,
+  });
+
   return (
     <div className={cn("relative flex items-center justify-center", sizeClasses[size], className)}>
       {/* Glow */}
@@ -162,14 +179,12 @@ export function FramePreview({
           <div 
             className="absolute inset-[15%] rounded-full bg-card/50 z-10"
           />
-          {/* Frame image overlay with alignment */}
+          {/* Frame image overlay with unified transform */}
           <img
             src={frameImage}
             alt="Frame preview"
             className="absolute inset-0 w-full h-full object-contain z-20"
-            style={{
-              transform: `scale(${frameScale}) translate(${frameOffsetX}px, ${frameOffsetY}px)`,
-            }}
+            style={frameTransform}
             onError={() => setFrameError(true)}
           />
         </div>
@@ -184,6 +199,92 @@ export function FramePreview({
           }}
         />
       )}
+    </div>
+  );
+}
+
+/**
+ * Inline frame preview for admin tool - matches exact container size for WYSIWYG
+ */
+export interface InlineFramePreviewProps {
+  frameImage: string;
+  frameScale?: number;
+  frameOffsetX?: number;
+  frameOffsetY?: number;
+  glowColor?: string;
+  containerSize: number;
+  showGuides?: boolean;
+  label?: string;
+}
+
+export function InlineFramePreview({
+  frameImage,
+  frameScale = 1,
+  frameOffsetX = 0,
+  frameOffsetY = 0,
+  glowColor = "rgba(91,180,255,0.5)",
+  containerSize,
+  showGuides = false,
+  label,
+}: InlineFramePreviewProps) {
+  const [frameError, setFrameError] = useState(false);
+  
+  const frameTransform = computeFrameTransform({
+    frameScale,
+    frameOffsetX,
+    frameOffsetY,
+  });
+
+  return (
+    <div className="flex flex-col items-center gap-1">
+      {label && (
+        <span className="text-[10px] text-primary/50 uppercase tracking-wider">{label}</span>
+      )}
+      <div 
+        className="relative flex items-center justify-center"
+        style={{ width: containerSize, height: containerSize }}
+      >
+        {/* Glow */}
+        <div 
+          className="absolute inset-0 rounded-full blur-md opacity-60"
+          style={{ backgroundColor: glowColor }}
+        />
+        
+        {/* Avatar placeholder */}
+        <div 
+          className="absolute rounded-full bg-card/50 z-10 flex items-center justify-center"
+          style={{ 
+            width: containerSize * 0.7, 
+            height: containerSize * 0.7,
+          }}
+        >
+          <span className="text-primary/40 font-orbitron" style={{ fontSize: containerSize * 0.2 }}>A</span>
+        </div>
+        
+        {/* Frame overlay */}
+        {!frameError && (
+          <img
+            src={frameImage}
+            alt="Frame preview"
+            className="absolute inset-0 w-full h-full object-contain z-20"
+            style={frameTransform}
+            onError={() => setFrameError(true)}
+          />
+        )}
+        
+        {/* Crosshair guides */}
+        {showGuides && (
+          <>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+              <div className="w-full h-px bg-primary/20" />
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-30">
+              <div className="w-px h-full bg-primary/20" />
+            </div>
+          </>
+        )}
+      </div>
+      <span className="text-[10px] text-primary/40">{containerSize}px</span>
     </div>
   );
 }

@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { InlineFramePreview } from "@/components/ui/avatar-frame";
+import { computeFrameTransform } from "@/components/ui/unified-frame-renderer";
 import { 
   Shield, 
   Sparkles, 
@@ -26,7 +28,8 @@ import {
   ZoomOut,
   Move,
   RotateCcw,
-  Crosshair
+  Crosshair,
+  Eye
 } from "lucide-react";
 
 interface CosmeticFrame {
@@ -395,26 +398,43 @@ export default function AdminCosmeticsManager() {
                             </Button>
                           </div>
                           
-                          {/* Live Preview */}
-                          <div className="flex justify-center">
-                            <div className="relative w-24 h-24 flex items-center justify-center">
-                              {/* Glow effect */}
-                              <div 
-                                className="absolute inset-0 rounded-full blur-md opacity-60"
-                                style={{ backgroundColor: editingFrame.glow_color || "rgba(91,180,255,0.5)" }}
+                          {/* WYSIWYG In-Context Previews */}
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-1 text-[10px] text-primary/50 uppercase tracking-wider">
+                              <Eye className="h-3 w-3" />
+                              In-Context Previews (WYSIWYG)
+                            </div>
+                            <div className="flex items-end justify-center gap-4 p-3 rounded-lg bg-card/30 border border-primary/10">
+                              {/* Shop preview (80px) */}
+                              <InlineFramePreview
+                                frameImage={editingFrame.preview_url}
+                                frameScale={editingFrame.frame_scale}
+                                frameOffsetX={editingFrame.frame_offset_x}
+                                frameOffsetY={editingFrame.frame_offset_y}
+                                glowColor={editingFrame.glow_color}
+                                containerSize={80}
+                                label="Shop"
                               />
-                              {/* Sample avatar */}
-                              <div className="absolute inset-[15%] rounded-full bg-card/50 z-10 flex items-center justify-center">
-                                <span className="text-primary/40 font-orbitron text-xl">A</span>
-                              </div>
-                              {/* Frame overlay with alignment applied */}
-                              <img
-                                src={editingFrame.preview_url}
-                                alt="Frame preview"
-                                className="absolute inset-0 w-full h-full object-contain z-20"
-                                style={{
-                                  transform: `scale(${editingFrame.frame_scale ?? 1}) translate(${editingFrame.frame_offset_x ?? 0}px, ${editingFrame.frame_offset_y ?? 0}px)`,
-                                }}
+                              {/* Admin/reference preview (96px) */}
+                              <InlineFramePreview
+                                frameImage={editingFrame.preview_url}
+                                frameScale={editingFrame.frame_scale}
+                                frameOffsetX={editingFrame.frame_offset_x}
+                                frameOffsetY={editingFrame.frame_offset_y}
+                                glowColor={editingFrame.glow_color}
+                                containerSize={96}
+                                showGuides
+                                label="Editor"
+                              />
+                              {/* Profile preview (128px) */}
+                              <InlineFramePreview
+                                frameImage={editingFrame.preview_url}
+                                frameScale={editingFrame.frame_scale}
+                                frameOffsetX={editingFrame.frame_offset_x}
+                                frameOffsetY={editingFrame.frame_offset_y}
+                                glowColor={editingFrame.glow_color}
+                                containerSize={128}
+                                label="Profile"
                               />
                             </div>
                           </div>
@@ -442,10 +462,10 @@ export default function AdminCosmeticsManager() {
                             />
                           </div>
                           
-                          {/* X/Y Offset Controls */}
+                          {/* X/Y Offset Controls (percentage-based) */}
                           <div className="grid grid-cols-2 gap-3">
                             <div className="space-y-2">
-                              <Label className="text-xs text-primary/60">X Offset</Label>
+                              <Label className="text-xs text-primary/60">X Offset (%)</Label>
                               <div className="flex items-center gap-2">
                                 <Button
                                   type="button"
@@ -453,7 +473,7 @@ export default function AdminCosmeticsManager() {
                                   variant="ghost"
                                   onClick={() => setEditingFrame({
                                     ...editingFrame,
-                                    frame_offset_x: (editingFrame.frame_offset_x ?? 0) - 1,
+                                    frame_offset_x: Math.round(((editingFrame.frame_offset_x ?? 0) - 1) * 10) / 10,
                                   })}
                                   className="h-6 w-6 text-primary/60 hover:text-primary"
                                 >
@@ -461,6 +481,7 @@ export default function AdminCosmeticsManager() {
                                 </Button>
                                 <Input
                                   type="number"
+                                  step="0.5"
                                   value={editingFrame.frame_offset_x ?? 0}
                                   onChange={(e) => setEditingFrame({
                                     ...editingFrame,
@@ -474,7 +495,7 @@ export default function AdminCosmeticsManager() {
                                   variant="ghost"
                                   onClick={() => setEditingFrame({
                                     ...editingFrame,
-                                    frame_offset_x: (editingFrame.frame_offset_x ?? 0) + 1,
+                                    frame_offset_x: Math.round(((editingFrame.frame_offset_x ?? 0) + 1) * 10) / 10,
                                   })}
                                   className="h-6 w-6 text-primary/60 hover:text-primary"
                                 >
@@ -483,7 +504,7 @@ export default function AdminCosmeticsManager() {
                               </div>
                             </div>
                             <div className="space-y-2">
-                              <Label className="text-xs text-primary/60">Y Offset</Label>
+                              <Label className="text-xs text-primary/60">Y Offset (%)</Label>
                               <div className="flex items-center gap-2">
                                 <Button
                                   type="button"
@@ -491,7 +512,7 @@ export default function AdminCosmeticsManager() {
                                   variant="ghost"
                                   onClick={() => setEditingFrame({
                                     ...editingFrame,
-                                    frame_offset_y: (editingFrame.frame_offset_y ?? 0) - 1,
+                                    frame_offset_y: Math.round(((editingFrame.frame_offset_y ?? 0) - 1) * 10) / 10,
                                   })}
                                   className="h-6 w-6 text-primary/60 hover:text-primary"
                                 >
@@ -499,6 +520,7 @@ export default function AdminCosmeticsManager() {
                                 </Button>
                                 <Input
                                   type="number"
+                                  step="0.5"
                                   value={editingFrame.frame_offset_y ?? 0}
                                   onChange={(e) => setEditingFrame({
                                     ...editingFrame,
@@ -512,7 +534,7 @@ export default function AdminCosmeticsManager() {
                                   variant="ghost"
                                   onClick={() => setEditingFrame({
                                     ...editingFrame,
-                                    frame_offset_y: (editingFrame.frame_offset_y ?? 0) + 1,
+                                    frame_offset_y: Math.round(((editingFrame.frame_offset_y ?? 0) + 1) * 10) / 10,
                                   })}
                                   className="h-6 w-6 text-primary/60 hover:text-primary"
                                 >

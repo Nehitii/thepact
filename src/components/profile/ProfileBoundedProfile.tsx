@@ -541,16 +541,18 @@ export function ProfileBoundedProfile({
                               : "border-primary/10 bg-card/30 opacity-60"
                         }`}
                       >
-                        {/* Frame preview using proper component */}
+                        {/* Frame preview using proper component with alignment */}
                         <div className="flex justify-center mb-2">
                           <FramePreview
                             size="sm"
                             frameImage={frame.preview_url}
                             borderColor={frame.border_color}
                             glowColor={frame.glow_color}
+                            frameScale={frame.frame_scale}
+                            frameOffsetX={frame.frame_offset_x}
+                            frameOffsetY={frame.frame_offset_y}
                           />
                         </div>
-                        <div className="text-xs font-rajdhani text-primary">{frame.name}</div>
                         <div className={`text-[10px] uppercase ${rarity.text} mt-1`}>{frame.rarity}</div>
                         
                         {/* Lock or check indicator */}
