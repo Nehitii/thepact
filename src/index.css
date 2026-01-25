@@ -1252,30 +1252,30 @@ All colors MUST be HSL.
 
   /* Hover effect - glassmorphism with neon glow */
   .module-card:hover {
-    background: hsl(var(--card) / 0.9);
-    backdrop-filter: blur(12px);
-    outline: 1px solid hsl(var(--hue) var(--saturation) 80% / 0.5);
+    background: #ffffff80;
+    color: #000;
+    outline: 1px solid rgb(255, 255, 255);
     box-shadow:
-      inset 0 0 60px hsl(var(--background) / 0.8),
-      inset 15px 0 60px hsl(280 80% 60% / 0.15),
-      inset -15px 0 60px hsl(180 80% 60% / 0.15),
-      inset 15px 0 200px hsl(280 80% 60% / 0.1),
-      inset -15px 0 200px hsl(180 80% 60% / 0.1),
-      0 0 30px hsl(var(--background) / 0.5),
-      -8px 0 50px hsl(280 80% 60% / 0.15),
-      8px 0 50px hsl(180 80% 60% / 0.15);
+      inset 0 0 80px whitesmoke,
+      inset 20px 0 80px rgba(255, 0, 255, 0.747),
+      inset -20px 0 80px #0ff,
+      inset 20px 0 300px #f0f,
+      inset -20px 0 300px #0ff,
+      0 0 50px #fff,
+      -10px 0 80px #f0f,
+      10px 0 80px #0ff;
   }
 
-  .dark .module-card:hover {
-    background: hsl(var(--card) / 0.95);
-    box-shadow:
-      inset 0 0 80px hsl(var(--background) / 0.9),
-      inset 20px 0 80px hsl(300 80% 50% / 0.25),
-      inset -20px 0 80px hsl(180 100% 50% / 0.25),
-      inset 20px 0 300px hsl(300 80% 50% / 0.15),
-      inset -20px 0 300px hsl(180 100% 50% / 0.15),
-      0 0 50px hsl(var(--background) / 0.8),
-      -10px 0 80px hsl(300 80% 50% / 0.25),
-      10px 0 80px hsl(180 100% 50% / 0.25);
+  .module-card:hover .module-card__heading,
+  .module-card:hover .module-card__price,
+  .module-card:hover .module-card__bullets,
+  .module-card:hover .module-card__badge {
+    color: #000;
+  }
+
+  .module-card:hover .module-card__cta {
+    outline: none;
+    background-color: #0d0d0d;
+    color: #fff;
   }
 }
