@@ -50,7 +50,6 @@ const getStatusLabel = (status: string): string => {
   }
 };
 
-// Valid tag labels matching the tag system in NewGoal.tsx
 const getGoalTypeLabel = (type: string): string => {
   const typeMap: Record<string, string> = {
     personal: "Personal",
@@ -68,167 +67,70 @@ const getGoalTypeLabel = (type: string): string => {
 
 const getDifficultyIntensity = (difficulty: string): number => {
   switch (difficulty) {
-    case "easy":
-      return 1;
-    case "medium":
-      return 2;
-    case "hard":
-      return 3;
-    case "extreme":
-      return 4;
+    case "easy": return 1;
+    case "medium": return 2;
+    case "hard": return 3;
+    case "extreme": return 4;
     case "impossible":
-    case "custom":
-      return 5;
-    default:
-      return 1;
+    case "custom": return 5;
+    default: return 1;
   }
 };
 
-const withAlpha = (color: string, alpha: number): string => {
-  if (color.startsWith("hsl(")) {
-    const inner = color.slice(4, -1).trim();
-    const base = inner.split("/")[0].trim();
-    return `hsl(${base} / ${alpha})`;
-  }
-  if (color.startsWith("#")) {
-    const hex = color.slice(1);
-    const full =
-      hex.length === 3
-        ? hex
-            .split("")
-            .map((c) => c + c)
-            .join("")
-        : hex;
-    if (full.length === 6) {
-      const r = parseInt(full.slice(0, 2), 16);
-      const g = parseInt(full.slice(2, 4), 16);
-      const b = parseInt(full.slice(4, 6), 16);
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
-  }
-  return color;
-};
-
-// Helper to adjust color brightness (works with hex)
-const adjustColorBrightness = (color: string, amount: number): string => {
+// Convert HSL or hex to RGB for glow effects
+const colorToRgb = (color: string): { r: number; g: number; b: number } => {
   if (color.startsWith("hsl(")) {
     const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
     if (match) {
-      const h = parseInt(match[1]);
+      const h = parseInt(match[1]) / 360;
+      const s = parseInt(match[2]) / 100;
+      const l = parseInt(match[3]) / 100;
+      
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const hue2rgb = (p: number, q: number, t: number) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1/6) return p + (q - p) * 6 * t;
+          if (t < 1/2) return q;
+          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+    }
+  }
+  if (color.startsWith("#")) {
+    const hex = color.slice(1);
+    const full = hex.length === 3 ? hex.split("").map(c => c + c).join("") : hex;
+    return {
+      r: parseInt(full.slice(0, 2), 16),
+      g: parseInt(full.slice(2, 4), 16),
+      b: parseInt(full.slice(4, 6), 16),
+    };
+  }
+  return { r: 92, g: 103, b: 255 }; // default
+};
+
+// Shift hue for secondary glow color
+const getSecondaryGlowColor = (color: string): string => {
+  if (color.startsWith("hsl(")) {
+    const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
+    if (match) {
+      const h = (parseInt(match[1]) + 60) % 360;
       const s = parseInt(match[2]);
-      const l = Math.max(0, Math.min(100, parseInt(match[3]) + amount));
-      return `hsl(${h} ${s}% ${l}%)`;
-    }
-    return color;
-  }
-
-  if (color.startsWith("#")) {
-    const hex = color.slice(1);
-    const full =
-      hex.length === 3
-        ? hex
-            .split("")
-            .map((c) => c + c)
-            .join("")
-        : hex;
-    const r = Math.max(0, Math.min(255, parseInt(full.slice(0, 2), 16) + amount));
-    const g = Math.max(0, Math.min(255, parseInt(full.slice(2, 4), 16) + amount));
-    const b = Math.max(0, Math.min(255, parseInt(full.slice(4, 6), 16) + amount));
-    return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
-  }
-
-  return color;
-};
-
-// Helper to desaturate colors for softer card backgrounds
-const desaturateColor = (color: string, amount: number): string => {
-  if (color.startsWith("hsl(")) {
-    const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
-    if (match) {
-      const h = parseInt(match[1]);
-      const s = Math.max(0, Math.min(100, parseInt(match[2]) - amount));
       const l = parseInt(match[3]);
       return `hsl(${h} ${s}% ${l}%)`;
     }
-    return color;
   }
-  if (color.startsWith("#")) {
-    const hex = color.slice(1);
-    const full = hex.length === 3 ? hex.split("").map((c) => c + c).join("") : hex;
-    const r = parseInt(full.slice(0, 2), 16);
-    const g = parseInt(full.slice(2, 4), 16);
-    const b = parseInt(full.slice(4, 6), 16);
-    const max = Math.max(r, g, b) / 255;
-    const min = Math.min(r, g, b) / 255;
-    const l = (max + min) / 2;
-    let s = 0;
-    let h = 0;
-    if (max !== min) {
-      const d = max - min;
-      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-      s = Math.max(0, s - amount / 100);
-      switch (max) {
-        case r / 255: h = ((g / 255 - b / 255) / d + (g < b ? 6 : 0)) / 6; break;
-        case g / 255: h = ((b / 255 - r / 255) / d + 2) / 6; break;
-        case b / 255: h = ((r / 255 - g / 255) / d + 4) / 6; break;
-      }
-    }
-    return `hsl(${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%)`;
-  }
-  return color;
-};
-
-// Get a contrasting accent color for the split line (shifted hue)
-const getSplitLineAccentColor = (color: string): string => {
-  if (color.startsWith("hsl(")) {
-    const match = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
-    if (match) {
-      const h = (parseInt(match[1]) + 30) % 360;
-      const s = Math.min(100, parseInt(match[2]) + 10);
-      const l = Math.min(85, parseInt(match[3]) + 15);
-      return `hsl(${h} ${s}% ${l}%)`;
-    }
-  }
-  return adjustColorBrightness(color, 40);
-};
-
-// Get tier background gradient for badge (matching UIVerseGoalCard)
-const getTierBackground = (difficulty: string, difficultyColor: string) => {
-  switch (difficulty) {
-    case "easy":
-      return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
-    case "medium":
-      return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
-    case "hard":
-      return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
-    case "extreme":
-      return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
-    case "impossible":
-    case "custom":
-      return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
-    default:
-      return difficultyColor;
-  }
-};
-
-// Glossy overlay intensity based on difficulty
-const getGlossIntensity = (difficulty: string): number => {
-  switch (difficulty) {
-    case "easy":
-      return 0.08;
-    case "medium":
-      return 0.14;
-    case "hard":
-      return 0.22;
-    case "extreme":
-      return 0.28;
-    case "impossible":
-      return 0.32;
-    case "custom":
-      return 0.35;
-    default:
-      return 0.08;
-  }
+  return "#00ffaa";
 };
 
 export function BarViewGoalCard({
@@ -241,6 +143,9 @@ export function BarViewGoalCard({
 }: BarViewGoalCardProps) {
   const difficulty = goal.difficulty || "easy";
   const difficultyColor = difficulty === "custom" ? customDifficultyColor : getUnifiedDifficultyColor(difficulty);
+  const secondaryColor = getSecondaryGlowColor(difficultyColor);
+  const rgb = colorToRgb(difficultyColor);
+  const rgb2 = colorToRgb(secondaryColor);
 
   const goalType = goal.goal_type || "standard";
   const isHabitGoal = goalType === "habit";
@@ -250,350 +155,184 @@ export function BarViewGoalCard({
 
   const tagLabel = getGoalTypeLabel(goal.type);
   const intensity = getDifficultyIntensity(difficulty);
-  const glossIntensity = getGlossIntensity(difficulty);
-
-  // Create soft, flat solid colors - highly desaturated and lightened for calm aesthetic
-  const softMainColor = adjustColorBrightness(desaturateColor(difficultyColor, 45), 35);
-  const softExpandedColor = adjustColorBrightness(desaturateColor(difficultyColor, 50), 50);
-  const softBorderColor = adjustColorBrightness(desaturateColor(difficultyColor, 35), 20);
-  
-  // Split line uses a subtle accent - slightly more saturated than card
-  const splitLineAccent = adjustColorBrightness(desaturateColor(difficultyColor, 25), 30);
-  // Unique ID for scoped CSS keyframes
   const cardId = `bar-card-${goal.id.slice(0, 8)}`;
 
   return (
-    <motion.div
-      className={`${cardId} group`}
-      whileHover={{ scale: 1.01 }}
-      transition={{ duration: 0.2 }}
+    <div
+      className={`${cardId} bar-goal-card noselect`}
       onClick={() => onNavigate(goal.id)}
-      style={{
-        position: "relative",
-        height: "140px",
-        width: "100%",
-        borderRadius: "25px",
-        overflow: "hidden",
-        background: "transparent",
-        cursor: "pointer",
-        transition: "height 0.5s ease",
-      }}
     >
-      {/* Main card - soft flat solid color */}
-      <div
-        className={`${cardId}-outline`}
-        style={{
-          position: "relative",
-          background: softMainColor,
-          width: "100%",
-          height: "140px",
-          borderRadius: "25px",
-          border: `1px solid ${withAlpha(softBorderColor, 0.4)}`,
-          transition: "box-shadow 0.4s ease",
-          zIndex: 2,
-          overflow: "hidden",
-        }}
-      >
-        {/* Split Line - Subtle elegant accent line */}
-        <div
-          className={`${cardId}-splitline`}
-          style={{
-            position: "absolute",
-            width: "calc(100% - 80px)",
-            height: "3px",
-            bottom: "16px",
-            left: "40px",
-            borderRadius: "999px",
-            background: splitLineAccent,
-            boxShadow: `0 0 6px ${withAlpha(splitLineAccent, 0.35)}, 0 0 12px ${withAlpha(splitLineAccent, 0.2)}`,
-            zIndex: 1,
-          }}
-        />
-
-        {/* Avatar / Image Frame */}
-        <div
-          style={{
-            position: "absolute",
-            top: "18px",
-            left: "20px",
-            width: "78px",
-            height: "78px",
-            borderRadius: "18px",
-            padding: "3px",
-            background: softBorderColor,
-            boxShadow: `0 2px 8px ${withAlpha(softBorderColor, 0.3)}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {goal.image_url ? (
-            <img
-              src={goal.image_url}
-              alt={goal.name}
-              className={isCompleted ? "grayscale opacity-70" : ""}
-              style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: "16px",
-                objectFit: "cover",
-              }}
-            />
-          ) : (
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                borderRadius: "16px",
-                background: adjustColorBrightness(softMainColor, -15),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Trophy className="h-7 w-7" style={{ color: softBorderColor }} />
-            </div>
-          )}
-        </div>
-
-        {/* Focus Star Button */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFocus(goal.id, goal.is_focus || false, e);
-          }}
-          className="absolute top-3 right-3 z-20 p-1.5 rounded-full border transition-all hover:scale-110"
-          style={{
-            background: "rgba(255,255,255,0.9)",
-            borderColor: withAlpha(softBorderColor, 0.3),
-          }}
-        >
-          <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`} />
-        </button>
-
-        {/* Difficulty Badge - Same style as UIVerseGoalCard */}
-        <Badge
-          className="absolute z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
-          style={{
-            top: "18px",
-            left: "110px",
-            borderRadius: "999px",
-            color: "white",
-            background: getTierBackground(difficulty, difficultyColor),
-            border: `1px solid ${withAlpha(difficultyColor, 0.6)}`,
-            backdropFilter: "blur(10px)",
-            boxShadow: `0 0 ${8 + intensity * 3}px ${withAlpha(difficultyColor, 0.5)}, inset 0 1px 1px rgba(255,255,255,${glossIntensity})`,
-          }}
-        >
-          {/* Glossy shine overlay */}
-          <span
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: `linear-gradient(135deg, rgba(255,255,255,${glossIntensity * 1.2}) 0%, rgba(255,255,255,${glossIntensity * 0.3}) 40%, transparent 60%)`,
-              borderRadius: "inherit",
-            }}
-          />
-          <span className="relative z-10">{getDifficultyLabel(difficulty, customDifficultyName)}</span>
-        </Badge>
-
-        {/* Goal Name */}
-        <h3
-          className="font-orbitron"
-          style={{
-            position: "absolute",
-            fontWeight: 700,
-            color: "#1a1a2e",
-            left: "110px",
-            fontSize: "16px",
-            top: "50px",
-            margin: 0,
-            maxWidth: "calc(100% - 160px)",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {goal.name}
-        </h3>
-
-        {/* Status Badge */}
-        <div
-          className="font-rajdhani"
-          style={{
-            position: "absolute",
-            left: "110px",
-            top: "76px",
-            margin: 0,
-            fontSize: "12px",
-            color: "#4a5568",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "6px",
-          }}
-        >
-          <span
-            style={{
-              width: "7px",
-              height: "7px",
-              borderRadius: "50%",
-              background: isCompleted ? "#34c759" : goal.status === "in_progress" ? "#34c759" : "#f5a623",
-            }}
-          />
-          {getStatusLabel(goal.status || "in_progress")}
-        </div>
+      {/* 5x5 Grid for 3D tilt tracking */}
+      <div className="canvas">
+        {Array.from({ length: 25 }, (_, i) => (
+          <div key={i} className={`tracker tr-${i + 1}`} />
+        ))}
       </div>
 
-      {/* Expandable Detail Section - Lighter soft color */}
-      <div
-        className={`${cardId}-detail`}
-        style={{
-          position: "relative",
-          display: "none",
-          width: "100%",
-          height: "170px",
-          background: softExpandedColor,
-          borderTop: `1px solid ${withAlpha(softBorderColor, 0.25)}`,
-          top: "-20px",
-          zIndex: 1,
-          borderRadius: "0 0 25px 25px",
-          overflow: "hidden",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          gap: "20px",
-          padding: "5px 24px",
-        }}
-      >
-        {/* XP Box */}
-        {goal.potential_score && goal.potential_score > 0 && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "10px 14px",
-              borderRadius: "14px",
-              background: "rgba(255,255,255,0.7)",
-              border: `1px solid ${withAlpha(softBorderColor, 0.3)}`,
-              flexShrink: 0,
-            }}
-          >
-            <Sparkles className="h-5 w-5" style={{ color: softBorderColor }} />
-            <span
-              className="font-rajdhani"
-              style={{
-                margin: 0,
-                fontSize: "16px",
-                fontWeight: 800,
-                color: "#1a1a2e",
-              }}
-            >
-              +{goal.potential_score} XP
-            </span>
-          </div>
-        )}
+      {/* Main Card */}
+      <div id="card" className={`${cardId}-card`}>
+        {/* Glare overlay */}
+        <div className="card-glare" />
 
-        {/* Step Box */}
-        <div style={{ flex: 1 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "8px",
+        {/* Scan line effect */}
+        <div className="scan-line" />
+
+        {/* Corner elements */}
+        <div className="corner-elements">
+          <span style={{ borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` }} />
+          <span style={{ borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` }} />
+          <span style={{ borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` }} />
+          <span style={{ borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` }} />
+        </div>
+
+        {/* Cyber lines */}
+        <div className="cyber-lines">
+          <span style={{ background: `linear-gradient(90deg, transparent, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2), transparent)` }} />
+          <span style={{ background: `linear-gradient(90deg, transparent, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2), transparent)` }} />
+          <span style={{ background: `linear-gradient(90deg, transparent, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2), transparent)` }} />
+          <span style={{ background: `linear-gradient(90deg, transparent, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2), transparent)` }} />
+        </div>
+
+        {/* Glowing elements */}
+        <div className="glowing-elements">
+          <div className="glow-1" style={{ background: `radial-gradient(circle at center, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) 0%, transparent 70%)` }} />
+          <div className="glow-2" style={{ background: `radial-gradient(circle at center, rgba(${rgb2.r}, ${rgb2.g}, ${rgb2.b}, 0.3) 0%, transparent 70%)` }} />
+          <div className="glow-3" style={{ background: `radial-gradient(circle at center, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3) 0%, transparent 70%)` }} />
+        </div>
+
+        {/* Particles */}
+        <div className="card-particles">
+          <span style={{ background: difficultyColor }} />
+          <span style={{ background: secondaryColor }} />
+          <span style={{ background: difficultyColor }} />
+          <span style={{ background: secondaryColor }} />
+          <span style={{ background: difficultyColor }} />
+          <span style={{ background: secondaryColor }} />
+        </div>
+
+        {/* Card Content */}
+        <div className="card-content">
+          {/* Focus Star Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFocus(goal.id, goal.is_focus || false, e);
             }}
+            className="focus-star-btn"
           >
-            <span
-              className="font-rajdhani"
-              style={{
-                letterSpacing: "0.3em",
-                fontWeight: 800,
-                fontSize: "11px",
-                margin: 0,
-                color: "#4a5568",
-              }}
-            >
-              {isHabitGoal ? "DAYS" : "STEP"}
-            </span>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "5px" }}>
-              <span
-                className="font-rajdhani"
-                style={{
-                  fontSize: "10px",
-                  padding: "2px 8px",
-                  borderRadius: "999px",
-                  background: "rgba(255,255,255,0.6)",
-                  color: "#1a1a2e",
-                  border: `1px solid ${withAlpha(softBorderColor, 0.25)}`,
-                }}
-              >
-                {tagLabel}
-              </span>
-            </div>
+            <Star className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-500 text-yellow-500" : "text-slate-400"}`} />
+          </button>
+
+          {/* Image / Avatar */}
+          <div className="goal-avatar">
+            {goal.image_url ? (
+              <img
+                src={goal.image_url}
+                alt={goal.name}
+                className={isCompleted ? "grayscale opacity-70" : ""}
+              />
+            ) : (
+              <div className="avatar-placeholder" style={{ background: `linear-gradient(135deg, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2), rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1))` }}>
+                <Trophy className="h-7 w-7" style={{ color: difficultyColor }} />
+              </div>
+            )}
           </div>
 
-          {/* Progress Bar */}
-          <div
-            style={{
-              width: "100%",
-              height: "8px",
-              borderRadius: "999px",
-              background: "rgba(255,255,255,0.5)",
-              overflow: "hidden",
-            }}
-          >
-            <motion.div
+          {/* Title - shown on hover */}
+          <h3 className="title font-orbitron" style={{
+            background: `linear-gradient(45deg, ${difficultyColor}, ${secondaryColor})`,
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: `drop-shadow(0 0 15px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3))`,
+          }}>
+            {goal.name}
+          </h3>
+
+          {/* Subtitle with steps and difficulty */}
+          <p className="subtitle font-rajdhani">
+            <span>{completedSteps}/{totalSteps} {isHabitGoal ? "Days" : "Steps"}</span>
+            <span className="highlight" style={{
+              background: `linear-gradient(90deg, ${difficultyColor}, ${secondaryColor})`,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}>
+              {getDifficultyLabel(difficulty, customDifficultyName)}
+            </span>
+          </p>
+
+          {/* Progress bar */}
+          <div className="progress-container">
+            <motion.div 
+              className="progress-bar"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.8, ease: "easeOut" }}
-              style={{
-                height: "100%",
-                background: softBorderColor,
-              }}
+              style={{ background: `linear-gradient(90deg, ${difficultyColor}, ${secondaryColor})` }}
             />
           </div>
 
-          {/* Step Counter */}
-          <span
-            className="font-rajdhani"
+          {/* Tags and Status row */}
+          <div className="meta-row">
+            <span className="tag-badge font-rajdhani" style={{ 
+              borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`,
+              color: difficultyColor,
+            }}>
+              {tagLabel}
+            </span>
+            <span className="status-badge font-rajdhani" style={{
+              background: isCompleted || goal.status === "fully_completed" 
+                ? "rgba(52, 199, 89, 0.2)" 
+                : goal.status === "in_progress" 
+                  ? `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)` 
+                  : "rgba(245, 166, 35, 0.2)",
+              color: isCompleted || goal.status === "fully_completed" 
+                ? "#34c759" 
+                : goal.status === "in_progress" 
+                  ? difficultyColor 
+                  : "#f5a623",
+            }}>
+              {getStatusLabel(goal.status || "in_progress")}
+            </span>
+          </div>
+
+          {/* XP indicator */}
+          {goal.potential_score && goal.potential_score > 0 && (
+            <div className="xp-badge" style={{ borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)` }}>
+              <Sparkles className="h-3.5 w-3.5" style={{ color: difficultyColor }} />
+              <span className="font-rajdhani" style={{ color: difficultyColor }}>+{goal.potential_score} XP</span>
+            </div>
+          )}
+
+          {/* Difficulty Badge */}
+          <Badge
+            className="difficulty-badge"
             style={{
-              marginTop: "6px",
-              fontSize: "11px",
-              color: "#4a5568",
-              display: "block",
+              background: `linear-gradient(135deg, ${difficultyColor}, rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7))`,
+              border: `1px solid rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.6)`,
+              boxShadow: `0 0 ${8 + intensity * 3}px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`,
             }}
           >
-            {completedSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"} • {progress.toFixed(0)}%
-          </span>
+            <span className="badge-shine" />
+            <span className="relative z-10">{getDifficultyLabel(difficulty, customDifficultyName)}</span>
+          </Badge>
         </div>
       </div>
 
-      {/* CSS for hover effects - subtle and clean */}
+      {/* Scoped CSS for hover effects with difficulty colors */}
       <style>{`
-        .${cardId}:hover {
-          height: 250px !important;
+        .${cardId}-card:hover .corner-elements span {
+          border-color: rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8) !important;
+          box-shadow: 0 0 10px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5);
         }
-        .${cardId}:hover .${cardId}-outline {
-          box-shadow: 0 4px 20px ${withAlpha(softBorderColor, 0.25)};
-        }
-        .${cardId}:hover .${cardId}-detail {
-          display: flex !important;
-          align-items: center;
-          justify-content: flex-start;
-          gap: 20px;
-          padding-top: 30px;
-          padding-bottom: 30px;
-          padding-left: 24px;
-          padding-right: 24px;
-          animation: ${cardId}-detail-slide-up 0.35s ease-out forwards;
-        }
-        .${cardId}:hover .${cardId}-splitline {
-          box-shadow: 0 0 8px ${withAlpha(splitLineAccent, 0.4)}, 0 0 16px ${withAlpha(splitLineAccent, 0.25)} !important;
-        }
-        @keyframes ${cardId}-detail-slide-up {
-          0% { transform: translateY(15px); opacity: 0; }
-          100% { transform: translateY(0); opacity: 1; }
+        .${cardId}-card::before {
+          background: radial-gradient(
+            circle at center,
+            rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1) 0%,
+            rgba(${rgb2.r}, ${rgb2.g}, ${rgb2.b}, 0.05) 50%,
+            transparent 100%
+          ) !important;
         }
       `}</style>
-    </motion.div>
+    </div>
   );
 }
