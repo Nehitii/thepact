@@ -101,6 +101,12 @@
     }
   },
   "todo": {
+    "title": "To-Do List",
+    "subtitle": "Execute with clarity",
+    "score": "pts",
+    "streak": "streak",
+    "active": "active",
+    "openTodoList": "Open To-Do List",
     "loadingQuests": "Loading quests…",
     "activeQuestsCount": "{{count}} / {{max}} active quests",
     "filteredQuestsCount": "{{count}} {{type}} quests",

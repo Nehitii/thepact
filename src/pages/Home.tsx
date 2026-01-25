@@ -6,7 +6,9 @@ import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Flame, ListTodo, BookOpen, Lock, ShoppingCart, Heart } from "lucide-react";
+import { TrendingUp, Flame, ListTodo, BookOpen, Lock, ShoppingCart, Heart, Target } from "lucide-react";
+import { useTodoList } from "@/hooks/useTodoList";
+import { useTodoReminders } from "@/hooks/useTodoReminders";
 import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
 import { ModuleGrid } from "@/components/home/ModuleGrid";
@@ -31,6 +33,9 @@ export default function Home() {
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
   const { data: financeSettings } = useFinanceSettings(user?.id);
+
+  // Initialize todo reminders - runs reminder check on Home load
+  useTodoReminders();
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
@@ -842,6 +847,17 @@ function JournalModule({ navigate, size = 'half' }: { navigate: any; size?: Modu
 
 function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
   const isCompact = size === 'quarter';
+  const { tasks, stats, isLoading } = useTodoList();
+
+  // Count by task type
+  const typeCounts = {
+    flexible: tasks.filter(t => t.task_type === 'flexible' || !t.task_type).length,
+    waiting: tasks.filter(t => t.task_type === 'waiting').length,
+    rendezvous: tasks.filter(t => t.task_type === 'rendezvous').length,
+    deadline: tasks.filter(t => t.task_type === 'deadline').length,
+  };
+
+  const totalActive = tasks.length;
   
   return (
     <div className="animate-fade-in relative group h-full">
@@ -855,21 +871,54 @@ function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?:
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-[2px] border border-cyan-500/20 rounded-[6px]" />
         </div>
-        <div className={`relative z-10 p-4 flex items-center justify-center gap-3 ${isCompact ? 'flex-col' : ''}`}>
-          <div className="relative">
-            <div className="absolute inset-0 bg-cyan-500/30 blur-lg rounded-full" />
-            <ListTodo className={`text-cyan-400 relative z-10 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)] ${isCompact ? 'w-6 h-6' : 'w-8 h-8'}`} />
-          </div>
-          <div className={`flex flex-col ${isCompact ? 'items-center' : 'items-start'}`}>
-            <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-400 ${isCompact ? 'text-xs' : 'text-lg'}`}>
+        
+        <div className={`relative z-10 p-4 ${isCompact ? 'flex flex-col items-center justify-center gap-2' : ''}`}>
+          {/* Header */}
+          <div className={`flex items-center gap-3 ${isCompact ? 'justify-center' : 'mb-3'}`}>
+            <div className="relative">
+              <div className="absolute inset-0 bg-cyan-500/30 blur-lg rounded-full" />
+              <ListTodo className={`text-cyan-400 relative z-10 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)] ${isCompact ? 'w-6 h-6' : 'w-6 h-6'}`} />
+            </div>
+            <span className={`font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-400 ${isCompact ? 'text-xs' : 'text-sm'}`}>
               To-Do List
             </span>
-            {!isCompact && (
-              <span className="text-xs text-cyan-400/60 font-rajdhani tracking-wide mt-0.5">
-                Execute with clarity
-              </span>
-            )}
           </div>
+          
+          {/* Task type counts - only show in non-compact mode */}
+          {!isCompact && !isLoading && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <TypeCountBadge label="Flexible" count={typeCounts.flexible} color="cyan" />
+              <TypeCountBadge label="Waiting" count={typeCounts.waiting} color="amber" />
+              <TypeCountBadge label="Rendez-vous" count={typeCounts.rendezvous} color="purple" />
+              <TypeCountBadge label="Deadline" count={typeCounts.deadline} color="red" />
+            </div>
+          )}
+          
+          {/* Compact stats */}
+          {isCompact && !isLoading && (
+            <div className="text-center">
+              <span className="text-lg font-bold text-cyan-400">{totalActive}</span>
+              <span className="text-xs text-cyan-400/60 ml-1">active</span>
+            </div>
+          )}
+
+          {/* Score and streak - non-compact */}
+          {!isCompact && !isLoading && (
+            <div className="flex items-center justify-between mt-3 pt-2 border-t border-cyan-500/20">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1">
+                  <Target className="w-3.5 h-3.5 text-cyan-400" />
+                  <span className="text-sm font-medium text-cyan-300">{stats?.score ?? 0}</span>
+                  <span className="text-xs text-cyan-400/60">pts</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Flame className="w-3.5 h-3.5 text-orange-400" />
+                  <span className="text-sm font-medium text-orange-300">{stats?.current_streak ?? 0}</span>
+                </div>
+              </div>
+              <span className="text-xs text-cyan-400/60">{totalActive} active</span>
+            </div>
+          )}
         </div>
         
         <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-cyan-500/50 rounded-tl" />
@@ -877,6 +926,23 @@ function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?:
         <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-cyan-500/50 rounded-bl" />
         <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-cyan-500/50 rounded-br" />
       </button>
+    </div>
+  );
+}
+
+// Helper component for task type badges
+function TypeCountBadge({ label, count, color }: { label: string; count: number; color: string }) {
+  const colorClasses: Record<string, string> = {
+    cyan: 'text-cyan-400 bg-cyan-500/10',
+    amber: 'text-amber-400 bg-amber-500/10',
+    purple: 'text-purple-400 bg-purple-500/10',
+    red: 'text-red-400 bg-red-500/10',
+  };
+  
+  return (
+    <div className={`flex items-center justify-between px-2 py-1 rounded ${colorClasses[color] || colorClasses.cyan}`}>
+      <span className="text-[10px] opacity-80">{label}</span>
+      <span className="text-xs font-bold">{count}</span>
     </div>
   );
 }
