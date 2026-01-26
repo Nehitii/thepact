@@ -21,14 +21,12 @@ export interface ModuleLayoutState {
 
 const DEFAULT_MODULES: ModuleConfig[] = [
   // Display modules - support full/half only
-  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 0, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'goals-gauge', name: 'Goals Completed', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'steps-gauge', name: 'Steps Completed', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'status-summary', name: 'Goals Status Summary', enabled: true, order: 3, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 0, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'progress-overview', name: 'Progress Overview', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'achievements', name: 'Achievements', enabled: true, order: 3, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
   { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 4, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
   { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 6, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'achievements', name: 'Achievements', enabled: true, order: 7, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
   
   // Action modules - support full/half/quarter
   { id: 'the-call', name: 'The Call', enabled: true, order: 8, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'] },
