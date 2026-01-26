@@ -37,7 +37,23 @@ function clamp01(v: number) {
  * - Category-based throttling to avoid stacking
  */
 export function SoundProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<SoundSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettingsState] = useState<SoundSettings>(DEFAULT_SETTINGS);
+  
+  // Stable setter that only updates if values actually changed
+  const setSettings = useCallback((next: SoundSettings) => {
+    setSettingsState((prev) => {
+      if (
+        prev.masterEnabled === next.masterEnabled &&
+        prev.volume === next.volume &&
+        prev.uiEnabled === next.uiEnabled &&
+        prev.successEnabled === next.successEnabled &&
+        prev.progressEnabled === next.progressEnabled
+      ) {
+        return prev; // No change, prevent re-render
+      }
+      return next;
+    });
+  }, []);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const lastPlayedRef = useRef<Record<SoundCategory, number>>({

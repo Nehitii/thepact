@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useSound } from "@/contexts/SoundContext";
 import { useSoundSettings } from "@/hooks/useSoundSettings";
 
@@ -7,12 +7,17 @@ import { useSoundSettings } from "@/hooks/useSoundSettings";
  * Kept as a tiny component to avoid mixing concerns into App.tsx.
  */
 export function SoundSettingsSync() {
-  const sound = useSound();
+  const { setSettings } = useSound();
   const { settings } = useSoundSettings();
+  const syncedRef = useRef(false);
 
   useEffect(() => {
-    if (settings) sound.setSettings(settings);
-  }, [settings, sound]);
+    // Only sync once when settings first load to avoid re-render loops
+    if (settings && !syncedRef.current) {
+      syncedRef.current = true;
+      setSettings(settings);
+    }
+  }, [settings, setSettings]);
 
   return null;
 }

@@ -1,5 +1,5 @@
 import { Volume2, Palette, Sparkles, Moon, Sun, Laptop } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,24 +13,29 @@ import { useTheme } from "next-themes";
 export function ProfileDisplaySounds() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const sound = useSound();
+  const { settings: soundSettings, setSettings: setSoundSettings } = useSound();
   const { settings, isLoading, save } = useSoundSettings();
   const saveTimer = useRef<number | null>(null);
+  const initialSyncDone = useRef(false);
 
   const { profile, isLoading: profileLoading, updateProfile } = useProfileSettings();
   const { setTheme } = useTheme();
 
-  // Hydrate global SoundProvider from persisted settings.
+  // Hydrate global SoundProvider from persisted settings ONCE on load.
   useEffect(() => {
-    if (settings) sound.setSettings(settings);
-  }, [settings, sound]);
+    if (settings && !initialSyncDone.current) {
+      initialSyncDone.current = true;
+      setSoundSettings(settings);
+    }
+  }, [settings, setSoundSettings]);
 
+  // Use DB settings if loaded, otherwise fallback to context settings
   const effective = useMemo(() => {
-    return settings ?? sound.settings;
-  }, [settings, sound.settings]);
+    return settings ?? soundSettings;
+  }, [settings, soundSettings]);
 
-  const updateAndPersist = (next: typeof effective) => {
-    sound.setSettings(next);
+  const updateAndPersist = useCallback((next: typeof effective) => {
+    setSoundSettings(next);
 
     if (!user?.id) return;
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
@@ -42,8 +47,8 @@ export function ProfileDisplaySounds() {
           variant: "destructive",
         });
       });
-    }, 250);
-  };
+    }, 400); // Increased debounce for less frequent saves
+  }, [user?.id, save, toast, setSoundSettings]);
 
   return (
     <div className="space-y-6">
