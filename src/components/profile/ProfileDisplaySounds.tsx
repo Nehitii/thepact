@@ -1,5 +1,5 @@
 import { Volume2, Palette, Sparkles, Moon, Sun, Laptop } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,11 +15,14 @@ export function ProfileDisplaySounds() {
   const { toast } = useToast();
   const { settings: soundSettings, setSettings: setSoundSettings } = useSound();
   const { settings, isLoading, save } = useSoundSettings();
-  const saveTimer = useRef<number | null>(null);
   const initialSyncDone = useRef(false);
 
   const { profile, isLoading: profileLoading, updateProfile } = useProfileSettings();
   const { setTheme } = useTheme();
+
+  // Local state for sliders - updates immediately without triggering re-renders elsewhere
+  const [localVolume, setLocalVolume] = useState<number | null>(null);
+  const [localParticleIntensity, setLocalParticleIntensity] = useState<number | null>(null);
 
   // Hydrate global SoundProvider from persisted settings ONCE on load.
   useEffect(() => {
@@ -34,21 +37,22 @@ export function ProfileDisplaySounds() {
     return settings ?? soundSettings;
   }, [settings, soundSettings]);
 
-  const updateAndPersist = useCallback((next: typeof effective) => {
+  // Persist sound settings to DB
+  const persistSound = useCallback((next: typeof effective) => {
     setSoundSettings(next);
-
     if (!user?.id) return;
-    if (saveTimer.current) window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => {
-      void save(next).catch((e) => {
-        toast({
-          title: "Error",
-          description: e?.message ?? "Failed to save sound settings",
-          variant: "destructive",
-        });
+    void save(next).catch((e) => {
+      toast({
+        title: "Error",
+        description: e?.message ?? "Failed to save sound settings",
+        variant: "destructive",
       });
-    }, 400); // Increased debounce for less frequent saves
+    });
   }, [user?.id, save, toast, setSoundSettings]);
+
+  // Display values - use local state while dragging, otherwise use effective
+  const displayVolume = localVolume ?? (effective.volume ?? 0);
+  const displayParticleIntensity = localParticleIntensity ?? ((profile?.particles_intensity ?? 1) as number);
 
   return (
     <div className="space-y-6">
@@ -178,7 +182,7 @@ export function ProfileDisplaySounds() {
               <Switch
                 checked={!!effective.masterEnabled}
                 onCheckedChange={(checked) =>
-                  updateAndPersist({ ...effective, masterEnabled: checked })
+                  persistSound({ ...effective, masterEnabled: checked })
                 }
               />
             </div>
@@ -188,14 +192,23 @@ export function ProfileDisplaySounds() {
               <div className="flex items-center justify-between">
                 <p className="text-sm font-orbitron text-foreground">Volume</p>
                 <span className="text-xs text-muted-foreground font-rajdhani">
-                  {Math.round((effective.volume ?? 0) * 100)}%
+                  {Math.round(displayVolume * 100)}%
                 </span>
               </div>
               <Slider
-                value={[Math.round((effective.volume ?? 0) * 100)]}
+                value={[Math.round(displayVolume * 100)]}
                 max={100}
                 step={1}
-                onValueChange={(v) => updateAndPersist({ ...effective, volume: (v[0] ?? 0) / 100 })}
+                onValueChange={(v) => {
+                  // Only update local state while dragging - no context updates
+                  setLocalVolume((v[0] ?? 0) / 100);
+                }}
+                onValueCommit={(v) => {
+                  // Persist when user releases the slider
+                  const newVolume = (v[0] ?? 0) / 100;
+                  setLocalVolume(null); // Clear local state
+                  persistSound({ ...effective, volume: newVolume });
+                }}
                 disabled={!effective.masterEnabled}
               />
               <p className="text-xs text-muted-foreground font-rajdhani">
@@ -213,7 +226,7 @@ export function ProfileDisplaySounds() {
                 <Switch
                   checked={!!effective.uiEnabled}
                   disabled={!effective.masterEnabled}
-                  onCheckedChange={(checked) => updateAndPersist({ ...effective, uiEnabled: checked })}
+                  onCheckedChange={(checked) => persistSound({ ...effective, uiEnabled: checked })}
                 />
               </div>
 
@@ -225,7 +238,7 @@ export function ProfileDisplaySounds() {
                 <Switch
                   checked={!!effective.successEnabled}
                   disabled={!effective.masterEnabled}
-                  onCheckedChange={(checked) => updateAndPersist({ ...effective, successEnabled: checked })}
+                  onCheckedChange={(checked) => persistSound({ ...effective, successEnabled: checked })}
                 />
               </div>
 
@@ -237,7 +250,7 @@ export function ProfileDisplaySounds() {
                 <Switch
                   checked={!!effective.progressEnabled}
                   disabled={!effective.masterEnabled}
-                  onCheckedChange={(checked) => updateAndPersist({ ...effective, progressEnabled: checked })}
+                  onCheckedChange={(checked) => persistSound({ ...effective, progressEnabled: checked })}
                 />
               </div>
             </div>
@@ -292,16 +305,23 @@ export function ProfileDisplaySounds() {
               <div className="flex items-center justify-between">
                 <p className="text-sm font-orbitron text-foreground">Intensity</p>
                 <span className="text-xs text-muted-foreground font-rajdhani">
-                  {Math.round(((profile?.particles_intensity ?? 1) as number) * 100)}%
+                  {Math.round(displayParticleIntensity * 100)}%
                 </span>
               </div>
               <Slider
-                value={[Math.round(((profile?.particles_intensity ?? 1) as number) * 100)]}
+                value={[Math.round(displayParticleIntensity * 100)]}
                 max={100}
                 step={1}
-                onValueChange={(v) =>
-                  updateProfile.mutate({ particles_intensity: (v[0] ?? 100) / 100 } as any)
-                }
+                onValueChange={(v) => {
+                  // Only update local state while dragging
+                  setLocalParticleIntensity((v[0] ?? 100) / 100);
+                }}
+                onValueCommit={(v) => {
+                  // Persist when user releases the slider
+                  const newIntensity = (v[0] ?? 100) / 100;
+                  setLocalParticleIntensity(null);
+                  updateProfile.mutate({ particles_intensity: newIntensity } as any);
+                }}
                 disabled={
                   profileLoading ||
                   updateProfile.isPending ||
