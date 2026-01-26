@@ -12,6 +12,7 @@ export interface Pact {
   global_progress: number;
   project_start_date?: string | null;
   project_end_date?: string | null;
+  created_at?: string | null;
 }
 
 export function usePact(userId: string | undefined) {
