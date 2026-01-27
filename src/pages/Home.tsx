@@ -21,6 +21,7 @@ import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { ActionModuleCard } from "@/components/home/ActionModuleCard";
+import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
 import { usePact, Pact } from "@/hooks/usePact";
 import { useRanks, Rank } from "@/hooks/useRanks";
 import { useProfile } from "@/hooks/useProfile";
@@ -57,6 +58,8 @@ export default function Home() {
     exitEditMode,
     toggleModule,
     cycleModuleSize,
+    toggleDisplayMode,
+    getDisplayMode,
     reorderModules,
     validateLayout,
     resetToDefault,
@@ -239,28 +242,37 @@ export default function Home() {
     return m.enabled;
   });
 
-  // Module rendering map with compact support
+  // Module rendering map with display mode support
   const renderModule = (moduleId: string, size: ModuleSize) => {
-    const compact = size !== 'full';
+    const displayMode = getDisplayMode(moduleId);
+    const handleToggle = () => toggleDisplayMode(moduleId);
+    
     switch (moduleId) {
       case 'timeline':
         return (
           <PactTimeline 
             projectStartDate={pact.project_start_date} 
             projectEndDate={pact.project_end_date}
-            hideBackgroundLines={true}
+            displayMode={displayMode}
+            onToggleDisplayMode={handleToggle}
           />
         );
       case 'progress-overview':
-        return <ProgressOverviewModule data={dashboardData} compact={compact} />;
+        return (
+          <ProgressOverviewModule 
+            data={dashboardData} 
+            displayMode={displayMode}
+            onToggleDisplayMode={handleToggle}
+          />
+        );
       case 'progress-difficulty':
         return (
           <ProgressByDifficultyModule
             difficultyProgress={dashboardData.difficultyProgress}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
-            compact={compact}
-            hideBackgroundLines={true}
+            displayMode={displayMode}
+            onToggleDisplayMode={handleToggle}
           />
         );
       case 'cost-tracking':
@@ -268,18 +280,31 @@ export default function Home() {
           <CostTrackingModule
             totalCostEngaged={dashboardData.totalCostEngaged}
             totalCostPaid={dashboardData.totalCostPaid}
-            compact={compact}
+            displayMode={displayMode}
+            onToggleDisplayMode={handleToggle}
             isCustomMode={dashboardData.isCustomMode}
           />
         );
       case 'focus-goals':
-        return <FocusGoalsModule goals={focusGoals} navigate={navigate} compact={compact} />;
+        return (
+          <FocusGoalsModule 
+            goals={focusGoals} 
+            navigate={navigate} 
+            displayMode={displayMode}
+            onToggleDisplayMode={handleToggle}
+          />
+        );
       case 'the-call':
         return <TheCallModule navigate={navigate} size={size} />;
       case 'finance':
         return <FinanceModule navigate={navigate} size={size} />;
       case 'achievements':
-        return <AchievementsWidget />;
+        return (
+          <AchievementsWidget 
+            displayMode={displayMode}
+            onToggleDisplayMode={handleToggle}
+          />
+        );
       case 'todo-list':
         return <TodoListModuleCard navigate={navigate} size={size} />;
       case 'journal':
@@ -477,140 +502,7 @@ export default function Home() {
   );
 }
 
-// ===== MODULE COMPONENTS =====
-
-function FocusGoalsModule({ goals, navigate, compact = false }: { goals: Goal[]; navigate: any; compact?: boolean }) {
-  return (
-    <div className="animate-fade-in relative group">
-      <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
-      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
-        </div>
-        <div className="relative z-10">
-          <div className="p-6 border-b border-primary/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
-                  <TrendingUp className="h-5 w-5 text-primary relative z-10 animate-glow-pulse" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary">
-                    Focus Goals
-                  </h3>
-                  <p className="text-xs text-primary/50 font-rajdhani mt-1">Your starred priorities</p>
-                </div>
-              </div>
-              <Button 
-                size="sm" 
-                onClick={() => navigate("/goals")}
-                className="bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 font-orbitron text-xs uppercase tracking-wider"
-              >
-                View All
-              </Button>
-            </div>
-          </div>
-          <div className="p-6">
-            {goals.length === 0 ? (
-              <div className="text-center py-8">
-                <div className="relative inline-block">
-                  <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
-                  <TrendingUp className="w-12 h-12 mx-auto mb-3 text-primary/40 relative z-10" />
-                </div>
-                <p className="text-sm text-primary/60 font-rajdhani">No focus goals yet</p>
-                <p className="text-xs text-primary/40 mt-2 font-rajdhani">Star goals in the Goals tab to see them here</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {goals.map((goal, index) => {
-                  const remainingSteps = (goal.total_steps || 0) - (goal.validated_steps || 0);
-                  const progressPercent = goal.total_steps > 0
-                    ? Math.round((goal.validated_steps / goal.total_steps) * 100)
-                    : 0;
-                  
-                  return (
-                    <button
-                      key={goal.id}
-                      onClick={() => navigate(`/goals/${goal.id}`)}
-                      className="w-full text-left rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)] group/goal overflow-hidden relative"
-                    >
-                      {/* Priority badge for top 3 */}
-                      {index < 3 && (
-                        <div className="absolute top-3 left-3 z-20 w-6 h-6 rounded-full bg-primary/80 border border-primary flex items-center justify-center shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
-                          <span className="text-xs font-bold text-primary-foreground font-orbitron">{index + 1}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex">
-                        {/* Goal Image Section */}
-                        <div className="relative w-24 h-24 flex-shrink-0 bg-card/30">
-                          {goal.image_url ? (
-                            <img 
-                              src={goal.image_url} 
-                              alt={goal.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
-                              <Target className="w-8 h-8 text-primary/50" />
-                            </div>
-                          )}
-                          {/* Overlay gradient */}
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/80" />
-                        </div>
-                        
-                        {/* Goal Info Section */}
-                        <div className="flex-1 p-4 flex flex-col justify-center">
-                          <h3 className="font-semibold text-sm text-primary font-orbitron drop-shadow-[0_0_5px_hsl(var(--primary)/0.3)] line-clamp-1 mb-2">
-                            {goal.name}
-                          </h3>
-                          
-                          {/* Steps Progress */}
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-primary/70 font-rajdhani">
-                                {remainingSteps > 0 
-                                  ? `${remainingSteps} step${remainingSteps > 1 ? 's' : ''} remaining`
-                                  : 'All steps complete!'
-                                }
-                              </span>
-                              <span className="text-primary font-orbitron font-bold">
-                                {progressPercent}%
-                              </span>
-                            </div>
-                            
-                            {/* Progress Bar */}
-                            <div className="h-1.5 w-full bg-card/40 rounded-full overflow-hidden border border-primary/20">
-                              <div 
-                                className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 rounded-full"
-                                style={{ width: `${progressPercent}%` }}
-                              />
-                            </div>
-                            
-                            {/* Badges */}
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-orbitron bg-primary/10 text-primary border border-primary/30">
-                                {goal.difficulty}
-                              </span>
-                              <span className="text-[10px] text-primary/50 font-rajdhani">
-                                {goal.validated_steps}/{goal.total_steps} steps
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+// ===== ACTION MODULE COMPONENTS =====
 
 function TheCallModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
   return (

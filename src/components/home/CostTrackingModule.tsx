@@ -1,86 +1,118 @@
 import { DollarSign } from "lucide-react";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
+import { DashboardWidgetShell, WidgetDisplayMode } from './DashboardWidgetShell';
 
 interface CostTrackingModuleProps {
   totalCostEngaged: number;
   totalCostPaid: number;
-  compact?: boolean;
+  displayMode?: WidgetDisplayMode;
+  onToggleDisplayMode?: () => void;
   isCustomMode?: boolean;
 }
 
 export function CostTrackingModule({
   totalCostEngaged,
   totalCostPaid,
-  compact = false,
+  displayMode = 'compact',
+  onToggleDisplayMode,
   isCustomMode = false,
 }: CostTrackingModuleProps) {
   const { currency } = useCurrency();
+  const isCompact = displayMode === 'compact';
   const totalCostRemaining = totalCostEngaged - totalCostPaid;
   const paidPercentage = totalCostEngaged > 0 ? (totalCostPaid / totalCostEngaged) * 100 : 0;
 
-  return (
-    <div className="relative group animate-fade-in">
-      <div className="absolute inset-0 bg-primary/5 rounded-lg blur-xl" />
-      <div className="relative bg-card/20 backdrop-blur-xl border-2 border-primary/30 rounded-lg overflow-hidden hover:border-primary/50 transition-all">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
+  const detailedBreakdown = (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-3 rounded-lg bg-card/30 border border-primary/20">
+          <div className="text-[10px] uppercase tracking-wider font-orbitron text-primary/50 mb-1">
+            {isCustomMode ? 'Custom Target' : 'Total Estimated'}
+          </div>
+          <div className="text-lg font-bold text-foreground font-orbitron">
+            {formatCurrency(totalCostEngaged, currency)}
+          </div>
         </div>
-        <div className="relative z-10">
-          <div className={`border-b border-primary/20 ${compact ? 'p-4' : 'p-6'}`}>
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
-                <DollarSign className={`text-primary relative z-10 animate-glow-pulse ${compact ? 'h-4 w-4' : 'h-5 w-5'}`} />
-              </div>
-              <h3 className={`font-bold uppercase tracking-widest font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary ${compact ? 'text-xs' : 'text-sm'}`}>
-                Cost Tracking
-              </h3>
+        {!isCustomMode && (
+          <div className="p-3 rounded-lg bg-primary/5 border border-primary/30">
+            <div className="text-[10px] uppercase tracking-wider font-orbitron text-primary/50 mb-1">
+              Paid / Financed
+            </div>
+            <div className="text-lg font-bold text-primary font-orbitron">
+              {formatCurrency(totalCostPaid, currency)}
             </div>
           </div>
-          <div className={compact ? 'p-4' : 'p-6'}>
-            <div className={`space-y-3 ${compact ? '' : 'space-y-4'}`}>
-              <div className={`space-y-2 ${compact ? 'space-y-1.5' : ''}`}>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-primary/50 uppercase tracking-wider font-rajdhani">
-                    {isCustomMode ? 'Custom Target' : 'Total Estimated'}
-                  </span>
-                  <span className={`font-bold text-foreground font-orbitron ${compact ? 'text-xs' : ''}`}>{formatCurrency(totalCostEngaged, currency)}</span>
-                </div>
-                {!isCustomMode && (
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-primary/50 uppercase tracking-wider font-rajdhani">Paid / Financed</span>
-                    <span className={`font-bold text-primary font-orbitron ${compact ? 'text-xs' : ''}`}>{formatCurrency(totalCostPaid, currency)}</span>
-                  </div>
-                )}
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-primary/50 uppercase tracking-wider font-rajdhani">Remaining</span>
-                  <span className={`font-bold text-foreground font-orbitron ${compact ? 'text-xs' : ''}`}>{formatCurrency(totalCostRemaining, currency)}</span>
-                </div>
-                {isCustomMode && (
-                  <div className="text-[9px] text-primary/40 uppercase tracking-wider font-rajdhani text-center mt-1">
-                    Custom mode • Not linked to goals
-                  </div>
-                )}
-              </div>
-              <div className="relative h-2 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
-                <div
-                  className="h-full bg-gradient-to-r from-primary via-accent to-primary/80 transition-all duration-1000"
-                  style={{ 
-                    width: `${paidPercentage}%`,
-                    boxShadow: '0 0 15px rgba(91, 180, 255, 0.5)'
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
-                </div>
-              </div>
-              <p className={`text-primary/60 text-right uppercase tracking-wider font-rajdhani ${compact ? 'text-[9px]' : 'text-[10px]'}`}>
-                {paidPercentage.toFixed(1)}% paid/financed
-              </p>
-            </div>
-          </div>
+        )}
+      </div>
+      
+      <div className="p-3 rounded-lg bg-accent/5 border border-accent/30">
+        <div className="text-[10px] uppercase tracking-wider font-orbitron text-accent/70 mb-1">
+          Remaining to Fund
+        </div>
+        <div className="text-xl font-bold text-accent font-orbitron">
+          {formatCurrency(totalCostRemaining, currency)}
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <DashboardWidgetShell
+      title="Cost Tracking"
+      icon={DollarSign}
+      subtitle={isCustomMode ? "Custom mode" : undefined}
+      displayMode={displayMode}
+      onToggleDisplayMode={onToggleDisplayMode}
+      expandableContent={!isCompact ? detailedBreakdown : undefined}
+      accentColor="primary"
+    >
+      <div className="flex-1 flex flex-col justify-center">
+        {/* Main metric display */}
+        <div className="text-center mb-4">
+          <div className="text-[10px] uppercase tracking-wider font-orbitron text-primary/50 mb-1">
+            {isCustomMode ? 'Remaining' : 'Left to Finance'}
+          </div>
+          <div className="text-3xl font-bold text-primary font-orbitron drop-shadow-[0_0_15px_rgba(91,180,255,0.5)]">
+            {formatCurrency(totalCostRemaining, currency)}
+          </div>
+          <div className="text-xs text-primary/60 font-rajdhani mt-1">
+            of {formatCurrency(totalCostEngaged, currency)} total
+          </div>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="space-y-2">
+          <div className="relative h-3 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
+            <div
+              className="h-full bg-gradient-to-r from-primary via-accent to-primary/80 transition-all duration-1000"
+              style={{ 
+                width: `${paidPercentage}%`,
+                boxShadow: '0 0 15px rgba(91, 180, 255, 0.5)'
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between text-[10px]">
+            <span className="text-primary/50 uppercase tracking-wider font-rajdhani">
+              {paidPercentage.toFixed(1)}% financed
+            </span>
+            {!isCustomMode && (
+              <span className="text-primary font-orbitron">
+                {formatCurrency(totalCostPaid, currency)}
+              </span>
+            )}
+          </div>
+        </div>
+        
+        {isCustomMode && (
+          <div className="text-[9px] text-primary/40 uppercase tracking-wider font-rajdhani text-center mt-2">
+            Custom mode • Not linked to goals
+          </div>
+        )}
+      </div>
+    </DashboardWidgetShell>
   );
 }
