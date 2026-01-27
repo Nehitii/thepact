@@ -329,7 +329,7 @@ export default function Home() {
           
           {/* Title & Subtitle */}
           <div className="space-y-3 relative">
-            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary animate-shimmer uppercase tracking-widest drop-shadow-[0_0_20px_hsl(var(--primary)/0.6)]" style={{ backgroundSize: '200% auto' }}>
+            <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_hsl(var(--primary)/0.6)]">
               {pact.name}
             </h1>
             <p className="text-base text-primary/80 italic font-rajdhani tracking-wide">&ldquo;{pact.mantra}&rdquo;</p>
@@ -522,50 +522,87 @@ function FocusGoalsModule({ goals, navigate, compact = false }: { goals: Goal[];
                 <p className="text-xs text-primary/40 mt-2 font-rajdhani">Star goals in the Goals tab to see them here</p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {goals.map((goal, index) => (
-                  <button
-                    key={goal.id}
-                    onClick={() => navigate(`/goals/${goal.id}`)}
-                    className="w-full text-left p-4 rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)] group/goal overflow-hidden relative"
-                  >
-                    {/* Priority badge for top 3 */}
-                    {index < 3 && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                        <span className="text-xs font-bold text-primary font-orbitron">{index + 1}</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute inset-[1px] border border-primary/10 rounded-[6px]" />
-                    </div>
-                    <div className="relative z-10 flex items-start justify-between gap-4 pr-8">
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-2 text-primary font-orbitron drop-shadow-[0_0_5px_hsl(var(--primary)/0.3)]">{goal.name}</h3>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-primary/10 text-primary border border-primary/30">
-                            {goal.type}
-                          </span>
-                          <span className="px-2 py-1 rounded text-xs font-bold uppercase tracking-wider font-orbitron bg-accent/10 text-accent border border-accent/30">
-                            {goal.difficulty}
-                          </span>
-                          <span className="text-xs text-primary/70 font-rajdhani">
-                            {goal.validated_steps} / {goal.total_steps} steps
-                          </span>
+              <div className="space-y-4">
+                {goals.map((goal, index) => {
+                  const remainingSteps = (goal.total_steps || 0) - (goal.validated_steps || 0);
+                  const progressPercent = goal.total_steps > 0
+                    ? Math.round((goal.validated_steps / goal.total_steps) * 100)
+                    : 0;
+                  
+                  return (
+                    <button
+                      key={goal.id}
+                      onClick={() => navigate(`/goals/${goal.id}`)}
+                      className="w-full text-left rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)] group/goal overflow-hidden relative"
+                    >
+                      {/* Priority badge for top 3 */}
+                      {index < 3 && (
+                        <div className="absolute top-3 left-3 z-20 w-6 h-6 rounded-full bg-primary/80 border border-primary flex items-center justify-center shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
+                          <span className="text-xs font-bold text-primary-foreground font-orbitron">{index + 1}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex">
+                        {/* Goal Image Section */}
+                        <div className="relative w-24 h-24 flex-shrink-0 bg-card/30">
+                          {goal.image_url ? (
+                            <img 
+                              src={goal.image_url} 
+                              alt={goal.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
+                              <Target className="w-8 h-8 text-primary/50" />
+                            </div>
+                          )}
+                          {/* Overlay gradient */}
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/80" />
+                        </div>
+                        
+                        {/* Goal Info Section */}
+                        <div className="flex-1 p-4 flex flex-col justify-center">
+                          <h3 className="font-semibold text-sm text-primary font-orbitron drop-shadow-[0_0_5px_hsl(var(--primary)/0.3)] line-clamp-1 mb-2">
+                            {goal.name}
+                          </h3>
+                          
+                          {/* Steps Progress */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-primary/70 font-rajdhani">
+                                {remainingSteps > 0 
+                                  ? `${remainingSteps} step${remainingSteps > 1 ? 's' : ''} remaining`
+                                  : 'All steps complete!'
+                                }
+                              </span>
+                              <span className="text-primary font-orbitron font-bold">
+                                {progressPercent}%
+                              </span>
+                            </div>
+                            
+                            {/* Progress Bar */}
+                            <div className="h-1.5 w-full bg-card/40 rounded-full overflow-hidden border border-primary/20">
+                              <div 
+                                className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 rounded-full"
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                            
+                            {/* Badges */}
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-orbitron bg-primary/10 text-primary border border-primary/30">
+                                {goal.difficulty}
+                              </span>
+                              <span className="text-[10px] text-primary/50 font-rajdhani">
+                                {goal.validated_steps}/{goal.total_steps} steps
+                              </span>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex-shrink-0">
-                        <div className="relative h-12 w-12 rounded-full border-2 border-primary/30 flex items-center justify-center bg-primary/5">
-                          <div className="absolute inset-0 bg-primary/10 rounded-full blur-sm" />
-                          <span className="text-sm font-bold text-primary font-orbitron drop-shadow-[0_0_5px_hsl(var(--primary)/0.5)] relative z-10">
-                            {goal.total_steps > 0
-                              ? Math.round((goal.validated_steps / goal.total_steps) * 100)
-                              : 0}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
