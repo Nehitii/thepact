@@ -20,23 +20,24 @@ export interface ModuleLayoutState {
 }
 
 const DEFAULT_MODULES: ModuleConfig[] = [
-  // Display modules - support full/half only
-  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 0, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'progress-overview', name: 'Progress Overview', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'achievements', name: 'Achievements', enabled: true, order: 3, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 4, size: 'full', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  // Display modules - paired sizes for visual consistency
+  // Pair 1: Progress Overview ↔ Cost Tracking (both half)
+  // Pair 2: Progress by Difficulty ↔ Focus Goals (both half)
+  // Pair 3: Pact Timeline ↔ Pact Achievement (both half)
+  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 0, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'progress-overview', name: 'Progress Overview', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 3, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 4, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  { id: 'achievements', name: 'Achievements', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
   
-  // Action modules - support full/half/quarter
-  { id: 'the-call', name: 'The Call', enabled: true, order: 8, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'] },
-  { id: 'finance', name: 'Track Finance', enabled: true, order: 9, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'] },
-  
-  // Placeholder action modules
-  { id: 'todo-list', name: 'To Do List', enabled: true, order: 10, size: 'quarter', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
-  { id: 'journal', name: 'Journal', enabled: true, order: 11, size: 'quarter', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
-  { id: 'track-health', name: 'Track Health', enabled: true, order: 12, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
-  { id: 'wishlist', name: 'Wishlist', enabled: true, order: 13, size: 'half', category: 'action', allowedSizes: ['full', 'half', 'quarter'], isPlaceholder: true },
+  // Action modules - ALL use 'half' size for consistent appearance
+  { id: 'the-call', name: 'The Call', enabled: true, order: 6, size: 'half', category: 'action', allowedSizes: ['full', 'half'] },
+  { id: 'finance', name: 'Track Finance', enabled: true, order: 7, size: 'half', category: 'action', allowedSizes: ['full', 'half'] },
+  { id: 'todo-list', name: 'To Do List', enabled: true, order: 8, size: 'half', category: 'action', allowedSizes: ['full', 'half'], isPlaceholder: true },
+  { id: 'journal', name: 'Journal', enabled: true, order: 9, size: 'half', category: 'action', allowedSizes: ['full', 'half'], isPlaceholder: true },
+  { id: 'track-health', name: 'Track Health', enabled: true, order: 10, size: 'half', category: 'action', allowedSizes: ['full', 'half'], isPlaceholder: true },
+  { id: 'wishlist', name: 'Wishlist', enabled: true, order: 11, size: 'half', category: 'action', allowedSizes: ['full', 'half'], isPlaceholder: true },
 ];
 
 const STORAGE_KEY = 'home-module-layout-v2';

@@ -6,8 +6,7 @@ import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Flame, ListTodo, BookOpen, Lock, ShoppingCart, Heart, Target } from "lucide-react";
-import { useTodoList } from "@/hooks/useTodoList";
+import { TrendingUp, Flame, ListTodo, BookOpen, ShoppingCart, Heart, Target } from "lucide-react";
 import { useTodoReminders } from "@/hooks/useTodoReminders";
 import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
@@ -21,6 +20,7 @@ import { QuickActionsBar } from "@/components/home/QuickActionsBar";
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
+import { ActionModuleCard } from "@/components/home/ActionModuleCard";
 import { usePact, Pact } from "@/hooks/usePact";
 import { useRanks, Rank } from "@/hooks/useRanks";
 import { useProfile } from "@/hooks/useProfile";
@@ -613,370 +613,79 @@ function FocusGoalsModule({ goals, navigate, compact = false }: { goals: Goal[];
 }
 
 function TheCallModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
-  const isCompact = size === 'quarter';
-  
   return (
-    <div className="animate-fade-in relative group h-full">
-      {/* Dynamic orange/fire accent glow for The Call */}
-      <div className="absolute inset-0 bg-orange-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-amber-500/10 to-orange-500/5 rounded-lg blur-2xl" />
-      <button
-        onClick={() => navigate("/the-call")}
-        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-orange-950/20 to-card/30 backdrop-blur-xl border-2 border-orange-500/40 rounded-lg overflow-hidden hover:border-orange-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(249,115,22,0.4),inset_0_0_30px_rgba(249,115,22,0.1)] group/call"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-orange-500/20 rounded-[6px]" />
-        </div>
-        <div className={cn(
-          "relative z-10 p-4 flex items-center justify-center gap-3",
-          isCompact && "flex-col"
-        )}>
-          <div className="relative">
-            <div className="absolute inset-0 bg-orange-500/30 blur-lg rounded-full animate-pulse" />
-            <Flame className={cn(
-              "text-orange-400 relative z-10 drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]",
-              isCompact ? "w-6 h-6" : "w-8 h-8"
-            )} />
-          </div>
-          <div className={cn("flex flex-col", isCompact ? "items-center" : "items-start")}>
-            <span className={cn(
-              "font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-amber-400 to-orange-400",
-              isCompact ? "text-xs" : "text-lg"
-            )}>
-              The Call
-            </span>
-            {!isCompact && (
-              <span className="text-xs text-orange-400/60 font-rajdhani tracking-wide mt-0.5">
-                Daily meditation & alignment
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-orange-500/50 rounded-tl" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-orange-500/50 rounded-tr" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-orange-500/50 rounded-bl" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-orange-500/50 rounded-br" />
-      </button>
-    </div>
+    <ActionModuleCard
+      title="The Call"
+      subtitle="Daily meditation & alignment"
+      icon={Flame}
+      onClick={() => navigate("/the-call")}
+      size={size}
+      accentColor="orange"
+    />
   );
 }
 
 function FinanceModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
-  const isCompact = size === 'quarter';
-  
   return (
-    <div className="animate-fade-in relative group h-full">
-      {/* Gold/amber accent glow for Finance */}
-      <div className="absolute inset-0 bg-amber-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-yellow-500/10 to-amber-500/5 rounded-lg blur-2xl" />
-      <button
-        onClick={() => navigate("/finance")}
-        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-amber-950/20 to-card/30 backdrop-blur-xl border-2 border-amber-500/40 rounded-lg overflow-hidden hover:border-amber-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(245,158,11,0.4),inset_0_0_30px_rgba(245,158,11,0.1)] group/finance"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-amber-500/20 rounded-[6px]" />
-        </div>
-        <div className={cn(
-          "relative z-10 p-4 flex items-center justify-center gap-3",
-          isCompact && "flex-col"
-        )}>
-          <div className="relative">
-            <div className="absolute inset-0 bg-amber-500/30 blur-lg rounded-full" />
-            <span className={cn(
-              "relative z-10 drop-shadow-[0_0_15px_rgba(245,158,11,0.6)]",
-              isCompact ? "text-xl" : "text-2xl"
-            )}>
-              💰
-            </span>
-          </div>
-          <div className={cn("flex flex-col", isCompact ? "items-center" : "items-start")}>
-            <span className={cn(
-              "font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-400",
-              isCompact ? "text-xs" : "text-lg"
-            )}>
-              Track Finance
-            </span>
-            {!isCompact && (
-              <span className="text-xs text-amber-400/60 font-rajdhani tracking-wide mt-0.5">
-                Budget & projections
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-amber-500/50 rounded-tl" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-amber-500/50 rounded-tr" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-amber-500/50 rounded-bl" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-amber-500/50 rounded-br" />
-      </button>
-    </div>
+    <ActionModuleCard
+      title="Track Finance"
+      subtitle="Budget & projections"
+      icon="💰"
+      onClick={() => navigate("/finance")}
+      size={size}
+      accentColor="amber"
+    />
   );
 }
 
 function JournalModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
-  const isCompact = size === 'quarter';
-  
   return (
-    <div className="animate-fade-in relative group h-full">
-      {/* Calm indigo accent glow for Journal */}
-      <div className="absolute inset-0 bg-indigo-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/5 via-purple-500/10 to-indigo-500/5 rounded-lg blur-2xl" />
-      <button
-        onClick={() => navigate("/journal")}
-        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-indigo-950/20 to-card/30 backdrop-blur-xl border-2 border-indigo-500/40 rounded-lg overflow-hidden hover:border-indigo-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(99,102,241,0.4),inset_0_0_30px_rgba(99,102,241,0.1)] group/journal"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-indigo-500/20 rounded-[6px]" />
-        </div>
-        <div className={cn(
-          "relative z-10 p-4 flex items-center justify-center gap-3",
-          isCompact && "flex-col"
-        )}>
-          <div className="relative">
-            <div className="absolute inset-0 bg-indigo-500/30 blur-lg rounded-full" />
-            <BookOpen className={cn(
-              "text-indigo-400 relative z-10 drop-shadow-[0_0_15px_rgba(99,102,241,0.6)]",
-              isCompact ? "w-6 h-6" : "w-8 h-8"
-            )} />
-          </div>
-          <div className={cn("flex flex-col", isCompact ? "items-center" : "items-start")}>
-            <span className={cn(
-              "font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-indigo-400",
-              isCompact ? "text-xs" : "text-lg"
-            )}>
-              Journal
-            </span>
-            {!isCompact && (
-              <span className="text-xs text-indigo-400/60 font-rajdhani tracking-wide mt-0.5">
-                Your memory timeline
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-indigo-500/50 rounded-tl" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-indigo-500/50 rounded-tr" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-indigo-500/50 rounded-bl" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-indigo-500/50 rounded-br" />
-      </button>
-    </div>
+    <ActionModuleCard
+      title="Journal"
+      subtitle="Your memory timeline"
+      icon={BookOpen}
+      onClick={() => navigate("/journal")}
+      size={size}
+      accentColor="indigo"
+    />
   );
 }
 
 function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
-  const isCompact = size === 'quarter';
-  const { tasks, stats, isLoading } = useTodoList();
-
-  // Count by task type
-  const typeCounts = {
-    flexible: tasks.filter(t => t.task_type === 'flexible' || !t.task_type).length,
-    waiting: tasks.filter(t => t.task_type === 'waiting').length,
-    rendezvous: tasks.filter(t => t.task_type === 'rendezvous').length,
-    deadline: tasks.filter(t => t.task_type === 'deadline').length,
-  };
-
-  const totalActive = tasks.length;
-  
   return (
-    <div className="animate-fade-in relative group h-full">
-      {/* Cyan accent glow for To-Do List */}
-      <div className="absolute inset-0 bg-cyan-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-teal-500/10 to-cyan-500/5 rounded-lg blur-2xl" />
-      <button
-        onClick={() => navigate("/todo")}
-        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-cyan-950/20 to-card/30 backdrop-blur-xl border-2 border-cyan-500/40 rounded-lg overflow-hidden hover:border-cyan-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(6,182,212,0.4),inset_0_0_30px_rgba(6,182,212,0.1)] group/todo"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-cyan-500/20 rounded-[6px]" />
-        </div>
-        
-        <div className={cn(
-          "relative z-10 p-4",
-          isCompact && "flex flex-col items-center justify-center gap-2"
-        )}>
-          {/* Header */}
-          <div className={cn(
-            "flex items-center gap-3",
-            isCompact ? "justify-center" : "mb-3"
-          )}>
-            <div className="relative">
-              <div className="absolute inset-0 bg-cyan-500/30 blur-lg rounded-full" />
-              <ListTodo className={cn(
-                "text-cyan-400 relative z-10 drop-shadow-[0_0_15px_rgba(6,182,212,0.6)]",
-                isCompact ? "w-6 h-6" : "w-6 h-6"
-              )} />
-            </div>
-            <span className={cn(
-              "font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-400 to-cyan-400",
-              isCompact ? "text-xs" : "text-sm"
-            )}>
-              To-Do List
-            </span>
-          </div>
-          
-          {/* Task type counts - only show in non-compact mode */}
-          {!isCompact && !isLoading && (
-            <div className="grid grid-cols-2 gap-2 mt-2">
-              <TypeCountBadge label="Flexible" count={typeCounts.flexible} color="cyan" />
-              <TypeCountBadge label="Waiting" count={typeCounts.waiting} color="amber" />
-              <TypeCountBadge label="Rendez-vous" count={typeCounts.rendezvous} color="purple" />
-              <TypeCountBadge label="Deadline" count={typeCounts.deadline} color="red" />
-            </div>
-          )}
-          
-          {/* Compact stats */}
-          {isCompact && !isLoading && (
-            <div className="text-center">
-              <span className="text-lg font-bold text-cyan-400">{totalActive}</span>
-              <span className="text-xs text-cyan-400/60 ml-1">active</span>
-            </div>
-          )}
-
-          {/* Score and streak - non-compact */}
-          {!isCompact && !isLoading && (
-            <div className="flex items-center justify-between mt-3 pt-2 border-t border-cyan-500/20">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1">
-                  <Target className="w-3.5 h-3.5 text-cyan-400" />
-                  <span className="text-sm font-medium text-cyan-300">{stats?.score ?? 0}</span>
-                  <span className="text-xs text-cyan-400/60">pts</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Flame className="w-3.5 h-3.5 text-orange-400" />
-                  <span className="text-sm font-medium text-orange-300">{stats?.current_streak ?? 0}</span>
-                </div>
-              </div>
-              <span className="text-xs text-cyan-400/60">{totalActive} active</span>
-            </div>
-          )}
-        </div>
-        
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-cyan-500/50 rounded-tl" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-cyan-500/50 rounded-tr" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-cyan-500/50 rounded-bl" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-cyan-500/50 rounded-br" />
-      </button>
-    </div>
-  );
-}
-
-// Helper component for task type badges
-function TypeCountBadge({ label, count, color }: { label: string; count: number; color: string }) {
-  const colorClasses: Record<string, string> = {
-    cyan: 'text-cyan-400 bg-cyan-500/10',
-    amber: 'text-amber-400 bg-amber-500/10',
-    purple: 'text-purple-400 bg-purple-500/10',
-    red: 'text-red-400 bg-red-500/10',
-  };
-  
-  return (
-    <div className={cn(
-      "flex items-center justify-between px-2 py-1 rounded",
-      colorClasses[color] || colorClasses.cyan
-    )}>
-      <span className="text-[10px] opacity-80">{label}</span>
-      <span className="text-xs font-bold">{count}</span>
-    </div>
+    <ActionModuleCard
+      title="To-Do List"
+      subtitle="Tasks & productivity"
+      icon={ListTodo}
+      onClick={() => navigate("/todo")}
+      size={size}
+      accentColor="cyan"
+    />
   );
 }
 
 function HealthModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
-  const isCompact = size === 'quarter';
-  
   return (
-    <div className="animate-fade-in relative group h-full">
-      {/* Calm teal/mint accent glow for Health */}
-      <div className="absolute inset-0 bg-teal-500/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-r from-teal-500/5 via-emerald-500/10 to-teal-500/5 rounded-lg blur-2xl" />
-      <button
-        onClick={() => navigate("/health")}
-        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-teal-950/20 to-card/30 backdrop-blur-xl border-2 border-teal-500/40 rounded-lg overflow-hidden hover:border-teal-400/60 transition-all duration-500 hover:shadow-[0_0_40px_rgba(20,184,166,0.4),inset_0_0_30px_rgba(20,184,166,0.1)] group/health"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-teal-500/20 rounded-[6px]" />
-        </div>
-        <div className={cn(
-          "relative z-10 p-4 flex items-center justify-center gap-3",
-          isCompact && "flex-col"
-        )}>
-          <div className="relative">
-            <div className="absolute inset-0 bg-teal-500/30 blur-lg rounded-full" />
-            <Heart className={cn(
-              "text-teal-400 relative z-10 drop-shadow-[0_0_15px_rgba(20,184,166,0.6)]",
-              isCompact ? "w-6 h-6" : "w-8 h-8"
-            )} />
-          </div>
-          <div className={cn("flex flex-col", isCompact ? "items-center" : "items-start")}>
-            <span className={cn(
-              "font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-400",
-              isCompact ? "text-xs" : "text-lg"
-            )}>
-              Track Health
-            </span>
-            {!isCompact && (
-              <span className="text-xs text-teal-400/60 font-rajdhani tracking-wide mt-0.5">
-                Balance & awareness
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-teal-500/50 rounded-tl" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-teal-500/50 rounded-tr" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-teal-500/50 rounded-bl" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-teal-500/50 rounded-br" />
-      </button>
-    </div>
+    <ActionModuleCard
+      title="Track Health"
+      subtitle="Balance & awareness"
+      icon={Heart}
+      onClick={() => navigate("/health")}
+      size={size}
+      accentColor="teal"
+    />
   );
 }
 
 function WishlistModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
-  const isCompact = size === 'quarter';
-
   return (
-    <div className="animate-fade-in relative group h-full">
-      <div className="absolute inset-0 bg-primary/10 rounded-lg blur-3xl group-hover:blur-[40px] transition-all duration-500" />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/10 to-primary/5 rounded-lg blur-2xl" />
-      <button
-        onClick={() => navigate("/wishlist")}
-        className="relative w-full h-full min-h-[80px] bg-gradient-to-br from-card/30 via-primary/10 to-card/30 backdrop-blur-xl border-2 border-primary/40 rounded-lg overflow-hidden hover:border-primary/60 transition-all duration-500 hover:shadow-[0_0_40px_hsl(var(--primary)/0.35),inset_0_0_30px_hsl(var(--primary)/0.12)] group/wishlist"
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[2px] border border-primary/20 rounded-[6px]" />
-        </div>
-
-        <div className={cn(
-          "relative z-10 p-4 flex items-center justify-center gap-3",
-          isCompact && "flex-col"
-        )}>
-          <div className="relative">
-            <div className="absolute inset-0 bg-primary/25 blur-lg rounded-full" />
-            <ShoppingCart className={cn(
-              "text-primary relative z-10 drop-shadow-[0_0_15px_hsl(var(--primary)/0.6)]",
-              isCompact ? "w-6 h-6" : "w-8 h-8"
-            )} />
-          </div>
-          <div className={cn("flex flex-col", isCompact ? "items-center" : "items-start")}>
-            <span className={cn(
-              "font-bold uppercase tracking-[0.15em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary",
-              isCompact ? "text-xs" : "text-lg"
-            )}>
-              Wishlist
-            </span>
-            {!isCompact && (
-              <span className="text-xs text-primary/60 font-rajdhani tracking-wide mt-0.5">
-                Plan what you truly need
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="absolute top-2 left-2 w-3 h-3 border-l-2 border-t-2 border-primary/50 rounded-tl" />
-        <div className="absolute top-2 right-2 w-3 h-3 border-r-2 border-t-2 border-primary/50 rounded-tr" />
-        <div className="absolute bottom-2 left-2 w-3 h-3 border-l-2 border-b-2 border-primary/50 rounded-bl" />
-        <div className="absolute bottom-2 right-2 w-3 h-3 border-r-2 border-b-2 border-primary/50 rounded-br" />
-      </button>
-    </div>
+    <ActionModuleCard
+      title="Wishlist"
+      subtitle="Plan what you truly need"
+      icon={ShoppingCart}
+      onClick={() => navigate("/wishlist")}
+      size={size}
+      accentColor="primary"
+    />
   );
 }
