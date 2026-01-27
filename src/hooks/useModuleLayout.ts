@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 export type ModuleSize = 'full' | 'half' | 'quarter';
 export type ModuleCategory = 'display' | 'action';
+export type DisplayMode = 'compact' | 'full';
 
 export interface ModuleConfig {
   id: string;
@@ -12,6 +13,7 @@ export interface ModuleConfig {
   category: ModuleCategory;
   allowedSizes: ModuleSize[];
   isPlaceholder?: boolean;
+  displayMode?: DisplayMode;
 }
 
 export interface ModuleLayoutState {
@@ -21,15 +23,13 @@ export interface ModuleLayoutState {
 
 const DEFAULT_MODULES: ModuleConfig[] = [
   // Display modules - paired sizes for visual consistency
-  // Pair 1: Progress Overview ↔ Cost Tracking (both half)
-  // Pair 2: Progress by Difficulty ↔ Focus Goals (both half)
-  // Pair 3: Pact Timeline ↔ Pact Achievement (both half)
-  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 0, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'progress-overview', name: 'Progress Overview', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 3, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 4, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
-  { id: 'achievements', name: 'Achievements', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'] },
+  // All display modules use half size for uniform grid
+  { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 0, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'progress-overview', name: 'Progress Overview', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 3, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 4, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'achievements', name: 'Achievements', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
   
   // Action modules - ALL use 'half' size for consistent appearance
   { id: 'the-call', name: 'The Call', enabled: true, order: 6, size: 'half', category: 'action', allowedSizes: ['full', 'half'] },
@@ -40,16 +40,29 @@ const DEFAULT_MODULES: ModuleConfig[] = [
   { id: 'wishlist', name: 'Wishlist', enabled: true, order: 11, size: 'half', category: 'action', allowedSizes: ['full', 'half'], isPlaceholder: true },
 ];
 
-const STORAGE_KEY = 'home-module-layout-v2';
+const STORAGE_KEY = 'home-module-layout-v3';
+const DISPLAY_MODE_KEY = 'home-widget-display-modes';
 
 export function useModuleLayout() {
   const [modules, setModules] = useState<ModuleConfig[]>(DEFAULT_MODULES);
   const [pendingModules, setPendingModules] = useState<ModuleConfig[]>(DEFAULT_MODULES);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [displayModes, setDisplayModes] = useState<Record<string, DisplayMode>>({});
 
   // Load saved layout from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
+    const savedDisplayModes = localStorage.getItem(DISPLAY_MODE_KEY);
+    
+    // Load display modes
+    if (savedDisplayModes) {
+      try {
+        setDisplayModes(JSON.parse(savedDisplayModes));
+      } catch (e) {
+        console.error('Failed to parse saved display modes', e);
+      }
+    }
+    
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as ModuleConfig[];
@@ -62,6 +75,7 @@ export function useModuleLayout() {
               enabled: savedModule.enabled,
               order: savedModule.order,
               size: savedModule.size,
+              displayMode: savedModule.displayMode || defaultModule.displayMode,
             };
           }
           return defaultModule;
@@ -101,6 +115,20 @@ export function useModuleLayout() {
     );
   }, []);
 
+  const toggleDisplayMode = useCallback((moduleId: string) => {
+    setDisplayModes(prev => {
+      const currentMode = prev[moduleId] || 'compact';
+      const newMode: DisplayMode = currentMode === 'compact' ? 'full' : 'compact';
+      const updated = { ...prev, [moduleId]: newMode };
+      localStorage.setItem(DISPLAY_MODE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const getDisplayMode = useCallback((moduleId: string): DisplayMode => {
+    return displayModes[moduleId] || 'compact';
+  }, [displayModes]);
+
   const reorderModules = useCallback((activeId: string, overId: string) => {
     setPendingModules(prev => {
       const oldIndex = prev.findIndex(m => m.id === activeId);
@@ -125,6 +153,8 @@ export function useModuleLayout() {
 
   const resetToDefault = useCallback(() => {
     setPendingModules(DEFAULT_MODULES);
+    setDisplayModes({});
+    localStorage.removeItem(DISPLAY_MODE_KEY);
   }, []);
 
   const getVisibleModules = useCallback(() => {
@@ -146,6 +176,8 @@ export function useModuleLayout() {
     exitEditMode,
     toggleModule,
     cycleModuleSize,
+    toggleDisplayMode,
+    getDisplayMode,
     reorderModules,
     validateLayout,
     resetToDefault,
