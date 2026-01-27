@@ -71,7 +71,11 @@ export function AchievementsWidget({
       }
       accentColor="primary"
     >
-      {stats?.unlocked === 0 ? (
+      {!stats ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-primary/40 text-sm font-rajdhani">Loading achievements...</div>
+        </div>
+      ) : stats.unlocked === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
           <div className="relative inline-block mb-3">
             <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
