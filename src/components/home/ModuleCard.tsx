@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Eye, EyeOff, Maximize2, Columns2, Grid2X2 } from 'lucide-react';
+import { Eye, EyeOff, Maximize2, Columns2, Grid2X2, EyeOff as HiddenIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ModuleSize, ModuleCategory } from '@/hooks/useModuleLayout';
 
@@ -93,6 +93,8 @@ export function ModuleCard({
     zIndex: isDragging ? 100 : 1,
   };
 
+  // FIX #1: In edit mode, always show the module (even if disabled)
+  // Only hide in non-edit mode if disabled
   if (!isEditMode && !isEnabled) {
     return null;
   }
@@ -109,7 +111,7 @@ export function ModuleCard({
         getWidthClass(),
         isEditMode && 'cursor-grab active:cursor-grabbing',
         isDragging && 'opacity-50',
-        isEditMode && !isEnabled && 'opacity-40',
+        // Remove the generic opacity reduction - we'll use a more visual approach
         isOver && !isDragging && 'ring-2 ring-primary/50 ring-offset-2 ring-offset-background rounded-lg',
         className
       )}
@@ -170,8 +172,16 @@ export function ModuleCard({
           
           {/* Module name label - top left */}
           <div className="absolute top-2 left-2 pointer-events-none">
-            <div className="px-2 py-1 rounded-md bg-card/90 backdrop-blur-xl border border-primary/40 shadow-[0_0_12px_rgba(91,180,255,0.2)]">
-              <span className="text-[10px] font-orbitron text-primary uppercase tracking-wider">
+            <div className={cn(
+              "px-2 py-1 rounded-md backdrop-blur-xl border shadow-[0_0_12px_rgba(91,180,255,0.2)]",
+              isEnabled 
+                ? "bg-card/90 border-primary/40" 
+                : "bg-destructive/10 border-destructive/30"
+            )}>
+              <span className={cn(
+                "text-[10px] font-orbitron uppercase tracking-wider",
+                isEnabled ? "text-primary" : "text-destructive"
+              )}>
                 {name || 'Module'}
               </span>
             </div>
@@ -182,10 +192,43 @@ export function ModuleCard({
             "absolute inset-0 rounded-lg border-2 border-dashed transition-all duration-200",
             isDragging 
               ? "border-primary shadow-[0_0_20px_rgba(91,180,255,0.4)]" 
-              : "border-primary/30",
-            !isEnabled && "border-destructive/30",
+              : isEnabled 
+                ? "border-primary/30"
+                : "border-destructive/40",
             isOver && !isDragging && "border-primary/60 bg-primary/5"
           )} />
+        </div>
+      )}
+      
+      {/* FIX #1: Hidden state overlay - show when disabled in edit mode */}
+      {isEditMode && !isEnabled && (
+        <div className="absolute inset-0 z-10 rounded-lg overflow-hidden pointer-events-none">
+          {/* Dimming overlay */}
+          <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px]" />
+          
+          {/* Diagonal hatch pattern */}
+          <div 
+            className="absolute inset-0 opacity-30"
+            style={{
+              backgroundImage: `repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                hsl(var(--destructive) / 0.2) 10px,
+                hsl(var(--destructive) / 0.2) 12px
+              )`
+            }}
+          />
+          
+          {/* Hidden label */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/40 backdrop-blur-sm">
+              <HiddenIcon className="w-4 h-4 text-destructive" />
+              <span className="text-sm font-orbitron text-destructive uppercase tracking-wider">
+                Hidden
+              </span>
+            </div>
+          </div>
         </div>
       )}
       
