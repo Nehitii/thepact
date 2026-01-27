@@ -121,7 +121,10 @@ export function ActionModuleCard({
   children,
 }: ActionModuleCardProps) {
   const theme = colorThemes[accentColor];
-  const IconComponent = typeof icon === 'function' ? icon as LucideIcon : null;
+  
+  // Check if icon is a React component (function or forwardRef object)
+  const isIconComponent = typeof icon === 'function' || 
+    (typeof icon === 'object' && icon !== null && '$$typeof' in icon);
   
   return (
     <div className="animate-fade-in relative group h-full">
@@ -149,8 +152,10 @@ export function ActionModuleCard({
           {/* Icon */}
           <div className="relative">
             <div className={cn("absolute inset-0 blur-lg rounded-full", theme.iconGlow)} />
-            {IconComponent ? (
-              <IconComponent className={cn("w-8 h-8 relative z-10", theme.iconColor, theme.iconDrop)} />
+            {isIconComponent ? (
+              React.createElement(icon as LucideIcon, { 
+                className: cn("w-8 h-8 relative z-10", theme.iconColor, theme.iconDrop) 
+              })
             ) : (
               <span className={cn("text-2xl relative z-10", theme.iconDrop)}>
                 {icon as React.ReactNode}
