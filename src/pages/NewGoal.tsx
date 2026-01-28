@@ -14,6 +14,7 @@ import { ArrowLeft, Target, Sparkles, Calendar, ListOrdered, Image, StickyNote, 
 import { useToast } from "@/hooks/use-toast";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
+import { GOAL_TAGS, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
 import { z } from "zod";
 import { motion } from "framer-motion";
 
@@ -26,26 +27,6 @@ const goalSchema = z.object({
   habitDurationDays: z.number().int().min(1, { message: "Must be at least 1 day" }).max(365, { message: "Cannot exceed 365 days" }).optional(),
   notes: z.string().max(500, { message: "Notes must be less than 500 characters" }).optional()
 });
-
-const goalTags = [
-  { value: "personal", label: "Personal", color: "hsl(200 100% 67%)" },
-  { value: "professional", label: "Professional", color: "hsl(45 95% 55%)" },
-  { value: "health", label: "Health", color: "hsl(142 70% 50%)" },
-  { value: "creative", label: "Creative", color: "hsl(280 75% 55%)" },
-  { value: "financial", label: "Financial", color: "hsl(212 90% 55%)" },
-  { value: "learning", label: "Learning", color: "hsl(25 100% 60%)" },
-  { value: "relationship", label: "Relationship", color: "hsl(340 75% 55%)" },
-  { value: "diy", label: "DIY", color: "hsl(175 70% 45%)" },
-  { value: "other", label: "Other", color: "hsl(210 30% 50%)" }
-];
-
-const difficulties = [
-  { value: "easy", label: "Easy", color: "hsl(142 70% 50%)" },
-  { value: "medium", label: "Medium", color: "hsl(45 95% 55%)" },
-  { value: "hard", label: "Hard", color: "hsl(25 100% 60%)" },
-  { value: "extreme", label: "Extreme", color: "hsl(0 90% 65%)" },
-  { value: "impossible", label: "Impossible", color: "hsl(280 75% 45%)" }
-];
 
 export default function NewGoal() {
   const { user } = useAuth();
@@ -89,8 +70,8 @@ export default function NewGoal() {
   }, [user]);
 
   const allDifficulties = [
-    ...difficulties,
-    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: customDifficultyColor }] : [])
+    ...DIFFICULTY_OPTIONS,
+    ...(customDifficultyActive ? [{ value: "custom" as const, label: customDifficultyName || "Custom", color: customDifficultyColor }] : [])
   ];
 
   const toggleTag = (tagValue: string) => {
@@ -292,7 +273,7 @@ export default function NewGoal() {
                   Tags <span className="text-destructive">*</span>
                 </Label>
                 <div className="flex flex-wrap gap-2">
-                  {goalTags.map((tag) => {
+                  {GOAL_TAGS.map((tag) => {
                     const isSelected = selectedTags.includes(tag.value);
                     return (
                       <button

@@ -13,6 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
+import { 
+  getDifficultyIntensity, 
+  getStatusLabel as getConstantStatusLabel, 
+  getStatusBadgeClass 
+} from "@/lib/goalConstants";
 import { usePact } from "@/hooks/usePact";
 import { useGoals, Goal } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
@@ -21,19 +26,6 @@ import { motion, AnimatePresence } from "framer-motion";
 type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression";
 type SortDirection = "asc" | "desc";
 type DisplayMode = "bar" | "grid" | "bookmark";
-
-// Helper function to get difficulty intensity level (1-5)
-const getDifficultyIntensity = (difficulty: string): number => {
-  switch (difficulty) {
-    case "easy": return 1;
-    case "medium": return 2;
-    case "hard": return 3;
-    case "extreme": return 4;
-    case "impossible":
-    case "custom": return 5;
-    default: return 1;
-  }
-};
 
 // Get aura animation class based on difficulty
 const getAuraClass = (difficulty: string): string => {
@@ -132,25 +124,9 @@ export default function Goals() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "not_started": return "bg-card/80 text-muted-foreground border-border";
-      case "in_progress": return "bg-blue-500/15 text-blue-400 border-blue-500/30";
-      case "fully_completed": return "bg-green-500/15 text-green-400 border-green-500/30";
-      case "paused": return "bg-orange-500/15 text-orange-400 border-orange-500/30";
-      default: return "bg-card/80 text-muted-foreground border-border";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "not_started": return "Not Started";
-      case "in_progress": return "In Progress";
-      case "fully_completed": return "Completed";
-      case "paused": return "Paused";
-      default: return status;
-    }
-  };
+  // Use centralized constants for status - keeping local getStatusColor for badge styling
+  const getStatusColor = (status: string) => getStatusBadgeClass(status);
+  const getStatusLabel = (status: string) => getConstantStatusLabel(status);
 
   const getDifficultyColor = (difficulty: string) => getUnifiedDifficultyColor(difficulty, customDifficultyColor);
 

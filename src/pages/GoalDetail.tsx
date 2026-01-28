@@ -28,6 +28,7 @@ import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { motion, AnimatePresence } from "framer-motion";
+import { GOAL_TAGS, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
 
 interface Goal {
   id: string;
@@ -57,28 +58,6 @@ interface Step {
   due_date: string | null;
   notes?: string | null;
 }
-
-// Valid goal tags matching NewGoal.tsx
-const goalTags = [
-  { value: "personal", label: "Personal", color: "hsl(200 100% 67%)" },
-  { value: "professional", label: "Professional", color: "hsl(45 95% 55%)" },
-  { value: "health", label: "Health", color: "hsl(142 70% 50%)" },
-  { value: "creative", label: "Creative", color: "hsl(280 75% 55%)" },
-  { value: "financial", label: "Financial", color: "hsl(212 90% 55%)" },
-  { value: "learning", label: "Learning", color: "hsl(25 100% 60%)" },
-  { value: "relationship", label: "Relationship", color: "hsl(340 75% 55%)" },
-  { value: "diy", label: "DIY", color: "hsl(175 70% 45%)" },
-  { value: "other", label: "Other", color: "hsl(210 30% 50%)" }
-];
-
-// Difficulties matching NewGoal.tsx
-const difficultyOptions = [
-  { value: "easy", label: "Easy", color: "hsl(142 70% 50%)" },
-  { value: "medium", label: "Medium", color: "hsl(45 95% 55%)" },
-  { value: "hard", label: "Hard", color: "hsl(25 100% 60%)" },
-  { value: "extreme", label: "Extreme", color: "hsl(0 90% 65%)" },
-  { value: "impossible", label: "Impossible", color: "hsl(280 75% 45%)" }
-];
 
 export default function GoalDetail() {
   const { id } = useParams<{ id: string }>();
@@ -162,8 +141,8 @@ export default function GoalDetail() {
   }, [costItems]);
 
   const allDifficulties = [
-    ...difficultyOptions,
-    ...(customDifficultyActive ? [{ value: "custom", label: customDifficultyName || "Custom", color: customDifficultyColor }] : [])
+    ...DIFFICULTY_OPTIONS,
+    ...(customDifficultyActive ? [{ value: "custom" as const, label: customDifficultyName || "Custom", color: customDifficultyColor }] : [])
   ];
 
   // Toggle tag for multi-select
@@ -177,7 +156,7 @@ export default function GoalDetail() {
 
   // Map old/invalid tags to valid ones
   const mapToValidTag = (tag: string): string => {
-    const validValues = goalTags.map(t => t.value);
+    const validValues = GOAL_TAGS.map(t => t.value) as readonly string[];
     const lowered = tag.toLowerCase();
     if (validValues.includes(lowered)) return lowered;
     // Map old tags like "Growth" to closest valid tag
@@ -781,7 +760,7 @@ export default function GoalDetail() {
                           Tags <span className="text-destructive">*</span>
                         </Label>
                         <div className="flex flex-wrap gap-2">
-                          {goalTags.map((tag) => {
+                          {GOAL_TAGS.map((tag) => {
                             const isSelected = editTags.includes(tag.value);
                             return (
                               <button
