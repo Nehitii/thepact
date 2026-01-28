@@ -35,11 +35,17 @@ export function NextMilestoneCard({
       ? Math.max(0, Math.ceil((new Date(projectEndDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
       : null;
     
-    // Primary focus goal
+    // Primary focus goal - use unified field access with fallback support
     const primaryFocus = focusGoals[0] ?? null;
+    const primaryTotalSteps = primaryFocus 
+      ? (primaryFocus.totalStepsCount ?? primaryFocus.total_steps ?? 0) 
+      : 0;
+    const primaryCompletedSteps = primaryFocus 
+      ? (primaryFocus.completedStepsCount ?? primaryFocus.validated_steps ?? 0) 
+      : 0;
     const focusProgress = primaryFocus 
-      ? primaryFocus.total_steps > 0 
-        ? Math.round((primaryFocus.validated_steps / primaryFocus.total_steps) * 100)
+      ? primaryTotalSteps > 0 
+        ? Math.round((primaryCompletedSteps / primaryTotalSteps) * 100)
         : 0
       : null;
     

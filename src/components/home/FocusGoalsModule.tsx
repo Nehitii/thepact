@@ -23,9 +23,12 @@ export function FocusGoalsModule({
   const allGoalsList = (
     <div className="space-y-3">
       {goals.slice(2).map((goal, index) => {
-        const remainingSteps = (goal.total_steps || 0) - (goal.validated_steps || 0);
-        const progressPercent = goal.total_steps > 0
-          ? Math.round((goal.validated_steps / goal.total_steps) * 100)
+        // Use unified field access with fallback support for both raw DB fields and enriched hook data
+        const totalSteps = goal.totalStepsCount ?? goal.total_steps ?? 0;
+        const completedSteps = goal.completedStepsCount ?? goal.validated_steps ?? 0;
+        const remainingSteps = totalSteps - completedSteps;
+        const progressPercent = totalSteps > 0
+          ? Math.round((completedSteps / totalSteps) * 100)
           : 0;
         
         return (
@@ -83,9 +86,12 @@ export function FocusGoalsModule({
       ) : (
         <div className="space-y-3 flex-1">
           {visibleGoals.map((goal, index) => {
-            const remainingSteps = (goal.total_steps || 0) - (goal.validated_steps || 0);
-            const progressPercent = goal.total_steps > 0
-              ? Math.round((goal.validated_steps / goal.total_steps) * 100)
+            // Use unified field access with fallback support for both raw DB fields and enriched hook data
+            const totalSteps = goal.totalStepsCount ?? goal.total_steps ?? 0;
+            const completedSteps = goal.completedStepsCount ?? goal.validated_steps ?? 0;
+            const remainingSteps = totalSteps - completedSteps;
+            const progressPercent = totalSteps > 0
+              ? Math.round((completedSteps / totalSteps) * 100)
               : 0;
             
             return (
