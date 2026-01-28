@@ -789,7 +789,7 @@ export default function GoalDetail() {
                             );
                           })}
                         </div>
-                        <p className="text-xs text-muted-foreground">Select one or more tags for your goal</p>
+                        <p className="text-xs text-muted-foreground">Select your primary tag (first selected will be saved)</p>
                       </div>
                     </div>
 
