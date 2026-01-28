@@ -14,9 +14,17 @@ export default function PrivacyControl() {
   const labelStyle = "text-foreground font-rajdhani text-base";
   const descriptionStyle = "text-sm text-muted-foreground font-rajdhani";
 
-  const toggle = (key: "community_profile_discoverable" | "show_activity_status" | "share_goals_progress" | "share_achievements" | "community_updates_enabled" | "achievement_celebrations_enabled", value: boolean) => {
+  type PrivacyKey = 
+    | "community_profile_discoverable" 
+    | "show_activity_status" 
+    | "share_goals_progress" 
+    | "share_achievements" 
+    | "community_updates_enabled" 
+    | "achievement_celebrations_enabled";
+
+  const toggle = (key: PrivacyKey, value: boolean) => {
     updateProfile.mutate(
-      { [key]: value } as any,
+      { [key]: value },
       {
         onSuccess: () => {
           toast({
@@ -93,8 +101,8 @@ export default function PrivacyControl() {
                   <p className={descriptionStyle}>Display earned achievements publicly</p>
                 </div>
                 <Switch
-                  checked={(profile as any)?.share_achievements ?? true}
-                  onCheckedChange={(v) => toggle("share_achievements" as any, v)}
+                  checked={profile?.share_achievements ?? true}
+                  onCheckedChange={(v) => toggle("share_achievements", v)}
                   disabled={isLoading || updateProfile.isPending}
                 />
               </div>
@@ -115,8 +123,8 @@ export default function PrivacyControl() {
                   <p className={descriptionStyle}>Receive updates from community members</p>
                 </div>
                 <Switch
-                  checked={(profile as any)?.community_updates_enabled ?? true}
-                  onCheckedChange={(v) => toggle("community_updates_enabled" as any, v)}
+                  checked={profile?.community_updates_enabled ?? true}
+                  onCheckedChange={(v) => toggle("community_updates_enabled", v)}
                   disabled={isLoading || updateProfile.isPending}
                 />
               </div>
@@ -126,8 +134,8 @@ export default function PrivacyControl() {
                   <p className={descriptionStyle}>Get notified of others' achievements</p>
                 </div>
                 <Switch
-                  checked={(profile as any)?.achievement_celebrations_enabled ?? true}
-                  onCheckedChange={(v) => toggle("achievement_celebrations_enabled" as any, v)}
+                  checked={profile?.achievement_celebrations_enabled ?? true}
+                  onCheckedChange={(v) => toggle("achievement_celebrations_enabled", v)}
                   disabled={isLoading || updateProfile.isPending}
                 />
               </div>
