@@ -4,6 +4,7 @@ import { Star } from "lucide-react";
 interface Goal {
   id: string;
   name: string;
+  type?: string;
   difficulty?: string | null;
   image_url?: string | null;
   is_focus?: boolean | null;
@@ -13,6 +14,7 @@ interface Goal {
   totalStepsCount?: number;
   completedStepsCount?: number;
   status?: string | null;
+  tags?: string[];
 }
 
 interface GridViewGoalCardProps {
