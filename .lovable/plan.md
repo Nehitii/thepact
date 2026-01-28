@@ -1,222 +1,237 @@
 
+# Implementation Plan: Goals Module Audit Fixes
 
-# /Home Analysis & Improvement Plan
+## Overview
 
-## Short Diagnosis
-
-### Current State Analysis
-
-The `/Home` page is a **feature-rich modular dashboard** with strong visual identity (sci-fi/HUD aesthetic), but suffers from several key issues that diminish its effectiveness as a "personal command center":
-
-**Strengths:**
-- Strong visual identity with consistent glassmorphism and glow effects
-- Solid modular architecture (drag-drop, resize, visibility toggles)
-- Good gamification elements (XP, Rank, Level)
-- Clear core identity section (Pact symbol, name, mantra)
-
-**Core Issues:**
-
-1. **Information Overload**: 14+ modules competing for attention with no visual hierarchy. Everything glows equally, reducing overall impact.
-
-2. **No User State Adaptation**: New users, active users, and advanced users see the exact same dashboard. A fresh user with 0 goals sees empty gauges rather than onboarding prompts.
-
-3. **Weak "Next Action" Clarity**: No clear CTA or "what should I do now?" guidance. The dashboard shows data but doesn't drive action.
-
-4. **Redundant Metrics**: Goals Completed, Steps Completed, and Status Summary all display overlapping goal data, creating cognitive noise.
-
-5. **Poor Mobile Experience**: Fixed width modules and complex grid become cramped on smaller screens.
-
-6. **Locked Modules Friction**: Unpurchased modules show "Unlock in Shop" but still consume valuable space and create visual clutter.
-
-7. **Cross-Module Disconnection**: Health, Finance, Journal, and Todo modules don't surface insights on Home—they're just navigation buttons.
+This plan addresses the critical issues identified in the /goals audit, including bug fixes, data model improvements, and code consistency enhancements. The implementation focuses on stability, maintainability, and preserving existing user data.
 
 ---
 
-## Prioritized Improvement Ideas
+## Phase 1: Critical Bug Fixes
 
-### Priority 1 — Hero Zone Redesign (High Impact)
+### 1.1 Fix Missing /goals/news Route (404 Error)
 
-**Problem**: The core Pact section is beautiful but passive. Three HUD panels (XP, Rank, Level) are visually similar and lack context.
+**Problem:** Navigating to `/goals/news` returns a 404 because the route is not defined in `App.tsx`.
 
-**Solution**:
-- Add a **"Today's Focus"** contextual message below the mantra (e.g., "3 steps remaining on Goal X" or "Validation pending in Finance")
-- Replace the 3-column stats grid with a **single "Next Milestone" card** showing:
-  - XP to next rank
-  - Days remaining if timeline is active
-  - Primary focus goal progress
-- Add subtle micro-animation to the rank panel when user is close to leveling up
+**Solution:** Since there's no existing implementation for this feature, we have two options:
+- **Option A (Recommended):** Remove any references to `/goals/news` from the codebase if it's an orphaned concept
+- **Option B:** Create a placeholder page that redirects to `/goals` with a toast message
 
----
+**Implementation:**
+- Search codebase for `/goals/news` references
+- If no meaningful references exist, document that this route is intentionally not implemented
+- If references exist, add a redirect route to `/goals`
 
-### Priority 2 — Smart Dashboard Sections (User-State Adaptive)
-
-**Problem**: Empty gauges for new users; overwhelming data for advanced users.
-
-**Solution**: Introduce 3 adaptive states:
-
-| User State | Criteria | Dashboard Behavior |
-|------------|----------|-------------------|
-| **Onboarding** | 0-1 goals, <7 days | Show "Getting Started" card with guided steps |
-| **Active** | 2+ goals, in-progress | Show standard modules + "Quick Actions" bar |
-| **Advanced** | 5+ completed goals | Unlock "Insights" panel with trends |
-
-**Implementation**:
-- Calculate user state in `useMemo` based on `allGoals`, pact creation date
-- Render conditional sections based on state
-- "Getting Started" card prompts: "Create your first goal", "Set project timeline", "Explore the shop"
+**Files to modify:**
+- `src/App.tsx` (add redirect if needed)
 
 ---
 
-### Priority 3 — Module Consolidation & Visual Hierarchy
+### 1.2 Fix FocusGoalsModule Field Name Mismatch
 
-**Problem**: Goals Gauge, Steps Gauge, and Status Summary all show goal-related metrics. Progress by Difficulty and Cost Tracking are secondary.
+**Problem:** `FocusGoalsModule.tsx` uses `goal.total_steps` and `goal.validated_steps`, but when goals come from `useGoals` hook with `includeStepCounts: true`, the fields are named `completedStepsCount` and `totalStepsCount`.
 
-**Solution**:
-1. **Merge Goals + Steps into a single "Progress Overview" module** with:
-   - Dual progress rings (goals outer, steps inner)
-   - Single glanceable metric
-2. **Demote Status Summary** to an expandable detail within Progress Overview
-3. **Create visual hierarchy** with 3 tiers:
-   - **Primary** (larger, top): Focus Goals, Progress Overview
-   - **Secondary** (medium): Timeline, Achievements
-   - **Tertiary** (smaller, bottom): Action modules (Finance, Todo, etc.)
-
----
-
-### Priority 4 — Quick Actions Bar
-
-**Problem**: No clear "next action" from the dashboard.
-
-**Solution**: Add a floating/sticky "Quick Actions" section below the hero:
-
-```
-[ + New Goal ]  [ ✓ Log Todo ]  [ 📝 Journal Entry ]  [ 💪 Health Check-in ]
+**Current (Broken):**
+```typescript
+const remainingSteps = (goal.total_steps || 0) - (goal.validated_steps || 0);
+const progressPercent = goal.total_steps > 0
+  ? Math.round((goal.validated_steps / goal.total_steps) * 100)
+  : 0;
 ```
 
-- Only show buttons for purchased modules
-- On mobile: horizontal scroll
-- Subtle entrance animation
-
----
-
-### Priority 5 — Module Insights Integration
-
-**Problem**: Purchased modules (Finance, Health, Todo) only show navigation buttons, not data.
-
-**Solution**: Display **live mini-insights** for owned modules:
-
-| Module | Home Insight |
-|--------|-------------|
-| **Finance** | "€450 remaining to goal" or "Validation due in 3 days" |
-| **Health** | Today's health score (if checked in) or "Check-in available" |
-| **Todo** | "4 tasks due today" with priority count |
-| **Journal** | "Last entry: 2 days ago" |
-
-**Implementation**: Extend each module component to accept an `insightMode` prop for compact data display.
-
----
-
-### Priority 6 — Locked Module Handling
-
-**Problem**: Locked modules take up space and add visual noise.
-
-**Solution**:
-1. **Group locked modules** into a single "Unlock More" teaser card at the bottom
-2. Show 2-3 module icons with "Discover more in Shop →"
-3. Remove individual locked module cards from the main grid
-
----
-
-### Priority 7 — Focus Goals Enhancement
-
-**Problem**: Focus Goals section is buried; starred goals lack priority distinction.
-
-**Solution**:
-1. Move Focus Goals to **directly below hero** (after Quick Actions)
-2. Add **priority ranking** (1, 2, 3) to starred goals
-3. Show **today's next step** for the #1 focus goal
-4. Add "Start Working" button that navigates to step detail
-
----
-
-### Priority 8 — Mobile & Responsive Polish
-
-**Problem**: Fixed 700px+ modules, complex grid doesn't adapt well.
-
-**Solution**:
-1. Stack all modules single-column on mobile (<768px)
-2. Reduce hero stats to 2-column on tablet
-3. Add swipe gestures for module categories on mobile
-4. Make Quick Actions bar sticky on mobile
-
----
-
-### Priority 9 — Typography & Spacing Refinements
-
-**Problem**: Inconsistent spacing, some text is hard to read at small sizes.
-
-**Solution**:
-1. Increase base padding from `p-6` to `p-6 md:p-8` for primary modules
-2. Standardize module header height (currently varies)
-3. Increase label font-size from `text-[10px]` to `text-xs` for accessibility
-4. Add consistent `gap-8` between module tiers
-
----
-
-### Priority 10 — Subtle Animation Enhancements
-
-**Problem**: Current animations (shimmer, glow-pulse) are generic.
-
-**Solution**:
-1. **Progress animations**: Ring fills animate on mount with staggered delay
-2. **Achievement unlock**: Flash effect when new achievement unlocked since last visit
-3. **Milestone proximity**: Pulsing border when <10% from next rank
-4. **Reduce motion**: Respect `prefers-reduced-motion` and Profile settings
-
----
-
-## Technical Implementation Outline
-
+**Solution:** Update to use unified field access with fallback support:
+```typescript
+const totalSteps = goal.totalStepsCount ?? goal.total_steps ?? 0;
+const completedSteps = goal.completedStepsCount ?? goal.validated_steps ?? 0;
+const remainingSteps = totalSteps - completedSteps;
+const progressPercent = totalSteps > 0
+  ? Math.round((completedSteps / totalSteps) * 100)
+  : 0;
 ```
-src/pages/Home.tsx Changes:
-├── Add userState calculation (onboarding | active | advanced)
-├── Create QuickActionsBar component
-├── Create GettingStartedCard component
-├── Merge GoalsGaugeModule + StepsGaugeModule → ProgressOverviewModule
-├── Move Focus Goals rendering to top of module grid
-├── Add insightMode props to action modules
 
-src/components/home/ New Files:
-├── QuickActionsBar.tsx
-├── GettingStartedCard.tsx
-├── ProgressOverviewModule.tsx
-├── LockedModulesTeaser.tsx
+**Files to modify:**
+- `src/components/home/FocusGoalsModule.tsx` (2 locations: lines 26-29 and 86-89)
+- `src/components/home/NextMilestoneCard.tsx` (if similar issue exists)
 
-src/hooks/useModuleLayout.ts Changes:
-├── Add tier property to ModuleConfig (primary | secondary | tertiary)
-├── Sort modules by tier then order
-├── Hide individual locked modules when LockedModulesTeaser active
+---
 
-CSS/Styling:
-├── Add .module-tier-primary, .module-tier-secondary classes
-├── Mobile-first responsive adjustments
-├── Accessibility font-size increases
+## Phase 2: Code Standardization
+
+### 2.1 Create Centralized Goal Constants
+
+**Problem:** Difficulty options, status labels, and tag definitions are hardcoded across 6+ files with slight variations.
+
+**Solution:** Create a new constants file that serves as the single source of truth.
+
+**New file: `src/lib/goalConstants.ts`**
+
+```typescript
+// Goal Tags with colors
+export const GOAL_TAGS = [
+  { value: "personal", label: "Personal", color: "hsl(200 100% 67%)" },
+  { value: "professional", label: "Professional", color: "hsl(45 95% 55%)" },
+  { value: "health", label: "Health", color: "hsl(142 70% 50%)" },
+  { value: "creative", label: "Creative", color: "hsl(280 75% 55%)" },
+  { value: "financial", label: "Financial", color: "hsl(212 90% 55%)" },
+  { value: "learning", label: "Learning", color: "hsl(25 100% 60%)" },
+  { value: "relationship", label: "Relationship", color: "hsl(340 75% 55%)" },
+  { value: "diy", label: "DIY", color: "hsl(175 70% 45%)" },
+  { value: "other", label: "Other", color: "hsl(210 30% 50%)" },
+] as const;
+
+// Difficulty options (without custom - that comes from profile)
+export const DIFFICULTY_OPTIONS = [
+  { value: "easy", label: "Easy", color: "hsl(142 70% 50%)" },
+  { value: "medium", label: "Medium", color: "hsl(45 95% 55%)" },
+  { value: "hard", label: "Hard", color: "hsl(25 100% 60%)" },
+  { value: "extreme", label: "Extreme", color: "hsl(0 90% 65%)" },
+  { value: "impossible", label: "Impossible", color: "hsl(280 75% 45%)" },
+] as const;
+
+// Difficulty order for sorting
+export const DIFFICULTY_ORDER = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
+
+// Status labels and colors
+export const STATUS_CONFIG = {
+  not_started: { label: "Not Started", color: "bg-muted text-muted-foreground", badgeClass: "bg-card/80 text-muted-foreground border-border" },
+  in_progress: { label: "In Progress", color: "bg-blue-500/10 text-blue-400", badgeClass: "bg-blue-500/15 text-blue-400 border-blue-500/30" },
+  validated: { label: "Validated", color: "bg-yellow-500/10 text-yellow-400", badgeClass: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30" },
+  fully_completed: { label: "Completed", color: "bg-green-500/10 text-green-400", badgeClass: "bg-green-500/15 text-green-400 border-green-500/30" },
+  paused: { label: "Paused", color: "bg-orange-500/10 text-orange-400", badgeClass: "bg-orange-500/15 text-orange-400 border-orange-500/30" },
+} as const;
+
+// Helper functions
+export function getStatusLabel(status: string): string {
+  return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.label || status;
+}
+
+export function getStatusColor(status: string): string {
+  return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.color || "bg-muted text-muted-foreground";
+}
+
+export function getStatusBadgeClass(status: string): string {
+  return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.badgeClass || "bg-card/80 text-muted-foreground border-border";
+}
+
+export function getDifficultyLabel(difficulty: string, customName?: string): string {
+  if (difficulty === "custom") return customName || "Custom";
+  const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
+  return found?.label || difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+}
+
+export function getTagLabel(type: string): string {
+  const found = GOAL_TAGS.find(t => t.value === type);
+  return found?.label || type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+export function getTagColor(type: string): string {
+  const found = GOAL_TAGS.find(t => t.value === type);
+  return found?.color || "hsl(210 30% 50%)";
+}
+```
+
+**Files to update:**
+- `src/pages/NewGoal.tsx` - Import from constants
+- `src/pages/GoalDetail.tsx` - Import from constants
+- `src/pages/Goals.tsx` - Import from constants
+- `src/components/goals/BarViewGoalCard.tsx` - Import from constants
+- `src/components/goals/GridViewGoalCard.tsx` - Import from constants
+
+---
+
+### 2.2 Document Tag Data Limitation (No Schema Change Required)
+
+**Problem:** The UI allows multi-tag selection, but the database `type` field is an enum that only stores one value.
+
+**Current behavior:** Only the first selected tag is saved to the database.
+
+**Recommendation:** Rather than implementing a complex junction table migration that could affect existing data, we should:
+
+1. **Document the limitation** clearly in the UI
+2. **Update UI text** from "Select one or more tags" to "Select your primary tag"
+3. **Keep multi-select for future enhancement** (the infrastructure is ready)
+
+**Files to modify:**
+- `src/pages/NewGoal.tsx` - Update helper text on line 318
+- `src/pages/GoalDetail.tsx` - Update UI to clarify single-tag behavior
+
+---
+
+## Phase 3: Home Dashboard Integration Fixes
+
+### 3.1 Ensure Home.tsx Uses Consistent Field Names
+
+**Current state:** `Home.tsx` line 123-124 uses `g.total_steps` and `g.validated_steps` which is correct for the raw database fields, but may be inconsistent when `useGoals` returns enriched data.
+
+**Solution:** The current implementation is actually correct because `Home.tsx` accesses goals differently. However, we should verify consistency.
+
+**Files to review:**
+- `src/pages/Home.tsx` - Verify field access patterns
+
+---
+
+## Implementation Order
+
+```text
++------------------+     +---------------------+     +------------------+
+|   Phase 1        |     |   Phase 2           |     |   Phase 3        |
+|   Critical Bugs  | --> |   Standardization   | --> |   Home Fixes     |
++------------------+     +---------------------+     +------------------+
+| 1.1 Route fix    |     | 2.1 Constants file  |     | 3.1 Field verify |
+| 1.2 Field names  |     | 2.2 Document tags   |     |                  |
++------------------+     +---------------------+     +------------------+
 ```
 
 ---
 
-## Deliverable Summary
+## Technical Details
 
-| Improvement | Impact | Effort |
-|-------------|--------|--------|
-| Hero + Next Milestone redesign | High | Medium |
-| User-state adaptive sections | High | Medium |
-| Module consolidation | High | Medium |
-| Quick Actions bar | Medium | Low |
-| Module insights integration | Medium | Medium |
-| Locked modules grouping | Medium | Low |
-| Focus Goals enhancement | Medium | Low |
-| Mobile/responsive polish | Medium | Medium |
-| Typography refinements | Low | Low |
-| Animation enhancements | Low | Low |
+### Files to Create
 
+| File | Purpose |
+|------|---------|
+| `src/lib/goalConstants.ts` | Centralized goal-related constants and helper functions |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/components/home/FocusGoalsModule.tsx` | Fix field name access (totalStepsCount/completedStepsCount) |
+| `src/pages/NewGoal.tsx` | Import constants, update tag helper text |
+| `src/pages/GoalDetail.tsx` | Import constants, clarify single-tag UI |
+| `src/pages/Goals.tsx` | Import constants for consistency |
+| `src/components/goals/BarViewGoalCard.tsx` | Import constants |
+| `src/App.tsx` | Add redirect for /goals/news if needed |
+
+### No Database Changes Required
+
+This implementation intentionally avoids database schema changes to:
+- Preserve existing user data
+- Avoid migration complexity
+- Allow the tag junction table enhancement to be a separate, planned feature
+
+---
+
+## Validation Checklist
+
+After implementation, verify:
+
+- [ ] `/goals/new` - Form submission works
+- [ ] `/goals/:id` - Goal detail page loads correctly
+- [ ] `/goals` - All three view modes (Bar, Grid, Bookmark) work
+- [ ] Home Focus Goals widget shows correct progress
+- [ ] Difficulty colors display correctly everywhere
+- [ ] Status labels are consistent across all surfaces
+- [ ] No console errors related to undefined fields
+- [ ] Sorting by progression works correctly
+
+---
+
+## Future Enhancements (Out of Scope)
+
+These items are documented but not included in this implementation:
+
+1. **Multi-tag support** - Requires `goal_tags` junction table and UI updates
+2. **GoalDetail React Query migration** - Convert manual fetching to use `useQuery`
+3. **Performance optimization** - Reduce hardcoded animation characters in GridViewGoalCard
+4. **/goals/news feature** - Implement as "Goal Activity Feed" if product decides it's valuable
