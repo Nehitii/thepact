@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { trackGoalCreated } from "@/lib/achievements";
+import { insertGoalTags } from "@/hooks/useGoalTags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -156,6 +157,9 @@ export default function NewGoal() {
         .single();
 
       if (goalError) throw goalError;
+
+      // Insert all selected tags into goal_tags junction table
+      await insertGoalTags(goalData.id, selectedTags);
 
       // Insert cost items
       if (costItems.length > 0) {
@@ -315,7 +319,7 @@ export default function NewGoal() {
                     );
                   })}
                 </div>
-                <p className="text-xs text-muted-foreground">Select your primary tag (first selected will be saved)</p>
+                <p className="text-xs text-muted-foreground">Select one or more tags to categorize your goal</p>
               </div>
             </div>
 

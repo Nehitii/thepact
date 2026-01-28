@@ -22,11 +22,13 @@ export interface Goal {
   // Step counts from batch query
   completedStepsCount?: number;
   totalStepsCount?: number;
+  // Tags from junction table
+  tags?: string[];
 }
 
-export function useGoals(pactId: string | undefined, options?: { includeStepCounts?: boolean }) {
+export function useGoals(pactId: string | undefined, options?: { includeStepCounts?: boolean; includeTags?: boolean }) {
   return useQuery({
-    queryKey: ["goals", pactId, options?.includeStepCounts],
+    queryKey: ["goals", pactId, options?.includeStepCounts, options?.includeTags],
     queryFn: async () => {
       if (!pactId) return [];
 
@@ -40,43 +42,59 @@ export function useGoals(pactId: string | undefined, options?: { includeStepCoun
       if (goalsError) throw goalsError;
       if (!goalsData || goalsData.length === 0) return [];
 
-      // If step counts not needed, return goals directly
-      if (!options?.includeStepCounts) {
-        return goalsData as Goal[];
-      }
-
-      // BATCH QUERY: Fetch ALL steps for all goals in ONE query
       const goalIds = goalsData.map((g) => g.id);
-      const { data: allSteps, error: stepsError } = await supabase
-        .from("steps")
-        .select("goal_id, status")
-        .in("goal_id", goalIds);
 
-      if (stepsError) throw stepsError;
+      // Parallel fetch for step counts and tags
+      const [stepsResult, tagsResult] = await Promise.all([
+        // Fetch step counts if requested
+        options?.includeStepCounts
+          ? supabase.from("steps").select("goal_id, status").in("goal_id", goalIds)
+          : Promise.resolve({ data: null, error: null }),
+        // Fetch tags if requested (default: true for backwards compat)
+        options?.includeTags !== false
+          ? supabase.from("goal_tags").select("goal_id, tag").in("goal_id", goalIds)
+          : Promise.resolve({ data: null, error: null }),
+      ]);
+
+      if (stepsResult.error) throw stepsResult.error;
+      if (tagsResult.error) throw tagsResult.error;
 
       // Aggregate step counts client-side
       const stepCountsByGoal = new Map<string, { total: number; completed: number }>();
-      
-      for (const step of allSteps || []) {
-        const existing = stepCountsByGoal.get(step.goal_id) || { total: 0, completed: 0 };
-        existing.total++;
-        if (step.status === "completed") {
-          existing.completed++;
+      if (stepsResult.data) {
+        for (const step of stepsResult.data) {
+          const existing = stepCountsByGoal.get(step.goal_id) || { total: 0, completed: 0 };
+          existing.total++;
+          if (step.status === "completed") {
+            existing.completed++;
+          }
+          stepCountsByGoal.set(step.goal_id, existing);
         }
-        stepCountsByGoal.set(step.goal_id, existing);
       }
 
-      // Merge step counts into goals
-      const goalsWithCounts = goalsData.map((goal) => {
+      // Aggregate tags by goal
+      const tagsByGoal = new Map<string, string[]>();
+      if (tagsResult.data) {
+        for (const row of tagsResult.data) {
+          const existing = tagsByGoal.get(row.goal_id) || [];
+          existing.push(row.tag);
+          tagsByGoal.set(row.goal_id, existing);
+        }
+      }
+
+      // Merge step counts and tags into goals
+      const goalsWithExtras = goalsData.map((goal) => {
         const counts = stepCountsByGoal.get(goal.id) || { total: 0, completed: 0 };
+        const tags = tagsByGoal.get(goal.id) || [];
         return {
           ...goal,
-          totalStepsCount: counts.total,
-          completedStepsCount: counts.completed,
+          totalStepsCount: options?.includeStepCounts ? counts.total : undefined,
+          completedStepsCount: options?.includeStepCounts ? counts.completed : undefined,
+          tags: tags.length > 0 ? tags : undefined,
         };
       });
 
-      return goalsWithCounts as Goal[];
+      return goalsWithExtras as Goal[];
     },
     enabled: !!pactId,
     staleTime: 30 * 1000, // 30 seconds

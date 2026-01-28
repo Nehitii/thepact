@@ -581,6 +581,35 @@ export type Database = {
           },
         ]
       }
+      goal_tags: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          tag: string
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          tag: string
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_tags_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           completion_date: string | null

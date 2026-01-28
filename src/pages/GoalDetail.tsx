@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
 import { trackStepCompleted } from "@/lib/achievements";
+import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +108,8 @@ export default function GoalDetail() {
 
   const { data: costItems = [] } = useCostItems(id);
   const saveCostItems = useSaveCostItems();
+  const { data: goalTagsData = [] } = useGoalTags(id);
+  const saveGoalTags = useSaveGoalTags();
 
   useEffect(() => {
     if (!user || !id) return;
@@ -130,9 +133,7 @@ export default function GoalDetail() {
         setEditCompletionDate(goalData.completion_date?.split("T")[0] || "");
         setEditImage(goalData.image_url || "");
         setEditDifficulty(goalData.difficulty || "medium");
-        // Map to valid tags - handle old/invalid tag values
-        const validTag = mapToValidTag(goalData.type || "other");
-        setEditTags([validTag]);
+        // Tags will be loaded from goalTagsData hook
         setEditNotes(goalData.notes || "");
         const { data: stepsData } = await supabase.from("steps").select("*").eq("goal_id", id).order("order", { ascending: true });
         if (stepsData) setSteps(stepsData);
@@ -141,6 +142,17 @@ export default function GoalDetail() {
     };
     loadData();
   }, [user, id]);
+
+  // Sync tags from junction table when loaded
+  useEffect(() => {
+    if (goalTagsData.length > 0) {
+      setEditTags(goalTagsData.map(t => t.tag));
+    } else if (goal?.type) {
+      // Fallback to legacy type field if no junction tags exist
+      const validTag = mapToValidTag(goal.type);
+      setEditTags([validTag]);
+    }
+  }, [goalTagsData, goal?.type]);
 
   // Sync cost items when loaded
   useEffect(() => {
@@ -271,6 +283,13 @@ export default function GoalDetail() {
         updates.estimated_cost = newTotal;
       } catch (err) {
         toast({ title: "Error", description: "Failed to save cost items", variant: "destructive" });
+      }
+
+      // Save tags to junction table
+      try {
+        await saveGoalTags.mutateAsync({ goalId: id, tags: editTags });
+      } catch (err) {
+        toast({ title: "Error", description: "Failed to save tags", variant: "destructive" });
       }
     }
 

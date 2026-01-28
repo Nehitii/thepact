@@ -17,6 +17,7 @@ interface Goal {
   totalStepsCount?: number;
   completedStepsCount?: number;
   potential_score?: number | null;
+  tags?: string[];
 }
 
 interface BarViewGoalCardProps {
@@ -153,7 +154,9 @@ export function BarViewGoalCard({
   const completedSteps = isHabitGoal ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
   const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
 
-  const tagLabel = getGoalTypeLabel(goal.type);
+  // Use tags from junction table if available, fallback to legacy type field
+  const displayTags = goal.tags && goal.tags.length > 0 ? goal.tags : [goal.type];
+  const primaryTagLabel = getGoalTypeLabel(displayTags[0] || goal.type);
   const intensity = getDifficultyIntensity(difficulty);
   const cardId = `bar-card-${goal.id.slice(0, 8)}`;
 
@@ -271,14 +274,28 @@ export function BarViewGoalCard({
             />
           </div>
 
-          {/* Tags and Status row */}
+          {/* Tags row - show all tags */}
           <div className="meta-row">
-            <span className="tag-badge font-rajdhani" style={{ 
-              borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`,
-              color: difficultyColor,
-            }}>
-              {tagLabel}
-            </span>
+            <div className="tags-container" style={{ display: "flex", gap: "4px", flexWrap: "wrap", flex: 1 }}>
+              {displayTags.slice(0, 3).map((tag, idx) => (
+                <span 
+                  key={tag} 
+                  className="tag-badge font-rajdhani" 
+                  style={{ 
+                    borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`,
+                    color: difficultyColor,
+                    fontSize: displayTags.length > 2 ? "0.65rem" : undefined,
+                  }}
+                >
+                  {getGoalTypeLabel(tag)}
+                </span>
+              ))}
+              {displayTags.length > 3 && (
+                <span className="tag-badge font-rajdhani" style={{ borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`, color: difficultyColor }}>
+                  +{displayTags.length - 3}
+                </span>
+              )}
+            </div>
             <span className="status-badge font-rajdhani" style={{
               background: isCompleted || goal.status === "fully_completed" 
                 ? "rgba(52, 199, 89, 0.2)" 

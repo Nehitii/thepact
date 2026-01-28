@@ -205,7 +205,9 @@ export default function Goals() {
     return goalsToFilter.filter((goal) => {
       const normalizedName = normalizeString(goal.name);
       const normalizedType = normalizeString(goal.type || "");
-      return normalizedName.includes(normalizedQuery) || normalizedType.includes(normalizedQuery);
+      // Also search in tags array from junction table
+      const tagsMatch = goal.tags?.some(tag => normalizeString(tag).includes(normalizedQuery)) || false;
+      return normalizedName.includes(normalizedQuery) || normalizedType.includes(normalizedQuery) || tagsMatch;
     });
   };
 
