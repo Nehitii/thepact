@@ -1,26 +1,29 @@
 // Centralized Goal Constants - Single source of truth for goal-related data
 // This file standardizes tags, difficulties, statuses across the entire Goals module
+// All labels are translation keys for i18n support
+
+import type { TFunction } from "i18next";
 
 // Goal Tags with colors - matches database goal_type enum
 export const GOAL_TAGS = [
-  { value: "personal", label: "Personal", color: "hsl(200 100% 67%)" },
-  { value: "professional", label: "Professional", color: "hsl(45 95% 55%)" },
-  { value: "health", label: "Health", color: "hsl(142 70% 50%)" },
-  { value: "creative", label: "Creative", color: "hsl(280 75% 55%)" },
-  { value: "financial", label: "Financial", color: "hsl(212 90% 55%)" },
-  { value: "learning", label: "Learning", color: "hsl(25 100% 60%)" },
-  { value: "relationship", label: "Relationship", color: "hsl(340 75% 55%)" },
-  { value: "diy", label: "DIY", color: "hsl(175 70% 45%)" },
-  { value: "other", label: "Other", color: "hsl(210 30% 50%)" },
+  { value: "personal", labelKey: "goals.tags.personal", color: "hsl(200 100% 67%)" },
+  { value: "professional", labelKey: "goals.tags.professional", color: "hsl(45 95% 55%)" },
+  { value: "health", labelKey: "goals.tags.health", color: "hsl(142 70% 50%)" },
+  { value: "creative", labelKey: "goals.tags.creative", color: "hsl(280 75% 55%)" },
+  { value: "financial", labelKey: "goals.tags.financial", color: "hsl(212 90% 55%)" },
+  { value: "learning", labelKey: "goals.tags.learning", color: "hsl(25 100% 60%)" },
+  { value: "relationship", labelKey: "goals.tags.relationship", color: "hsl(340 75% 55%)" },
+  { value: "diy", labelKey: "goals.tags.diy", color: "hsl(175 70% 45%)" },
+  { value: "other", labelKey: "goals.tags.other", color: "hsl(210 30% 50%)" },
 ] as const;
 
 // Difficulty options (without custom - that comes from user profile)
 export const DIFFICULTY_OPTIONS = [
-  { value: "easy", label: "Easy", color: "hsl(142 70% 50%)" },
-  { value: "medium", label: "Medium", color: "hsl(45 95% 55%)" },
-  { value: "hard", label: "Hard", color: "hsl(25 100% 60%)" },
-  { value: "extreme", label: "Extreme", color: "hsl(0 90% 65%)" },
-  { value: "impossible", label: "Impossible", color: "hsl(280 75% 45%)" },
+  { value: "easy", labelKey: "goals.difficulties.easy", color: "hsl(142 70% 50%)" },
+  { value: "medium", labelKey: "goals.difficulties.medium", color: "hsl(45 95% 55%)" },
+  { value: "hard", labelKey: "goals.difficulties.hard", color: "hsl(25 100% 60%)" },
+  { value: "extreme", labelKey: "goals.difficulties.extreme", color: "hsl(0 90% 65%)" },
+  { value: "impossible", labelKey: "goals.difficulties.impossible", color: "hsl(280 75% 45%)" },
 ] as const;
 
 // Difficulty order for sorting (custom is highest tier when active)
@@ -29,51 +32,68 @@ export const DIFFICULTY_ORDER = ["easy", "medium", "hard", "extreme", "impossibl
 // Status configuration with labels and styling
 export const STATUS_CONFIG = {
   not_started: { 
-    label: "Not Started", 
+    labelKey: "goals.statuses.not_started", 
     color: "bg-muted text-muted-foreground", 
     badgeClass: "bg-card/80 text-muted-foreground border-border" 
   },
   in_progress: { 
-    label: "In Progress", 
+    labelKey: "goals.statuses.in_progress", 
     color: "bg-blue-500/10 text-blue-400", 
     badgeClass: "bg-blue-500/15 text-blue-400 border-blue-500/30" 
   },
   validated: { 
-    label: "Validated", 
+    labelKey: "goals.statuses.validated", 
     color: "bg-yellow-500/10 text-yellow-400", 
     badgeClass: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30" 
   },
   fully_completed: { 
-    label: "Completed", 
+    labelKey: "goals.statuses.fully_completed", 
     color: "bg-green-500/10 text-green-400", 
     badgeClass: "bg-green-500/15 text-green-400 border-green-500/30" 
   },
   paused: { 
-    label: "Paused", 
+    labelKey: "goals.statuses.paused", 
     color: "bg-orange-500/10 text-orange-400", 
     badgeClass: "bg-orange-500/15 text-orange-400 border-orange-500/30" 
   },
   active: { 
-    label: "Active", 
+    labelKey: "goals.statuses.active", 
     color: "bg-blue-500/10 text-blue-400", 
     badgeClass: "bg-blue-500/15 text-blue-400 border-blue-500/30" 
   },
   completed: { 
-    label: "Completed", 
+    labelKey: "goals.statuses.completed", 
     color: "bg-green-500/10 text-green-400", 
     badgeClass: "bg-green-500/15 text-green-400 border-green-500/30" 
   },
   cancelled: { 
-    label: "Cancelled", 
+    labelKey: "goals.statuses.cancelled", 
     color: "bg-red-500/10 text-red-400", 
     badgeClass: "bg-red-500/15 text-red-400 border-red-500/30" 
   },
 } as const;
 
-// Helper function: Get status label
-export function getStatusLabel(status: string): string {
-  return STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.label || 
-    status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+// Helper function: Get status label (with i18n support)
+export function getStatusLabel(status: string, t?: TFunction): string {
+  const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
+  if (!config) {
+    return status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
+  }
+  if (t) {
+    return t(config.labelKey);
+  }
+  // Fallback to English if no translation function provided
+  const fallbacks: Record<string, string> = {
+    not_started: "Not Started",
+    in_progress: "In Progress",
+    validated: "Validated",
+    fully_completed: "Completed",
+    paused: "Paused",
+    active: "Active",
+    completed: "Completed",
+    cancelled: "Cancelled",
+  };
+  return fallbacks[status] || status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
 }
 
 // Helper function: Get status color classes
@@ -88,17 +108,41 @@ export function getStatusBadgeClass(status: string): string {
     "bg-card/80 text-muted-foreground border-border";
 }
 
-// Helper function: Get difficulty label (handles custom difficulty name)
-export function getDifficultyLabel(difficulty: string, customName?: string): string {
-  if (difficulty === "custom") return customName || "Custom";
+// Helper function: Get difficulty label (with i18n support, handles custom difficulty name)
+export function getDifficultyLabel(difficulty: string, t?: TFunction, customName?: string): string {
+  if (difficulty === "custom") return customName || (t ? t("goals.difficulties.custom") : "Custom");
   const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
-  return found?.label || difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  if (!found) return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+  if (t) return t(found.labelKey);
+  // Fallback to English
+  const fallbacks: Record<string, string> = {
+    easy: "Easy",
+    medium: "Medium",
+    hard: "Hard",
+    extreme: "Extreme",
+    impossible: "Impossible",
+  };
+  return fallbacks[difficulty] || difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 }
 
-// Helper function: Get tag label
-export function getTagLabel(type: string): string {
-  const found = GOAL_TAGS.find(t => t.value === type);
-  return found?.label || type.charAt(0).toUpperCase() + type.slice(1);
+// Helper function: Get tag label (with i18n support)
+export function getTagLabel(type: string, t?: TFunction): string {
+  const found = GOAL_TAGS.find(tag => tag.value === type);
+  if (!found) return type.charAt(0).toUpperCase() + type.slice(1);
+  if (t) return t(found.labelKey);
+  // Fallback to English
+  const fallbacks: Record<string, string> = {
+    personal: "Personal",
+    professional: "Professional",
+    health: "Health",
+    creative: "Creative",
+    financial: "Financial",
+    learning: "Learning",
+    relationship: "Relationship",
+    diy: "DIY",
+    other: "Other",
+  };
+  return fallbacks[type] || type.charAt(0).toUpperCase() + type.slice(1);
 }
 
 // Helper function: Get tag color

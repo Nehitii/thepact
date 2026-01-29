@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { trackGoalCreated } from "@/lib/achievements";
@@ -14,7 +15,7 @@ import { ArrowLeft, Target, Sparkles, Calendar, ListOrdered, Image, StickyNote, 
 import { useToast } from "@/hooks/use-toast";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
-import { GOAL_TAGS, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
+import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "@/lib/goalConstants";
 import { z } from "zod";
 import { motion } from "framer-motion";
 
@@ -29,6 +30,7 @@ const goalSchema = z.object({
 });
 
 export default function NewGoal() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -294,7 +296,7 @@ export default function NewGoal() {
                       >
                         <span className="flex items-center gap-1.5">
                           {isSelected && <Check className="h-3.5 w-3.5" />}
-                          {tag.label}
+                          {getTagLabel(tag.value, t)}
                         </span>
                       </button>
                     );
@@ -386,7 +388,7 @@ export default function NewGoal() {
                           boxShadow: `0 0 25px ${diff.color}50`
                         } : {}}
                       >
-                        {diff.label}
+                        {getDifficultyLabel(diff.value, t)}
                       </button>
                     );
                   })}

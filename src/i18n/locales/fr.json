@@ -9,7 +9,29 @@
     "saving": "Enregistrement…",
     "error": "Erreur",
     "success": "Succès !",
-    "daysShort": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
+    "daysShort": ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"],
+    "confirm": "Confirmer",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "viewAll": "Voir tout",
+    "noData": "Aucune donnée disponible",
+    "back": "Retour",
+    "next": "Suivant",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "sortBy": "Trier par",
+    "all": "Tous",
+    "active": "Actifs",
+    "completed": "Terminés",
+    "pending": "En attente",
+    "required": "Requis",
+    "optional": "Optionnel",
+    "reset": "Réinitialiser",
+    "customize": "Personnaliser",
+    "save": "Enregistrer"
   },
   "auth": {
     "brand": "Pact",
@@ -49,8 +71,8 @@
     "failedDesc": "Code invalide. Réessaie."
   },
   "profile": {
-    "title": "Profile",
-    "subtitle": "Ton console d'identité",
+    "title": "Profil",
+    "subtitle": "Ta console d'identité",
     "emailCantChange": "L'email ne peut pas être modifié",
     "displayName": "Nom d'affichage",
     "displayNamePlaceholder": "Ton nom",
@@ -121,7 +143,6 @@
     "questHistory": "Historique des quêtes",
     "questCalendar": "Calendrier des quêtes",
     "editQuest": "Modifier la quête",
-
     "filters": {
       "sort": "Trier",
       "sortOptions": {
@@ -140,7 +161,6 @@
         "deadline": "Échéance"
       }
     },
-
     "create": {
       "title": "Nouvelle quête",
       "questName": "Nom de la quête",
@@ -173,7 +193,6 @@
         "yearly": "Annuel"
       }
     },
-
     "categories": {
       "work": "Travail",
       "health": "Santé",
@@ -199,7 +218,6 @@
       "medium": "Moyenne",
       "high": "Difficile"
     },
-
     "historyPanel": {
       "loading": "Chargement de l'historique…",
       "empty": "Aucune tâche terminée pour l'instant.",
@@ -209,7 +227,6 @@
       "confirmTitle": "Vider l'historique des tâches ?",
       "confirmDesc": "Cela supprimera l'historique. Ton score ne changera pas."
     },
-
     "taskCard": {
       "urgent": "URGENT",
       "today": "Aujourd'hui",
@@ -222,14 +239,12 @@
       "delete": "Supprimer",
       "reminderActive": "Rappel actif"
     },
-
     "calendarView": {
       "title": "Calendrier des tâches",
       "today": "Aujourd'hui",
       "more": "+{{count}} de plus",
       "noTasksForDay": "Aucune tâche prévue ce jour-là"
     },
-
     "advanced": {
       "totalScore": "Score total",
       "currentStreak": "Série en cours",
@@ -246,7 +261,6 @@
       "completeToSee": "Termine des tâches pour afficher des statistiques détaillées ici.",
       "tasksTooltip": "{{count}} tâches"
     },
-
     "header": {
       "lvl": "NIV",
       "levelProgress": "Progression",
@@ -258,5 +272,662 @@
       "xp": "{{value}}/100 XP",
       "streakBonus": "Bonus de série actif !"
     }
+  },
+  "goals": {
+    "title": "OBJECTIFS",
+    "subtitle": "Ton parcours vers la grandeur",
+    "createGoal": "Créer un objectif",
+    "editGoal": "Modifier l'objectif",
+    "deleteGoal": "Supprimer l'objectif",
+    "noGoals": "Pas encore d'objectifs",
+    "noGoalsDesc": "Crée ton premier objectif pour commencer",
+    "loadingGoals": "Chargement des objectifs…",
+    "goalCreated": "Objectif créé avec succès",
+    "goalUpdated": "Objectif mis à jour",
+    "goalDeleted": "Objectif supprimé",
+    "filters": {
+      "all": "Tous",
+      "active": "Actifs",
+      "completed": "Terminés",
+      "inProgress": "En cours",
+      "paused": "En pause"
+    },
+    "sort": {
+      "label": "Trier par",
+      "difficulty": "Difficulté",
+      "created": "Date de création",
+      "status": "Statut",
+      "name": "Nom",
+      "progress": "Progression"
+    },
+    "form": {
+      "goalName": "Nom de l'objectif",
+      "goalNamePlaceholder": "Entre le nom de ton objectif",
+      "estimatedCost": "Coût estimé",
+      "estimatedCostPlaceholder": "0",
+      "tags": "Catégories",
+      "tagsPlaceholder": "Sélectionner les catégories",
+      "tagsHint": "Sélectionne une ou plusieurs catégories",
+      "difficulty": "Difficulté",
+      "difficultyPlaceholder": "Sélectionner la difficulté",
+      "notes": "Notes",
+      "notesPlaceholder": "Ajoute des notes supplémentaires...",
+      "startDate": "Date de début",
+      "targetDate": "Date cible",
+      "image": "Image de l'objectif",
+      "imageHint": "Télécharge une image pour représenter ton objectif",
+      "creating": "Création…",
+      "updating": "Mise à jour…"
+    },
+    "tags": {
+      "personal": "Personnel",
+      "professional": "Professionnel",
+      "health": "Santé",
+      "creative": "Créatif",
+      "financial": "Financier",
+      "learning": "Apprentissage",
+      "relationship": "Relationnel",
+      "diy": "Bricolage",
+      "other": "Autre"
+    },
+    "difficulties": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile",
+      "extreme": "Extrême",
+      "impossible": "Impossible",
+      "custom": "Personnalisé"
+    },
+    "statuses": {
+      "not_started": "Non commencé",
+      "in_progress": "En cours",
+      "validated": "Validé",
+      "fully_completed": "Terminé",
+      "paused": "En pause",
+      "active": "Actif",
+      "completed": "Terminé",
+      "cancelled": "Annulé"
+    },
+    "steps": {
+      "title": "Étapes",
+      "addStep": "Ajouter une étape",
+      "editStep": "Modifier l'étape",
+      "deleteStep": "Supprimer l'étape",
+      "noSteps": "Pas encore d'étapes",
+      "noStepsDesc": "Décompose ton objectif en étapes concrètes",
+      "stepTitle": "Titre de l'étape",
+      "stepDescription": "Description",
+      "markComplete": "Marquer comme terminée",
+      "markIncomplete": "Marquer comme non terminée",
+      "dueDate": "Date limite",
+      "completed": "terminée(s)"
+    },
+    "detail": {
+      "progress": "Progression",
+      "stepsCompleted": "{{completed}} / {{total}} étapes",
+      "estimatedCost": "Coût estimé",
+      "actualCost": "Coût réel",
+      "startDate": "Date de début",
+      "targetDate": "Date cible",
+      "completionDate": "Date de fin",
+      "focus": "Prioritaire",
+      "focusHint": "Marque cet objectif comme prioritaire",
+      "notes": "Notes",
+      "costItems": "Éléments de coût",
+      "timeline": "Chronologie"
+    },
+    "views": {
+      "grid": "Grille",
+      "list": "Liste",
+      "bar": "Barre"
+    },
+    "emptyStates": {
+      "noActiveGoals": "Aucun objectif actif",
+      "noActiveGoalsDesc": "Tous tes objectifs sont terminés ou en pause",
+      "noCompletedGoals": "Pas encore d'objectifs terminés",
+      "noCompletedGoalsDesc": "Termine ton premier objectif pour le voir ici"
+    }
+  },
+  "finance": {
+    "title": "SUIVI FINANCIER",
+    "subtitle": "Ton centre de commande financier",
+    "tabs": {
+      "overview": "Vue d'ensemble",
+      "monthly": "Mensuel",
+      "projections": "Projections"
+    },
+    "overview": {
+      "projectFinancing": "Financement du projet",
+      "budgetOverview": "Aperçu du budget",
+      "totalTarget": "Objectif total",
+      "alreadyFunded": "Déjà financé",
+      "remaining": "Restant",
+      "monthlyAllocation": "Allocation mensuelle",
+      "monthsToGoal": "Mois jusqu'à l'objectif",
+      "onTrack": "En bonne voie",
+      "behindSchedule": "En retard"
+    },
+    "monthly": {
+      "title": "Validation mensuelle",
+      "selectMonth": "Sélectionner le mois",
+      "income": "Revenus",
+      "expenses": "Dépenses",
+      "balance": "Solde",
+      "savings": "Épargne",
+      "plannedIncome": "Revenus prévus",
+      "actualIncome": "Revenus réels",
+      "plannedExpenses": "Dépenses prévues",
+      "actualExpenses": "Dépenses réelles",
+      "unplannedIncome": "Revenus imprévus",
+      "unplannedExpenses": "Dépenses imprévues",
+      "validate": "Valider le mois",
+      "validated": "Validé",
+      "notValidated": "Non validé",
+      "confirmIncome": "Confirmer les revenus",
+      "confirmExpenses": "Confirmer les dépenses"
+    },
+    "recurring": {
+      "title": "Éléments récurrents",
+      "income": "Revenus récurrents",
+      "expenses": "Dépenses récurrentes",
+      "addIncome": "Ajouter un revenu",
+      "addExpense": "Ajouter une dépense",
+      "itemName": "Nom de l'élément",
+      "amount": "Montant",
+      "category": "Catégorie",
+      "noItems": "Aucun élément récurrent",
+      "noItemsDesc": "Ajoute tes revenus et dépenses réguliers"
+    },
+    "categories": {
+      "housing": "Logement",
+      "utilities": "Services publics",
+      "food": "Alimentation",
+      "transport": "Transport",
+      "subscriptions": "Abonnements",
+      "health": "Santé",
+      "leisure": "Loisirs",
+      "savings": "Épargne",
+      "taxes": "Impôts",
+      "education": "Éducation",
+      "travel": "Voyages",
+      "shopping": "Shopping",
+      "maintenance": "Entretien",
+      "insurance": "Assurance",
+      "childcare": "Garde d'enfants",
+      "pets": "Animaux",
+      "gifts": "Cadeaux",
+      "debt": "Dettes",
+      "entertainment": "Divertissement",
+      "other": "Autre",
+      "salary": "Salaire",
+      "freelance": "Freelance",
+      "business": "Business",
+      "investments": "Investissements",
+      "rental": "Location",
+      "bonus": "Prime",
+      "pension": "Pension",
+      "benefits": "Allocations",
+      "royalties": "Redevances",
+      "refunds": "Remboursements",
+      "gift": "Don"
+    },
+    "projections": {
+      "title": "Projections financières",
+      "realData": "Données réelles",
+      "projected": "Projeté",
+      "targetDate": "Date cible",
+      "projectedDate": "Date projetée",
+      "monthlyNeeded": "Mensuel requis"
+    },
+    "settings": {
+      "title": "Paramètres financiers",
+      "paymentDay": "Jour de versement du salaire",
+      "paymentDayHint": "Jour du mois où tu reçois ton salaire",
+      "fundingTarget": "Objectif de financement",
+      "fundingTargetHint": "Montant total que tu veux économiser pour ton projet",
+      "monthlyAllocation": "Allocation mensuelle",
+      "monthlyAllocationHint": "Montant à allouer chaque mois",
+      "alreadyFunded": "Déjà financé",
+      "alreadyFundedHint": "Montant déjà économisé"
+    }
+  },
+  "health": {
+    "title": "Santé & Équilibre",
+    "subtitle": "Ton tableau de bord bien-être",
+    "loading": "Chargement du tableau de bord…",
+    "dailyCheckin": "Bilan quotidien",
+    "weeklyChart": "Graphique hebdomadaire",
+    "metrics": {
+      "sleepQuality": "Qualité du sommeil",
+      "sleepHours": "Heures de sommeil",
+      "wakeEnergy": "Énergie au réveil",
+      "stressLevel": "Niveau de stress",
+      "mentalLoad": "Charge mentale",
+      "hydration": "Hydratation",
+      "mealBalance": "Équilibre alimentaire",
+      "activityLevel": "Niveau d'activité",
+      "movementMinutes": "Minutes d'exercice"
+    },
+    "scores": {
+      "healthScore": "Score santé",
+      "dailyScore": "Score du jour",
+      "weeklyAverage": "Moyenne hebdomadaire",
+      "trend": "Tendance"
+    },
+    "bmi": {
+      "title": "IMC",
+      "height": "Taille",
+      "weight": "Poids",
+      "underweight": "Insuffisance pondérale",
+      "normal": "Normal",
+      "overweight": "Surpoids",
+      "obese": "Obésité"
+    },
+    "settings": {
+      "title": "Paramètres santé",
+      "sleepGoal": "Objectif sommeil",
+      "hydrationGoal": "Objectif hydratation",
+      "activityGoal": "Objectif activité",
+      "showMetrics": "Afficher les métriques",
+      "glasses": "verres",
+      "hours": "heures",
+      "minutes": "minutes"
+    },
+    "checkin": {
+      "howDidYouSleep": "Comment as-tu dormi ?",
+      "howDoYouFeel": "Comment te sens-tu ?",
+      "stressLevel": "Niveau de stress aujourd'hui ?",
+      "hydrationLevel": "Niveau d'hydratation ?",
+      "todaysNotes": "Notes du jour",
+      "notesPlaceholder": "Notes sur ton état..."
+    }
+  },
+  "shop": {
+    "title": "BOUTIQUE",
+    "subtitle": "Étends ton expérience",
+    "tabs": {
+      "cosmetics": "Cosmétiques",
+      "modules": "Modules",
+      "bonds": "Bonds",
+      "wishlist": "Liste de souhaits",
+      "history": "Historique"
+    },
+    "dailyDeals": {
+      "title": "Offres du jour",
+      "noDeals": "Pas d'offres disponibles aujourd'hui",
+      "expiresIn": "Expire dans",
+      "discount": "-{{percent}}%"
+    },
+    "bundles": {
+      "title": "Packs",
+      "items": "{{count}} articles",
+      "save": "Économise {{percent}}%"
+    },
+    "cosmetics": {
+      "frames": "Cadres",
+      "banners": "Bannières",
+      "titles": "Titres",
+      "noItems": "Aucun cosmétique disponible"
+    },
+    "modules": {
+      "title": "Modules Premium",
+      "unlock": "Débloquer",
+      "unlocked": "Débloqué",
+      "comingSoon": "Bientôt disponible"
+    },
+    "bonds": {
+      "title": "Obtenir des Bonds",
+      "balance": "Ton solde",
+      "buyBonds": "Acheter des Bonds",
+      "bonus": "+{{percent}}% bonus"
+    },
+    "wishlist": {
+      "title": "Ta liste de souhaits",
+      "empty": "Ta liste de souhaits est vide",
+      "emptyDesc": "Ajoute des articles à suivre",
+      "addToWishlist": "Ajouter aux souhaits",
+      "removeFromWishlist": "Retirer des souhaits"
+    },
+    "history": {
+      "title": "Historique d'achats",
+      "empty": "Aucun achat",
+      "emptyDesc": "Ton historique d'achats apparaîtra ici",
+      "purchasedOn": "Acheté le"
+    },
+    "purchase": {
+      "confirm": "Confirmer l'achat",
+      "price": "Prix",
+      "yourBalance": "Ton solde",
+      "afterPurchase": "Après achat",
+      "insufficientFunds": "Bonds insuffisants",
+      "buy": "Acheter",
+      "cancel": "Annuler"
+    },
+    "rarity": {
+      "common": "Commun",
+      "uncommon": "Peu commun",
+      "rare": "Rare",
+      "epic": "Épique",
+      "legendary": "Légendaire"
+    },
+    "promoCode": {
+      "title": "Code promo",
+      "placeholder": "Entrer le code",
+      "redeem": "Utiliser",
+      "success": "Code utilisé avec succès !",
+      "invalid": "Code invalide ou expiré",
+      "alreadyUsed": "Tu as déjà utilisé ce code"
+    }
+  },
+  "community": {
+    "title": "COMMUNAUTÉ",
+    "subtitle": "Là où la discipline devient visible",
+    "tabs": {
+      "feed": "Fil de la communauté",
+      "reels": "Vidéos de victoire"
+    },
+    "feed": {
+      "createPost": "Créer une publication",
+      "noPostsTitle": "Pas encore de publications",
+      "noPostsDesc": "Sois le premier à partager ton parcours",
+      "loading": "Chargement des publications…"
+    },
+    "reels": {
+      "createReel": "Créer une vidéo",
+      "noReelsTitle": "Pas encore de vidéos de victoire",
+      "noReelsDesc": "Partage tes objectifs accomplis avec la communauté",
+      "views": "{{count}} vues"
+    },
+    "post": {
+      "like": "J'aime",
+      "comment": "Commenter",
+      "share": "Partager",
+      "delete": "Supprimer",
+      "edit": "Modifier",
+      "report": "Signaler",
+      "comments": "Commentaires",
+      "noComments": "Pas encore de commentaires",
+      "addComment": "Ajouter un commentaire...",
+      "postComment": "Publier"
+    },
+    "create": {
+      "title": "Créer une publication",
+      "content": "Qu'as-tu en tête ?",
+      "contentPlaceholder": "Partage ta progression, tes pensées ou tes victoires...",
+      "attachGoal": "Associer un objectif",
+      "visibility": "Visibilité",
+      "public": "Public",
+      "private": "Privé",
+      "posting": "Publication…",
+      "post": "Publier"
+    },
+    "reactions": {
+      "fire": "Feu",
+      "love": "Amour",
+      "clap": "Bravo",
+      "strong": "Force",
+      "brain": "Génie"
+    }
+  },
+  "wishlist": {
+    "title": "LISTE DE SOUHAITS",
+    "subtitle": "Des rêves en attente de devenir réalité",
+    "addItem": "Ajouter un article",
+    "editItem": "Modifier l'article",
+    "noItems": "Ta liste de souhaits est vide",
+    "noItemsDesc": "Ajoute des articles que tu veux acquérir",
+    "form": {
+      "itemName": "Nom de l'article",
+      "itemNamePlaceholder": "Que veux-tu ?",
+      "estimatedCost": "Coût estimé",
+      "category": "Catégorie",
+      "notes": "Notes",
+      "notesPlaceholder": "Ajoute des notes...",
+      "linkToGoal": "Associer à un objectif",
+      "linkToGoalHint": "Associe cet article à un objectif"
+    },
+    "categories": {
+      "tech": "Tech",
+      "fashion": "Mode",
+      "home": "Maison",
+      "travel": "Voyage",
+      "experience": "Expérience",
+      "other": "Autre"
+    },
+    "status": {
+      "acquired": "Acquis",
+      "pending": "En attente",
+      "markAcquired": "Marquer comme acquis"
+    },
+    "stats": {
+      "totalItems": "Total articles",
+      "totalValue": "Valeur totale",
+      "acquired": "Acquis"
+    }
+  },
+  "inbox": {
+    "title": "Boîte de réception",
+    "subtitle": "Notifications & Messages",
+    "tabs": {
+      "notifications": "Notifications",
+      "messages": "Messages"
+    },
+    "notifications": {
+      "markAllRead": "Tout marquer comme lu",
+      "clearAll": "Tout effacer",
+      "empty": "Aucune notification",
+      "emptyDesc": "Tu es à jour !",
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "earlier": "Plus tôt"
+    },
+    "messages": {
+      "empty": "Aucun message",
+      "emptyDesc": "Commence une conversation",
+      "sendMessage": "Envoyer un message",
+      "typePlaceholder": "Tape un message..."
+    },
+    "categories": {
+      "system": "Système",
+      "progress": "Progrès",
+      "social": "Social",
+      "marketing": "Marketing"
+    }
+  },
+  "home": {
+    "title": "Centre de commande",
+    "welcome": "Bon retour",
+    "goodMorning": "Bonjour",
+    "goodAfternoon": "Bon après-midi",
+    "goodEvening": "Bonsoir",
+    "widgets": {
+      "focusGoals": "Objectifs prioritaires",
+      "focusGoalsDesc": "Tes priorités marquées",
+      "progressOverview": "Aperçu de progression",
+      "costTracking": "Suivi des coûts",
+      "todoPreview": "Quêtes du jour",
+      "timeline": "Chronologie",
+      "nextMilestone": "Prochaine étape",
+      "quickActions": "Actions rapides"
+    },
+    "emptyStates": {
+      "noFocusGoals": "Pas d'objectifs prioritaires",
+      "noFocusGoalsDesc": "Marque des objectifs pour les prioriser",
+      "noProgress": "Pas encore de progression",
+      "noProgressDesc": "Commence à travailler sur tes objectifs"
+    },
+    "actions": {
+      "createGoal": "Créer un objectif",
+      "addTask": "Ajouter une tâche",
+      "checkIn": "Faire le bilan",
+      "viewFinance": "Voir les finances"
+    },
+    "customize": {
+      "title": "Personnaliser le tableau de bord",
+      "showWidget": "Afficher le widget",
+      "hideWidget": "Masquer le widget",
+      "resetLayout": "Réinitialiser",
+      "saveLayout": "Enregistrer"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "privacy": {
+      "title": "Confidentialité",
+      "subtitle": "Gère tes données et ta visibilité",
+      "communityVisibility": "Visibilité communautaire",
+      "profileDiscoverable": "Profil découvrable",
+      "profileDiscoverableDesc": "Permettre aux autres de trouver ton profil",
+      "shareAchievements": "Partager les succès",
+      "shareAchievementsDesc": "Afficher les succès sur ton profil public",
+      "shareGoalsProgress": "Partager la progression",
+      "shareGoalsProgressDesc": "Afficher la progression dans la communauté",
+      "showActivityStatus": "Afficher le statut d'activité",
+      "showActivityStatusDesc": "Permettre aux autres de voir quand tu es en ligne",
+      "communityUpdates": "Mises à jour communautaires",
+      "communityUpdatesDesc": "Recevoir les actualités de la communauté"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Choisis ce dont tu veux être notifié",
+      "pushEnabled": "Notifications push",
+      "pushEnabledDesc": "Activer les notifications du navigateur",
+      "systemNotifications": "Notifications système",
+      "systemNotificationsDesc": "Mises à jour importantes et annonces",
+      "progressNotifications": "Progrès & Engagement",
+      "progressNotificationsDesc": "Jalons et séries d'objectifs",
+      "socialNotifications": "Notifications sociales",
+      "socialNotificationsDesc": "J'aime, commentaires et abonnements",
+      "marketingNotifications": "Marketing & Offres",
+      "marketingNotificationsDesc": "Promotions et nouvelles fonctionnalités",
+      "focusMode": "Mode concentration",
+      "focusModeDesc": "Couper temporairement toutes les notifications"
+    },
+    "display": {
+      "title": "Affichage & Son",
+      "subtitle": "Personnalise ton expérience visuelle et audio",
+      "theme": "Thème",
+      "themeLight": "Clair",
+      "themeDark": "Sombre",
+      "themeSystem": "Système",
+      "reduceMotion": "Réduire les animations",
+      "reduceMotionDesc": "Minimiser les animations pour l'accessibilité",
+      "particles": "Effets de particules",
+      "particlesDesc": "Activer les effets de particules ambiants",
+      "particleIntensity": "Intensité des particules",
+      "soundMaster": "Son principal",
+      "soundMasterDesc": "Activer tous les effets sonores",
+      "soundUI": "Sons d'interface",
+      "soundUIDesc": "Clics de boutons et interactions",
+      "soundProgress": "Sons de progression",
+      "soundProgressDesc": "Montées de niveau et succès",
+      "soundSuccess": "Sons de réussite",
+      "soundSuccessDesc": "Achèvement de tâches et objectifs",
+      "volume": "Volume",
+      "celebrations": "Célébrations de succès",
+      "celebrationsDesc": "Afficher les animations de célébration"
+    },
+    "data": {
+      "title": "Données & Portabilité",
+      "subtitle": "Exporte et gère tes données",
+      "exportData": "Exporter les données",
+      "exportDataDesc": "Télécharger toutes tes données en JSON",
+      "importData": "Importer les données",
+      "importDataDesc": "Restaurer depuis une exportation précédente",
+      "deleteAccount": "Supprimer le compte",
+      "deleteAccountDesc": "Supprimer définitivement ton compte et tes données"
+    },
+    "pact": {
+      "title": "Paramètres du Pacte",
+      "subtitle": "Personnalise ton engagement",
+      "editPact": "Modifier le Pacte",
+      "pactName": "Nom du Pacte",
+      "mantra": "Mantra",
+      "symbol": "Symbole",
+      "color": "Couleur",
+      "projectDates": "Chronologie du projet",
+      "startDate": "Date de début",
+      "endDate": "Date de fin"
+    },
+    "boundedProfile": {
+      "title": "Profil lié",
+      "subtitle": "Ta présence publique",
+      "avatar": "Avatar",
+      "changeAvatar": "Changer d'avatar",
+      "frame": "Cadre",
+      "banner": "Bannière",
+      "title_cosmetic": "Titre",
+      "quote": "Citation personnelle",
+      "quotePlaceholder": "Partage ta sagesse..."
+    },
+    "account": {
+      "title": "Informations du compte",
+      "subtitle": "Gère les détails de ton compte"
+    }
+  },
+  "achievements": {
+    "title": "SUCCÈS",
+    "subtitle": "Tes badges d'honneur",
+    "unlocked": "Débloqué",
+    "locked": "Verrouillé",
+    "progress": "Progression",
+    "categories": {
+      "all": "Tous",
+      "goals": "Objectifs",
+      "finance": "Finance",
+      "community": "Communauté",
+      "dedication": "Dévouement"
+    },
+    "rarity": {
+      "common": "Commun",
+      "uncommon": "Peu commun",
+      "rare": "Rare",
+      "epic": "Épique",
+      "legendary": "Légendaire"
+    },
+    "viewAll": "Voir tous les succès"
+  },
+  "journal": {
+    "title": "JOURNAL",
+    "subtitle": "Tes pensées, documentées",
+    "newEntry": "Nouvelle entrée",
+    "editEntry": "Modifier l'entrée",
+    "deleteEntry": "Supprimer l'entrée",
+    "noEntries": "Aucune entrée de journal",
+    "noEntriesDesc": "Commence à documenter ton parcours",
+    "form": {
+      "title": "Titre",
+      "titlePlaceholder": "Titre de l'entrée...",
+      "content": "Contenu",
+      "contentPlaceholder": "Écris tes pensées...",
+      "mood": "Humeur",
+      "lifeContext": "Contexte de vie"
+    },
+    "moods": {
+      "great": "Super",
+      "good": "Bien",
+      "neutral": "Neutre",
+      "low": "Bas",
+      "rough": "Difficile"
+    },
+    "contexts": {
+      "work": "Travail",
+      "personal": "Personnel",
+      "health": "Santé",
+      "relationships": "Relations",
+      "growth": "Croissance"
+    }
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur Pact",
+    "subtitle": "Configurons ton parcours",
+    "steps": {
+      "pact": "Crée ton Pacte",
+      "goals": "Définis tes objectifs",
+      "profile": "Complète ton profil"
+    },
+    "skip": "Passer pour l'instant",
+    "continue": "Continuer",
+    "finish": "Terminer la configuration"
   }
 }
