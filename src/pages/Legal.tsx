@@ -8,15 +8,16 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-
 export default function Legal() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const {
+    user,
+    signOut
+  } = useAuth();
   const [showFirstConfirm, setShowFirstConfirm] = useState(false);
   const [showFinalConfirm, setShowFinalConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
-  
   const handleBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
@@ -24,37 +25,17 @@ export default function Legal() {
       navigate('/profile');
     }
   };
-
   const handleFirstConfirm = () => {
     setShowFirstConfirm(false);
     setShowFinalConfirm(true);
   };
-
   const handleDeleteAccount = async () => {
     if (confirmText !== "DELETE") return;
     if (!user) return;
-
     setDeleting(true);
     try {
       // Delete user data from all tables
-      await Promise.all([
-        supabase.from('profiles').delete().eq('id', user.id),
-        supabase.from('pacts').delete().eq('user_id', user.id),
-        supabase.from('ranks').delete().eq('user_id', user.id),
-        supabase.from('finance').delete().eq('user_id', user.id),
-        supabase.from('recurring_expenses').delete().eq('user_id', user.id),
-        supabase.from('recurring_income').delete().eq('user_id', user.id),
-        supabase.from('journal_entries').delete().eq('user_id', user.id),
-        supabase.from('user_achievements').delete().eq('user_id', user.id),
-        supabase.from('user_cosmetics').delete().eq('user_id', user.id),
-        supabase.from('user_module_purchases').delete().eq('user_id', user.id),
-        supabase.from('bond_balance').delete().eq('user_id', user.id),
-        supabase.from('bond_transactions').delete().eq('user_id', user.id),
-        supabase.from('achievement_tracking').delete().eq('user_id', user.id),
-        supabase.from('monthly_finance_validations').delete().eq('user_id', user.id),
-        supabase.from('pact_spending').delete().eq('user_id', user.id),
-        supabase.from('user_roles').delete().eq('user_id', user.id),
-      ]);
+      await Promise.all([supabase.from('profiles').delete().eq('id', user.id), supabase.from('pacts').delete().eq('user_id', user.id), supabase.from('ranks').delete().eq('user_id', user.id), supabase.from('finance').delete().eq('user_id', user.id), supabase.from('recurring_expenses').delete().eq('user_id', user.id), supabase.from('recurring_income').delete().eq('user_id', user.id), supabase.from('journal_entries').delete().eq('user_id', user.id), supabase.from('user_achievements').delete().eq('user_id', user.id), supabase.from('user_cosmetics').delete().eq('user_id', user.id), supabase.from('user_module_purchases').delete().eq('user_id', user.id), supabase.from('bond_balance').delete().eq('user_id', user.id), supabase.from('bond_transactions').delete().eq('user_id', user.id), supabase.from('achievement_tracking').delete().eq('user_id', user.id), supabase.from('monthly_finance_validations').delete().eq('user_id', user.id), supabase.from('pact_spending').delete().eq('user_id', user.id), supabase.from('user_roles').delete().eq('user_id', user.id)]);
 
       // Sign out and redirect
       await signOut();
@@ -68,9 +49,7 @@ export default function Legal() {
       setConfirmText("");
     }
   };
-
-  return (
-    <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
+  return <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
@@ -80,22 +59,19 @@ export default function Legal() {
       {/* Sci-fi grid overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-20">
         <div className="absolute inset-0" style={{
-          backgroundImage: `
+        backgroundImage: `
             linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
             linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px'
-        }} />
+        backgroundSize: '50px 50px'
+      }} />
       </div>
 
       <ScrollArea className="h-screen">
         <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10 pb-12">
           {/* Header */}
           <div className="pt-8 space-y-4 animate-fade-in">
-            <button 
-              onClick={handleBack} 
-              className="flex items-center gap-2 text-[#6b9ec4] hover:text-[#8ACBFF] transition-colors font-rajdhani"
-            >
+            <button onClick={handleBack} className="flex items-center gap-2 text-[#6b9ec4] hover:text-[#8ACBFF] transition-colors font-rajdhani">
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
             </button>
@@ -253,11 +229,7 @@ export default function Legal() {
                     
                     {/* Delete Account Button */}
                     <div className="mt-4 pt-4 border-t border-primary/10">
-                      <Button
-                        onClick={() => setShowFirstConfirm(true)}
-                        variant="outline"
-                        className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300 font-rajdhani"
-                      >
+                      <Button onClick={() => setShowFirstConfirm(true)} variant="outline" className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-300 font-rajdhani">
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete My Account
                       </Button>
@@ -339,10 +311,7 @@ export default function Legal() {
                 <div className="text-[#a8c8e8] font-rajdhani space-y-2 text-sm leading-relaxed">
                   <p className="text-[#c8e0f4] font-medium">15. Contact</p>
                   <p>For legal inquiries, data requests, or account-related issues:</p>
-                  <a 
-                    href="mailto:legal@thepact.app" 
-                    className="inline-block mt-2 text-primary hover:text-[#8ACBFF] transition-colors font-medium"
-                  >
+                  <a href="mailto:legal@thepact.app" className="inline-block mt-2 text-primary hover:text-[#8ACBFF] transition-colors font-medium">
                     legal@thepact.app
                   </a>
                 </div>
@@ -365,7 +334,7 @@ export default function Legal() {
           {/* Footer with Version Info */}
           <div className="text-center pt-6 pb-4 space-y-2">
             <div className="text-xs text-[#6b9ec4]/60 font-rajdhani">
-              Last updated: December 2025
+              Last updated: January 2026
             </div>
             <div className="text-[10px] text-[#6b9ec4]/40 font-rajdhani tracking-wider">
               Version V3.0 — The Pact · Author: G.L
@@ -392,10 +361,7 @@ export default function Legal() {
             <AlertDialogCancel className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white font-rajdhani">
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleFirstConfirm}
-              className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/20 font-rajdhani"
-            >
+            <AlertDialogAction onClick={handleFirstConfirm} className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/20 font-rajdhani">
               Yes, Continue
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -413,31 +379,18 @@ export default function Legal() {
             <AlertDialogDescription className="text-[#a8c8e8] font-rajdhani space-y-3">
               <p className="text-[#ff6b6b] font-medium">This is your final chance to cancel.</p>
               <p>To confirm deletion, type <span className="text-white font-bold">DELETE</span> below:</p>
-              <Input
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
-                placeholder="Type DELETE to confirm"
-                className="bg-[#0d1a2d]/90 border-red-500/30 text-white placeholder:text-[#6b9ec4]/50 font-mono"
-              />
+              <Input value={confirmText} onChange={e => setConfirmText(e.target.value.toUpperCase())} placeholder="Type DELETE to confirm" className="bg-[#0d1a2d]/90 border-red-500/30 text-white placeholder:text-[#6b9ec4]/50 font-mono" />
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel 
-              onClick={() => setConfirmText("")}
-              className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white font-rajdhani"
-            >
+            <AlertDialogCancel onClick={() => setConfirmText("")} className="bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white font-rajdhani">
               Cancel
             </AlertDialogCancel>
-            <Button
-              onClick={handleDeleteAccount}
-              disabled={confirmText !== "DELETE" || deleting}
-              className="bg-red-500/30 text-red-300 hover:bg-red-500/40 border border-red-500/30 font-rajdhani disabled:opacity-50 disabled:cursor-not-allowed"
-            >
+            <Button onClick={handleDeleteAccount} disabled={confirmText !== "DELETE" || deleting} className="bg-red-500/30 text-red-300 hover:bg-red-500/40 border border-red-500/30 font-rajdhani disabled:opacity-50 disabled:cursor-not-allowed">
               {deleting ? "Deleting..." : "Delete Forever"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 }
