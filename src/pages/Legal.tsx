@@ -334,7 +334,9 @@ export default function Legal() {
           {/* Footer with Version Info */}
           <div className="text-center pt-6 pb-4 space-y-2">
             <div className="text-xs text-[#6b9ec4]/60 font-rajdhani">
-              Last updated: January 2026
+              
+              Last updated: January 202
+            
             </div>
             <div className="text-[10px] text-[#6b9ec4]/40 font-rajdhani tracking-wider">
               Version V3.0 — The Pact · Author: G.L
