@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
@@ -28,7 +29,7 @@ import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { motion, AnimatePresence } from "framer-motion";
-import { GOAL_TAGS, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
+import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "@/lib/goalConstants";
 
 interface Goal {
   id: string;
@@ -60,6 +61,7 @@ interface Step {
 }
 
 export default function GoalDetail() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { currency } = useCurrency();
@@ -781,7 +783,7 @@ export default function GoalDetail() {
                               >
                                 <span className="flex items-center gap-1.5">
                                   {isSelected && <Check className="h-3.5 w-3.5" />}
-                                  {tag.label}
+                                  {getTagLabel(tag.value, t)}
                                 </span>
                               </button>
                             );
@@ -849,7 +851,7 @@ export default function GoalDetail() {
                                   boxShadow: `0 0 20px ${diff.color}40`
                                 } : {}}
                               >
-                                {diff.label}
+                                {diff.value === "custom" ? customDifficultyName || t("goals.difficulties.custom") : t(`goals.difficulties.${diff.value}`)}
                               </button>
                             );
                           })}

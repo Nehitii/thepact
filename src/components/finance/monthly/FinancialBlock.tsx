@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit2, Check, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import {
   type FinanceCategory,
   getItemCategory,
   groupItemsByCategory,
+  getCategoryLabel,
 } from '@/lib/financeCategories';
 import type { FinancialItem } from '@/types/finance';
 
@@ -54,6 +56,7 @@ function CategoryGroup({
   onEditDataChange,
   onDelete,
 }: CategoryGroupProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
   const categoryTotal = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
   const Icon = category.icon;
@@ -86,7 +89,7 @@ function CategoryGroup({
           <Icon className="w-4 h-4" style={{ color: hexColor }} />
         </div>
         <span className="flex-1 text-left text-sm font-semibold text-white/90">
-          {category.label}
+          {getCategoryLabel(category, t)}
         </span>
         <span className="text-xs text-slate-500 px-2 py-0.5 rounded-full bg-white/[0.03]">
           {items.length}
@@ -136,7 +139,7 @@ function CategoryGroup({
                               >
                                 <div className="flex items-center gap-2">
                                   <cat.icon className="w-3 h-3" style={{ color: cat.hexColor }} />
-                                  <span>{cat.label}</span>
+                                  <span>{getCategoryLabel(cat, t)}</span>
                                 </div>
                               </SelectItem>
                             ))}
@@ -225,6 +228,7 @@ export function FinancialBlock({
   onDelete,
   isPending,
 }: FinancialBlockProps) {
+  const { t } = useTranslation();
   const { currency } = useCurrency();
   const [newItem, setNewItem] = useState({ name: '', amount: '', category: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -361,7 +365,7 @@ export function FinancialBlock({
                             >
                               <div className="flex items-center gap-2">
                                 <cat.icon className="w-3.5 h-3.5" style={{ color: cat.hexColor }} />
-                                <span>{cat.label}</span>
+                                <span>{getCategoryLabel(cat, t)}</span>
                               </div>
                             </SelectItem>
                           ))}
