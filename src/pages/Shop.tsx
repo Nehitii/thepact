@@ -12,14 +12,15 @@ import { BundlesSection } from "@/components/shop/BundlesSection";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useTranslation } from "react-i18next";
 
 export default function Shop() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ShopTab>("cosmetics");
   const { user } = useAuth();
   const { data: wishlist = [] } = useWishlist(user?.id);
 
   const handlePurchaseFromWishlist = (item: any, itemType: string) => {
-    // Switch to appropriate tab and let the shop handle the purchase
     if (itemType === "module") {
       setActiveTab("modules");
     } else {
@@ -37,11 +38,11 @@ export default function Shop() {
           <div className="space-y-1">
             <h1 className="font-orbitron text-2xl font-bold tracking-wider">
               <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(91,180,255,0.5)]">
-                SHOP
+                {t("shop.title")}
               </span>
             </h1>
             <p className="text-sm text-muted-foreground font-rajdhani">
-              Expand your experience
+              {t("shop.subtitle")}
             </p>
           </div>
           <ShopBondDisplay />

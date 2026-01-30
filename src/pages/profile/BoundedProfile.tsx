@@ -4,8 +4,10 @@ import { supabase } from "@/lib/supabase";
 import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { UserCircle2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function BoundedProfile() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -33,8 +35,8 @@ export default function BoundedProfile() {
 
   return (
     <ProfileSettingsShell
-      title="Bounded Profile"
-      subtitle="Customize your avatar and appearance"
+      title={t("settings.boundedProfile.title")}
+      subtitle={t("settings.boundedProfile.subtitle")}
       icon={<UserCircle2 className="h-7 w-7 text-primary" />}
       containerClassName="max-w-2xl"
     >
