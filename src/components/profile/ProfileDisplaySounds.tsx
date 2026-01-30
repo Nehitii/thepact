@@ -9,8 +9,10 @@ import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
 import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
 import { useTheme } from "next-themes";
+import { useTranslation } from "react-i18next";
 
 export function ProfileDisplaySounds() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const { settings: soundSettings, setSettings: setSoundSettings } = useSound();
@@ -43,12 +45,12 @@ export function ProfileDisplaySounds() {
     if (!user?.id) return;
     void save(next).catch((e) => {
       toast({
-        title: "Error",
-        description: e?.message ?? "Failed to save sound settings",
+        title: t("common.error"),
+        description: e?.message ?? t("settings.displaySound.toasts.saveFailed"),
         variant: "destructive",
       });
     });
-  }, [user?.id, save, toast, setSoundSettings]);
+  }, [user?.id, save, toast, setSoundSettings, t]);
 
   // Display values - use local state while dragging, otherwise use effective
   const displayVolume = localVolume ?? (effective.volume ?? 0);
@@ -62,12 +64,12 @@ export function ProfileDisplaySounds() {
           <div className="flex items-center gap-3">
             <Palette className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-orbitron font-semibold text-primary">
-              Visual Settings
+              {t("settings.displaySound.visualSettings")}
             </h2>
           </div>
 
           <p className="text-sm text-muted-foreground font-rajdhani">
-            Personalize the interface without changing gameplay or data.
+            {t("settings.displaySound.visualSettingsDesc")}
           </p>
 
           <div className="space-y-5">
@@ -75,9 +77,9 @@ export function ProfileDisplaySounds() {
             <div className="space-y-3 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-orbitron text-foreground">Theme</p>
+                  <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.theme")}</p>
                   <p className="text-xs text-muted-foreground font-rajdhani">
-                    System, light, or dark — synced across devices.
+                    {t("settings.displaySound.themeDesc")}
                   </p>
                 </div>
               </div>
@@ -85,9 +87,9 @@ export function ProfileDisplaySounds() {
               <div className="grid grid-cols-3 gap-2">
                 {(
                   [
-                    { value: "system" as const, label: "System", icon: Laptop },
-                    { value: "light" as const, label: "Light", icon: Sun },
-                    { value: "dark" as const, label: "Dark", icon: Moon },
+                    { value: "system" as const, labelKey: "settings.displaySound.themeSystem", icon: Laptop },
+                    { value: "light" as const, labelKey: "settings.displaySound.themeLight", icon: Sun },
+                    { value: "dark" as const, labelKey: "settings.displaySound.themeDark", icon: Moon },
                   ] as const
                 ).map((opt) => {
                   const Icon = opt.icon;
@@ -104,8 +106,8 @@ export function ProfileDisplaySounds() {
                           {
                             onSuccess: () =>
                               toast({
-                                title: "Theme updated",
-                                description: "Your theme preference has been saved.",
+                                title: t("settings.displaySound.toasts.themeUpdated"),
+                                description: t("settings.displaySound.toasts.themeUpdatedDesc"),
                               }),
                           }
                         );
@@ -119,7 +121,7 @@ export function ProfileDisplaySounds() {
                       }
                     >
                       <Icon className="h-4 w-4" />
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </button>
                   );
                 })}
@@ -129,9 +131,9 @@ export function ProfileDisplaySounds() {
             {/* Reduce motion */}
             <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="min-w-0">
-                <p className="text-sm font-orbitron text-foreground">Reduce Motion</p>
+                <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.reduceMotion")}</p>
                 <p className="text-xs text-muted-foreground font-rajdhani">
-                  Minimizes animations and transitions.
+                  {t("settings.displaySound.reduceMotionDesc")}
                 </p>
               </div>
               <Switch
@@ -142,8 +144,8 @@ export function ProfileDisplaySounds() {
                     {
                       onSuccess: () =>
                         toast({
-                          title: "Updated",
-                          description: "Motion preference saved.",
+                          title: t("common.updated"),
+                          description: t("settings.displaySound.toasts.motionSaved"),
                         }),
                     }
                   )
@@ -161,12 +163,12 @@ export function ProfileDisplaySounds() {
           <div className="flex items-center gap-3">
             <Volume2 className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-orbitron font-semibold text-primary">
-              Sound Settings
+              {t("settings.displaySound.soundSettings")}
             </h2>
           </div>
           
           <p className="text-sm text-muted-foreground font-rajdhani">
-            Subtle, futuristic feedback for actions — calm, premium, and consistent.
+            {t("settings.displaySound.soundSettingsDesc")}
           </p>
 
           {/* Controls */}
@@ -174,9 +176,9 @@ export function ProfileDisplaySounds() {
             {/* Master toggle */}
             <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="min-w-0">
-                <p className="text-sm font-orbitron text-foreground">Master Sound</p>
+                <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.masterSound")}</p>
                 <p className="text-xs text-muted-foreground font-rajdhani">
-                  Turn all audio feedback on/off.
+                  {t("settings.displaySound.masterSoundDesc")}
                 </p>
               </div>
               <Switch
@@ -190,7 +192,7 @@ export function ProfileDisplaySounds() {
             {/* Volume */}
             <div className="space-y-3 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-orbitron text-foreground">Volume</p>
+                <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.volume")}</p>
                 <span className="text-xs text-muted-foreground font-rajdhani">
                   {Math.round(displayVolume * 100)}%
                 </span>
@@ -200,19 +202,17 @@ export function ProfileDisplaySounds() {
                 max={100}
                 step={1}
                 onValueChange={(v) => {
-                  // Only update local state while dragging - no context updates
                   setLocalVolume((v[0] ?? 0) / 100);
                 }}
                 onValueCommit={(v) => {
-                  // Persist when user releases the slider
                   const newVolume = (v[0] ?? 0) / 100;
-                  setLocalVolume(null); // Clear local state
+                  setLocalVolume(null);
                   persistSound({ ...effective, volume: newVolume });
                 }}
                 disabled={!effective.masterEnabled}
               />
               <p className="text-xs text-muted-foreground font-rajdhani">
-                Designed to stay present without becoming intrusive.
+                {t("settings.displaySound.volumeDesc")}
               </p>
             </div>
 
@@ -220,8 +220,8 @@ export function ProfileDisplaySounds() {
             <div className="grid gap-3">
               <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
                 <div className="min-w-0">
-                  <p className="text-sm font-orbitron text-foreground">UI Sounds</p>
-                  <p className="text-xs text-muted-foreground font-rajdhani">Buttons, toggles, tabs, dialogs.</p>
+                  <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.uiSounds")}</p>
+                  <p className="text-xs text-muted-foreground font-rajdhani">{t("settings.displaySound.uiSoundsDesc")}</p>
                 </div>
                 <Switch
                   checked={!!effective.uiEnabled}
@@ -232,8 +232,8 @@ export function ProfileDisplaySounds() {
 
               <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
                 <div className="min-w-0">
-                  <p className="text-sm font-orbitron text-foreground">Success / Validation</p>
-                  <p className="text-xs text-muted-foreground font-rajdhani">Confirmations and meaningful completions.</p>
+                  <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.successSounds")}</p>
+                  <p className="text-xs text-muted-foreground font-rajdhani">{t("settings.displaySound.successSoundsDesc")}</p>
                 </div>
                 <Switch
                   checked={!!effective.successEnabled}
@@ -244,8 +244,8 @@ export function ProfileDisplaySounds() {
 
               <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
                 <div className="min-w-0">
-                  <p className="text-sm font-orbitron text-foreground">Progress / Gamification</p>
-                  <p className="text-xs text-muted-foreground font-rajdhani">XP, streaks, milestones, unlocks.</p>
+                  <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.progressSounds")}</p>
+                  <p className="text-xs text-muted-foreground font-rajdhani">{t("settings.displaySound.progressSoundsDesc")}</p>
                 </div>
                 <Switch
                   checked={!!effective.progressEnabled}
@@ -257,7 +257,7 @@ export function ProfileDisplaySounds() {
 
             {isLoading && (
               <p className="text-xs text-muted-foreground font-rajdhani">
-                Loading your sound preferences…
+                {t("settings.displaySound.loadingPreferences")}
               </p>
             )}
           </div>
@@ -270,20 +270,20 @@ export function ProfileDisplaySounds() {
           <div className="flex items-center gap-3">
             <Sparkles className="h-5 w-5 text-primary" />
             <h2 className="text-xl font-orbitron font-semibold text-primary">
-              Particle Effects
+              {t("settings.displaySound.particleEffects")}
             </h2>
           </div>
 
           <p className="text-sm text-muted-foreground font-rajdhani">
-            Particle bursts for rewards and celebrations.
+            {t("settings.displaySound.particleEffectsDesc")}
           </p>
 
           <div className="space-y-5">
             <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="min-w-0">
-                <p className="text-sm font-orbitron text-foreground">Enable Particles</p>
+                <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.enableParticles")}</p>
                 <p className="text-xs text-muted-foreground font-rajdhani">
-                  Disabling removes particle bursts across the app.
+                  {t("settings.displaySound.enableParticlesDesc")}
                 </p>
               </div>
               <Switch
@@ -293,7 +293,7 @@ export function ProfileDisplaySounds() {
                     { particles_enabled: v } as any,
                     {
                       onSuccess: () =>
-                        toast({ title: "Updated", description: "Particle setting saved." }),
+                        toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.particleSaved") }),
                     }
                   )
                 }
@@ -303,7 +303,7 @@ export function ProfileDisplaySounds() {
 
             <div className="space-y-3 p-4 rounded-xl border border-primary/15 bg-card/50">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-orbitron text-foreground">Intensity</p>
+                <p className="text-sm font-orbitron text-foreground">{t("settings.displaySound.intensity")}</p>
                 <span className="text-xs text-muted-foreground font-rajdhani">
                   {Math.round(displayParticleIntensity * 100)}%
                 </span>
@@ -313,11 +313,9 @@ export function ProfileDisplaySounds() {
                 max={100}
                 step={1}
                 onValueChange={(v) => {
-                  // Only update local state while dragging
                   setLocalParticleIntensity((v[0] ?? 100) / 100);
                 }}
                 onValueCommit={(v) => {
-                  // Persist when user releases the slider
                   const newIntensity = (v[0] ?? 100) / 100;
                   setLocalParticleIntensity(null);
                   updateProfile.mutate({ particles_intensity: newIntensity } as any);
@@ -329,7 +327,7 @@ export function ProfileDisplaySounds() {
                 }
               />
               <p className="text-xs text-muted-foreground font-rajdhani">
-                Controls how many particles spawn in bursts.
+                {t("settings.displaySound.intensityDesc")}
               </p>
             </div>
           </div>

@@ -16,8 +16,10 @@ import {
   Inbox as InboxIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export default function Inbox() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("notifications");
@@ -58,10 +60,10 @@ export default function Inbox() {
             </div>
             <div>
               <h1 className="text-2xl font-orbitron text-primary tracking-wider">
-                Inbox
+                {t("inbox.title")}
               </h1>
               <p className="text-sm text-muted-foreground font-rajdhani">
-                Notifications & Messages
+                {t("inbox.subtitle")}
               </p>
             </div>
           </div>
@@ -73,7 +75,7 @@ export default function Inbox() {
             className="border-primary/30 hover:bg-primary/10"
           >
             <Settings className="h-4 w-4 mr-2" />
-            Settings
+            {t("common.settings")}
           </Button>
         </div>
 
@@ -85,7 +87,7 @@ export default function Inbox() {
               className="relative data-[state=active]:bg-primary/20 data-[state=active]:text-primary flex items-center gap-2"
             >
               <Bell className="h-4 w-4" />
-              Notifications
+              {t("inbox.tabs.notifications")}
               {unreadCount > 0 && (
                 <span className="ml-1 text-xs bg-destructive text-destructive-foreground px-1.5 py-0.5 rounded-full">
                   {unreadCount}
@@ -97,7 +99,7 @@ export default function Inbox() {
               className="relative data-[state=active]:bg-primary/20 data-[state=active]:text-primary flex items-center gap-2"
             >
               <MessageSquare className="h-4 w-4" />
-              Messages
+              {t("inbox.tabs.messages")}
               {messageUnreadCount > 0 && (
                 <span className="ml-1 text-xs bg-violet-500 text-white px-1.5 py-0.5 rounded-full">
                   {messageUnreadCount}
@@ -112,8 +114,8 @@ export default function Inbox() {
               {/* Actions Bar */}
               <div className="flex items-center justify-between p-4 border-b border-primary/20 bg-primary/5">
                 <span className="text-sm text-muted-foreground font-rajdhani">
-                  {notifications.length} notification{notifications.length !== 1 ? "s" : ""}
-                  {unreadCount > 0 && ` (${unreadCount} unread)`}
+                  {t("inbox.notificationCount", { count: notifications.length })}
+                  {unreadCount > 0 && ` (${t("inbox.unreadCount", { count: unreadCount })})`}
                 </span>
                 <div className="flex items-center gap-2">
                   {unreadCount > 0 && (
@@ -124,7 +126,7 @@ export default function Inbox() {
                       className="text-primary hover:text-primary hover:bg-primary/10"
                     >
                       <CheckCheck className="h-4 w-4 mr-1" />
-                      Mark all read
+                      {t("inbox.markAllRead")}
                     </Button>
                   )}
                   {notifications.length > 0 && (
@@ -135,7 +137,7 @@ export default function Inbox() {
                       className="text-destructive hover:text-destructive hover:bg-destructive/10"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Clear all
+                      {t("inbox.clearAll")}
                     </Button>
                   )}
                 </div>
@@ -146,7 +148,7 @@ export default function Inbox() {
                 <div className="p-4 space-y-3">
                   {isLoading ? (
                     <div className="text-center py-12 text-muted-foreground font-rajdhani">
-                      Loading notifications...
+                      {t("inbox.loadingNotifications")}
                     </div>
                   ) : notifications.length === 0 ? (
                     <div className="text-center py-16 space-y-4">
@@ -155,10 +157,10 @@ export default function Inbox() {
                       </div>
                       <div>
                         <p className="text-lg text-muted-foreground font-rajdhani">
-                          No notifications
+                          {t("inbox.emptyNotifications")}
                         </p>
                         <p className="text-sm text-muted-foreground/60 font-rajdhani mt-1">
-                          You're all caught up!
+                          {t("inbox.emptyNotificationsDesc")}
                         </p>
                       </div>
                     </div>
@@ -183,8 +185,8 @@ export default function Inbox() {
               {/* Actions Bar */}
               <div className="flex items-center justify-between p-4 border-b border-primary/20 bg-violet-500/5">
                 <span className="text-sm text-muted-foreground font-rajdhani">
-                  {conversations.length} conversation{conversations.length !== 1 ? "s" : ""}
-                  {messageUnreadCount > 0 && ` (${messageUnreadCount} unread)`}
+                  {t("inbox.conversationCount", { count: conversations.length })}
+                  {messageUnreadCount > 0 && ` (${t("inbox.unreadCount", { count: messageUnreadCount })})`}
                 </span>
               </div>
 
@@ -193,7 +195,7 @@ export default function Inbox() {
                 <div className="p-4">
                   {messagesLoading ? (
                     <div className="text-center py-12 text-muted-foreground font-rajdhani">
-                      Loading messages...
+                      {t("inbox.loadingMessages")}
                     </div>
                   ) : conversations.length === 0 ? (
                     <div className="text-center py-16 space-y-4">
@@ -202,10 +204,10 @@ export default function Inbox() {
                       </div>
                       <div>
                         <p className="text-lg text-muted-foreground font-rajdhani">
-                          No messages yet
+                          {t("inbox.emptyMessages")}
                         </p>
                         <p className="text-sm text-muted-foreground/60 font-rajdhani mt-1">
-                          Private messaging coming soon
+                          {t("inbox.emptyMessagesDesc")}
                         </p>
                       </div>
                     </div>
@@ -229,7 +231,7 @@ export default function Inbox() {
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between">
                                 <p className="font-semibold text-primary truncate">
-                                  {conv.other_user_name || "Unknown User"}
+                                  {conv.other_user_name || t("inbox.unknownUser")}
                                 </p>
                                 {conv.unread_count > 0 && (
                                   <span className="text-xs bg-violet-500 text-white px-1.5 py-0.5 rounded-full">

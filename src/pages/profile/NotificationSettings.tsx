@@ -5,8 +5,10 @@ import { useNotificationSettings } from "@/hooks/useNotifications";
 import { toast } from "@/hooks/use-toast";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { Card } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 export default function NotificationSettings() {
+  const { t } = useTranslation();
   const { settings, isLoading, updateSettings } = useNotificationSettings();
 
   const labelStyle = "text-foreground font-rajdhani text-base";
@@ -16,8 +18,8 @@ export default function NotificationSettings() {
     updateSettings.mutate({ [key]: value }, {
       onSuccess: () => {
         toast({
-          title: "Settings updated",
-          description: "Your notification preferences have been saved.",
+          title: t("settings.notifications.toasts.updated"),
+          description: t("settings.notifications.toasts.updatedDesc"),
         });
       },
     });
@@ -25,8 +27,8 @@ export default function NotificationSettings() {
 
   return (
     <ProfileSettingsShell
-      title="Notifications"
-      subtitle="Control how you receive updates"
+      title={t("settings.notifications.title")}
+      subtitle={t("settings.notifications.subtitle")}
       icon={<Bell className="h-7 w-7 text-primary" />}
       containerClassName="max-w-2xl"
     >
@@ -36,7 +38,7 @@ export default function NotificationSettings() {
             <div className="flex items-center gap-3">
               <Bell className="h-5 w-5 text-primary" />
               <h2 className="text-xl font-orbitron font-semibold text-primary">
-                Notification Categories
+                {t("settings.notifications.categories")}
               </h2>
             </div>
             <div className="space-y-4">
@@ -44,9 +46,9 @@ export default function NotificationSettings() {
                 <div className="flex items-start gap-3">
                   <Zap className="h-5 w-5 text-primary/70 mt-0.5" />
                   <div className="space-y-1">
-                    <Label className={labelStyle}>System Notifications</Label>
+                    <Label className={labelStyle}>{t("settings.notifications.system")}</Label>
                     <p className={descriptionStyle}>
-                      Updates, new features, patch notes, system notices
+                      {t("settings.notifications.systemDesc")}
                     </p>
                   </div>
                 </div>
@@ -61,9 +63,9 @@ export default function NotificationSettings() {
                 <div className="flex items-start gap-3">
                   <Volume2 className="h-5 w-5 text-primary/70 mt-0.5" />
                   <div className="space-y-1">
-                    <Label className={labelStyle}>Progress & Engagement</Label>
+                    <Label className={labelStyle}>{t("settings.notifications.progress")}</Label>
                     <p className={descriptionStyle}>
-                      Achievements, goal completions, streaks, milestones
+                      {t("settings.notifications.progressDesc")}
                     </p>
                   </div>
                 </div>
@@ -78,8 +80,8 @@ export default function NotificationSettings() {
                 <div className="flex items-start gap-3">
                   <MessageSquare className="h-5 w-5 text-primary/70 mt-0.5" />
                   <div className="space-y-1">
-                    <Label className={labelStyle}>Social Notifications</Label>
-                    <p className={descriptionStyle}>Private messages, replies, mentions</p>
+                    <Label className={labelStyle}>{t("settings.notifications.social")}</Label>
+                    <p className={descriptionStyle}>{t("settings.notifications.socialDesc")}</p>
                   </div>
                 </div>
                 <Switch
@@ -93,8 +95,8 @@ export default function NotificationSettings() {
                 <div className="flex items-start gap-3">
                   <Gift className="h-5 w-5 text-primary/70 mt-0.5" />
                   <div className="space-y-1">
-                    <Label className={labelStyle}>Marketing & Gifts</Label>
-                    <p className={descriptionStyle}>Promo codes, gifts, special offers</p>
+                    <Label className={labelStyle}>{t("settings.notifications.marketing")}</Label>
+                    <p className={descriptionStyle}>{t("settings.notifications.marketingDesc")}</p>
                   </div>
                 </div>
                 <Switch

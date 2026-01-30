@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { 
   Heart, 
   Moon, 
@@ -8,9 +8,6 @@ import {
   Brain, 
   Droplets,
   Apple,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   Settings,
   Calendar,
   Sparkles,
@@ -28,8 +25,10 @@ import { HealthDailyCheckin } from "@/components/health/HealthDailyCheckin";
 import { HealthSettingsModal } from "@/components/health/HealthSettingsModal";
 import { HealthWeeklyChart } from "@/components/health/HealthWeeklyChart";
 import { HealthBMIIndicator } from "@/components/health/HealthBMIIndicator";
+import { useTranslation } from "react-i18next";
 
 export default function Health() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
@@ -45,7 +44,7 @@ export default function Health() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading Health Dashboard...</p>
+          <p className="text-muted-foreground">{t("health.loading")}</p>
         </div>
       </div>
     );
@@ -86,10 +85,10 @@ export default function Health() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 font-orbitron">
-                Health & Balance
+                {t("health.title")}
               </h1>
               <p className="text-muted-foreground/70 text-sm">
-                Your personal wellness awareness dashboard
+                {t("health.subtitle")}
               </p>
             </div>
           </div>
@@ -102,7 +101,7 @@ export default function Health() {
               className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
             >
               <Calendar className="w-4 h-4 mr-2" />
-              Daily Check-in
+              {t("health.dailyCheckin")}
             </Button>
             <Button
               variant="ghost"
@@ -132,8 +131,8 @@ export default function Health() {
           {settings?.show_sleep !== false && (
             <HealthMetricCard
               icon={Moon}
-              title="Sleep & Recovery"
-              description="Track your rest quality and energy"
+              title={t("health.metrics.sleep")}
+              description={t("health.metrics.sleepDesc")}
               color="blue"
               metricKey="sleep"
             />
@@ -142,8 +141,8 @@ export default function Health() {
           {settings?.show_activity !== false && (
             <HealthMetricCard
               icon={Activity}
-              title="Activity & Movement"
-              description="Stay consistent with daily movement"
+              title={t("health.metrics.activity")}
+              description={t("health.metrics.activityDesc")}
               color="green"
               metricKey="activity"
             />
@@ -152,8 +151,8 @@ export default function Health() {
           {settings?.show_stress !== false && (
             <HealthMetricCard
               icon={Brain}
-              title="Stress & Mental Load"
-              description="Monitor your mental wellness"
+              title={t("health.metrics.stress")}
+              description={t("health.metrics.stressDesc")}
               color="purple"
               metricKey="stress"
             />
@@ -162,8 +161,8 @@ export default function Health() {
           {settings?.show_hydration !== false && (
             <HealthMetricCard
               icon={Droplets}
-              title="Hydration"
-              description="Track your water intake"
+              title={t("health.metrics.hydration")}
+              description={t("health.metrics.hydrationDesc")}
               color="cyan"
               metricKey="hydration"
             />
@@ -172,8 +171,8 @@ export default function Health() {
           {settings?.show_nutrition && (
             <HealthMetricCard
               icon={Apple}
-              title="Nutrition Balance"
-              description="General meal balance awareness"
+              title={t("health.metrics.nutrition")}
+              description={t("health.metrics.nutritionDesc")}
               color="orange"
               metricKey="nutrition"
             />
@@ -191,7 +190,7 @@ export default function Health() {
           className="text-center text-xs text-muted-foreground/50 py-4"
         >
           <Sparkles className="w-3 h-3 inline mr-1" />
-          This module provides personal wellness awareness only. It is not a medical tool and does not provide health advice.
+          {t("health.disclaimer")}
         </motion.div>
       </div>
 

@@ -5,15 +5,17 @@ import { CyberBackground } from "@/components/CyberBackground";
 import { CommunityFeed } from "@/components/community/CommunityFeed";
 import { VictoryReelsFeed } from "@/components/community/VictoryReelsFeed";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 type CommunityTab = 'feed' | 'reels';
 
 export default function Community() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<CommunityTab>('feed');
   
-  const tabs: { id: CommunityTab; label: string; icon: typeof Users }[] = [
-    { id: 'feed', label: 'Community Feed', icon: Users },
-    { id: 'reels', label: 'Victory Reels', icon: Film },
+  const tabs: { id: CommunityTab; labelKey: string; icon: typeof Users }[] = [
+    { id: 'feed', labelKey: 'community.tabs.feed', icon: Users },
+    { id: 'reels', labelKey: 'community.tabs.reels', icon: Film },
   ];
   
   return (
@@ -37,11 +39,11 @@ export default function Community() {
           
           <h1 className="font-orbitron text-2xl md:text-3xl font-bold tracking-wider mb-2">
             <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-              COMMUNITY
+              {t("community.title")}
             </span>
           </h1>
           <p className="text-muted-foreground text-sm">
-            Where discipline becomes visible
+            {t("community.subtitle")}
           </p>
         </motion.div>
         
@@ -76,7 +78,7 @@ export default function Community() {
                     />
                   )}
                   <Icon className="w-4 h-4 relative z-10" />
-                  <span className="relative z-10">{tab.label}</span>
+                  <span className="relative z-10">{t(tab.labelKey)}</span>
                 </button>
               );
             })}

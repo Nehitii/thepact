@@ -5,12 +5,12 @@ import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell"
 import { Card } from "@/components/ui/card";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
 import { toast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 export default function PrivacyControl() {
-
+  const { t } = useTranslation();
   const { profile, isLoading, updateProfile } = useProfileSettings();
 
-  // Luminous label style for consistency and readability
   const labelStyle = "text-foreground font-rajdhani text-base";
   const descriptionStyle = "text-sm text-muted-foreground font-rajdhani";
 
@@ -28,8 +28,8 @@ export default function PrivacyControl() {
       {
         onSuccess: () => {
           toast({
-            title: "Privacy updated",
-            description: "Your privacy preferences have been saved.",
+            title: t("settings.privacy.toasts.updated"),
+            description: t("settings.privacy.toasts.updatedDesc"),
           });
         },
       }
@@ -38,8 +38,8 @@ export default function PrivacyControl() {
 
   return (
     <ProfileSettingsShell
-      title="Privacy & Control"
-      subtitle="Manage your visibility and notifications"
+      title={t("settings.privacy.title")}
+      subtitle={t("settings.privacy.subtitle")}
       icon={<Shield className="h-7 w-7 text-primary" />}
       containerClassName="max-w-2xl"
     >
@@ -48,13 +48,15 @@ export default function PrivacyControl() {
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
               <Users className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">Community Visibility</h2>
+              <h2 className="text-xl font-orbitron font-semibold text-primary">
+                {t("settings.privacy.communityVisibility")}
+              </h2>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between py-3 border-b border-primary/10">
                 <div className="space-y-1">
-                  <Label className={labelStyle}>Profile Discoverable</Label>
-                  <p className={descriptionStyle}>Allow others to find your profile in community</p>
+                  <Label className={labelStyle}>{t("settings.privacy.profileDiscoverable")}</Label>
+                  <p className={descriptionStyle}>{t("settings.privacy.profileDiscoverableDesc")}</p>
                 </div>
                 <Switch
                   checked={profile?.community_profile_discoverable ?? true}
@@ -64,8 +66,8 @@ export default function PrivacyControl() {
               </div>
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1">
-                  <Label className={labelStyle}>Show Activity Status</Label>
-                  <p className={descriptionStyle}>Display when you're active</p>
+                  <Label className={labelStyle}>{t("settings.privacy.showActivityStatus")}</Label>
+                  <p className={descriptionStyle}>{t("settings.privacy.showActivityStatusDesc")}</p>
                 </div>
                 <Switch
                   checked={profile?.show_activity_status ?? true}
@@ -81,13 +83,15 @@ export default function PrivacyControl() {
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
               <Eye className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">Goal Visibility</h2>
+              <h2 className="text-xl font-orbitron font-semibold text-primary">
+                {t("settings.privacy.goalVisibility")}
+              </h2>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between py-3 border-b border-primary/10">
                 <div className="space-y-1">
-                  <Label className={labelStyle}>Share Goals Progress</Label>
-                  <p className={descriptionStyle}>Allow community members to see your goals</p>
+                  <Label className={labelStyle}>{t("settings.privacy.shareGoalsProgress")}</Label>
+                  <p className={descriptionStyle}>{t("settings.privacy.shareGoalsProgressDesc")}</p>
                 </div>
                 <Switch
                   checked={profile?.share_goals_progress ?? true}
@@ -97,8 +101,8 @@ export default function PrivacyControl() {
               </div>
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1">
-                  <Label className={labelStyle}>Share Achievements</Label>
-                  <p className={descriptionStyle}>Display earned achievements publicly</p>
+                  <Label className={labelStyle}>{t("settings.privacy.shareAchievements")}</Label>
+                  <p className={descriptionStyle}>{t("settings.privacy.shareAchievementsDesc")}</p>
                 </div>
                 <Switch
                   checked={profile?.share_achievements ?? true}
@@ -114,13 +118,15 @@ export default function PrivacyControl() {
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
               <Bell className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">Community Notifications</h2>
+              <h2 className="text-xl font-orbitron font-semibold text-primary">
+                {t("settings.privacy.communityNotifications")}
+              </h2>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between py-3 border-b border-primary/10">
                 <div className="space-y-1">
-                  <Label className={labelStyle}>Community Updates</Label>
-                  <p className={descriptionStyle}>Receive updates from community members</p>
+                  <Label className={labelStyle}>{t("settings.privacy.communityUpdates")}</Label>
+                  <p className={descriptionStyle}>{t("settings.privacy.communityUpdatesDesc")}</p>
                 </div>
                 <Switch
                   checked={profile?.community_updates_enabled ?? true}
@@ -130,8 +136,8 @@ export default function PrivacyControl() {
               </div>
               <div className="flex items-center justify-between py-3">
                 <div className="space-y-1">
-                  <Label className={labelStyle}>Achievement Celebrations</Label>
-                  <p className={descriptionStyle}>Get notified of others' achievements</p>
+                  <Label className={labelStyle}>{t("settings.privacy.achievementCelebrations")}</Label>
+                  <p className={descriptionStyle}>{t("settings.privacy.achievementCelebrationsDesc")}</p>
                 </div>
                 <Switch
                   checked={profile?.achievement_celebrations_enabled ?? true}
