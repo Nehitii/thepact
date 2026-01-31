@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { DIFFICULTY_OPTIONS } from '@/lib/goalConstants';
 
 interface Goal {
   id: string;
@@ -27,6 +28,22 @@ interface BarViewGoalCardProps {
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
 
+// Get difficulty color from constants or custom
+function getDifficultyColor(difficulty: string | null | undefined, customColor: string): string {
+  if (!difficulty) return '#00ffaa';
+  if (difficulty === 'custom') return customColor;
+  const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
+  return found?.color || '#00ffaa';
+}
+
+// Get difficulty label
+function getDifficultyDisplayLabel(difficulty: string | null | undefined, customName: string): string {
+  if (!difficulty) return 'UNKNOWN';
+  if (difficulty === 'custom') return customName.toUpperCase() || 'CUSTOM';
+  const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
+  return found?.value.toUpperCase() || difficulty.toUpperCase();
+}
+
 export function BarViewGoalCard({
   goal,
   isCompleted = false,
@@ -35,8 +52,16 @@ export function BarViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: BarViewGoalCardProps) {
+  const difficultyColor = getDifficultyColor(goal.difficulty, customDifficultyColor);
+  const difficultyLabel = getDifficultyDisplayLabel(goal.difficulty, customDifficultyName);
+  
+  // Calculate progress
+  const totalSteps = goal.totalStepsCount || 0;
+  const completedSteps = goal.completedStepsCount || 0;
+  const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+
   return (
-    <StyledWrapper onClick={() => onNavigate(goal.id)}>
+    <StyledWrapper $accentColor={difficultyColor} onClick={() => onNavigate(goal.id)}>
       <div className="container noselect">
         <div className="canvas">
           <div className="tracker tr-1"></div>
@@ -78,11 +103,9 @@ export function BarViewGoalCard({
                 <div className="glow-2"></div>
                 <div className="glow-3"></div>
               </div>
-              <p id="prompt">HOVER ME</p>
+              <p id="prompt">{goal.name.toUpperCase()}</p>
               <div className="title">
-                CYBER
-                <br />
-                CARD
+                {goal.name.length > 20 ? goal.name.substring(0, 20).toUpperCase() + '...' : goal.name.toUpperCase()}
               </div>
               <div className="card-particles">
                 <span></span>
@@ -93,8 +116,8 @@ export function BarViewGoalCard({
                 <span></span>
               </div>
               <div className="subtitle">
-                INTERACTIVE
-                <span className="highlight">3D EFFECT</span>
+                {difficultyLabel}
+                <span className="highlight">{progressPercent}%</span>
               </div>
               <div className="corner-elements">
                 <span></span>
@@ -111,7 +134,7 @@ export function BarViewGoalCard({
   );
 }
 
-const StyledWrapper = styled.div`
+const StyledWrapper = styled.div<{ $accentColor: string }>`
   .container {
     position: relative;
     width: 600px;
@@ -134,10 +157,11 @@ const StyledWrapper = styled.div`
     border-radius: 20px;
     transition: 700ms;
     background: linear-gradient(45deg, #1a1a1a, #262626);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid ${props => props.$accentColor}33;
     overflow: hidden;
     box-shadow:
       0 0 20px rgba(0, 0, 0, 0.3),
+      0 0 30px ${props => props.$accentColor}15,
       inset 0 0 20px rgba(0, 0, 0, 0.2);
   }
 
@@ -152,33 +176,36 @@ const StyledWrapper = styled.div`
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: 2px;
     transition: 300ms ease-in-out;
     position: absolute;
     text-align: center;
     color: rgba(255, 255, 255, 0.7);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    text-shadow: 0 0 10px ${props => props.$accentColor}50;
+    max-width: 90%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .title {
     opacity: 0;
     transition: 300ms ease-in-out;
     position: absolute;
-    font-size: 28px;
+    font-size: 22px;
     font-weight: 800;
-    letter-spacing: 4px;
+    letter-spacing: 3px;
     text-align: center;
     width: 100%;
-    padding-top: 20px;
-    background: linear-gradient(45deg, #00ffaa, #00a2ff);
+    padding: 20px 10px 0;
+    background: linear-gradient(45deg, ${props => props.$accentColor}, ${props => props.$accentColor}aa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 15px rgba(0, 255, 170, 0.3));
-    text-shadow:
-      0 0 10px rgba(92, 103, 255, 0.5),
-      0 0 20px rgba(92, 103, 255, 0.3);
+    filter: drop-shadow(0 0 15px ${props => props.$accentColor}50);
+    line-height: 1.2;
+    word-break: break-word;
   }
 
   .subtitle {
@@ -193,9 +220,9 @@ const StyledWrapper = styled.div`
   }
 
   .highlight {
-    color: #00ffaa;
-    margin-left: 5px;
-    background: linear-gradient(90deg, #5c67ff, #ad51ff);
+    color: ${props => props.$accentColor};
+    margin-left: 8px;
+    background: linear-gradient(90deg, ${props => props.$accentColor}, ${props => props.$accentColor}cc);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     font-weight: bold;
@@ -216,8 +243,8 @@ const StyledWrapper = styled.div`
     border-radius: 50%;
     background: radial-gradient(
       circle at center,
-      rgba(0, 255, 170, 0.3) 0%,
-      rgba(0, 255, 170, 0) 70%
+      ${props => props.$accentColor}4d 0%,
+      ${props => props.$accentColor}00 70%
     );
     filter: blur(15px);
     opacity: 0;
@@ -242,7 +269,7 @@ const StyledWrapper = styled.div`
     position: absolute;
     width: 3px;
     height: 3px;
-    background: #00ffaa;
+    background: ${props => props.$accentColor};
     border-radius: 50%;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -318,8 +345,8 @@ const StyledWrapper = styled.div`
     content: "";
     background: radial-gradient(
       circle at center,
-      rgba(0, 255, 170, 0.1) 0%,
-      rgba(0, 162, 255, 0.05) 50%,
+      ${props => props.$accentColor}1a 0%,
+      ${props => props.$accentColor}0d 50%,
       transparent 100%
     );
     filter: blur(20px);
@@ -464,7 +491,7 @@ const StyledWrapper = styled.div`
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(92, 103, 255, 0.2),
+      ${props => props.$accentColor}33,
       transparent
     );
   }
@@ -513,7 +540,7 @@ const StyledWrapper = styled.div`
     position: absolute;
     width: 15px;
     height: 15px;
-    border: 2px solid rgba(92, 103, 255, 0.3);
+    border: 2px solid ${props => props.$accentColor}4d;
   }
 
   .corner-elements span:nth-child(1) {
@@ -550,7 +577,7 @@ const StyledWrapper = styled.div`
     background: linear-gradient(
       to bottom,
       transparent,
-      rgba(92, 103, 255, 0.1),
+      ${props => props.$accentColor}1a,
       transparent
     );
     transform: translateY(-100%);
@@ -568,14 +595,13 @@ const StyledWrapper = styled.div`
     100% { transform: translateY(100%); }
   }
 
-  /* Modyfikacja istniejących styli */
   #card:hover .card-glare { opacity: 1; }
 
   .corner-elements span { transition: all 0.3s ease; }
 
   #card:hover .corner-elements span {
-    border-color: rgba(92, 103, 255, 0.8);
-    box-shadow: 0 0 10px rgba(92, 103, 255, 0.5);
+    border-color: ${props => props.$accentColor}cc;
+    box-shadow: 0 0 10px ${props => props.$accentColor}80;
   }
 `;
 
