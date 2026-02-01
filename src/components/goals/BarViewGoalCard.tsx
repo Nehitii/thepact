@@ -1,7 +1,7 @@
-import React, { memo, useMemo } from 'react';
-import styled from 'styled-components';
-import { Star, Target, ImageOff } from 'lucide-react';
-import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity } from '@/lib/goalConstants';
+import React, { memo, useMemo } from "react";
+import styled from "styled-components";
+import { Star, Target } from "lucide-react";
+import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 
 /**
  * PERFORMANCE OPTIMIZATIONS APPLIED:
@@ -70,9 +70,9 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
 // Get difficulty label
 const getDifficultyDisplayLabel = (difficulty: string, customName: string): string => {
   if (difficulty === "custom") return customName || "Custom";
-  const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
-  return found?.value 
-    ? found.value.charAt(0).toUpperCase() + found.value.slice(1) 
+  const found = DIFFICULTY_OPTIONS.find((d) => d.value === difficulty);
+  return found?.value
+    ? found.value.charAt(0).toUpperCase() + found.value.slice(1)
     : difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
 };
 
@@ -86,25 +86,34 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   onToggleFocus,
 }: BarViewGoalCardProps) {
   // Memoize derived values to prevent recalculation
-  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity } = useMemo(() => {
-    const diff = goal.difficulty || "easy";
-    const total = goal.totalStepsCount || 0;
-    const completed = goal.completedStepsCount || 0;
-    
-    return {
-      theme: getDifficultyTheme(diff, customDifficultyColor),
-      difficultyLabel: getDifficultyDisplayLabel(diff, customDifficultyName),
-      progressPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
-      statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
-      totalSteps: total,
-      completedSteps: completed,
-      intensity: getDifficultyIntensity(diff),
-    };
-  }, [goal.difficulty, goal.totalStepsCount, goal.completedStepsCount, goal.status, isCompleted, customDifficultyName, customDifficultyColor]);
+  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity } =
+    useMemo(() => {
+      const diff = goal.difficulty || "easy";
+      const total = goal.totalStepsCount || 0;
+      const completed = goal.completedStepsCount || 0;
+
+      return {
+        theme: getDifficultyTheme(diff, customDifficultyColor),
+        difficultyLabel: getDifficultyDisplayLabel(diff, customDifficultyName),
+        progressPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
+        statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
+        totalSteps: total,
+        completedSteps: completed,
+        intensity: getDifficultyIntensity(diff),
+      };
+    }, [
+      goal.difficulty,
+      goal.totalStepsCount,
+      goal.completedStepsCount,
+      goal.status,
+      isCompleted,
+      customDifficultyName,
+      customDifficultyColor,
+    ]);
 
   return (
-    <StyledWrapper 
-      $accentColor={theme.color} 
+    <StyledWrapper
+      $accentColor={theme.color}
       $accentRgb={theme.rgb}
       $intensity={intensity}
       onClick={() => onNavigate(goal.id)}
@@ -121,25 +130,20 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
           <div className="tracker tr-7" />
           <div className="tracker tr-8" />
           <div className="tracker tr-9" />
-          
+
           <div id="card">
             <div className="card-content">
               {/* Left side: Image thumbnail */}
               <div className="image-frame">
                 {goal.image_url ? (
-                  <img 
-                    src={goal.image_url} 
-                    alt={goal.name}
-                    loading="lazy"
-                    className="goal-image"
-                  />
+                  <img src={goal.image_url} alt={goal.name} loading="lazy" className="goal-image" />
                 ) : (
                   <div className="image-placeholder">
                     <Target className="placeholder-icon" />
                   </div>
                 )}
               </div>
-              
+
               {/* Content area */}
               <div className="info-section">
                 {/* Difficulty badge - exact match to GridView/BookmarkView */}
@@ -147,14 +151,14 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                   <span className="badge-text">{difficultyLabel}</span>
                   <div className="badge-glossy" />
                 </div>
-                
+
                 {/* Goal name */}
                 <h3 className="goal-name">{goal.name}</h3>
-                
+
                 {/* Status badge (hover only) */}
                 <div className="status-badge">{statusLabel}</div>
               </div>
-              
+
               {/* Focus star (top-right, hover only, starred only) */}
               {goal.is_focus && (
                 <button
@@ -167,24 +171,26 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                   <Star className="star-icon" />
                 </button>
               )}
-              
+
               {/* Progress section (hover reveal) */}
               <div className="progress-section">
                 <div className="progress-bar-container">
-                  <div 
-                    className="progress-bar-fill"
-                    style={{ width: `${progressPercent}%` }}
-                  />
+                  <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }} />
                 </div>
                 <div className="progress-text">
-                  <span className="steps-count">{completedSteps}/{totalSteps} steps</span>
+                  <span className="steps-count">
+                    {completedSteps}/{totalSteps} steps
+                  </span>
                   <span className="progress-percent">{progressPercent}%</span>
                 </div>
               </div>
-              
+
               {/* Corner accents */}
               <div className="corner-elements">
-                <span /><span /><span /><span />
+                <span />
+                <span />
+                <span />
+                <span />
               </div>
             </div>
           </div>
@@ -225,7 +231,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     z-index: 200;
   }
 
-  /* Card base with pre-hover difficulty glow */
+  /* Card base + premium difficulty glow (2-layer: aura + ring) */
   #card {
     position: absolute;
     inset: 0;
@@ -233,14 +239,64 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     border-radius: 16px;
     transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
     background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
-    border: 1.5px solid rgba(${props => props.$accentRgb}, ${props => 0.2 + props.$intensity * 0.08});
     overflow: hidden;
-    
-    /* Pre-hover difficulty glow - visible when NOT hovered */
+
+    /* Difficulty-coded border, stays subtle */
+    border: 1.5px solid rgba(${(props) => props.$accentRgb}, ${(props) => 0.18 + props.$intensity * 0.08});
+
+    /* Base depth (keep cheap) */
     box-shadow:
-      0 4px 12px rgba(0, 0, 0, 0.4),
-      0 0 ${props => 15 + props.$intensity * 5}px rgba(${props => props.$accentRgb}, ${props => 0.08 + props.$intensity * 0.03}),
+      0 4px 12px rgba(0, 0, 0, 0.45),
       inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+    /* Make pseudo-elements behave predictably */
+    isolation: isolate;
+  }
+
+  /* Diffuse aura (behind the card) */
+  #card::before {
+    content: "";
+    position: absolute;
+    inset: -18px;
+    border-radius: 22px;
+    z-index: -1;
+    pointer-events: none;
+
+    background: radial-gradient(
+      60% 55% at 50% 45%,
+      rgba(${(props) => props.$accentRgb}, ${(props) => 0.07 + props.$intensity * 0.035}) 0%,
+      rgba(${(props) => props.$accentRgb}, ${(props) => 0.035 + props.$intensity * 0.02}) 35%,
+      rgba(${(props) => props.$accentRgb}, 0) 70%
+    );
+
+    filter: blur(${(props) => 10 + props.$intensity * 3}px);
+    opacity: 0.9;
+    transform: translateZ(0);
+  }
+
+  /* Crisp ring + subtle highlight near edges */
+  #card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: 1;
+
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0)),
+      radial-gradient(
+        120% 140% at 10% 0%,
+        rgba(${(props) => props.$accentRgb}, ${(props) => 0.18 + props.$intensity * 0.06}) 0%,
+        rgba(${(props) => props.$accentRgb}, 0) 55%
+      );
+
+    box-shadow:
+      0 0 ${(props) => 10 + props.$intensity * 4}px rgba(${(props) => props.$accentRgb}, ${(props) => 0.08 + props.$intensity * 0.03}),
+      inset 0 0 0 1px rgba(${(props) => props.$accentRgb}, ${(props) => 0.08 + props.$intensity * 0.02});
+
+    opacity: 0.85;
+    mix-blend-mode: screen;
   }
 
   .card-content {
@@ -251,6 +307,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     align-items: center;
     padding: 16px 20px;
     gap: 16px;
+    z-index: 2; /* above the ring */
   }
 
   /* Image thumbnail frame (left side) */
@@ -260,8 +317,8 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     height: 72px;
     border-radius: 10px;
     overflow: hidden;
-    border: 2px solid rgba(${props => props.$accentRgb}, 0.4);
-    box-shadow: 0 0 12px rgba(${props => props.$accentRgb}, 0.15);
+    border: 2px solid rgba(${(props) => props.$accentRgb}, 0.4);
+    box-shadow: 0 0 12px rgba(${(props) => props.$accentRgb}, 0.15);
     background: rgba(0, 0, 0, 0.3);
   }
 
@@ -277,13 +334,17 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(${props => props.$accentRgb}, 0.1), rgba(${props => props.$accentRgb}, 0.05));
+    background: linear-gradient(
+      135deg,
+      rgba(${(props) => props.$accentRgb}, 0.1),
+      rgba(${(props) => props.$accentRgb}, 0.05)
+    );
   }
 
   .placeholder-icon {
     width: 28px;
     height: 28px;
-    color: rgba(${props => props.$accentRgb}, 0.5);
+    color: rgba(${(props) => props.$accentRgb}, 0.5);
   }
 
   /* Info section */
@@ -306,12 +367,12 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     overflow: hidden;
     background: linear-gradient(
       135deg,
-      rgba(${props => props.$accentRgb}, ${props => 0.15 + props.$intensity * 0.05}) 0%,
-      rgba(${props => props.$accentRgb}, ${props => 0.08 + props.$intensity * 0.03}) 100%
+      rgba(${(props) => props.$accentRgb}, ${(props) => 0.15 + props.$intensity * 0.05}) 0%,
+      rgba(${(props) => props.$accentRgb}, ${(props) => 0.08 + props.$intensity * 0.03}) 100%
     );
-    border: 1px solid rgba(${props => props.$accentRgb}, ${props => 0.35 + props.$intensity * 0.1});
-    box-shadow: 
-      0 2px 8px rgba(${props => props.$accentRgb}, ${props => 0.15 + props.$intensity * 0.05}),
+    border: 1px solid rgba(${(props) => props.$accentRgb}, ${(props) => 0.35 + props.$intensity * 0.1});
+    box-shadow:
+      0 2px 8px rgba(${(props) => props.$accentRgb}, ${(props) => 0.15 + props.$intensity * 0.05}),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
@@ -322,7 +383,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: ${props => props.$accentColor};
+    color: ${(props) => props.$accentColor};
   }
 
   /* Glossy overlay - matches BookmarkView */
@@ -377,8 +438,8 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     z-index: 25;
     padding: 6px;
     border-radius: 50%;
-    background: rgba(${props => props.$accentRgb}, 0.2);
-    border: 1px solid rgba(${props => props.$accentRgb}, 0.4);
+    background: rgba(${(props) => props.$accentRgb}, 0.2);
+    border: 1px solid rgba(${(props) => props.$accentRgb}, 0.4);
     opacity: 0;
     transform: scale(0.8);
     transition: all 250ms ease;
@@ -388,8 +449,8 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   .focus-star .star-icon {
     width: 14px;
     height: 14px;
-    color: ${props => props.$accentColor};
-    fill: ${props => props.$accentColor};
+    color: ${(props) => props.$accentColor};
+    fill: ${(props) => props.$accentColor};
   }
 
   /* Progress section - hover reveal */
@@ -401,6 +462,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     opacity: 0;
     transform: translateY(6px);
     transition: opacity 250ms ease, transform 250ms ease;
+    z-index: 2;
   }
 
   .progress-bar-container {
@@ -412,7 +474,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
 
   .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, rgba(${props => props.$accentRgb}, 0.6), ${props => props.$accentColor});
+    background: linear-gradient(90deg, rgba(${(props) => props.$accentRgb}, 0.6), ${(props) => props.$accentColor});
     border-radius: 2px;
     transition: width 300ms ease;
   }
@@ -430,7 +492,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
 
   .progress-percent {
     font-weight: 600;
-    color: ${props => props.$accentColor};
+    color: ${(props) => props.$accentColor};
   }
 
   /* Corner elements */
@@ -442,7 +504,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     position: absolute;
     width: 12px;
     height: 12px;
-    border: 1.5px solid rgba(${props => props.$accentRgb}, 0.25);
+    border: 1.5px solid rgba(${(props) => props.$accentRgb}, 0.25);
     transition: all 250ms ease;
   }
 
@@ -487,11 +549,22 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
 
   /* Hover state effects */
   .tracker:hover ~ #card {
-    filter: brightness(1.08);
+    filter: brightness(1.08) saturate(1.05);
     box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.4),
-      0 0 30px rgba(${props => props.$accentRgb}, 0.2),
+      0 10px 28px rgba(0, 0, 0, 0.45),
       inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .tracker:hover ~ #card::before {
+    opacity: 1;
+    filter: blur(${(props) => 14 + props.$intensity * 4}px);
+  }
+
+  .tracker:hover ~ #card::after {
+    opacity: 1;
+    box-shadow:
+      0 0 34px rgba(${(props) => props.$accentRgb}, ${(props) => 0.16 + props.$intensity * 0.05}),
+      inset 0 0 0 1px rgba(${(props) => props.$accentRgb}, ${(props) => 0.14 + props.$intensity * 0.03});
   }
 
   .tracker:hover ~ #card .status-badge {
@@ -510,7 +583,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   }
 
   .tracker:hover ~ #card .corner-elements span {
-    border-color: rgba(${props => props.$accentRgb}, 0.6);
+    border-color: rgba(${(props) => props.$accentRgb}, 0.6);
   }
 
   /* Accessibility: respect reduced motion */
@@ -522,9 +595,14 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     .corner-elements span {
       transition: none;
     }
-    
+
     .tracker:hover ~ #card {
       transform: none;
+    }
+
+    #card::before,
+    #card::after {
+      filter: none;
     }
   }
 
