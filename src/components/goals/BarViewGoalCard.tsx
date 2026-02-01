@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import { DIFFICULTY_OPTIONS } from '@/lib/goalConstants';
+import { Star } from 'lucide-react';
+import { DIFFICULTY_OPTIONS, getStatusLabel } from '@/lib/goalConstants';
 
 interface Goal {
   id: string;
@@ -38,10 +39,19 @@ function getDifficultyColor(difficulty: string | null | undefined, customColor: 
 
 // Get difficulty label
 function getDifficultyDisplayLabel(difficulty: string | null | undefined, customName: string): string {
-  if (!difficulty) return 'UNKNOWN';
-  if (difficulty === 'custom') return customName.toUpperCase() || 'CUSTOM';
+  if (!difficulty) return 'Unknown';
+  if (difficulty === 'custom') return customName || 'Custom';
   const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
-  return found?.value.toUpperCase() || difficulty.toUpperCase();
+  return found?.value ? found.value.charAt(0).toUpperCase() + found.value.slice(1) : difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+}
+
+// Convert hex to RGB for rgba usage
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (result) {
+    return `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`;
+  }
+  return '0, 255, 170';
 }
 
 export function BarViewGoalCard({
@@ -54,14 +64,18 @@ export function BarViewGoalCard({
 }: BarViewGoalCardProps) {
   const difficultyColor = getDifficultyColor(goal.difficulty, customDifficultyColor);
   const difficultyLabel = getDifficultyDisplayLabel(goal.difficulty, customDifficultyName);
+  const accentRgb = hexToRgb(difficultyColor);
   
   // Calculate progress
   const totalSteps = goal.totalStepsCount || 0;
   const completedSteps = goal.completedStepsCount || 0;
   const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
+  
+  // Status label
+  const statusLabel = isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started");
 
   return (
-    <StyledWrapper $accentColor={difficultyColor} onClick={() => onNavigate(goal.id)}>
+    <StyledWrapper $accentColor={difficultyColor} $accentRgb={accentRgb} onClick={() => onNavigate(goal.id)}>
       <div className="container noselect">
         <div className="canvas">
           <div className="tracker tr-1"></div>
@@ -90,6 +104,13 @@ export function BarViewGoalCard({
           <div className="tracker tr-24"></div>
           <div className="tracker tr-25"></div>
           <div id="card">
+            {/* Goal image as subtle background */}
+            {goal.image_url && (
+              <div 
+                className="goal-image-bg"
+                style={{ backgroundImage: `url(${goal.image_url})` }}
+              />
+            )}
             <div className="card-content">
               <div className="card-glare"></div>
               <div className="cyber-lines">
@@ -103,6 +124,30 @@ export function BarViewGoalCard({
                 <div className="glow-2"></div>
                 <div className="glow-3"></div>
               </div>
+              
+              {/* Difficulty badge (top-left, always visible) */}
+              <div className="difficulty-badge">
+                {difficultyLabel}
+              </div>
+              
+              {/* Focus star (top-right, hover only, starred only) */}
+              {goal.is_focus && (
+                <button
+                  className="focus-star"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFocus(goal.id, !!goal.is_focus, e);
+                  }}
+                >
+                  <Star className="star-icon" />
+                </button>
+              )}
+              
+              {/* Status badge (hover only) */}
+              <div className="status-badge">
+                {statusLabel}
+              </div>
+              
               <p id="prompt">{goal.name.toUpperCase()}</p>
               <div className="title">
                 {goal.name.length > 20 ? goal.name.substring(0, 20).toUpperCase() + '...' : goal.name.toUpperCase()}
@@ -116,7 +161,6 @@ export function BarViewGoalCard({
                 <span></span>
               </div>
               <div className="subtitle">
-                {difficultyLabel}
                 <span className="highlight">{progressPercent}%</span>
               </div>
               <div className="corner-elements">
@@ -125,7 +169,6 @@ export function BarViewGoalCard({
                 <span></span>
                 <span></span>
               </div>
-              <div className="scan-line"></div>
             </div>
           </div>
         </div>
@@ -134,17 +177,23 @@ export function BarViewGoalCard({
   );
 }
 
-const StyledWrapper = styled.div<{ $accentColor: string }>`
+const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string }>`
+  /* Single card per row with spacing */
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  padding: 16px 0;
+
   .container {
     position: relative;
-    width: 600px;
+    width: 100%;
+    max-width: 700px;
     height: 184px;
     transition: 200ms;
   }
 
   .container:active {
-    width: 180px;
-    height: 245px;
+    transform: scale(0.98);
   }
 
   #card {
@@ -157,22 +206,105 @@ const StyledWrapper = styled.div<{ $accentColor: string }>`
     border-radius: 20px;
     transition: 700ms;
     background: linear-gradient(45deg, #1a1a1a, #262626);
-    border: 2px solid ${props => props.$accentColor}33;
+    border: 2px solid ${props => props.$accentColor}40;
     overflow: hidden;
     box-shadow:
       0 0 20px rgba(0, 0, 0, 0.3),
-      0 0 30px ${props => props.$accentColor}15,
+      0 0 40px ${props => props.$accentColor}12,
+      0 0 60px ${props => props.$accentColor}08,
       inset 0 0 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Goal image as subtle background */
+  .goal-image-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0.15;
+    filter: blur(2px);
+    z-index: 0;
   }
 
   .card-content {
     position: relative;
     width: 100%;
     height: 100%;
+    z-index: 1;
+  }
+
+  /* Difficulty badge - glossy pill style like GridView */
+  .difficulty-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 20px;
+    z-index: 25;
+    background: linear-gradient(
+      135deg,
+      rgba(${props => props.$accentRgb}, 0.25) 0%,
+      rgba(${props => props.$accentRgb}, 0.15) 100%
+    );
+    color: ${props => props.$accentColor};
+    border: 1px solid rgba(${props => props.$accentRgb}, 0.5);
+    box-shadow: 
+      0 2px 8px rgba(${props => props.$accentRgb}, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Focus star - hover only, top-right */
+  .focus-star {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    z-index: 25;
+    padding: 6px;
+    border-radius: 50%;
+    background: rgba(${props => props.$accentRgb}, 0.2);
+    border: 1px solid rgba(${props => props.$accentRgb}, 0.4);
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    pointer-events: none;
+  }
+
+  .focus-star .star-icon {
+    width: 16px;
+    height: 16px;
+    color: ${props => props.$accentColor};
+    fill: ${props => props.$accentColor};
+  }
+
+  /* Status badge - hover only */
+  .status-badge {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    padding: 5px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 12px;
+    z-index: 25;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transform: translateY(5px);
+    transition: all 0.3s ease;
   }
 
   #prompt {
-    bottom: 100px;
+    bottom: 85px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
@@ -184,7 +316,7 @@ const StyledWrapper = styled.div<{ $accentColor: string }>`
     text-align: center;
     color: rgba(255, 255, 255, 0.7);
     text-shadow: 0 0 10px ${props => props.$accentColor}50;
-    max-width: 90%;
+    max-width: 80%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -199,7 +331,7 @@ const StyledWrapper = styled.div<{ $accentColor: string }>`
     letter-spacing: 3px;
     text-align: center;
     width: 100%;
-    padding: 20px 10px 0;
+    padding: 50px 10px 0;
     background: linear-gradient(45deg, ${props => props.$accentColor}, ${props => props.$accentColor}aa);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -210,7 +342,7 @@ const StyledWrapper = styled.div<{ $accentColor: string }>`
 
   .subtitle {
     position: absolute;
-    bottom: 40px;
+    bottom: 45px;
     width: 100%;
     text-align: center;
     font-size: 12px;
@@ -287,6 +419,19 @@ const StyledWrapper = styled.div<{ $accentColor: string }>`
 
   .tracker:hover ~ #card .card-particles span {
     animation: particleFloat 2s infinite;
+  }
+
+  /* Show focus star on hover */
+  .tracker:hover ~ #card .focus-star {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+
+  /* Show status badge on hover */
+  .tracker:hover ~ #card .status-badge {
+    opacity: 1;
+    transform: translateY(0);
   }
 
   @keyframes particleFloat {
@@ -571,28 +716,12 @@ const StyledWrapper = styled.div<{ $accentColor: string }>`
     border-top: 0;
   }
 
-  .scan-line {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      transparent,
-      ${props => props.$accentColor}1a,
-      transparent
-    );
-    transform: translateY(-100%);
-    animation: scanMove 2s linear infinite;
-  }
+  /* Scan-line removed - no animation */
 
   @keyframes lineGrow {
     0% { transform: scaleX(0); opacity: 0; }
     50% { transform: scaleX(1); opacity: 1; }
     100% { transform: scaleX(0); opacity: 0; }
-  }
-
-  @keyframes scanMove {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100%); }
   }
 
   #card:hover .card-glare { opacity: 1; }
