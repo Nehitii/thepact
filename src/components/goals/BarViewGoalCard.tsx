@@ -1,7 +1,19 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import styled from 'styled-components';
-import { Star } from 'lucide-react';
-import { DIFFICULTY_OPTIONS, getStatusLabel } from '@/lib/goalConstants';
+import { Star, Target, ImageOff } from 'lucide-react';
+import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity } from '@/lib/goalConstants';
+
+/**
+ * PERFORMANCE OPTIMIZATIONS APPLIED:
+ * 1. React.memo to prevent unnecessary re-renders
+ * 2. useMemo for derived values (colors, labels, progress)
+ * 3. CSS animations only run on hover (paused by default)
+ * 4. Reduced blur/shadow effects - moved heavy effects to hover state
+ * 5. Lazy loading for goal images
+ * 6. Reduced tracker grid from 25 to 9 zones (3x3 provides same effect)
+ * 7. CSS containment for layout isolation
+ * 8. prefers-reduced-motion support
+ */
 
 interface Goal {
   id: string;
@@ -29,32 +41,43 @@ interface BarViewGoalCardProps {
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
 
-// Get difficulty color from constants or custom
-function getDifficultyColor(difficulty: string | null | undefined, customColor: string): string {
-  if (!difficulty) return '#00ffaa';
-  if (difficulty === 'custom') return customColor;
-  const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
-  return found?.color || '#00ffaa';
-}
+// Get difficulty theme with color and RGB values
+const getDifficultyTheme = (difficulty: string, customColor?: string) => {
+  switch (difficulty) {
+    case "easy":
+      return { color: "#16a34a", rgb: "22, 163, 74" };
+    case "medium":
+      return { color: "#eab308", rgb: "234, 179, 8" };
+    case "hard":
+      return { color: "#f97316", rgb: "249, 115, 22" };
+    case "extreme":
+      return { color: "#dc2626", rgb: "220, 38, 38" };
+    case "impossible":
+      return { color: "#a855f7", rgb: "168, 85, 247" };
+    case "custom": {
+      const base = customColor || "#a855f7";
+      const hex = base.replace("#", "");
+      const r = parseInt(hex.substring(0, 2), 16) || 168;
+      const g = parseInt(hex.substring(2, 4), 16) || 85;
+      const b = parseInt(hex.substring(4, 6), 16) || 247;
+      return { color: base, rgb: `${r}, ${g}, ${b}` };
+    }
+    default:
+      return { color: "#6b7280", rgb: "107, 114, 128" };
+  }
+};
 
 // Get difficulty label
-function getDifficultyDisplayLabel(difficulty: string | null | undefined, customName: string): string {
-  if (!difficulty) return 'Unknown';
-  if (difficulty === 'custom') return customName || 'Custom';
+const getDifficultyDisplayLabel = (difficulty: string, customName: string): string => {
+  if (difficulty === "custom") return customName || "Custom";
   const found = DIFFICULTY_OPTIONS.find(d => d.value === difficulty);
-  return found?.value ? found.value.charAt(0).toUpperCase() + found.value.slice(1) : difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-}
+  return found?.value 
+    ? found.value.charAt(0).toUpperCase() + found.value.slice(1) 
+    : difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+};
 
-// Convert hex to RGB for rgba usage
-function hexToRgb(hex: string): string {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  if (result) {
-    return `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`;
-  }
-  return '0, 255, 170';
-}
-
-export function BarViewGoalCard({
+// Memoized card component for performance
+export const BarViewGoalCard = memo(function BarViewGoalCard({
   goal,
   isCompleted = false,
   customDifficultyName = "",
@@ -62,72 +85,74 @@ export function BarViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: BarViewGoalCardProps) {
-  const difficultyColor = getDifficultyColor(goal.difficulty, customDifficultyColor);
-  const difficultyLabel = getDifficultyDisplayLabel(goal.difficulty, customDifficultyName);
-  const accentRgb = hexToRgb(difficultyColor);
-  
-  // Calculate progress
-  const totalSteps = goal.totalStepsCount || 0;
-  const completedSteps = goal.completedStepsCount || 0;
-  const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
-  
-  // Status label
-  const statusLabel = isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started");
+  // Memoize derived values to prevent recalculation
+  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity } = useMemo(() => {
+    const diff = goal.difficulty || "easy";
+    const total = goal.totalStepsCount || 0;
+    const completed = goal.completedStepsCount || 0;
+    
+    return {
+      theme: getDifficultyTheme(diff, customDifficultyColor),
+      difficultyLabel: getDifficultyDisplayLabel(diff, customDifficultyName),
+      progressPercent: total > 0 ? Math.round((completed / total) * 100) : 0,
+      statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
+      totalSteps: total,
+      completedSteps: completed,
+      intensity: getDifficultyIntensity(diff),
+    };
+  }, [goal.difficulty, goal.totalStepsCount, goal.completedStepsCount, goal.status, isCompleted, customDifficultyName, customDifficultyColor]);
 
   return (
-    <StyledWrapper $accentColor={difficultyColor} $accentRgb={accentRgb} onClick={() => onNavigate(goal.id)}>
+    <StyledWrapper 
+      $accentColor={theme.color} 
+      $accentRgb={theme.rgb}
+      $intensity={intensity}
+      onClick={() => onNavigate(goal.id)}
+    >
       <div className="container noselect">
         <div className="canvas">
-          <div className="tracker tr-1"></div>
-          <div className="tracker tr-2"></div>
-          <div className="tracker tr-3"></div>
-          <div className="tracker tr-4"></div>
-          <div className="tracker tr-5"></div>
-          <div className="tracker tr-6"></div>
-          <div className="tracker tr-7"></div>
-          <div className="tracker tr-8"></div>
-          <div className="tracker tr-9"></div>
-          <div className="tracker tr-10"></div>
-          <div className="tracker tr-11"></div>
-          <div className="tracker tr-12"></div>
-          <div className="tracker tr-13"></div>
-          <div className="tracker tr-14"></div>
-          <div className="tracker tr-15"></div>
-          <div className="tracker tr-16"></div>
-          <div className="tracker tr-17"></div>
-          <div className="tracker tr-18"></div>
-          <div className="tracker tr-19"></div>
-          <div className="tracker tr-20"></div>
-          <div className="tracker tr-21"></div>
-          <div className="tracker tr-22"></div>
-          <div className="tracker tr-23"></div>
-          <div className="tracker tr-24"></div>
-          <div className="tracker tr-25"></div>
+          {/* Reduced tracker grid: 3x3 = 9 zones instead of 5x5 = 25 for performance */}
+          <div className="tracker tr-1" />
+          <div className="tracker tr-2" />
+          <div className="tracker tr-3" />
+          <div className="tracker tr-4" />
+          <div className="tracker tr-5" />
+          <div className="tracker tr-6" />
+          <div className="tracker tr-7" />
+          <div className="tracker tr-8" />
+          <div className="tracker tr-9" />
+          
           <div id="card">
-            {/* Goal image as subtle background */}
-            {goal.image_url && (
-              <div 
-                className="goal-image-bg"
-                style={{ backgroundImage: `url(${goal.image_url})` }}
-              />
-            )}
             <div className="card-content">
-              <div className="card-glare"></div>
-              <div className="cyber-lines">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div className="glowing-elements">
-                <div className="glow-1"></div>
-                <div className="glow-2"></div>
-                <div className="glow-3"></div>
+              {/* Left side: Image thumbnail */}
+              <div className="image-frame">
+                {goal.image_url ? (
+                  <img 
+                    src={goal.image_url} 
+                    alt={goal.name}
+                    loading="lazy"
+                    className="goal-image"
+                  />
+                ) : (
+                  <div className="image-placeholder">
+                    <Target className="placeholder-icon" />
+                  </div>
+                )}
               </div>
               
-              {/* Difficulty badge (top-left, always visible) */}
-              <div className="difficulty-badge">
-                {difficultyLabel}
+              {/* Content area */}
+              <div className="info-section">
+                {/* Difficulty badge - exact match to GridView/BookmarkView */}
+                <div className="difficulty-badge">
+                  <span className="badge-text">{difficultyLabel}</span>
+                  <div className="badge-glossy" />
+                </div>
+                
+                {/* Goal name */}
+                <h3 className="goal-name">{goal.name}</h3>
+                
+                {/* Status badge (hover only) */}
+                <div className="status-badge">{statusLabel}</div>
               </div>
               
               {/* Focus star (top-right, hover only, starred only) */}
@@ -143,31 +168,23 @@ export function BarViewGoalCard({
                 </button>
               )}
               
-              {/* Status badge (hover only) */}
-              <div className="status-badge">
-                {statusLabel}
+              {/* Progress section (hover reveal) */}
+              <div className="progress-section">
+                <div className="progress-bar-container">
+                  <div 
+                    className="progress-bar-fill"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                <div className="progress-text">
+                  <span className="steps-count">{completedSteps}/{totalSteps} steps</span>
+                  <span className="progress-percent">{progressPercent}%</span>
+                </div>
               </div>
               
-              <p id="prompt">{goal.name.toUpperCase()}</p>
-              <div className="title">
-                {goal.name.length > 20 ? goal.name.substring(0, 20).toUpperCase() + '...' : goal.name.toUpperCase()}
-              </div>
-              <div className="card-particles">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
-              <div className="subtitle">
-                <span className="highlight">{progressPercent}%</span>
-              </div>
+              {/* Corner accents */}
               <div className="corner-elements">
-                <span></span>
-                <span></span>
-                <span></span>
-                <span></span>
+                <span /><span /><span /><span />
               </div>
             </div>
           </div>
@@ -175,90 +192,184 @@ export function BarViewGoalCard({
       </div>
     </StyledWrapper>
   );
-}
+});
 
-const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string }>`
-  /* Single card per row with spacing */
+const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $intensity: number }>`
+  /* Single card per row layout */
   display: flex;
   justify-content: center;
   width: 100%;
-  padding: 16px 0;
+  padding: 12px 16px;
+  contain: layout style;
 
   .container {
     position: relative;
     width: 100%;
-    max-width: 700px;
-    height: 184px;
-    transition: 200ms;
+    max-width: 680px;
+    height: 140px;
+    cursor: pointer;
   }
 
-  .container:active {
-    transform: scale(0.98);
+  /* Canvas with 3x3 tracker grid (reduced from 5x5 for performance) */
+  .canvas {
+    perspective: 800px;
+    inset: 0;
+    z-index: 10;
+    position: absolute;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
   }
 
+  .tracker {
+    z-index: 200;
+  }
+
+  /* Card base with pre-hover difficulty glow */
   #card {
     position: absolute;
     inset: 0;
     z-index: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 20px;
-    transition: 700ms;
-    background: linear-gradient(45deg, #1a1a1a, #262626);
-    border: 2px solid ${props => props.$accentColor}40;
+    border-radius: 16px;
+    transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
+    background: linear-gradient(135deg, #1a1a1a 0%, #242424 100%);
+    border: 1.5px solid rgba(${props => props.$accentRgb}, ${props => 0.2 + props.$intensity * 0.08});
     overflow: hidden;
+    
+    /* Pre-hover difficulty glow - visible when NOT hovered */
     box-shadow:
-      0 0 20px rgba(0, 0, 0, 0.3),
-      0 0 40px ${props => props.$accentColor}12,
-      0 0 60px ${props => props.$accentColor}08,
-      inset 0 0 20px rgba(0, 0, 0, 0.2);
-  }
-
-  /* Goal image as subtle background */
-  .goal-image-bg {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.15;
-    filter: blur(2px);
-    z-index: 0;
+      0 4px 12px rgba(0, 0, 0, 0.4),
+      0 0 ${props => 15 + props.$intensity * 5}px rgba(${props => props.$accentRgb}, ${props => 0.08 + props.$intensity * 0.03}),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
   }
 
   .card-content {
     position: relative;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    gap: 16px;
   }
 
-  /* Difficulty badge - glossy pill style like GridView */
+  /* Image thumbnail frame (left side) */
+  .image-frame {
+    flex-shrink: 0;
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 2px solid rgba(${props => props.$accentRgb}, 0.4);
+    box-shadow: 0 0 12px rgba(${props => props.$accentRgb}, 0.15);
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .goal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(${props => props.$accentRgb}, 0.1), rgba(${props => props.$accentRgb}, 0.05));
+  }
+
+  .placeholder-icon {
+    width: 28px;
+    height: 28px;
+    color: rgba(${props => props.$accentRgb}, 0.5);
+  }
+
+  /* Info section */
+  .info-section {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Difficulty badge - matching GridView/BookmarkView exactly */
   .difficulty-badge {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    padding: 6px 14px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 5px 14px;
     border-radius: 20px;
-    z-index: 25;
+    overflow: hidden;
     background: linear-gradient(
       135deg,
-      rgba(${props => props.$accentRgb}, 0.25) 0%,
-      rgba(${props => props.$accentRgb}, 0.15) 100%
+      rgba(${props => props.$accentRgb}, ${props => 0.15 + props.$intensity * 0.05}) 0%,
+      rgba(${props => props.$accentRgb}, ${props => 0.08 + props.$intensity * 0.03}) 100%
     );
-    color: ${props => props.$accentColor};
-    border: 1px solid rgba(${props => props.$accentRgb}, 0.5);
+    border: 1px solid rgba(${props => props.$accentRgb}, ${props => 0.35 + props.$intensity * 0.1});
     box-shadow: 
-      0 2px 8px rgba(${props => props.$accentRgb}, 0.3),
-      inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(4px);
+      0 2px 8px rgba(${props => props.$accentRgb}, ${props => 0.15 + props.$intensity * 0.05}),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 
-  /* Focus star - hover only, top-right */
+  .badge-text {
+    position: relative;
+    z-index: 2;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: ${props => props.$accentColor};
+  }
+
+  /* Glossy overlay - matches BookmarkView */
+  .badge-glossy {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.15) 0%,
+      rgba(255, 255, 255, 0) 50%,
+      rgba(0, 0, 0, 0.1) 100%
+    );
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Goal name */
+  .goal-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  /* Status badge - hover reveal */
+  .status-badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px 10px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 250ms ease, transform 250ms ease;
+  }
+
+  /* Focus star - hover only */
   .focus-star {
     position: absolute;
     top: 12px;
@@ -270,467 +381,157 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string }>`
     border: 1px solid rgba(${props => props.$accentRgb}, 0.4);
     opacity: 0;
     transform: scale(0.8);
-    transition: all 0.3s ease;
+    transition: all 250ms ease;
     cursor: pointer;
-    pointer-events: none;
   }
 
   .focus-star .star-icon {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     color: ${props => props.$accentColor};
     fill: ${props => props.$accentColor};
   }
 
-  /* Status badge - hover only */
-  .status-badge {
+  /* Progress section - hover reveal */
+  .progress-section {
     position: absolute;
-    bottom: 14px;
-    right: 14px;
-    padding: 5px 12px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-radius: 12px;
-    z-index: 25;
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(4px);
+    bottom: 12px;
+    left: 108px;
+    right: 20px;
     opacity: 0;
-    transform: translateY(5px);
-    transition: all 0.3s ease;
+    transform: translateY(6px);
+    transition: opacity 250ms ease, transform 250ms ease;
   }
 
-  #prompt {
-    bottom: 85px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 2px;
-    transition: 300ms ease-in-out;
-    position: absolute;
-    text-align: center;
-    color: rgba(255, 255, 255, 0.7);
-    text-shadow: 0 0 10px ${props => props.$accentColor}50;
-    max-width: 80%;
+  .progress-bar-container {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
-  .title {
-    opacity: 0;
-    transition: 300ms ease-in-out;
-    position: absolute;
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: 3px;
-    text-align: center;
-    width: 100%;
-    padding: 50px 10px 0;
-    background: linear-gradient(45deg, ${props => props.$accentColor}, ${props => props.$accentColor}aa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 15px ${props => props.$accentColor}50);
-    line-height: 1.2;
-    word-break: break-word;
-  }
-
-  .subtitle {
-    position: absolute;
-    bottom: 45px;
-    width: 100%;
-    text-align: center;
-    font-size: 12px;
-    letter-spacing: 2px;
-    transform: translateY(30px);
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  .highlight {
-    color: ${props => props.$accentColor};
-    margin-left: 8px;
-    background: linear-gradient(90deg, ${props => props.$accentColor}, ${props => props.$accentColor}cc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: bold;
-  }
-
-  .glowing-elements {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .glow-1,
-  .glow-2,
-  .glow-3 {
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background: radial-gradient(
-      circle at center,
-      ${props => props.$accentColor}4d 0%,
-      ${props => props.$accentColor}00 70%
-    );
-    filter: blur(15px);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .glow-1 {
-    top: -20px;
-    left: -20px;
-  }
-  .glow-2 {
-    top: 50%;
-    right: -30px;
-    transform: translateY(-50%);
-  }
-  .glow-3 {
-    bottom: -20px;
-    left: 30%;
-  }
-
-  .card-particles span {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    background: ${props => props.$accentColor};
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  /* Hover effects */
-  .tracker:hover ~ #card .title {
-    opacity: 1;
-    transform: translateY(-10px);
-  }
-
-  .tracker:hover ~ #card .glowing-elements div {
-    opacity: 1;
-  }
-
-  .tracker:hover ~ #card .card-particles span {
-    animation: particleFloat 2s infinite;
-  }
-
-  /* Show focus star on hover */
-  .tracker:hover ~ #card .focus-star {
-    opacity: 1;
-    transform: scale(1);
-    pointer-events: auto;
-  }
-
-  /* Show status badge on hover */
-  .tracker:hover ~ #card .status-badge {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  @keyframes particleFloat {
-    0% {
-      transform: translate(0, 0);
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      transform: translate(calc(var(--x, 0) * 30px), calc(var(--y, 0) * 30px));
-      opacity: 0;
-    }
-  }
-
-  /* Particle positions */
-  .card-particles span:nth-child(1) {
-    --x: 1;
-    --y: -1;
-    top: 40%;
-    left: 20%;
-  }
-  .card-particles span:nth-child(2) {
-    --x: -1;
-    --y: -1;
-    top: 60%;
-    right: 20%;
-  }
-  .card-particles span:nth-child(3) {
-    --x: 0.5;
-    --y: 1;
-    top: 20%;
-    left: 40%;
-  }
-  .card-particles span:nth-child(4) {
-    --x: -0.5;
-    --y: 1;
-    top: 80%;
-    right: 40%;
-  }
-  .card-particles span:nth-child(5) {
-    --x: 1;
-    --y: 0.5;
-    top: 30%;
-    left: 60%;
-  }
-  .card-particles span:nth-child(6) {
-    --x: -1;
-    --y: 0.5;
-    top: 70%;
-    right: 60%;
-  }
-
-  #card::before {
-    content: "";
-    background: radial-gradient(
-      circle at center,
-      ${props => props.$accentColor}1a 0%,
-      ${props => props.$accentColor}0d 50%,
-      transparent 100%
-    );
-    filter: blur(20px);
-    opacity: 0;
-    width: 150%;
-    height: 150%;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    transition: opacity 0.3s ease;
-  }
-
-  .tracker:hover ~ #card::before {
-    opacity: 1;
-  }
-
-  .tracker {
-    position: absolute;
-    z-index: 200;
-    width: 100%;
+  .progress-bar-fill {
     height: 100%;
+    background: linear-gradient(90deg, rgba(${props => props.$accentRgb}, 0.6), ${props => props.$accentColor});
+    border-radius: 2px;
+    transition: width 300ms ease;
   }
 
-  .tracker:hover {
-    cursor: pointer;
+  .progress-text {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 4px;
+    font-size: 10px;
   }
 
-  .tracker:hover ~ #card #prompt {
-    opacity: 0;
+  .steps-count {
+    color: rgba(255, 255, 255, 0.5);
   }
 
-  .tracker:hover ~ #card {
-    transition: 300ms;
-    filter: brightness(1.1);
+  .progress-percent {
+    font-weight: 600;
+    color: ${props => props.$accentColor};
   }
 
-  .container:hover #card::before {
-    transition: 200ms;
-    content: "";
-    opacity: 80%;
-  }
-
-  .canvas {
-    perspective: 800px;
-    inset: 0;
-    z-index: 200;
-    position: absolute;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-    grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
-    gap: 0px 0px;
-    grid-template-areas:
-      "tr-1 tr-2 tr-3 tr-4 tr-5"
-      "tr-6 tr-7 tr-8 tr-9 tr-10"
-      "tr-11 tr-12 tr-13 tr-14 tr-15"
-      "tr-16 tr-17 tr-18 tr-19 tr-20"
-      "tr-21 tr-22 tr-23 tr-24 tr-25";
-  }
-
-  .tr-1 { grid-area: tr-1; }
-  .tr-2 { grid-area: tr-2; }
-  .tr-3 { grid-area: tr-3; }
-  .tr-4 { grid-area: tr-4; }
-  .tr-5 { grid-area: tr-5; }
-  .tr-6 { grid-area: tr-6; }
-  .tr-7 { grid-area: tr-7; }
-  .tr-8 { grid-area: tr-8; }
-  .tr-9 { grid-area: tr-9; }
-  .tr-10 { grid-area: tr-10; }
-  .tr-11 { grid-area: tr-11; }
-  .tr-12 { grid-area: tr-12; }
-  .tr-13 { grid-area: tr-13; }
-  .tr-14 { grid-area: tr-14; }
-  .tr-15 { grid-area: tr-15; }
-  .tr-16 { grid-area: tr-16; }
-  .tr-17 { grid-area: tr-17; }
-  .tr-18 { grid-area: tr-18; }
-  .tr-19 { grid-area: tr-19; }
-  .tr-20 { grid-area: tr-20; }
-  .tr-21 { grid-area: tr-21; }
-  .tr-22 { grid-area: tr-22; }
-  .tr-23 { grid-area: tr-23; }
-  .tr-24 { grid-area: tr-24; }
-  .tr-25 { grid-area: tr-25; }
-
-  .tr-1:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(-10deg) rotateZ(0deg); }
-  .tr-2:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(-5deg) rotateZ(0deg); }
-  .tr-3:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(0deg) rotateZ(0deg); }
-  .tr-4:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(5deg) rotateZ(0deg); }
-  .tr-5:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(20deg) rotateY(10deg) rotateZ(0deg); }
-
-  .tr-6:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(-10deg) rotateZ(0deg); }
-  .tr-7:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(-5deg) rotateZ(0deg); }
-  .tr-8:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(0deg) rotateZ(0deg); }
-  .tr-9:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(5deg) rotateZ(0deg); }
-  .tr-10:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(10deg) rotateY(10deg) rotateZ(0deg); }
-
-  .tr-11:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(-10deg) rotateZ(0deg); }
-  .tr-12:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(-5deg) rotateZ(0deg); }
-  .tr-13:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-  .tr-14:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(5deg) rotateZ(0deg); }
-  .tr-15:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(0deg) rotateY(10deg) rotateZ(0deg); }
-
-  .tr-16:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(-10deg) rotateZ(0deg); }
-  .tr-17:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(-5deg) rotateZ(0deg); }
-  .tr-18:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(0deg) rotateZ(0deg); }
-  .tr-19:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(5deg) rotateZ(0deg); }
-  .tr-20:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-10deg) rotateY(10deg) rotateZ(0deg); }
-
-  .tr-21:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(-10deg) rotateZ(0deg); }
-  .tr-22:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(-5deg) rotateZ(0deg); }
-  .tr-23:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(0deg) rotateZ(0deg); }
-  .tr-24:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(5deg) rotateZ(0deg); }
-  .tr-25:hover ~ #card { transition: 125ms ease-in-out; transform: rotateX(-20deg) rotateY(10deg) rotateZ(0deg); }
-
-  .noselect {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-  }
-
-  .card-glare {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      125deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.05) 45%,
-      rgba(255, 255, 255, 0.1) 50%,
-      rgba(255, 255, 255, 0.05) 55%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    opacity: 0;
-    transition: opacity 300ms;
-  }
-
-  .cyber-lines span {
-    position: absolute;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      ${props => props.$accentColor}33,
-      transparent
-    );
-  }
-
-  .cyber-lines span:nth-child(1) {
-    top: 20%;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    transform: scaleX(0);
-    transform-origin: left;
-    animation: lineGrow 3s linear infinite;
-  }
-
-  .cyber-lines span:nth-child(2) {
-    top: 40%;
-    right: 0;
-    width: 100%;
-    height: 1px;
-    transform: scaleX(0);
-    transform-origin: right;
-    animation: lineGrow 3s linear infinite 1s;
-  }
-
-  .cyber-lines span:nth-child(3) {
-    top: 60%;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    transform: scaleX(0);
-    transform-origin: left;
-    animation: lineGrow 3s linear infinite 2s;
-  }
-
-  .cyber-lines span:nth-child(4) {
-    top: 80%;
-    right: 0;
-    width: 100%;
-    height: 1px;
-    transform: scaleX(0);
-    transform-origin: right;
-    animation: lineGrow 3s linear infinite 1.5s;
+  /* Corner elements */
+  .corner-elements {
+    pointer-events: none;
   }
 
   .corner-elements span {
     position: absolute;
-    width: 15px;
-    height: 15px;
-    border: 2px solid ${props => props.$accentColor}4d;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid rgba(${props => props.$accentRgb}, 0.25);
+    transition: all 250ms ease;
   }
 
   .corner-elements span:nth-child(1) {
-    top: 10px;
-    left: 10px;
+    top: 8px;
+    left: 8px;
     border-right: 0;
     border-bottom: 0;
   }
 
   .corner-elements span:nth-child(2) {
-    top: 10px;
-    right: 10px;
+    top: 8px;
+    right: 8px;
     border-left: 0;
     border-bottom: 0;
   }
 
   .corner-elements span:nth-child(3) {
-    bottom: 10px;
-    left: 10px;
+    bottom: 8px;
+    left: 8px;
     border-right: 0;
     border-top: 0;
   }
 
   .corner-elements span:nth-child(4) {
-    bottom: 10px;
-    right: 10px;
+    bottom: 8px;
+    right: 8px;
     border-left: 0;
     border-top: 0;
   }
 
-  /* Scan-line removed - no animation */
+  /* 3x3 Tracker hover transforms */
+  .tr-1:hover ~ #card { transform: rotateX(8deg) rotateY(-8deg); }
+  .tr-2:hover ~ #card { transform: rotateX(8deg) rotateY(0deg); }
+  .tr-3:hover ~ #card { transform: rotateX(8deg) rotateY(8deg); }
+  .tr-4:hover ~ #card { transform: rotateX(0deg) rotateY(-8deg); }
+  .tr-5:hover ~ #card { transform: rotateX(0deg) rotateY(0deg); }
+  .tr-6:hover ~ #card { transform: rotateX(0deg) rotateY(8deg); }
+  .tr-7:hover ~ #card { transform: rotateX(-8deg) rotateY(-8deg); }
+  .tr-8:hover ~ #card { transform: rotateX(-8deg) rotateY(0deg); }
+  .tr-9:hover ~ #card { transform: rotateX(-8deg) rotateY(8deg); }
 
-  @keyframes lineGrow {
-    0% { transform: scaleX(0); opacity: 0; }
-    50% { transform: scaleX(1); opacity: 1; }
-    100% { transform: scaleX(0); opacity: 0; }
+  /* Hover state effects */
+  .tracker:hover ~ #card {
+    filter: brightness(1.08);
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.4),
+      0 0 30px rgba(${props => props.$accentRgb}, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
 
-  #card:hover .card-glare { opacity: 1; }
+  .tracker:hover ~ #card .status-badge {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
-  .corner-elements span { transition: all 0.3s ease; }
+  .tracker:hover ~ #card .focus-star {
+    opacity: 1;
+    transform: scale(1);
+  }
 
-  #card:hover .corner-elements span {
-    border-color: ${props => props.$accentColor}cc;
-    box-shadow: 0 0 10px ${props => props.$accentColor}80;
+  .tracker:hover ~ #card .progress-section {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .tracker:hover ~ #card .corner-elements span {
+    border-color: rgba(${props => props.$accentRgb}, 0.6);
+  }
+
+  /* Accessibility: respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    #card,
+    .status-badge,
+    .focus-star,
+    .progress-section,
+    .corner-elements span {
+      transition: none;
+    }
+    
+    .tracker:hover ~ #card {
+      transform: none;
+    }
+  }
+
+  .noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 `;
 
