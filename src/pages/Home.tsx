@@ -317,12 +317,12 @@ export default function Home() {
         
         /* Battement de cœur (Cercle qui pulse depuis le centre) */
         @keyframes heartbeat-circle {
-          0% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
-          15% { transform: translate(50%, -50%) scale(1.25); opacity: 1; box-shadow: 0 0 25px rgba(0, 212, 255, 0.9); }
-          30% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
-          45% { transform: translate(50%, -50%) scale(1.1); opacity: 0.9; box-shadow: 0 0 15px rgba(0, 212, 255, 0.7); }
-          60% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
-          100% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
+          0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
+          15% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 25px rgba(0, 212, 255, 0.9); }
+          30% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
+          45% { transform: scale(1.1); opacity: 0.9; box-shadow: 0 0 15px rgba(0, 212, 255, 0.7); }
+          60% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
+          100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
         }
 
         /* Respiration de la barre (Glow BLEU qui pulse) */
@@ -399,8 +399,8 @@ export default function Home() {
             className="max-w-2xl mx-auto"
           />
 
-          {/* Global XP Progress Bar - BLUE ENERGY VERSION */}
-          <div className="space-y-2 max-w-3xl mx-auto group">
+          {/* Global XP Progress Bar - BLUE ENERGY + BIGGER HEART */}
+          <div className="space-y-4 max-w-3xl mx-auto group">
             {/* Conditional Rendering for Max Rank */}
             {!nextRank && ranks.length > 0 ? (
               <div className="w-full max-w-3xl mx-auto p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center gap-2 animate-pulse">
@@ -410,82 +410,61 @@ export default function Home() {
               </div>
             ) : (
               <>
-                {/* Header : Labels */}
-                <div className="flex items-end justify-between px-1">
-                  <div className="flex flex-col items-start">
-                    <span className="text-[10px] text-blue-300/70 font-orbitron uppercase tracking-[0.2em] mb-0.5">
-                      Current Resonance
-                    </span>
-                    <span className="text-sm font-bold text-cyan-300 font-orbitron tracking-wide drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">
-                      {nextRank?.name || "Next Rank"}
-                    </span>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-xs font-medium text-cyan-100 font-mono bg-blue-900/40 px-2 py-0.5 rounded border border-blue-500/30">
-                      {nextRank ? nextRank.min_points - totalPoints : 0} XP needed
-                    </span>
-                  </div>
+                {/* 1. Header Centré */}
+                <div className="flex flex-col items-center justify-center space-y-1">
+                  <span className="text-[10px] text-blue-300/70 font-orbitron uppercase tracking-[0.2em]">
+                    Current Resonance
+                  </span>
+                  <span className="text-xl font-bold text-cyan-300 font-orbitron tracking-wide drop-shadow-[0_0_12px_rgba(0,212,255,0.6)]">
+                    {nextRank?.name || "Next Rank"}
+                  </span>
+                  <span className="text-xs font-medium text-cyan-100 font-mono bg-blue-900/40 px-3 py-0.5 rounded-full border border-blue-500/30 mt-1">
+                    {nextRank ? nextRank.min_points - totalPoints : 0} XP needed
+                  </span>
                 </div>
 
-                {/* Container de la barre (Glass Tube Bleu) */}
-                <div className="relative h-6 w-full bg-blue-950/40 backdrop-blur-xl rounded-full border border-blue-400/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] overflow-hidden">
-                  {/* Fond inactif (Veines subtiles bleutées) */}
-                  <div
-                    className="absolute inset-0 opacity-30"
-                    style={{
-                      backgroundImage: "radial-gradient(circle at center, rgba(0,212,255,0.2) 1px, transparent 1px)",
-                      backgroundSize: "12px 12px",
-                    }}
-                  />
+                {/* 2. Container de la barre (Wrapper) */}
+                <div className="relative w-full h-8 flex items-center">
+                  {/* Fond de la barre (Le tube inactif) - Hauteur fixe h-3 */}
+                  <div className="absolute inset-0 top-1/2 -translate-y-1/2 h-3 w-full bg-blue-950/60 backdrop-blur-xl rounded-full border border-blue-400/20 shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] z-0" />
 
-                  {/* La Barre de Progression (Le remplissage Vivant BLEU) */}
+                  {/* La Barre de Progression (Le remplissage) - MASKÉE pour ne pas déborder */}
                   <div
-                    className="relative h-full rounded-l-full transition-all duration-1000 ease-out animate-breathe-blue"
-                    style={{
-                      width: `${rankProgress}%`,
-                      // Dégradé Plasma Liquide BLEU ÉLECTRIQUE
-                      background: `linear-gradient(90deg, 
-                        #0055ff 0%, 
-                        #00aaff 40%, 
-                        #00d4ff 70%, 
-                        #80e5ff 100%
-                      )`,
-                    }}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 h-3 rounded-full overflow-hidden z-10 transition-all duration-1000 ease-out"
+                    style={{ width: `${rankProgress}%` }}
                   >
-                    {/* Texture Organique Fluide (Overlay) */}
                     <div
-                      className="absolute inset-0 animate-fluid mix-blend-overlay opacity-50"
+                      className="w-full h-full animate-fluid opacity-80"
                       style={{
-                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
+                        background: `linear-gradient(90deg, #0044cc 0%, #0099ff 50%, #00ccff 100%)`,
                         backgroundSize: "200% 100%",
                       }}
                     />
-
-                    {/* Particules de bruit */}
+                    {/* Bruit/Texture */}
                     <div
-                      className="absolute inset-0 opacity-10 mix-blend-soft-light"
+                      className="absolute inset-0 opacity-20 mix-blend-soft-light"
                       style={{
                         backgroundImage:
                           "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%221%22/%3E%3C/svg%3E')",
                       }}
                     />
+                  </div>
 
-                    {/* L'Éclat "Cœur" (Cercle Bleu/Blanc qui bat) */}
-                    <div className="absolute right-0 top-1/2 w-5 h-5 bg-cyan-100 rounded-full animate-heartbeat-circle z-20 shadow-[0_0_20px_rgba(0,212,255,0.8)] border-2 border-white/40" />
-
-                    {/* Glow diffus autour de la tête */}
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-cyan-400/30 blur-xl z-10" />
-
-                    {/* Trainée de lumière derrière le cœur */}
-                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-cyan-300/40 to-transparent opacity-70 blur-[2px]" />
+                  {/* 3. L'Éclat "Cœur" (Rond flottant PAR DESSUS) */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 z-20 transition-all duration-1000 ease-out"
+                    style={{ left: `${rankProgress}%` }}
+                  >
+                    {/* Le rond lui-même (plus gros que la barre h-7 vs h-3) */}
+                    <div className="w-7 h-7 -ml-3.5 bg-cyan-50 rounded-full animate-heartbeat-circle shadow-[0_0_20px_rgba(0,212,255,1)] border-[3px] border-cyan-400 flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full blur-[1px]" />
+                    </div>
                   </div>
                 </div>
 
                 {/* Footer : Pourcentage */}
-                <div className="flex justify-between items-center text-[10px] text-blue-300/50 font-orbitron uppercase tracking-widest px-2">
-                  <span>Synchronization</span>
-                  <span>{Math.round(rankProgress)}% Active</span>
+                <div className="flex justify-center items-center text-[10px] text-blue-300/40 font-orbitron uppercase tracking-widest px-2 pt-1">
+                  <span>Synchronization: {Math.round(rankProgress)}%</span>
                 </div>
               </>
             )}
