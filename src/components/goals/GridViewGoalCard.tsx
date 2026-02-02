@@ -196,12 +196,27 @@ export function GridViewGoalCard({
 }
 
 const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $intensity: number; $progress: number }>`
-  width: 100%;
-  aspect-ratio: 4/5;
+  /* --- DIMENSIONS & LAYOUT --- */
   position: relative;
+  
+  /* Sécurité : Si le parent n'a pas de largeur définie, on force une taille minimale */
+  width: 100%;
+  max-width: 340px; /* Évite qu'elle ne devienne géante sur grand écran */
+  min-width: 260px; /* Évite qu'elle ne disparaisse */
+  
+  /* Définit la hauteur en fonction de la largeur (Ratio Portrait) */
+  aspect-ratio: 4/5;
+  
+  /* Fallback pour les vieux navigateurs qui ne gèrent pas aspect-ratio */
+  @supports not (aspect-ratio: 4/5) {
+    height: 380px;
+  }
+
   perspective: 1000px;
   cursor: pointer;
+  margin: auto; /* Centre la carte si elle est seule dans une grille large */
 
+  /* --- CARD INTERIOR --- */
   .card-inner {
     position: relative;
     width: 100%;
@@ -210,6 +225,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     background: #121212;
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05); /* Bordure subtile par défaut */
     transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease;
     isolation: isolate;
   }
@@ -243,9 +259,9 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     inset: 0;
     background: linear-gradient(
       to bottom,
-      rgba(0,0,0,0.1) 0%,
-      rgba(0,0,0,0.2) 40%,
-      rgba(0,0,0,0.85) 90%,
+      rgba(0,0,0,0.05) 0%,
+      rgba(0,0,0,0.3) 40%,
+      rgba(0,0,0,0.85) 85%,
       rgba(0,0,0,0.95) 100%
     );
     z-index: 1;
@@ -269,7 +285,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 30px;
@@ -305,7 +321,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   }
 
   .fav-btn:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.15);
     transform: scale(1.1);
     color: white;
   }
@@ -319,7 +335,6 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   .fav-btn .icon {
     width: 16px;
     height: 16px;
-    /* On n'utilise pas fill ici via CSS car c'est géré par la prop SVG */
   }
 
   /* --- Content Area --- */
@@ -333,10 +348,13 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     display: flex;
     flex-direction: column;
     gap: 12px;
-    transform: translateY(calc(100% - 76px));
+    
+    /* Animation: on cache le détail, on montre le titre */
+    transform: translateY(calc(100% - 76px)); 
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   
+  /* Sur mobile (pas de hover), on affiche tout par défaut */
   @media (hover: none) {
     .content-area { transform: translateY(0); }
   }
@@ -379,6 +397,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     background: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
     overflow: hidden;
+    margin-top: 4px;
   }
 
   .progress-fill {
@@ -419,18 +438,18 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    color: #888;
+    color: #9ca3af;
     font-weight: 600;
   }
 
   .value {
     font-size: 13px;
     font-weight: 700;
-    color: #eee;
+    color: #f3f4f6;
     font-variant-numeric: tabular-nums;
   }
   
-  .dim { color: #666; font-size: 11px; }
+  .dim { color: #6b7280; font-size: 11px; }
 
   .tags-row {
     display: flex;
@@ -441,17 +460,17 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   .mini-tag {
     font-size: 9px;
     font-weight: 700;
-    padding: 2px 8px;
+    padding: 3px 8px;
     border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.2);
-    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.4);
     opacity: 0.9;
   }
   
   .mini-tag.more {
     border-style: dashed;
-    color: #888;
-    border-color: #444;
+    color: #9ca3af;
+    border-color: #4b5563;
   }
 
   /* --- Borders & Glows --- */
