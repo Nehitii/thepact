@@ -37,7 +37,7 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Use React Query hooks - these run in parallel automatically
+  // Use React Query hooks
   const { data: pact, isLoading: pactLoading } = usePact(user?.id);
   const { data: ranks = [] } = useRanks(user?.id);
   const { data: profile } = useProfile(user?.id);
@@ -45,7 +45,7 @@ export default function Home() {
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
   const { data: financeSettings } = useFinanceSettings(user?.id);
 
-  // Initialize todo reminders - runs reminder check on Home load
+  // Initialize todo reminders
   useTodoReminders();
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
@@ -66,7 +66,7 @@ export default function Home() {
     getAllModules,
   } = useModuleLayout();
 
-  // Compute derived data from React Query results
+  // Compute derived data
   const {
     focusGoals,
     totalPoints,
@@ -104,7 +104,6 @@ export default function Home() {
       }
     }
 
-    // Goals-based difficulty progress (count goals, not steps)
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
       const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
@@ -129,17 +128,13 @@ export default function Home() {
       fully_completed: allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
     };
 
-    // Determine if custom mode is active
     const customTarget = Number(financeSettings?.project_funding_target) || 0;
     const isCustomMode = customTarget > 0;
 
-    // In linked mode: use goals total; in custom mode: use custom target
     const totalCostEngaged = isCustomMode
       ? customTarget
       : allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
 
-    // In custom mode: Financed is always 0 (not linked to goals)
-    // In linked mode: Financed = completed goals cost + already funded
     let totalCostPaid = 0;
     if (!isCustomMode) {
       const completedGoalsCost = allGoals
@@ -150,7 +145,6 @@ export default function Home() {
       totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
     }
 
-    // Calculate user state for adaptive dashboard
     const daysSincePactCreation = pact?.created_at
       ? Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
@@ -162,7 +156,6 @@ export default function Home() {
       userState = "advanced";
     }
 
-    // Track owned/locked modules
     const moduleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
     const ownedModules = {
       "the-call": isModulePurchased?.("the-call") ?? false,
@@ -198,7 +191,7 @@ export default function Home() {
     };
   }, [allGoals, ranks, financeSettings, pact?.created_at, isModulePurchased]);
 
-  // Redirect to onboarding if no pact (after loading)
+  // Loading & Redirects
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
 
   if (!pactLoading && !pact && user) {
@@ -224,21 +217,15 @@ export default function Home() {
   const progressPercentage = Number(pact.global_progress) || 0;
   const sortedModules = getAllModules();
 
-  // Filter modules based on new logic
   const visibleModules = sortedModules.filter((m) => {
-    // Always show display modules
     if (m.category === "display") return m.enabled;
-
-    // For action modules: only show if purchased
     const actionModuleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
     if (actionModuleKeys.includes(m.id)) {
       return m.enabled && ownedModules[m.id as keyof typeof ownedModules];
     }
-
     return m.enabled;
   });
 
-  // Calculate Rank Progress Percentage
   const rankProgress = useMemo(() => {
     if (!nextRank) return 100;
     const min = currentRank ? currentRank.min_points : 0;
@@ -251,7 +238,6 @@ export default function Home() {
     return Math.min(Math.max(percent, 0), 100);
   }, [currentRank, nextRank, totalPoints]);
 
-  // Module rendering map
   const renderModule = (moduleId: string, size: ModuleSize) => {
     const displayMode = getDisplayMode(moduleId);
     const handleToggle = () => toggleDisplayMode(moduleId);
@@ -320,7 +306,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Styles pour l'animation Organique & Fluide */}
+      {/* Styles pour l'animation Organique & Fluide BLEUE */}
       <style>{`
         /* Flux d'énergie liquide */
         @keyframes fluid-flow {
@@ -329,33 +315,33 @@ export default function Home() {
           100% { background-position: 0% 50%; }
         }
         
-        /* Battement de cœur (Double pulsation "Lub-Dub") */
-        @keyframes heartbeat {
-          0% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-          15% { transform: translate(50%, -50%) scale(1.3); opacity: 1; box-shadow: 0 0 10px 5px rgba(255,255,255,0.5); }
-          30% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-          45% { transform: translate(50%, -50%) scale(1.15); opacity: 0.9; box-shadow: 0 0 8px 3px rgba(255,255,255,0.5); }
-          60% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-          100% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        /* Battement de cœur (Cercle qui pulse depuis le centre) */
+        @keyframes heartbeat-circle {
+          0% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
+          15% { transform: translate(50%, -50%) scale(1.25); opacity: 1; box-shadow: 0 0 25px rgba(0, 212, 255, 0.9); }
+          30% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
+          45% { transform: translate(50%, -50%) scale(1.1); opacity: 0.9; box-shadow: 0 0 15px rgba(0, 212, 255, 0.7); }
+          60% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
+          100% { transform: translate(50%, -50%) scale(1); opacity: 0.8; box-shadow: 0 0 10px rgba(0, 212, 255, 0.6); }
         }
 
-        /* Respiration de la barre (Glow qui pulse) */
-        @keyframes breathe {
-          0%, 100% { box-shadow: 0 0 10px -2px hsla(var(--primary), 0.3); }
-          50% { box-shadow: 0 0 25px -4px hsla(var(--primary), 0.6); }
+        /* Respiration de la barre (Glow BLEU qui pulse) */
+        @keyframes breathe-blue {
+          0%, 100% { box-shadow: 0 0 15px -2px rgba(0, 102, 255, 0.4); }
+          50% { box-shadow: 0 0 30px -4px rgba(0, 212, 255, 0.7); }
         }
 
         .animate-fluid {
-          animation: fluid-flow 3s ease-in-out infinite;
+          animation: fluid-flow 4s ease-in-out infinite;
           background-size: 200% 200%;
         }
 
-        .animate-heartbeat {
-          animation: heartbeat 2s ease-in-out infinite;
+        .animate-heartbeat-circle {
+          animation: heartbeat-circle 2s ease-in-out infinite;
         }
 
-        .animate-breathe {
-          animation: breathe 3s ease-in-out infinite;
+        .animate-breathe-blue {
+          animation: breathe-blue 3s ease-in-out infinite;
         }
       `}</style>
 
@@ -413,88 +399,91 @@ export default function Home() {
             className="max-w-2xl mx-auto"
           />
 
-          {/* Global XP Progress Bar - ORGANIC / LIVING VERSION */}
+          {/* Global XP Progress Bar - BLUE ENERGY VERSION */}
           <div className="space-y-2 max-w-3xl mx-auto group">
             {/* Conditional Rendering for Max Rank */}
             {!nextRank && ranks.length > 0 ? (
-              <div className="w-full max-w-3xl mx-auto p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center gap-2 animate-pulse">
-                <Sparkles className="w-5 h-5 text-yellow-500" />
-                <span className="font-orbitron font-bold text-yellow-500 tracking-wider">MAX RANK REACHED</span>
-                <Sparkles className="w-5 h-5 text-yellow-500" />
+              <div className="w-full max-w-3xl mx-auto p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center gap-2 animate-pulse">
+                <Sparkles className="w-5 h-5 text-cyan-400" />
+                <span className="font-orbitron font-bold text-cyan-400 tracking-wider">MAX RANK REACHED</span>
+                <Sparkles className="w-5 h-5 text-cyan-400" />
               </div>
             ) : (
               <>
                 {/* Header : Labels */}
                 <div className="flex items-end justify-between px-1">
                   <div className="flex flex-col items-start">
-                    <span className="text-[10px] text-primary/50 font-orbitron uppercase tracking-[0.2em] mb-0.5">
+                    <span className="text-[10px] text-blue-300/70 font-orbitron uppercase tracking-[0.2em] mb-0.5">
                       Current Resonance
                     </span>
-                    <span className="text-sm font-bold text-primary font-orbitron tracking-wide drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]">
+                    <span className="text-sm font-bold text-cyan-300 font-orbitron tracking-wide drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">
                       {nextRank?.name || "Next Rank"}
                     </span>
                   </div>
 
                   <div className="text-right">
-                    <span className="text-xs font-medium text-white/90 font-mono bg-primary/20 px-2 py-0.5 rounded border border-primary/30">
+                    <span className="text-xs font-medium text-cyan-100 font-mono bg-blue-900/40 px-2 py-0.5 rounded border border-blue-500/30">
                       {nextRank ? nextRank.min_points - totalPoints : 0} XP needed
                     </span>
                   </div>
                 </div>
 
-                {/* Container de la barre (Glass Tube) */}
-                <div className="relative h-6 w-full bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] overflow-hidden">
-                  {/* Fond inactif (Veines sombres) */}
+                {/* Container de la barre (Glass Tube Bleu) */}
+                <div className="relative h-6 w-full bg-blue-950/40 backdrop-blur-xl rounded-full border border-blue-400/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)] overflow-hidden">
+                  {/* Fond inactif (Veines subtiles bleutées) */}
                   <div
-                    className="absolute inset-0 opacity-20"
+                    className="absolute inset-0 opacity-30"
                     style={{
-                      backgroundImage: "radial-gradient(circle at center, rgba(255,255,255,0.1) 1px, transparent 1px)",
-                      backgroundSize: "10px 10px",
+                      backgroundImage: "radial-gradient(circle at center, rgba(0,212,255,0.2) 1px, transparent 1px)",
+                      backgroundSize: "12px 12px",
                     }}
                   />
 
-                  {/* La Barre de Progression (Le remplissage Vivant) */}
+                  {/* La Barre de Progression (Le remplissage Vivant BLEU) */}
                   <div
-                    className="relative h-full rounded-l-full transition-all duration-1000 ease-out animate-breathe"
+                    className="relative h-full rounded-l-full transition-all duration-1000 ease-out animate-breathe-blue"
                     style={{
                       width: `${rankProgress}%`,
-                      // Dégradé Plasma Liquide
+                      // Dégradé Plasma Liquide BLEU ÉLECTRIQUE
                       background: `linear-gradient(90deg, 
-                        hsla(var(--primary), 0.6) 0%, 
-                        hsla(var(--primary), 0.9) 40%, 
-                        hsla(var(--accent), 0.8) 70%, 
-                        hsla(var(--primary), 1) 100%
+                        #0055ff 0%, 
+                        #00aaff 40%, 
+                        #00d4ff 70%, 
+                        #80e5ff 100%
                       )`,
                     }}
                   >
                     {/* Texture Organique Fluide (Overlay) */}
                     <div
-                      className="absolute inset-0 animate-fluid mix-blend-overlay opacity-60"
+                      className="absolute inset-0 animate-fluid mix-blend-overlay opacity-50"
                       style={{
-                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
                         backgroundSize: "200% 100%",
                       }}
                     />
 
-                    {/* Particules de bruit (Grain) pour la texture physique */}
+                    {/* Particules de bruit */}
                     <div
-                      className="absolute inset-0 opacity-20 mix-blend-soft-light"
+                      className="absolute inset-0 opacity-10 mix-blend-soft-light"
                       style={{
                         backgroundImage:
                           "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%221%22/%3E%3C/svg%3E')",
                       }}
                     />
 
-                    {/* L'Éclat "Cœur" (Le point qui bat) */}
-                    <div className="absolute right-0 top-1/2 w-4 h-4 bg-white rounded-full animate-heartbeat z-20" />
+                    {/* L'Éclat "Cœur" (Cercle Bleu/Blanc qui bat) */}
+                    <div className="absolute right-0 top-1/2 w-5 h-5 bg-cyan-100 rounded-full animate-heartbeat-circle z-20 shadow-[0_0_20px_rgba(0,212,255,0.8)] border-2 border-white/40" />
+
+                    {/* Glow diffus autour de la tête */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-cyan-400/30 blur-xl z-10" />
 
                     {/* Trainée de lumière derrière le cœur */}
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent opacity-50 blur-[2px]" />
+                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-cyan-300/40 to-transparent opacity-70 blur-[2px]" />
                   </div>
                 </div>
 
                 {/* Footer : Pourcentage */}
-                <div className="flex justify-between items-center text-[10px] text-primary/40 font-orbitron uppercase tracking-widest px-2">
+                <div className="flex justify-between items-center text-[10px] text-blue-300/50 font-orbitron uppercase tracking-widest px-2">
                   <span>Synchronization</span>
                   <span>{Math.round(rankProgress)}% Active</span>
                 </div>
@@ -559,7 +548,7 @@ export default function Home() {
   );
 }
 
-// ===== ACTION MODULE COMPONENTS =====
+// ===== ACTION MODULE COMPONENTS (Inchangés) =====
 
 function TheCallModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
@@ -573,7 +562,6 @@ function TheCallModule({ navigate, size = "half" }: { navigate: any; size?: Modu
     />
   );
 }
-
 function FinanceModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -586,7 +574,6 @@ function FinanceModule({ navigate, size = "half" }: { navigate: any; size?: Modu
     />
   );
 }
-
 function JournalModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -599,7 +586,6 @@ function JournalModule({ navigate, size = "half" }: { navigate: any; size?: Modu
     />
   );
 }
-
 function TodoListModuleCard({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -612,7 +598,6 @@ function TodoListModuleCard({ navigate, size = "half" }: { navigate: any; size?:
     />
   );
 }
-
 function HealthModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -625,7 +610,6 @@ function HealthModule({ navigate, size = "half" }: { navigate: any; size?: Modul
     />
   );
 }
-
 function WishlistModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
