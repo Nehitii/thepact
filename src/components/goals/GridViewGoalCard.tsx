@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 import styled from "styled-components";
-import { Star, Target, Zap, Trophy, TrendingUp, ImageOff } from "lucide-react";
+import { Star, Target, Zap, ImageOff } from "lucide-react";
 import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 
-// --- Interfaces (inchangées) ---
+// --- Interfaces ---
 interface Goal {
   id: string;
   name: string;
@@ -142,24 +142,25 @@ export function GridViewGoalCard({
               onToggleFocus(goal.id, !!goal.is_focus, e);
             }}
           >
-            <Star className="icon" weight={goal.is_focus ? "fill" : "regular"} />
+            {/* ✅ CORRECTION ICI : utilisation de fill="currentColor" */}
+            <Star className="icon" fill={goal.is_focus ? "currentColor" : "none"} />
           </button>
         </div>
 
         {/* --- Main Content (Bottom) --- */}
         <div className="content-area">
-          {/* Main Info (Always visible, moves up on hover) */}
+          {/* Primary Info */}
           <div className="primary-info">
             <div className="icon-badge">{isHabitGoal ? <Zap size={14} /> : <Target size={14} />}</div>
             <h3 className="title">{goal.name}</h3>
           </div>
 
-          {/* Progress Bar (Always visible) */}
+          {/* Progress Bar */}
           <div className="progress-track">
             <div className="progress-fill" />
           </div>
 
-          {/* Hidden Details (Slide in on hover) */}
+          {/* Hidden Details (Revealed on hover) */}
           <div className="details-reveal">
             <div className="stats-grid">
               <div className="stat-item">
@@ -196,7 +197,7 @@ export function GridViewGoalCard({
 
 const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $intensity: number; $progress: number }>`
   width: 100%;
-  aspect-ratio: 4/5; /* Ratio "Portrait" plus élégant pour une grille */
+  aspect-ratio: 4/5;
   position: relative;
   perspective: 1000px;
   cursor: pointer;
@@ -237,7 +238,6 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     color: #444;
   }
 
-  /* Gradient pour lisibilité du texte */
   .gradient-overlay {
     position: absolute;
     inset: 0;
@@ -319,7 +319,7 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   .fav-btn .icon {
     width: 16px;
     height: 16px;
-    fill: currentColor;
+    /* On n'utilise pas fill ici via CSS car c'est géré par la prop SVG */
   }
 
   /* --- Content Area --- */
@@ -333,11 +333,10 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     display: flex;
     flex-direction: column;
     gap: 12px;
-    transform: translateY(calc(100% - 76px)); /* Cache les détails par défaut */
+    transform: translateY(calc(100% - 76px));
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
   
-  /* Ajustement si pas de tags/stats pour ne pas casser le layout */
   @media (hover: none) {
     .content-area { transform: translateY(0); }
   }
@@ -476,11 +475,11 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   }
 
   &:hover .image-layer img {
-    transform: scale(1.08); /* Zoom subtil */
+    transform: scale(1.08);
   }
 
   &:hover .content-area {
-    transform: translateY(0); /* Glisse vers le haut pour révéler */
+    transform: translateY(0);
   }
 
   &:hover .details-reveal {
