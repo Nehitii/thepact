@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Zap, Check, ArrowLeft, Lock } from "lucide-react";
+import { Zap, Check, ArrowLeft, Lock, RefreshCw, Play, FastForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // --- CONFIGURATION ---
@@ -16,20 +16,18 @@ interface PactData {
   last_checkin_date: string | null;
 }
 
-// États pour la séquence de fin uniquement
 enum FinalSequenceState {
   IDLE = "idle",
-  IMPLOSION = "implosion", // Le bouton s'effondre
-  SINGULARITY = "singularity", // Court instant de noir total
-  EXPLOSION = "explosion", // Flash blanc aveuglant
-  REVEAL = "reveal", // Le texte apparaît
-  LOCKED = "locked", // État final
+  IMPLOSION = "implosion",
+  SINGULARITY = "singularity",
+  EXPLOSION = "explosion",
+  REVEAL = "reveal",
+  LOCKED = "locked",
 }
 
-// --- UTILS MATHS ---
+// --- UTILS ---
 const clamp = (n: number, a: number, b: number) => Math.max(a, Math.min(b, n));
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
-// Fonction de lissage exponentiel pour l'intensité (rend le début doux et la fin violente)
 const easeInExpo = (x: number) => (x === 0 ? 0 : Math.pow(2, 10 * x - 10));
 
 export default function TheCall() {
@@ -38,14 +36,11 @@ export default function TheCall() {
 
   // --- STATE ---
   const [pactData, setPactData] = useState<PactData | null>(null);
-  // On utilise un seul état pour gérer la séquence de fin, le reste est géré par la "progress" brute
   const [sequenceState, setSequenceState] = useState<FinalSequenceState>(FinalSequenceState.IDLE);
   const [completedToday, setCompletedToday] = useState(false);
-  // Progression normalisée (0.0 à 1.0) pour un contrôle précis
   const [normalizedProgress, setNormalizedProgress] = useState(0);
 
-  // --- REFS (DOM & Engine) ---
-  // On manipule plusieurs couches du DOM séparément pour un effet de parallaxe/profondeur
+  // --- REFS ---
   const screenShakeRef = useRef<HTMLDivElement>(null);
   const backgroundFxRef = useRef<HTMLDivElement>(null);
   const coreButtonRef = useRef<HTMLButtonElement>(null);
@@ -54,6 +49,11 @@ export default function TheCall() {
   const startTimeRef = useRef<number>(0);
   const isHoldingRef = useRef(false);
   const hasCompletedRef = useRef(false);
+
+  // NOUVEAU: Pour contrôler la vitesse du temps (x1 en normal, x5 en dev)
+  const timeSpeedRef = useRef<number>(1);
+  // NOUVEAU: Pour savoir si on est en mode "Auto-Play" (sans clic)
+  const isAutoPlayingRef = useRef(false);
 
   // --- DATA FETCHING ---
   useEffect(() => {
@@ -83,6 +83,12 @@ export default function TheCall() {
   };
 
   const saveCheckInData = async () => {
+    // En mode Dev/AutoPlay, on évite d'écrire en base pour ne pas polluer les données
+    if (isAutoPlayingRef.current || timeSpeedRef.current > 1) {
+      console.log("DEV MODE: Database update skipped");
+      return;
+    }
+
     if (!pactData) return;
     const todayStr = new Date().toLocaleDateString("en-CA");
     await supabase
@@ -95,9 +101,38 @@ export default function TheCall() {
       .eq("id", pactData.id);
   };
 
-  // --- MOTEUR PHYSIQUE & VISUEL (Le cœur du système) ---
+  // --- DEV TOOLS (Reset & Replay) ---
+  const devReset = () => {
+    // 1. Stop Loop
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
-  // Cette fonction est appelée à chaque frame (60fps) et met à jour le style directement
+    // 2. Reset Refs
+    isHoldingRef.current = false;
+    hasCompletedRef.current = false;
+    isAutoPlayingRef.current = false;
+    timeSpeedRef.current = 1; // Retour à vitesse normale
+
+    // 3. Reset State & DOM
+    setCompletedToday(false);
+    setSequenceState(FinalSequenceState.IDLE);
+    setNormalizedProgress(0);
+    resetPhysicalEffects();
+  };
+
+  const devAutoPlay = (speedMultiplier: number = 1) => {
+    devReset();
+    // Petit timeout pour laisser React faire le reset avant de lancer
+    setTimeout(() => {
+      isHoldingRef.current = true;
+      isAutoPlayingRef.current = true;
+      timeSpeedRef.current = speedMultiplier;
+      startTimeRef.current = performance.now();
+      rafRef.current = requestAnimationFrame(animate);
+    }, 50);
+  };
+
+  // --- MOTEUR PHYSIQUE ---
+
   const applyCinematicEffects = useCallback(
     (progress: number) => {
       if (hasCompletedRef.current || sequenceState !== FinalSequenceState.IDLE) {
@@ -105,32 +140,25 @@ export default function TheCall() {
         return;
       }
 
-      // Calcul de l'intensité globale basée sur une courbe exponentielle
-      // 0% -> 0 intensité. 80% -> 0.25 intensité. 100% -> 1.0 intensité.
       const rawIntensity = easeInExpo(progress);
-      // On clamp pour éviter les valeurs folles au tout début
       const intensity = clamp(rawIntensity, 0, 1);
 
-      // 1. SCREEN SHAKE & ABERRATION CHROMATIQUE (Sur le conteneur principal)
       if (screenShakeRef.current) {
-        const shakeMax = 35 * intensity; // Max 35px de déplacement
-        const rotateMax = 2 * intensity; // Max 2 degrés de rotation
+        const shakeMax = 35 * intensity;
+        const rotateMax = 2 * intensity;
 
         const x = (Math.random() - 0.5) * 2 * shakeMax;
         const y = (Math.random() - 0.5) * 2 * shakeMax;
         const r = (Math.random() - 0.5) * 2 * rotateMax;
 
-        // Aberration Chromatique (RGB Split) : plus c'est intense, plus les couches se séparent
         const rgbSplit = 10 * intensity;
         const blurAmount = 3 * intensity;
 
         screenShakeRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${r}deg) scale(${1 + intensity * 0.05})`;
-        // L'astuce pour le RGB split performant : text-shadow sur tout le conteneur
         screenShakeRef.current.style.textShadow = `
             ${rgbSplit}px 0 rgba(255, 0, 80, ${0.5 * intensity}), 
             -${rgbSplit}px 0 rgba(0, 255, 255, ${0.5 * intensity})
         `;
-        // Flou de mouvement simulé
         if (intensity > 0.1) {
           screenShakeRef.current.style.filter = `blur(${blurAmount}px) contrast(${1 + intensity * 0.2})`;
         } else {
@@ -138,34 +166,26 @@ export default function TheCall() {
         }
       }
 
-      // 2. DYNAMIQUE DU CŒUR (Le bouton lui-même)
       if (coreButtonRef.current) {
-        // Le bouton "respire" de plus en plus vite et fort
-        const breatheSpeed = 2 + intensity * 10; // De 2x à 12x la vitesse
-        const breatheDepth = 0.02 + intensity * 0.08; // Amplitude
-        const scale = 1 + Math.sin((performance.now() / 1000) * breatheSpeed) * breatheDepth + intensity * 0.15; // Il grossit globalement
+        const breatheSpeed = 2 + intensity * 10;
+        const breatheDepth = 0.02 + intensity * 0.08;
+        const scale = 1 + Math.sin((performance.now() / 1000) * breatheSpeed) * breatheDepth + intensity * 0.15;
 
-        // En phase critique (>80%), il vibre violemment de l'intérieur
         let innerJitterX = 0,
           innerJitterY = 0;
         if (progress > 0.8) {
-          const jitterIntensity = (progress - 0.8) * 5; // 0 à 1
+          const jitterIntensity = (progress - 0.8) * 5;
           innerJitterX = (Math.random() - 0.5) * 10 * jitterIntensity;
           innerJitterY = (Math.random() - 0.5) * 10 * jitterIntensity;
         }
 
         coreButtonRef.current.style.transform = `scale(${scale}) translate3d(${innerJitterX}px, ${innerJitterY}px, 0)`;
-
-        // Mise à jour des variables CSS pour les couleurs/lumières
         coreButtonRef.current.style.setProperty("--intensity", intensity.toString());
       }
 
-      // 3. ARRIÈRE-PLAN DYNAMIQUE
       if (backgroundFxRef.current) {
-        // Le fond s'assombrit puis devient aveuglant vers la fin (vignette inversée)
         const vignetteOpacity = 0.4 + intensity * 0.6;
         backgroundFxRef.current.style.opacity = vignetteOpacity.toString();
-        // Le "puits de gravité" central s'intensifie
         backgroundFxRef.current.style.transform = `scale(${1 + intensity * 1.5})`;
       }
     },
@@ -188,7 +208,9 @@ export default function TheCall() {
     if (!isHoldingRef.current || hasCompletedRef.current) return;
 
     const now = performance.now();
-    const elapsed = now - startTimeRef.current;
+    // ICI : On applique le multiplicateur de vitesse
+    const elapsed = (now - startTimeRef.current) * timeSpeedRef.current;
+
     const progress = clamp(elapsed / HOLD_DURATION, 0, 1);
 
     setNormalizedProgress(progress);
@@ -212,11 +234,14 @@ export default function TheCall() {
 
   const stopHolding = () => {
     if (hasCompletedRef.current) return;
+
+    // Si on est en AutoPlay, on ignore le relâchement de souris accidentel
+    if (isAutoPlayingRef.current) return;
+
     isHoldingRef.current = false;
     cancelAnimationFrame(rafRef.current);
     resetPhysicalEffects();
 
-    // Snap back doux
     const snapBack = () => {
       if (isHoldingRef.current || hasCompletedRef.current) return;
       setNormalizedProgress((prev) => {
@@ -229,33 +254,27 @@ export default function TheCall() {
     snapBack();
   };
 
-  // --- SÉQUENCE FINALE CINÉMATOGRAPHIQUE ---
+  // --- SÉQUENCE FINALE ---
   const finishCinematicSequence = async () => {
     isHoldingRef.current = false;
     hasCompletedRef.current = true;
+    isAutoPlayingRef.current = false; // Stop auto play
     cancelAnimationFrame(rafRef.current);
-    resetPhysicalEffects(); // Stop le tremblement pour le contraste
+    resetPhysicalEffects();
 
-    // 1. IMPLOSION (Le bouton s'effondre en un point infiniment dense)
     setSequenceState(FinalSequenceState.IMPLOSION);
-    // Le CSS gère la transition de scale(0)
     await new Promise((r) => setTimeout(r, 500));
 
-    // 2. SINGULARITÉ (Silence visuel, noir total avant le big bang)
     setSequenceState(FinalSequenceState.SINGULARITY);
     await new Promise((r) => setTimeout(r, 200));
 
-    // 3. EXPLOSION (Flash blanc aveuglant)
     if (user && !completedToday) saveCheckInData();
     setSequenceState(FinalSequenceState.EXPLOSION);
-    // Le flash est instantané, puis fade out
     await new Promise((r) => setTimeout(r, 100));
 
-    // 4. RÉVÉLATION MAJESTUEUSE (Le texte apparaît dans la lumière déclinante)
     setSequenceState(FinalSequenceState.REVEAL);
     await new Promise((r) => setTimeout(r, 5000));
 
-    // 5. FIN
     setSequenceState(FinalSequenceState.LOCKED);
     setCompletedToday(true);
   };
@@ -264,16 +283,14 @@ export default function TheCall() {
   const p = normalizedProgress;
   const isCritical = p > 0.85;
 
-  // Interpolation de couleur complexe : Cyan -> Violet -> Magenta Incandescent -> Blanc Pur
   let currentColor;
   if (p < 0.5) {
-    currentColor = `rgb(${lerp(6, 139, p * 2)}, ${lerp(182, 92, p * 2)}, ${lerp(212, 246, p * 2)})`; // Cyan vers Violet
+    currentColor = `rgb(${lerp(6, 139, p * 2)}, ${lerp(182, 92, p * 2)}, ${lerp(212, 246, p * 2)})`;
   } else if (p < 0.85) {
     const t = (p - 0.5) / 0.35;
-    currentColor = `rgb(${lerp(139, 255, t)}, ${lerp(92, 0, t)}, ${lerp(246, 255, t)})`; // Violet vers Magenta vif
+    currentColor = `rgb(${lerp(139, 255, t)}, ${lerp(92, 0, t)}, ${lerp(246, 255, t)})`;
   } else {
     const t = (p - 0.85) / 0.15;
-    // Mélange avec du blanc pur pour l'incandescence
     currentColor = `rgb(${lerp(255, 255, t)}, ${lerp(0, 255, t)}, ${lerp(255, 255, t)})`;
   }
 
@@ -283,23 +300,21 @@ export default function TheCall() {
 
   return (
     <div className="min-h-screen bg-[#010102] overflow-hidden flex flex-col relative text-slate-100 font-sans select-none touch-none perspective-[1000px]">
-      {/* --- COUCHE BACKGROUND FX (Profondeur) --- */}
+      {/* BACKGROUND FX */}
       <div
         ref={backgroundFxRef}
         className="absolute inset-0 pointer-events-none z-0 transition-all duration-100 ease-out will-change-transform opacity-40"
       >
-        {/* Puits de gravité central */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vmax] h-[120vmax] bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_60%)] mix-blend-screen animate-pulse-slow"></div>
-        {/* Grain cinéma */}
         <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.08] mix-blend-overlay"></div>
       </div>
 
-      {/* --- CONTENEUR PRINCIPAL SOUMIS AU TREMBLEMENT --- */}
+      {/* MAIN CONTAINER */}
       <div
         ref={screenShakeRef}
         className="relative z-10 flex-1 flex flex-col items-center justify-center will-change-transform transform-style-3d"
       >
-        {/* Header (disparaît à la fin) */}
+        {/* HEADER */}
         <header
           className={`absolute top-0 left-0 w-full p-6 flex justify-between items-center transition-opacity duration-500 ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
         >
@@ -319,24 +334,17 @@ export default function TheCall() {
         </header>
 
         <div className="relative flex flex-col items-center justify-center">
-          {/* --- COUCHES DE SÉQUENCE FINALE --- */}
-
-          {/* 1. SINGULARITÉ (Noir total) */}
+          {/* FINALS SEQUENCES */}
           <div
             className={`fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200 ${sequenceState === FinalSequenceState.SINGULARITY ? "opacity-100" : "opacity-0"}`}
           />
-
-          {/* 2. EXPLOSION (Flash Blanc) - Fade out lent */}
           <div
             className={`fixed inset-0 bg-white z-[100] pointer-events-none transition-opacity ease-out ${sequenceState === FinalSequenceState.EXPLOSION ? "duration-75 opacity-100" : "duration-[3000ms] opacity-0"}`}
           />
 
-          {/* 3. RÉVÉLATION (Texte) */}
           {sequenceState === FinalSequenceState.REVEAL && (
             <div className="absolute z-[110] flex flex-col items-center animate-reveal-majestic top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
-              {/* Rayons de lumière divins en arrière-plan */}
               <div className="absolute inset-[-300px] bg-gradient-conic from-cyan-200/0 via-cyan-100/20 to-cyan-200/0 animate-god-rays opacity-50 blur-2xl -z-10"></div>
-
               <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tighter drop-shadow-[0_0_50px_rgba(255,255,255,0.9)] leading-[0.9] mb-6">
                 SOUL
                 <br />
@@ -349,12 +357,9 @@ export default function TheCall() {
             </div>
           )}
 
-          {/* --- LE CŒUR (Bouton) --- */}
+          {/* BUTTON CORE */}
           <div
-            className={`relative transition-all will-change-transform
-                ${sequenceState === FinalSequenceState.IMPLOSION ? "scale-0 opacity-0 duration-500 cubic-bezier(.69,.01,.84,.19)" : "scale-100 opacity-100 duration-100"}
-                ${sequenceState === FinalSequenceState.REVEAL ? "hidden" : "block"}
-                `}
+            className={`relative transition-all will-change-transform ${sequenceState === FinalSequenceState.IMPLOSION ? "scale-0 opacity-0 duration-500 cubic-bezier(.69,.01,.84,.19)" : "scale-100 opacity-100 duration-100"} ${sequenceState === FinalSequenceState.REVEAL ? "hidden" : "block"}`}
           >
             <button
               ref={coreButtonRef}
@@ -365,17 +370,11 @@ export default function TheCall() {
               className={`
                         relative w-72 h-72 rounded-full flex items-center justify-center overflow-visible
                         border-[1px] transition-all duration-100 outline-none group
-                        ${
-                          completedToday
-                            ? "border-green-500/30 cursor-default bg-green-900/5"
-                            : "border-white/10 cursor-pointer bg-black/40"
-                        }
-                        /* Variable CSS contrôlée par JS pour l'intensité */
+                        ${completedToday ? "border-green-500/30 cursor-default bg-green-900/5" : "border-white/10 cursor-pointer bg-black/40"}
                         [--intensity:0]
                     `}
               style={{
                 boxShadow: !completedToday && p > 0 ? glowIntensity : "none",
-                // En phase critique, le bord devient incandescent
                 borderColor: isCritical
                   ? `rgba(255,255,255, ${p})`
                   : completedToday
@@ -383,14 +382,12 @@ export default function TheCall() {
                     : "rgba(255,255,255,0.1)",
               }}
             >
-              {/* NOYAU PLASMA (Plus de trait blanc, juste des couches de lumière floutées) */}
               {!completedToday && p > 0 && (
                 <>
                   <div
                     className="absolute inset-2 rounded-full blur-xl mix-blend-screen transition-colors duration-200 animate-pulse-plasma"
                     style={{ background: currentColor, opacity: 0.4 + p * 0.4 }}
                   />
-                  {/* Noyau central plus chaud */}
                   <div
                     className="absolute inset-16 rounded-full blur-md mix-blend-overlay transition-colors duration-200"
                     style={{ background: isCritical ? "white" : currentColor, opacity: p }}
@@ -398,14 +395,11 @@ export default function TheCall() {
                 </>
               )}
 
-              {/* SYSTÈME DE PARTICULES ORBITALES (Aspiration gravitationnelle) */}
               {!completedToday && p > 0 && (
                 <div className="absolute inset-[-100px] pointer-events-none rounded-full overflow-hidden [mask-image:radial-gradient(circle,transparent_30%,black_70%)]">
                   {[...Array(30)].map((_, i) => {
-                    // Paramètres aléatoires pour chaque particule
                     const angle = (i / 30) * 360;
-                    const delay = Math.random() * -2;
-                    const duration = lerp(3, 0.5, p); // Accélère massivement avec le temps
+                    const duration = lerp(3, 0.5, p);
                     const size = Math.random() * 2 + 1;
                     return (
                       <div
@@ -413,14 +407,14 @@ export default function TheCall() {
                         className="absolute top-1/2 left-1/2 rounded-full animate-gravity-well mix-blend-screen"
                         style={{
                           width: `${size}px`,
-                          height: `${size * 3}px`, // Légèrement étirées
+                          height: `${size * 3}px`,
                           background: isCritical ? "white" : currentColor,
                           boxShadow: `0 0 ${size * 2}px ${currentColor}`,
-                          transformOrigin: "0 150px", // Orbitent autour du centre
+                          transformOrigin: "0 150px",
                           transform: `rotate(${angle}deg) translateY(-150px)`,
                           animationDuration: `${duration}s`,
-                          animationDelay: `${delay}s`,
-                          opacity: p, // Devient plus visible avec le temps
+                          animationDelay: `${Math.random() * -2}s`,
+                          opacity: p,
                         }}
                       />
                     );
@@ -428,7 +422,6 @@ export default function TheCall() {
                 </div>
               )}
 
-              {/* ICÔNE CENTRALE (Réagit à l'intensité) */}
               <div
                 className="relative z-20 flex flex-col items-center pointer-events-none"
                 style={{ transform: `scale(${1 + p * 0.2})` }}
@@ -440,19 +433,15 @@ export default function TheCall() {
                   </div>
                 ) : (
                   <>
-                    {/* L'icône se charge d'énergie */}
                     <Zap
                       className={`w-24 h-24 transition-all duration-200 ${isCritical ? "animate-vibrate-wild" : ""}`}
                       style={{
-                        // Transition de contour à remplissage incandescent
                         fill: p > 0.5 ? currentColor : "transparent",
                         stroke: p < 0.8 ? (p > 0 ? currentColor : "rgba(255,255,255,0.2)") : "transparent",
                         strokeWidth: 1.5,
                         filter: `drop-shadow(0 0 ${p * 30}px ${currentColor})`,
                       }}
                     />
-
-                    {/* Timer / Statut */}
                     <div className="mt-6 h-4 flex items-center justify-center font-mono text-xs tracking-[0.2em]">
                       {p > 0 ? (
                         <span
@@ -476,7 +465,6 @@ export default function TheCall() {
             </button>
           </div>
 
-          {/* TEXTE D'AMBIANCE INFÉRIEUR (Réagit au tremblement) */}
           {!completedToday && sequenceState === FinalSequenceState.IDLE && (
             <div className="absolute top-[calc(100%+60px)] w-full text-center overflow-hidden">
               <p
@@ -484,7 +472,6 @@ export default function TheCall() {
                 style={{
                   color: isCritical ? "white" : currentColor,
                   opacity: p > 0 ? 0.7 + p * 0.3 : 0.3,
-                  // Le texte se déchire aussi avec l'intensité
                   transform: isCritical ? `translateX(${(Math.random() - 0.5) * 10}px)` : "none",
                   textShadow: isCritical ? "2px 0 rgba(255,0,0,0.8), -2px 0 rgba(0,255,255,0.8)" : "none",
                 }}
@@ -499,17 +486,24 @@ export default function TheCall() {
         </div>
       </div>
 
+      {/* --- DEV TOOLBAR (Pour le test) --- */}
+      {/* Affiché discrètement en bas à droite pour tester l'animation à répétition */}
+      <div className="fixed bottom-4 right-4 z-[200] flex gap-2 opacity-20 hover:opacity-100 transition-opacity">
+        <Button variant="secondary" size="icon" onClick={() => devReset()} title="Hard Reset">
+          <RefreshCw className="w-4 h-4" />
+        </Button>
+        <Button variant="secondary" size="icon" onClick={() => devAutoPlay(1)} title="Auto Play (Normal)">
+          <Play className="w-4 h-4" />
+        </Button>
+        <Button variant="secondary" size="icon" onClick={() => devAutoPlay(5)} title="Fast Forward (5x)">
+          <FastForward className="w-4 h-4" />
+        </Button>
+      </div>
+
       <style>{`
-        /* --- CSS ANIMATIONS --- */
-        
-        /* Respiration du plasma */
-        @keyframes pulse-plasma {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.05); opacity: 0.8; }
-        }
+        @keyframes pulse-plasma { 0%, 100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.05); opacity: 0.8; } }
         .animate-pulse-plasma { animation: pulse-plasma 2s ease-in-out infinite; }
         
-        /* Particules aspirées vers le centre en spiralant */
         @keyframes gravity-well {
             0% { transform: rotate(var(--start-angle)) translateY(-180px) scale(0.5); opacity: 0; }
             20% { opacity: var(--opacity); }
@@ -517,46 +511,25 @@ export default function TheCall() {
         }
         .animate-gravity-well { animation: gravity-well linear infinite; }
 
-        /* Vibration sauvage pour la phase critique */
         @keyframes vibrate-wild {
-            0% { transform: translate(0, 0) rotate(0); }
-            20% { transform: translate(-4px, 2px) rotate(-2deg); }
-            40% { transform: translate(3px, -3px) rotate(1deg); }
-            60% { transform: translate(-3px, 4px) rotate(3deg); }
-            80% { transform: translate(4px, -2px) rotate(-1deg); }
-            100% { transform: translate(0, 0) rotate(0); }
+            0% { transform: translate(0, 0) rotate(0); } 20% { transform: translate(-4px, 2px) rotate(-2deg); }
+            40% { transform: translate(3px, -3px) rotate(1deg); } 60% { transform: translate(-3px, 4px) rotate(3deg); }
+            80% { transform: translate(4px, -2px) rotate(-1deg); } 100% { transform: translate(0, 0) rotate(0); }
         }
         .animate-vibrate-wild { animation: vibrate-wild 0.08s linear infinite; }
 
-        /* Révélation majestueuse du texte final */
-        @keyframes reveal-majestic {
-            0% { opacity: 0; transform: translate(-50%, -40%) scale(1.1); filter: blur(20px); }
-            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
-        }
+        @keyframes reveal-majestic { 0% { opacity: 0; transform: translate(-50%, -40%) scale(1.1); filter: blur(20px); } 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); } }
         .animate-reveal-majestic { animation: reveal-majestic 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
 
-        /* Rayons divins rotatifs */
-        @keyframes god-rays {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+        @keyframes god-rays { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .animate-god-rays { animation: god-rays 60s linear infinite; }
         
-        /* Extension de la ligne sous le texte */
-        @keyframes expand-line {
-            0% { width: 0; opacity: 0; }
-            100% { width: 200px; opacity: 1; }
-        }
+        @keyframes expand-line { 0% { width: 0; opacity: 0; } 100% { width: 200px; opacity: 1; } }
         .animate-expand-line { animation: expand-line 1.5s ease-out forwards 0.5s; }
         
-        /* Montée du sous-texte */
-        @keyframes slide-up {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 0.6; transform: translateY(0); }
-        }
+        @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 0.6; transform: translateY(0); } }
         .animate-slide-up { animation: slide-up 1s ease-out forwards 1s; opacity: 0; }
 
-        /* Utilitaires */
         .transform-style-3d { transform-style: preserve-3d; }
         .bg-gradient-conic { background-image: conic-gradient(var(--tw-gradient-stops)); }
       `}</style>
