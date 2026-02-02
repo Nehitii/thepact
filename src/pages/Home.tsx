@@ -224,9 +224,7 @@ export default function Home() {
   const progressPercentage = Number(pact.global_progress) || 0;
   const sortedModules = getAllModules();
 
-  // Filter modules based on new logic:
-  // - Hide locked modules from main grid (they go to LockedModulesTeaser)
-  // - Show only enabled modules
+  // Filter modules based on new logic
   const visibleModules = sortedModules.filter((m) => {
     // Always show display modules
     if (m.category === "display") return m.enabled;
@@ -240,7 +238,7 @@ export default function Home() {
     return m.enabled;
   });
 
-  // Calculate Rank Progress Percentage for the bar
+  // Calculate Rank Progress Percentage
   const rankProgress = useMemo(() => {
     if (!nextRank) return 100;
     const min = currentRank ? currentRank.min_points : 0;
@@ -253,7 +251,7 @@ export default function Home() {
     return Math.min(Math.max(percent, 0), 100);
   }, [currentRank, nextRank, totalPoints]);
 
-  // Module rendering map with display mode support
+  // Module rendering map
   const renderModule = (moduleId: string, size: ModuleSize) => {
     const displayMode = getDisplayMode(moduleId);
     const handleToggle = () => toggleDisplayMode(moduleId);
@@ -322,14 +320,42 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Styles for the Gamified Progress Bar Animation */}
+      {/* Styles pour l'animation Organique & Fluide */}
       <style>{`
-        @keyframes progress-stripes {
-          0% { background-position: 0 0; }
-          100% { background-position: 56px 0; }
+        /* Flux d'énergie liquide */
+        @keyframes fluid-flow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
-        .animate-progress-stripes {
-          animation: progress-stripes 1s linear infinite;
+        
+        /* Battement de cœur (Double pulsation "Lub-Dub") */
+        @keyframes heartbeat {
+          0% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+          15% { transform: translate(50%, -50%) scale(1.3); opacity: 1; box-shadow: 0 0 10px 5px rgba(255,255,255,0.5); }
+          30% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+          45% { transform: translate(50%, -50%) scale(1.15); opacity: 0.9; box-shadow: 0 0 8px 3px rgba(255,255,255,0.5); }
+          60% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+          100% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+        }
+
+        /* Respiration de la barre (Glow qui pulse) */
+        @keyframes breathe {
+          0%, 100% { box-shadow: 0 0 10px -2px hsla(var(--primary), 0.3); }
+          50% { box-shadow: 0 0 25px -4px hsla(var(--primary), 0.6); }
+        }
+
+        .animate-fluid {
+          animation: fluid-flow 3s ease-in-out infinite;
+          background-size: 200% 200%;
+        }
+
+        .animate-heartbeat {
+          animation: heartbeat 2s ease-in-out infinite;
+        }
+
+        .animate-breathe {
+          animation: breathe 3s ease-in-out infinite;
         }
       `}</style>
 
@@ -371,13 +397,13 @@ export default function Home() {
             </h1>
             <p className="text-base text-primary/80 italic font-rajdhani tracking-wide">&ldquo;{pact.mantra}&rdquo;</p>
 
-            {/* Today's Focus Message - NEW */}
+            {/* Today's Focus Message */}
             <div className="pt-2">
               <TodaysFocusMessage focusGoals={focusGoals} allGoals={allGoals} />
             </div>
           </div>
 
-          {/* Next Milestone Card - REPLACES 3-column HUD */}
+          {/* Next Milestone Card */}
           <NextMilestoneCard
             totalPoints={totalPoints}
             currentRank={currentRank}
@@ -387,7 +413,7 @@ export default function Home() {
             className="max-w-2xl mx-auto"
           />
 
-          {/* Global XP Progress Bar - GAMIFIED VERSION */}
+          {/* Global XP Progress Bar - ORGANIC / LIVING VERSION */}
           <div className="space-y-2 max-w-3xl mx-auto group">
             {/* Conditional Rendering for Max Rank */}
             {!nextRank && ranks.length > 0 ? (
@@ -402,7 +428,7 @@ export default function Home() {
                 <div className="flex items-end justify-between px-1">
                   <div className="flex flex-col items-start">
                     <span className="text-[10px] text-primary/50 font-orbitron uppercase tracking-[0.2em] mb-0.5">
-                      Current Progress
+                      Current Resonance
                     </span>
                     <span className="text-sm font-bold text-primary font-orbitron tracking-wide drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]">
                       {nextRank?.name || "Next Rank"}
@@ -411,64 +437,72 @@ export default function Home() {
 
                   <div className="text-right">
                     <span className="text-xs font-medium text-white/90 font-mono bg-primary/20 px-2 py-0.5 rounded border border-primary/30">
-                      {nextRank ? nextRank.min_points - totalPoints : 0} XP to go
+                      {nextRank ? nextRank.min_points - totalPoints : 0} XP needed
                     </span>
                   </div>
                 </div>
 
-                {/* Container de la barre */}
-                <div className="relative h-6 w-full bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-inner overflow-hidden">
-                  {/* Fond décoratif (grille subtile) */}
-                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.03)_50%,transparent_100%)] opacity-50" />
-
-                  {/* La Barre de Progression (Le remplissage) */}
+                {/* Container de la barre (Glass Tube) */}
+                <div className="relative h-6 w-full bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] overflow-hidden">
+                  {/* Fond inactif (Veines sombres) */}
                   <div
-                    className="relative h-full flex items-center justify-end rounded-l-full transition-all duration-700 ease-out"
+                    className="absolute inset-0 opacity-20"
+                    style={{
+                      backgroundImage: "radial-gradient(circle at center, rgba(255,255,255,0.1) 1px, transparent 1px)",
+                      backgroundSize: "10px 10px",
+                    }}
+                  />
+
+                  {/* La Barre de Progression (Le remplissage Vivant) */}
+                  <div
+                    className="relative h-full rounded-l-full transition-all duration-1000 ease-out animate-breathe"
                     style={{
                       width: `${rankProgress}%`,
-                      // Dégradé riche + Pattern de hachures (stripes)
-                      background: `
-                        linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%),
-                        repeating-linear-gradient(
-                          45deg,
-                          transparent,
-                          transparent 10px,
-                          rgba(255, 255, 255, 0.1) 10px,
-                          rgba(255, 255, 255, 0.1) 20px
-                        )
-                      `,
-                      backgroundSize: "100% 100%, 28px 28px",
+                      // Dégradé Plasma Liquide
+                      background: `linear-gradient(90deg, 
+                        hsla(var(--primary), 0.6) 0%, 
+                        hsla(var(--primary), 0.9) 40%, 
+                        hsla(var(--accent), 0.8) 70%, 
+                        hsla(var(--primary), 1) 100%
+                      )`,
                     }}
                   >
-                    {/* Animation CSS pour faire bouger les hachures */}
+                    {/* Texture Organique Fluide (Overlay) */}
                     <div
-                      className="absolute inset-0 animate-progress-stripes opacity-30 mix-blend-overlay"
+                      className="absolute inset-0 animate-fluid mix-blend-overlay opacity-60"
                       style={{
-                        backgroundImage:
-                          "repeating-linear-gradient(45deg, transparent, transparent 10px, white 10px, white 20px)",
-                        backgroundSize: "28px 28px",
+                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                        backgroundSize: "200% 100%",
                       }}
                     />
 
-                    {/* Lueur interne (Inner Glow) */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent opacity-50" />
+                    {/* Particules de bruit (Grain) pour la texture physique */}
+                    <div
+                      className="absolute inset-0 opacity-20 mix-blend-soft-light"
+                      style={{
+                        backgroundImage:
+                          "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%221%22/%3E%3C/svg%3E')",
+                      }}
+                    />
 
-                    {/* L'Éclat de tête (The Spark/Head) */}
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-8 h-8 bg-white rounded-full blur-md opacity-60 shadow-[0_0_20px_10px_rgba(255,255,255,0.4)] z-10" />
-                    <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_2px_rgba(255,255,255,0.8)] z-20" />
+                    {/* L'Éclat "Cœur" (Le point qui bat) */}
+                    <div className="absolute right-0 top-1/2 w-4 h-4 bg-white rounded-full animate-heartbeat z-20" />
+
+                    {/* Trainée de lumière derrière le cœur */}
+                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent opacity-50 blur-[2px]" />
                   </div>
                 </div>
 
-                {/* Footer : Pourcentage précis */}
+                {/* Footer : Pourcentage */}
                 <div className="flex justify-between items-center text-[10px] text-primary/40 font-orbitron uppercase tracking-widest px-2">
-                  <span>Level Sync</span>
-                  <span>{Math.round(rankProgress)}% Complete</span>
+                  <span>Synchronization</span>
+                  <span>{Math.round(rankProgress)}% Active</span>
                 </div>
               </>
             )}
           </div>
 
-          {/* Quick Actions Bar - NEW */}
+          {/* Quick Actions Bar */}
           <QuickActionsBar
             ownedModules={{
               todo: ownedModules["todo-list"],
@@ -509,7 +543,7 @@ export default function Home() {
           ))}
         </ModuleGrid>
 
-        {/* Locked Modules Teaser - only show if there are locked modules */}
+        {/* Locked Modules Teaser */}
         {lockedModules.length > 0 && !isEditMode && <LockedModulesTeaser lockedModules={lockedModules} />}
       </div>
 
