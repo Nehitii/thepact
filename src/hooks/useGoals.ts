@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
+import type { SuperGoalRule } from "@/components/goals/super/types";
+
 export interface Goal {
   id: string;
   name: string;
@@ -19,6 +21,10 @@ export interface Goal {
   goal_type?: string;
   habit_duration_days?: number;
   habit_checks?: boolean[];
+  // Super Goal fields
+  child_goal_ids?: string[] | null;
+  super_goal_rule?: SuperGoalRule | null;
+  is_dynamic_super?: boolean;
   // Step counts from batch query
   completedStepsCount?: number;
   totalStepsCount?: number;

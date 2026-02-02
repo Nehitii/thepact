@@ -612,6 +612,7 @@ export type Database = {
       }
       goals: {
         Row: {
+          child_goal_ids: string[] | null
           completion_date: string | null
           created_at: string | null
           difficulty: Database["public"]["Enums"]["goal_difficulty"] | null
@@ -621,6 +622,7 @@ export type Database = {
           habit_duration_days: number | null
           id: string
           image_url: string | null
+          is_dynamic_super: boolean | null
           is_focus: boolean | null
           name: string
           notes: string | null
@@ -628,12 +630,14 @@ export type Database = {
           potential_score: number | null
           start_date: string | null
           status: Database["public"]["Enums"]["goal_status"] | null
+          super_goal_rule: Json | null
           total_steps: number | null
           type: Database["public"]["Enums"]["goal_type"] | null
           updated_at: string | null
           validated_steps: number | null
         }
         Insert: {
+          child_goal_ids?: string[] | null
           completion_date?: string | null
           created_at?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
@@ -643,6 +647,7 @@ export type Database = {
           habit_duration_days?: number | null
           id?: string
           image_url?: string | null
+          is_dynamic_super?: boolean | null
           is_focus?: boolean | null
           name: string
           notes?: string | null
@@ -650,12 +655,14 @@ export type Database = {
           potential_score?: number | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"] | null
+          super_goal_rule?: Json | null
           total_steps?: number | null
           type?: Database["public"]["Enums"]["goal_type"] | null
           updated_at?: string | null
           validated_steps?: number | null
         }
         Update: {
+          child_goal_ids?: string[] | null
           completion_date?: string | null
           created_at?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
@@ -665,6 +672,7 @@ export type Database = {
           habit_duration_days?: number | null
           id?: string
           image_url?: string | null
+          is_dynamic_super?: boolean | null
           is_focus?: boolean | null
           name?: string
           notes?: string | null
@@ -672,6 +680,7 @@ export type Database = {
           potential_score?: number | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"] | null
+          super_goal_rule?: Json | null
           total_steps?: number | null
           type?: Database["public"]["Enums"]["goal_type"] | null
           updated_at?: string | null
