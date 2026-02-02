@@ -1,20 +1,24 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { trackGoalCreated } from "@/lib/achievements";
 import { insertGoalTags } from "@/hooks/useGoalTags";
+import { useGoals } from "@/hooks/useGoals";
+import { usePact } from "@/hooks/usePact";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Target, Sparkles, Calendar, ListOrdered, Image, StickyNote, DollarSign, Tag, Zap, Check, X } from "lucide-react";
+import { ArrowLeft, Target, Sparkles, Calendar, ListOrdered, Image, StickyNote, DollarSign, Tag, Zap, Check, X, Crown, Layers, Filter, HandIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
+import { GoalSelectionList, AutoBuildRuleEditor, SuperGoalRule, filterGoalsByRule } from "@/components/goals/super";
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "@/lib/goalConstants";
 import { z } from "zod";
 import { motion } from "framer-motion";
@@ -23,7 +27,7 @@ const goalSchema = z.object({
   name: z.string().trim().min(1, { message: "Goal name is required" }).max(100, { message: "Goal name must be less than 100 characters" }),
   type: z.array(z.string()).min(1, { message: "At least one tag is required" }),
   difficulty: z.string(),
-  goalType: z.enum(["normal", "habit"]),
+  goalType: z.enum(["normal", "habit", "super"]),
   stepCount: z.number().int().min(1, { message: "Must have at least 1 step" }).max(20, { message: "Cannot have more than 20 steps" }).optional(),
   habitDurationDays: z.number().int().min(1, { message: "Must be at least 1 day" }).max(365, { message: "Cannot exceed 365 days" }).optional(),
   notes: z.string().max(500, { message: "Notes must be less than 500 characters" }).optional()
@@ -34,19 +38,28 @@ export default function NewGoal() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { data: pactData } = usePact(user?.id);
+  const { data: existingGoals = [] } = useGoals(pactData?.id, { includeStepCounts: true, includeTags: true });
+  
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>(["personal"]);
   const [difficulty, setDifficulty] = useState("medium");
   const [notes, setNotes] = useState("");
   const [stepCount, setStepCount] = useState(5);
-  const [goalType, setGoalType] = useState<"normal" | "habit">("normal");
+  const [goalType, setGoalType] = useState<"normal" | "habit" | "super">("normal");
   const [habitDurationDays, setHabitDurationDays] = useState(7);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+
+  // Super Goal specific state
+  const [superBuildMode, setSuperBuildMode] = useState<"manual" | "auto">("manual");
+  const [selectedChildGoalIds, setSelectedChildGoalIds] = useState<string[]>([]);
+  const [superGoalRule, setSuperGoalRule] = useState<SuperGoalRule>({});
+  const [isDynamicSuper, setIsDynamicSuper] = useState(false);
 
   // Custom difficulty state
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
@@ -90,6 +103,18 @@ export default function NewGoal() {
       return;
     }
 
+    // Validate super goal has child goals
+    if (goalType === "super") {
+      const childIds = superBuildMode === "manual" 
+        ? selectedChildGoalIds 
+        : filterGoalsByRule(existingGoals, superGoalRule).map(g => g.id);
+      
+      if (childIds.length === 0) {
+        toast({ title: "Error", description: "Super Goal must contain at least one child goal", variant: "destructive" });
+        return;
+      }
+    }
+
     try {
       const validatedData = goalSchema.parse({
         name: name.trim(),
@@ -103,8 +128,8 @@ export default function NewGoal() {
       
       setLoading(true);
 
-      const { data: pactData } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
-      if (!pactData) {
+      const { data: pactResult } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
+      if (!pactResult) {
         toast({ title: "Error", description: "Pact not found", variant: "destructive" });
         setLoading(false);
         return;
@@ -118,23 +143,43 @@ export default function NewGoal() {
       // Use first tag as primary type for DB compatibility
       const primaryType = selectedTags[0] || "personal";
 
+      // Prepare Super Goal specific data
+      let superGoalData: { child_goal_ids?: string[]; super_goal_rule?: SuperGoalRule; is_dynamic_super?: boolean } = {};
+      if (goalType === "super") {
+        if (superBuildMode === "manual") {
+          superGoalData = {
+            child_goal_ids: selectedChildGoalIds,
+            is_dynamic_super: false,
+          };
+        } else {
+          // Auto-build mode
+          const matchedIds = filterGoalsByRule(existingGoals, superGoalRule).map(g => g.id);
+          superGoalData = {
+            child_goal_ids: isDynamicSuper ? null : matchedIds,
+            super_goal_rule: superGoalRule,
+            is_dynamic_super: isDynamicSuper,
+          };
+        }
+      }
+
       const { data: goalData, error: goalError } = await supabase
         .from("goals")
         .insert({
-          pact_id: pactData.id,
+          pact_id: pactResult.id,
           name: validatedData.name,
           type: primaryType as any,
           difficulty: validatedData.difficulty as any,
           estimated_cost: totalEstimatedCost,
           notes: validatedData.notes || null,
-          total_steps: goalType === "normal" ? validatedData.stepCount : habitDurationDays,
+          total_steps: goalType === "normal" ? validatedData.stepCount : goalType === "habit" ? habitDurationDays : 0,
           potential_score: potentialScore,
           start_date: new Date(startDate).toISOString(),
           status: "not_started",
           goal_type: goalType,
           habit_duration_days: goalType === "habit" ? habitDurationDays : null,
           habit_checks: habitChecks,
-          image_url: imageUrl || null
+          image_url: imageUrl || null,
+          ...superGoalData,
         } as any)
         .select()
         .single();
@@ -168,7 +213,7 @@ export default function NewGoal() {
       }
 
       setTimeout(() => { trackGoalCreated(user.id, difficulty); }, 0);
-      toast({ title: "Goal Created", description: "Your Pact evolution has been added" });
+      toast({ title: goalType === "super" ? "Super Goal Created" : "Goal Created", description: "Your Pact evolution has been added" });
       navigate(`/goals/${goalData.id}`);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -318,84 +363,194 @@ export default function NewGoal() {
                 <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
                   Goal Type
                 </Label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-3">
                   <button
                     type="button"
                     onClick={() => setGoalType("normal")}
-                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                    className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
                       goalType === "normal"
-                        ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(91,180,255,0.2)]"
+                        ? "border-primary bg-primary/10 shadow-[0_0_30px_hsl(var(--primary)/0.2)]"
                         : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
                     }`}
                   >
-                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    <div className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
                       goalType === "normal" ? "border-primary bg-primary" : "border-muted-foreground/30"
                     }`}>
-                      {goalType === "normal" && <Check className="h-3 w-3 text-primary-foreground" />}
+                      {goalType === "normal" && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
                     </div>
-                    <ListOrdered className={`h-7 w-7 mb-3 ${goalType === "normal" ? "text-primary" : "text-muted-foreground"}`} />
-                    <div className={`font-rajdhani font-bold text-lg mb-1 ${goalType === "normal" ? "text-primary" : "text-foreground"}`}>
-                      Normal Goal
+                    <ListOrdered className={`h-6 w-6 mb-2 ${goalType === "normal" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "normal" ? "text-primary" : "text-foreground"}`}>
+                      Standard
                     </div>
-                    <div className="text-sm text-muted-foreground">Track progress with customizable steps</div>
+                    <div className="text-xs text-muted-foreground">Steps-based progress</div>
                   </button>
                   
                   <button
                     type="button"
                     onClick={() => setGoalType("habit")}
-                    className={`group relative p-5 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                    className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
                       goalType === "habit"
-                        ? "border-primary bg-primary/10 shadow-[0_0_30px_rgba(91,180,255,0.2)]"
+                        ? "border-primary bg-primary/10 shadow-[0_0_30px_hsl(var(--primary)/0.2)]"
                         : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
                     }`}
                   >
-                    <div className={`absolute top-3 right-3 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                    <div className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
                       goalType === "habit" ? "border-primary bg-primary" : "border-muted-foreground/30"
                     }`}>
-                      {goalType === "habit" && <Check className="h-3 w-3 text-primary-foreground" />}
+                      {goalType === "habit" && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
                     </div>
-                    <Sparkles className={`h-7 w-7 mb-3 ${goalType === "habit" ? "text-primary" : "text-muted-foreground"}`} />
-                    <div className={`font-rajdhani font-bold text-lg mb-1 ${goalType === "habit" ? "text-primary" : "text-foreground"}`}>
-                      Habit Goal
+                    <Sparkles className={`h-6 w-6 mb-2 ${goalType === "habit" ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "habit" ? "text-primary" : "text-foreground"}`}>
+                      Habit
                     </div>
-                    <div className="text-sm text-muted-foreground">Daily check-ins for a set duration</div>
+                    <div className="text-xs text-muted-foreground">Daily check-ins</div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setGoalType("super")}
+                    className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
+                      goalType === "super"
+                        ? "border-yellow-500 bg-yellow-500/10 shadow-[0_0_30px_rgba(234,179,8,0.3)]"
+                        : "border-border bg-muted/30 hover:border-yellow-500/50 hover:bg-muted/50"
+                    }`}
+                  >
+                    <div className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                      goalType === "super" ? "border-yellow-500 bg-yellow-500" : "border-muted-foreground/30"
+                    }`}>
+                      {goalType === "super" && <Check className="h-2.5 w-2.5 text-yellow-900" />}
+                    </div>
+                    <Crown className={`h-6 w-6 mb-2 ${goalType === "super" ? "text-yellow-500" : "text-muted-foreground"}`} />
+                    <div className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "super" ? "text-yellow-500" : "text-foreground"}`}>
+                      Super Goal
+                    </div>
+                    <div className="text-xs text-muted-foreground">Meta-goal of goals</div>
                   </button>
                 </div>
               </div>
 
-              {/* Difficulty Selection */}
-              <div className="space-y-3">
-                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                  Difficulty
-                </Label>
-                <div className="flex flex-wrap gap-2">
-                  {allDifficulties.map((diff) => {
-                    const isSelected = difficulty === diff.value;
-                    return (
-                      <button
-                        key={diff.value}
-                        type="button"
-                        onClick={() => setDifficulty(diff.value)}
-                        className={`
-                          relative px-5 py-2.5 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200
-                          ${isSelected 
-                            ? 'text-white shadow-lg scale-105' 
-                            : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
-                          }
-                        `}
-                        style={isSelected ? { 
-                          background: diff.color,
-                          boxShadow: `0 0 25px ${diff.color}50`
-                        } : {}}
-                      >
-                        {getDifficultyLabel(diff.value, t)}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+              {/* Super Goal Configuration */}
+              {goalType === "super" && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-5 p-5 rounded-2xl border-2 border-yellow-500/30 bg-yellow-500/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <Crown className="h-5 w-5 text-yellow-500" />
+                    <h3 className="font-orbitron text-sm uppercase tracking-wider text-yellow-500">Super Goal Configuration</h3>
+                  </div>
 
-              {/* Steps / Duration based on goal type */}
+                  {/* Build Mode Selection */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSuperBuildMode("manual")}
+                      className={`p-3 rounded-xl border-2 text-left transition-all ${
+                        superBuildMode === "manual"
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card/50 hover:border-primary/40"
+                      }`}
+                    >
+                      <HandIcon className={`h-5 w-5 mb-1 ${superBuildMode === "manual" ? "text-primary" : "text-muted-foreground"}`} />
+                      <div className={`font-medium text-sm ${superBuildMode === "manual" ? "text-primary" : "text-foreground"}`}>Manual Selection</div>
+                      <div className="text-xs text-muted-foreground">Pick specific goals</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSuperBuildMode("auto")}
+                      className={`p-3 rounded-xl border-2 text-left transition-all ${
+                        superBuildMode === "auto"
+                          ? "border-primary bg-primary/10"
+                          : "border-border bg-card/50 hover:border-primary/40"
+                      }`}
+                    >
+                      <Filter className={`h-5 w-5 mb-1 ${superBuildMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
+                      <div className={`font-medium text-sm ${superBuildMode === "auto" ? "text-primary" : "text-foreground"}`}>Auto-Build</div>
+                      <div className="text-xs text-muted-foreground">Use smart rules</div>
+                    </button>
+                  </div>
+
+                  {/* Manual Selection Mode */}
+                  {superBuildMode === "manual" && (
+                    <GoalSelectionList
+                      goals={existingGoals}
+                      selectedIds={selectedChildGoalIds}
+                      onSelectionChange={setSelectedChildGoalIds}
+                      customDifficultyName={customDifficultyName}
+                      customDifficultyColor={customDifficultyColor}
+                    />
+                  )}
+
+                  {/* Auto-Build Mode */}
+                  {superBuildMode === "auto" && (
+                    <div className="space-y-4">
+                      <AutoBuildRuleEditor
+                        rule={superGoalRule}
+                        onRuleChange={setSuperGoalRule}
+                        goals={existingGoals}
+                        customDifficultyName={customDifficultyName}
+                        customDifficultyActive={customDifficultyActive}
+                      />
+                      
+                      {/* Dynamic vs Static toggle */}
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-card/80 border border-border">
+                        <div>
+                          <Label className="font-medium flex items-center gap-2">
+                            <Zap className="h-4 w-4 text-purple-500" />
+                            Dynamic Super Goal
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Auto-updates when new goals match rules
+                          </p>
+                        </div>
+                        <Switch
+                          checked={isDynamicSuper}
+                          onCheckedChange={setIsDynamicSuper}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+              {/* Difficulty Selection - hide for super goals since they aggregate */}
+              {goalType !== "super" && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
+                    Difficulty
+                  </Label>
+                  <div className="flex flex-wrap gap-2">
+                    {allDifficulties.map((diff) => {
+                      const isSelected = difficulty === diff.value;
+                      return (
+                        <button
+                          key={diff.value}
+                          type="button"
+                          onClick={() => setDifficulty(diff.value)}
+                          className={`
+                            relative px-5 py-2.5 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200
+                            ${isSelected 
+                              ? 'text-white shadow-lg scale-105' 
+                              : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
+                            }
+                          `}
+                          style={isSelected ? { 
+                            background: diff.color,
+                            boxShadow: `0 0 25px ${diff.color}50`
+                          } : {}}
+                        >
+                          {getDifficultyLabel(diff.value, t)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Steps / Duration based on goal type - not for super goals */}
+              {goalType !== "super" && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {goalType === "normal" ? (
                   <div className="space-y-3">
@@ -455,6 +610,7 @@ export default function NewGoal() {
                   />
                 </div>
               </div>
+              )}
             </div>
 
             {/* Section 3: Cost & Budget */}
