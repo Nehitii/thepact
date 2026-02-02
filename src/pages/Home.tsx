@@ -6,7 +6,7 @@ import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
 
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Flame, ListTodo, BookOpen, ShoppingCart, Heart, Target } from "lucide-react";
+import { TrendingUp, Flame, ListTodo, BookOpen, ShoppingCart, Heart, Target, Sparkles } from "lucide-react";
 import { useTodoReminders } from "@/hooks/useTodoReminders";
 import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
@@ -31,7 +31,7 @@ import { useFinanceSettings } from "@/hooks/useFinance";
 import { cn } from "@/lib/utils";
 
 // User state types for adaptive dashboard
-type UserState = 'onboarding' | 'active' | 'advanced';
+type UserState = "onboarding" | "active" | "advanced";
 
 export default function Home() {
   const { user } = useAuth();
@@ -67,23 +67,21 @@ export default function Home() {
   } = useModuleLayout();
 
   // Compute derived data from React Query results
-  const { 
-    focusGoals, 
-    totalPoints, 
-    currentRank, 
-    nextRank, 
-    level, 
+  const {
+    focusGoals,
+    totalPoints,
+    currentRank,
+    nextRank,
+    level,
     dashboardData,
     userState,
     ownedModules,
     lockedModules,
   } = useMemo(() => {
-    const focusGoals = allGoals.filter(g => 
-      g.is_focus && g.status !== 'fully_completed'
-    );
+    const focusGoals = allGoals.filter((g) => g.is_focus && g.status !== "fully_completed");
 
     const totalPoints = allGoals.reduce((sum, g) => {
-      if (g.status === 'validated' || g.status === 'fully_completed') {
+      if (g.status === "validated" || g.status === "fully_completed") {
         return sum + (g.potential_score || 0);
       }
       return sum;
@@ -110,7 +108,7 @@ export default function Home() {
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
       const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
-      const completedGoals = diffGoals.filter(g => g.status === 'fully_completed').length;
+      const completedGoals = diffGoals.filter((g) => g.status === "fully_completed").length;
       const totalGoals = diffGoals.length;
       return {
         difficulty,
@@ -122,60 +120,60 @@ export default function Home() {
 
     const totalSteps = allGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
     const totalStepsCompleted = allGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-    const goalsCompleted = allGoals.filter(g => g.status === 'fully_completed').length;
+    const goalsCompleted = allGoals.filter((g) => g.status === "fully_completed").length;
     const totalGoalsCount = allGoals.length;
 
     const statusCounts = {
-      not_started: allGoals.filter(g => g.status === 'not_started').length,
-      in_progress: allGoals.filter(g => g.status === 'in_progress').length,
-      fully_completed: allGoals.filter(g => g.status === 'fully_completed' || g.status === 'validated').length,
+      not_started: allGoals.filter((g) => g.status === "not_started").length,
+      in_progress: allGoals.filter((g) => g.status === "in_progress").length,
+      fully_completed: allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
     };
 
     // Determine if custom mode is active
     const customTarget = Number(financeSettings?.project_funding_target) || 0;
     const isCustomMode = customTarget > 0;
-    
+
     // In linked mode: use goals total; in custom mode: use custom target
-    const totalCostEngaged = isCustomMode 
-      ? customTarget 
+    const totalCostEngaged = isCustomMode
+      ? customTarget
       : allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
-    
+
     // In custom mode: Financed is always 0 (not linked to goals)
     // In linked mode: Financed = completed goals cost + already funded
     let totalCostPaid = 0;
     if (!isCustomMode) {
       const completedGoalsCost = allGoals
-        .filter(g => g.status === 'completed' || g.status === 'fully_completed' || g.status === 'validated')
+        .filter((g) => g.status === "completed" || g.status === "fully_completed" || g.status === "validated")
         .reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
-      
+
       const alreadyFunded = Number(financeSettings?.already_funded) || 0;
       totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
     }
 
     // Calculate user state for adaptive dashboard
-    const daysSincePactCreation = pact?.created_at 
+    const daysSincePactCreation = pact?.created_at
       ? Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
-    
-    let userState: UserState = 'active';
+
+    let userState: UserState = "active";
     if (totalGoalsCount <= 1 && daysSincePactCreation < 7) {
-      userState = 'onboarding';
+      userState = "onboarding";
     } else if (goalsCompleted >= 5) {
-      userState = 'advanced';
+      userState = "advanced";
     }
 
     // Track owned/locked modules
-    const moduleKeys = ['the-call', 'finance', 'todo-list', 'journal', 'track-health', 'wishlist'];
+    const moduleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
     const ownedModules = {
-      'the-call': isModulePurchased?.('the-call') ?? false,
-      'finance': isModulePurchased?.('finance') ?? false,
-      'todo-list': isModulePurchased?.('todo-list') ?? false,
-      'journal': isModulePurchased?.('journal') ?? false,
-      'track-health': isModulePurchased?.('track-health') ?? false,
-      'wishlist': isModulePurchased?.('wishlist') ?? false,
+      "the-call": isModulePurchased?.("the-call") ?? false,
+      finance: isModulePurchased?.("finance") ?? false,
+      "todo-list": isModulePurchased?.("todo-list") ?? false,
+      journal: isModulePurchased?.("journal") ?? false,
+      "track-health": isModulePurchased?.("track-health") ?? false,
+      wishlist: isModulePurchased?.("wishlist") ?? false,
     };
-    
-    const lockedModules = moduleKeys.filter(key => !ownedModules[key as keyof typeof ownedModules]);
+
+    const lockedModules = moduleKeys.filter((key) => !ownedModules[key as keyof typeof ownedModules]);
 
     return {
       focusGoals,
@@ -202,7 +200,7 @@ export default function Home() {
 
   // Redirect to onboarding if no pact (after loading)
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
-  
+
   if (!pactLoading && !pact && user) {
     navigate("/onboarding");
     return null;
@@ -225,47 +223,56 @@ export default function Home() {
 
   const progressPercentage = Number(pact.global_progress) || 0;
   const sortedModules = getAllModules();
-  
+
   // Filter modules based on new logic:
   // - Hide locked modules from main grid (they go to LockedModulesTeaser)
   // - Show only enabled modules
   const visibleModules = sortedModules.filter((m) => {
     // Always show display modules
-    if (m.category === 'display') return m.enabled;
-    
+    if (m.category === "display") return m.enabled;
+
     // For action modules: only show if purchased
-    const actionModuleKeys = ['the-call', 'finance', 'todo-list', 'journal', 'track-health', 'wishlist'];
+    const actionModuleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
     if (actionModuleKeys.includes(m.id)) {
       return m.enabled && ownedModules[m.id as keyof typeof ownedModules];
     }
-    
+
     return m.enabled;
   });
+
+  // Calculate Rank Progress Percentage for the bar
+  const rankProgress = useMemo(() => {
+    if (!nextRank) return 100;
+    const min = currentRank ? currentRank.min_points : 0;
+    const max = nextRank.min_points;
+    const current = totalPoints;
+
+    if (max - min === 0) return 0;
+
+    const percent = ((current - min) / (max - min)) * 100;
+    return Math.min(Math.max(percent, 0), 100);
+  }, [currentRank, nextRank, totalPoints]);
 
   // Module rendering map with display mode support
   const renderModule = (moduleId: string, size: ModuleSize) => {
     const displayMode = getDisplayMode(moduleId);
     const handleToggle = () => toggleDisplayMode(moduleId);
-    
+
     switch (moduleId) {
-      case 'timeline':
+      case "timeline":
         return (
-          <PactTimeline 
-            projectStartDate={pact.project_start_date} 
+          <PactTimeline
+            projectStartDate={pact.project_start_date}
             projectEndDate={pact.project_end_date}
             displayMode={displayMode}
             onToggleDisplayMode={handleToggle}
           />
         );
-      case 'progress-overview':
+      case "progress-overview":
         return (
-          <ProgressOverviewModule 
-            data={dashboardData} 
-            displayMode={displayMode}
-            onToggleDisplayMode={handleToggle}
-          />
+          <ProgressOverviewModule data={dashboardData} displayMode={displayMode} onToggleDisplayMode={handleToggle} />
         );
-      case 'progress-difficulty':
+      case "progress-difficulty":
         return (
           <ProgressByDifficultyModule
             difficultyProgress={dashboardData.difficultyProgress}
@@ -275,7 +282,7 @@ export default function Home() {
             onToggleDisplayMode={handleToggle}
           />
         );
-      case 'cost-tracking':
+      case "cost-tracking":
         return (
           <CostTrackingModule
             totalCostEngaged={dashboardData.totalCostEngaged}
@@ -285,33 +292,28 @@ export default function Home() {
             isCustomMode={dashboardData.isCustomMode}
           />
         );
-      case 'focus-goals':
+      case "focus-goals":
         return (
-          <FocusGoalsModule 
-            goals={focusGoals} 
-            navigate={navigate} 
+          <FocusGoalsModule
+            goals={focusGoals}
+            navigate={navigate}
             displayMode={displayMode}
             onToggleDisplayMode={handleToggle}
           />
         );
-      case 'the-call':
+      case "the-call":
         return <TheCallModule navigate={navigate} size={size} />;
-      case 'finance':
+      case "finance":
         return <FinanceModule navigate={navigate} size={size} />;
-      case 'achievements':
-        return (
-          <AchievementsWidget 
-            displayMode={displayMode}
-            onToggleDisplayMode={handleToggle}
-          />
-        );
-      case 'todo-list':
+      case "achievements":
+        return <AchievementsWidget displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
+      case "todo-list":
         return <TodoListModuleCard navigate={navigate} size={size} />;
-      case 'journal':
+      case "journal":
         return <JournalModule navigate={navigate} size={size} />;
-      case 'track-health':
+      case "track-health":
         return <HealthModule navigate={navigate} size={size} />;
-      case 'wishlist':
+      case "wishlist":
         return <WishlistModule navigate={navigate} size={size} />;
       default:
         return null;
@@ -320,21 +322,35 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Styles for the Gamified Progress Bar Animation */}
+      <style>{`
+        @keyframes progress-stripes {
+          0% { background-position: 0 0; }
+          100% { background-position: 56px 0; }
+        }
+        .animate-progress-stripes {
+          animation: progress-stripes 1s linear infinite;
+        }
+      `}</style>
+
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
       </div>
-      
+
       {/* Sci-fi grid overlay */}
       <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
             linear-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px),
             linear-gradient(90deg, hsl(var(--primary) / 0.1) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px'
-        }} />
+            backgroundSize: "50px 50px",
+          }}
+        />
       </div>
 
       <div className="max-w-4xl mx-auto p-6 space-y-8 relative z-10">
@@ -344,27 +360,20 @@ export default function Home() {
           <div className="flex justify-center relative overflow-visible">
             <div className="absolute inset-0 bg-primary/20 blur-[60px] rounded-full" />
             <div className="relative overflow-visible">
-              <PactVisual 
-                symbol={pact.symbol} 
-                progress={progressPercentage}
-                size="lg"
-              />
+              <PactVisual symbol={pact.symbol} progress={progressPercentage} size="lg" />
             </div>
           </div>
-          
+
           {/* Title & Subtitle */}
           <div className="space-y-3 relative">
             <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_hsl(var(--primary)/0.6)]">
               {pact.name}
             </h1>
             <p className="text-base text-primary/80 italic font-rajdhani tracking-wide">&ldquo;{pact.mantra}&rdquo;</p>
-            
+
             {/* Today's Focus Message - NEW */}
             <div className="pt-2">
-              <TodaysFocusMessage 
-                focusGoals={focusGoals} 
-                allGoals={allGoals} 
-              />
+              <TodaysFocusMessage focusGoals={focusGoals} allGoals={allGoals} />
             </div>
           </div>
 
@@ -378,93 +387,109 @@ export default function Home() {
             className="max-w-2xl mx-auto"
           />
 
-          {/* Global XP Progress Bar */}
-          <div className="space-y-3 max-w-3xl mx-auto">
-            {nextRank && currentRank ? (
-              <>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-primary/60 uppercase tracking-wider font-orbitron">
-                    Next: {nextRank.name}
-                  </span>
-                  <span className="font-medium text-primary font-orbitron">
-                    {nextRank.min_points - totalPoints} XP
-                  </span>
-                </div>
-                <div className="relative h-3 w-full bg-card/20 backdrop-blur rounded-full overflow-hidden border border-primary/20">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% auto' }} />
-                  <div
-                    className="h-full bg-gradient-to-r from-primary via-accent to-primary relative transition-all duration-1000 shadow-[0_0_20px_hsl(var(--primary)/0.6)]"
-                    style={{
-                      width: `${
-                        ((totalPoints - currentRank.min_points) /
-                          (nextRank.min_points - currentRank.min_points)) *
-                        100
-                      }%`,
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
-                  </div>
-                </div>
-              </>
-            ) : nextRank && !currentRank ? (
-              <>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-primary/60 uppercase tracking-wider font-orbitron">
-                    Next: {nextRank.name}
-                  </span>
-                  <span className="font-medium text-primary font-orbitron">
-                    {nextRank.min_points - totalPoints} XP
-                  </span>
-                </div>
-                <div className="relative h-3 w-full bg-card/20 backdrop-blur rounded-full overflow-hidden border border-primary/20">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% auto' }} />
-                  <div
-                    className="h-full bg-gradient-to-r from-primary via-accent to-primary relative transition-all duration-1000 shadow-[0_0_20px_hsl(var(--primary)/0.6)]"
-                    style={{
-                      width: `${(totalPoints / nextRank.min_points) * 100}%`,
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="text-center text-xs text-primary/60 font-orbitron uppercase tracking-wider">
-                {ranks.length === 0 ? (
-                  <span>No ranks defined</span>
-                ) : (
-                  <span className="font-medium text-primary">🏆 Max Rank Reached</span>
-                )}
+          {/* Global XP Progress Bar - GAMIFIED VERSION */}
+          <div className="space-y-2 max-w-3xl mx-auto group">
+            {/* Conditional Rendering for Max Rank */}
+            {!nextRank && ranks.length > 0 ? (
+              <div className="w-full max-w-3xl mx-auto p-4 rounded-xl bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center gap-2 animate-pulse">
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+                <span className="font-orbitron font-bold text-yellow-500 tracking-wider">MAX RANK REACHED</span>
+                <Sparkles className="w-5 h-5 text-yellow-500" />
               </div>
+            ) : (
+              <>
+                {/* Header : Labels */}
+                <div className="flex items-end justify-between px-1">
+                  <div className="flex flex-col items-start">
+                    <span className="text-[10px] text-primary/50 font-orbitron uppercase tracking-[0.2em] mb-0.5">
+                      Current Progress
+                    </span>
+                    <span className="text-sm font-bold text-primary font-orbitron tracking-wide drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]">
+                      {nextRank?.name || "Next Rank"}
+                    </span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs font-medium text-white/90 font-mono bg-primary/20 px-2 py-0.5 rounded border border-primary/30">
+                      {nextRank ? nextRank.min_points - totalPoints : 0} XP to go
+                    </span>
+                  </div>
+                </div>
+
+                {/* Container de la barre */}
+                <div className="relative h-6 w-full bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-inner overflow-hidden">
+                  {/* Fond décoratif (grille subtile) */}
+                  <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.03)_50%,transparent_100%)] opacity-50" />
+
+                  {/* La Barre de Progression (Le remplissage) */}
+                  <div
+                    className="relative h-full flex items-center justify-end rounded-l-full transition-all duration-700 ease-out"
+                    style={{
+                      width: `${rankProgress}%`,
+                      // Dégradé riche + Pattern de hachures (stripes)
+                      background: `
+                        linear-gradient(90deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%),
+                        repeating-linear-gradient(
+                          45deg,
+                          transparent,
+                          transparent 10px,
+                          rgba(255, 255, 255, 0.1) 10px,
+                          rgba(255, 255, 255, 0.1) 20px
+                        )
+                      `,
+                      backgroundSize: "100% 100%, 28px 28px",
+                    }}
+                  >
+                    {/* Animation CSS pour faire bouger les hachures */}
+                    <div
+                      className="absolute inset-0 animate-progress-stripes opacity-30 mix-blend-overlay"
+                      style={{
+                        backgroundImage:
+                          "repeating-linear-gradient(45deg, transparent, transparent 10px, white 10px, white 20px)",
+                        backgroundSize: "28px 28px",
+                      }}
+                    />
+
+                    {/* Lueur interne (Inner Glow) */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-white/30 to-transparent opacity-50" />
+
+                    {/* L'Éclat de tête (The Spark/Head) */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-8 h-8 bg-white rounded-full blur-md opacity-60 shadow-[0_0_20px_10px_rgba(255,255,255,0.4)] z-10" />
+                    <div className="absolute right-0 top-0 bottom-0 w-0.5 bg-white shadow-[0_0_10px_2px_rgba(255,255,255,0.8)] z-20" />
+                  </div>
+                </div>
+
+                {/* Footer : Pourcentage précis */}
+                <div className="flex justify-between items-center text-[10px] text-primary/40 font-orbitron uppercase tracking-widest px-2">
+                  <span>Level Sync</span>
+                  <span>{Math.round(rankProgress)}% Complete</span>
+                </div>
+              </>
             )}
           </div>
 
           {/* Quick Actions Bar - NEW */}
           <QuickActionsBar
             ownedModules={{
-              todo: ownedModules['todo-list'],
-              journal: ownedModules['journal'],
-              health: ownedModules['track-health'],
+              todo: ownedModules["todo-list"],
+              journal: ownedModules["journal"],
+              health: ownedModules["track-health"],
             }}
             className="pt-2"
           />
         </div>
 
         {/* ===== USER-STATE ADAPTIVE SECTION ===== */}
-        {userState === 'onboarding' && (
+        {userState === "onboarding" && (
           <GettingStartedCard
             hasGoals={dashboardData.totalGoals > 0}
             hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
-            hasPurchasedModules={Object.values(ownedModules).some(v => v)}
+            hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
           />
         )}
 
         {/* ===== MODULAR SECTION ===== */}
-        <ModuleGrid 
-          modules={visibleModules} 
-          isEditMode={isEditMode} 
-          onReorder={reorderModules}
-        >
+        <ModuleGrid modules={visibleModules} isEditMode={isEditMode} onReorder={reorderModules}>
           {visibleModules.map((module) => (
             <ModuleCard
               key={module.id}
@@ -485,9 +510,7 @@ export default function Home() {
         </ModuleGrid>
 
         {/* Locked Modules Teaser - only show if there are locked modules */}
-        {lockedModules.length > 0 && !isEditMode && (
-          <LockedModulesTeaser lockedModules={lockedModules} />
-        )}
+        {lockedModules.length > 0 && !isEditMode && <LockedModulesTeaser lockedModules={lockedModules} />}
       </div>
 
       {/* Module Manager */}
@@ -504,7 +527,7 @@ export default function Home() {
 
 // ===== ACTION MODULE COMPONENTS =====
 
-function TheCallModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+function TheCallModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="The Call"
@@ -517,7 +540,7 @@ function TheCallModule({ navigate, size = 'half' }: { navigate: any; size?: Modu
   );
 }
 
-function FinanceModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+function FinanceModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="Track Finance"
@@ -530,7 +553,7 @@ function FinanceModule({ navigate, size = 'half' }: { navigate: any; size?: Modu
   );
 }
 
-function JournalModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+function JournalModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="Journal"
@@ -543,7 +566,7 @@ function JournalModule({ navigate, size = 'half' }: { navigate: any; size?: Modu
   );
 }
 
-function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+function TodoListModuleCard({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="To-Do List"
@@ -556,7 +579,7 @@ function TodoListModuleCard({ navigate, size = 'half' }: { navigate: any; size?:
   );
 }
 
-function HealthModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+function HealthModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="Track Health"
@@ -569,7 +592,7 @@ function HealthModule({ navigate, size = 'half' }: { navigate: any; size?: Modul
   );
 }
 
-function WishlistModule({ navigate, size = 'half' }: { navigate: any; size?: ModuleSize }) {
+function WishlistModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="Wishlist"
