@@ -37,7 +37,7 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Use React Query hooks - these run in parallel automatically
+  // Use React Query hooks
   const { data: pact, isLoading: pactLoading } = usePact(user?.id);
   const { data: ranks = [] } = useRanks(user?.id);
   const { data: profile } = useProfile(user?.id);
@@ -45,7 +45,7 @@ export default function Home() {
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
   const { data: financeSettings } = useFinanceSettings(user?.id);
 
-  // Initialize todo reminders - runs reminder check on Home load
+  // Initialize todo reminders
   useTodoReminders();
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
@@ -66,7 +66,7 @@ export default function Home() {
     getAllModules,
   } = useModuleLayout();
 
-  // Compute derived data from React Query results
+  // Compute derived data
   const {
     focusGoals,
     totalPoints,
@@ -104,7 +104,6 @@ export default function Home() {
       }
     }
 
-    // Goals-based difficulty progress (count goals, not steps)
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
       const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
@@ -129,17 +128,13 @@ export default function Home() {
       fully_completed: allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
     };
 
-    // Determine if custom mode is active
     const customTarget = Number(financeSettings?.project_funding_target) || 0;
     const isCustomMode = customTarget > 0;
 
-    // In linked mode: use goals total; in custom mode: use custom target
     const totalCostEngaged = isCustomMode
       ? customTarget
       : allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
 
-    // In custom mode: Financed is always 0 (not linked to goals)
-    // In linked mode: Financed = completed goals cost + already funded
     let totalCostPaid = 0;
     if (!isCustomMode) {
       const completedGoalsCost = allGoals
@@ -150,7 +145,6 @@ export default function Home() {
       totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
     }
 
-    // Calculate user state for adaptive dashboard
     const daysSincePactCreation = pact?.created_at
       ? Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
@@ -162,7 +156,6 @@ export default function Home() {
       userState = "advanced";
     }
 
-    // Track owned/locked modules
     const moduleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
     const ownedModules = {
       "the-call": isModulePurchased?.("the-call") ?? false,
@@ -198,7 +191,7 @@ export default function Home() {
     };
   }, [allGoals, ranks, financeSettings, pact?.created_at, isModulePurchased]);
 
-  // Redirect to onboarding if no pact (after loading)
+  // Loading & Redirects
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
 
   if (!pactLoading && !pact && user) {
@@ -224,21 +217,15 @@ export default function Home() {
   const progressPercentage = Number(pact.global_progress) || 0;
   const sortedModules = getAllModules();
 
-  // Filter modules based on new logic
   const visibleModules = sortedModules.filter((m) => {
-    // Always show display modules
     if (m.category === "display") return m.enabled;
-
-    // For action modules: only show if purchased
     const actionModuleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
     if (actionModuleKeys.includes(m.id)) {
       return m.enabled && ownedModules[m.id as keyof typeof ownedModules];
     }
-
     return m.enabled;
   });
 
-  // Calculate Rank Progress Percentage
   const rankProgress = useMemo(() => {
     if (!nextRank) return 100;
     const min = currentRank ? currentRank.min_points : 0;
@@ -251,7 +238,6 @@ export default function Home() {
     return Math.min(Math.max(percent, 0), 100);
   }, [currentRank, nextRank, totalPoints]);
 
-  // Module rendering map
   const renderModule = (moduleId: string, size: ModuleSize) => {
     const displayMode = getDisplayMode(moduleId);
     const handleToggle = () => toggleDisplayMode(moduleId);
@@ -329,14 +315,14 @@ export default function Home() {
           100% { background-position: 0% 50%; }
         }
         
-        /* Battement de cœur (Double pulsation "Lub-Dub") */
+        /* Battement de cœur (Pulsation qui affecte l'échelle mais reste centrée) */
         @keyframes heartbeat {
-          0% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-          15% { transform: translate(50%, -50%) scale(1.3); opacity: 1; box-shadow: 0 0 10px 5px rgba(255,255,255,0.5); }
-          30% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-          45% { transform: translate(50%, -50%) scale(1.15); opacity: 0.9; box-shadow: 0 0 8px 3px rgba(255,255,255,0.5); }
-          60% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-          100% { transform: translate(50%, -50%) scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(255,255,255,0); }
+          0% { transform: scaleX(1) scaleY(1); opacity: 0.9; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+          15% { transform: scaleX(1.1) scaleY(1.05); opacity: 1; box-shadow: 0 0 25px rgba(255,255,255,0.7); }
+          30% { transform: scaleX(1) scaleY(1); opacity: 0.9; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+          45% { transform: scaleX(1.05) scaleY(1.02); opacity: 0.95; box-shadow: 0 0 20px rgba(255,255,255,0.6); }
+          60% { transform: scaleX(1) scaleY(1); opacity: 0.9; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+          100% { transform: scaleX(1) scaleY(1); opacity: 0.9; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
         }
 
         /* Respiration de la barre (Glow qui pulse) */
@@ -352,6 +338,7 @@ export default function Home() {
 
         .animate-heartbeat {
           animation: heartbeat 2s ease-in-out infinite;
+          transform-origin: center right; /* L'échelle part de la droite (collé à la barre) */
         }
 
         .animate-breathe {
@@ -442,14 +429,14 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Container de la barre (Glass Tube) */}
-                <div className="relative h-6 w-full bg-black/60 backdrop-blur-xl rounded-full border border-white/10 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] overflow-hidden">
-                  {/* Fond inactif (Veines sombres) */}
+                {/* Container de la barre (Glass Tube) - FOND ÉCLAIRCI (primary/10 au lieu de black/60) */}
+                <div className="relative h-6 w-full bg-primary/10 backdrop-blur-xl rounded-full border border-primary/20 shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)] overflow-hidden">
+                  {/* Fond inactif (Veines subtiles) */}
                   <div
-                    className="absolute inset-0 opacity-20"
+                    className="absolute inset-0 opacity-30"
                     style={{
-                      backgroundImage: "radial-gradient(circle at center, rgba(255,255,255,0.1) 1px, transparent 1px)",
-                      backgroundSize: "10px 10px",
+                      backgroundImage: "radial-gradient(circle at center, rgba(255,255,255,0.2) 1px, transparent 1px)",
+                      backgroundSize: "12px 12px",
                     }}
                   />
 
@@ -471,12 +458,12 @@ export default function Home() {
                     <div
                       className="absolute inset-0 animate-fluid mix-blend-overlay opacity-60"
                       style={{
-                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+                        background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
                         backgroundSize: "200% 100%",
                       }}
                     />
 
-                    {/* Particules de bruit (Grain) pour la texture physique */}
+                    {/* Particules de bruit */}
                     <div
                       className="absolute inset-0 opacity-20 mix-blend-soft-light"
                       style={{
@@ -485,11 +472,14 @@ export default function Home() {
                       }}
                     />
 
-                    {/* L'Éclat "Cœur" (Le point qui bat) */}
-                    <div className="absolute right-0 top-1/2 w-4 h-4 bg-white rounded-full animate-heartbeat z-20" />
+                    {/* L'Éclat "Cœur" (Tête de Piston) - HAUTEUR CORRIGÉE */}
+                    <div className="absolute right-0 top-0 h-full w-2.5 bg-white rounded-r-sm animate-heartbeat z-20 shadow-[0_0_15px_rgba(255,255,255,0.8)]" />
+
+                    {/* Glow diffus autour de la tête */}
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-8 h-full bg-white/40 blur-md z-10" />
 
                     {/* Trainée de lumière derrière le cœur */}
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white/80 to-transparent opacity-50 blur-[2px]" />
+                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/60 to-transparent opacity-60 blur-[1px]" />
                   </div>
                 </div>
 
@@ -559,7 +549,7 @@ export default function Home() {
   );
 }
 
-// ===== ACTION MODULE COMPONENTS =====
+// ===== ACTION MODULE COMPONENTS (Inchangés) =====
 
 function TheCallModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
@@ -573,7 +563,6 @@ function TheCallModule({ navigate, size = "half" }: { navigate: any; size?: Modu
     />
   );
 }
-
 function FinanceModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -586,7 +575,6 @@ function FinanceModule({ navigate, size = "half" }: { navigate: any; size?: Modu
     />
   );
 }
-
 function JournalModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -599,7 +587,6 @@ function JournalModule({ navigate, size = "half" }: { navigate: any; size?: Modu
     />
   );
 }
-
 function TodoListModuleCard({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -612,7 +599,6 @@ function TodoListModuleCard({ navigate, size = "half" }: { navigate: any; size?:
     />
   );
 }
-
 function HealthModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
@@ -625,7 +611,6 @@ function HealthModule({ navigate, size = "half" }: { navigate: any; size?: Modul
     />
   );
 }
-
 function WishlistModule({ navigate, size = "half" }: { navigate: any; size?: ModuleSize }) {
   return (
     <ActionModuleCard
