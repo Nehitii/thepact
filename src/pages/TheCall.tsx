@@ -17,7 +17,7 @@ interface PactData {
 }
 
 // États pour la séquence de fin uniquement
-enum Final SequenceState {
+enum FinalSequenceState {
   IDLE = "idle",
   IMPLOSION = "implosion", // Le bouton s'effondre
   SINGULARITY = "singularity", // Court instant de noir total
@@ -46,10 +46,10 @@ export default function TheCall() {
 
   // --- REFS (DOM & Engine) ---
   // On manipule plusieurs couches du DOM séparément pour un effet de parallaxe/profondeur
-  const screenShakeRef = useRef<HTMLDivElement>(null); 
+  const screenShakeRef = useRef<HTMLDivElement>(null);
   const backgroundFxRef = useRef<HTMLDivElement>(null);
   const coreButtonRef = useRef<HTMLButtonElement>(null);
-  
+
   const rafRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
   const isHoldingRef = useRef(false);
@@ -74,7 +74,7 @@ export default function TheCall() {
       const today = new Date().toLocaleDateString("en-CA");
       const last = data.last_checkin_date ? new Date(data.last_checkin_date).toLocaleDateString("en-CA") : null;
       const done = today === last;
-      
+
       setCompletedToday(done);
       setSequenceState(done ? FinalSequenceState.LOCKED : FinalSequenceState.IDLE);
       setNormalizedProgress(done ? 1 : 0);
@@ -96,31 +96,32 @@ export default function TheCall() {
   };
 
   // --- MOTEUR PHYSIQUE & VISUEL (Le cœur du système) ---
-  
+
   // Cette fonction est appelée à chaque frame (60fps) et met à jour le style directement
-  const applyCinematicEffects = useCallback((progress: number) => {
-    if (hasCompletedRef.current || sequenceState !== FinalSequenceState.IDLE) {
+  const applyCinematicEffects = useCallback(
+    (progress: number) => {
+      if (hasCompletedRef.current || sequenceState !== FinalSequenceState.IDLE) {
         resetPhysicalEffects();
         return;
-    }
+      }
 
-    // Calcul de l'intensité globale basée sur une courbe exponentielle
-    // 0% -> 0 intensité. 80% -> 0.25 intensité. 100% -> 1.0 intensité.
-    const rawIntensity = easeInExpo(progress);
-    // On clamp pour éviter les valeurs folles au tout début
-    const intensity = clamp(rawIntensity, 0, 1);
+      // Calcul de l'intensité globale basée sur une courbe exponentielle
+      // 0% -> 0 intensité. 80% -> 0.25 intensité. 100% -> 1.0 intensité.
+      const rawIntensity = easeInExpo(progress);
+      // On clamp pour éviter les valeurs folles au tout début
+      const intensity = clamp(rawIntensity, 0, 1);
 
-    // 1. SCREEN SHAKE & ABERRATION CHROMATIQUE (Sur le conteneur principal)
-    if (screenShakeRef.current) {
+      // 1. SCREEN SHAKE & ABERRATION CHROMATIQUE (Sur le conteneur principal)
+      if (screenShakeRef.current) {
         const shakeMax = 35 * intensity; // Max 35px de déplacement
         const rotateMax = 2 * intensity; // Max 2 degrés de rotation
-        
+
         const x = (Math.random() - 0.5) * 2 * shakeMax;
         const y = (Math.random() - 0.5) * 2 * shakeMax;
         const r = (Math.random() - 0.5) * 2 * rotateMax;
 
         // Aberration Chromatique (RGB Split) : plus c'est intense, plus les couches se séparent
-        const rgbSplit = 10 * intensity; 
+        const rgbSplit = 10 * intensity;
         const blurAmount = 3 * intensity;
 
         screenShakeRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${r}deg) scale(${1 + intensity * 0.05})`;
@@ -131,52 +132,54 @@ export default function TheCall() {
         `;
         // Flou de mouvement simulé
         if (intensity > 0.1) {
-            screenShakeRef.current.style.filter = `blur(${blurAmount}px) contrast(${1 + intensity * 0.2})`;
+          screenShakeRef.current.style.filter = `blur(${blurAmount}px) contrast(${1 + intensity * 0.2})`;
         } else {
-            screenShakeRef.current.style.filter = "none";
+          screenShakeRef.current.style.filter = "none";
         }
-    }
+      }
 
-    // 2. DYNAMIQUE DU CŒUR (Le bouton lui-même)
-    if (coreButtonRef.current) {
+      // 2. DYNAMIQUE DU CŒUR (Le bouton lui-même)
+      if (coreButtonRef.current) {
         // Le bouton "respire" de plus en plus vite et fort
         const breatheSpeed = 2 + intensity * 10; // De 2x à 12x la vitesse
         const breatheDepth = 0.02 + intensity * 0.08; // Amplitude
-        const scale = 1 + Math.sin(performance.now() / 1000 * breatheSpeed) * breatheDepth + (intensity * 0.15); // Il grossit globalement
-        
+        const scale = 1 + Math.sin((performance.now() / 1000) * breatheSpeed) * breatheDepth + intensity * 0.15; // Il grossit globalement
+
         // En phase critique (>80%), il vibre violemment de l'intérieur
-        let innerJitterX = 0, innerJitterY = 0;
+        let innerJitterX = 0,
+          innerJitterY = 0;
         if (progress > 0.8) {
-            const jitterIntensity = (progress - 0.8) * 5; // 0 à 1
-             innerJitterX = (Math.random() - 0.5) * 10 * jitterIntensity;
-             innerJitterY = (Math.random() - 0.5) * 10 * jitterIntensity;
+          const jitterIntensity = (progress - 0.8) * 5; // 0 à 1
+          innerJitterX = (Math.random() - 0.5) * 10 * jitterIntensity;
+          innerJitterY = (Math.random() - 0.5) * 10 * jitterIntensity;
         }
 
         coreButtonRef.current.style.transform = `scale(${scale}) translate3d(${innerJitterX}px, ${innerJitterY}px, 0)`;
 
         // Mise à jour des variables CSS pour les couleurs/lumières
-        coreButtonRef.current.style.setProperty('--intensity', intensity.toString());
-    }
+        coreButtonRef.current.style.setProperty("--intensity", intensity.toString());
+      }
 
-    // 3. ARRIÈRE-PLAN DYNAMIQUE
-    if (backgroundFxRef.current) {
+      // 3. ARRIÈRE-PLAN DYNAMIQUE
+      if (backgroundFxRef.current) {
         // Le fond s'assombrit puis devient aveuglant vers la fin (vignette inversée)
         const vignetteOpacity = 0.4 + intensity * 0.6;
         backgroundFxRef.current.style.opacity = vignetteOpacity.toString();
         // Le "puits de gravité" central s'intensifie
         backgroundFxRef.current.style.transform = `scale(${1 + intensity * 1.5})`;
-    }
-
-  }, [sequenceState]);
+      }
+    },
+    [sequenceState],
+  );
 
   const resetPhysicalEffects = () => {
     if (screenShakeRef.current) {
-        screenShakeRef.current.style.transform = "none";
-        screenShakeRef.current.style.textShadow = "none";
-        screenShakeRef.current.style.filter = "none";
+      screenShakeRef.current.style.transform = "none";
+      screenShakeRef.current.style.textShadow = "none";
+      screenShakeRef.current.style.filter = "none";
     }
     if (coreButtonRef.current && sequenceState !== FinalSequenceState.IMPLOSION) {
-        coreButtonRef.current.style.transform = "none";
+      coreButtonRef.current.style.transform = "none";
     }
   };
 
@@ -192,9 +195,9 @@ export default function TheCall() {
     applyCinematicEffects(progress);
 
     if (progress >= 1) {
-        finishCinematicSequence();
+      finishCinematicSequence();
     } else {
-        rafRef.current = requestAnimationFrame(animate);
+      rafRef.current = requestAnimationFrame(animate);
     }
   };
 
@@ -236,21 +239,21 @@ export default function TheCall() {
     // 1. IMPLOSION (Le bouton s'effondre en un point infiniment dense)
     setSequenceState(FinalSequenceState.IMPLOSION);
     // Le CSS gère la transition de scale(0)
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise((r) => setTimeout(r, 500));
 
     // 2. SINGULARITÉ (Silence visuel, noir total avant le big bang)
     setSequenceState(FinalSequenceState.SINGULARITY);
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise((r) => setTimeout(r, 200));
 
     // 3. EXPLOSION (Flash blanc aveuglant)
     if (user && !completedToday) saveCheckInData();
     setSequenceState(FinalSequenceState.EXPLOSION);
     // Le flash est instantané, puis fade out
-    await new Promise(r => setTimeout(r, 100)); 
+    await new Promise((r) => setTimeout(r, 100));
 
     // 4. RÉVÉLATION MAJESTUEUSE (Le texte apparaît dans la lumière déclinante)
     setSequenceState(FinalSequenceState.REVEAL);
-    await new Promise(r => setTimeout(r, 5000));
+    await new Promise((r) => setTimeout(r, 5000));
 
     // 5. FIN
     setSequenceState(FinalSequenceState.LOCKED);
@@ -260,27 +263,31 @@ export default function TheCall() {
   // --- CALCUL DES COULEURS ---
   const p = normalizedProgress;
   const isCritical = p > 0.85;
-  
+
   // Interpolation de couleur complexe : Cyan -> Violet -> Magenta Incandescent -> Blanc Pur
   let currentColor;
   if (p < 0.5) {
-      currentColor = `rgb(${lerp(6, 139, p*2)}, ${lerp(182, 92, p*2)}, ${lerp(212, 246, p*2)})`; // Cyan vers Violet
+    currentColor = `rgb(${lerp(6, 139, p * 2)}, ${lerp(182, 92, p * 2)}, ${lerp(212, 246, p * 2)})`; // Cyan vers Violet
   } else if (p < 0.85) {
-      const t = (p - 0.5) / 0.35;
-      currentColor = `rgb(${lerp(139, 255, t)}, ${lerp(92, 0, t)}, ${lerp(246, 255, t)})`; // Violet vers Magenta vif
+    const t = (p - 0.5) / 0.35;
+    currentColor = `rgb(${lerp(139, 255, t)}, ${lerp(92, 0, t)}, ${lerp(246, 255, t)})`; // Violet vers Magenta vif
   } else {
-      const t = (p - 0.85) / 0.15;
-       // Mélange avec du blanc pur pour l'incandescence
-      currentColor = `rgb(${lerp(255, 255, t)}, ${lerp(0, 255, t)}, ${lerp(255, 255, t)})`;
+    const t = (p - 0.85) / 0.15;
+    // Mélange avec du blanc pur pour l'incandescence
+    currentColor = `rgb(${lerp(255, 255, t)}, ${lerp(0, 255, t)}, ${lerp(255, 255, t)})`;
   }
 
-  const glowIntensity = isCritical ? `0 0 ${40 + p*60}px ${currentColor}, inset 0 0 ${20 + p*40}px ${currentColor}` : `0 0 ${p*40}px ${currentColor}`;
+  const glowIntensity = isCritical
+    ? `0 0 ${40 + p * 60}px ${currentColor}, inset 0 0 ${20 + p * 40}px ${currentColor}`
+    : `0 0 ${p * 40}px ${currentColor}`;
 
   return (
     <div className="min-h-screen bg-[#010102] overflow-hidden flex flex-col relative text-slate-100 font-sans select-none touch-none perspective-[1000px]">
-      
       {/* --- COUCHE BACKGROUND FX (Profondeur) --- */}
-      <div ref={backgroundFxRef} className="absolute inset-0 pointer-events-none z-0 transition-all duration-100 ease-out will-change-transform opacity-40">
+      <div
+        ref={backgroundFxRef}
+        className="absolute inset-0 pointer-events-none z-0 transition-all duration-100 ease-out will-change-transform opacity-40"
+      >
         {/* Puits de gravité central */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vmax] h-[120vmax] bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.15)_0%,transparent_60%)] mix-blend-screen animate-pulse-slow"></div>
         {/* Grain cinéma */}
@@ -288,178 +295,207 @@ export default function TheCall() {
       </div>
 
       {/* --- CONTENEUR PRINCIPAL SOUMIS AU TREMBLEMENT --- */}
-      <div ref={screenShakeRef} className="relative z-10 flex-1 flex flex-col items-center justify-center will-change-transform transform-style-3d">
-        
+      <div
+        ref={screenShakeRef}
+        className="relative z-10 flex-1 flex flex-col items-center justify-center will-change-transform transform-style-3d"
+      >
         {/* Header (disparaît à la fin) */}
-        <header className={`absolute top-0 left-0 w-full p-6 flex justify-between items-center transition-opacity duration-500 ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? 'opacity-100' : 'opacity-0'}`}>
-          <Button variant="ghost" onClick={() => navigate("/")} className="text-white/30 hover:text-white hover:bg-white/5 font-mono text-xs tracking-[0.2em]">
+        <header
+          className={`absolute top-0 left-0 w-full p-6 flex justify-between items-center transition-opacity duration-500 ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
+        >
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="text-white/30 hover:text-white hover:bg-white/5 font-mono text-xs tracking-[0.2em]"
+          >
             <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
           </Button>
           {pactData && (
-             <div className="text-right font-mono">
-                <div className="text-[9px] uppercase tracking-[0.3em] text-white/30 mb-1">Streak Protocol</div>
-                <div className="text-lg text-cyan-300 font-bold">{pactData.checkin_streak}</div>
-             </div>
+            <div className="text-right font-mono">
+              <div className="text-[9px] uppercase tracking-[0.3em] text-white/30 mb-1">Streak Protocol</div>
+              <div className="text-lg text-cyan-300 font-bold">{pactData.checkin_streak}</div>
+            </div>
           )}
         </header>
 
         <div className="relative flex flex-col items-center justify-center">
+          {/* --- COUCHES DE SÉQUENCE FINALE --- */}
 
-            {/* --- COUCHES DE SÉQUENCE FINALE --- */}
-            
-            {/* 1. SINGULARITÉ (Noir total) */}
-            <div className={`fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200 ${sequenceState === FinalSequenceState.SINGULARITY ? 'opacity-100' : 'opacity-0'}`} />
+          {/* 1. SINGULARITÉ (Noir total) */}
+          <div
+            className={`fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200 ${sequenceState === FinalSequenceState.SINGULARITY ? "opacity-100" : "opacity-0"}`}
+          />
 
-            {/* 2. EXPLOSION (Flash Blanc) - Fade out lent */}
-            <div className={`fixed inset-0 bg-white z-[100] pointer-events-none transition-opacity ease-out ${sequenceState === FinalSequenceState.EXPLOSION ? 'duration-75 opacity-100' : 'duration-[3000ms] opacity-0'}`} />
+          {/* 2. EXPLOSION (Flash Blanc) - Fade out lent */}
+          <div
+            className={`fixed inset-0 bg-white z-[100] pointer-events-none transition-opacity ease-out ${sequenceState === FinalSequenceState.EXPLOSION ? "duration-75 opacity-100" : "duration-[3000ms] opacity-0"}`}
+          />
 
-            {/* 3. RÉVÉLATION (Texte) */}
-            {sequenceState === FinalSequenceState.REVEAL && (
-                <div className="absolute z-[110] flex flex-col items-center animate-reveal-majestic top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
-                    {/* Rayons de lumière divins en arrière-plan */}
-                    <div className="absolute inset-[-300px] bg-gradient-conic from-cyan-200/0 via-cyan-100/20 to-cyan-200/0 animate-god-rays opacity-50 blur-2xl -z-10"></div>
-                    
-                    <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tighter drop-shadow-[0_0_50px_rgba(255,255,255,0.9)] leading-[0.9] mb-6">
-                        SOUL<br/>CONNECTED
-                    </h1>
-                    <div className="h-[1px] width-0 bg-cyan-400/50 animate-expand-line"></div>
-                    <p className="text-cyan-200/70 font-mono text-xs uppercase tracking-[0.5em] mt-6 animate-slide-up">
-                        Ritual Synchronized
-                    </p>
-                </div>
-            )}
+          {/* 3. RÉVÉLATION (Texte) */}
+          {sequenceState === FinalSequenceState.REVEAL && (
+            <div className="absolute z-[110] flex flex-col items-center animate-reveal-majestic top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
+              {/* Rayons de lumière divins en arrière-plan */}
+              <div className="absolute inset-[-300px] bg-gradient-conic from-cyan-200/0 via-cyan-100/20 to-cyan-200/0 animate-god-rays opacity-50 blur-2xl -z-10"></div>
 
-            {/* --- LE CŒUR (Bouton) --- */}
-            <div 
-                className={`relative transition-all will-change-transform
-                ${sequenceState === FinalSequenceState.IMPLOSION ? 'scale-0 opacity-0 duration-500 cubic-bezier(.69,.01,.84,.19)' : 'scale-100 opacity-100 duration-100'}
-                ${sequenceState === FinalSequenceState.REVEAL ? 'hidden' : 'block'}
+              <h1 className="text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tighter drop-shadow-[0_0_50px_rgba(255,255,255,0.9)] leading-[0.9] mb-6">
+                SOUL
+                <br />
+                CONNECTED
+              </h1>
+              <div className="h-[1px] width-0 bg-cyan-400/50 animate-expand-line"></div>
+              <p className="text-cyan-200/70 font-mono text-xs uppercase tracking-[0.5em] mt-6 animate-slide-up">
+                Ritual Synchronized
+              </p>
+            </div>
+          )}
+
+          {/* --- LE CŒUR (Bouton) --- */}
+          <div
+            className={`relative transition-all will-change-transform
+                ${sequenceState === FinalSequenceState.IMPLOSION ? "scale-0 opacity-0 duration-500 cubic-bezier(.69,.01,.84,.19)" : "scale-100 opacity-100 duration-100"}
+                ${sequenceState === FinalSequenceState.REVEAL ? "hidden" : "block"}
                 `}
-            >
-                <button
-                    ref={coreButtonRef}
-                    onPointerDown={startHolding}
-                    onPointerUp={stopHolding}
-                    onPointerLeave={stopHolding}
-                    disabled={completedToday}
-                    className={`
+          >
+            <button
+              ref={coreButtonRef}
+              onPointerDown={startHolding}
+              onPointerUp={stopHolding}
+              onPointerLeave={stopHolding}
+              disabled={completedToday}
+              className={`
                         relative w-72 h-72 rounded-full flex items-center justify-center overflow-visible
                         border-[1px] transition-all duration-100 outline-none group
-                        ${completedToday 
-                            ? 'border-green-500/30 cursor-default bg-green-900/5' 
-                            : 'border-white/10 cursor-pointer bg-black/40'
+                        ${
+                          completedToday
+                            ? "border-green-500/30 cursor-default bg-green-900/5"
+                            : "border-white/10 cursor-pointer bg-black/40"
                         }
                         /* Variable CSS contrôlée par JS pour l'intensité */
                         [--intensity:0]
                     `}
-                    style={{
-                        boxShadow: !completedToday && p > 0 ? glowIntensity : 'none',
-                        // En phase critique, le bord devient incandescent
-                        borderColor: isCritical ? `rgba(255,255,255, ${p})` : completedToday ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.1)'
-                    }}
-                >
-                    
-                    {/* NOYAU PLASMA (Plus de trait blanc, juste des couches de lumière floutées) */}
-                    {!completedToday && p > 0 && (
-                        <>
-                           <div 
-                                className="absolute inset-2 rounded-full blur-xl mix-blend-screen transition-colors duration-200 animate-pulse-plasma"
-                                style={{ background: currentColor, opacity: 0.4 + p * 0.4 }}
-                           />
-                           {/* Noyau central plus chaud */}
-                           <div 
-                                className="absolute inset-16 rounded-full blur-md mix-blend-overlay transition-colors duration-200"
-                                style={{ background: isCritical ? 'white' : currentColor, opacity: p }}
-                           />
-                        </>
-                    )}
+              style={{
+                boxShadow: !completedToday && p > 0 ? glowIntensity : "none",
+                // En phase critique, le bord devient incandescent
+                borderColor: isCritical
+                  ? `rgba(255,255,255, ${p})`
+                  : completedToday
+                    ? "rgba(34,197,94,0.3)"
+                    : "rgba(255,255,255,0.1)",
+              }}
+            >
+              {/* NOYAU PLASMA (Plus de trait blanc, juste des couches de lumière floutées) */}
+              {!completedToday && p > 0 && (
+                <>
+                  <div
+                    className="absolute inset-2 rounded-full blur-xl mix-blend-screen transition-colors duration-200 animate-pulse-plasma"
+                    style={{ background: currentColor, opacity: 0.4 + p * 0.4 }}
+                  />
+                  {/* Noyau central plus chaud */}
+                  <div
+                    className="absolute inset-16 rounded-full blur-md mix-blend-overlay transition-colors duration-200"
+                    style={{ background: isCritical ? "white" : currentColor, opacity: p }}
+                  />
+                </>
+              )}
 
-                    {/* SYSTÈME DE PARTICULES ORBITALES (Aspiration gravitationnelle) */}
-                    {!completedToday && p > 0 && (
-                        <div className="absolute inset-[-100px] pointer-events-none rounded-full overflow-hidden [mask-image:radial-gradient(circle,transparent_30%,black_70%)]">
-                             {[...Array(30)].map((_, i) => {
-                                // Paramètres aléatoires pour chaque particule
-                                const angle = (i / 30) * 360;
-                                const delay = Math.random() * -2;
-                                const duration = lerp(3, 0.5, p); // Accélère massivement avec le temps
-                                const size = Math.random() * 2 + 1;
-                                return (
-                                <div 
-                                    key={i}
-                                    className="absolute top-1/2 left-1/2 rounded-full animate-gravity-well mix-blend-screen"
-                                    style={{
-                                        width: `${size}px`, height: `${size * 3}px`, // Légèrement étirées
-                                        background: isCritical ? 'white' : currentColor,
-                                        boxShadow: `0 0 ${size*2}px ${currentColor}`,
-                                        transformOrigin: '0 150px', // Orbitent autour du centre
-                                        transform: `rotate(${angle}deg) translateY(-150px)`,
-                                        animationDuration: `${duration}s`,
-                                        animationDelay: `${delay}s`,
-                                        opacity: p // Devient plus visible avec le temps
-                                    }}
-                                />
-                             )})}
-                        </div>
-                    )}
-
-                    {/* ICÔNE CENTRALE (Réagit à l'intensité) */}
-                    <div className="relative z-20 flex flex-col items-center pointer-events-none" style={{ transform: `scale(${1 + p * 0.2})` }}>
-                        {completedToday ? (
-                            <div className="flex flex-col items-center animate-pulse-slow text-green-500">
-                                <Lock className="w-16 h-16 mb-4 drop-shadow-[0_0_15px_currentColor]" />
-                                <span className="font-mono text-[10px] tracking-[0.3em] uppercase opacity-70">Protocol Locked</span>
-                            </div>
-                        ) : (
-                            <>
-                                {/* L'icône se charge d'énergie */}
-                                <Zap 
-                                    className={`w-24 h-24 transition-all duration-200 ${isCritical ? 'animate-vibrate-wild' : ''}`}
-                                    style={{ 
-                                        // Transition de contour à remplissage incandescent
-                                        fill: p > 0.5 ? currentColor : 'transparent',
-                                        stroke: p < 0.8 ? (p > 0 ? currentColor : 'rgba(255,255,255,0.2)') : 'transparent',
-                                        strokeWidth: 1.5,
-                                        filter: `drop-shadow(0 0 ${p * 30}px ${currentColor})`
-                                    }}
-                                />
-                                
-                                {/* Timer / Statut */}
-                                <div className="mt-6 h-4 flex items-center justify-center font-mono text-xs tracking-[0.2em]">
-                                    {p > 0 ? (
-                                        <span style={{ color: isCritical ? 'white' : currentColor, textShadow: `0 0 ${p*20}px currentColor` }} className="tabular-nums">
-                                            {(20 - (p * 20)).toFixed(2)}s
-                                        </span>
-                                    ) : (
-                                        <span className="text-white/30 group-hover:text-white/60 transition-colors">HOLD TO INITIATE</span>
-                                    )}
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </button>
-            </div>
-
-            {/* TEXTE D'AMBIANCE INFÉRIEUR (Réagit au tremblement) */}
-            {!completedToday && sequenceState === FinalSequenceState.IDLE && (
-                <div className="absolute top-[calc(100%+60px)] w-full text-center overflow-hidden">
-                     <p 
-                        className="font-mono text-[9px] uppercase tracking-[0.5em] transition-all duration-200"
+              {/* SYSTÈME DE PARTICULES ORBITALES (Aspiration gravitationnelle) */}
+              {!completedToday && p > 0 && (
+                <div className="absolute inset-[-100px] pointer-events-none rounded-full overflow-hidden [mask-image:radial-gradient(circle,transparent_30%,black_70%)]">
+                  {[...Array(30)].map((_, i) => {
+                    // Paramètres aléatoires pour chaque particule
+                    const angle = (i / 30) * 360;
+                    const delay = Math.random() * -2;
+                    const duration = lerp(3, 0.5, p); // Accélère massivement avec le temps
+                    const size = Math.random() * 2 + 1;
+                    return (
+                      <div
+                        key={i}
+                        className="absolute top-1/2 left-1/2 rounded-full animate-gravity-well mix-blend-screen"
                         style={{
-                            color: isCritical ? 'white' : currentColor,
-                            opacity: p > 0 ? 0.7 + p*0.3 : 0.3,
-                            // Le texte se déchire aussi avec l'intensité
-                            transform: isCritical ? `translateX(${(Math.random()-0.5)*10}px)` : 'none',
-                            textShadow: isCritical ? '2px 0 rgba(255,0,0,0.8), -2px 0 rgba(0,255,255,0.8)' : 'none'
+                          width: `${size}px`,
+                          height: `${size * 3}px`, // Légèrement étirées
+                          background: isCritical ? "white" : currentColor,
+                          boxShadow: `0 0 ${size * 2}px ${currentColor}`,
+                          transformOrigin: "0 150px", // Orbitent autour du centre
+                          transform: `rotate(${angle}deg) translateY(-150px)`,
+                          animationDuration: `${duration}s`,
+                          animationDelay: `${delay}s`,
+                          opacity: p, // Devient plus visible avec le temps
                         }}
-                    >
-                        {p === 0 && "Awaiting Input"}
-                        {p > 0 && p < 0.5 && "Synchronizing..."}
-                        {p >= 0.5 && p < 0.85 && "Energy rising // Hold steady"}
-                        {p >= 0.85 && "CRITICAL // DO NOT RELEASE"}
-                     </p>
+                      />
+                    );
+                  })}
                 </div>
-            )}
+              )}
 
+              {/* ICÔNE CENTRALE (Réagit à l'intensité) */}
+              <div
+                className="relative z-20 flex flex-col items-center pointer-events-none"
+                style={{ transform: `scale(${1 + p * 0.2})` }}
+              >
+                {completedToday ? (
+                  <div className="flex flex-col items-center animate-pulse-slow text-green-500">
+                    <Lock className="w-16 h-16 mb-4 drop-shadow-[0_0_15px_currentColor]" />
+                    <span className="font-mono text-[10px] tracking-[0.3em] uppercase opacity-70">Protocol Locked</span>
+                  </div>
+                ) : (
+                  <>
+                    {/* L'icône se charge d'énergie */}
+                    <Zap
+                      className={`w-24 h-24 transition-all duration-200 ${isCritical ? "animate-vibrate-wild" : ""}`}
+                      style={{
+                        // Transition de contour à remplissage incandescent
+                        fill: p > 0.5 ? currentColor : "transparent",
+                        stroke: p < 0.8 ? (p > 0 ? currentColor : "rgba(255,255,255,0.2)") : "transparent",
+                        strokeWidth: 1.5,
+                        filter: `drop-shadow(0 0 ${p * 30}px ${currentColor})`,
+                      }}
+                    />
+
+                    {/* Timer / Statut */}
+                    <div className="mt-6 h-4 flex items-center justify-center font-mono text-xs tracking-[0.2em]">
+                      {p > 0 ? (
+                        <span
+                          style={{
+                            color: isCritical ? "white" : currentColor,
+                            textShadow: `0 0 ${p * 20}px currentColor`,
+                          }}
+                          className="tabular-nums"
+                        >
+                          {(20 - p * 20).toFixed(2)}s
+                        </span>
+                      ) : (
+                        <span className="text-white/30 group-hover:text-white/60 transition-colors">
+                          HOLD TO INITIATE
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </button>
+          </div>
+
+          {/* TEXTE D'AMBIANCE INFÉRIEUR (Réagit au tremblement) */}
+          {!completedToday && sequenceState === FinalSequenceState.IDLE && (
+            <div className="absolute top-[calc(100%+60px)] w-full text-center overflow-hidden">
+              <p
+                className="font-mono text-[9px] uppercase tracking-[0.5em] transition-all duration-200"
+                style={{
+                  color: isCritical ? "white" : currentColor,
+                  opacity: p > 0 ? 0.7 + p * 0.3 : 0.3,
+                  // Le texte se déchire aussi avec l'intensité
+                  transform: isCritical ? `translateX(${(Math.random() - 0.5) * 10}px)` : "none",
+                  textShadow: isCritical ? "2px 0 rgba(255,0,0,0.8), -2px 0 rgba(0,255,255,0.8)" : "none",
+                }}
+              >
+                {p === 0 && "Awaiting Input"}
+                {p > 0 && p < 0.5 && "Synchronizing..."}
+                {p >= 0.5 && p < 0.85 && "Energy rising // Hold steady"}
+                {p >= 0.85 && "CRITICAL // DO NOT RELEASE"}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
