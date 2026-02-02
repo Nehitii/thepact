@@ -2,10 +2,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Zap, Check, ArrowLeft, Fingerprint } from "lucide-react";
+import { Zap, Check, ArrowLeft, Fingerprint, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// --- Types & Constants ---
+// --- Configuration ---
+const HOLD_DURATION = 20000; // 20 secondes réelles
 
 interface PactData {
   id: string;
@@ -16,38 +17,34 @@ interface PactData {
 
 enum RitualState {
   IDLE = "idle",
-  CHARGING = "charging", // 0-80%
-  CRITICAL = "critical", // 80-99% (Intense shake, plasma turns white/magenta)
-  ANTICIPATION = "anticipation", // 99-100% (Swells up before collapse)
-  COLLAPSE = "collapse", // The actual implosion frame
-  EXPLOSION = "explosion", // White flash screen
-  SOUL_CONNECTED = "soul_connected", // Final text state
-  LOCKED = "locked", // Done for the day
+  CHARGING = "charging", // 0-85%
+  CRITICAL = "critical", // 85-99.9% (Tremblements violents)
+  IMPLOSION = "implosion", // 100% (Le bouton disparaît)
+  EXPLOSION = "explosion", // Flash blanc
+  SOUL_CONNECTED = "soul_connected",
+  LOCKED = "locked",
 }
 
-const HOLD_DURATION = 20000; // 20 seconds
-
+// Fonction utilitaire pour limiter les valeurs
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
-
-// Générateur de tremblement aléatoire
-const randomRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
 export default function TheCall() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // --- State ---
+  // --- State React (Pour l'affichage UI) ---
   const [pactData, setPactData] = useState<PactData | null>(null);
   const [ritualState, setRitualState] = useState<RitualState>(RitualState.IDLE);
-  const [progress, setProgress] = useState(0); // 0 to 100
   const [completedToday, setCompletedToday] = useState(false);
+  const [progress, setProgress] = useState(0);
 
-  // --- Refs ---
-  const containerShakeRef = useRef<HTMLDivElement>(null); // Le div qui tremble
+  // --- Refs (Pour la performance et la physique) ---
+  const containerShakeRef = useRef<HTMLDivElement>(null); // Le conteneur qui tremble
+  const btnRef = useRef<HTMLButtonElement>(null); // Le bouton lui-même
   const rafRef = useRef<number>(0);
-  const startRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(0);
   const isHoldingRef = useRef(false);
   const hasCompletedRef = useRef(false);
 
@@ -91,96 +88,102 @@ export default function TheCall() {
       .eq("id", pactData.id);
   };
 
-  // --- Animation Loop Principale ---
+  // --- Moteur Physique (Animation Loop) ---
 
-  const determineState = (p: number): RitualState => {
-    if (p <= 0) return RitualState.IDLE;
-    if (p < 80) return RitualState.CHARGING;
-    if (p < 99) return RitualState.CRITICAL;
-    return RitualState.ANTICIPATION;
-  };
-
-  // Fonction qui gère les effets physiques frame par frame (tremblement, distorsion)
-  const updatePhysicalEffects = useCallback((p: number) => {
+  // Cette fonction gère le tremblement directement sur le DOM sans re-rendu React
+  const applyPhysicalEffects = (p: number) => {
     if (!containerShakeRef.current) return;
-    const el = containerShakeRef.current;
 
-    if (p > 80 && p < 100) {
-      // Intensité exponentielle
-      const rawIntensity = (p - 80) / 20; // 0 to 1
-      const intensity = Math.pow(rawIntensity, 2) * 25; // Max 25px shake
+    // Le tremblement commence doucement à 50% et devient fou à 85%+
+    if (p > 50 && p < 100) {
+      const intensityFactor = Math.max(0, (p - 50) / 50); // 0 à 1
+      // Courbe exponentielle pour l'intensité (cube)
+      const shakeAmount = Math.pow(intensityFactor, 3) * 20;
 
-      const x = randomRange(-intensity, intensity);
-      const y = randomRange(-intensity, intensity);
-      // Rotation très légère pour désorienter
-      const rot = randomRange(-intensity * 0.05, intensity * 0.05);
+      const x = (Math.random() - 0.5) * shakeAmount;
+      const y = (Math.random() - 0.5) * shakeAmount;
+      const rot = (Math.random() - 0.5) * (shakeAmount * 0.1);
 
-      // Simulation d'aberration chromatique via text-shadow (marche sur tout le conteneur)
-      const rgbSplit = rawIntensity * 4;
-      const blur = rawIntensity * 2;
+      // Appliquer les transfos
+      containerShakeRef.current.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg)`;
 
-      el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg)`;
-      el.style.filter = `blur(${blur}px) contrast(${1 + rawIntensity / 2})`;
-      // L'astuce pour l'aberration chromatique RGB
-      el.style.textShadow = `${rgbSplit}px 0 2px rgba(255,0,0,0.5), -${rgbSplit}px 0 2px rgba(0,255,255,0.5)`;
+      // Aberration chromatique (RGB Split) vers la fin
+      if (p > 85) {
+        const split = (p - 85) * 0.3;
+        containerShakeRef.current.style.textShadow = `${split}px 0 rgba(255,0,0,0.5), -${split}px 0 rgba(0,255,255,0.5)`;
+        containerShakeRef.current.style.filter = `blur(${split * 0.1}px) contrast(1.1)`;
+      }
     } else {
       // Reset propre
-      el.style.transform = "none";
-      el.style.filter = "none";
-      el.style.textShadow = "none";
+      containerShakeRef.current.style.transform = "none";
+      containerShakeRef.current.style.textShadow = "none";
+      containerShakeRef.current.style.filter = "none";
     }
-  }, []);
+  };
 
-  const animate = useCallback(() => {
+  const animate = () => {
     if (!isHoldingRef.current || hasCompletedRef.current) return;
 
-    const elapsed = performance.now() - startRef.current;
-    // const p = clamp((elapsed / HOLD_DURATION) * 100, 0, 100);
-    // DEV SPEEDUP (Retirer pour la prod)
-    const p = clamp(((elapsed * 3) / HOLD_DURATION) * 100, 0, 100);
+    const now = performance.now();
+    const elapsed = now - startTimeRef.current;
 
+    // Calcul précis de la progression (0 à 100)
+    const rawProgress = (elapsed / HOLD_DURATION) * 100;
+    const p = clamp(rawProgress, 0, 100);
+
+    // Mise à jour de l'état React (Progress Bar & Visuels)
     setProgress(p);
 
-    // On ne change l'état que si on n'est pas déjà dans la séquence de fin
-    if (ritualState !== RitualState.ANTICIPATION) {
-      setRitualState(determineState(p));
-    }
-
-    updatePhysicalEffects(p);
-
-    if (p >= 100) {
-      finishRitualSequence();
+    // Gestion des phases
+    if (p < 85) {
+      setRitualState(RitualState.CHARGING);
+    } else if (p < 100) {
+      setRitualState(RitualState.CRITICAL);
     } else {
-      rafRef.current = requestAnimationFrame(animate);
+      // FIN DU RITUEL
+      finishSequence();
+      return; // On arrête la boucle ici
     }
-  }, [ritualState, updatePhysicalEffects]);
+
+    // Application des effets physiques (DOM direct)
+    applyPhysicalEffects(p);
+
+    // Boucle suivante
+    rafRef.current = requestAnimationFrame(animate);
+  };
+
+  // --- Gestionnaires d'événements ---
 
   const startHolding = (e: React.PointerEvent) => {
     if (completedToday || hasCompletedRef.current) return;
 
+    // Capture du pointeur CRUCIALE : permet de continuer même si la souris sort du bouton
     e.currentTarget.setPointerCapture(e.pointerId);
+
     isHoldingRef.current = true;
-    startRef.current = performance.now();
+    startTimeRef.current = performance.now(); // On démarre le chrono à 0
     rafRef.current = requestAnimationFrame(animate);
   };
 
   const stopHolding = () => {
     if (hasCompletedRef.current) return;
+
     isHoldingRef.current = false;
     cancelAnimationFrame(rafRef.current);
 
     // Reset immédiat des effets physiques
     if (containerShakeRef.current) {
       containerShakeRef.current.style.transform = "none";
-      containerShakeRef.current.style.filter = "none";
       containerShakeRef.current.style.textShadow = "none";
+      containerShakeRef.current.style.filter = "none";
     }
 
-    // Animation de retour rapide vers 0 (Snap back)
+    // Animation de retour (Snap back)
     const snapBack = () => {
       if (isHoldingRef.current || hasCompletedRef.current) return;
+
       setProgress((prev) => {
-        const next = prev - 5; // Vitesse de retour
+        const next = prev - 3; // Vitesse de retour
         if (next <= 0) {
           setRitualState(RitualState.IDLE);
           return 0;
@@ -192,250 +195,206 @@ export default function TheCall() {
     snapBack();
   };
 
-  // --- La Séquence Climactique ---
-  const finishRitualSequence = async () => {
+  const finishSequence = async () => {
     isHoldingRef.current = false;
     hasCompletedRef.current = true;
     cancelAnimationFrame(rafRef.current);
 
-    // Étape 1 : Anticipation (déjà définie par la boucle d'anim avant 100%)
-    // Le bouton est gonflé au max. On attend une fraction de seconde.
-    setRitualState(RitualState.ANTICIPATION);
-    await new Promise((r) => setTimeout(r, 250));
+    // 1. Implosion
+    setRitualState(RitualState.IMPLOSION);
+    await new Promise((r) => setTimeout(r, 400)); // Temps de l'implosion CSS
 
-    // Étape 2 : Implosion violente
-    setRitualState(RitualState.COLLAPSE);
-    // On laisse le temps à l'animation CSS de collapse de se jouer (env. 300ms)
-    await new Promise((r) => setTimeout(r, 350));
-
-    // Étape 3 : Explosion Blanche (Flash)
+    // 2. Explosion (Flash)
     setRitualState(RitualState.EXPLOSION);
     if (user && !completedToday) saveCheckInData();
+    await new Promise((r) => setTimeout(r, 100)); // Flash instantané
 
-    // Étape 4 : Révélation du texte (après que le flash commence à se dissiper)
-    await new Promise((r) => setTimeout(r, 300));
+    // 3. Soul Connected
     setRitualState(RitualState.SOUL_CONNECTED);
+    await new Promise((r) => setTimeout(r, 4000)); // Durée de l'affichage
 
-    // Étape 5 : Retour au calme et état Locked
-    await new Promise((r) => setTimeout(r, 4500));
+    // 4. Locked
     setRitualState(RitualState.LOCKED);
     setCompletedToday(true);
   };
 
-  // --- Helpers d'état pour le JSX ---
-  const isChargingOrHigher = progress > 0 && !completedToday;
-  const isCritical = ritualState === RitualState.CRITICAL || ritualState === RitualState.ANTICIPATION;
-  const isAnticipation = ritualState === RitualState.ANTICIPATION;
-  const isCollapse = ritualState === RitualState.COLLAPSE;
-  const isExplosion = ritualState === RitualState.EXPLOSION;
-  const isSoul = ritualState === RitualState.SOUL_CONNECTED;
-  const isLocked = ritualState === RitualState.LOCKED;
+  // --- Valeurs dérivées pour le rendu ---
+  const pNorm = progress / 100; // 0.0 à 1.0
+  const isCharging = progress > 0 && !completedToday;
+  const isCritical = ritualState === RitualState.CRITICAL;
 
-  const pNorm = progress / 100; // Normalized progress 0..1
-
-  // Calcul dynamique de la couleur du coeur (Cyan -> Magenta -> Blanc/Or)
-  const getPlasmaColor = () => {
-    if (isLocked) return "rgba(34, 197, 94, 0.2)"; // Green
-    if (pNorm < 0.5) return `rgba(6, 182, 212, ${0.2 + pNorm})`; // Cyan build up
-    if (pNorm < 0.85) return `rgba(${6 + (pNorm - 0.5) * 600}, ${182 - (pNorm - 0.5) * 400}, 212, ${0.5 + pNorm / 2})`; // Transition to Purple
-    return `rgba(255, ${200 * (1 - pNorm)}, ${255 * (1 - pNorm)}, ${0.8 + pNorm * 0.2})`; // White hot critical
-  };
+  // Couleurs dynamiques
+  const plasmaColor = isCritical
+    ? "rgba(255, 255, 255, 0.9)" // Blanc pur en critique
+    : `rgba(${6 + pNorm * 200}, ${182 - pNorm * 100}, 212, ${0.4 + pNorm * 0.6})`; // Cyan -> Violet
 
   return (
-    // MAIN WRAPPER : Fond noir profond
-    <div className="min-h-screen bg-[#030305] overflow-hidden flex flex-col relative text-slate-100 font-sans selection:bg-white/20">
-      {/* BACKGROUND LAYERS (Ambiance statique et dynamique) */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* Nébuleuse de fond qui réagit à l'intensité */}
+    <div className="min-h-screen bg-[#020203] overflow-hidden flex flex-col relative text-slate-100 font-sans select-none touch-none">
+      {/* --- BACKGROUND AMBIANT --- */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        {/* Halo central qui grossit */}
         <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vmin] h-[100vmin] rounded-full blur-[150px] transition-all duration-700 ease-out"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] h-[80vw] rounded-full blur-[100px] transition-all duration-100 ease-linear"
           style={{
-            background: isSoul ? "radial-gradient(circle, rgba(6,182,212,0.3) 0%, transparent 70%)" : getPlasmaColor(),
-            opacity: isChargingOrHigher ? 0.4 + pNorm * 0.3 : 0.2,
-            transform: isChargingOrHigher
-              ? `translate(-50%, -50%) scale(${1 + pNorm * 0.5})`
-              : "translate(-50%, -50%) scale(1)",
+            background: `radial-gradient(circle, ${plasmaColor} 0%, transparent 70%)`,
+            opacity: isCharging ? 0.1 + pNorm * 0.3 : 0.05,
+            transform: `translate(-50%, -50%) scale(${1 + pNorm * 0.5})`,
           }}
         />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay"></div>
+        {/* Grain overlay */}
+        <div
+          className="absolute inset-0 opacity-[0.07]"
+          style={{
+            backgroundImage:
+              'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%221%22/%3E%3C/svg%3E")',
+          }}
+        ></div>
       </div>
 
-      {/* CONTAINER QUI TREMBLE (C'est lui qui subit le transform 3D) */}
+      {/* --- CONTENEUR PHYSIQUE (Tremblement) --- */}
       <div
         ref={containerShakeRef}
-        className="relative z-10 flex-1 flex flex-col items-center justify-center p-6 will-change-transform backface-hidden"
+        className="relative z-10 flex-1 flex flex-col items-center justify-center will-change-transform"
       >
-        {/* HEADER */}
+        {/* Header */}
         <header
-          className={`absolute top-0 left-0 w-full p-6 flex justify-between items-center transition-opacity duration-500 ${isSoul || isExplosion ? "opacity-0" : "opacity-100"}`}
+          className={`absolute top-0 left-0 w-full p-6 flex justify-between items-center transition-opacity duration-300 ${ritualState === RitualState.SOUL_CONNECTED ? "opacity-0" : "opacity-100"}`}
         >
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="text-white/40 hover:text-white hover:bg-white/5 font-mono text-sm"
+            className="text-white/30 hover:text-white hover:bg-white/5 font-mono text-xs tracking-widest"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" /> RETURN
+            <ArrowLeft className="w-4 h-4 mr-2" /> ABORT
           </Button>
           {pactData && (
             <div className="text-right font-mono">
-              <div className="text-[10px] uppercase tracking-[0.2em] text-white/40">Sync Streak</div>
-              <div className="text-xl text-white">{pactData.checkin_streak}</div>
+              <div className="text-[9px] uppercase tracking-[0.3em] text-white/30 mb-1">Sync Streak</div>
+              <div className="text-lg text-white font-bold">{pactData.checkin_streak}</div>
             </div>
           )}
         </header>
 
-        {/* ZONE D'INTERACTION CENTRALE */}
-        <div className="relative flex flex-col items-center">
-          {/* ÉCRAN FINAL : SOUL CONNECTED */}
-          {isSoul && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-50 animate-appear-slow">
-              {/* "God Rays" rotatifs en background */}
-              <div className="absolute inset-[-200%] bg-gradient-conic from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 animate-spin-slow opacity-30 blur-xl"></div>
+        {/* --- ZONE DU RITUEL --- */}
+        <div className="relative flex flex-col items-center justify-center">
+          {/* Flash Blanc */}
+          <div
+            className={`fixed inset-0 bg-white z-50 pointer-events-none transition-opacity ${ritualState === RitualState.EXPLOSION ? "duration-75 opacity-100" : "duration-[2000ms] opacity-0"}`}
+          />
 
-              <h1 className="relative text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_40px_rgba(6,182,212,0.6)] animate-pulse-subtle">
+          {/* Texte Final */}
+          {ritualState === RitualState.SOUL_CONNECTED && (
+            <div className="absolute z-40 flex flex-col items-center animate-appear">
+              <h1 className="text-5xl md:text-7xl font-black text-white tracking-tighter drop-shadow-[0_0_30px_rgba(255,255,255,0.8)]">
                 SOUL
                 <br />
                 CONNECTED
               </h1>
-              <div className="w-32 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent my-6 animate-expand-width"></div>
-              <p className="text-cyan-200/60 tracking-[0.4em] text-xs font-mono uppercase animate-slide-up-fade">
-                Ritual Complete
-              </p>
             </div>
           )}
 
-          {/* FLASH BLANC D'EXPLOSION */}
+          {/* Le Bouton (Cœur) */}
           <div
-            className={`fixed inset-0 bg-white z-[100] pointer-events-none transition-opacity ${isExplosion ? "opacity-100 duration-75" : "opacity-0 duration-[2500ms] ease-out"}`}
-          />
-
-          {/* LE BOUTON CENTRAL (Le Cœur) */}
-          {/* Ce conteneur gère l'échelle globale pour l'anticipation et l'implosion */}
-          <div
-            className={`relative transition-transform cubic-bezier(0.34, 1.56, 0.64, 1)
-                    ${isAnticipation ? "scale-110 duration-200" : ""} 
-                    ${isCollapse ? "scale-[0.001] duration-300 cubic-bezier(.87,0,.13,1)" : "duration-100"}
-                    ${isSoul || isExplosion ? "opacity-0" : "opacity-100"}
+            className={`relative transition-all cubic-bezier(0.4, 0, 0.2, 1)
+                ${ritualState === RitualState.IMPLOSION ? "scale-0 opacity-0 duration-300" : "scale-100 opacity-100 duration-100"}
+                ${ritualState === RitualState.SOUL_CONNECTED ? "hidden" : "block"}
                 `}
           >
-            {/* Anneaux d'ondes de choc externes */}
-            {isChargingOrHigher && !isLocked && (
-              <>
-                <div
-                  className="absolute inset-0 rounded-full border-2 border-cyan-400/30 animate-ping-slow"
-                  style={{ animationDuration: `${3 - pNorm * 2}s` }}
-                />
-                {pNorm > 0.5 && (
-                  <div
-                    className="absolute inset-[-20px] rounded-full border border-purple-400/20 animate-ping-slow animation-delay-500"
-                    style={{ animationDuration: `${2.5 - pNorm}s` }}
-                  />
-                )}
-              </>
-            )}
-
             <button
+              ref={btnRef}
               onPointerDown={startHolding}
               onPointerUp={stopHolding}
               onPointerLeave={stopHolding}
-              disabled={isLocked}
+              disabled={completedToday}
               className={`
-                        relative w-64 h-64 rounded-full flex items-center justify-center overflow-hidden
-                        border-[3px] transition-all duration-200 group
+                        relative w-64 h-64 rounded-full flex items-center justify-center
+                        border-[2px] transition-all duration-75 outline-none
                         ${
-                          isLocked
-                            ? "border-green-500/50 cursor-default"
-                            : "border-white/10 cursor-pointer hover:border-white/30"
+                          completedToday
+                            ? "border-green-500/30 cursor-default bg-green-900/10"
+                            : "border-white/10 cursor-pointer bg-black/20 hover:border-white/20 active:scale-[0.98]"
                         }
-                        ${isCritical && !isLocked ? "border-white/80 drop-shadow-[0_0_25px_rgba(255,255,255,0.7)]" : ""}
                     `}
               style={{
-                // L'ombre portée change de couleur et d'intensité avec la charge
-                boxShadow:
-                  isChargingOrHigher && !isLocked
-                    ? `0 0 ${30 + pNorm * 50}px ${getPlasmaColor()}, inset 0 0 ${20 + pNorm * 30}px ${getPlasmaColor()}`
-                    : isLocked
-                      ? "0 0 40px rgba(34,197,94,0.3), inset 0 0 20px rgba(34,197,94,0.1)"
-                      : "none",
+                boxShadow: isCharging
+                  ? `0 0 ${pNorm * 60}px ${plasmaColor}, inset 0 0 ${pNorm * 40}px ${plasmaColor}`
+                  : "none",
               }}
             >
-              {/* FOND PLASMA INTÉRIEUR */}
-              {!isLocked && (
+              {/* Intérieur Plasma (CSS Pur) */}
+              {!completedToday && isCharging && (
                 <div
-                  className="absolute inset-[-50%] animate-spin-slow opacity-70 mix-blend-screen blur-2xl transition-colors duration-500"
+                  className="absolute inset-0 rounded-full opacity-50 blur-xl pointer-events-none mix-blend-screen animate-spin-slow"
                   style={{
-                    background: isCritical
-                      ? "conic-gradient(from 0deg, white, magenta, white, cyan, white)"
-                      : "conic-gradient(from 0deg, transparent, cyan, transparent, purple, transparent)",
+                    background: `conic-gradient(from 0deg, transparent, ${plasmaColor}, transparent)`,
                   }}
                 />
               )}
 
-              {/* Anneau de progression SVG */}
-              <svg className="absolute inset-[-3px] w-[calc(100%+6px)] h-[calc(100%+6px)] -rotate-90 pointer-events-none">
-                <circle cx="50%" cy="50%" r="98" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
-                {!isLocked && progress > 0 && (
-                  <circle
-                    cx="50%"
-                    cy="50%"
-                    r="98"
-                    fill="none"
-                    stroke={isCritical ? "white" : pNorm > 0.6 ? "#e879f9" : "#22d3ee"}
-                    strokeWidth={4 + pNorm * 4}
-                    strokeDasharray={2 * Math.PI * 98}
-                    strokeDashoffset={2 * Math.PI * 98 * (1 - pNorm)}
-                    strokeLinecap="round"
-                    className="transition-all duration-100 ease-linear drop-shadow-[0_0_10px_currentColor]"
-                  />
-                )}
-              </svg>
+              {/* Anneau de Progression */}
+              {!completedToday && (
+                <svg className="absolute inset-[-4px] w-[calc(100%+8px)] h-[calc(100%+8px)] -rotate-90 pointer-events-none">
+                  <circle cx="50%" cy="50%" r="100" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
+                  {progress > 0 && (
+                    <circle
+                      cx="50%"
+                      cy="50%"
+                      r="100"
+                      fill="none"
+                      stroke={isCritical ? "#ffffff" : "#22d3ee"}
+                      strokeWidth={2 + pNorm * 4}
+                      strokeDasharray={2 * Math.PI * 100}
+                      strokeDashoffset={2 * Math.PI * 100 * (1 - pNorm)}
+                      strokeLinecap="round"
+                      className="drop-shadow-[0_0_8px_currentColor]"
+                    />
+                  )}
+                </svg>
+              )}
 
-              {/* Contenu central (Icône/Texte) */}
-              <div className="relative z-20 flex flex-col items-center justify-center space-y-3">
-                {isLocked ? (
-                  <Check className="w-20 h-20 text-green-400 drop-shadow-[0_0_20px_rgba(34,197,94,1)] animate-pulse-subtle" />
+              {/* Icône / Contenu */}
+              <div className="relative z-10 flex flex-col items-center pointer-events-none">
+                {completedToday ? (
+                  <div className="flex flex-col items-center animate-pulse-slow">
+                    <Lock className="w-12 h-12 text-green-500/50 mb-2" />
+                    <span className="text-green-500/50 text-[10px] tracking-widest uppercase">Sync Complete</span>
+                  </div>
                 ) : (
                   <>
-                    {/* L'icône change et vibre en phase critique */}
-                    <div
-                      className={`${isCritical ? "animate-vibrate-intense text-white drop-shadow-[0_0_25px_white]" : ""}`}
-                    >
-                      {isCritical ? (
-                        <Zap className="w-16 h-16 fill-white" />
-                      ) : (
-                        <Fingerprint
-                          className={`w-16 h-16 transition-all duration-300 ${isChargingOrHigher ? "text-cyan-100 opacity-100" : "text-white/30 opacity-50 group-hover:opacity-80"}`}
-                        />
-                      )}
-                    </div>
-                    {/* Timer */}
-                    <div className="font-mono text-xs tracking-widest h-4">
-                      {isChargingOrHigher ? (
-                        <span className={`${isCritical ? "text-white" : "text-cyan-200"}`}>
-                          {(20 - pNorm * 20).toFixed(2)}s
+                    {isCritical ? (
+                      <Zap className="w-16 h-16 text-white animate-vibrate fill-white drop-shadow-[0_0_15px_white]" />
+                    ) : (
+                      <Fingerprint
+                        className={`w-16 h-16 transition-all duration-500 ${isCharging ? "text-cyan-200" : "text-white/20"}`}
+                        style={{ opacity: 0.3 + pNorm * 0.7 }}
+                      />
+                    )}
+
+                    <div className="mt-4 h-4 flex items-center justify-center font-mono text-xs tracking-widest">
+                      {isCharging ? (
+                        <span className={isCritical ? "text-white" : "text-cyan-400"}>
+                          {(20 - pNorm * 20).toFixed(1)}s
                         </span>
                       ) : (
-                        <span className="text-white/40 group-hover:text-white/70 transition-colors">HOLD</span>
+                        <span className="text-white/20">HOLD</span>
                       )}
                     </div>
                   </>
                 )}
               </div>
 
-              {/* PARTICULES "WARP SPEED" (Aspiration) */}
-              {isChargingOrHigher && !isLocked && (
-                <div className="absolute inset-0 pointer-events-none">
-                  {[...Array(16)].map((_, i) => (
+              {/* Particules d'Aspiration (Warp Lines) */}
+              {!completedToday && isCharging && (
+                <div className="absolute inset-0 pointer-events-none rounded-full overflow-hidden">
+                  {[...Array(12)].map((_, i) => (
                     <div
                       key={i}
-                      // Traînées au lieu de points
-                      className="absolute top-1/2 left-1/2 w-0.5 h-12 bg-gradient-to-b from-transparent via-white to-transparent rounded-full animate-warp-in"
+                      className="absolute top-1/2 left-1/2 w-[1px] h-[50px] origin-bottom bg-gradient-to-t from-transparent to-white animate-warp"
                       style={{
-                        transform: `rotate(${i * 22.5}deg) translateY(150px)`,
-                        // Plus on charge, plus elles vont vite
-                        animationDuration: `${1.5 - pNorm * 1.2}s`,
-                        animationDelay: `${Math.random() * 0.5}s`,
-                        opacity: pNorm > 0.2 ? 0.6 + pNorm * 0.4 : 0,
+                        transform: `rotate(${i * 30}deg) translateY(-140px)`,
+                        animationDuration: `${1.5 - pNorm}s`, // Accélère avec le temps
+                        animationDelay: `${i * 0.1}s`,
+                        opacity: pNorm, // Devient plus visible avec le temps
                       }}
                     />
                   ))}
@@ -444,16 +403,15 @@ export default function TheCall() {
             </button>
           </div>
 
-          {/* Texte d'état sous le bouton */}
-          {!isSoul && !isExplosion && !isLocked && (
-            <div className="absolute -bottom-20 left-0 w-full text-center font-mono text-xs tracking-[0.3em] uppercase transition-all duration-300">
+          {/* Texte de statut */}
+          {!completedToday && ritualState !== RitualState.SOUL_CONNECTED && (
+            <div className="absolute top-[calc(100%+40px)] w-full text-center">
               <p
-                className={`${isCritical ? "text-white animate-vibrate-intense drop-shadow-[0_0_10px_white]" : "text-white/40"}`}
+                className={`font-mono text-[10px] uppercase tracking-[0.4em] transition-colors duration-300 ${isCritical ? "text-red-100 animate-vibrate" : "text-white/20"}`}
               >
-                {ritualState === RitualState.IDLE && "Initiate"}
-                {ritualState === RitualState.CHARGING && "Synchronizing Energy"}
-                {ritualState === RitualState.CRITICAL && "Critical Threshold"}
-                {ritualState === RitualState.ANTICIPATION && "Release Imminent"}
+                {ritualState === RitualState.IDLE && "Initiate Link"}
+                {ritualState === RitualState.CHARGING && "Synchronizing..."}
+                {ritualState === RitualState.CRITICAL && "Do not release"}
               </p>
             </div>
           )}
@@ -461,72 +419,39 @@ export default function TheCall() {
       </div>
 
       <style>{`
-        /* --- ANIMATIONS CSS AVANCÉES --- */
-        
-        /* Rotation lente pour le fond et les "god rays" */
         @keyframes spin-slow {
             100% { transform: rotate(360deg); }
         }
-        .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
 
-        /* Ondes de choc qui s'agrandissent et disparaissent */
-        @keyframes ping-slow {
-            0% { transform: scale(1); opacity: 0.6; }
-            100% { transform: scale(2); opacity: 0; }
+        @keyframes warp {
+            0% { transform: rotate(var(--r)) translateY(-160px) scaleY(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: rotate(var(--r)) translateY(-30px) scaleY(1); opacity: 0; }
         }
-        .animate-ping-slow { animation: ping-slow 3s cubic-bezier(0, 0, 0.2, 1) infinite; }
-        .animation-delay-500 { animation-delay: 0.5s; }
+        .animate-warp { animation: warp linear infinite; }
 
-        /* Particules "Warp Speed" : traînées aspirées vers le centre */
-        @keyframes warp-in {
-            0% { transform: rotate(var(--angle)) translateY(180px) scaleY(1); opacity: 0; }
-            20% { opacity: 1; }
-            100% { transform: rotate(var(--angle)) translateY(0px) scaleY(4); opacity: 0; }
+        @keyframes vibrate {
+            0% { transform: translate(0, 0); }
+            20% { transform: translate(-2px, 1px); }
+            40% { transform: translate(2px, -1px); }
+            60% { transform: translate(-1px, 2px); }
+            80% { transform: translate(1px, -2px); }
+            100% { transform: translate(0, 0); }
         }
-        .animate-warp-in { animation: warp-in linear infinite; }
+        .animate-vibrate { animation: vibrate 0.05s linear infinite; }
 
-        /* Vibration intense pour la phase critique */
-        @keyframes vibrate-intense {
-            0% { transform: translate(0,0); }
-            20% { transform: translate(-3px, 3px); }
-            40% { transform: translate(-3px, -3px); }
-            60% { transform: translate(3px, 3px); }
-            80% { transform: translate(3px, -3px); }
-            100% { transform: translate(0,0); }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
         }
-        .animate-vibrate-intense { animation: vibrate-intense 0.05s linear infinite; }
-
-        /* Pulsation subtile pour le texte final */
-        @keyframes pulse-subtle {
-            0%, 100% { opacity: 0.8; }
-            50% { opacity: 1; text-shadow: 0 0 50px currentColor; }
-        }
-        .animate-pulse-subtle { animation: pulse-subtle 4s ease-in-out infinite; }
-
-        /* Apparition lente du conteneur final */
-        @keyframes appear-slow {
-            0% { opacity: 0; transform: scale(0.95); filter: blur(10px); }
+        .animate-pulse-slow { animation: pulse-slow 3s ease-in-out infinite; }
+        
+        @keyframes appear {
+            0% { opacity: 0; transform: scale(0.9); filter: blur(10px); }
             100% { opacity: 1; transform: scale(1); filter: blur(0); }
         }
-        .animate-appear-slow { animation: appear-slow 1.2s ease-out forwards; }
-
-        /* Extension de la ligne de séparation */
-        @keyframes expand-width {
-            0% { width: 0; opacity: 0; }
-            100% { width: 128px; opacity: 1; }
-        }
-        .animate-expand-width { animation: expand-width 1s ease-out forwards 0.3s; opacity: 0; }
-
-        /* Montée et fondu du sous-texte */
-        @keyframes slide-up-fade {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 0.7; transform: translateY(0); }
-        }
-        .animate-slide-up-fade { animation: slide-up-fade 1s ease-out forwards 0.6s; opacity: 0; }
-
-        /* Utilitaires pour la perspective et le rendu */
-        .backface-hidden { backface-visibility: hidden; }
-        .bg-gradient-conic { background-image: conic-gradient(var(--tw-gradient-stops)); }
+        .animate-appear { animation: appear 1s ease-out forwards; }
       `}</style>
     </div>
   );
