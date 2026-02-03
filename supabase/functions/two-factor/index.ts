@@ -1,8 +1,9 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.84.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 type Action =
@@ -147,7 +148,7 @@ function generateDeviceToken(): string {
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get("Authorization");
@@ -162,12 +163,28 @@ Deno.serve(async (req) => {
     const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
     });
-    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
 
-    // CRITICAL: Pass token explicitly for Lovable Cloud (ES256 signing)
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    const user = userData?.user;
-    if (userError || !user) return jsonResponse({ error: "Invalid or expired token" }, 401);
+    // Validate token (Lovable Cloud signing-keys compatible)
+    let claimsData: unknown;
+    try {
+      const res = await supabaseClient.auth.getClaims(token);
+      claimsData = res.data as unknown;
+    } catch (e) {
+      // auth-js can THROW (e.g. "JWT has expired")
+      console.error("two-factor auth claims threw", e);
+      return jsonResponse({ error: "Invalid or expired token" }, 401);
+    }
+
+    const claims: any = (claimsData as any)?.claims;
+    const userId = typeof claims?.sub === "string" ? claims.sub : "";
+    const userEmail = typeof claims?.email === "string" ? claims.email : null;
+    if (!userId) return jsonResponse({ error: "Invalid or expired token" }, 401);
+
+    // Keep a minimal "user" shape used throughout this function
+    const user = { id: userId, email: userEmail };
 
     const body = (await req.json().catch(() => ({}))) as {
       action?: Action;

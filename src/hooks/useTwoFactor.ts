@@ -61,16 +61,43 @@ export function useTwoFactor() {
     queryKey: ["twofactor", "status", user?.id, session?.access_token],
     enabled: !!user && !!session?.access_token,
     queryFn: async () => {
-      // Use the current session's access token to ensure we have a valid token
       const accessToken = session?.access_token;
-      if (!accessToken) {
-        throw new Error("No valid session");
-      }
-      
+      if (!accessToken) throw new Error("No valid session");
+
       const deviceToken = getTrustedDeviceToken();
-      const { data, error } = await supabase.functions.invoke("two-factor", {
-        body: { action: "status", deviceToken },
-      });
+
+      const invokeStatus = async (token: string) => {
+        return await supabase.functions.invoke("two-factor", {
+          body: { action: "status", deviceToken },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      };
+
+      const is401 = (err: unknown) => {
+        const anyErr = err as any;
+        const status = anyErr?.context?.status ?? anyErr?.status;
+        const msg = typeof anyErr?.message === "string" ? anyErr.message : "";
+        return status === 401 || /invalid or expired token/i.test(msg);
+      };
+
+      // First try with the current access token
+      let { data, error } = await invokeStatus(accessToken);
+
+      // If the token is stale/expired, refresh once and retry.
+      if (error && is401(error)) {
+        const refreshed = await supabase.auth.refreshSession();
+        const newToken = refreshed.data.session?.access_token;
+        if (newToken) {
+          ({ data, error } = await invokeStatus(newToken));
+        }
+
+        // If refresh didn't help, force re-auth instead of crashing the app.
+        if (error && is401(error)) {
+          await supabase.auth.signOut();
+          return { enabled: false, trusted: false };
+        }
+      }
+
       if (error) throw error;
       return data as { enabled: boolean; trusted: boolean };
     },
