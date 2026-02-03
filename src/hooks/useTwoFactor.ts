@@ -32,7 +32,7 @@ export function clearTrustedDeviceToken() {
 }
 
 export function useTwoFactor() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const qc = useQueryClient();
 
   const sessionVerified = useMemo(() => {
@@ -58,9 +58,15 @@ export function useTwoFactor() {
   );
 
   const statusQuery = useQuery({
-    queryKey: ["twofactor", "status", user?.id],
-    enabled: !!user,
+    queryKey: ["twofactor", "status", user?.id, session?.access_token],
+    enabled: !!user && !!session?.access_token,
     queryFn: async () => {
+      // Use the current session's access token to ensure we have a valid token
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        throw new Error("No valid session");
+      }
+      
       const deviceToken = getTrustedDeviceToken();
       const { data, error } = await supabase.functions.invoke("two-factor", {
         body: { action: "status", deviceToken },
@@ -69,6 +75,7 @@ export function useTwoFactor() {
       return data as { enabled: boolean; trusted: boolean };
     },
     staleTime: 15_000,
+    retry: false, // Don't retry on auth errors
   });
 
   const enabled = statusQuery.data?.enabled ?? false;
