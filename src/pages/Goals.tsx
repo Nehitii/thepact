@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
 import { GridViewGoalCard } from "@/components/goals/GridViewGoalCard";
+import { SuperGoalCard, computeSuperGoalProgress, filterGoalsByRule, type SuperGoalRule } from "@/components/goals/super";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
@@ -387,6 +388,38 @@ export default function Goals() {
   };
 
   const renderGoalCard = (goal: Goal, index: number, isCompleted = false) => {
+    // Super Goal - special rendering for all modes
+    if (goal.goal_type === "super") {
+      // Compute child goals progress
+      const childIds = goal.child_goal_ids || [];
+      let childGoals = displayGoals.filter(g => childIds.includes(g.id));
+      
+      // If dynamic, apply rule to get current children
+      if (goal.is_dynamic_super && goal.super_goal_rule) {
+        const eligibleGoals = displayGoals.filter(g => g.id !== goal.id && g.goal_type !== "super");
+        childGoals = filterGoalsByRule(eligibleGoals, goal.super_goal_rule as SuperGoalRule);
+      }
+      
+      const completedChildCount = childGoals.filter(g => g.status === "fully_completed").length;
+      
+      return (
+        <motion.div key={goal.id} variants={itemVariants}>
+          <SuperGoalCard
+            id={goal.id}
+            name={goal.name}
+            childCount={childGoals.length}
+            completedCount={completedChildCount}
+            isDynamic={goal.is_dynamic_super || false}
+            rule={goal.super_goal_rule as SuperGoalRule | undefined}
+            difficulty={goal.difficulty}
+            onClick={(goalId) => navigate(`/goals/${goalId}`)}
+            customDifficultyName={customDifficultyName}
+            customDifficultyColor={customDifficultyColor}
+          />
+        </motion.div>
+      );
+    }
+
     // Bar Mode (Default)
     if (displayMode === "bar") {
       return (
