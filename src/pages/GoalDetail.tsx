@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Star, Trophy, Receipt, Target, Tag, Zap, ListOrdered, Image, StickyNote, DollarSign, X, MessageSquare } from "lucide-react";
+import { ArrowLeft, Check, ChevronRight, Trash2, Edit, Sparkles, Calendar, Star, Trophy, Receipt, Target, Tag, Zap, ListOrdered, Image, StickyNote, DollarSign, X, MessageSquare, Crown } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -30,6 +30,9 @@ import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { motion, AnimatePresence } from "framer-motion";
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "@/lib/goalConstants";
+import { SuperGoalChildList, SuperGoalEditModal, computeSuperGoalProgress, filterGoalsByRule, type SuperGoalRule, type SuperGoalChildInfo } from "@/components/goals/super";
+import { usePact } from "@/hooks/usePact";
+import { useGoals } from "@/hooks/useGoals";
 
 interface Goal {
   id: string;
@@ -49,6 +52,12 @@ interface Goal {
   goal_type?: string;
   habit_duration_days?: number;
   habit_checks?: boolean[];
+  // Super Goal fields
+  child_goal_ids?: string[] | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  super_goal_rule?: any;
+  is_dynamic_super?: boolean;
+  pact_id?: string;
 }
 
 interface Step {
@@ -85,12 +94,60 @@ export default function GoalDetail() {
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
+  const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
   const { data: costItems = [] } = useCostItems(id);
   const saveCostItems = useSaveCostItems();
   const { data: goalTagsData = [] } = useGoalTags(id);
   const saveGoalTags = useSaveGoalTags();
+  
+  // Fetch pact and all goals for Super Goal context
+  const { data: pact } = usePact(user?.id);
+  const { data: allGoals = [] } = useGoals(pact?.id, { includeStepCounts: true });
+  
+  // Pre-compute child goals info for Super Goals (must be before early returns)
+  const childGoalsInfo: SuperGoalChildInfo[] = useMemo(() => {
+    if (!goal || goal.goal_type !== "super") return [];
+    
+    let childIds = goal.child_goal_ids || [];
+    
+    // If dynamic, apply rule to get current children
+    if (goal.is_dynamic_super && goal.super_goal_rule) {
+      const eligibleGoals = allGoals.filter(g => g.id !== goal.id && g.goal_type !== "super");
+      const matched = filterGoalsByRule(eligibleGoals, goal.super_goal_rule as SuperGoalRule);
+      childIds = matched.map(g => g.id);
+    }
+    
+    return childIds.map(childId => {
+      const childGoal = allGoals.find(g => g.id === childId);
+      if (!childGoal) {
+        return {
+          id: childId,
+          name: "Missing Goal",
+          difficulty: "medium",
+          status: "not_started",
+          progress: 0,
+          isCompleted: false,
+          isMissing: true,
+        };
+      }
+      
+      const total = childGoal.totalStepsCount ?? childGoal.total_steps ?? 0;
+      const completed = childGoal.completedStepsCount ?? childGoal.validated_steps ?? 0;
+      const prog = total > 0 ? Math.round((completed / total) * 100) : 0;
+      
+      return {
+        id: childGoal.id,
+        name: childGoal.name,
+        difficulty: childGoal.difficulty,
+        status: childGoal.status,
+        progress: prog,
+        isCompleted: childGoal.status === "fully_completed",
+        isMissing: false,
+      };
+    });
+  }, [goal, allGoals]);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -320,9 +377,27 @@ export default function GoalDetail() {
   }
 
   const isHabitGoal = goal.goal_type === "habit";
-  const completedStepsCount = isHabitGoal ? (goal.habit_checks?.filter(Boolean).length || 0) : steps.filter((s) => s.status === "completed").length;
-  const totalStepsCount = isHabitGoal ? (goal.habit_duration_days || 1) : (steps.length || 1);
-  const progress = (completedStepsCount / totalStepsCount) * 100;
+  const isSuperGoal = goal.goal_type === "super";
+  
+  // Compute progress based on goal type
+  let completedStepsCount: number;
+  let totalStepsCount: number;
+  let progress: number;
+  
+  if (isSuperGoal) {
+    const superProgress = computeSuperGoalProgress(childGoalsInfo);
+    completedStepsCount = superProgress.completedCount;
+    totalStepsCount = superProgress.totalCount;
+    progress = superProgress.percentage;
+  } else if (isHabitGoal) {
+    completedStepsCount = goal.habit_checks?.filter(Boolean).length || 0;
+    totalStepsCount = goal.habit_duration_days || 1;
+    progress = (completedStepsCount / totalStepsCount) * 100;
+  } else {
+    completedStepsCount = steps.filter((s) => s.status === "completed").length;
+    totalStepsCount = steps.length || 1;
+    progress = (completedStepsCount / totalStepsCount) * 100;
+  }
 
   const getDifficultyLabel = (difficulty: string) => {
     if (difficulty === "custom" && customDifficultyName) return customDifficultyName;
@@ -537,13 +612,61 @@ export default function GoalDetail() {
           </div>
         </motion.div>
 
-        {/* Steps or Habit Tracking */}
+        {/* Steps, Habit Tracking, or Super Goal Children */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.2 }}
         >
-          {isHabitGoal ? (
+          {isSuperGoal ? (
+            /* Super Goal - Child Goals List */
+            <div className="relative rounded-xl border-2 border-primary/30 bg-card/80 backdrop-blur-xl overflow-hidden">
+              {/* Legendary aura effect */}
+              <div
+                className="absolute inset-0 opacity-20 pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse at top, hsl(var(--primary) / 0.3), transparent 70%)`,
+                }}
+              />
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
+              <div className="relative p-6">
+                {/* Header with edit button */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center">
+                      <Crown className="h-5 w-5 text-yellow-500" />
+                    </div>
+                    <div>
+                      <Badge variant="outline" className="border-primary/30 text-primary text-xs font-bold uppercase mb-1">
+                        {goal.is_dynamic_super ? "Dynamic Super Goal" : "Super Goal"}
+                      </Badge>
+                      {goal.is_dynamic_super && goal.super_goal_rule && (
+                        <p className="text-xs text-muted-foreground font-mono">
+                          Auto-updates based on rules
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    variant="hud"
+                    size="sm"
+                    onClick={() => setSuperGoalEditOpen(true)}
+                    className="rounded-lg"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Goals
+                  </Button>
+                </div>
+                
+                <SuperGoalChildList
+                  children={childGoalsInfo}
+                  onChildClick={(childId) => navigate(`/goals/${childId}`)}
+                  customDifficultyName={customDifficultyName}
+                  customDifficultyColor={customDifficultyColor}
+                />
+              </div>
+            </div>
+          ) : isHabitGoal ? (
             <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl">
               <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
               <div className="relative p-6">
@@ -1009,6 +1132,45 @@ export default function GoalDetail() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Super Goal Edit Modal */}
+      {goal && isSuperGoal && (
+        <SuperGoalEditModal
+          isOpen={superGoalEditOpen}
+          onClose={() => setSuperGoalEditOpen(false)}
+          onSave={async ({ childGoalIds, rule, isDynamic }) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const ruleForDb = rule as any;
+            const { error } = await supabase
+              .from("goals")
+              .update({
+                child_goal_ids: childGoalIds,
+                super_goal_rule: ruleForDb,
+                is_dynamic_super: isDynamic,
+              })
+              .eq("id", goal.id);
+            
+            if (error) {
+              toast({ title: "Error", description: error.message, variant: "destructive" });
+              return;
+            }
+            
+            // Refresh goal data
+            const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
+            if (updatedGoal) {
+              setGoal(updatedGoal);
+            }
+            toast({ title: "Super Goal Updated", description: "Child goals have been updated" });
+          }}
+          currentChildIds={goal.child_goal_ids || []}
+          currentRule={goal.super_goal_rule as SuperGoalRule | null}
+          currentIsDynamic={goal.is_dynamic_super || false}
+          allGoals={allGoals}
+          superGoalId={goal.id}
+          customDifficultyName={customDifficultyName}
+          customDifficultyColor={customDifficultyColor}
+        />
+      )}
     </div>
   );
 }
