@@ -9,6 +9,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/lib/supabase";
 import { setTrustedDeviceToken, useTwoFactor } from "@/hooks/useTwoFactor";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
 type FromState = {
@@ -31,6 +32,7 @@ export default function TwoFactor() {
   const { toast } = useToast();
   const { t } = useTranslation();
   const twoFactor = useTwoFactor();
+  const { session } = useAuth();
 
   const from = useMemo(() => {
     const state = (location.state ?? {}) as FromState;
@@ -54,6 +56,12 @@ export default function TwoFactor() {
     if (loading) return;
     setLoading(true);
     try {
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        await supabase.auth.signOut();
+        return;
+      }
+
       const payload: any = {
         action: "verify",
         trustDevice,
@@ -66,7 +74,33 @@ export default function TwoFactor() {
         payload.recoveryCode = recoveryCode;
       }
 
-      const { data, error } = await supabase.functions.invoke("two-factor", { body: payload });
+      const invokeVerify = async (token: string) => {
+        return await supabase.functions.invoke("two-factor", {
+          body: payload,
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      };
+
+      const is401 = (err: unknown) => {
+        const anyErr = err as any;
+        const status = anyErr?.context?.status ?? anyErr?.status;
+        const msg = typeof anyErr?.message === "string" ? anyErr.message : "";
+        return status === 401 || /invalid or expired token/i.test(msg);
+      };
+
+      let { data, error } = await invokeVerify(accessToken);
+      if (error && is401(error)) {
+        const refreshed = await supabase.auth.refreshSession();
+        const newToken = refreshed.data.session?.access_token;
+        if (newToken) {
+          ({ data, error } = await invokeVerify(newToken));
+        }
+      }
+
+      if (error && is401(error)) {
+        await supabase.auth.signOut();
+        return;
+      }
       if (error) throw error;
 
       if (data?.deviceToken) {
