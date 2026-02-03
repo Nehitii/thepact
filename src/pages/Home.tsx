@@ -191,7 +191,20 @@ export default function Home() {
     };
   }, [allGoals, ranks, financeSettings, pact?.created_at, isModulePurchased]);
 
-  // Loading & Redirects
+  // Rank progress - MUST be before any conditional returns
+  const rankProgress = useMemo(() => {
+    if (!nextRank) return 100;
+    const min = currentRank ? currentRank.min_points : 0;
+    const max = nextRank.min_points;
+    const current = totalPoints;
+
+    if (max - min === 0) return 0;
+
+    const percent = ((current - min) / (max - min)) * 100;
+    return Math.min(Math.max(percent, 0), 100);
+  }, [currentRank, nextRank, totalPoints]);
+
+  // Loading & Redirects - AFTER all hooks
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
 
   if (!pactLoading && !pact && user) {
@@ -225,18 +238,6 @@ export default function Home() {
     }
     return m.enabled;
   });
-
-  const rankProgress = useMemo(() => {
-    if (!nextRank) return 100;
-    const min = currentRank ? currentRank.min_points : 0;
-    const max = nextRank.min_points;
-    const current = totalPoints;
-
-    if (max - min === 0) return 0;
-
-    const percent = ((current - min) / (max - min)) * 100;
-    return Math.min(Math.max(percent, 0), 100);
-  }, [currentRank, nextRank, totalPoints]);
 
   const renderModule = (moduleId: string, size: ModuleSize) => {
     const displayMode = getDisplayMode(moduleId);
