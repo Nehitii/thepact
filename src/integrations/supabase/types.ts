@@ -2209,9 +2209,37 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_2fa_settings_safe: {
+        Row: {
+          created_at: string | null
+          totp_enabled: boolean | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          totp_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          totp_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_user_2fa_status: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string
+          totp_enabled: boolean
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
