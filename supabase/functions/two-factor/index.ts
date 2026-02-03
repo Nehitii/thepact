@@ -151,7 +151,9 @@ Deno.serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) return jsonResponse({ error: "Authentication required" }, 401);
+    if (!authHeader?.startsWith("Bearer ")) return jsonResponse({ error: "Authentication required" }, 401);
+
+    const token = authHeader.replace("Bearer ", "");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
@@ -162,7 +164,8 @@ Deno.serve(async (req) => {
     });
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    // CRITICAL: Pass token explicitly for Lovable Cloud (ES256 signing)
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
     const user = userData?.user;
     if (userError || !user) return jsonResponse({ error: "Invalid or expired token" }, 401);
 
