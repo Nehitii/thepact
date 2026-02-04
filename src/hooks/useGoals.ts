@@ -1,6 +1,11 @@
+/**
+ * Goals data hook.
+ * 
+ * Provides access to user goals with optional step counts and tags.
+ * Uses React Query for caching and automatic refetching.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-
 import type { SuperGoalRule } from "@/components/goals/super/types";
 
 export interface Goal {

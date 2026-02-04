@@ -1,6 +1,11 @@
+/**
+ * Pact data hook.
+ * 
+ * A "pact" represents a user's commitment/project in the app.
+ * Each user has one active pact containing their goals and progress.
+ */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
-
 export interface Pact {
   id: string;
   name: string;
