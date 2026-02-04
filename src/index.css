@@ -282,6 +282,44 @@ All colors MUST be HSL.
     animation: cyber-shimmer 3s linear infinite;
   }
 
+  /* ========== HERO SECTION ANIMATIONS ========== */
+  
+  /* Fluid flow for XP progress bar */
+  @keyframes fluid-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Heartbeat pulse for progress indicator */
+  @keyframes heartbeat-circle {
+    0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+    15% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 25px hsl(var(--primary) / 0.9); }
+    30% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+    45% { transform: scale(1.1); opacity: 0.9; box-shadow: 0 0 15px hsl(var(--primary) / 0.7); }
+    60% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+    100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+  }
+
+  /* Breathing glow for rank badge */
+  @keyframes breathe-blue {
+    0%, 100% { box-shadow: 0 0 15px -2px hsl(var(--primary) / 0.4); }
+    50% { box-shadow: 0 0 30px -4px hsl(var(--primary) / 0.7); }
+  }
+
+  .animate-fluid {
+    animation: fluid-flow 4s ease-in-out infinite;
+    background-size: 200% 200%;
+  }
+
+  .animate-heartbeat-circle {
+    animation: heartbeat-circle 2s ease-in-out infinite;
+  }
+
+  .animate-breathe-blue {
+    animation: breathe-blue 3s ease-in-out infinite;
+  }
+
   /* Smooth transitions */
   .transition-smooth {
     transition: var(--transition-smooth);
