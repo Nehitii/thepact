@@ -1,18 +1,31 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { ScrollText } from "lucide-react";
+import { usePactMutation } from "@/hooks/usePactMutation";
 
 export default function PactSettings() {
   const { user } = useAuth();
+  
+  // Pact identity state
   const [pactId, setPactId] = useState<string | null>(null);
+  const [pactName, setPactName] = useState("");
+  const [pactMantra, setPactMantra] = useState("");
+  const [pactSymbol, setPactSymbol] = useState("🎯");
+  
+  // Timeline state
   const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
   const [projectEndDate, setProjectEndDate] = useState<Date | undefined>(undefined);
+  
+  // Custom difficulty state
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
+
+  // Pact mutation hook for saving identity changes
+  const { updatePact, isUpdating } = usePactMutation(user?.id, pactId);
 
   useEffect(() => {
     if (!user) return;
@@ -31,15 +44,18 @@ export default function PactSettings() {
         setCustomDifficultyColor(profileData.custom_difficulty_color || "#a855f7");
       }
 
-      // Load pact data
+      // Load pact data (including identity fields)
       const { data: pactData } = await supabase
         .from("pacts")
-        .select("id, project_start_date, project_end_date")
+        .select("id, name, mantra, symbol, project_start_date, project_end_date")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (pactData) {
         setPactId(pactData.id);
+        setPactName(pactData.name || "");
+        setPactMantra(pactData.mantra || "");
+        setPactSymbol(pactData.symbol || "🎯");
         if (pactData.project_start_date) {
           setProjectStartDate(new Date(pactData.project_start_date));
         }
@@ -52,25 +68,45 @@ export default function PactSettings() {
     loadData();
   }, [user]);
 
+  // Handler for saving pact identity
+  const handleSavePactIdentity = useCallback(async () => {
+    await updatePact({
+      name: pactName.trim(),
+      mantra: pactMantra.trim(),
+      symbol: pactSymbol,
+    });
+  }, [updatePact, pactName, pactMantra, pactSymbol]);
+
   if (!user) return null;
 
   return (
     <ProfileSettingsShell
       title="Pact Settings"
-      subtitle="Configure your pact timeline and custom difficulty"
+      subtitle="Configure your pact identity, timeline, and custom difficulty"
       icon={<ScrollText className="h-7 w-7 text-primary" />}
       containerClassName="max-w-2xl"
     >
       <ProfilePactSettings
         userId={user.id}
         pactId={pactId}
+        // Pact identity props
+        pactName={pactName}
+        pactMantra={pactMantra}
+        pactSymbol={pactSymbol}
+        onPactNameChange={setPactName}
+        onPactMantraChange={setPactMantra}
+        onPactSymbolChange={setPactSymbol}
+        onSavePactIdentity={handleSavePactIdentity}
+        isSavingIdentity={isUpdating}
+        // Timeline props
         projectStartDate={projectStartDate}
         projectEndDate={projectEndDate}
+        onProjectStartDateChange={setProjectStartDate}
+        onProjectEndDateChange={setProjectEndDate}
+        // Custom difficulty props
         customDifficultyName={customDifficultyName}
         customDifficultyActive={customDifficultyActive}
         customDifficultyColor={customDifficultyColor}
-        onProjectStartDateChange={setProjectStartDate}
-        onProjectEndDateChange={setProjectEndDate}
         onCustomDifficultyNameChange={setCustomDifficultyName}
         onCustomDifficultyActiveChange={setCustomDifficultyActive}
         onCustomDifficultyColorChange={setCustomDifficultyColor}
