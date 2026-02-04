@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Plus, CheckSquare, BookOpen, Heart, ChevronRight } from "lucide-react";
+import { Plus, CheckSquare, BookOpen, Heart, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -18,133 +18,175 @@ export function QuickActionsBar({ ownedModules, className }: QuickActionsBarProp
   const actions = [
     {
       id: "new-goal",
-      label: "New Goal",
-      description: "Create Target",
+      label: "NEW GOAL",
+      sub: "Initiate",
       icon: Plus,
       onClick: () => navigate("/goals/new"),
       always: true,
-      variant: "primary", // Special styling for the main action
+      variant: "primary",
     },
     {
       id: "log-todo",
-      label: "Tasks",
-      description: "Quick Log",
+      label: "TASKS",
+      sub: "Check",
       icon: CheckSquare,
       onClick: () => navigate("/todo"),
       always: false,
       owned: ownedModules.todo,
-      variant: "default",
+      variant: "glass",
     },
     {
       id: "journal-entry",
-      label: "Journal",
-      description: "Daily Note",
+      label: "JOURNAL",
+      sub: "Record",
       icon: BookOpen,
       onClick: () => navigate("/journal"),
       always: false,
       owned: ownedModules.journal,
-      variant: "default",
+      variant: "glass",
     },
     {
       id: "health-checkin",
-      label: "Health",
-      description: "Vitals",
+      label: "HEALTH",
+      sub: "Vitals",
       icon: Heart,
       onClick: () => navigate("/health"),
       always: false,
       owned: ownedModules.health,
-      variant: "default",
+      variant: "glass",
     },
   ];
 
   const visibleActions = actions.filter((a) => a.always || a.owned);
 
-  // Animation container pour l'effet "cascade"
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 },
-  };
-
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
-      className={cn("w-full max-w-5xl mx-auto py-4", className)}
-    >
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {visibleActions.map((action) => (
-          <motion.button
-            key={action.id}
-            variants={itemVariants}
-            onClick={action.onClick}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            className={cn(
-              "group relative flex flex-col items-start justify-between p-4 h-24 rounded-xl border transition-all duration-300 overflow-hidden",
-              // Styles conditionnels selon le type d'action
-              action.variant === "primary"
-                ? "bg-primary text-primary-foreground border-primary shadow-lg shadow-primary/25 hover:shadow-primary/40"
-                : "bg-card/40 backdrop-blur-md border-white/10 hover:border-white/20 hover:bg-card/60 hover:shadow-lg",
-            )}
-          >
-            {/* Background Glow Effect (Subtil) */}
-            {action.variant !== "primary" && (
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            )}
-
-            <div className="flex w-full justify-between items-start z-10">
-              <div
-                className={cn(
-                  "p-2 rounded-lg transition-colors",
-                  action.variant === "primary"
-                    ? "bg-white/20"
-                    : "bg-secondary/50 group-hover:bg-primary/10 group-hover:text-primary",
-                )}
-              >
-                <action.icon size={20} />
-              </div>
-
-              {/* Petite flèche qui apparait au hover */}
-              <ChevronRight
-                className={cn(
-                  "w-4 h-4 transition-all duration-300 opacity-0 -translate-x-2 group-hover:translate-x-0 group-hover:opacity-100",
-                  action.variant === "primary" ? "text-white/80" : "text-muted-foreground",
-                )}
-              />
-            </div>
-
-            <div className="text-left z-10 mt-auto">
-              <span
-                className={cn(
-                  "block text-sm font-bold font-orbitron tracking-wide",
-                  action.variant === "primary" ? "text-primary-foreground" : "text-foreground",
-                )}
-              >
-                {action.label}
-              </span>
-              <span
-                className={cn(
-                  "text-[10px] font-rajdhani uppercase tracking-wider",
-                  action.variant === "primary" ? "text-primary-foreground/70" : "text-muted-foreground/60",
-                )}
-              >
-                {action.description}
-              </span>
-            </div>
-          </motion.button>
+    <div className={cn("w-full max-w-5xl mx-auto py-6", className)}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {visibleActions.map((action, i) => (
+          <QuantumButton key={action.id} action={action} index={i} />
         ))}
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+// --- Le Composant Bouton Ultra-Avancé ---
+
+function QuantumButton({ action, index }: { action: any; index: number }) {
+  const isPrimary = action.variant === "primary";
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.4, type: "spring" }}
+      whileHover="hover"
+      whileTap="tap"
+      onClick={action.onClick}
+      className={cn(
+        "relative group h-28 w-full overflow-hidden rounded-2xl border transition-all duration-500",
+        // Base styles
+        isPrimary
+          ? "border-primary/50 shadow-[0_0_30px_-10px_hsl(var(--primary)/0.5)]"
+          : "border-white/10 bg-black/20 hover:border-white/20",
+      )}
+    >
+      {/* 1. L'arrière-plan abstrait animé (Plasma Effect) */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
+        <motion.div
+          animate={{
+            rotate: [0, 360],
+            scale: [1, 1.2, 1],
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          className={cn(
+            "absolute -top-[50%] -left-[50%] w-[200%] h-[200%] blur-[60px]",
+            isPrimary
+              ? "bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,hsl(var(--primary))_100%)]"
+              : "bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_50%,rgba(255,255,255,0.1)_100%)]",
+          )}
+        />
+      </div>
+
+      {/* 2. Glass Layer & Noise */}
+      <div className="absolute inset-0 backdrop-blur-xl bg-card/10 group-hover:bg-card/20 transition-colors duration-300" />
+
+      {/* 3. Contenu au premier plan */}
+      <div className="relative h-full flex flex-col justify-between p-5 z-10">
+        {/* Header: Icon & Indicator */}
+        <div className="flex justify-between items-start">
+          <motion.div
+            variants={{
+              hover: { scale: 1.1, rotate: isPrimary ? 90 : 0 },
+              tap: { scale: 0.9 },
+            }}
+            className={cn(
+              "p-2.5 rounded-xl backdrop-blur-md border border-white/10 transition-colors duration-300",
+              isPrimary
+                ? "bg-primary text-primary-foreground"
+                : "bg-white/5 text-muted-foreground group-hover:text-white group-hover:bg-white/10",
+            )}
+          >
+            <action.icon size={22} strokeWidth={1.5} />
+          </motion.div>
+
+          {/* Abstract Dot that glows */}
+          <div className="flex gap-1">
+            <motion.div
+              animate={{ opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className={cn("w-1.5 h-1.5 rounded-full", isPrimary ? "bg-primary-foreground" : "bg-white/40")}
+            />
+            <div className={cn("w-1.5 h-1.5 rounded-full", isPrimary ? "bg-primary-foreground/30" : "bg-white/10")} />
+          </div>
+        </div>
+
+        {/* Footer: Text Content */}
+        <div className="text-left space-y-0.5">
+          <motion.div
+            variants={{ hover: { x: 5 } }}
+            transition={{ type: "spring", stiffness: 300 }}
+            className="flex items-center gap-2"
+          >
+            <span
+              className={cn(
+                "text-sm font-bold font-orbitron tracking-widest",
+                isPrimary ? "text-primary-foreground" : "text-foreground group-hover:text-white",
+              )}
+            >
+              {action.label}
+            </span>
+            {/* Arrow appears on hover */}
+            <motion.div variants={{ hover: { opacity: 1, x: 0 }, initial: { opacity: 0, x: -10 } }} initial="initial">
+              <ArrowRight size={14} className={isPrimary ? "text-primary-foreground" : "text-white"} />
+            </motion.div>
+          </motion.div>
+
+          <p
+            className={cn(
+              "text-[10px] font-rajdhani uppercase tracking-wider font-medium",
+              isPrimary ? "text-primary-foreground/70" : "text-muted-foreground group-hover:text-white/60",
+            )}
+          >
+            /// {action.sub}
+          </p>
+        </div>
+      </div>
+
+      {/* 4. Bordure brillante qui se déplace au survol (Scanline effect) */}
+      <motion.div
+        variants={{
+          hover: { top: "150%" },
+          initial: { top: "-50%" },
+        }}
+        initial="initial"
+        transition={{ duration: 0.6 }}
+        className="absolute left-0 right-0 h-[30%] bg-gradient-to-b from-transparent via-white/10 to-transparent skew-y-12 pointer-events-none"
+      />
+    </motion.button>
   );
 }
