@@ -1,10 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
+/**
+ * Rank interface representing a user-defined rank tier.
+ * Includes custom styling properties for visual display.
+ */
 export interface Rank {
   id: string;
   min_points: number;
+  max_points?: number | null;
   name: string;
+  logo_url?: string | null;
+  background_url?: string | null;
+  background_opacity?: number | null;
+  frame_color?: string | null;
+  glow_color?: string | null;
+  quote?: string | null;
 }
 
 export function useRanks(userId: string | undefined) {

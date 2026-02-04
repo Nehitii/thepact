@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Shield, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Rank } from '@/hooks/useRanks';
+import { Rank } from '@/hooks/useRankXP';
 
 interface CurrentRankBadgeProps {
   rank: Rank | null;
