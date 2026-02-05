@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion"; // Import de Variants ajouté
 import { Sparkles, Trophy, Zap } from "lucide-react";
 
 import { PactVisual } from "@/components/PactVisual";
@@ -30,8 +30,9 @@ interface HeroSectionProps {
 
 /**
  * ANIMATIONS CONFIG
+ * Typage explicite : Variants pour éviter l'erreur TS2322
  */
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -42,7 +43,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.95 },
   visible: {
     opacity: 1,
@@ -52,11 +53,7 @@ const itemVariants = {
   },
 };
 
-/**
- * HERO SECTION - VERSION "COMMAND CENTER"
- */
 export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules, className }: HeroSectionProps) {
-  // --- Data Logic (Identique pour garantir la stabilité) ---
   const progressPercentage = Number(pact.global_progress) || 0;
 
   const { currentRank, nextRank, currentXP, progressInCurrentRank } = rankData;
@@ -101,20 +98,16 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[600px] pointer-events-none -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent opacity-50" />
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[100px] opacity-40 mix-blend-screen animate-pulse" />
-        {/* Grid Pattern subtil */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       </div>
 
       <div className="flex flex-col items-center space-y-8 pt-6 pb-10">
         {/* --- BLOCK 1: IDENTITY CORE --- */}
         <motion.div variants={itemVariants} className="relative z-20 text-center space-y-4">
-          {/* Visual Wrapper with Magnetic Glow */}
           <div className="group relative flex justify-center mb-6">
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/30 to-accent/30 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-700" />
             <div className="relative transform transition-transform duration-500 hover:scale-105 hover:rotate-2">
               <PactVisual symbol={pact.symbol} progress={progressPercentage} size="lg" />
-
-              {/* Badge Level Flottant */}
               <div className="absolute -bottom-2 -right-2 bg-background/80 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-full shadow-xl flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 <span className="text-[10px] font-orbitron font-bold text-foreground">LVL {level}</span>
@@ -122,7 +115,6 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
             </div>
           </div>
 
-          {/* Typography */}
           <div className="space-y-2">
             <h1 className="text-4xl md:text-6xl font-black font-orbitron tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white via-white/90 to-white/50 drop-shadow-sm">
               {pact.name}
@@ -134,16 +126,14 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
             </p>
           </div>
 
-          {/* Tactical Notification */}
           <div className="flex justify-center pt-2">
             <TodaysFocusMessage focusGoals={focusGoals} allGoals={allGoals} />
           </div>
         </motion.div>
 
-        {/* --- BLOCK 2: PLAYER STATUS CARD (Rank + XP Merged) --- */}
+        {/* --- BLOCK 2: PLAYER STATUS CARD --- */}
         <motion.div variants={itemVariants} className="w-full max-w-2xl">
           <div className="relative group overflow-hidden rounded-3xl border border-white/10 bg-black/40 backdrop-blur-xl shadow-2xl">
-            {/* Glossy overlay */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-transparent opacity-50 pointer-events-none" />
 
             <div className="p-6 md:p-8 space-y-6 relative z-10">
@@ -160,8 +150,8 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
                       level={level}
                       currentXP={currentXP}
                       progressToNext={progressInCurrentRank}
-                      className="p-0 border-none bg-transparent shadow-none" // Reset styles for embedded view
-                      hideProgress // On cache la progress bar interne du badge pour utiliser la grande
+                      className="p-0 border-none bg-transparent shadow-none"
+                      hideProgress={true} // PROPRIÉTÉ AJOUTÉE
                     />
                   </div>
                 </div>
@@ -188,8 +178,8 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
                   nextRankName={nextRankName}
                   isMaxRank={isMaxRank}
                   frameColor={currentRank?.frame_color}
-                  showLabels={false} // On gère les labels nous-mêmes au dessus
-                  className="h-4" // Plus épaisse
+                  showLabels={false} // PROPRIÉTÉ AJOUTÉE
+                  className="h-4"
                 />
                 <div className="flex justify-between mt-2 text-[10px] font-rajdhani text-muted-foreground/50 uppercase tracking-widest">
                   <span>{currentRankMin} XP</span>
@@ -200,7 +190,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
           </div>
         </motion.div>
 
-        {/* --- BLOCK 3: MISSION CONTROL (Stats) --- */}
+        {/* --- BLOCK 3: MISSION CONTROL --- */}
         <motion.div variants={itemVariants} className="w-full">
           <QuickStatsBadges
             totalGoals={quickStats.totalGoals}
@@ -214,10 +204,8 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
         {/* --- BLOCK 4: ACTIONS DOCK --- */}
         <motion.div variants={itemVariants} className="w-full max-w-lg">
           <div className="relative">
-            {/* Decorative lines around actions */}
             <div className="absolute top-1/2 left-0 w-8 h-[1px] bg-gradient-to-r from-transparent to-border -translate-x-full" />
             <div className="absolute top-1/2 right-0 w-8 h-[1px] bg-gradient-to-l from-transparent to-border translate-x-full" />
-
             <QuickActionsBar ownedModules={ownedModules} className="pt-0" />
           </div>
         </motion.div>
