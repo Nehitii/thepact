@@ -1,267 +1,353 @@
 
+# /Home Page Premium UI/UX Overhaul — Expert Audit & Implementation Plan
 
-# Home Page Comprehensive Audit & Improvement Plan
+---
 
 ## Executive Summary
 
-After a thorough analysis of the `/home` route implementation, I've identified several opportunities to enhance the Hero Section (project identity, XP display, user stats) while improving maintainability, performance, and mobile responsiveness.
+After analyzing the complete `/home` implementation, I've identified a **significant visual inconsistency gap** between the recently upgraded components (`QuickStatsBadges`, `QuickActionsBar`) and the remaining elements. This audit proposes a systematic elevation of the entire page to a **Premium/High-End Cyberpunk Glassmorphism 2.0** standard.
 
 ---
 
-## Part 1: Current State Analysis
+## Part 1: UX Audit — Information Architecture & Flow
 
-### Hero Section Structure (Lines 369-483)
-The current hero section consists of:
-1. **PactVisual** - Animated icon with progress ring
-2. **Title & Mantra** - Project name with gradient text + italic mantra
-3. **TodaysFocusMessage** - Dynamic status message
-4. **NextMilestoneCard** - 3-column milestone display (XP, Timeline, Focus)
-5. **Global XP Progress Bar** - Custom animated progress bar with "heartbeat" effect
-6. **QuickActionsBar** - HUD-style action buttons
+### Current State Assessment
 
-### Identified Issues
+| Element | Location | Hierarchy Score | Issues |
+|---------|----------|-----------------|--------|
+| PactVisual | Top center | ★★★★☆ | Good focal point, but floating without contextual framing |
+| Project Title/Mantra | Below visual | ★★★★★ | Excellent prominence, gradient text works well |
+| TodaysFocusMessage | Below title | ★★☆☆☆ | Too subtle, gets lost visually |
+| CurrentRankBadge | Below message | ★★★☆☆ | Good structure but lacks visual impact |
+| XPProgressBar | Below rank | ★★★☆☆ | Functional but visually flat compared to new components |
+| QuickStatsBadges | Below XP bar | ★★★★★ | New premium standard — the benchmark |
+| QuickActionsBar | Bottom of hero | ★★★★★ | Excellent plasma effects and motion |
 
-**UX & Information Hierarchy:**
-- XP information is scattered: current rank is buried, total XP isn't prominently displayed
-- The "Current Resonance" label above the progress bar refers to the "next" rank (confusing)
-- Critical user stats (current XP, current rank name) are not immediately visible
-- NextMilestoneCard repeats XP info that's also in the progress bar
+### Identified UX Problems
 
-**Visual Identity:**
-- The progress bar container lacks visual cohesion with the rest of the hero
-- No visual representation of the current rank (name/badge)
-- The PactVisual icon floats without contextual framing
-- Animation styles are defined inline (lines 311-347) rather than in CSS
+1. **Visual Hierarchy Breaks**: The `TodaysFocusMessage` is rendered as plain text with minimal styling — it's the least visible element despite carrying actionable information
 
-**Technical Debt:**
-- 604-line monolithic file with inline styles
-- Rank calculation logic duplicated between Home.tsx and useRankXP.ts
-- Animation keyframes defined inline in JSX (maintenance burden)
-- Module renderer function (renderModule) is verbose and could be a map
-- Module subcomponents (TheCallModule, FinanceModule, etc.) defined at end of file
+2. **Rank Badge Underwhelms**: The `CurrentRankBadge` uses simpler styling than `QuickStatsBadges`, creating cognitive dissonance about which element is more important
 
-**Mobile Responsiveness:**
-- Progress bar heart indicator uses fixed pixel values (-ml-3.5)
-- NextMilestoneCard 3-column grid doesn't stack on small screens
-- QuickActionsBar could overflow on very narrow viewports
+3. **XP Progress Bar Lacks Depth**: Compared to the noise textures and glow effects in `QuickStatsBadges`, the progress bar feels "2D"
 
----
+4. **Missing Page Entrance Animation**: No staggered entrance — all elements appear simultaneously, losing the premium "reveal" feeling
 
-## Part 2: Proposed Improvements
+5. **Module Cards Inconsistency**: `ActionModuleCard` and `DashboardWidgetShell` have different glassmorphism depths, creating visual fragmentation
 
-### A. Functional Enhancements
+### Recommended Hierarchy Restructure
 
-1. **Unified Rank & XP Display**
-   - Create a new `HeroStatsBar` component showing current rank, current XP, and progress toward next rank in a single cohesive unit
-   - Display current rank name prominently with the rank's custom frame color/glow
-
-2. **Quick Stat Badges**
-   - Add animated stat badges below the title: Total Goals, Active Focus, Days Remaining
-   - These provide at-a-glance dashboard metrics
-
-3. **"Level Up" Notification State**
-   - When progress reaches 90%+, trigger a pulsing highlight effect on the rank display
-   - Visual reward anticipation pattern
-
-4. **Streak/Consistency Indicator** (optional enhancement)
-   - Show a "daily engagement" micro-indicator if the user has activity patterns
-
-### B. UX & Information Hierarchy Fixes
-
-1. **Reorder Hero Elements:**
-   ```text
-   [PactVisual with integrated XP ring]
-            |
-   [Project Name + Mantra]
-            |
-   [Current Rank Badge] ← NEW FOCAL POINT
-            |
-   [XP Progress Bar with "X XP / Y XP needed for [Next Rank]"]
-            |
-   [Quick Stats: Goals | Focus | Timeline]
-            |
-   [Quick Actions Bar]
-   ```
-
-2. **Consolidate Milestone Data**
-   - Merge NextMilestoneCard into a more compact "Quick Stats" row
-   - Remove redundant XP display from NextMilestoneCard (progress bar handles this)
-
-3. **Clarify Labels**
-   - "Current Resonance" → "Progress to [Next Rank Name]"
-   - Show "Current Rank: [Name]" explicitly above the bar
-
-### C. Visual Identity Improvements
-
-1. **Rank Badge Component**
-   - Create a prominent `CurrentRankBadge` with the rank's custom colors (frame_color, glow_color)
-   - Include rank name, optional quote, and level number
-   - Cyber-HUD aesthetic with glassmorphism border
-
-2. **Unified Hero Container**
-   - Wrap the entire hero in a single `HeroSection` component with cohesive styling
-   - Add subtle animated border/glow that pulses gently
-
-3. **Enhanced Progress Bar**
-   - Increase visual prominence of current/max XP numbers
-   - Add tick marks at rank thresholds (optional)
-   - Improve the "heart" indicator with rank-themed coloring
-
-4. **Animation Consolidation**
-   - Move all custom keyframes to index.css
-   - Use Tailwind's animation utilities where possible
-
-### D. Technical Debt Resolution
-
-1. **Component Extraction**
-   - Extract `HeroSection` component (~200 lines → separate file)
-   - Extract `XPProgressBar` component
-   - Extract `CurrentRankBadge` component
-   - Move module subcomponents to a separate file or use a registry pattern
-
-2. **Hook Consolidation**
-   - Use `useRankXP` hook consistently instead of duplicating rank logic in Home.tsx
-   - Remove redundant calculations from the main useMemo block
-
-3. **Code Organization**
-   ```text
-   src/components/home/
-   ├── hero/
-   │   ├── HeroSection.tsx          ← Main hero wrapper
-   │   ├── CurrentRankBadge.tsx     ← Rank display with colors
-   │   ├── XPProgressBar.tsx        ← Animated XP bar
-   │   ├── QuickStatsBadges.tsx     ← Stats row (goals, focus, days)
-   │   └── index.ts                 ← Barrel export
-   ├── modules/
-   │   ├── ActionModuleRegistry.tsx ← Module renderer map
-   │   └── index.ts
-   └── ... (existing files)
-   ```
-
-4. **Animation CSS Extraction**
-   - Move `fluid-flow`, `heartbeat-circle`, `breathe-blue` keyframes to index.css
-   - Add utility classes: `.animate-fluid`, `.animate-heartbeat`, `.animate-breathe`
-
-### E. Mobile Responsiveness
-
-1. **Responsive Progress Bar**
-   - Use relative units for heart indicator positioning
-   - Reduce bar height on mobile (h-2 instead of h-3)
-
-2. **Responsive Quick Stats**
-   - Stack vertically on mobile (grid-cols-1 sm:grid-cols-3)
-   - Reduce font sizes on mobile breakpoints
-
-3. **Hero Spacing**
-   - Use responsive padding: `p-4 md:p-6`
-   - Reduce title size on mobile: `text-3xl md:text-5xl`
+```text
+┌─────────────────────────────────────────────┐
+│  [PactVisual with ambient glow halo]        │  ← Z-index: Highest, radial glow behind
+├─────────────────────────────────────────────┤
+│  PROJECT NAME (Orbitron, gradient, glow)    │  ← Primary focal point
+│  "mantra" (Rajdhani italic)                 │
+├─────────────────────────────────────────────┤
+│  [TodaysFocusMessage] ← UPGRADED            │  ← Now a glassmorphism pill with icon
+├─────────────────────────────────────────────┤
+│  ╔═════════════════════════════════════════╗│
+│  ║  CURRENT RANK BADGE (Premium Edition)   ║│  ← Hero-within-hero, noise texture
+│  ║  Level indicator + Rank name + XP       ║│
+│  ╚═════════════════════════════════════════╝│
+├─────────────────────────────────────────────┤
+│  [XP Progress Bar with depth layers]        │  ← Inner shadow, noise, fluid animation
+├─────────────────────────────────────────────┤
+│  [QuickStatsBadges] ← REFERENCE STANDARD    │  ← Keep as-is (benchmark)
+├─────────────────────────────────────────────┤
+│  [QuickActionsBar] ← REFERENCE STANDARD     │  ← Keep as-is (benchmark)
+└─────────────────────────────────────────────┘
+```
 
 ---
 
-## Part 3: Implementation Roadmap
+## Part 2: UI Audit — Visual Polish & "Wow Factor"
 
-### Phase 1: CSS Cleanup & Animation Extraction
-- Move inline keyframes to index.css
-- Create Tailwind animation utilities
+### Gap Analysis: Old vs. New Components
 
-### Phase 2: Component Extraction
-- Create `src/components/home/hero/` directory
-- Extract `HeroSection.tsx` wrapper
-- Extract `XPProgressBar.tsx`
-- Extract `CurrentRankBadge.tsx`
-- Extract `QuickStatsBadges.tsx`
+| Property | QuickStatsBadges (NEW) | CurrentRankBadge (OLD) | Gap |
+|----------|------------------------|------------------------|-----|
+| Background | `bg-gradient-to-br` with transparency | `bg-card/40` | Missing gradient |
+| Border | `border-{color}/20 hover:border-{color}/50` | Inline style border | Inconsistent |
+| Glow Effect | Animated background glow on hover | Static `boxShadow` | No interactivity |
+| Noise Texture | Present in XPProgressBar | Absent | Missing depth |
+| Hover Transform | `-translate-y-1` | None | Static feeling |
+| Font Treatment | Orbitron + truncate + gradient | Same | OK |
 
-### Phase 3: Hook Integration
-- Integrate `useRankXP` hook properly in Home.tsx
-- Remove duplicate rank calculation logic
-- Update components to use unified data source
+### Proposed Visual Enhancements
 
-### Phase 4: Visual Enhancements
-- Implement new rank badge with custom colors
-- Redesign XP progress bar with clear current/next labels
-- Add mobile-responsive styling throughout
+#### A. TodaysFocusMessage Upgrade
+**Current**: Plain `<div>` with icon and text
+**Proposed**: Glassmorphism pill with:
+- `backdrop-blur-xl bg-card/30`
+- Animated border glow based on message type
+- Subtle scale-in entrance animation
+- Icon with `animate-glow-pulse`
 
-### Phase 5: Module Registry Refactor
-- Create module component registry for cleaner renderModule logic
-- Move inline module components to separate file
+#### B. CurrentRankBadge Premium Tier
+**Current**: Functional card with rank colors
+**Proposed**:
+- Add noise texture overlay (same as XPProgressBar)
+- Add background glow layer that pulses on "close to level-up"
+- Add `hover:-translate-y-1 hover:shadow-lg` for lift effect
+- Add scanline effect on hover
+- Corner brackets (using existing `.corner-brackets` CSS class)
+
+#### C. XPProgressBar Depth Enhancement
+**Current**: Flat progress bar with fluid animation
+**Proposed**:
+- Add inner shadow to track: `shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]`
+- Add noise texture overlay (match QuickStatsBadges)
+- Enhance heart indicator with ring glow effect
+- Add tick marks at 25%, 50%, 75%
+
+#### D. Page-Level Entrance Animation
+**Current**: Single `animate-fade-in` on hero container
+**Proposed**: Staggered Framer Motion entrance:
+```text
+0ms   → PactVisual (scale-in from 0.8)
+100ms → Title + Mantra (fade-in from below)
+200ms → TodaysFocusMessage (slide-in from left)
+300ms → CurrentRankBadge (scale-in)
+400ms → XPProgressBar (width animation from 0)
+500ms → QuickStatsBadges (stagger each card 100ms)
+700ms → QuickActionsBar (stagger each button 100ms)
+```
+
+### Animation Classes to Apply
+
+| Element | Animation Class | Effect |
+|---------|----------------|--------|
+| PactVisual wrapper | `animate-float` | Gentle floating |
+| TodaysFocusMessage | `animate-glow-pulse` on icon | Attention draw |
+| CurrentRankBadge | `animate-breathe-blue` | Rank color breathing |
+| XPProgressBar fill | `animate-fluid` | Already applied |
+| QuickStatsBadges | `hover-shimmer-wave` | On-hover shine |
+| Module Cards | `hover-shimmer-wave` | Consistent hover |
 
 ---
 
-## Technical Details
+## Part 3: Code Refactoring — Technical Debt & Performance
 
-### New Component: CurrentRankBadge
+### Current Issues
+
+1. **HeroSection.tsx lacks Framer Motion**: All sibling components use `framer-motion` for animations, but HeroSection uses CSS-only animations, creating inconsistency
+
+2. **Inline Styles in CurrentRankBadge**: Uses inline `style={{}}` for dynamic colors instead of CSS custom properties
+
+3. **No Memoization of Expensive Renders**: The module grid re-renders all children when any module changes
+
+4. **Inconsistent Component Structure**: Some components use `motion.div`, others use plain `div` with Tailwind animations
+
+### Proposed Refactoring
+
+#### A. Unified Motion Wrapper for HeroSection
+
+Create a new `AnimatedHeroSection` that wraps existing components with staggered Framer Motion:
+
 ```tsx
-interface CurrentRankBadgeProps {
-  rank: Rank | null;
-  level: number;
-  currentXP: number;
-  className?: string;
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0,
+    transition: { type: "spring", stiffness: 100 }
+  },
+};
+```
+
+#### B. CSS Custom Properties for Dynamic Colors
+
+Replace inline styles with CSS variables:
+
+```tsx
+// Before
+style={{ border: `2px solid ${frameColor}` }}
+
+// After
+style={{ '--rank-frame-color': frameColor } as React.CSSProperties}
+className="border-2 border-[var(--rank-frame-color)]"
+```
+
+#### C. React.memo for Module Cards
+
+Wrap pure display components:
+
+```tsx
+export const ProgressOverviewModule = React.memo(function ProgressOverviewModule(...) {
+  // component body
+});
+```
+
+#### D. Noise Texture Utility Component
+
+Create a reusable noise overlay:
+
+```tsx
+function NoiseOverlay({ opacity = 0.2 }: { opacity?: number }) {
+  return (
+    <div 
+      className="absolute inset-0 opacity-20 mix-blend-soft-light pointer-events-none"
+      style={{
+        backgroundImage: "url('data:image/svg+xml,...')", // SVG noise
+      }}
+    />
+  );
 }
 ```
 
-Features:
-- Displays rank name with Orbitron font
-- Uses rank's `frame_color` for border/glow
-- Shows level number badge
-- Optional quote tooltip
-- Pulsing glow animation when close to level-up
+---
 
-### New Component: XPProgressBar
-```tsx
-interface XPProgressBarProps {
-  currentXP: number;
-  nextRankXP: number;
-  currentRankXP: number;
-  nextRankName: string;
-  isMaxRank: boolean;
-  frameColor?: string;
+## Part 4: Mobile Responsiveness Fixes
+
+### Current Issues
+
+1. **XPProgressBar heart indicator**: Uses fixed `-ml-3.5` which may clip on mobile
+2. **QuickStatsBadges**: Already responsive (`grid-cols-1 md:grid-cols-3`)
+3. **QuickActionsBar**: Uses `grid-cols-2 lg:grid-cols-4` — good
+4. **CurrentRankBadge**: Content may overflow on narrow screens
+
+### Proposed Fixes
+
+| Component | Current | Proposed |
+|-----------|---------|----------|
+| XPProgressBar | `-ml-3.5` fixed | `-ml-2.5 sm:-ml-3.5` responsive |
+| CurrentRankBadge | `flex items-center gap-4` | `flex flex-col sm:flex-row items-center gap-2 sm:gap-4` |
+| TodaysFocusMessage | `flex items-center` | `flex flex-col sm:flex-row items-center text-center sm:text-left` |
+
+---
+
+## Part 5: Implementation Roadmap
+
+### Phase 1: CSS Utilities (Foundation)
+- Add new utility classes to `index.css`:
+  - `.glass-card-premium` — unified glassmorphism
+  - `.noise-overlay` — SVG noise texture
+  - `.stagger-fade-in` — animation delay utilities
+
+### Phase 2: TodaysFocusMessage Upgrade
+- Convert to glassmorphism pill
+- Add message-type-based color theming
+- Add entrance animation
+
+### Phase 3: CurrentRankBadge Premium
+- Add noise texture overlay
+- Add corner brackets
+- Add hover lift effect
+- Add shimmer wave on hover
+
+### Phase 4: XPProgressBar Enhancement
+- Add inner shadow to track
+- Add tick marks at quartiles
+- Improve heart indicator glow
+
+### Phase 5: HeroSection Motion Integration
+- Wrap in Framer Motion `motion.div`
+- Add staggered entrance animations
+- Add viewport-aware animations (only animate on first view)
+
+### Phase 6: Module Cards Consistency
+- Apply `hover-shimmer-wave` to all widget shells
+- Ensure consistent border/glow treatment
+
+---
+
+## Technical Specifications
+
+### New CSS Classes (to add to index.css)
+
+```css
+/* Premium Glassmorphism Card */
+.glass-premium {
+  @apply relative overflow-hidden;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card) / 0.4) 0%,
+    hsl(var(--card) / 0.2) 100%
+  );
+  backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  box-shadow: 
+    0 8px 32px hsl(var(--primary) / 0.1),
+    inset 0 1px 0 hsl(var(--primary) / 0.1);
 }
+
+.glass-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.05) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+/* Staggered Animation Delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
 ```
 
-Features:
-- Responsive height (h-2 sm:h-3)
-- Clear XP numerical display (e.g., "2,450 / 5,000 XP")
-- Animated fluid fill with glow
-- "MAX RANK" state handling
+### Framer Motion Variants (for HeroSection)
 
-### New Component: QuickStatsBadges
-```tsx
-interface QuickStatsBadgesProps {
-  totalGoals: number;
-  completedGoals: number;
-  focusGoalName: string | null;
-  daysRemaining: number | null;
-}
+```typescript
+export const heroContainerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1, delayChildren: 0.05 }
+  }
+};
+
+export const heroItemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.95 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 15 }
+  }
+};
 ```
-
-Features:
-- 3 compact stat pills in a row
-- Icon + value + label format
-- Mobile stacking with grid
 
 ---
 
 ## Files to Create/Modify
 
-### New Files:
-- `src/components/home/hero/HeroSection.tsx`
-- `src/components/home/hero/CurrentRankBadge.tsx`
-- `src/components/home/hero/XPProgressBar.tsx`
-- `src/components/home/hero/QuickStatsBadges.tsx`
-- `src/components/home/hero/index.ts`
+### New Files
+- `src/components/home/hero/NoiseOverlay.tsx` — Reusable noise texture
+- `src/components/home/hero/motion-variants.ts` — Shared animation configs
 
-### Modified Files:
-- `src/pages/Home.tsx` (major refactor - import new components)
-- `src/index.css` (add animation keyframes)
+### Modified Files
+1. `src/index.css` — Add premium glass utilities
+2. `src/components/home/TodaysFocusMessage.tsx` — Premium pill redesign
+3. `src/components/home/hero/CurrentRankBadge.tsx` — Add noise, brackets, shimmer
+4. `src/components/home/hero/XPProgressBar.tsx` — Add depth, ticks, enhanced glow
+5. `src/components/home/hero/HeroSection.tsx` — Wrap with Framer Motion stagger
+6. `src/components/home/DashboardWidgetShell.tsx` — Add shimmer wave hover
 
 ---
 
 ## Expected Outcomes
 
-1. **Improved Information Hierarchy**: Current rank and XP are immediately visible
-2. **Cleaner Codebase**: Home.tsx reduced from 604 lines to ~300 lines
-3. **Better Mobile Experience**: Responsive hero that works on all viewports
-4. **Maintainable Animations**: CSS-based animations instead of inline styles
-5. **Unified Rank Display**: Consistent use of useRankXP hook
-6. **Enhanced Visual Polish**: Rank-colored badges and improved progress visualization
-
+1. **Visual Cohesion**: All hero components match the premium standard of QuickStatsBadges
+2. **Improved Hierarchy**: TodaysFocusMessage becomes visible and actionable
+3. **"Wow Factor"**: Staggered entrance animations create a cinematic reveal
+4. **Performance**: Memoization prevents unnecessary re-renders
+5. **Maintainability**: Shared motion variants and utility classes reduce duplication
+6. **Mobile Excellence**: All components adapt gracefully to narrow viewports
