@@ -63,6 +63,9 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
   const quickStats = useMemo(() => {
     const completedGoals = allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length;
 
+    // CORRECTION ICI : Définition explicite de totalGoals
+    const totalGoals = allGoals.length;
+
     const primaryFocus = focusGoals[0];
     const focusGoalName = primaryFocus?.name || null;
 
@@ -87,10 +90,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
     >
       {/* 🔮 Background Layers */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none -z-10 overflow-hidden">
-        {/* Grille technique subtile */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-
-        {/* Ligne de connexion centrale (Le "Spine" du layout) */}
         <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gradient-to-b from-transparent via-cyan-500/10 to-transparent -translate-x-1/2" />
       </div>
 
@@ -115,7 +115,6 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
         <motion.div variants={itemVariants} className="w-full max-w-2xl relative">
           <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-3xl opacity-30 blur-sm" />
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/60 backdrop-blur-md p-6">
-            {/* Info Rang */}
             <div className="flex items-end justify-between mb-4">
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] text-cyan-400 font-orbitron uppercase tracking-widest">Rang Actuel</span>
@@ -138,7 +137,6 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
               </div>
             </div>
 
-            {/* Barre XP */}
             <XPProgressBar
               currentXP={currentXP}
               currentRankXP={currentRankMin}
@@ -147,7 +145,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
               isMaxRank={isMaxRank}
               frameColor={currentRank?.frame_color}
               showLabels={false}
-              className="h-5" // Un peu plus épais pour l'impact visuel
+              className="h-5"
             />
 
             <div className="flex justify-between mt-2 text-[10px] font-mono text-white/30">
@@ -167,7 +165,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
           />
         </motion.div>
 
-        {/* --- 4. DOCK ACTIONS (SPACER POUR RESPIRER) --- */}
+        {/* --- 4. DOCK ACTIONS --- */}
         <div className="h-4" />
 
         <motion.div variants={itemVariants} className="w-full sticky bottom-6 z-30">
