@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+// CORRECTION : On utilise useRouter au lieu de Link pour éviter l'erreur de module
+import { useRouter } from "next/navigation";
 import { CheckSquare, Book, Heart, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -16,6 +17,8 @@ interface QuickActionsBarProps {
 }
 
 export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: QuickActionsBarProps) {
+  const router = useRouter(); // Hook pour la navigation rapide
+
   const actions = [
     {
       id: "tasks",
@@ -23,7 +26,7 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
       sub: "/// CHECK",
       icon: CheckSquare,
       owned: ownedModules.todo,
-      href: "/todo", // CORRECTION ICI : Route changée de /tasks à /todo
+      href: "/todo", // Route corrigée
       color: "text-blue-400",
       bgHover: "hover:bg-blue-400/10",
       borderHover: "hover:border-blue-400/50",
@@ -52,30 +55,24 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
     },
   ];
 
+  // Fonction helper pour naviguer sans rechargement
+  const handleNavigation = (path: string) => {
+    router.push(path);
+  };
+
   return (
     <div className={cn("w-full max-w-2xl mx-auto", className)}>
       <div className="relative p-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-between gap-3 shadow-2xl">
         {/* BOUTON NEW GOAL */}
-        {onNewGoalClick ? (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onNewGoalClick}
-            className="group relative flex flex-col items-center justify-center w-24 h-20 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all duration-300 overflow-hidden cursor-pointer"
-          >
-            <NewGoalContent />
-          </motion.button>
-        ) : (
-          <Link href="/goals/new" className="block">
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.95 }}
-              className="group relative flex flex-col items-center justify-center w-24 h-20 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all duration-300 overflow-hidden cursor-pointer"
-            >
-              <NewGoalContent />
-            </motion.div>
-          </Link>
-        )}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.95 }}
+          // Si onNewGoalClick existe on l'utilise, sinon on navigue vers /goals/new
+          onClick={onNewGoalClick || (() => handleNavigation("/goals/new"))}
+          className="group relative flex flex-col items-center justify-center w-24 h-20 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all duration-300 overflow-hidden cursor-pointer"
+        >
+          <NewGoalContent />
+        </motion.button>
 
         {/* Separator */}
         <div className="w-px h-12 bg-white/10" />
@@ -84,29 +81,31 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
         <div className="flex-1 grid grid-cols-3 gap-2">
           {actions.map((action) =>
             action.owned ? (
-              <Link key={action.id} href={action.href} className="block w-full">
-                <div
-                  className={cn(
-                    "relative flex flex-col items-center justify-center h-20 rounded-xl border border-transparent transition-all duration-300 group cursor-pointer",
-                    `bg-white/5 ${action.bgHover} ${action.borderHover}`,
-                  )}
-                >
-                  <action.icon
-                    className={cn("w-6 h-6 mb-1 transition-transform group-hover:-translate-y-1", action.color)}
-                    strokeWidth={1.5}
-                  />
-                  <div className="flex flex-col items-center">
-                    <span className={cn("text-[10px] font-bold font-orbitron tracking-wide text-foreground")}>
-                      {action.label.toUpperCase()}
-                    </span>
-                    <span className="text-[8px] font-rajdhani text-muted-foreground tracking-widest opacity-60">
-                      {action.sub}
-                    </span>
-                  </div>
-
-                  <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-white/20 group-hover:bg-white/60" />
+              <motion.div
+                key={action.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleNavigation(action.href)}
+                className={cn(
+                  "relative flex flex-col items-center justify-center h-20 rounded-xl border border-transparent transition-all duration-300 group cursor-pointer",
+                  `bg-white/5 ${action.bgHover} ${action.borderHover}`,
+                )}
+              >
+                <action.icon
+                  className={cn("w-6 h-6 mb-1 transition-transform group-hover:-translate-y-1", action.color)}
+                  strokeWidth={1.5}
+                />
+                <div className="flex flex-col items-center">
+                  <span className={cn("text-[10px] font-bold font-orbitron tracking-wide text-foreground")}>
+                    {action.label.toUpperCase()}
+                  </span>
+                  <span className="text-[8px] font-rajdhani text-muted-foreground tracking-widest opacity-60">
+                    {action.sub}
+                  </span>
                 </div>
-              </Link>
+
+                <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-white/20 group-hover:bg-white/60" />
+              </motion.div>
             ) : (
               <div
                 key={action.id}
