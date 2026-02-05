@@ -1796,3 +1796,107 @@ All colors MUST be HSL.
 .bar-goal-card .tr-23:hover ~ #card { transform: rotateX(-10deg) rotateY(0deg); transition: 125ms ease-in-out; }
 .bar-goal-card .tr-24:hover ~ #card { transform: rotateX(-10deg) rotateY(2.5deg); transition: 125ms ease-in-out; }
 .bar-goal-card .tr-25:hover ~ #card { transform: rotateX(-10deg) rotateY(5deg); transition: 125ms ease-in-out; }
+
+/* ========== PREMIUM GLASSMORPHISM UTILITIES ========== */
+
+/* Premium Glassmorphism Card - Unified high-end glass effect */
+.glass-premium {
+  @apply relative overflow-hidden;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card) / 0.4) 0%,
+    hsl(var(--card) / 0.2) 100%
+  );
+  backdrop-filter: blur(20px);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  box-shadow: 
+    0 8px 32px hsl(var(--primary) / 0.1),
+    inset 0 1px 0 hsl(var(--primary) / 0.1);
+}
+
+.glass-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--primary) / 0.05) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+}
+
+/* Glass Pill - For focus messages and badges */
+.glass-pill {
+  @apply relative inline-flex items-center gap-2 px-4 py-2 rounded-full;
+  background: linear-gradient(
+    135deg,
+    hsl(var(--card) / 0.5) 0%,
+    hsl(var(--card) / 0.3) 100%
+  );
+  backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--primary) / 0.25);
+}
+
+/* Staggered Animation Delays for orchestrated entrances */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
+.stagger-6 { animation-delay: 0.6s; }
+.stagger-7 { animation-delay: 0.7s; }
+
+/* Staggered fade-in animation */
+@keyframes stagger-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger-fade-in {
+  animation: stagger-fade-in 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+/* Premium hover lift effect */
+.hover-lift {
+  @apply transition-all duration-300;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 40px hsl(var(--primary) / 0.15),
+    0 4px 16px hsl(var(--primary) / 0.1);
+}
+
+/* Scanline hover effect for premium cards */
+.hover-scanline {
+  @apply relative overflow-hidden;
+}
+
+.hover-scanline::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    hsl(var(--primary) / 0.6), 
+    transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.hover-scanline:hover::after {
+  opacity: 1;
+  animation: scan-line 2s linear infinite;
+}

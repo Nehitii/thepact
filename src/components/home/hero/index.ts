@@ -7,3 +7,5 @@ export { HeroSection } from './HeroSection';
 export { CurrentRankBadge } from './CurrentRankBadge';
 export { XPProgressBar } from './XPProgressBar';
 export { QuickStatsBadges } from './QuickStatsBadges';
+export { NoiseOverlay } from './NoiseOverlay';
+export * from './motion-variants';
