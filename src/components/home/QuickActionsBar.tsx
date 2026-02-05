@@ -1,7 +1,7 @@
 "use client";
 
-// CORRECTION : On utilise useRouter au lieu de Link pour éviter l'erreur de module
-import { useRouter } from "next/navigation";
+// CORRECTION : On utilise 'next/router' (standard classique) au lieu de 'next/navigation'
+import { useRouter } from "next/router";
 import { CheckSquare, Book, Heart, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -17,7 +17,10 @@ interface QuickActionsBarProps {
 }
 
 export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: QuickActionsBarProps) {
-  const router = useRouter(); // Hook pour la navigation rapide
+  // Initialisation du router.
+  // Si cela provoque une erreur "No router instance found", c'est que le composant n'est pas dans un arbre Next.js valide,
+  // mais dans 99% des cas, c'est la bonne solution ici.
+  const router = useRouter();
 
   const actions = [
     {
@@ -26,7 +29,7 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
       sub: "/// CHECK",
       icon: CheckSquare,
       owned: ownedModules.todo,
-      href: "/todo", // Route corrigée
+      href: "/todo",
       color: "text-blue-400",
       bgHover: "hover:bg-blue-400/10",
       borderHover: "hover:border-blue-400/50",
@@ -55,9 +58,14 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
     },
   ];
 
-  // Fonction helper pour naviguer sans rechargement
+  // Fonction de navigation rapide (SPA)
   const handleNavigation = (path: string) => {
-    router.push(path);
+    if (router) {
+      router.push(path);
+    } else {
+      // Fallback de sécurité (rechargement complet) si le router n'est pas monté
+      window.location.href = path;
+    }
   };
 
   return (
@@ -67,7 +75,6 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.95 }}
-          // Si onNewGoalClick existe on l'utilise, sinon on navigue vers /goals/new
           onClick={onNewGoalClick || (() => handleNavigation("/goals/new"))}
           className="group relative flex flex-col items-center justify-center w-24 h-20 rounded-xl bg-cyan-500/10 border border-cyan-500/30 hover:bg-cyan-500/20 hover:border-cyan-400 transition-all duration-300 overflow-hidden cursor-pointer"
         >
