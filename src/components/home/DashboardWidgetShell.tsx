@@ -134,10 +134,11 @@ export function DashboardWidgetShell({
       {/* Outer glow */}
       <div className={cn("absolute inset-0 rounded-lg blur-xl group-hover:blur-2xl transition-all", styles.glow)} />
       
-      {/* Main card */}
+      {/* Main card with shimmer wave hover effect */}
       <div 
         className={cn(
           "relative bg-card/20 backdrop-blur-xl border-2 rounded-lg overflow-hidden transition-all flex flex-col h-full",
+          "hover-shimmer-wave",
           styles.border
         )}
         style={{ minHeight: WIDGET_MIN_HEIGHT }}
