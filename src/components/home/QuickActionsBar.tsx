@@ -1,8 +1,6 @@
 "use client";
 
-// CORRECTION : Suppression de l'import 'next/link' qui causait l'erreur
-// import Link from "next/link";
-
+import Link from "next/link";
 import { CheckSquare, Book, Heart, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
@@ -25,7 +23,7 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
       sub: "/// CHECK",
       icon: CheckSquare,
       owned: ownedModules.todo,
-      href: "/tasks",
+      href: "/todo", // CORRECTION ICI : Route changée de /tasks à /todo
       color: "text-blue-400",
       bgHover: "hover:bg-blue-400/10",
       borderHover: "hover:border-blue-400/50",
@@ -56,9 +54,8 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
 
   return (
     <div className={cn("w-full max-w-2xl mx-auto", className)}>
-      {/* Dock Container Unifié */}
       <div className="relative p-2 rounded-2xl bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-between gap-3 shadow-2xl">
-        {/* New Goal Button (Action Principale) */}
+        {/* BOUTON NEW GOAL */}
         {onNewGoalClick ? (
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -69,8 +66,7 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
             <NewGoalContent />
           </motion.button>
         ) : (
-          // Utilisation d'une balise <a> standard pour éviter l'erreur de build
-          <a href="/goals/new" className="block">
+          <Link href="/goals/new" className="block">
             <motion.div
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.95 }}
@@ -78,18 +74,17 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
             >
               <NewGoalContent />
             </motion.div>
-          </a>
+          </Link>
         )}
 
         {/* Separator */}
         <div className="w-px h-12 bg-white/10" />
 
-        {/* Module Actions */}
+        {/* MODULES LINKS */}
         <div className="flex-1 grid grid-cols-3 gap-2">
           {actions.map((action) =>
             action.owned ? (
-              // Utilisation d'une balise <a> standard
-              <a key={action.id} href={action.href} className="block w-full">
+              <Link key={action.id} href={action.href} className="block w-full">
                 <div
                   className={cn(
                     "relative flex flex-col items-center justify-center h-20 rounded-xl border border-transparent transition-all duration-300 group cursor-pointer",
@@ -109,10 +104,9 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
                     </span>
                   </div>
 
-                  {/* Status Dot */}
                   <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-white/20 group-hover:bg-white/60" />
                 </div>
-              </a>
+              </Link>
             ) : (
               <div
                 key={action.id}
