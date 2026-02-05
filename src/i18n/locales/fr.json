@@ -74,7 +74,7 @@
   },
   "profile": {
     "title": "Profil",
-    "subtitle": "Ta console d'identité",
+    "subtitle": "Ton console d'identité",
     "emailCantChange": "L'email ne peut pas être modifié",
     "displayName": "Nom d'affichage",
     "displayNamePlaceholder": "Ton nom",
