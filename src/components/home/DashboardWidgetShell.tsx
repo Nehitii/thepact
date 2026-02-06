@@ -215,38 +215,22 @@ export function DashboardWidgetShell({
           </div>
           
           {/* ===== EXPANDABLE SECTION (Full mode only) ===== */}
+          {/* FIX: Immediate expansion - removed intermediate "Show More" text toggle */}
+          {/* Now controlled via the header expand/collapse button (Maximize2/Minimize2) */}
           {!isCompact && expandableContent && (
-            <div className="px-4 pb-2">
-              <button
-                onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full flex items-center justify-center gap-2 py-2 text-primary/60 hover:text-primary transition-colors rounded-md hover:bg-primary/5"
+            <AnimatePresence>
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="overflow-hidden"
               >
-                <span className="text-[10px] uppercase tracking-wider font-orbitron">
-                  {isExpanded ? 'Show Less' : 'Show More'}
-                </span>
-                {isExpanded ? (
-                  <ChevronUp className="w-3 h-3" />
-                ) : (
-                  <ChevronDown className="w-3 h-3" />
-                )}
-              </button>
-              
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden"
-                  >
-                    <div className="pt-2 border-t border-primary/20 mt-2">
-                      {expandableContent}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                <div className="px-4 pb-4 pt-2 border-t border-primary/20">
+                  {expandableContent}
+                </div>
+              </motion.div>
+            </AnimatePresence>
           )}
           
           {/* ===== FOOTER ===== */}
