@@ -60,20 +60,13 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
     return index >= 0 ? index + 1 : 1;
   }, [currentRank, rankData.ranks]);
 
-  const quickStats = useMemo(() => {
-    const completedGoals = allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length;
-
-    const totalGoals = allGoals.length;
-
-    const primaryFocus = focusGoals[0];
-    const focusGoalName = primaryFocus?.name || null;
-
-    const daysRemaining = pact.project_end_date
-      ? Math.max(0, Math.ceil((new Date(pact.project_end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-      : null;
-
-    return { totalGoals, completedGoals, focusGoalName, daysRemaining };
-  }, [allGoals, focusGoals, pact.project_end_date]);
+  // Stats for Mission Randomizer
+  const hasIncompleteGoals = useMemo(() => {
+    return allGoals.some(g => {
+      const remaining = (g.total_steps || 0) - (g.validated_steps || 0);
+      return remaining > 0 && g.status !== 'fully_completed' && g.status !== 'validated';
+    });
+  }, [allGoals]);
 
   const isMaxRank = !nextRank && rankData.ranks.length > 0;
   const currentRankMin = currentRank?.min_points || 0;
