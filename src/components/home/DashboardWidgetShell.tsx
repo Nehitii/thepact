@@ -89,8 +89,14 @@ export function DashboardWidgetShell({
   accentColor = 'primary',
   isLoading = false,
 }: DashboardWidgetShellProps) {
+  // FIX: Remove intermediate state - expand immediately on toggle
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const styles = accentStyles[accentColor];
+  
+  // Immediate toggle handler - no intermediate "show more" text state
+  const handleExpandToggle = () => {
+    setIsExpanded(prev => !prev);
+  };
   const isCompact = displayMode === 'compact';
 
   // Loading state
