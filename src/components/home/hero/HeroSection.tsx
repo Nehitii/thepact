@@ -5,11 +5,11 @@ import { motion, Variants } from "framer-motion";
 import { Trophy, Zap } from "lucide-react";
 
 import { PactVisual } from "@/components/PactVisual";
-import { TodaysFocusMessage } from "@/components/home/TodaysFocusMessage";
+import { SmartProjectHeader } from "./SmartProjectHeader";
 import { QuickActionsBar } from "@/components/home/QuickActionsBar";
 import { CurrentRankBadge } from "./CurrentRankBadge";
 import { XPProgressBar } from "./XPProgressBar";
-import { QuickStatsBadges } from "./QuickStatsBadges";
+import { MissionRandomizer } from "./MissionRandomizer";
 import { cn } from "@/lib/utils";
 import { Pact } from "@/hooks/usePact";
 import { Goal } from "@/hooks/useGoals";
