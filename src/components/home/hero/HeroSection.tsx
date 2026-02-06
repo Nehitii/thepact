@@ -106,6 +106,16 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
           </h1>
 
           {/* MANTRA */}
+          {pact.mantra && (
+            <div className="flex items-center gap-4 mb-3 opacity-80">
+              <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent to-primary/50" />
+              <p className="text-xs sm:text-sm font-rajdhani font-medium uppercase tracking-[0.25em] text-primary/80 whitespace-nowrap">
+                {pact.mantra}
+              </p>
+              <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent to-primary/50" />
+            </div>
+          )}
+
           {/* SMART PROJECT HEADER - Dynamic next action with metrics */}
           <div className="flex justify-center">
             <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} />
