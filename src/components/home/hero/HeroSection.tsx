@@ -5,11 +5,11 @@ import { motion, Variants } from "framer-motion";
 import { Trophy, Zap } from "lucide-react";
 
 import { PactVisual } from "@/components/PactVisual";
-import { TodaysFocusMessage } from "@/components/home/TodaysFocusMessage";
+import { SmartProjectHeader } from "./SmartProjectHeader";
 import { QuickActionsBar } from "@/components/home/QuickActionsBar";
 import { CurrentRankBadge } from "./CurrentRankBadge";
 import { XPProgressBar } from "./XPProgressBar";
-import { QuickStatsBadges } from "./QuickStatsBadges";
+import { MissionRandomizer } from "./MissionRandomizer";
 import { cn } from "@/lib/utils";
 import { Pact } from "@/hooks/usePact";
 import { Goal } from "@/hooks/useGoals";
@@ -60,20 +60,13 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
     return index >= 0 ? index + 1 : 1;
   }, [currentRank, rankData.ranks]);
 
-  const quickStats = useMemo(() => {
-    const completedGoals = allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length;
-
-    const totalGoals = allGoals.length;
-
-    const primaryFocus = focusGoals[0];
-    const focusGoalName = primaryFocus?.name || null;
-
-    const daysRemaining = pact.project_end_date
-      ? Math.max(0, Math.ceil((new Date(pact.project_end_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
-      : null;
-
-    return { totalGoals, completedGoals, focusGoalName, daysRemaining };
-  }, [allGoals, focusGoals, pact.project_end_date]);
+  // Stats for Mission Randomizer
+  const hasIncompleteGoals = useMemo(() => {
+    return allGoals.some(g => {
+      const remaining = (g.total_steps || 0) - (g.validated_steps || 0);
+      return remaining > 0 && g.status !== 'fully_completed' && g.status !== 'validated';
+    });
+  }, [allGoals]);
 
   const isMaxRank = !nextRank && rankData.ranks.length > 0;
   const currentRankMin = currentRank?.min_points || 0;
@@ -114,17 +107,18 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
 
           {/* MANTRA */}
           {pact.mantra && (
-            <div className="flex items-center gap-4 mb-4 opacity-80">
-              <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent to-cyan-500/50" />
-              <p className="text-xs sm:text-sm font-rajdhani font-medium uppercase tracking-[0.25em] text-cyan-100/80 whitespace-nowrap">
+            <div className="flex items-center gap-4 mb-3 opacity-80">
+              <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent to-primary/50" />
+              <p className="text-xs sm:text-sm font-rajdhani font-medium uppercase tracking-[0.25em] text-primary/80 whitespace-nowrap">
                 {pact.mantra}
               </p>
-              <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent to-cyan-500/50" />
+              <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent to-primary/50" />
             </div>
           )}
 
+          {/* SMART PROJECT HEADER - Dynamic next action with metrics */}
           <div className="flex justify-center">
-            <TodaysFocusMessage focusGoals={focusGoals} allGoals={allGoals} />
+            <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} />
           </div>
         </motion.div>
 
@@ -180,14 +174,9 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
           </div>
         </motion.div>
 
-        {/* --- 3. STATS GRID --- */}
-        <motion.div variants={itemVariants} className="w-full">
-          <QuickStatsBadges
-            totalGoals={quickStats.totalGoals}
-            completedGoals={quickStats.completedGoals}
-            focusGoalName={quickStats.focusGoalName}
-            daysRemaining={quickStats.daysRemaining}
-          />
+        {/* --- 3. MISSION RANDOMIZER (Replaced redundant stats) --- */}
+        <motion.div variants={itemVariants} className="w-full max-w-md">
+          <MissionRandomizer allGoals={allGoals} />
         </motion.div>
 
         {/* --- 4. DOCK ACTIONS --- */}
