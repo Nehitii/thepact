@@ -174,14 +174,9 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
           </div>
         </motion.div>
 
-        {/* --- 3. STATS GRID --- */}
-        <motion.div variants={itemVariants} className="w-full">
-          <QuickStatsBadges
-            totalGoals={quickStats.totalGoals}
-            completedGoals={quickStats.completedGoals}
-            focusGoalName={quickStats.focusGoalName}
-            daysRemaining={quickStats.daysRemaining}
-          />
+        {/* --- 3. MISSION RANDOMIZER (Replaced redundant stats) --- */}
+        <motion.div variants={itemVariants} className="w-full max-w-md">
+          <MissionRandomizer allGoals={allGoals} />
         </motion.div>
 
         {/* --- 4. DOCK ACTIONS --- */}
