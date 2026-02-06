@@ -1,5 +1,5 @@
 import { ReactNode, useState } from 'react';
-import { Maximize2, Minimize2 } from 'lucide-react';
+import { LucideIcon, Maximize2, Minimize2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
