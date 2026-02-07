@@ -2,35 +2,41 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Dices, Check, RotateCcw, ChevronRight, Zap, Target, Sparkles } from 'lucide-react';
+import { Dices, ChevronRight, Sparkles, Target, Focus, RotateCcw } from 'lucide-react';
 import { Goal } from '@/hooks/useGoals';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
+import { useActiveMission, DeadlineType } from '@/hooks/useActiveMission';
+import { DeadlineSelector } from './DeadlineSelector';
+import { ActiveMissionCard } from './ActiveMissionCard';
 
 interface MissionRandomizerProps {
   allGoals: Goal[];
   className?: string;
 }
 
-interface SelectedMission {
+interface PendingMission {
   goal: Goal;
   stepTitle: string;
-  stepId: string;
+  stepId: string | null;
 }
+
+type ViewState = 'idle' | 'spinning' | 'confirm' | 'deadline';
 
 /**
  * Mission Randomizer with Slot Machine Animation
- * Helps users who don't know what to do by picking a random incomplete step
+ * Now with persistent mission focus and deadline selection
  */
 export function MissionRandomizer({ allGoals, className }: MissionRandomizerProps) {
   const navigate = useNavigate();
-  const [isSpinning, setIsSpinning] = useState(false);
+  const { activeMission, hasMission, isLoading, focusMission, abandonMission, completeMissionStep } = useActiveMission();
+  
+  const [viewState, setViewState] = useState<ViewState>('idle');
   const [currentDisplayGoal, setCurrentDisplayGoal] = useState<string | null>(null);
-  const [selectedMission, setSelectedMission] = useState<SelectedMission | null>(null);
-  const [completingStep, setCompletingStep] = useState(false);
+  const [pendingMission, setPendingMission] = useState<PendingMission | null>(null);
+  const [isFocusing, setIsFocusing] = useState(false);
   const spinIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Get goals with incomplete steps
@@ -51,10 +57,10 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
   }, []);
 
   const spinSlotMachine = useCallback(async () => {
-    if (!hasEligibleGoals || isSpinning) return;
+    if (!hasEligibleGoals || viewState === 'spinning') return;
 
-    setIsSpinning(true);
-    setSelectedMission(null);
+    setViewState('spinning');
+    setPendingMission(null);
 
     // Slot machine spinning effect (1.2s total)
     let spinCount = 0;
@@ -80,7 +86,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
         fetchFirstIncompleteStep(finalGoal);
       }
     }, intervalTime);
-  }, [eligibleGoals, hasEligibleGoals, isSpinning]);
+  }, [eligibleGoals, hasEligibleGoals, viewState]);
 
   const fetchFirstIncompleteStep = async (goal: Goal) => {
     try {
@@ -95,7 +101,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
       if (error) throw error;
 
       if (steps && steps.length > 0) {
-        setSelectedMission({
+        setPendingMission({
           goal,
           stepTitle: steps[0].title,
           stepId: steps[0].id,
@@ -109,62 +115,96 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
           return;
         }
         // Fallback: show goal without specific step
-        setSelectedMission({
+        setPendingMission({
           goal,
           stepTitle: 'Continue working on this goal',
-          stepId: '',
+          stepId: null,
         });
       }
+      setViewState('confirm');
     } catch (err) {
       console.error('Error fetching step:', err);
-      setSelectedMission({
+      setPendingMission({
         goal,
         stepTitle: 'Continue working on this goal',
-        stepId: '',
+        stepId: null,
       });
-    } finally {
-      setIsSpinning(false);
+      setViewState('confirm');
     }
   };
 
-  const markStepComplete = async () => {
-    if (!selectedMission?.stepId) {
-      navigate(`/goals/${selectedMission?.goal.id}`);
-      return;
+  const handleFocusChoice = () => {
+    setViewState('deadline');
+  };
+
+  const handleDeadlineSelect = async (deadline: DeadlineType) => {
+    if (!pendingMission) return;
+    
+    setIsFocusing(true);
+    const success = await focusMission(
+      pendingMission.goal.id,
+      pendingMission.goal.name,
+      pendingMission.stepId,
+      pendingMission.stepTitle,
+      deadline
+    );
+    
+    if (success) {
+      setPendingMission(null);
+      setViewState('idle');
     }
-
-    setCompletingStep(true);
-    try {
-      const { error } = await supabase
-        .from('steps')
-        .update({ status: 'completed', completion_date: new Date().toISOString() })
-        .eq('id', selectedMission.stepId);
-
-      if (error) throw error;
-
-      toast.success('Step completed! +XP earned 🎉');
-      setSelectedMission(null);
-    } catch (err) {
-      console.error('Error completing step:', err);
-      toast.error('Failed to complete step');
-    } finally {
-      setCompletingStep(false);
-    }
+    setIsFocusing(false);
   };
 
   const handleReroll = () => {
-    setSelectedMission(null);
+    setPendingMission(null);
+    setViewState('idle');
     spinSlotMachine();
   };
 
+  const handleCancelDeadline = () => {
+    setViewState('confirm');
+  };
+
   const goToGoal = () => {
-    if (selectedMission) {
-      navigate(`/goals/${selectedMission.goal.id}`);
+    if (pendingMission) {
+      navigate(`/goals/${pendingMission.goal.id}`);
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className={cn(
+          "relative overflow-hidden rounded-2xl border bg-black/40 backdrop-blur-xl p-5",
+          "border-white/10",
+          className
+        )}
+      >
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-6 w-6 border-2 border-primary border-t-transparent" />
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Show Active Mission Card if user has a focused mission
+  if (hasMission && activeMission) {
+    return (
+      <ActiveMissionCard
+        mission={activeMission}
+        onAbandon={abandonMission}
+        onComplete={completeMissionStep}
+        className={className}
+      />
+    );
+  }
+
   // Idle state - show the randomizer button
-  if (!isSpinning && !selectedMission) {
+  if (viewState === 'idle') {
     return (
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
@@ -210,7 +250,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
   }
 
   // Spinning state - slot machine animation
-  if (isSpinning) {
+  if (viewState === 'spinning') {
     return (
       <motion.div 
         initial={{ opacity: 0 }}
@@ -270,91 +310,135 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
     );
   }
 
-  // Mission selected state
-  return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className={cn(
-        "relative overflow-hidden rounded-2xl border bg-black/60 backdrop-blur-xl",
-        "border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.3)]",
-        className
-      )}
-    >
-      {/* Success glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-primary/10" />
-      
-      {/* Header */}
-      <div className="relative z-10 px-4 py-3 border-b border-amber-500/20 bg-amber-500/5">
-        <div className="flex items-center gap-2">
-          <Zap className="w-4 h-4 text-amber-400 animate-pulse" />
-          <span className="text-[10px] font-orbitron uppercase tracking-widest text-amber-400">
-            Mission Assigned
-          </span>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 p-4 space-y-4">
-        {/* Goal name */}
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 flex-shrink-0">
-            <Target className="w-5 h-5 text-amber-400" />
+  // Confirm state - ask user to focus or reroll
+  if (viewState === 'confirm' && pendingMission) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+        className={cn(
+          "relative overflow-hidden rounded-2xl border bg-black/60 backdrop-blur-xl",
+          "border-amber-500/40 shadow-[0_0_30px_rgba(245,158,11,0.3)]",
+          className
+        )}
+      >
+        {/* Success glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-primary/10" />
+        
+        {/* Header */}
+        <div className="relative z-10 px-4 py-3 border-b border-amber-500/20 bg-amber-500/5">
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-amber-400" />
+            <span className="text-[10px] font-orbitron uppercase tracking-widest text-amber-400">
+              Mission Found
+            </span>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider">
-              Goal
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 p-4 space-y-4">
+          {/* Goal name */}
+          <div className="flex items-start gap-3">
+            <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 flex-shrink-0">
+              <Target className="w-5 h-5 text-amber-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider">
+                Goal
+              </p>
+              <h4 className="text-sm font-orbitron font-bold text-white truncate">
+                {pendingMission.goal.name}
+              </h4>
+            </div>
+          </div>
+
+          {/* Step to complete */}
+          <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
+            <p className="text-[10px] text-primary/60 font-rajdhani uppercase tracking-wider mb-1">
+              Next Step
             </p>
-            <h4 className="text-sm font-orbitron font-bold text-white truncate">
-              {selectedMission?.goal.name}
-            </h4>
+            <p className="text-sm font-rajdhani text-white leading-snug">
+              {pendingMission.stepTitle}
+            </p>
+          </div>
+
+          {/* Action buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={handleFocusChoice}
+              className={cn(
+                "font-rajdhani text-xs",
+                "bg-gradient-to-r from-primary/80 to-accent/80 hover:from-primary hover:to-accent",
+                "border border-primary/30"
+              )}
+            >
+              <Focus className="w-4 h-4 mr-1" />
+              Focus on this
+            </Button>
+            
+            <Button
+              onClick={handleReroll}
+              variant="outline"
+              className="font-rajdhani text-xs border-amber-500/30 hover:bg-amber-500/10"
+            >
+              <RotateCcw className="w-4 h-4 mr-1" />
+              Roll again
+            </Button>
+          </div>
+
+          {/* Go to goal link */}
+          <button
+            onClick={goToGoal}
+            className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors font-rajdhani uppercase tracking-wider py-1"
+          >
+            View full goal <ChevronRight className="w-3 h-3" />
+          </button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Deadline selection state
+  if (viewState === 'deadline' && pendingMission) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className={cn(
+          "relative overflow-hidden rounded-2xl border bg-black/60 backdrop-blur-xl",
+          "border-primary/40 shadow-[0_0_30px_rgba(0,212,255,0.3)]",
+          className
+        )}
+      >
+        {/* Header */}
+        <div className="relative z-10 px-4 py-3 border-b border-primary/20 bg-primary/5">
+          <div className="flex items-center gap-2">
+            <Focus className="w-4 h-4 text-primary" />
+            <span className="text-[10px] font-orbitron uppercase tracking-widest text-primary">
+              Set Deadline
+            </span>
           </div>
         </div>
 
-        {/* Step to complete */}
-        <div className="p-3 rounded-xl bg-primary/5 border border-primary/20">
-          <p className="text-[10px] text-primary/60 font-rajdhani uppercase tracking-wider mb-1">
-            Next Step
-          </p>
-          <p className="text-sm font-rajdhani text-white leading-snug">
-            {selectedMission?.stepTitle}
+        {/* Mission summary */}
+        <div className="relative z-10 px-4 pt-3">
+          <p className="text-xs text-white/70 font-rajdhani truncate">
+            <span className="text-primary">Goal:</span> {pendingMission.goal.name}
           </p>
         </div>
 
-        {/* Action buttons */}
-        <div className="grid grid-cols-2 gap-2">
-          <Button
-            onClick={markStepComplete}
-            disabled={completingStep}
-            className={cn(
-              "font-rajdhani text-xs",
-              "bg-gradient-to-r from-health/80 to-health hover:from-health hover:to-health/80",
-              "border border-health/30"
-            )}
-          >
-            <Check className="w-4 h-4 mr-1" />
-            {completingStep ? 'Saving...' : 'Complete'}
-          </Button>
-          
-          <Button
-            onClick={handleReroll}
-            variant="outline"
-            className="font-rajdhani text-xs border-primary/30 hover:bg-primary/10"
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            Reroll
-          </Button>
+        {/* Deadline selector */}
+        <div className="relative z-10 p-4">
+          <DeadlineSelector
+            onSelect={handleDeadlineSelect}
+            onCancel={handleCancelDeadline}
+            isLoading={isFocusing}
+          />
         </div>
+      </motion.div>
+    );
+  }
 
-        {/* Go to goal link */}
-        <button
-          onClick={goToGoal}
-          className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors font-rajdhani uppercase tracking-wider py-1"
-        >
-          View full goal <ChevronRight className="w-3 h-3" />
-        </button>
-      </div>
-    </motion.div>
-  );
+  return null;
 }

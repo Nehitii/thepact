@@ -9,4 +9,6 @@ export { XPProgressBar } from './XPProgressBar';
 export { SmartProjectHeader } from './SmartProjectHeader';
 export { MissionRandomizer } from './MissionRandomizer';
 export { NoiseOverlay } from './NoiseOverlay';
+export { DeadlineSelector } from './DeadlineSelector';
+export { ActiveMissionCard } from './ActiveMissionCard';
 export * from './motion-variants';

@@ -152,6 +152,54 @@ export type Database = {
         }
         Relationships: []
       }
+      active_missions: {
+        Row: {
+          created_at: string
+          deadline_type: string
+          expires_at: string
+          goal_id: string
+          id: string
+          step_id: string | null
+          step_title: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline_type: string
+          expires_at: string
+          goal_id: string
+          id?: string
+          step_id?: string | null
+          step_title: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline_type?: string
+          expires_at?: string
+          goal_id?: string
+          id?: string
+          step_id?: string | null
+          step_title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "active_missions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "active_missions_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bond_balance: {
         Row: {
           balance: number
