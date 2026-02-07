@@ -382,8 +382,8 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 to-transparent blur opacity-50 group-hover/box:opacity-100 transition duration-500" />
                 <div className="relative p-4 bg-black/80 rounded-lg border-l-2 border-amber-500">
                   <span className="text-[10px] text-amber-400 uppercase tracking-wider font-mono block mb-1">
-                    > Next Actionable Step
-                  </span>
+  > Next Actionable Step
+</span>
                   <p className="text-sm font-medium text-gray-200">
                     {targetMission.stepTitle}
                   </p>
