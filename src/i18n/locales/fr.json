@@ -546,12 +546,26 @@
       "minutes": "minutes"
     },
     "checkin": {
-      "howDidYouSleep": "Comment as-tu dormi ?",
+      "howDidYouSleep": "Combien d'heures as-tu dormi ?",
       "howDoYouFeel": "Comment te sens-tu ?",
-      "stressLevel": "Niveau de stress aujourd'hui ?",
-      "hydrationLevel": "Niveau d'hydratation ?",
-      "todaysNotes": "Notes du jour",
-      "notesPlaceholder": "Notes sur ton état..."
+      "stressLevel": "Niveau de stress aujourd'hui",
+      "hydrationLevel": "Verres d'eau aujourd'hui",
+      "todaysNotes": "Notes (Optionnel)",
+      "notesPlaceholder": "Comment te sens-tu ? Des observations sur ton bien-être aujourd'hui...",
+      "quality": {
+        "poor": "Faible",
+        "fair": "Passable",
+        "okay": "Correct",
+        "good": "Bien",
+        "great": "Excellent"
+      },
+      "stress": {
+        "minimal": "Minimal",
+        "low": "Faible",
+        "moderate": "Modéré",
+        "high": "Élevé",
+        "overwhelming": "Intense"
+      }
     }
   },
   "shop": {

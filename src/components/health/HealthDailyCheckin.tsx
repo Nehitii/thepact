@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -24,24 +24,15 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTodayHealth, useUpsertHealthData, useHealthSettings } from "@/hooks/useHealth";
+import { useTranslation } from "react-i18next";
 
 interface HealthDailyCheckinProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-const steps = [
-  { key: "sleep", icon: Moon, title: "Sleep & Recovery", color: "blue" },
-  { key: "activity", icon: Activity, title: "Activity", color: "green" },
-  { key: "stress", icon: Brain, title: "Mental Wellness", color: "purple" },
-  { key: "hydration", icon: Droplets, title: "Hydration", color: "cyan" },
-  { key: "notes", icon: Sparkles, title: "Notes (Optional)", color: "amber" },
-];
-
-const qualityLabels = ["Poor", "Fair", "Okay", "Good", "Great"];
-const stressLabels = ["Minimal", "Low", "Moderate", "High", "Overwhelming"];
-
 export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   
@@ -50,16 +41,56 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const upsertHealth = useUpsertHealthData(user?.id);
   
   // Form state
-  const [sleepHours, setSleepHours] = useState<number>(todayData?.sleep_hours ?? 7);
-  const [sleepQuality, setSleepQuality] = useState<number>(todayData?.sleep_quality ?? 3);
-  const [wakeEnergy, setWakeEnergy] = useState<number>(todayData?.wake_energy ?? 3);
-  const [activityLevel, setActivityLevel] = useState<number>(todayData?.activity_level ?? 3);
-  const [movementMinutes, setMovementMinutes] = useState<number>(todayData?.movement_minutes ?? 30);
-  const [stressLevel, setStressLevel] = useState<number>(todayData?.stress_level ?? 3);
-  const [mentalLoad, setMentalLoad] = useState<number>(todayData?.mental_load ?? 3);
-  const [hydrationGlasses, setHydrationGlasses] = useState<number>(todayData?.hydration_glasses ?? 4);
-  const [mealBalance, setMealBalance] = useState<number>(todayData?.meal_balance ?? 3);
-  const [notes, setNotes] = useState<string>(todayData?.notes ?? "");
+  const [sleepHours, setSleepHours] = useState<number>(7);
+  const [sleepQuality, setSleepQuality] = useState<number>(3);
+  const [wakeEnergy, setWakeEnergy] = useState<number>(3);
+  const [activityLevel, setActivityLevel] = useState<number>(3);
+  const [movementMinutes, setMovementMinutes] = useState<number>(30);
+  const [stressLevel, setStressLevel] = useState<number>(3);
+  const [mentalLoad, setMentalLoad] = useState<number>(3);
+  const [hydrationGlasses, setHydrationGlasses] = useState<number>(4);
+  const [mealBalance, setMealBalance] = useState<number>(3);
+  const [notes, setNotes] = useState<string>("");
+
+  // Sync form state when todayData loads
+  useEffect(() => {
+    if (todayData) {
+      setSleepHours(todayData.sleep_hours ?? 7);
+      setSleepQuality(todayData.sleep_quality ?? 3);
+      setWakeEnergy(todayData.wake_energy ?? 3);
+      setActivityLevel(todayData.activity_level ?? 3);
+      setMovementMinutes(todayData.movement_minutes ?? 30);
+      setStressLevel(todayData.stress_level ?? 3);
+      setMentalLoad(todayData.mental_load ?? 3);
+      setHydrationGlasses(todayData.hydration_glasses ?? 4);
+      setMealBalance(todayData.meal_balance ?? 3);
+      setNotes(todayData.notes ?? "");
+    }
+  }, [todayData]);
+
+  const steps = [
+    { key: "sleep", icon: Moon, title: t("health.metrics.sleep"), color: "blue" },
+    { key: "activity", icon: Activity, title: t("health.metrics.activity"), color: "green" },
+    { key: "stress", icon: Brain, title: t("health.metrics.stress"), color: "purple" },
+    { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), color: "cyan" },
+    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), color: "amber" },
+  ];
+
+  const qualityLabels = [
+    t("health.checkin.quality.poor", "Poor"),
+    t("health.checkin.quality.fair", "Fair"),
+    t("health.checkin.quality.okay", "Okay"),
+    t("health.checkin.quality.good", "Good"),
+    t("health.checkin.quality.great", "Great"),
+  ];
+  
+  const stressLabels = [
+    t("health.checkin.stress.minimal", "Minimal"),
+    t("health.checkin.stress.low", "Low"),
+    t("health.checkin.stress.moderate", "Moderate"),
+    t("health.checkin.stress.high", "High"),
+    t("health.checkin.stress.overwhelming", "Overwhelming"),
+  ];
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -100,7 +131,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
           <div className="space-y-6">
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                How many hours did you sleep?
+                {t("health.checkin.howDidYouSleep")}
               </Label>
               <div className="flex items-center gap-4">
                 <Slider
@@ -119,7 +150,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
             
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                Sleep quality
+                {t("health.metrics.sleepQuality")}
               </Label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
@@ -129,8 +160,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                     className={cn(
                       "flex-1 py-3 rounded-lg border transition-all text-sm",
                       sleepQuality === value
-                        ? "bg-blue-500/20 border-blue-500 text-blue-400"
-                        : "border-muted-foreground/20 text-muted-foreground hover:border-blue-500/50"
+                        ? "bg-blue-500/20 border-blue-500 text-blue-600 dark:text-blue-400"
+                        : "border-border text-muted-foreground hover:border-blue-500/50"
                     )}
                   >
                     {qualityLabels[value - 1]}
@@ -141,7 +172,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
             
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                Energy when you woke up
+                {t("health.metrics.wakeEnergy")}
               </Label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
@@ -151,8 +182,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                     className={cn(
                       "flex-1 py-3 rounded-lg border transition-all text-sm",
                       wakeEnergy === value
-                        ? "bg-blue-500/20 border-blue-500 text-blue-400"
-                        : "border-muted-foreground/20 text-muted-foreground hover:border-blue-500/50"
+                        ? "bg-blue-500/20 border-blue-500 text-blue-600 dark:text-blue-400"
+                        : "border-border text-muted-foreground hover:border-blue-500/50"
                     )}
                   >
                     {qualityLabels[value - 1]}
@@ -168,7 +199,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
           <div className="space-y-6">
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                Overall activity level today
+                {t("health.metrics.activityLevel")}
               </Label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
@@ -178,8 +209,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                     className={cn(
                       "flex-1 py-3 rounded-lg border transition-all text-sm",
                       activityLevel === value
-                        ? "bg-emerald-500/20 border-emerald-500 text-emerald-400"
-                        : "border-muted-foreground/20 text-muted-foreground hover:border-emerald-500/50"
+                        ? "bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400"
+                        : "border-border text-muted-foreground hover:border-emerald-500/50"
                     )}
                   >
                     {qualityLabels[value - 1]}
@@ -190,7 +221,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
             
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                Approximate active minutes
+                {t("health.metrics.movementMinutes")}
               </Label>
               <div className="flex items-center gap-4">
                 <Slider
@@ -201,7 +232,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                   step={5}
                   className="flex-1"
                 />
-                <span className="text-2xl font-bold text-emerald-400 w-20 text-right">
+                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 w-20 text-right">
                   {movementMinutes}m
                 </span>
               </div>
@@ -214,7 +245,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
           <div className="space-y-6">
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                Stress level today
+                {t("health.checkin.stressLevel")}
               </Label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
@@ -224,8 +255,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                     className={cn(
                       "flex-1 py-3 rounded-lg border transition-all text-sm",
                       stressLevel === value
-                        ? "bg-purple-500/20 border-purple-500 text-purple-400"
-                        : "border-muted-foreground/20 text-muted-foreground hover:border-purple-500/50"
+                        ? "bg-purple-500/20 border-purple-500 text-purple-600 dark:text-purple-400"
+                        : "border-border text-muted-foreground hover:border-purple-500/50"
                     )}
                   >
                     {stressLabels[value - 1]}
@@ -236,7 +267,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
             
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                Mental load / cognitive demand
+                {t("health.metrics.mentalLoad")}
               </Label>
               <div className="flex gap-2">
                 {[1, 2, 3, 4, 5].map((value) => (
@@ -246,8 +277,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                     className={cn(
                       "flex-1 py-3 rounded-lg border transition-all text-sm",
                       mentalLoad === value
-                        ? "bg-purple-500/20 border-purple-500 text-purple-400"
-                        : "border-muted-foreground/20 text-muted-foreground hover:border-purple-500/50"
+                        ? "bg-purple-500/20 border-purple-500 text-purple-600 dark:text-purple-400"
+                        : "border-border text-muted-foreground hover:border-purple-500/50"
                     )}
                   >
                     {stressLabels[value - 1]}
@@ -263,7 +294,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
           <div className="space-y-6">
             <div>
               <Label className="text-sm text-muted-foreground mb-3 block">
-                Glasses of water today
+                {t("health.checkin.hydrationLevel")}
               </Label>
               <div className="flex items-center gap-4">
                 <Slider
@@ -274,19 +305,19 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                   step={1}
                   className="flex-1"
                 />
-                <span className="text-2xl font-bold text-cyan-400 w-20 text-right">
+                <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 w-20 text-right">
                   {hydrationGlasses} 🥛
                 </span>
               </div>
               <p className="text-xs text-muted-foreground/50 mt-2">
-                Target: {settings?.hydration_goal_glasses || 8} glasses
+                {t("health.settings.hydrationGoal")}: {settings?.hydration_goal_glasses || 8} {t("health.settings.glasses")}
               </p>
             </div>
             
             {settings?.show_nutrition && (
               <div>
                 <Label className="text-sm text-muted-foreground mb-3 block">
-                  Meal balance today
+                  {t("health.metrics.mealBalance")}
                 </Label>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((value) => (
@@ -296,8 +327,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                       className={cn(
                         "flex-1 py-3 rounded-lg border transition-all text-sm",
                         mealBalance === value
-                          ? "bg-orange-500/20 border-orange-500 text-orange-400"
-                          : "border-muted-foreground/20 text-muted-foreground hover:border-orange-500/50"
+                          ? "bg-orange-500/20 border-orange-500 text-orange-600 dark:text-orange-400"
+                          : "border-border text-muted-foreground hover:border-orange-500/50"
                       )}
                     >
                       {qualityLabels[value - 1]}
@@ -313,16 +344,16 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
         return (
           <div className="space-y-4">
             <Label className="text-sm text-muted-foreground block">
-              Any thoughts or notes about today?
+              {t("health.checkin.todaysNotes")}
             </Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="How are you feeling? Any observations about your wellness today..."
+              placeholder={t("health.checkin.notesPlaceholder")}
               className="min-h-[120px] bg-muted/30"
             />
             <p className="text-xs text-muted-foreground/50">
-              This is completely optional and private.
+              {t("common.optional")}
             </p>
           </div>
         );
@@ -334,7 +365,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-[#0a1525] border-emerald-500/20">
+      <DialogContent className="sm:max-w-lg bg-popover border-emerald-500/20">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
             <div className={cn(
@@ -347,11 +378,11 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
             )}>
               <Icon className={cn(
                 "w-5 h-5",
-                currentStep === 0 && "text-blue-400",
-                currentStep === 1 && "text-emerald-400",
-                currentStep === 2 && "text-purple-400",
-                currentStep === 3 && "text-cyan-400",
-                currentStep === 4 && "text-amber-400"
+                currentStep === 0 && "text-blue-600 dark:text-blue-400",
+                currentStep === 1 && "text-emerald-600 dark:text-emerald-400",
+                currentStep === 2 && "text-purple-600 dark:text-purple-400",
+                currentStep === 3 && "text-cyan-600 dark:text-cyan-400",
+                currentStep === 4 && "text-amber-600 dark:text-amber-400"
               )} />
             </div>
             {currentStepData.title}
@@ -365,7 +396,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               key={step.key}
               className={cn(
                 "flex-1 h-1 rounded-full transition-all",
-                i <= currentStep ? "bg-emerald-500" : "bg-muted-foreground/20"
+                i <= currentStep ? "bg-emerald-500" : "bg-muted"
               )}
             />
           ))}
@@ -385,7 +416,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
         </AnimatePresence>
         
         {/* Navigation */}
-        <div className="flex justify-between pt-4 border-t border-muted-foreground/10">
+        <div className="flex justify-between pt-4 border-t border-border">
           <Button
             variant="ghost"
             onClick={handleBack}
@@ -393,21 +424,21 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
             className="text-muted-foreground"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
-            Back
+            {t("common.back")}
           </Button>
           
           {currentStep < steps.length - 1 ? (
-            <Button onClick={handleNext} className="bg-emerald-600 hover:bg-emerald-700">
-              Next
+            <Button onClick={handleNext} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+              {t("common.next")}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
             <Button 
               onClick={handleSubmit} 
               disabled={upsertHealth.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
-              {upsertHealth.isPending ? "Saving..." : "Complete"}
+              {upsertHealth.isPending ? t("common.saving") : t("common.save")}
               <Check className="w-4 h-4 ml-1" />
             </Button>
           )}

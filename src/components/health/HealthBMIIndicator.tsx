@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Scale, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface HealthBMIIndicatorProps {
   bmi: number | null;
@@ -8,17 +9,19 @@ interface HealthBMIIndicatorProps {
 }
 
 export function HealthBMIIndicator({ bmi, category }: HealthBMIIndicatorProps) {
+  const { t } = useTranslation();
+
   if (bmi === null) {
     return (
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card/30 backdrop-blur-xl border border-muted-foreground/20 rounded-2xl p-4"
+        className="bg-card/30 dark:bg-card/30 backdrop-blur-xl border border-border rounded-2xl p-4"
       >
         <div className="flex items-center gap-3 text-muted-foreground">
           <Scale className="w-5 h-5" />
           <span className="text-sm">
-            Add your height and weight in settings to see your BMI indicator
+            {t("health.bmi.title")}
           </span>
         </div>
       </motion.div>
@@ -37,16 +40,16 @@ export function HealthBMIIndicator({ bmi, category }: HealthBMIIndicatorProps) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-6"
+      className="bg-card/30 dark:bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-6"
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-emerald-500/20">
-            <Scale className="w-5 h-5 text-emerald-400" />
+            <Scale className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div>
-            <h3 className="font-medium text-foreground">Body Mass Index</h3>
-            <p className="text-xs text-muted-foreground/70">Informational indicator only</p>
+            <h3 className="font-medium text-foreground">{t("health.bmi.title")}</h3>
+            <p className="text-xs text-muted-foreground/70">{t("health.disclaimer")}</p>
           </div>
         </div>
         <div className="text-right">
@@ -82,30 +85,29 @@ export function HealthBMIIndicator({ bmi, category }: HealthBMIIndicatorProps) {
         
         {/* Position indicator */}
         <motion.div
-          className="absolute top-0 bottom-0 w-1 bg-white rounded-full shadow-lg"
+          className="absolute top-0 bottom-0 w-1 bg-foreground rounded-full shadow-lg"
           initial={{ left: "50%" }}
           animate={{ left: `${getPositionPercentage()}%` }}
           transition={{ duration: 0.8, ease: "easeOut" }}
           style={{ transform: "translateX(-50%)" }}
         >
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white rounded-full shadow-md" />
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-foreground rounded-full shadow-md" />
         </motion.div>
       </div>
 
       {/* Scale labels */}
       <div className="flex justify-between text-xs text-muted-foreground">
-        <span>Underweight</span>
-        <span>Normal</span>
-        <span>Overweight</span>
-        <span>Obese</span>
+        <span>{t("health.bmi.underweight")}</span>
+        <span>{t("health.bmi.normal")}</span>
+        <span>{t("health.bmi.overweight")}</span>
+        <span>{t("health.bmi.obese")}</span>
       </div>
 
       {/* Disclaimer */}
-      <div className="flex items-start gap-2 mt-4 p-3 bg-muted/20 rounded-lg">
+      <div className="flex items-start gap-2 mt-4 p-3 bg-muted/20 dark:bg-muted/10 rounded-lg">
         <AlertCircle className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
         <p className="text-xs text-muted-foreground/70">
-          BMI is a simple calculation based on height and weight. It does not account for muscle mass, 
-          bone density, age, sex, or ethnicity. It should not be used as a health diagnostic tool.
+          {t("health.disclaimer")}
         </p>
       </div>
     </motion.div>

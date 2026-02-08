@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface HealthScoreCardProps {
   score: number;
@@ -9,27 +10,29 @@ interface HealthScoreCardProps {
 }
 
 export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps) {
+  const { t } = useTranslation();
+
   const getTrendIcon = () => {
     switch (trend) {
-      case "up": return <TrendingUp className="w-5 h-5 text-emerald-400" />;
-      case "down": return <TrendingDown className="w-5 h-5 text-orange-400" />;
+      case "up": return <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />;
+      case "down": return <TrendingDown className="w-5 h-5 text-orange-600 dark:text-orange-400" />;
       default: return <Minus className="w-5 h-5 text-muted-foreground" />;
     }
   };
 
   const getTrendLabel = () => {
     switch (trend) {
-      case "up": return "Improving";
-      case "down": return "Needs attention";
-      default: return "Stable";
+      case "up": return t("health.scores.trend") + " ↑";
+      case "down": return t("health.scores.trend") + " ↓";
+      default: return t("health.scores.trend");
     }
   };
 
   const getScoreColor = () => {
-    if (score >= 80) return "text-emerald-400";
-    if (score >= 60) return "text-teal-400";
-    if (score >= 40) return "text-yellow-400";
-    return "text-orange-400";
+    if (score >= 80) return "text-emerald-600 dark:text-emerald-400";
+    if (score >= 60) return "text-teal-600 dark:text-teal-400";
+    if (score >= 40) return "text-yellow-600 dark:text-yellow-400";
+    return "text-orange-600 dark:text-orange-400";
   };
 
   const getScoreGlow = () => {
@@ -47,11 +50,11 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
       className="relative overflow-hidden"
     >
       {/* Background glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-teal-500/10 rounded-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 dark:from-emerald-500/10 via-transparent to-teal-500/5 dark:to-teal-500/10 rounded-3xl" />
       
-      <div className="relative bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-3xl p-8">
+      <div className="relative bg-card/30 dark:bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-3xl p-8">
         {/* Inner glow effect */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-24 bg-emerald-500/10 blur-3xl" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-24 bg-emerald-500/5 dark:bg-emerald-500/10 blur-3xl" />
         
         <div className="relative flex flex-col lg:flex-row items-center gap-8">
           {/* Score Circle */}
@@ -105,7 +108,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                   {score}
                 </motion.span>
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">
-                  Health Score
+                  {t("health.scores.healthScore")}
                 </p>
               </div>
             </div>
@@ -115,14 +118,14 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
           <div className="flex-1 text-center lg:text-left space-y-4">
             <div>
               <h2 className="text-2xl font-bold text-foreground mb-2">
-                Weekly Wellness Overview
+                {t("health.scores.weeklyAverage")}
               </h2>
               <div className="flex items-center justify-center lg:justify-start gap-2">
                 {getTrendIcon()}
                 <span className={cn(
                   "text-sm font-medium",
-                  trend === "up" && "text-emerald-400",
-                  trend === "down" && "text-orange-400",
+                  trend === "up" && "text-emerald-600 dark:text-emerald-400",
+                  trend === "down" && "text-orange-600 dark:text-orange-400",
                   trend === "stable" && "text-muted-foreground"
                 )}>
                   {getTrendLabel()}
@@ -141,7 +144,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                     transition={{ delay: 0.3 + i * 0.1 }}
                     className={cn(
                       "px-3 py-1 rounded-full text-xs font-medium",
-                      "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                      "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
                     )}
                   >
                     <Sparkles className="w-3 h-3 inline mr-1" />
@@ -153,13 +156,12 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
             
             {factors.length === 0 && (
               <p className="text-muted-foreground/70 text-sm">
-                Complete daily check-ins to see your wellness insights
+                {t("health.dailyCheckin")}
               </p>
             )}
             
             <p className="text-xs text-muted-foreground/50">
-              This score is indicative and based on your self-reported data. 
-              It's designed to help you track trends, not to diagnose.
+              {t("health.disclaimer")}
             </p>
           </div>
         </div>

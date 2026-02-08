@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTodayHealth, useWeeklyHealth } from "@/hooks/useHealth";
+import { useTranslation } from "react-i18next";
 
 interface HealthMetricCardProps {
   icon: LucideIcon;
@@ -14,43 +15,44 @@ interface HealthMetricCardProps {
 
 const colorVariants = {
   blue: {
-    bg: "from-blue-500/20 to-blue-600/10",
+    bg: "from-blue-500/10 dark:from-blue-500/20 to-blue-600/5 dark:to-blue-600/10",
     border: "border-blue-500/30",
-    icon: "text-blue-400",
-    glow: "bg-blue-500/20",
+    icon: "text-blue-600 dark:text-blue-400",
+    glow: "bg-blue-500/10 dark:bg-blue-500/20",
     progress: "bg-blue-500",
   },
   green: {
-    bg: "from-emerald-500/20 to-emerald-600/10",
+    bg: "from-emerald-500/10 dark:from-emerald-500/20 to-emerald-600/5 dark:to-emerald-600/10",
     border: "border-emerald-500/30",
-    icon: "text-emerald-400",
-    glow: "bg-emerald-500/20",
+    icon: "text-emerald-600 dark:text-emerald-400",
+    glow: "bg-emerald-500/10 dark:bg-emerald-500/20",
     progress: "bg-emerald-500",
   },
   purple: {
-    bg: "from-purple-500/20 to-purple-600/10",
+    bg: "from-purple-500/10 dark:from-purple-500/20 to-purple-600/5 dark:to-purple-600/10",
     border: "border-purple-500/30",
-    icon: "text-purple-400",
-    glow: "bg-purple-500/20",
+    icon: "text-purple-600 dark:text-purple-400",
+    glow: "bg-purple-500/10 dark:bg-purple-500/20",
     progress: "bg-purple-500",
   },
   cyan: {
-    bg: "from-cyan-500/20 to-cyan-600/10",
+    bg: "from-cyan-500/10 dark:from-cyan-500/20 to-cyan-600/5 dark:to-cyan-600/10",
     border: "border-cyan-500/30",
-    icon: "text-cyan-400",
-    glow: "bg-cyan-500/20",
+    icon: "text-cyan-600 dark:text-cyan-400",
+    glow: "bg-cyan-500/10 dark:bg-cyan-500/20",
     progress: "bg-cyan-500",
   },
   orange: {
-    bg: "from-orange-500/20 to-orange-600/10",
+    bg: "from-orange-500/10 dark:from-orange-500/20 to-orange-600/5 dark:to-orange-600/10",
     border: "border-orange-500/30",
-    icon: "text-orange-400",
-    glow: "bg-orange-500/20",
+    icon: "text-orange-600 dark:text-orange-400",
+    glow: "bg-orange-500/10 dark:bg-orange-500/20",
     progress: "bg-orange-500",
   },
 };
 
 export function HealthMetricCard({ icon: Icon, title, description, color, metricKey }: HealthMetricCardProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: todayData } = useTodayHealth(user?.id);
   const { data: weeklyData } = useWeeklyHealth(user?.id);
@@ -101,7 +103,7 @@ export function HealthMetricCard({ icon: Icon, title, description, color, metric
     if (value === null) return "—";
     
     if (metricKey === "hydration") {
-      return `${value} glasses`;
+      return `${value} ${t("health.settings.glasses")}`;
     }
     return `${value}/5`;
   };
@@ -113,7 +115,7 @@ export function HealthMetricCard({ icon: Icon, title, description, color, metric
 
   const todayValue = getTodayValue();
   const weeklyAvg = getWeeklyAverage();
-  const hasData = todayValue !== null || weeklyData?.length > 0;
+  const hasData = todayValue !== null || (weeklyData && weeklyData.length > 0);
 
   return (
     <motion.div
@@ -137,7 +139,7 @@ export function HealthMetricCard({ icon: Icon, title, description, color, metric
         {/* Icon */}
         <div className="flex items-start justify-between mb-4">
           <div className={cn(
-            "p-3 rounded-xl bg-card/50 border",
+            "p-3 rounded-xl bg-card/50 dark:bg-card/50 border",
             colors.border
           )}>
             <Icon className={cn("w-6 h-6", colors.icon)} />
@@ -160,10 +162,10 @@ export function HealthMetricCard({ icon: Icon, title, description, color, metric
         {/* Weekly Progress Bar */}
         <div className="space-y-2">
           <div className="flex justify-between text-xs">
-            <span className="text-muted-foreground">Weekly Average</span>
+            <span className="text-muted-foreground">{t("health.scores.weeklyAverage")}</span>
             <span className={colors.icon}>{weeklyAvg.toFixed(1)}/5</span>
           </div>
-          <div className="h-2 bg-card/50 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted/50 dark:bg-card/50 rounded-full overflow-hidden">
             <motion.div
               className={cn("h-full rounded-full", colors.progress)}
               initial={{ width: 0 }}
@@ -175,7 +177,7 @@ export function HealthMetricCard({ icon: Icon, title, description, color, metric
         
         {!hasData && (
           <p className="text-xs text-muted-foreground/50 mt-4 text-center">
-            No data yet. Start with a daily check-in!
+            {t("health.dailyCheckin")}
           </p>
         )}
       </div>
