@@ -51,19 +51,19 @@ export default function Health() {
   }
 
   return (
-    <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Ambient background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-teal-500/3 rounded-full blur-[100px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-teal-500/3 dark:bg-teal-500/5 rounded-full blur-[100px]" />
       </div>
       
       {/* Soft grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-10">
+      <div className="fixed inset-0 pointer-events-none opacity-5 dark:opacity-10">
         <div className="absolute inset-0" style={{
           backgroundImage: `
-            linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)
+            linear-gradient(hsl(var(--primary) / 0.15) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--primary) / 0.15) 1px, transparent 1px)
           `,
           backgroundSize: '50px 50px'
         }} />

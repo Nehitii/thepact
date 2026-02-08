@@ -1,25 +1,33 @@
 import { motion } from "framer-motion";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWeeklyHealth, useHealthSettings } from "@/hooks/useHealth";
 import { cn } from "@/lib/utils";
-import { 
-  Moon, 
-  Activity, 
-  Brain,
-  TrendingUp,
-} from "lucide-react";
-
-const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+import { TrendingUp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function HealthWeeklyChart() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: weeklyData = [], isLoading } = useWeeklyHealth(user?.id);
   const { data: settings } = useHealthSettings(user?.id);
 
+  // Get localized day labels from common.daysShort array (starts with Sunday)
+  const daysShortRaw = t("common.daysShort", { returnObjects: true }) as string[];
+  // Reorder to start with Monday
+  const dayLabels = [
+    daysShortRaw[1], // Mon
+    daysShortRaw[2], // Tue
+    daysShortRaw[3], // Wed
+    daysShortRaw[4], // Thu
+    daysShortRaw[5], // Fri
+    daysShortRaw[6], // Sat
+    daysShortRaw[0], // Sun
+  ];
+
   if (isLoading) {
     return (
-      <div className="bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-6 animate-pulse">
+      <div className="bg-card/30 dark:bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-6 animate-pulse">
         <div className="h-6 bg-muted/30 rounded w-1/4 mb-6" />
         <div className="h-40 bg-muted/30 rounded" />
       </div>
@@ -56,22 +64,22 @@ export function HealthWeeklyChart() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
-      className="bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-6"
+      className="bg-card/30 dark:bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-6"
     >
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-emerald-400" />
-          Weekly Overview
+          <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          {t("health.weeklyChart")}
         </h3>
         <div className="flex gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-blue-500" /> Sleep
+            <div className="w-3 h-3 rounded-full bg-blue-500" /> {t("health.metrics.sleep")}
           </span>
           <span className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" /> Activity
+            <div className="w-3 h-3 rounded-full bg-emerald-500" /> {t("health.metrics.activity")}
           </span>
           <span className="flex items-center gap-1">
-            <div className="w-3 h-3 rounded-full bg-purple-500" /> Stress
+            <div className="w-3 h-3 rounded-full bg-purple-500" /> {t("health.metrics.stress")}
           </span>
         </div>
       </div>
@@ -90,14 +98,14 @@ export function HealthWeeklyChart() {
               )}
             >
               {isToday && (
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-emerald-400" />
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-emerald-500" />
               )}
               
               {/* Bars container */}
               <div className="flex gap-1 justify-center h-32 items-end mb-2">
                 {/* Sleep bar */}
                 <motion.div
-                  className="w-3 rounded-t bg-blue-500/80"
+                  className="w-3 rounded-t bg-blue-500/90"
                   initial={{ height: 0 }}
                   animate={{ height: `${getBarHeight(data?.sleep_quality)}%` }}
                   transition={{ delay: 0.1 * i, duration: 0.5 }}
@@ -105,7 +113,7 @@ export function HealthWeeklyChart() {
                 
                 {/* Activity bar */}
                 <motion.div
-                  className="w-3 rounded-t bg-emerald-500/80"
+                  className="w-3 rounded-t bg-emerald-500/90"
                   initial={{ height: 0 }}
                   animate={{ height: `${getBarHeight(data?.activity_level)}%` }}
                   transition={{ delay: 0.1 * i + 0.05, duration: 0.5 }}
@@ -113,7 +121,7 @@ export function HealthWeeklyChart() {
                 
                 {/* Stress bar (inverted - lower is better) */}
                 <motion.div
-                  className="w-3 rounded-t bg-purple-500/80"
+                  className="w-3 rounded-t bg-purple-500/90"
                   initial={{ height: 0 }}
                   animate={{ height: `${getBarHeight(data?.stress_level ? 6 - data.stress_level : null)}%` }}
                   transition={{ delay: 0.1 * i + 0.1, duration: 0.5 }}
@@ -123,7 +131,7 @@ export function HealthWeeklyChart() {
               {/* Day label */}
               <span className={cn(
                 "text-xs",
-                isToday ? "text-emerald-400 font-medium" : "text-muted-foreground"
+                isToday ? "text-emerald-600 dark:text-emerald-400 font-medium" : "text-muted-foreground"
               )}>
                 {day}
               </span>
@@ -139,7 +147,7 @@ export function HealthWeeklyChart() {
 
       {weeklyData.length === 0 && (
         <div className="text-center text-muted-foreground/70 text-sm mt-4">
-          Complete daily check-ins to see your weekly trends
+          {t("health.dailyCheckin")}
         </div>
       )}
     </motion.div>

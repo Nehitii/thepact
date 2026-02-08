@@ -546,12 +546,26 @@
       "minutes": "minutes"
     },
     "checkin": {
-      "howDidYouSleep": "How did you sleep?",
+      "howDidYouSleep": "How many hours did you sleep?",
       "howDoYouFeel": "How do you feel?",
-      "stressLevel": "Stress level today?",
-      "hydrationLevel": "Hydration level?",
-      "todaysNotes": "Today's notes",
-      "notesPlaceholder": "Any notes about how you're feeling..."
+      "stressLevel": "Stress level today",
+      "hydrationLevel": "Glasses of water today",
+      "todaysNotes": "Notes (Optional)",
+      "notesPlaceholder": "How are you feeling? Any observations about your wellness today...",
+      "quality": {
+        "poor": "Poor",
+        "fair": "Fair",
+        "okay": "Okay",
+        "good": "Good",
+        "great": "Great"
+      },
+      "stress": {
+        "minimal": "Minimal",
+        "low": "Low",
+        "moderate": "Moderate",
+        "high": "High",
+        "overwhelming": "Overwhelming"
+      }
     }
   },
   "shop": {
