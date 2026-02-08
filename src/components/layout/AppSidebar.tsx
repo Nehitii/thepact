@@ -108,6 +108,16 @@ export function AppSidebar() {
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 z-50 w-72 flex flex-col bg-[#05080f] border-r border-white/5 overflow-hidden font-rajdhani">
+      {/* --- CSS INJECTION POUR MASQUER LA SCROLLBAR --- */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `,
+        }}
+      />
+
       {/* --- VFX: SCANLINES & GRID --- */}
       <div
         className="absolute inset-0 pointer-events-none opacity-[0.03]"
@@ -140,8 +150,8 @@ export function AppSidebar() {
         </div>
       </div>
 
-      {/* --- NAVIGATION --- */}
-      <nav className="flex-1 px-4 space-y-2 overflow-y-auto scrollbar-none custom-scroll relative z-10">
+      {/* --- NAVIGATION: hide-scrollbar ajouté ici --- */}
+      <nav className="flex-1 px-4 space-y-2 overflow-y-auto hide-scrollbar relative z-10">
         {/* Main Section */}
         <div className="space-y-1">
           {mainNavItems.map((item) => {
@@ -272,7 +282,6 @@ export function AppSidebar() {
 
       {/* --- FOOTER: USER PANEL --- */}
       <div className="mt-auto relative border-t border-white/5 bg-black/40 backdrop-blur-xl p-4">
-        {/* Glow effect at bottom */}
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-primary animate-pulse" />
 
         <DropdownMenu>
