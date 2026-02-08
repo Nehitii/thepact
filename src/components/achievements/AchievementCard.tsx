@@ -1,5 +1,5 @@
 import { Achievement, rarityColors, AchievementRarity } from "@/lib/achievements";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -7,15 +7,6 @@ interface AchievementCardProps {
   achievement: Achievement;
   compact?: boolean;
 }
-
-const rarityParticleColors: Record<AchievementRarity, string[]> = {
-  common: ["#9CA3AF", "#D1D5DB"],
-  uncommon: ["#10B981", "#34D399"],
-  rare: ["#3B82F6", "#60A5FA"],
-  epic: ["#A78BFA", "#C4B5FD"],
-  mythic: ["#FF2975", "#EF4444"], // Plus agressif
-  legendary: ["#F59E0B", "#FBBF24"],
-};
 
 export function AchievementCard({ achievement, compact = false }: AchievementCardProps) {
   const IconComponent =
@@ -29,167 +20,132 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
   const isLocked = !achievement.unlocked;
   const isHidden = achievement.is_hidden && isLocked;
   const color = rarityColors[achievement.rarity];
-  const particles = rarityParticleColors[achievement.rarity];
 
   const condition = achievement.conditions as any;
   const isProgressBased = condition?.value && typeof condition.value === "number" && condition.value > 1;
-  const progressValue = achievement.progress || 0;
-  const targetValue = isProgressBased ? condition.value : 0;
-  const progressPercent = Math.min(100, (progressValue / targetValue) * 100);
+  const progressPercent = Math.min(100, ((achievement.progress || 0) / (condition?.value || 1)) * 100);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: isLocked ? 1.02 : 1.04, y: -2 }}
-      className={cn("relative group transition-all duration-500", compact ? "h-28" : "h-40")}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ y: -4 }} // On évite le scale global qui fait bugger le clip-path
+      className={cn("relative group w-full transition-all duration-300", compact ? "h-24" : "h-32")}
     >
-      {/* Background avec Glassmorphism & Clip-path style futuriste */}
-      <div
-        className={cn(
-          "absolute inset-0 transition-all duration-500",
-          isLocked
-            ? "bg-slate-950/40 border-slate-800"
-            : "bg-gradient-to-br from-slate-900/80 to-black/90 backdrop-blur-xl border-t-2",
-        )}
-        style={{
-          clipPath: "polygon(0% 0%, 95% 0%, 100% 15%, 100% 100%, 5% 100%, 0% 85%)",
-          borderColor: isLocked ? "#1e293b" : `${color}80`,
-          boxShadow: isLocked ? "none" : `0 10px 30px -10px ${color}40`,
-        }}
-      />
-
-      {/* Scanlines subtiles (effet écran futuriste) */}
+      {/* 1. LAYER DE FOND (Lueur externe) */}
       {!isLocked && (
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03] overflow-hidden"
-          style={{ backgroundImage: `linear-gradient(0deg, transparent 50%, white 50%)`, backgroundSize: "100% 4px" }}
+          className="absolute -inset-1 opacity-20 group-hover:opacity-40 blur-xl transition-opacity duration-500"
+          style={{ backgroundColor: color }}
         />
       )}
 
-      {/* Particules animées */}
-      {!isLocked && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(4)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute w-1 h-1 rounded-full"
-              animate={{
-                y: [0, -40],
-                x: [0, i % 2 === 0 ? 20 : -20],
-                opacity: [0, 1, 0],
-                scale: [0, 1.5, 0],
-              }}
-              transition={{
-                duration: 3 + i,
-                repeat: Infinity,
-                delay: i * 0.8,
-              }}
-              style={{
-                left: `${20 + i * 20}%`,
-                bottom: "10%",
-                backgroundColor: color,
-                boxShadow: `0 0 10px ${color}`,
-              }}
-            />
-          ))}
-        </div>
-      )}
+      {/* 2. LE CORPS DE LA CARTE (Clip-path fixe) */}
+      <div
+        className={cn(
+          "absolute inset-0 transition-all duration-300 border-l-2",
+          isLocked ? "bg-slate-900/80 border-slate-700" : "bg-slate-950 border-t border-b border-r",
+        )}
+        style={{
+          clipPath: "polygon(0 0, 92% 0, 100% 25%, 100% 100%, 8% 100%, 0 75%)",
+          borderColor: isLocked ? undefined : `${color}60`,
+          borderLeftColor: isLocked ? undefined : color,
+        }}
+      >
+        {/* Scanlines animées */}
+        {!isLocked && (
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]" />
+        )}
 
-      <div className="relative p-4 flex gap-4 h-full items-center z-10">
-        {/* Container Icône avec lueur hexagonale */}
-        <div className="relative shrink-0">
-          {!isLocked && (
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-              className="absolute -inset-2 opacity-20 blur-sm rounded-full border-t border-r"
-              style={{ borderColor: color }}
-            />
-          )}
-          <div
-            className={cn(
-              "w-14 h-14 flex items-center justify-center relative",
-              isLocked ? "bg-slate-900/50" : "bg-black/40",
+        {/* Contenu principal */}
+        <div className="relative flex items-center h-full px-4 gap-4">
+          {/* ICON SECTION */}
+          <div className="relative shrink-0 flex items-center justify-center w-12 h-12">
+            {!isLocked && (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                className="absolute inset-0 border border-dashed rounded-full opacity-30"
+                style={{ borderColor: color }}
+              />
             )}
-            style={{
-              clipPath: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-              border: `1px solid ${isLocked ? "#334155" : color}`,
-            }}
-          >
             <IconComponent
-              size={26}
-              className={cn("transition-all duration-700", isLocked ? "text-slate-600 grayscale" : "")}
+              className={cn("z-10 transition-all duration-500", isLocked ? "text-slate-700" : "")}
               style={{
                 color: isLocked ? undefined : color,
-                filter: isLocked ? "none" : `drop-shadow(0 0 8px ${color})`,
+                filter: isLocked ? "none" : `drop-shadow(0 0 5px ${color})`,
               }}
+              size={compact ? 24 : 28}
             />
           </div>
-        </div>
 
-        {/* Textes & Progress */}
-        <div className="flex-1 flex flex-col justify-center min-w-0">
-          <div className="flex justify-between items-start mb-1">
-            <div className="flex flex-col">
+          {/* TEXT SECTION */}
+          <div className="flex-1 min-w-0">
+            {" "}
+            {/* min-w-0 est crucial pour empêcher le texte de push la carte */}
+            <div className="flex items-center justify-between gap-2">
               <span
-                className="text-[9px] uppercase tracking-[0.2em] font-bold mb-0.5 opacity-60"
-                style={{ color: isLocked ? "#64748b" : color }}
+                className="text-[10px] font-black uppercase tracking-widest opacity-50 font-mono"
+                style={{ color: isLocked ? "#475569" : color }}
               >
-                {achievement.rarity}
+                [{achievement.rarity}]
               </span>
-              <h3
-                className={cn(
-                  "font-black italic tracking-tighter uppercase text-base truncate",
-                  isLocked ? "text-slate-600" : "text-white",
-                )}
-              >
-                {isHidden ? "••••••••" : achievement.name}
-              </h3>
-            </div>
-
-            {/* Badge de pourcentage / Statut */}
-            <div className="text-[10px] font-mono bg-black/40 px-2 py-1 rounded border border-white/5 uppercase">
-              {isLocked ? (isHidden ? "Locked" : "In Progress") : "Sync Complete"}
-            </div>
-          </div>
-
-          <p
-            className={cn(
-              "text-xs line-clamp-2 font-medium leading-tight mb-3 transition-colors",
-              isLocked ? "text-slate-500" : "text-slate-300",
-            )}
-          >
-            {isHidden ? "Classified information. Objective unknown." : achievement.description}
-          </p>
-
-          {/* Progress Bar Style "Cyber" */}
-          {isProgressBased && (
-            <div className="relative h-1.5 w-full bg-white/5 rounded-none overflow-hidden border-l border-r border-white/10">
-              <motion.div
-                className="absolute inset-y-0 left-0"
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
-                style={{
-                  backgroundColor: isLocked ? "#334155" : color,
-                  boxShadow: isLocked ? "none" : `0 0 10px ${color}`,
-                }}
-              />
-              {/* Overlay brillant sur la barre */}
               {!isLocked && (
-                <motion.div
-                  animate={{ x: ["-100%", "100%"] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                  className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                <div
+                  className="h-1 w-1 rounded-full animate-pulse"
+                  style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }}
                 />
               )}
             </div>
-          )}
+            <h3
+              className={cn(
+                "font-bold uppercase tracking-tight truncate leading-none mb-1",
+                compact ? "text-xs" : "text-sm",
+                isLocked ? "text-slate-500" : "text-white",
+              )}
+            >
+              {isHidden ? "••••••••••••" : achievement.name}
+            </h3>
+            <p
+              className={cn(
+                "text-[11px] leading-tight line-clamp-1 opacity-70 italic",
+                isLocked ? "text-slate-600" : "text-slate-300",
+              )}
+            >
+              {isHidden ? "Locked Data Fragment" : achievement.description}
+            </p>
+            {/* PROGRESS BAR */}
+            {(isProgressBased || isLocked) && (
+              <div className="mt-2 relative">
+                <div className="flex justify-between text-[9px] mb-1 font-mono opacity-50">
+                  <span>PROG_</span>
+                  <span>{isLocked && isHidden ? "??%" : `${Math.round(progressPercent)}%`}</span>
+                </div>
+                <div className="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    className="h-full"
+                    style={{
+                      backgroundColor: isLocked ? "#334155" : color,
+                      boxShadow: isLocked ? "none" : `0 0 10px ${color}`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Glint effect (brillance au survol) */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white to-transparent -translate-x-full group-hover:translate-x-full rotate-12" />
+      {/* 3. EFFET DE REFLET AU SURVOL (Glint) */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: "linear-gradient(105deg, transparent 20%, white 50%, transparent 80%)",
+          clipPath: "polygon(0 0, 92% 0, 100% 25%, 100% 100%, 8% 100%, 0 75%)",
+        }}
+      />
     </motion.div>
   );
 }
