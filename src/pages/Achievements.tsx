@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getUserAchievements, Achievement, AchievementRarity, rarityColors } from "@/lib/achievements";
 import { AchievementCard } from "@/components/achievements/AchievementCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, ChevronDown, Check } from "lucide-react";
+import { Trophy, ChevronDown, Check, Sparkles, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const rarityOrder: AchievementRarity[] = ["common", "uncommon", "rare", "epic", "mythic", "legendary"];
-
 const rarityLabels: Record<AchievementRarity, string> = {
   common: "Common",
   uncommon: "Uncommon",
@@ -31,9 +30,7 @@ export default function Achievements() {
   const [selectedRarity, setSelectedRarity] = useState<AchievementRarity | "all">("all");
 
   useEffect(() => {
-    if (user) {
-      loadAchievements();
-    }
+    if (user) loadAchievements();
   }, [user]);
 
   const loadAchievements = async () => {
@@ -42,22 +39,15 @@ export default function Achievements() {
       const data = await getUserAchievements(user.id);
       setAchievements(data);
     } catch (error) {
-      console.error("Error loading achievements:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Calculate rarity counters
   const rarityCounts = useMemo(() => {
-    const counts: Record<AchievementRarity, { unlocked: number; total: number }> = {
-      common: { unlocked: 0, total: 0 },
-      uncommon: { unlocked: 0, total: 0 },
-      rare: { unlocked: 0, total: 0 },
-      epic: { unlocked: 0, total: 0 },
-      mythic: { unlocked: 0, total: 0 },
-      legendary: { unlocked: 0, total: 0 },
-    };
+    const counts: any = {};
+    rarityOrder.forEach((r) => (counts[r] = { unlocked: 0, total: 0 }));
     achievements.forEach((a) => {
       counts[a.rarity].total++;
       if (a.unlocked) counts[a.rarity].unlocked++;
@@ -77,240 +67,151 @@ export default function Achievements() {
   const unlockedCount = achievements.filter((a) => a.unlocked).length;
   const percentage = achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0;
 
-  const selectedRarityLabel = selectedRarity === "all" ? "All Rarities" : rarityLabels[selectedRarity];
-
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Clean subtle background - no harsh lines */}
+    <div className="min-h-screen bg-[#050505] text-slate-200 relative overflow-hidden font-rajdhani">
+      {/* --- BACKGROUND PANTHEON EFFECT --- */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 left-1/4 w-[500px] h-[400px] bg-accent/3 rounded-full blur-[120px]" />
+        {/* Rayons de lumière venant du haut */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,_rgba(120,119,198,0.15)_0%,_rgba(255,255,255,0)_50%)]" />
+        {/* Grille de sol futuriste en perspective */}
+        <div className="absolute bottom-0 w-full h-[500px] opacity-20 [perspective:1000px]">
+          <div className="absolute inset-0 [transform:rotateX(60deg)] bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_100%,#000_70%,transparent_100%)]" />
+        </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-8 relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          {/* Title */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <div className="relative">
-              <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl" />
-              <div className="relative p-3.5 rounded-full bg-card/40 backdrop-blur-xl border border-primary/40">
-                <Trophy className="w-8 h-8 text-primary" />
-              </div>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground font-orbitron uppercase tracking-wider">
-              Pact Achievements
-            </h1>
-          </div>
+      <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
+        {/* --- HEADER PANTHÉON --- */}
+        <header className="relative mb-20 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="inline-block relative mb-6"
+          >
+            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
+            <Trophy className="w-16 h-16 text-primary relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+          </motion.div>
 
-          {/* Stats Cards - Clean Design without scan lines */}
-          <div className="grid grid-cols-3 gap-3 sm:gap-4 max-w-lg mx-auto mb-8">
-            {/* Unlocked */}
-            <div className="relative bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-4 hover:border-primary/40 transition-all">
-              <div className="text-xs text-muted-foreground uppercase tracking-widest font-orbitron mb-1">Unlocked</div>
-              <div className="text-2xl sm:text-3xl font-bold text-primary font-orbitron">
-                {unlockedCount}
-              </div>
-            </div>
+          <motion.h1
+            initial={{ letterSpacing: "0.1em", opacity: 0 }}
+            animate={{ letterSpacing: "0.4em", opacity: 1 }}
+            className="text-4xl md:text-6xl font-black uppercase font-orbitron mb-4 text-white"
+          >
+            Hall of <span className="text-primary">Eternity</span>
+          </motion.h1>
+          <p className="text-muted-foreground tracking-[0.3em] uppercase text-sm mb-12">Legacy of your achievements</p>
 
-            {/* Total */}
-            <div className="relative bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-4 hover:border-primary/40 transition-all">
-              <div className="text-xs text-muted-foreground uppercase tracking-widest font-orbitron mb-1">Total</div>
-              <div className="text-2xl sm:text-3xl font-bold text-primary font-orbitron">
-                {achievements.length}
-              </div>
-            </div>
-
-            {/* Completion */}
-            <div className="relative bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-4 hover:border-primary/40 transition-all">
-              <div className="text-xs text-muted-foreground uppercase tracking-widest font-orbitron mb-1">Complete</div>
-              <div className="text-2xl sm:text-3xl font-bold text-primary font-orbitron">
-                {percentage}%
-              </div>
-            </div>
-          </div>
-
-          {/* Premium Progress Bar */}
-          <div className="max-w-lg mx-auto">
-            <div className="relative h-4 w-full bg-card/40 backdrop-blur rounded-full overflow-hidden border border-primary/20">
-              {/* Background shimmer */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-cyber-shimmer" style={{ backgroundSize: '200% auto' }} />
-              
-              {/* Progress fill */}
+          {/* STATS MONUMENTALES */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {[
+              { label: "Completion", val: `${percentage}%`, sub: `${unlockedCount}/${achievements.length}` },
+              { label: "Legacy Rank", val: "Elite", sub: "Top 5% Users" },
+              { label: "Points", val: unlockedCount * 150, sub: "Total Score" },
+            ].map((s, i) => (
               <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${percentage}%` }}
-                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full relative"
-                style={{
-                  background: `linear-gradient(90deg, 
-                    hsl(var(--primary)) 0%, 
-                    hsl(var(--accent)) 50%, 
-                    hsl(var(--primary)) 100%)`,
-                  boxShadow: `0 0 20px hsl(var(--primary) / 0.5), 0 0 40px hsl(var(--primary) / 0.3)`,
-                }}
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="relative group cursor-default"
               >
-                {/* Inner glow */}
-                <div className="absolute inset-0 bg-gradient-to-t from-transparent via-white/20 to-transparent" />
-                
-                {/* Edge glow */}
-                <div 
-                  className="absolute right-0 top-0 bottom-0 w-2 rounded-r-full"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent, hsl(var(--primary-glow)))',
-                    boxShadow: '0 0 15px hsl(var(--primary))',
-                  }}
-                />
+                <div className="absolute inset-x-0 -bottom-2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+                <div className="py-4">
+                  <div className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{s.label}</div>
+                  <div className="text-4xl font-black font-orbitron text-white group-hover:scale-110 transition-transform duration-500">
+                    {s.val}
+                  </div>
+                  <div className="text-[10px] text-primary/60 font-mono mt-1">{s.sub}</div>
+                </div>
               </motion.div>
-            </div>
-            <div className="mt-2 text-xs text-muted-foreground font-rajdhani">
-              {unlockedCount} of {achievements.length} achievements unlocked
-            </div>
+            ))}
           </div>
-        </motion.div>
+        </header>
 
-        {/* Filters Section */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
-        >
-          {/* Status Filter */}
-          <div className="flex items-center gap-2 bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg p-1.5">
-            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
-              <TabsList className="bg-transparent border-0 p-0 gap-1">
-                {["all", "unlocked", "locked"].map((val) => (
+        {/* --- FILTRES DE STRUCTURE --- */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 border-y border-white/5 py-6 bg-white/[0.02] backdrop-blur-md px-4 rounded-xl">
+          <div className="flex items-center gap-4">
+            <Crown className="w-5 h-5 text-primary opacity-50" />
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="w-auto">
+              <TabsList className="bg-black/40 border border-white/10 p-1">
+                {["all", "unlocked", "locked"].map((v) => (
                   <TabsTrigger
-                    key={val}
-                    value={val}
-                    className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:shadow-[0_0_10px_hsl(var(--primary)/0.3)] text-muted-foreground font-orbitron text-xs uppercase tracking-wider px-4 py-2 rounded-md transition-all"
+                    key={v}
+                    value={v}
+                    className="font-orbitron text-[10px] uppercase px-6 data-[state=active]:bg-primary/20 data-[state=active]:text-primary transition-all"
                   >
-                    {val.charAt(0).toUpperCase() + val.slice(1)}
+                    {v}
                   </TabsTrigger>
                 ))}
               </TabsList>
             </Tabs>
           </div>
 
-          {/* Rarity Dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 bg-card/30 backdrop-blur-xl border border-primary/20 rounded-lg px-4 py-2.5 hover:border-primary/40 transition-all focus:outline-none focus:ring-2 focus:ring-primary/30">
-                <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{
-                    backgroundColor: selectedRarity === "all" ? "hsl(var(--primary))" : rarityColors[selectedRarity],
-                  }}
-                />
-                <span className="font-orbitron text-xs uppercase tracking-wider text-foreground">
-                  {selectedRarityLabel}
-                </span>
-                {selectedRarity !== "all" && (
-                  <span className="text-xs text-muted-foreground font-rajdhani">
-                    ({rarityCounts[selectedRarity].unlocked}/{rarityCounts[selectedRarity].total})
-                  </span>
-                )}
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              </button>
+            <DropdownMenuTrigger className="flex items-center gap-3 bg-black/40 border border-white/10 px-6 py-2 rounded-full hover:bg-white/5 transition-all group">
+              <div
+                className="w-2 h-2 rounded-full animate-pulse"
+                style={{ backgroundColor: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity] }}
+              />
+              <span className="font-orbitron text-xs uppercase tracking-[0.2em]">
+                {selectedRarity === "all" ? "Filter Rarity" : rarityLabels[selectedRarity]}
+              </span>
+              <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="center"
-              className="w-56 bg-card/95 backdrop-blur-xl border border-primary/30 z-50"
-            >
+            <DropdownMenuContent className="bg-[#0a0a0a] border-white/10 text-white min-w-[200px]">
               <DropdownMenuItem
                 onClick={() => setSelectedRarity("all")}
-                className="flex items-center justify-between gap-2 cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                className="font-orbitron text-[10px] uppercase tracking-widest"
               >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: "hsl(var(--primary))" }}
-                  />
-                  <span className="font-orbitron text-xs uppercase tracking-wider">All Rarities</span>
-                </div>
-                {selectedRarity === "all" && <Check className="w-4 h-4 text-primary" />}
+                Show All
               </DropdownMenuItem>
-
-              {rarityOrder.map((rarity) => (
+              {rarityOrder.map((r) => (
                 <DropdownMenuItem
-                  key={rarity}
-                  onClick={() => setSelectedRarity(rarity)}
-                  className="flex items-center justify-between gap-2 cursor-pointer hover:bg-primary/10 focus:bg-primary/10"
+                  key={r}
+                  onClick={() => setSelectedRarity(r)}
+                  className="flex justify-between font-orbitron text-[10px] uppercase tracking-widest hover:bg-white/5"
                 >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="w-2.5 h-2.5 rounded-full"
-                      style={{ backgroundColor: rarityColors[rarity] }}
-                    />
-                    <span className="font-orbitron text-xs uppercase tracking-wider">
-                      {rarityLabels[rarity]}
-                    </span>
-                    <span className="text-xs text-muted-foreground font-rajdhani">
-                      ({rarityCounts[rarity].unlocked}/{rarityCounts[rarity].total})
-                    </span>
-                  </div>
-                  {selectedRarity === rarity && <Check className="w-4 h-4 text-primary" />}
+                  <span style={{ color: rarityColors[r] }}>{r}</span>
+                  <span className="opacity-40">
+                    {rarityCounts[r].unlocked}/{rarityCounts[r].total}
+                  </span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
-        </motion.div>
+        </div>
 
-        {/* Achievements Grid */}
+        {/* --- GRID ACHIEVEMENTS --- */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
             {[...Array(6)].map((_, i) => (
-              <div
-                key={i}
-                className="h-36 bg-card/20 backdrop-blur-sm rounded-lg border border-primary/10 animate-pulse"
-              />
+              <div key={i} className="h-32 bg-white/5 rounded-2xl border border-white/5" />
             ))}
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AnimatePresence mode="popLayout">
-              {filteredAchievements.map((achievement, index) => (
+              {filteredAchievements.map((achievement, idx) => (
                 <motion.div
                   key={achievement.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.02, duration: 0.2 }}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.4, delay: idx * 0.03 }}
                 >
-                  <AchievementCard achievement={achievement} />
+                  <AchievementCard achievement={achievement} compact={false} />
                 </motion.div>
               ))}
             </AnimatePresence>
           </motion.div>
         )}
 
-        {filteredAchievements.length === 0 && !loading && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-16"
-          >
-            <div className="relative inline-block mb-6">
-              <div className="absolute inset-0 bg-primary/10 rounded-full blur-2xl" />
-              <div className="relative p-5 rounded-full bg-card/30 backdrop-blur-xl border border-primary/20">
-                <Trophy className="w-12 h-12 text-muted-foreground/50" />
-              </div>
-            </div>
-            <p className="text-lg text-muted-foreground font-rajdhani tracking-wide">
-              No achievements found with current filters
-            </p>
-          </motion.div>
+        {/* --- EMPTY STATE --- */}
+        {!loading && filteredAchievements.length === 0 && (
+          <div className="text-center py-24">
+            <Sparkles className="w-12 h-12 text-white/10 mx-auto mb-4" />
+            <h3 className="font-orbitron uppercase text-muted-foreground tracking-widest">No remnants found</h3>
+          </div>
         )}
       </div>
     </div>
