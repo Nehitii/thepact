@@ -117,16 +117,6 @@ export function AppSidebar() {
         }}
       />
 
-      {/* --- VFX: SCANLINES & GRID --- */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
-        style={{
-          backgroundImage: `linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06))`,
-          backgroundSize: "100% 2px, 3px 100%",
-        }}
-      />
-      <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:30px_30px] [mask-image:radial-gradient(ellipse_at_center,black,transparent_80%)]" />
-
       {/* --- HEADER --- */}
       <div className="relative p-8 mb-4">
         <div className="flex items-center gap-4">
