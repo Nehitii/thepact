@@ -38,9 +38,9 @@ export default function Achievements() {
     if (!user) return;
     try {
       const data = await getUserAchievements(user.id);
-      setAchievements(data);
+      setAchievements(data || []);
     } catch (error) {
-      console.error(error);
+      console.error("Error loading achievements:", error);
     } finally {
       setLoading(false);
     }
@@ -50,8 +50,10 @@ export default function Achievements() {
     const counts: any = {};
     rarityOrder.forEach((r) => (counts[r] = { unlocked: 0, total: 0 }));
     achievements.forEach((a) => {
-      counts[a.rarity].total++;
-      if (a.unlocked) counts[a.rarity].unlocked++;
+      if (counts[a.rarity]) {
+        counts[a.rarity].total++;
+        if (a.unlocked) counts[a.rarity].unlocked++;
+      }
     });
     return counts;
   }, [achievements]);
@@ -69,10 +71,23 @@ export default function Achievements() {
   const percentage = achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0;
 
   return (
-    <div className="pantheon-container min-h-screen text-slate-200 relative overflow-x-hidden">
-      {/* --- INJECTION CSS FORCEE --- */}
-      <style>{`
-        .pantheon-container {
+    <div className="pantheon-wrapper min-h-screen text-slate-200 relative overflow-x-hidden">
+      {/* --- INJECTION CSS POUR PERSPECTIVE ET SUPPRESSION SCROLLBAR --- */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+        /* Cache la scrollbar sur toute la page mais garde le défilement */
+        html, body {
+          scrollbar-width: none !important; /* Firefox */
+          -ms-overflow-style: none !important;  /* IE/Edge */
+          background-color: #050505 !important;
+        }
+
+        body::-webkit-scrollbar {
+          display: none !important; /* Chrome/Safari */
+        }
+
+        .pantheon-wrapper {
           background-color: #050505 !important;
           perspective: 1200px;
         }
@@ -110,10 +125,13 @@ export default function Achievements() {
           background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
           border-top: 1px solid rgba(255,255,255,0.1);
           box-shadow: 0 15px 30px -15px rgba(0,0,0,0.8);
+          backdrop-blur: 5px;
         }
-      `}</style>
+      `,
+        }}
+      />
 
-      {/* Background Elements */}
+      {/* Éléments de décor */}
       <div className="celestial-light" />
       <div className="ground-grid" />
 
@@ -132,12 +150,12 @@ export default function Achievements() {
           <motion.h1
             initial={{ letterSpacing: "0.1em", opacity: 0 }}
             animate={{ letterSpacing: "0.5em", opacity: 1 }}
-            className="text-4xl md:text-7xl font-black uppercase font-orbitron mb-4 text-white drop-shadow-sm"
+            className="text-4xl md:text-7xl font-black uppercase font-orbitron mb-4 text-white"
           >
             Hall of <span className="text-primary">Eternity</span>
           </motion.h1>
-          <p className="text-primary/60 tracking-[0.4em] uppercase text-[10px] font-bold mb-14">
-            Archives of the Ascended
+          <p className="text-primary/60 tracking-[0.4em] uppercase text-[10px] font-bold mb-14 italic">
+            "Your legacy is etched in the stars"
           </p>
 
           {/* STATS MONUMENTALES */}
@@ -164,7 +182,7 @@ export default function Achievements() {
           </div>
         </header>
 
-        {/* --- FILTRES --- */}
+        {/* --- BARRE DE FILTRES --- */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-16 border-y border-white/10 py-8 bg-black/20 backdrop-blur-xl px-8 rounded-3xl shadow-2xl">
           <div className="flex items-center gap-6">
             <Crown className="w-6 h-6 text-primary animate-pulse" />
@@ -220,7 +238,7 @@ export default function Achievements() {
                     <span style={{ color: rarityColors[r] }}>{r}</span>
                   </div>
                   <span className="opacity-30 text-[9px]">
-                    {rarityCounts[r].unlocked}/{rarityCounts[r].total}
+                    {rarityCounts[r]?.unlocked || 0}/{rarityCounts[r]?.total || 0}
                   </span>
                 </DropdownMenuItem>
               ))}
@@ -251,6 +269,18 @@ export default function Achievements() {
                 </motion.div>
               ))}
             </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* --- EMPTY STATE --- */}
+        {!loading && filteredAchievements.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-32 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl mt-8"
+          >
+            <Sparkles className="w-12 h-12 text-white/5 mx-auto mb-4" />
+            <h3 className="font-orbitron uppercase text-muted-foreground tracking-[0.4em]">Data Remnants Not Found</h3>
           </motion.div>
         )}
       </div>
