@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getUserAchievements, Achievement, AchievementRarity, rarityColors } from "@/lib/achievements";
@@ -6,6 +5,7 @@ import { AchievementCard } from "@/components/achievements/AchievementCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, ChevronDown, Check, Sparkles, Crown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,76 +69,112 @@ export default function Achievements() {
   const percentage = achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-200 relative overflow-hidden font-rajdhani">
-      {/* --- BACKGROUND PANTHEON EFFECT --- */}
-      <div className="fixed inset-0 pointer-events-none">
-        {/* Rayons de lumière venant du haut */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,_rgba(120,119,198,0.15)_0%,_rgba(255,255,255,0)_50%)]" />
-        {/* Grille de sol futuriste en perspective */}
-        <div className="absolute bottom-0 w-full h-[500px] opacity-20 [perspective:1000px]">
-          <div className="absolute inset-0 [transform:rotateX(60deg)] bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_100%,#000_70%,transparent_100%)]" />
-        </div>
-      </div>
+    <div className="pantheon-container min-h-screen text-slate-200 relative overflow-x-hidden">
+      {/* --- INJECTION CSS FORCEE --- */}
+      <style>{`
+        .pantheon-container {
+          background-color: #050505 !important;
+          perspective: 1200px;
+        }
 
-      <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
-        {/* --- HEADER PANTHÉON --- */}
-        <header className="relative mb-20 text-center">
+        .celestial-light {
+          position: fixed;
+          top: 0;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 150%;
+          height: 80%;
+          background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.18) 0%, transparent 75%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .ground-grid {
+          position: fixed;
+          bottom: -150px;
+          left: 0;
+          width: 100%;
+          height: 60vh;
+          transform: rotateX(65deg);
+          background-image: 
+            linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+          background-size: 50px 50px;
+          mask-image: linear-gradient(to top, black 20%, transparent 100%);
+          -webkit-mask-image: linear-gradient(to top, black 20%, transparent 100%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .stat-monument {
+          background: linear-gradient(to bottom, rgba(255,255,255,0.05), transparent);
+          border-top: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 15px 30px -15px rgba(0,0,0,0.8);
+        }
+      `}</style>
+
+      {/* Background Elements */}
+      <div className="celestial-light" />
+      <div className="ground-grid" />
+
+      <div className="max-w-6xl mx-auto px-6 py-16 relative z-10 font-rajdhani">
+        {/* --- HEADER --- */}
+        <header className="relative mb-24 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="inline-block relative mb-6"
+            className="inline-block relative mb-8"
           >
-            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full" />
-            <Trophy className="w-16 h-16 text-primary relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+            <div className="absolute inset-0 bg-primary/30 blur-[80px] rounded-full" />
+            <Trophy className="w-20 h-20 text-primary relative z-10 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
           </motion.div>
 
           <motion.h1
             initial={{ letterSpacing: "0.1em", opacity: 0 }}
-            animate={{ letterSpacing: "0.4em", opacity: 1 }}
-            className="text-4xl md:text-6xl font-black uppercase font-orbitron mb-4 text-white"
+            animate={{ letterSpacing: "0.5em", opacity: 1 }}
+            className="text-4xl md:text-7xl font-black uppercase font-orbitron mb-4 text-white drop-shadow-sm"
           >
             Hall of <span className="text-primary">Eternity</span>
           </motion.h1>
-          <p className="text-muted-foreground tracking-[0.3em] uppercase text-sm mb-12">Legacy of your achievements</p>
+          <p className="text-primary/60 tracking-[0.4em] uppercase text-[10px] font-bold mb-14">
+            Archives of the Ascended
+          </p>
 
           {/* STATS MONUMENTALES */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-4xl mx-auto">
             {[
-              { label: "Completion", val: `${percentage}%`, sub: `${unlockedCount}/${achievements.length}` },
-              { label: "Legacy Rank", val: "Elite", sub: "Top 5% Users" },
-              { label: "Points", val: unlockedCount * 150, sub: "Total Score" },
+              { label: "Completion", val: `${percentage}%`, sub: `${unlockedCount} / ${achievements.length}` },
+              { label: "Legacy Rank", val: "Elite", sub: "Global Status" },
+              { label: "Expedition", val: unlockedCount * 125, sub: "Total Score" },
             ].map((s, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="relative group cursor-default"
+                className="stat-monument p-8 rounded-t-2xl transition-transform hover:-translate-y-1 duration-500"
               >
-                <div className="absolute inset-x-0 -bottom-2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-                <div className="py-4">
-                  <div className="text-xs text-muted-foreground uppercase tracking-widest mb-1">{s.label}</div>
-                  <div className="text-4xl font-black font-orbitron text-white group-hover:scale-110 transition-transform duration-500">
-                    {s.val}
-                  </div>
-                  <div className="text-[10px] text-primary/60 font-mono mt-1">{s.sub}</div>
+                <div className="text-[10px] text-primary font-black uppercase tracking-[0.4em] mb-3">{s.label}</div>
+                <div className="text-5xl font-black font-orbitron text-white mb-2">{s.val}</div>
+                <div className="text-[11px] text-muted-foreground font-mono border-l-2 border-primary/40 pl-3 text-left opacity-70">
+                  {s.sub}
                 </div>
               </motion.div>
             ))}
           </div>
         </header>
 
-        {/* --- FILTRES DE STRUCTURE --- */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 border-y border-white/5 py-6 bg-white/[0.02] backdrop-blur-md px-4 rounded-xl">
-          <div className="flex items-center gap-4">
-            <Crown className="w-5 h-5 text-primary opacity-50" />
-            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)} className="w-auto">
-              <TabsList className="bg-black/40 border border-white/10 p-1">
+        {/* --- FILTRES --- */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-16 border-y border-white/10 py-8 bg-black/20 backdrop-blur-xl px-8 rounded-3xl shadow-2xl">
+          <div className="flex items-center gap-6">
+            <Crown className="w-6 h-6 text-primary animate-pulse" />
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
+              <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl">
                 {["all", "unlocked", "locked"].map((v) => (
                   <TabsTrigger
                     key={v}
                     value={v}
-                    className="font-orbitron text-[10px] uppercase px-6 data-[state=active]:bg-primary/20 data-[state=active]:text-primary transition-all"
+                    className="font-orbitron text-[10px] uppercase px-8 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-lg"
                   >
                     {v}
                   </TabsTrigger>
@@ -148,31 +184,42 @@ export default function Achievements() {
           </div>
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-3 bg-black/40 border border-white/10 px-6 py-2 rounded-full hover:bg-white/5 transition-all group">
+            <DropdownMenuTrigger className="flex items-center gap-4 bg-white/5 border border-white/10 px-8 py-3 rounded-full hover:bg-white/10 transition-all outline-none">
               <div
-                className="w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity] }}
+                className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor]"
+                style={{
+                  backgroundColor: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity],
+                  color: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity],
+                }}
               />
-              <span className="font-orbitron text-xs uppercase tracking-[0.2em]">
-                {selectedRarity === "all" ? "Filter Rarity" : rarityLabels[selectedRarity]}
+              <span className="font-orbitron text-xs uppercase tracking-[0.2em] text-white font-bold">
+                {selectedRarity === "all" ? "All Rarities" : rarityLabels[selectedRarity]}
               </span>
-              <ChevronDown size={14} className="group-hover:translate-y-0.5 transition-transform" />
+              <ChevronDown size={16} className="text-muted-foreground" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-[#0a0a0a] border-white/10 text-white min-w-[200px]">
+            <DropdownMenuContent className="bg-[#0f0f0f] border border-white/10 text-white min-w-[240px] p-2 rounded-2xl shadow-3xl">
               <DropdownMenuItem
                 onClick={() => setSelectedRarity("all")}
-                className="font-orbitron text-[10px] uppercase tracking-widest"
+                className="font-orbitron text-[10px] uppercase tracking-widest p-4 cursor-pointer focus:bg-white/10 rounded-xl mb-1"
               >
+                <Check
+                  className={cn("mr-3 h-4 w-4 text-primary", selectedRarity === "all" ? "opacity-100" : "opacity-0")}
+                />
                 Show All
               </DropdownMenuItem>
               {rarityOrder.map((r) => (
                 <DropdownMenuItem
                   key={r}
                   onClick={() => setSelectedRarity(r)}
-                  className="flex justify-between font-orbitron text-[10px] uppercase tracking-widest hover:bg-white/5"
+                  className="flex justify-between font-orbitron text-[10px] uppercase tracking-widest p-4 cursor-pointer focus:bg-white/10 rounded-xl mb-1"
                 >
-                  <span style={{ color: rarityColors[r] }}>{r}</span>
-                  <span className="opacity-40">
+                  <div className="flex items-center">
+                    <Check
+                      className={cn("mr-3 h-4 w-4 text-primary", selectedRarity === r ? "opacity-100" : "opacity-0")}
+                    />
+                    <span style={{ color: rarityColors[r] }}>{r}</span>
+                  </div>
+                  <span className="opacity-30 text-[9px]">
                     {rarityCounts[r].unlocked}/{rarityCounts[r].total}
                   </span>
                 </DropdownMenuItem>
@@ -183,36 +230,28 @@ export default function Achievements() {
 
         {/* --- GRID ACHIEVEMENTS --- */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 animate-pulse">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="h-32 bg-white/5 rounded-2xl border border-white/5" />
+              <div key={i} className="h-40 bg-white/5 rounded-3xl" />
             ))}
           </div>
         ) : (
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             <AnimatePresence mode="popLayout">
               {filteredAchievements.map((achievement, idx) => (
                 <motion.div
                   key={achievement.id}
                   layout
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.4, delay: idx * 0.03 }}
+                  transition={{ duration: 0.4, delay: idx * 0.05 }}
                 >
-                  <AchievementCard achievement={achievement} compact={false} />
+                  <AchievementCard achievement={achievement} />
                 </motion.div>
               ))}
             </AnimatePresence>
           </motion.div>
-        )}
-
-        {/* --- EMPTY STATE --- */}
-        {!loading && filteredAchievements.length === 0 && (
-          <div className="text-center py-24">
-            <Sparkles className="w-12 h-12 text-white/10 mx-auto mb-4" />
-            <h3 className="font-orbitron uppercase text-muted-foreground tracking-widest">No remnants found</h3>
-          </div>
         )}
       </div>
     </div>
