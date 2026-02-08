@@ -1,353 +1,431 @@
 
-# /Home Page Premium UI/UX Overhaul — Expert Audit & Implementation Plan
+
+# Health Module — Complete Audit & Enhancement Recommendations
 
 ---
 
 ## Executive Summary
 
-After analyzing the complete `/home` implementation, I've identified a **significant visual inconsistency gap** between the recently upgraded components (`QuickStatsBadges`, `QuickActionsBar`) and the remaining elements. This audit proposes a systematic elevation of the entire page to a **Premium/High-End Cyberpunk Glassmorphism 2.0** standard.
+The Health module is a **premium locked module** that provides wellness awareness tracking through daily check-ins, visualizations, and a composite health score. After a thorough audit, I've identified **critical theming bugs**, **missing features**, and significant opportunities to elevate this module to a professional, highly-developed state.
 
 ---
 
-## Part 1: UX Audit — Information Architecture & Flow
+## Part 1: Critical Issues to Fix
 
-### Current State Assessment
+### Issue #1: Light Mode Unreadable (Critical)
 
-| Element | Location | Hierarchy Score | Issues |
-|---------|----------|-----------------|--------|
-| PactVisual | Top center | ★★★★☆ | Good focal point, but floating without contextual framing |
-| Project Title/Mantra | Below visual | ★★★★★ | Excellent prominence, gradient text works well |
-| TodaysFocusMessage | Below title | ★★☆☆☆ | Too subtle, gets lost visually |
-| CurrentRankBadge | Below message | ★★★☆☆ | Good structure but lacks visual impact |
-| XPProgressBar | Below rank | ★★★☆☆ | Functional but visually flat compared to new components |
-| QuickStatsBadges | Below XP bar | ★★★★★ | New premium standard — the benchmark |
-| QuickActionsBar | Bottom of hero | ★★★★★ | Excellent plasma effects and motion |
+**Severity**: High — Module is unusable in light mode
 
-### Identified UX Problems
+| File | Problem Code | Location |
+|------|--------------|----------|
+| `Health.tsx` | `bg-[#00050B]` | Line 54 |
+| `Health.tsx` | Hardcoded grid with `rgba(16, 185, 129, 0.1)` | Lines 64-66 |
+| `HealthDailyCheckin.tsx` | `bg-[#0a1525]` | Line 337 |
+| `HealthSettingsModal.tsx` | `bg-[#0a1525]` | Line 87 |
 
-1. **Visual Hierarchy Breaks**: The `TodaysFocusMessage` is rendered as plain text with minimal styling — it's the least visible element despite carrying actionable information
+**Root Cause**: Components use hardcoded dark-theme hex colors instead of CSS variables.
 
-2. **Rank Badge Underwhelms**: The `CurrentRankBadge` uses simpler styling than `QuickStatsBadges`, creating cognitive dissonance about which element is more important
+**Fix**: Replace all hardcoded colors with theme-aware classes:
 
-3. **XP Progress Bar Lacks Depth**: Compared to the noise textures and glow effects in `QuickStatsBadges`, the progress bar feels "2D"
-
-4. **Missing Page Entrance Animation**: No staggered entrance — all elements appear simultaneously, losing the premium "reveal" feeling
-
-5. **Module Cards Inconsistency**: `ActionModuleCard` and `DashboardWidgetShell` have different glassmorphism depths, creating visual fragmentation
-
-### Recommended Hierarchy Restructure
-
-```text
-┌─────────────────────────────────────────────┐
-│  [PactVisual with ambient glow halo]        │  ← Z-index: Highest, radial glow behind
-├─────────────────────────────────────────────┤
-│  PROJECT NAME (Orbitron, gradient, glow)    │  ← Primary focal point
-│  "mantra" (Rajdhani italic)                 │
-├─────────────────────────────────────────────┤
-│  [TodaysFocusMessage] ← UPGRADED            │  ← Now a glassmorphism pill with icon
-├─────────────────────────────────────────────┤
-│  ╔═════════════════════════════════════════╗│
-│  ║  CURRENT RANK BADGE (Premium Edition)   ║│  ← Hero-within-hero, noise texture
-│  ║  Level indicator + Rank name + XP       ║│
-│  ╚═════════════════════════════════════════╝│
-├─────────────────────────────────────────────┤
-│  [XP Progress Bar with depth layers]        │  ← Inner shadow, noise, fluid animation
-├─────────────────────────────────────────────┤
-│  [QuickStatsBadges] ← REFERENCE STANDARD    │  ← Keep as-is (benchmark)
-├─────────────────────────────────────────────┤
-│  [QuickActionsBar] ← REFERENCE STANDARD     │  ← Keep as-is (benchmark)
-└─────────────────────────────────────────────┘
-```
+| Before | After |
+|--------|-------|
+| `bg-[#00050B]` | `bg-background` |
+| `bg-[#0a1525]` | `bg-popover` |
+| `rgba(16, 185, 129, 0.1)` | `hsl(var(--health) / 0.1)` |
 
 ---
 
-## Part 2: UI Audit — Visual Polish & "Wow Factor"
+### Issue #2: Missing Localization Keys
 
-### Gap Analysis: Old vs. New Components
+Some components have hardcoded English strings that bypass the i18n system:
 
-| Property | QuickStatsBadges (NEW) | CurrentRankBadge (OLD) | Gap |
-|----------|------------------------|------------------------|-----|
-| Background | `bg-gradient-to-br` with transparency | `bg-card/40` | Missing gradient |
-| Border | `border-{color}/20 hover:border-{color}/50` | Inline style border | Inconsistent |
-| Glow Effect | Animated background glow on hover | Static `boxShadow` | No interactivity |
-| Noise Texture | Present in XPProgressBar | Absent | Missing depth |
-| Hover Transform | `-translate-y-1` | None | Static feeling |
-| Font Treatment | Orbitron + truncate + gradient | Same | OK |
-
-### Proposed Visual Enhancements
-
-#### A. TodaysFocusMessage Upgrade
-**Current**: Plain `<div>` with icon and text
-**Proposed**: Glassmorphism pill with:
-- `backdrop-blur-xl bg-card/30`
-- Animated border glow based on message type
-- Subtle scale-in entrance animation
-- Icon with `animate-glow-pulse`
-
-#### B. CurrentRankBadge Premium Tier
-**Current**: Functional card with rank colors
-**Proposed**:
-- Add noise texture overlay (same as XPProgressBar)
-- Add background glow layer that pulses on "close to level-up"
-- Add `hover:-translate-y-1 hover:shadow-lg` for lift effect
-- Add scanline effect on hover
-- Corner brackets (using existing `.corner-brackets` CSS class)
-
-#### C. XPProgressBar Depth Enhancement
-**Current**: Flat progress bar with fluid animation
-**Proposed**:
-- Add inner shadow to track: `shadow-[inset_0_2px_4px_rgba(0,0,0,0.3)]`
-- Add noise texture overlay (match QuickStatsBadges)
-- Enhance heart indicator with ring glow effect
-- Add tick marks at 25%, 50%, 75%
-
-#### D. Page-Level Entrance Animation
-**Current**: Single `animate-fade-in` on hero container
-**Proposed**: Staggered Framer Motion entrance:
-```text
-0ms   → PactVisual (scale-in from 0.8)
-100ms → Title + Mantra (fade-in from below)
-200ms → TodaysFocusMessage (slide-in from left)
-300ms → CurrentRankBadge (scale-in)
-400ms → XPProgressBar (width animation from 0)
-500ms → QuickStatsBadges (stagger each card 100ms)
-700ms → QuickActionsBar (stagger each button 100ms)
-```
-
-### Animation Classes to Apply
-
-| Element | Animation Class | Effect |
-|---------|----------------|--------|
-| PactVisual wrapper | `animate-float` | Gentle floating |
-| TodaysFocusMessage | `animate-glow-pulse` on icon | Attention draw |
-| CurrentRankBadge | `animate-breathe-blue` | Rank color breathing |
-| XPProgressBar fill | `animate-fluid` | Already applied |
-| QuickStatsBadges | `hover-shimmer-wave` | On-hover shine |
-| Module Cards | `hover-shimmer-wave` | Consistent hover |
+| Component | Hardcoded Text | Should Use |
+|-----------|---------------|------------|
+| `HealthDailyCheckin.tsx` | "How many hours did you sleep?" | `t("health.checkin.howDidYouSleep")` |
+| `HealthDailyCheckin.tsx` | "Poor", "Fair", "Okay", "Good", "Great" | Localized labels |
+| `HealthWeeklyChart.tsx` | "Mon", "Tue", "Wed"... | `t("common.daysShort")` |
+| `HealthSettingsModal.tsx` | "BMI Indicator", "Visible Sections" | Translation keys |
 
 ---
 
-## Part 3: Code Refactoring — Technical Debt & Performance
+### Issue #3: Incomplete Form State Sync
 
-### Current Issues
-
-1. **HeroSection.tsx lacks Framer Motion**: All sibling components use `framer-motion` for animations, but HeroSection uses CSS-only animations, creating inconsistency
-
-2. **Inline Styles in CurrentRankBadge**: Uses inline `style={{}}` for dynamic colors instead of CSS custom properties
-
-3. **No Memoization of Expensive Renders**: The module grid re-renders all children when any module changes
-
-4. **Inconsistent Component Structure**: Some components use `motion.div`, others use plain `div` with Tailwind animations
-
-### Proposed Refactoring
-
-#### A. Unified Motion Wrapper for HeroSection
-
-Create a new `AnimatedHeroSection` that wraps existing components with staggered Framer Motion:
-
-```tsx
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { type: "spring", stiffness: 100 }
-  },
-};
-```
-
-#### B. CSS Custom Properties for Dynamic Colors
-
-Replace inline styles with CSS variables:
-
-```tsx
-// Before
-style={{ border: `2px solid ${frameColor}` }}
-
-// After
-style={{ '--rank-frame-color': frameColor } as React.CSSProperties}
-className="border-2 border-[var(--rank-frame-color)]"
-```
-
-#### C. React.memo for Module Cards
-
-Wrap pure display components:
-
-```tsx
-export const ProgressOverviewModule = React.memo(function ProgressOverviewModule(...) {
-  // component body
-});
-```
-
-#### D. Noise Texture Utility Component
-
-Create a reusable noise overlay:
-
-```tsx
-function NoiseOverlay({ opacity = 0.2 }: { opacity?: number }) {
-  return (
-    <div 
-      className="absolute inset-0 opacity-20 mix-blend-soft-light pointer-events-none"
-      style={{
-        backgroundImage: "url('data:image/svg+xml,...')", // SVG noise
-      }}
-    />
-  );
-}
-```
+In `HealthDailyCheckin.tsx`, initial state is set from `todayData` in `useState`, but if `todayData` loads asynchronously after mount, the form won't update. A `useEffect` to sync state when data loads is missing.
 
 ---
 
-## Part 4: Mobile Responsiveness Fixes
+## Part 2: Feature Gap Analysis
 
-### Current Issues
+### Current Features
+- Daily check-in wizard (5 steps: Sleep, Activity, Stress, Hydration, Notes)
+- Health Score (0-100) with trend indicator
+- Weekly bar chart (7 days)
+- Metric cards per category
+- BMI indicator (optional)
+- Personal goals (sleep hours, glasses of water, activity minutes)
 
-1. **XPProgressBar heart indicator**: Uses fixed `-ml-3.5` which may clip on mobile
-2. **QuickStatsBadges**: Already responsive (`grid-cols-1 md:grid-cols-3`)
-3. **QuickActionsBar**: Uses `grid-cols-2 lg:grid-cols-4` — good
-4. **CurrentRankBadge**: Content may overflow on narrow screens
+### Missing Features (Industry Standard)
+
+| Feature | Priority | Complexity | Impact |
+|---------|----------|------------|--------|
+| **Streak Tracking** | High | Medium | Engagement |
+| **30/90-Day History** | High | Low | Insights |
+| **Mood Tracking** | High | Low | Completeness |
+| **Smart Insights** | High | Medium | Value |
+| **Home Widget** | High | Low | Visibility |
+| **Health Achievements** | Medium | Medium | Gamification |
+| **Weekly Challenges** | Medium | Medium | Engagement |
+| **Quick Log Actions** | Medium | Low | UX |
+| **Data Export** | Low | Low | Privacy |
+| **Notification Reminders** | Low | Medium | Retention |
+
+---
+
+## Part 3: Detailed Enhancement Proposals
+
+### A. Streak System (High Priority)
+
+**What**: Track consecutive check-in days with visual badges
+
+**Database Schema**:
+```sql
+CREATE TABLE health_streaks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES auth.users(id),
+  current_streak INTEGER DEFAULT 0,
+  longest_streak INTEGER DEFAULT 0,
+  last_checkin_date DATE,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**UI Impact**:
+- Add flame icon with streak count on HealthScoreCard
+- Milestone celebrations at 7, 30, 100 days
+- Bond rewards for streak milestones
+
+---
+
+### B. Mood Tracking (High Priority)
+
+**What**: Add a 5-level mood scale with optional journal
+
+**Database Changes**:
+```sql
+ALTER TABLE health_data ADD COLUMN mood_level INTEGER; -- 1-5
+ALTER TABLE health_data ADD COLUMN mood_journal TEXT;
+```
+
+**UI**: Add to check-in wizard as new step with emoji selector:
+😔 → 😕 → 😐 → 🙂 → 😊
+
+**Insight Integration**: Correlate mood with sleep/stress for patterns
+
+---
+
+### C. Extended Time Views (High Priority)
+
+**Current**: Only 7-day view available
+
+**Enhancement**:
+- Tab selector: "Week | Month | 3 Months"
+- Line charts for trend visualization
+- Moving averages overlay
+- Sparklines on metric cards showing 7-day micro-trends
+
+---
+
+### D. Smart Insights Engine (High Priority)
+
+**What**: AI-generated personalized observations
+
+**Examples**:
+- "Your sleep quality drops 20% on weekdays"
+- "High stress correlates with low hydration"
+- "Best sleep happens after active days"
+
+**Implementation**: Edge function using Lovable AI (gemini-2.5-flash) to analyze patterns weekly
+
+---
+
+### E. Home Dashboard Widget (High Priority)
+
+**What**: Quick health status card on `/home`
+
+**Display**:
+- Today's health score (or "Check in" CTA if no data)
+- Current streak
+- One-tap quick check-in button
+
+**Already Supported**: Sidebar link exists, just needs widget component
+
+---
+
+### F. Health Achievements (Medium Priority)
+
+**Achievement Ideas**:
+
+| Key | Name | Condition | Rarity |
+|-----|------|-----------|--------|
+| `sleep_champion` | Sleep Champion | 8h+ sleep for 30 days | Epic |
+| `hydration_hero` | Hydration Hero | Hit water goal for 30 days | Rare |
+| `stress_master` | Stress Master | Low stress for 14 days | Rare |
+| `early_bird` | Early Bird | 7 morning check-ins | Uncommon |
+| `night_owl` | Night Owl | 7 evening check-ins | Uncommon |
+| `perfect_week` | Perfect Week | All 7 days logged | Common |
+| `wellness_warrior` | Wellness Warrior | 100 total check-ins | Epic |
+
+**Integration**: Add to existing `achievement_definitions` table
+
+---
+
+### G. Weekly Health Challenges (Medium Priority)
+
+**What**: System-generated personal challenges
+
+**Examples**:
+- "Sleep 8+ hours for 5 days this week"
+- "Keep stress below 3 for 4 days"
+- "Hit hydration goal every day"
+
+**Database Schema**:
+```sql
+CREATE TABLE health_challenges (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  challenge_type TEXT NOT NULL, -- 'sleep', 'stress', 'hydration', 'activity'
+  target_value NUMERIC NOT NULL,
+  current_value NUMERIC DEFAULT 0,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  completed BOOLEAN DEFAULT false,
+  bond_reward INTEGER DEFAULT 10,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**Reward**: Bonds on completion
+
+---
+
+### H. Quick Log Actions (Medium Priority)
+
+**What**: Single-tap logging for common actions
+
+**Actions**:
+- "Log Water" (+1 glass)
+- "Quick Stress Check" (tap 1-5)
+- "Log Movement" (+15/30/60 min)
+
+**UI**: Floating action button or quick actions bar
+
+---
+
+### I. Energy Curve Tracking (Medium Priority)
+
+**What**: Track energy levels at multiple times of day
+
+**New Fields**:
+```sql
+ALTER TABLE health_data ADD COLUMN energy_morning INTEGER;
+ALTER TABLE health_data ADD COLUMN energy_afternoon INTEGER;
+ALTER TABLE health_data ADD COLUMN energy_evening INTEGER;
+```
+
+**Visualization**: Line chart showing daily energy rhythm
+
+---
+
+### J. Guided Breathing Exercise (Low Priority)
+
+**What**: Quick 1-3 minute breathing exercises for stress relief
+
+**Features**:
+- Animated breath indicator (inhale 4s, hold 4s, exhale 4s)
+- Post-exercise stress level prompt
+- Session count tracking
+
+---
+
+### K. Sleep Quality Predictor (Low Priority)
+
+**What**: Evening prediction based on day's data
+
+**Logic**: If stress > 3 or activity < 2, suggest sleep improvement tips
+
+**Implementation**: Edge function with simple rule-based or AI prediction
+
+---
+
+### L. Data Export (Low Priority)
+
+**What**: Download health history as CSV
+
+**Scope**: All health_data entries for the user
+
+**Format**: Date, Sleep Hours, Sleep Quality, Activity, Stress, Hydration, Notes
+
+---
+
+## Part 4: UI/UX Improvements
+
+### Visual Consistency
+
+1. **Apply Premium Glassmorphism**
+   - Use `.glass-premium` from `/home` overhaul
+   - Add noise texture overlays
+   - Consistent hover effects
+
+2. **Metric Card Enhancements**
+   - Add sparkline (7-day trend) to each card
+   - Goal progress ring instead of linear bar
+   - Pulsing glow when goal is hit today
+
+3. **Weekly Chart Improvements**
+   - Add hover tooltips with exact values
+   - Add goal lines (horizontal markers)
+   - Animate on first view only (not on every render)
+
+4. **Check-in Wizard Polish**
+   - Add skip button per step (mark as "not tracked today")
+   - Save draft on each step (resume if interrupted)
+   - Celebration animation on completion
+
+### Mobile Responsiveness
+
+| Component | Current Issue | Fix |
+|-----------|--------------|-----|
+| `HealthScoreCard` | Circle may overflow on mobile | Make responsive with `w-28 sm:w-40` |
+| `HealthWeeklyChart` | 7 columns tight on mobile | Horizontal scroll or reduce bar width |
+| `HealthDailyCheckin` | 5 buttons per row | 3 buttons on mobile with labels |
+
+### Accessibility
+
+1. Add `aria-labels` to all interactive elements
+2. Ensure color contrast in both themes
+3. Add keyboard navigation to check-in wizard
+4. Screen reader announcements for score changes
+
+---
+
+## Part 5: Performance Optimizations
+
+### Current Concerns
+
+1. **Multiple Queries on Mount**: `useHealthSettings`, `useHealthScore`, `useTodayHealth`, `useWeeklyHealth` all fire on page load
+
+2. **No Suspense Boundaries**: Loading state is handled but not optimized
+
+3. **Re-renders on Data Change**: Metric cards re-render when any health data changes
 
 ### Proposed Fixes
 
-| Component | Current | Proposed |
-|-----------|---------|----------|
-| XPProgressBar | `-ml-3.5` fixed | `-ml-2.5 sm:-ml-3.5` responsive |
-| CurrentRankBadge | `flex items-center gap-4` | `flex flex-col sm:flex-row items-center gap-2 sm:gap-4` |
-| TodaysFocusMessage | `flex items-center` | `flex flex-col sm:flex-row items-center text-center sm:text-left` |
+1. **Combine Related Queries**: Create `useHealthDashboard` hook that fetches all data in one query
+
+2. **Add React.memo**: Wrap `HealthMetricCard`, `HealthScoreCard`, `HealthWeeklyChart`
+
+3. **Lazy Load Charts**: Use dynamic imports for chart components
+
+4. **Cache Settings**: Health settings rarely change; increase staleTime
 
 ---
 
-## Part 5: Implementation Roadmap
+## Part 6: Integration Opportunities
 
-### Phase 1: CSS Utilities (Foundation)
-- Add new utility classes to `index.css`:
-  - `.glass-card-premium` — unified glassmorphism
-  - `.noise-overlay` — SVG noise texture
-  - `.stagger-fade-in` — animation delay utilities
+### With Goals Module
 
-### Phase 2: TodaysFocusMessage Upgrade
-- Convert to glassmorphism pill
-- Add message-type-based color theming
-- Add entrance animation
+- Auto-track wellness-related goals ("Improve sleep", "Reduce stress")
+- Health metrics as goal progress source
+- Goal completion triggers health achievement check
 
-### Phase 3: CurrentRankBadge Premium
-- Add noise texture overlay
-- Add corner brackets
-- Add hover lift effect
-- Add shimmer wave on hover
+### With Finance Module
 
-### Phase 4: XPProgressBar Enhancement
-- Add inner shadow to track
-- Add tick marks at quartiles
-- Improve heart indicator glow
+- Track health-related spending category
+- Correlate wellness with financial behavior (optional insight)
 
-### Phase 5: HeroSection Motion Integration
-- Wrap in Framer Motion `motion.div`
-- Add staggered entrance animations
-- Add viewport-aware animations (only animate on first view)
+### With Pact System
 
-### Phase 6: Module Cards Consistency
-- Apply `hover-shimmer-wave` to all widget shells
-- Ensure consistent border/glow treatment
+- Health streak contributes to Pact XP
+- Check-in streaks unlock Pact tier bonuses
+- Health achievements award Bonds
+
+### With Notification System
+
+- Daily check-in reminders (configurable time)
+- Streak-at-risk alerts (no check-in by 9 PM)
+- Weekly summary notifications
 
 ---
 
-## Technical Specifications
+## Part 7: Technical Implementation Priority
 
-### New CSS Classes (to add to index.css)
+### Phase 1: Bug Fixes (Immediate)
+- Fix light mode colors in all 7 files
+- Add missing i18n keys
+- Fix form state sync in check-in
 
-```css
-/* Premium Glassmorphism Card */
-.glass-premium {
-  @apply relative overflow-hidden;
-  background: linear-gradient(
-    135deg,
-    hsl(var(--card) / 0.4) 0%,
-    hsl(var(--card) / 0.2) 100%
-  );
-  backdrop-filter: blur(20px);
-  border: 1px solid hsl(var(--primary) / 0.2);
-  box-shadow: 
-    0 8px 32px hsl(var(--primary) / 0.1),
-    inset 0 1px 0 hsl(var(--primary) / 0.1);
-}
+### Phase 2: Core Enhancements (1-2 weeks)
+- Streak tracking system
+- Mood tracking metric
+- 30/90-day history views
+- Home dashboard widget
 
-.glass-premium::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    hsl(var(--primary) / 0.05) 0%,
-    transparent 50%
-  );
-  pointer-events: none;
-}
+### Phase 3: Engagement Features (2-4 weeks)
+- Health achievements integration
+- Weekly challenges system
+- Smart insights engine
+- Notification reminders
 
-/* Staggered Animation Delays */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
-```
-
-### Framer Motion Variants (for HeroSection)
-
-```typescript
-export const heroContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.05 }
-  }
-};
-
-export const heroItemVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 15 }
-  }
-};
-```
+### Phase 4: Advanced Features (4-6 weeks)
+- AI-powered recommendations
+- Guided breathing exercises
+- Energy curve tracking
+- Data export functionality
 
 ---
 
-## Files to Create/Modify
+## Files Affected by Implementation
 
-### New Files
-- `src/components/home/hero/NoiseOverlay.tsx` — Reusable noise texture
-- `src/components/home/hero/motion-variants.ts` — Shared animation configs
+### Bug Fixes Only
+| File | Changes |
+|------|---------|
+| `src/pages/Health.tsx` | Theme-aware colors |
+| `src/components/health/HealthDailyCheckin.tsx` | i18n + state sync |
+| `src/components/health/HealthSettingsModal.tsx` | Theme-aware colors |
+| `src/components/health/HealthWeeklyChart.tsx` | i18n for day labels |
+| `src/components/health/HealthScoreCard.tsx` | Minor theming |
+| `src/components/health/HealthMetricCard.tsx` | Theming adjustments |
+| `src/components/health/HealthBMIIndicator.tsx` | Already mostly theme-aware |
 
-### Modified Files
-1. `src/index.css` — Add premium glass utilities
-2. `src/components/home/TodaysFocusMessage.tsx` — Premium pill redesign
-3. `src/components/home/hero/CurrentRankBadge.tsx` — Add noise, brackets, shimmer
-4. `src/components/home/hero/XPProgressBar.tsx` — Add depth, ticks, enhanced glow
-5. `src/components/home/hero/HeroSection.tsx` — Wrap with Framer Motion stagger
-6. `src/components/home/DashboardWidgetShell.tsx` — Add shimmer wave hover
+### New Files for Enhancements
+| File | Purpose |
+|------|---------|
+| `src/components/health/HealthStreakBadge.tsx` | Streak display |
+| `src/components/health/HealthMoodSelector.tsx` | Mood step in wizard |
+| `src/components/health/HealthInsightsPanel.tsx` | Smart insights |
+| `src/components/health/HealthQuickActions.tsx` | Quick log buttons |
+| `src/components/health/HealthHistoryChart.tsx` | 30/90-day line chart |
+| `src/components/home/HealthQuickWidget.tsx` | Home dashboard widget |
+| `src/hooks/useHealthStreak.ts` | Streak logic |
+| `src/hooks/useHealthInsights.ts` | AI insights |
+| `supabase/functions/health-insights/index.ts` | AI analysis edge function |
+
+### Database Migrations
+- `health_streaks` table
+- `health_challenges` table
+- `health_data` mood columns
+- Health achievements in `achievement_definitions`
 
 ---
 
-## Expected Outcomes
+## Summary
 
-1. **Visual Cohesion**: All hero components match the premium standard of QuickStatsBadges
-2. **Improved Hierarchy**: TodaysFocusMessage becomes visible and actionable
-3. **"Wow Factor"**: Staggered entrance animations create a cinematic reveal
-4. **Performance**: Memoization prevents unnecessary re-renders
-5. **Maintainability**: Shared motion variants and utility classes reduce duplication
-6. **Mobile Excellence**: All components adapt gracefully to narrow viewports
+The Health module has a solid foundation but needs:
+
+1. **Immediate Fixes**: Light mode support and localization
+2. **Core Additions**: Streaks, mood tracking, extended history
+3. **Engagement Layer**: Achievements, challenges, gamification
+4. **Polish**: Premium UI consistency, mobile optimization
+
+With these enhancements, the module will transform from a basic data logger into a comprehensive wellness companion that integrates seamlessly with the Pact ecosystem.
+
