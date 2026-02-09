@@ -744,15 +744,74 @@ export type Database = {
           },
         ]
       }
+      health_challenges: {
+        Row: {
+          bond_reward: number
+          challenge_type: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_value: number
+          description: string | null
+          end_date: string
+          id: string
+          start_date: string
+          target_days: number
+          target_value: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bond_reward?: number
+          challenge_type: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          end_date: string
+          id?: string
+          start_date: string
+          target_days?: number
+          target_value: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bond_reward?: number
+          challenge_type?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_value?: number
+          description?: string | null
+          end_date?: string
+          id?: string
+          start_date?: string
+          target_days?: number
+          target_value?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       health_data: {
         Row: {
           activity_level: number | null
           created_at: string
+          energy_afternoon: number | null
+          energy_evening: number | null
+          energy_morning: number | null
           entry_date: string
           hydration_glasses: number | null
           id: string
           meal_balance: number | null
           mental_load: number | null
+          mood_journal: string | null
+          mood_level: number | null
           movement_minutes: number | null
           notes: string | null
           sleep_hours: number | null
@@ -765,11 +824,16 @@ export type Database = {
         Insert: {
           activity_level?: number | null
           created_at?: string
+          energy_afternoon?: number | null
+          energy_evening?: number | null
+          energy_morning?: number | null
           entry_date?: string
           hydration_glasses?: number | null
           id?: string
           meal_balance?: number | null
           mental_load?: number | null
+          mood_journal?: string | null
+          mood_level?: number | null
           movement_minutes?: number | null
           notes?: string | null
           sleep_hours?: number | null
@@ -782,11 +846,16 @@ export type Database = {
         Update: {
           activity_level?: number | null
           created_at?: string
+          energy_afternoon?: number | null
+          energy_evening?: number | null
+          energy_morning?: number | null
           entry_date?: string
           hydration_glasses?: number | null
           id?: string
           meal_balance?: number | null
           mental_load?: number | null
+          mood_journal?: string | null
+          mood_level?: number | null
           movement_minutes?: number | null
           notes?: string | null
           sleep_hours?: number | null
@@ -849,6 +918,39 @@ export type Database = {
           updated_at?: string
           user_id?: string
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      health_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_checkin_date: string | null
+          longest_streak: number
+          total_checkins: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_checkin_date?: string | null
+          longest_streak?: number
+          total_checkins?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_checkin_date?: string | null
+          longest_streak?: number
+          total_checkins?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

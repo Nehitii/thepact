@@ -8,3 +8,8 @@ export { HealthMetricCard } from "./HealthMetricCard";
 export { HealthScoreCard } from "./HealthScoreCard";
 export { HealthSettingsModal } from "./HealthSettingsModal";
 export { HealthWeeklyChart } from "./HealthWeeklyChart";
+export { HealthStreakBadge } from "./HealthStreakBadge";
+export { HealthMoodSelector } from "./HealthMoodSelector";
+export { HealthHistoryChart } from "./HealthHistoryChart";
+export { HealthChallengeCard } from "./HealthChallengeCard";
+export { HealthChallengesPanel } from "./HealthChallengesPanel";

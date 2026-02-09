@@ -566,6 +566,60 @@
         "high": "Élevé",
         "overwhelming": "Intense"
       }
+    },
+    "mood": {
+      "title": "Humeur",
+      "howAreYouFeeling": "Comment te sens-tu en ce moment ?",
+      "veryLow": "Très bas",
+      "low": "Bas",
+      "neutral": "Neutre",
+      "good": "Bien",
+      "great": "Super",
+      "addNote": "Ajouter une note sur ton humeur",
+      "journalPlaceholder": "Qu'as-tu en tête ? Des pensées ou des émotions...",
+      "journalHint": "C'est privé et t'aide à suivre tes tendances",
+      "feedback": {
+        "1": "C'est normal d'avoir des jours difficiles. Souviens-toi : ça passera.",
+        "2": "Reconnais ce que tu ressens. Les petits pas comptent aussi.",
+        "3": "Une journée équilibrée. Reste attentif à tes besoins.",
+        "4": "Bonne énergie aujourd'hui ! Continue sur cette lancée.",
+        "5": "Tu rayonnes ! Savoure ce moment positif."
+      }
+    },
+    "streak": {
+      "day": "jour",
+      "days": "jours",
+      "currentStreak": "Série actuelle",
+      "longestStreak": "Plus longue série",
+      "totalCheckins": "Total des check-ins"
+    },
+    "history": {
+      "title": "Tendances bien-être",
+      "noData": "Pas encore d'historique",
+      "startCheckin": "Commence à faire des check-ins quotidiens pour voir les tendances",
+      "avgPrefix": "Moy"
+    },
+    "challenges": {
+      "title": "Défis hebdomadaires",
+      "new": "Nouveau",
+      "startNew": "Commencer un nouveau défi",
+      "randomChallenge": "Défi aléatoire",
+      "randomDesc": "Laisse-nous choisir un défi pour toi",
+      "noChallenges": "Aucun défi actif",
+      "startOne": "Lance un défi pour gagner des Bonds !",
+      "active": "Actifs",
+      "recentlyCompleted": "Récemment terminés",
+      "completed": "Terminé !",
+      "daysHit": "jours atteints",
+      "daysLeft": "jours restants",
+      "endsToday": "Se termine aujourd'hui"
+    },
+    "widget": {
+      "title": "Santé",
+      "todayScore": "Score bien-être du jour",
+      "noCheckinYet": "Tu n'as pas encore fait de check-in aujourd'hui",
+      "updateToday": "Mettre à jour",
+      "viewDetails": "Voir les détails"
     }
   },
   "shop": {
