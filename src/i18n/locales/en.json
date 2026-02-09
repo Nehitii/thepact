@@ -566,6 +566,60 @@
         "high": "High",
         "overwhelming": "Overwhelming"
       }
+    },
+    "mood": {
+      "title": "Mood",
+      "howAreYouFeeling": "How are you feeling right now?",
+      "veryLow": "Very Low",
+      "low": "Low",
+      "neutral": "Neutral",
+      "good": "Good",
+      "great": "Great",
+      "addNote": "Add a note about your mood",
+      "journalPlaceholder": "What's on your mind? Any thoughts or feelings...",
+      "journalHint": "This is private and helps you track patterns",
+      "feedback": {
+        "1": "It's okay to have hard days. Remember: this too shall pass.",
+        "2": "Acknowledge how you feel. Small steps forward still count.",
+        "3": "A balanced day. Stay mindful of what you need.",
+        "4": "Good energy today! Keep building on this momentum.",
+        "5": "You're thriving! Celebrate this positive moment."
+      }
+    },
+    "streak": {
+      "day": "day",
+      "days": "days",
+      "currentStreak": "Current Streak",
+      "longestStreak": "Longest Streak",
+      "totalCheckins": "Total Check-ins"
+    },
+    "history": {
+      "title": "Wellness Trends",
+      "noData": "No history data yet",
+      "startCheckin": "Start checking in daily to see trends",
+      "avgPrefix": "Avg"
+    },
+    "challenges": {
+      "title": "Weekly Challenges",
+      "new": "New",
+      "startNew": "Start a New Challenge",
+      "randomChallenge": "Random Challenge",
+      "randomDesc": "Let us pick a challenge for you",
+      "noChallenges": "No active challenges",
+      "startOne": "Start a challenge to earn Bonds!",
+      "active": "Active",
+      "recentlyCompleted": "Recently Completed",
+      "completed": "Completed!",
+      "daysHit": "days hit",
+      "daysLeft": "days left",
+      "endsToday": "Ends today"
+    },
+    "widget": {
+      "title": "Health",
+      "todayScore": "Today's wellness score",
+      "noCheckinYet": "You haven't checked in today",
+      "updateToday": "Update",
+      "viewDetails": "View details"
     }
   },
   "shop": {

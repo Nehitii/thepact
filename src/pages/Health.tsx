@@ -25,6 +25,9 @@ import { HealthDailyCheckin } from "@/components/health/HealthDailyCheckin";
 import { HealthSettingsModal } from "@/components/health/HealthSettingsModal";
 import { HealthWeeklyChart } from "@/components/health/HealthWeeklyChart";
 import { HealthBMIIndicator } from "@/components/health/HealthBMIIndicator";
+import { HealthStreakBadge } from "@/components/health/HealthStreakBadge";
+import { HealthHistoryChart } from "@/components/health/HealthHistoryChart";
+import { HealthChallengesPanel } from "@/components/health/HealthChallengesPanel";
 import { useTranslation } from "react-i18next";
 
 export default function Health() {
@@ -93,7 +96,10 @@ export default function Health() {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            {/* Streak badge */}
+            <HealthStreakBadge size="md" />
+            
             <Button
               variant="outline"
               size="sm"
@@ -181,6 +187,12 @@ export default function Health() {
 
         {/* Weekly Overview Chart */}
         <HealthWeeklyChart />
+
+        {/* Extended History and Challenges */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <HealthHistoryChart />
+          <HealthChallengesPanel />
+        </div>
 
         {/* Disclaimer */}
         <motion.div

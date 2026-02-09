@@ -15,8 +15,8 @@ import {
   Moon, 
   Activity, 
   Brain, 
-  Droplets, 
-  Apple,
+  Droplets,
+  Smile,
   ChevronRight,
   ChevronLeft,
   Check,
@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTodayHealth, useUpsertHealthData, useHealthSettings } from "@/hooks/useHealth";
+import { useUpdateHealthStreak } from "@/hooks/useHealthStreak";
+import { HealthMoodSelector } from "./HealthMoodSelector";
 import { useTranslation } from "react-i18next";
 
 interface HealthDailyCheckinProps {
@@ -39,6 +41,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const { data: todayData } = useTodayHealth(user?.id);
   const { data: settings } = useHealthSettings(user?.id);
   const upsertHealth = useUpsertHealthData(user?.id);
+  const updateStreak = useUpdateHealthStreak(user?.id);
   
   // Form state
   const [sleepHours, setSleepHours] = useState<number>(7);
@@ -50,6 +53,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [mentalLoad, setMentalLoad] = useState<number>(3);
   const [hydrationGlasses, setHydrationGlasses] = useState<number>(4);
   const [mealBalance, setMealBalance] = useState<number>(3);
+  const [moodLevel, setMoodLevel] = useState<number>(3);
+  const [moodJournal, setMoodJournal] = useState<string>("");
   const [notes, setNotes] = useState<string>("");
 
   // Sync form state when todayData loads
@@ -64,6 +69,10 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       setMentalLoad(todayData.mental_load ?? 3);
       setHydrationGlasses(todayData.hydration_glasses ?? 4);
       setMealBalance(todayData.meal_balance ?? 3);
+      // Handle mood fields from extended data
+      const extData = todayData as unknown as { mood_level?: number; mood_journal?: string };
+      setMoodLevel(extData.mood_level ?? 3);
+      setMoodJournal(extData.mood_journal ?? "");
       setNotes(todayData.notes ?? "");
     }
   }, [todayData]);
@@ -73,7 +82,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
     { key: "activity", icon: Activity, title: t("health.metrics.activity"), color: "green" },
     { key: "stress", icon: Brain, title: t("health.metrics.stress"), color: "purple" },
     { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), color: "cyan" },
-    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), color: "amber" },
+    { key: "mood", icon: Smile, title: t("health.mood.title"), color: "amber" },
+    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), color: "pink" },
   ];
 
   const qualityLabels = [
@@ -116,7 +126,12 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       hydration_glasses: hydrationGlasses,
       meal_balance: mealBalance,
       notes: notes || null,
-    });
+      // Pass mood fields through extended input
+    } as Record<string, unknown>);
+    
+    // Update streak after successful check-in
+    await updateStreak.mutateAsync();
+    
     onOpenChange(false);
     setCurrentStep(0);
   };
@@ -340,7 +355,18 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
           </div>
         );
         
-      case 4: // Notes
+      case 4: // Mood
+        return (
+          <HealthMoodSelector
+            value={moodLevel}
+            onChange={setMoodLevel}
+            journal={moodJournal}
+            onJournalChange={setMoodJournal}
+            showJournal={true}
+          />
+        );
+        
+      case 5: // Notes
         return (
           <div className="space-y-4">
             <Label className="text-sm text-muted-foreground block">
@@ -374,7 +400,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               currentStep === 1 && "bg-emerald-500/20",
               currentStep === 2 && "bg-purple-500/20",
               currentStep === 3 && "bg-cyan-500/20",
-              currentStep === 4 && "bg-amber-500/20"
+              currentStep === 4 && "bg-amber-500/20",
+              currentStep === 5 && "bg-pink-500/20"
             )}>
               <Icon className={cn(
                 "w-5 h-5",
@@ -382,7 +409,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                 currentStep === 1 && "text-emerald-600 dark:text-emerald-400",
                 currentStep === 2 && "text-purple-600 dark:text-purple-400",
                 currentStep === 3 && "text-cyan-600 dark:text-cyan-400",
-                currentStep === 4 && "text-amber-600 dark:text-amber-400"
+                currentStep === 4 && "text-amber-600 dark:text-amber-400",
+                currentStep === 5 && "text-pink-600 dark:text-pink-400"
               )} />
             </div>
             {currentStepData.title}
