@@ -29,7 +29,6 @@ interface GridViewGoalCardProps {
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
 
-// --- Helpers ---
 const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   const map: Record<string, { color: string; rgb: string }> = {
     easy: { color: "#4ade80", rgb: "74, 222, 128" },
@@ -81,28 +80,23 @@ export function GridViewGoalCard({
       $progress={meta.progress}
       onClick={() => onNavigate(goal.id)}
     >
-      {/* Background Glow Effect */}
-      <div className="glow-effect" />
-
-      <div className="card-content">
-        {/* Top: Image Section */}
-        <div className="media-area">
+      <div className="card-inner">
+        {/* 1. MEDIA SECTION (Hauteur Fixe) */}
+        <div className="media-box">
           {goal.image_url ? (
-            <img src={goal.image_url} alt="" loading="lazy" />
+            <img src={goal.image_url} alt="" />
           ) : (
-            <div className="placeholder">
-              <ImageOff size={32} strokeWidth={1} />
+            <div className="empty-media">
+              <ImageOff size={24} />
             </div>
           )}
-
-          <div className="media-badges">
-            <div className="pill difficulty">
+          <div className="badges-overlay">
+            <div className="diff-pill">
               <span className="dot" />
               {meta.difficulty === "custom" ? customDifficultyName : meta.difficulty}
             </div>
-
             <button
-              className={`focus-btn ${goal.is_focus ? "active" : ""}`}
+              className={`fav-btn ${goal.is_focus ? "active" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onToggleFocus(goal.id, !!goal.is_focus, e);
@@ -113,44 +107,36 @@ export function GridViewGoalCard({
           </div>
         </div>
 
-        {/* Bottom: Info Section */}
-        <div className="info-area">
-          <div className="header-row">
-            <div className="type-badge">
-              {meta.isHabit ? <Zap size={12} /> : <Target size={12} />}
+        {/* 2. INFO SECTION (Prend le reste de l'espace) */}
+        <div className="content-box">
+          <div className="top-meta">
+            <span className="type-label">
+              {meta.isHabit ? <Zap size={10} /> : <Target size={10} />}
               {meta.isHabit ? "HABIT" : "GOAL"}
-            </div>
-            {isCompleted && (
-              <div className="status-badge">
-                <Trophy size={12} />
-              </div>
-            )}
+            </span>
+            {isCompleted && <Trophy size={14} className="trophy" />}
           </div>
 
-          <h3 className="goal-name">{goal.name}</h3>
+          <h3 className="goal-title">{goal.name}</h3>
 
-          <div className="progress-container">
-            <div className="progress-labels">
-              <span className="percentage">{meta.progress}%</span>
-              <span className="count">
-                {meta.completed} / {meta.total}
+          {/* 3. PROGRESS SECTION (Poussée vers le bas) */}
+          <div className="bottom-meta">
+            <div className="prog-text">
+              <span className="percent">{meta.progress}%</span>
+              <span className="fraction">
+                {meta.completed}/{meta.total}
               </span>
             </div>
-            <div className="progress-bar">
-              <div className="fill" />
+            <div className="prog-bar-track">
+              <div className="prog-bar-fill" />
             </div>
-          </div>
-
-          <div className="card-footer">
-            <div className="tags-list">
-              {meta.displayTags.map((t, i) => (
-                <span key={i} className="tag">
-                  #{getTagLabel(t)}
-                </span>
-              ))}
-            </div>
-            <div className="arrow-link">
-              <ArrowUpRight size={16} />
+            <div className="footer-row">
+              <div className="tags">
+                {meta.displayTags.map((t, i) => (
+                  <span key={i}>#{getTagLabel(t)}</span>
+                ))}
+              </div>
+              <ArrowUpRight size={14} className="arrow" />
             </div>
           </div>
         </div>
@@ -159,251 +145,209 @@ export function GridViewGoalCard({
   );
 }
 
-// --- Styles ---
+// --- CSS ---
 
 const shine = keyframes`
   0% { transform: translateX(-100%) skewX(-15deg); }
-  30%, 100% { transform: translateX(200%) skewX(-15deg); }
+  40%, 100% { transform: translateX(250%) skewX(-15deg); }
 `;
 
 const CardWrapper = styled.div<{ $color: string; $rgb: string; $progress: number }>`
   --accent: ${(p) => p.$color};
   --accent-rgb: ${(p) => p.$rgb};
   
-  position: relative;
   width: 100%;
-  aspect-ratio: 0.8 / 1; /* Force une taille identique pour toutes les cartes */
-  background: #0a0a0a;
-  border-radius: 24px;
+  /* LE FIX : On impose un ratio pour que toutes les cartes soient IDENTIQUES */
+  aspect-ratio: 0.85 / 1; 
   cursor: pointer;
-  isolation: isolate;
-  transition: transform 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+  transition: transform 0.3s ease;
 
-  /* Effet de lueur derrière la carte */
-  .glow-effect {
-    position: absolute;
-    inset: -1px;
-    background: radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.15), transparent 70%);
-    border-radius: inherit;
-    z-index: -1;
-    opacity: 0;
-    transition: opacity 0.4s ease;
+  &:hover {
+    transform: translateY(-5px);
   }
 
-  .card-content {
+  .card-inner {
     height: 100%;
     display: flex;
     flex-direction: column;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: inherit;
+    background: #0d0d0d;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     overflow: hidden;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0) 100%);
+    position: relative;
   }
 
-  /* Media Area */
-  .media-area {
+  /* Partie Image - Hauteur rigide */
+  .media-box {
     position: relative;
-    height: 45%;
-    background: #151515;
+    height: 42%; 
+    width: 100%;
+    background: #141414;
     overflow: hidden;
 
     img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.6s ease;
+      opacity: 0.8;
+      transition: transform 0.5s ease;
     }
 
-    .placeholder {
-      width: 100%;
+    .empty-media {
       height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #333;
-    }
-
-    .media-badges {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      right: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 2;
-    }
-
-    .pill {
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
-      padding: 4px 10px;
-      border-radius: 100px;
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: white;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid rgba(255,255,255,0.1);
-
-      .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--accent);
-        box-shadow: 0 0 8px var(--accent);
-      }
-    }
-
-    .focus-btn {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-
-      &.active {
-        background: var(--accent);
-        color: black;
-      }
+      color: #222;
     }
   }
 
-  /* Info Area */
-  .info-area {
-    flex: 1;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .header-row {
+  .badges-overlay {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
-  .type-badge {
+  .diff-pill {
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    padding: 4px 10px;
+    border-radius: 100px;
     font-size: 9px;
-    font-weight: 900;
-    color: var(--accent);
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.1);
     display: flex;
     align-items: center;
-    gap: 4px;
-    letter-spacing: 1px;
+    gap: 6px;
+
+    .dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+    }
   }
 
-  .status-badge {
-    color: var(--accent);
+  .fav-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
   }
 
-  .goal-name {
-    margin: 0;
+  /* Contenu textuel - Flex auto-ajusté */
+  .content-box {
+    flex: 1;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .top-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    .type-label {
+      font-size: 9px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .trophy { color: var(--accent); }
+  }
+
+  .goal-title {
     font-size: 1.1rem;
     font-weight: 700;
     color: #fff;
-    line-height: 1.3;
+    margin: 0;
+    line-height: 1.2;
+    /* On limite à 2 lignes pour garder l'alignement */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  /* Progress Section */
-  .progress-container {
-    margin-top: auto;
+  /* Bloc progrès poussé au fond */
+  .bottom-meta {
+    margin-top: auto; 
+    padding-top: 12px;
 
-    .progress-labels {
+    .prog-text {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
       margin-bottom: 6px;
-
-      .percentage {
-        font-size: 1.4rem;
-        font-weight: 800;
-        color: #fff;
-      }
-      .count {
-        font-size: 11px;
-        color: #666;
-        font-weight: 600;
-      }
+      .percent { font-size: 1.3rem; font-weight: 850; color: #fff; }
+      .fraction { font-size: 10px; color: #444; font-weight: 600; }
     }
 
-    .progress-bar {
+    .prog-bar-track {
       height: 4px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 2px;
       overflow: hidden;
+      margin-bottom: 12px;
 
-      .fill {
+      .prog-bar-fill {
         height: 100%;
         width: ${(p) => p.$progress}%;
         background: var(--accent);
-        border-radius: inherit;
         position: relative;
-        transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: width 0.8s ease;
 
         &::after {
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
           animation: ${shine} 2s infinite linear;
         }
       }
     }
   }
 
-  .card-footer {
+  .footer-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding-top: 12px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-
-    .tags-list {
+    .tags {
       display: flex;
       gap: 8px;
-      .tag {
-        font-size: 10px;
-        font-weight: 600;
-        color: #555;
-      }
-    }
-
-    .arrow-link {
+      font-size: 10px;
       color: #333;
-      transition: transform 0.3s, color 0.3s;
+      font-weight: 600;
     }
+    .arrow { color: #222; transition: 0.2s; }
   }
 
-  /* Hover Effects */
   &:hover {
-    transform: translateY(-6px);
-    
-    .glow-effect { opacity: 1; }
-    
-    .card-content {
-      border-color: rgba(var(--accent-rgb), 0.4);
-      background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.05) 0%, rgba(0,0,0,0) 100%);
-    }
-
-    .media-area img { transform: scale(1.1); }
-
-    .arrow-link {
-      color: var(--accent);
-      transform: translate(2px, -2px);
-    }
+    .media-box img { transform: scale(1.05); opacity: 1; }
+    .card-inner { border-color: rgba(var(--accent-rgb), 0.3); }
+    .footer-row .arrow { color: var(--accent); transform: translate(2px, -2px); }
   }
 `;
 
