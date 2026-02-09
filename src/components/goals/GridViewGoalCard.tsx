@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import styled, { keyframes } from "styled-components";
-import { Star, Target, Zap, ImageOff, ArrowUpRight, Trophy } from "lucide-react";
-import { getTagColor, getTagLabel, getStatusLabel } from "@/lib/goalConstants";
+import styled from "styled-components";
+import { Star, Target, Zap, ImageOff } from "lucide-react";
+import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 
 // --- Interfaces ---
 interface Goal {
@@ -29,22 +29,35 @@ interface GridViewGoalCardProps {
   onToggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
 }
 
+// --- Helpers ---
 const getDifficultyTheme = (difficulty: string, customColor?: string) => {
-  const map: Record<string, { color: string; rgb: string }> = {
-    easy: { color: "#4ade80", rgb: "74, 222, 128" },
-    medium: { color: "#facc15", rgb: "250, 204, 21" },
-    hard: { color: "#fb923c", rgb: "251, 146, 60" },
-    extreme: { color: "#f87171", rgb: "248, 113, 113" },
-    impossible: { color: "#c084fc", rgb: "192, 132, 252" },
-  };
-  if (difficulty === "custom") {
-    const hex = (customColor || "#a855f7").replace("#", "");
-    const r = parseInt(hex.substring(0, 2), 16) || 168;
-    const g = parseInt(hex.substring(2, 4), 16) || 85;
-    const b = parseInt(hex.substring(4, 6), 16) || 247;
-    return { color: customColor || "#a855f7", rgb: `${r}, ${g}, ${b}` };
+  switch (difficulty) {
+    case "easy":
+      return { color: "#4ade80", rgb: "74, 222, 128" };
+    case "medium":
+      return { color: "#facc15", rgb: "250, 204, 21" };
+    case "hard":
+      return { color: "#fb923c", rgb: "251, 146, 60" };
+    case "extreme":
+      return { color: "#f87171", rgb: "248, 113, 113" };
+    case "impossible":
+      return { color: "#c084fc", rgb: "192, 132, 252" };
+    case "custom": {
+      const base = customColor || "#a855f7";
+      const hex = base.replace("#", "");
+      const r = parseInt(hex.substring(0, 2), 16) || 168;
+      const g = parseInt(hex.substring(2, 4), 16) || 85;
+      const b = parseInt(hex.substring(4, 6), 16) || 247;
+      return { color: base, rgb: `${r}, ${g}, ${b}` };
+    }
+    default:
+      return { color: "#94a3b8", rgb: "148, 163, 184" };
   }
-  return map[difficulty] || { color: "#94a3b8", rgb: "148, 163, 184" };
+};
+
+const getDifficultyLabel = (diff: string, customName?: string): string => {
+  if (diff === "custom") return customName || "Custom";
+  return diff.charAt(0).toUpperCase() + diff.slice(1);
 };
 
 export function GridViewGoalCard({
@@ -55,299 +68,447 @@ export function GridViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: GridViewGoalCardProps) {
-  const meta = useMemo(() => {
+  const {
+    difficulty,
+    isHabitGoal,
+    totalSteps,
+    completedSteps,
+    progress,
+    theme,
+    statusLabel,
+    displayTags,
+    remainingTagsCount,
+    intensity,
+  } = useMemo(() => {
     const diff = goal.difficulty || "easy";
-    const isHabit = goal.goal_type === "habit";
+    const goalType = goal.goal_type || "standard";
+    const isHabit = goalType === "habit";
+
     const total = isHabit ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
     const completed = isHabit ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
     const prog = total > 0 ? Math.round((completed / total) * 100) : 0;
 
     return {
       difficulty: diff,
-      isHabit,
+      isHabitGoal: isHabit,
+      totalSteps: total,
+      completedSteps: completed,
       progress: prog,
-      completed,
-      total,
       theme: getDifficultyTheme(diff, customDifficultyColor),
-      displayTags: goal.tags?.slice(0, 2) || [],
+      statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
+      displayTags: goal.tags?.slice(0, 2) || (goal.type ? [goal.type] : []),
+      remainingTagsCount: Math.max(0, (goal.tags?.length || 0) - 2),
+      intensity: getDifficultyIntensity(diff),
     };
-  }, [goal, customDifficultyColor]);
+  }, [goal, isCompleted, customDifficultyColor]);
 
   return (
-    <CardWrapper
-      $color={meta.theme.color}
-      $rgb={meta.theme.rgb}
-      $progress={meta.progress}
+    <StyledWrapper
+      $accentColor={theme.color}
+      $accentRgb={theme.rgb}
+      $intensity={intensity}
+      $progress={progress}
       onClick={() => onNavigate(goal.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onNavigate(goal.id);
+      }}
     >
       <div className="card-inner">
-        {/* 1. MEDIA SECTION (Hauteur Fixe) */}
-        <div className="media-box">
+        {/* --- Background Image Layer --- */}
+        <div className="image-layer">
           {goal.image_url ? (
-            <img src={goal.image_url} alt="" />
+            <img src={goal.image_url} alt="" loading="lazy" />
           ) : (
-            <div className="empty-media">
-              <ImageOff size={24} />
+            <div className="fallback-pattern">
+              <ImageOff size={48} strokeWidth={1} opacity={0.3} />
             </div>
           )}
-          <div className="badges-overlay">
-            <div className="diff-pill">
-              <span className="dot" />
-              {meta.difficulty === "custom" ? customDifficultyName : meta.difficulty}
-            </div>
-            <button
-              className={`fav-btn ${goal.is_focus ? "active" : ""}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFocus(goal.id, !!goal.is_focus, e);
-              }}
-            >
-              <Star size={14} fill={goal.is_focus ? "currentColor" : "none"} />
-            </button>
-          </div>
+          <div className="gradient-overlay" />
         </div>
 
-        {/* 2. INFO SECTION (Prend le reste de l'espace) */}
-        <div className="content-box">
-          <div className="top-meta">
-            <span className="type-label">
-              {meta.isHabit ? <Zap size={10} /> : <Target size={10} />}
-              {meta.isHabit ? "HABIT" : "GOAL"}
-            </span>
-            {isCompleted && <Trophy size={14} className="trophy" />}
+        {/* --- Top Controls (Difficulty & Favorite) --- */}
+        <div className="top-bar">
+          <div className="difficulty-pill">
+            <span className="dot" />
+            {getDifficultyLabel(difficulty, customDifficultyName)}
           </div>
 
-          <h3 className="goal-title">{goal.name}</h3>
+          <button
+            className={`fav-btn ${goal.is_focus ? "active" : ""}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleFocus(goal.id, !!goal.is_focus, e);
+            }}
+          >
+            {/* ✅ CORRECTION ICI : utilisation de fill="currentColor" */}
+            <Star className="icon" fill={goal.is_focus ? "currentColor" : "none"} />
+          </button>
+        </div>
 
-          {/* 3. PROGRESS SECTION (Poussée vers le bas) */}
-          <div className="bottom-meta">
-            <div className="prog-text">
-              <span className="percent">{meta.progress}%</span>
-              <span className="fraction">
-                {meta.completed}/{meta.total}
-              </span>
-            </div>
-            <div className="prog-bar-track">
-              <div className="prog-bar-fill" />
-            </div>
-            <div className="footer-row">
-              <div className="tags">
-                {meta.displayTags.map((t, i) => (
-                  <span key={i}>#{getTagLabel(t)}</span>
-                ))}
+        {/* --- Main Content (Bottom) --- */}
+        <div className="content-area">
+          {/* Primary Info */}
+          <div className="primary-info">
+            <div className="icon-badge">{isHabitGoal ? <Zap size={14} /> : <Target size={14} />}</div>
+            <h3 className="title">{goal.name}</h3>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="progress-track">
+            <div className="progress-fill" />
+          </div>
+
+          {/* Hidden Details (Revealed on hover) */}
+          <div className="details-reveal">
+            <div className="stats-grid">
+              <div className="stat-item">
+                <span className="label">Status</span>
+                <span className="value" style={{ color: isCompleted ? theme.color : "inherit" }}>
+                  {statusLabel}
+                </span>
               </div>
-              <ArrowUpRight size={14} className="arrow" />
+              <div className="stat-item right">
+                <span className="label">{isHabitGoal ? "Days" : "Steps"}</span>
+                <span className="value">
+                  {completedSteps} <span className="dim">/ {totalSteps}</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="tags-row">
+              {displayTags.map((tag, i) => (
+                <span key={i} className="mini-tag" style={{ borderColor: getTagColor(tag), color: getTagColor(tag) }}>
+                  {getTagLabel(tag)}
+                </span>
+              ))}
+              {remainingTagsCount > 0 && <span className="mini-tag more">+{remainingTagsCount}</span>}
             </div>
           </div>
         </div>
+
+        {/* --- Aesthetic borders --- */}
+        <div className="border-glow" />
       </div>
-    </CardWrapper>
+    </StyledWrapper>
   );
 }
 
-// --- CSS ---
-
-const shine = keyframes`
-  0% { transform: translateX(-100%) skewX(-15deg); }
-  40%, 100% { transform: translateX(250%) skewX(-15deg); }
-`;
-
-const CardWrapper = styled.div<{ $color: string; $rgb: string; $progress: number }>`
-  --accent: ${(p) => p.$color};
-  --accent-rgb: ${(p) => p.$rgb};
+const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $intensity: number; $progress: number }>`
+  /* --- DIMENSIONS & LAYOUT --- */
+  position: relative;
   
+  /* Sécurité : Si le parent n'a pas de largeur définie, on force une taille minimale */
   width: 100%;
-  /* LE FIX : On impose un ratio pour que toutes les cartes soient IDENTIQUES */
-  aspect-ratio: 0.85 / 1; 
+  max-width: 340px; /* Évite qu'elle ne devienne géante sur grand écran */
+  min-width: 260px; /* Évite qu'elle ne disparaisse */
+  
+  /* Définit la hauteur en fonction de la largeur (Ratio Portrait) */
+  aspect-ratio: 4/5;
+  
+  /* Fallback pour les vieux navigateurs qui ne gèrent pas aspect-ratio */
+  @supports not (aspect-ratio: 4/5) {
+    height: 380px;
+  }
+
+  perspective: 1000px;
   cursor: pointer;
-  transition: transform 0.3s ease;
+  margin: auto; /* Centre la carte si elle est seule dans une grille large */
 
-  &:hover {
-    transform: translateY(-5px);
-  }
-
+  /* --- CARD INTERIOR --- */
   .card-inner {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    background: #0d0d0d;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    overflow: hidden;
     position: relative;
-  }
-
-  /* Partie Image - Hauteur rigide */
-  .media-box {
-    position: relative;
-    height: 42%; 
     width: 100%;
-    background: #141414;
+    height: 100%;
+    border-radius: 20px;
+    background: #121212;
     overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.8;
-      transition: transform 0.5s ease;
-    }
-
-    .empty-media {
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #222;
-    }
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    border: 1px solid rgba(255, 255, 255, 0.05); /* Bordure subtile par défaut */
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.4s ease;
+    isolation: isolate;
   }
 
-  .badges-overlay {
+  /* --- Image Layer --- */
+  .image-layer {
     position: absolute;
-    top: 12px;
-    left: 12px;
-    right: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    inset: 0;
+    z-index: 0;
   }
 
-  .diff-pill {
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(10px);
-    padding: 4px 10px;
-    border-radius: 100px;
-    font-size: 9px;
-    font-weight: 800;
-    text-transform: uppercase;
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-
-    .dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-    }
+  .image-layer img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
-  .fav-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.15);
-    color: rgba(255,255,255,0.5);
+  .fallback-pattern {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at top right, #2a2a2a, #1a1a1a);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-
-    &.active {
-      background: var(--accent);
-      color: #000;
-      border-color: var(--accent);
-    }
+    color: #444;
   }
 
-  /* Contenu textuel - Flex auto-ajusté */
-  .content-box {
-    flex: 1;
+  .gradient-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.05) 0%,
+      rgba(0,0,0,0.3) 40%,
+      rgba(0,0,0,0.85) 85%,
+      rgba(0,0,0,0.95) 100%
+    );
+    z-index: 1;
+  }
+
+  /* --- Top Bar --- */
+  .top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     padding: 16px;
     display: flex;
-    flex-direction: column;
-  }
-
-  .top-meta {
-    display: flex;
     justify-content: space-between;
-    margin-bottom: 8px;
-    .type-label {
-      font-size: 9px;
-      font-weight: 900;
-      color: var(--accent);
-      letter-spacing: 1px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .trophy { color: var(--accent); }
+    align-items: flex-start;
+    z-index: 10;
   }
 
-  .goal-title {
-    font-size: 1.1rem;
+  .difficulty-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 30px;
+    font-size: 11px;
     font-weight: 700;
-    color: #fff;
+    letter-spacing: 0.5px;
+    color: #eee;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  .difficulty-pill .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: ${(props) => props.$accentColor};
+    box-shadow: 0 0 8px ${(props) => props.$accentColor};
+  }
+
+  .fav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    border: 1px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.6);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .fav-btn:hover {
+    background: rgba(255,255,255,0.15);
+    transform: scale(1.1);
+    color: white;
+  }
+
+  .fav-btn.active {
+    background: rgba(${(props) => props.$accentRgb}, 0.2);
+    border-color: rgba(${(props) => props.$accentRgb}, 0.5);
+    color: ${(props) => props.$accentColor};
+  }
+  
+  .fav-btn .icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* --- Content Area --- */
+  .content-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
+    /* Animation: on cache le détail, on montre le titre */
+    transform: translateY(calc(100% - 76px)); 
+    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  
+  /* Sur mobile (pas de hover), on affiche tout par défaut */
+  @media (hover: none) {
+    .content-area { transform: translateY(0); }
+  }
+
+  .primary-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .icon-badge {
+    width: fit-content;
+    padding: 4px 8px;
+    background: rgba(${(props) => props.$accentRgb}, 0.15);
+    border-radius: 6px;
+    color: ${(props) => props.$accentColor};
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(${(props) => props.$accentRgb}, 0.2);
+  }
+
+  .title {
     margin: 0;
-    line-height: 1.2;
-    /* On limite à 2 lignes pour garder l'alignement */
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  /* Bloc progrès poussé au fond */
-  .bottom-meta {
-    margin-top: auto; 
-    padding-top: 12px;
-
-    .prog-text {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 6px;
-      .percent { font-size: 1.3rem; font-weight: 850; color: #fff; }
-      .fraction { font-size: 10px; color: #444; font-weight: 600; }
-    }
-
-    .prog-bar-track {
-      height: 4px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-bottom: 12px;
-
-      .prog-bar-fill {
-        height: 100%;
-        width: ${(p) => p.$progress}%;
-        background: var(--accent);
-        position: relative;
-        transition: width 0.8s ease;
-
-        &::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-          animation: ${shine} 2s infinite linear;
-        }
-      }
-    }
+  /* --- Progress Bar --- */
+  .progress-track {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 4px;
   }
 
-  .footer-row {
+  .progress-fill {
+    height: 100%;
+    width: ${(props) => props.$progress}%;
+    background: ${(props) => props.$accentColor};
+    box-shadow: 0 0 10px ${(props) => props.$accentColor};
+    transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  /* --- Revealed Details --- */
+  .details-reveal {
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 4px;
+  }
+
+  .stats-grid {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    .tags {
-      display: flex;
-      gap: 8px;
-      font-size: 10px;
-      color: #333;
-      font-weight: 600;
-    }
-    .arrow { color: #222; transition: 0.2s; }
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 12px;
   }
 
-  &:hover {
-    .media-box img { transform: scale(1.05); opacity: 1; }
-    .card-inner { border-color: rgba(var(--accent-rgb), 0.3); }
-    .footer-row .arrow { color: var(--accent); transform: translate(2px, -2px); }
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-item.right { align-items: flex-end; }
+
+  .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #9ca3af;
+    font-weight: 600;
+  }
+
+  .value {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f3f4f6;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .dim { color: #6b7280; font-size: 11px; }
+
+  .tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mini-tag {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(0,0,0,0.4);
+    opacity: 0.9;
+  }
+  
+  .mini-tag.more {
+    border-style: dashed;
+    color: #9ca3af;
+    border-color: #4b5563;
+  }
+
+  /* --- Borders & Glows --- */
+  .border-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+    z-index: 20;
+    transition: border-color 0.3s ease;
+  }
+
+  /* --- HOVER EFFECTS --- */
+  
+  &:hover .card-inner {
+    transform: translateY(-6px);
+    box-shadow: 
+      0 12px 30px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(${(props) => props.$accentRgb}, 0.3);
+  }
+
+  &:hover .image-layer img {
+    transform: scale(1.08);
+  }
+
+  &:hover .content-area {
+    transform: translateY(0);
+  }
+
+  &:hover .details-reveal {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0.1s;
+  }
+  
+  &:hover .border-glow {
+    border-color: rgba(${(props) => props.$accentRgb}, 0.5);
   }
 `;
 
