@@ -28,7 +28,10 @@ import { ArrowLeft, Check, Edit, Plus, ShoppingBag, Target, Trash2 } from "lucid
 import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/wishlist/DuplicateMergeDialog";
 
 function normalizeWishlistName(value: string) {
-  return value.trim().toLowerCase().replace(/\s+/g, " ");
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
 }
 
 function findDuplicateByNameAndGoal(opts: {
@@ -44,7 +47,7 @@ function findDuplicateByNameAndGoal(opts: {
       (i) =>
         i.id !== (opts.excludeId ?? null) &&
         normalizeWishlistName(i.name) === needle &&
-        (i.goal_id ?? null) === goalKey,
+        (i.goal_id ?? null) === goalKey
     ) ?? null
   );
 }
@@ -89,7 +92,10 @@ export default function Wishlist() {
   const [mergeExistingPreview, setMergeExistingPreview] = useState<DuplicateMergePreview | null>(null);
   const [mergeIncomingPreview, setMergeIncomingPreview] = useState<DuplicateMergePreview | null>(null);
 
-  const editingItem = useMemo(() => (editId ? (items.find((i) => i.id === editId) ?? null) : null), [editId, items]);
+  const editingItem = useMemo(
+    () => (editId ? items.find((i) => i.id === editId) ?? null : null),
+    [editId, items]
+  );
 
   const openEdit = (item: (typeof items)[number]) => {
     setEditId(item.id);
@@ -132,7 +138,7 @@ export default function Wishlist() {
         setMergeIncomingPreview({
           name: trimmed,
           goalId: nextGoalId,
-          goalName: nextGoalId ? (goals.find((g) => g.id === nextGoalId)?.name ?? null) : null,
+          goalName: nextGoalId ? goals.find((g) => g.id === nextGoalId)?.name ?? null : null,
           category: editCategory.trim() || null,
           estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
           itemType: editType,
@@ -261,7 +267,7 @@ export default function Wishlist() {
 
       const mergedCost = Number(dupeItem?.estimated_cost ?? 0) + Number(mergeIncomingPreview.estimatedCost ?? 0);
       const mergedType: PactWishlistItemType =
-        dupeItem?.item_type === "required" || mergeIncomingPreview.itemType === "required" ? "required" : "optional";
+        (dupeItem?.item_type === "required" || mergeIncomingPreview.itemType === "required") ? "required" : "optional";
       const mergedCategory = (dupeItem?.category ?? "").trim() || (mergeIncomingPreview.category ?? "").trim() || null;
       const mergedNotes =
         [dupeItem?.notes?.trim(), mergeIncomingPreview.notes?.trim()].filter(Boolean).join("\n\n") || null;
@@ -319,29 +325,15 @@ export default function Wishlist() {
         onOpenChange={setMergeOpen}
         existing={
           mergeExistingPreview ??
-          ({
-            name: "",
-            estimatedCost: 0,
-            itemType: "optional",
-            category: null,
-            goalName: null,
-            notes: null,
-          } as any)
+          ({ name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any)
         }
         incoming={
           mergeIncomingPreview ??
-          ({
-            name: "",
-            estimatedCost: 0,
-            itemType: "optional",
-            category: null,
-            goalName: null,
-            notes: null,
-          } as any)
+          ({ name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any)
         }
         isBusy={mergeBusy}
-        onMerge={performMerge} // Ajouté pour corriger l'erreur TS
-        onKeepBoth={keepBoth} // Ajouté pour corriger l'erreur TS
+        onMerge={performMerge}
+        onKeepBoth={keepBoth}
       />
 
       {/* Edit modal (single instance for smooth UX) */}
@@ -360,21 +352,12 @@ export default function Wishlist() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Estimated cost</Label>
-                <Input
-                  value={editCost}
-                  onChange={(e) => setEditCost(e.target.value)}
-                  placeholder="0"
-                  inputMode="decimal"
-                />
+                <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder="0" inputMode="decimal" />
               </div>
 
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Input
-                  value={editCategory}
-                  onChange={(e) => setEditCategory(e.target.value)}
-                  placeholder="e.g. Equipment"
-                />
+                <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} placeholder="e.g. Equipment" />
               </div>
             </div>
 
@@ -383,10 +366,7 @@ export default function Wishlist() {
                 <p className="text-sm font-medium">Required for Pact</p>
                 <p className="text-xs text-muted-foreground">Mark necessities that support goal completion.</p>
               </div>
-              <Switch
-                checked={editType === "required"}
-                onCheckedChange={(v) => setEditType(v ? "required" : "optional")}
-              />
+              <Switch checked={editType === "required"} onCheckedChange={(v) => setEditType(v ? "required" : "optional")} />
             </div>
 
             <div className="space-y-2">
@@ -431,7 +411,11 @@ export default function Wishlist() {
               >
                 Cancel
               </Button>
-              <Button onClick={() => saveEdit()} disabled={!editName.trim() || updateItem.isPending} className="flex-1">
+              <Button
+                onClick={() => saveEdit()}
+                disabled={!editName.trim() || updateItem.isPending}
+                className="flex-1"
+              >
                 <Check className="h-4 w-4 mr-2" />
                 Save
               </Button>
@@ -465,31 +449,18 @@ export default function Wishlist() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>Name</Label>
-                  <Input
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder="e.g. Running shoes"
-                  />
+                  <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Running shoes" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Estimated cost</Label>
-                    <Input
-                      value={newCost}
-                      onChange={(e) => setNewCost(e.target.value)}
-                      placeholder="0"
-                      inputMode="decimal"
-                    />
+                    <Input value={newCost} onChange={(e) => setNewCost(e.target.value)} placeholder="0" inputMode="decimal" />
                   </div>
 
                   <div className="space-y-2">
                     <Label>Category (optional)</Label>
-                    <Input
-                      value={newCategory}
-                      onChange={(e) => setNewCategory(e.target.value)}
-                      placeholder="e.g. Equipment"
-                    />
+                    <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Equipment" />
                   </div>
                 </div>
 
@@ -498,10 +469,7 @@ export default function Wishlist() {
                     <p className="text-sm font-medium">Required for Pact</p>
                     <p className="text-xs text-muted-foreground">Use this for goal-linked necessities.</p>
                   </div>
-                  <Switch
-                    checked={newType === "required"}
-                    onCheckedChange={(v) => setNewType(v ? "required" : "optional")}
-                  />
+                  <Switch checked={newType === "required"} onCheckedChange={(v) => setNewType(v ? "required" : "optional")} />
                 </div>
 
                 <Button onClick={() => createNew()} disabled={!newName.trim() || createItem.isPending}>
@@ -586,9 +554,7 @@ export default function Wishlist() {
             ) : derived.list.length === 0 ? (
               <div className="py-10 text-center space-y-2">
                 <p className="text-sm text-muted-foreground">No wishlist items yet.</p>
-                <p className="text-xs text-muted-foreground">
-                  Add one to start clarifying what’s essential vs optional.
-                </p>
+                <p className="text-xs text-muted-foreground">Add one to start clarifying what’s essential vs optional.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -624,9 +590,7 @@ export default function Wishlist() {
 
                       <div className="flex items-center gap-3 justify-between md:justify-end">
                         <div className="text-right">
-                          <p className="text-sm font-semibold">
-                            {formatCurrency(Number(item.estimated_cost || 0), currency)}
-                          </p>
+                          <p className="text-sm font-semibold">{formatCurrency(Number(item.estimated_cost || 0), currency)}</p>
                           <div className="flex items-center gap-2 justify-end mt-1">
                             <Label className="text-xs text-muted-foreground">Already acquired?</Label>
                             <Switch
