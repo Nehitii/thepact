@@ -73,10 +73,13 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       setMentalLoad(todayData.mental_load ?? 3);
       setHydrationGlasses(todayData.hydration_glasses ?? 4);
       setMealBalance(todayData.meal_balance ?? 3);
-      // Handle mood fields from extended data
-      const extData = todayData as unknown as { mood_level?: number; mood_journal?: string };
+      // Handle extended fields
+      const extData = todayData as unknown as { mood_level?: number; mood_journal?: string; energy_morning?: number; energy_afternoon?: number; energy_evening?: number };
       setMoodLevel(extData.mood_level ?? 3);
       setMoodJournal(extData.mood_journal ?? "");
+      setEnergyMorning(extData.energy_morning ?? 3);
+      setEnergyAfternoon(extData.energy_afternoon ?? 3);
+      setEnergyEvening(extData.energy_evening ?? 3);
       setNotes(todayData.notes ?? "");
     }
   }, [todayData]);
@@ -87,6 +90,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
     { key: "stress", icon: Brain, title: t("health.metrics.stress"), color: "purple" },
     { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), color: "cyan" },
     { key: "mood", icon: Smile, title: t("health.mood.title"), color: "amber" },
+    { key: "energy", icon: Zap, title: t("health.energy.title"), color: "yellow" },
     { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), color: "pink" },
   ];
 
