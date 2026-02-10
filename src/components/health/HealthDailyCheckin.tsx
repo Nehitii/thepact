@@ -374,7 +374,38 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
           />
         );
         
-      case 5: // Notes
+      case 5: // Energy
+        return (
+          <div className="space-y-6">
+            {[
+              { label: t("health.energy.morning"), value: energyMorning, setter: setEnergyMorning },
+              { label: t("health.energy.afternoon"), value: energyAfternoon, setter: setEnergyAfternoon },
+              { label: t("health.energy.evening"), value: energyEvening, setter: setEnergyEvening },
+            ].map(({ label, value, setter }) => (
+              <div key={label}>
+                <Label className="text-sm text-muted-foreground mb-3 block">{label}</Label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setter(v)}
+                      className={cn(
+                        "flex-1 py-3 rounded-lg border transition-all text-sm",
+                        value === v
+                          ? "bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400"
+                          : "border-border text-muted-foreground hover:border-amber-500/50"
+                      )}
+                    >
+                      {qualityLabels[v - 1]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 6: // Notes
         return (
           <div className="space-y-4">
             <Label className="text-sm text-muted-foreground block">
