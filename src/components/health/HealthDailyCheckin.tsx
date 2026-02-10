@@ -56,6 +56,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [mealBalance, setMealBalance] = useState<number>(3);
   const [moodLevel, setMoodLevel] = useState<number>(3);
   const [moodJournal, setMoodJournal] = useState<string>("");
+  const [energyMorning, setEnergyMorning] = useState<number>(3);
+  const [energyAfternoon, setEnergyAfternoon] = useState<number>(3);
+  const [energyEvening, setEnergyEvening] = useState<number>(3);
   const [notes, setNotes] = useState<string>("");
 
   // Sync form state when todayData loads
