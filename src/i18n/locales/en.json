@@ -620,6 +620,40 @@
       "noCheckinYet": "You haven't checked in today",
       "updateToday": "Update",
       "viewDetails": "View details"
+    },
+    "insights": {
+      "title": "Smart Insights",
+      "generate": "Generate",
+      "refresh": "Refresh",
+      "description": "Get AI-powered observations about your wellness patterns from recent check-in data.",
+      "needMoreData": "Need at least 3 days of check-in data for insights",
+      "error": "Failed to generate insights"
+    },
+    "breathing": {
+      "title": "Breathing",
+      "ready": "Ready",
+      "start": "Start",
+      "pause": "Pause",
+      "inhale": "Inhale",
+      "hold": "Hold",
+      "exhale": "Exhale",
+      "rest": "Rest",
+      "cycles": "Cycles",
+      "hint": "Focus on your breath. Inhale through your nose, exhale through your mouth."
+    },
+    "energy": {
+      "title": "Energy Curve",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "noData": "Track energy levels in your daily check-in to see your energy curve",
+      "weekAvg": "7-day avg"
+    },
+    "export": {
+      "button": "Export CSV",
+      "success": "Health data exported successfully",
+      "error": "Failed to export data",
+      "noData": "No health data to export"
     }
   },
   "shop": {

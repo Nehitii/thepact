@@ -17,6 +17,7 @@ import {
   Brain, 
   Droplets,
   Smile,
+  Zap,
   ChevronRight,
   ChevronLeft,
   Check,
@@ -55,6 +56,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [mealBalance, setMealBalance] = useState<number>(3);
   const [moodLevel, setMoodLevel] = useState<number>(3);
   const [moodJournal, setMoodJournal] = useState<string>("");
+  const [energyMorning, setEnergyMorning] = useState<number>(3);
+  const [energyAfternoon, setEnergyAfternoon] = useState<number>(3);
+  const [energyEvening, setEnergyEvening] = useState<number>(3);
   const [notes, setNotes] = useState<string>("");
 
   // Sync form state when todayData loads
@@ -69,10 +73,13 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       setMentalLoad(todayData.mental_load ?? 3);
       setHydrationGlasses(todayData.hydration_glasses ?? 4);
       setMealBalance(todayData.meal_balance ?? 3);
-      // Handle mood fields from extended data
-      const extData = todayData as unknown as { mood_level?: number; mood_journal?: string };
+      // Handle extended fields
+      const extData = todayData as unknown as { mood_level?: number; mood_journal?: string; energy_morning?: number; energy_afternoon?: number; energy_evening?: number };
       setMoodLevel(extData.mood_level ?? 3);
       setMoodJournal(extData.mood_journal ?? "");
+      setEnergyMorning(extData.energy_morning ?? 3);
+      setEnergyAfternoon(extData.energy_afternoon ?? 3);
+      setEnergyEvening(extData.energy_evening ?? 3);
       setNotes(todayData.notes ?? "");
     }
   }, [todayData]);
@@ -83,6 +90,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
     { key: "stress", icon: Brain, title: t("health.metrics.stress"), color: "purple" },
     { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), color: "cyan" },
     { key: "mood", icon: Smile, title: t("health.mood.title"), color: "amber" },
+    { key: "energy", icon: Zap, title: t("health.energy.title"), color: "yellow" },
     { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), color: "pink" },
   ];
 
@@ -125,8 +133,12 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       mental_load: mentalLoad,
       hydration_glasses: hydrationGlasses,
       meal_balance: mealBalance,
+      mood_level: moodLevel,
+      mood_journal: moodJournal || null,
+      energy_morning: energyMorning,
+      energy_afternoon: energyAfternoon,
+      energy_evening: energyEvening,
       notes: notes || null,
-      // Pass mood fields through extended input
     } as Record<string, unknown>);
     
     // Update streak after successful check-in
@@ -366,7 +378,38 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
           />
         );
         
-      case 5: // Notes
+      case 5: // Energy
+        return (
+          <div className="space-y-6">
+            {[
+              { label: t("health.energy.morning"), value: energyMorning, setter: setEnergyMorning },
+              { label: t("health.energy.afternoon"), value: energyAfternoon, setter: setEnergyAfternoon },
+              { label: t("health.energy.evening"), value: energyEvening, setter: setEnergyEvening },
+            ].map(({ label, value, setter }) => (
+              <div key={label}>
+                <Label className="text-sm text-muted-foreground mb-3 block">{label}</Label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((v) => (
+                    <button
+                      key={v}
+                      onClick={() => setter(v)}
+                      className={cn(
+                        "flex-1 py-3 rounded-lg border transition-all text-sm",
+                        value === v
+                          ? "bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400"
+                          : "border-border text-muted-foreground hover:border-amber-500/50"
+                      )}
+                    >
+                      {qualityLabels[v - 1]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case 6: // Notes
         return (
           <div className="space-y-4">
             <Label className="text-sm text-muted-foreground block">
@@ -401,7 +444,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               currentStep === 2 && "bg-purple-500/20",
               currentStep === 3 && "bg-cyan-500/20",
               currentStep === 4 && "bg-amber-500/20",
-              currentStep === 5 && "bg-pink-500/20"
+              currentStep === 5 && "bg-yellow-500/20",
+              currentStep === 6 && "bg-pink-500/20"
             )}>
               <Icon className={cn(
                 "w-5 h-5",
@@ -410,7 +454,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                 currentStep === 2 && "text-purple-600 dark:text-purple-400",
                 currentStep === 3 && "text-cyan-600 dark:text-cyan-400",
                 currentStep === 4 && "text-amber-600 dark:text-amber-400",
-                currentStep === 5 && "text-pink-600 dark:text-pink-400"
+                currentStep === 5 && "text-yellow-600 dark:text-yellow-400",
+                currentStep === 6 && "text-pink-600 dark:text-pink-400"
               )} />
             </div>
             {currentStepData.title}

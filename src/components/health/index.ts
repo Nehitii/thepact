@@ -13,3 +13,7 @@ export { HealthMoodSelector } from "./HealthMoodSelector";
 export { HealthHistoryChart } from "./HealthHistoryChart";
 export { HealthChallengeCard } from "./HealthChallengeCard";
 export { HealthChallengesPanel } from "./HealthChallengesPanel";
+export { HealthInsightsPanel } from "./HealthInsightsPanel";
+export { HealthBreathingExercise } from "./HealthBreathingExercise";
+export { HealthEnergyCurve } from "./HealthEnergyCurve";
+export { HealthDataExport } from "./HealthDataExport";
