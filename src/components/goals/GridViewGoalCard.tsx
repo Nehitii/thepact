@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import styled, { keyframes, css } from "styled-components";
-import { Star, Target, Zap, ImageOff, CheckCircle2 } from "lucide-react";
+// Correction: Utilisation de 'CheckCircle' qui est plus standard que 'CheckCircle2'
+import { Star, Target, Zap, ImageOff, CheckCircle } from "lucide-react";
 import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 
 // --- Interfaces ---
@@ -44,7 +45,6 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
       return { color: "#c084fc", rgb: "192, 132, 252" };
     case "custom": {
       const base = customColor || "#a855f7";
-      // Simple hex to rgb conversion fallback
       const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(base);
       const rgb = result
         ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
@@ -87,7 +87,6 @@ export function GridViewGoalCard({
 
     const total = isHabit ? goal.habit_duration_days || 0 : goal.totalStepsCount || 0;
     const completed = isHabit ? goal.habit_checks?.filter(Boolean).length || 0 : goal.completedStepsCount || 0;
-    // Cap progress at 100%
     const prog = total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
 
     return {
@@ -104,7 +103,6 @@ export function GridViewGoalCard({
     };
   }, [goal, isCompleted, customDifficultyColor]);
 
-  // Handle keyboard interaction for accessibility
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -165,7 +163,7 @@ export function GridViewGoalCard({
           <div className="primary-info">
             <div className="header-row">
               <div className="icon-badge">
-                {isCompleted ? <CheckCircle2 size={14} /> : isHabitGoal ? <Zap size={14} /> : <Target size={14} />}
+                {isCompleted ? <CheckCircle size={14} /> : isHabitGoal ? <Zap size={14} /> : <Target size={14} />}
               </div>
               <div className="tags-row">
                 {displayTags.map((tag, i) => (
@@ -216,26 +214,31 @@ const StyledWrapper = styled.article<{
   $progress: number;
   $isCompleted: boolean;
 }>`
-  /* --- Variables CSS dynamiques pour la performance --- */
+  /* --- Variables CSS --- */
   --accent: ${(props) => props.$accentColor};
   --accent-rgb: ${(props) => props.$accentRgb};
   --progress: ${(props) => props.$progress}%;
   
   position: relative;
+  
+  /* DIMENSIONS DE SÉCURITÉ RESTAURÉES */
   width: 100%;
+  max-width: 340px;
+  min-width: 260px; /* Important pour éviter le collapse */
   aspect-ratio: 4/5;
+  margin: 0 auto; /* Centrage */
+
   perspective: 1000px;
   cursor: pointer;
   user-select: none;
   border-radius: 20px;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Fallback height */
+  /* Fallback height strict */
   @supports not (aspect-ratio: 4/5) {
     height: 380px;
   }
 
-  /* État complété : saturation réduite */
   ${(props) =>
     props.$isCompleted &&
     css`
@@ -249,9 +252,9 @@ const StyledWrapper = styled.article<{
     width: 100%;
     height: 100%;
     border-radius: 20px;
-    background: #09090b; /* Zinc-950 equivalent */
+    background: #09090b;
     overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.08);
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
@@ -284,7 +287,6 @@ const StyledWrapper = styled.article<{
   .gradient-overlay {
     position: absolute;
     inset: 0;
-    /* Gradient amélioré pour lisibilité du bas */
     background: linear-gradient(
       to bottom,
       rgba(0,0,0,0.1) 0%,
@@ -360,7 +362,7 @@ const StyledWrapper = styled.article<{
     align-items: center;
     justify-content: center;
     color: rgba(255,255,255,0.6);
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.2s;
     cursor: pointer;
 
     &:hover {
@@ -446,7 +448,6 @@ const StyledWrapper = styled.article<{
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    /* Petit effet subtil pour le texte */
     text-shadow: 0 1px 2px rgba(0,0,0,0.8);
   }
 
@@ -517,6 +518,7 @@ const StyledWrapper = styled.article<{
   /* --- HOVER EFFECTS --- */
   &:hover {
     transform: translateY(-4px);
+    z-index: 20;
     
     .card-inner {
       box-shadow: 
