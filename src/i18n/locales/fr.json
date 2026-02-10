@@ -620,6 +620,40 @@
       "noCheckinYet": "Tu n'as pas encore fait de check-in aujourd'hui",
       "updateToday": "Mettre à jour",
       "viewDetails": "Voir les détails"
+    },
+    "insights": {
+      "title": "Insights intelligents",
+      "generate": "Générer",
+      "refresh": "Actualiser",
+      "description": "Obtiens des observations IA sur tes tendances de bien-être à partir de tes check-ins récents.",
+      "needMoreData": "Il faut au moins 3 jours de check-in pour les insights",
+      "error": "Échec de la génération des insights"
+    },
+    "breathing": {
+      "title": "Respiration",
+      "ready": "Prêt",
+      "start": "Démarrer",
+      "pause": "Pause",
+      "inhale": "Inspirez",
+      "hold": "Retenez",
+      "exhale": "Expirez",
+      "rest": "Repos",
+      "cycles": "Cycles",
+      "hint": "Concentre-toi sur ta respiration. Inspire par le nez, expire par la bouche."
+    },
+    "energy": {
+      "title": "Courbe d'énergie",
+      "morning": "Matin",
+      "afternoon": "Après-midi",
+      "evening": "Soirée",
+      "noData": "Suis tes niveaux d'énergie dans ton check-in quotidien pour voir ta courbe",
+      "weekAvg": "Moy. 7 jours"
+    },
+    "export": {
+      "button": "Exporter CSV",
+      "success": "Données exportées avec succès",
+      "error": "Échec de l'export",
+      "noData": "Aucune donnée à exporter"
     }
   },
   "shop": {
