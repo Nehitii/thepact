@@ -42,7 +42,7 @@ export function HealthInsightsPanel() {
             activity_level: d.activity_level,
             stress_level: d.stress_level,
             hydration_glasses: d.hydration_glasses,
-            mood_level: (d as Record<string, unknown>).mood_level ?? null,
+            mood_level: (d as unknown as Record<string, unknown>).mood_level ?? null,
           })),
           streakDays: streak?.current_streak ?? 0,
         },
