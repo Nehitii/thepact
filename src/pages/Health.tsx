@@ -11,6 +11,7 @@ import {
   Settings,
   Calendar,
   Sparkles,
+  Wind,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -28,6 +29,11 @@ import { HealthBMIIndicator } from "@/components/health/HealthBMIIndicator";
 import { HealthStreakBadge } from "@/components/health/HealthStreakBadge";
 import { HealthHistoryChart } from "@/components/health/HealthHistoryChart";
 import { HealthChallengesPanel } from "@/components/health/HealthChallengesPanel";
+import { HealthInsightsPanel } from "@/components/health/HealthInsightsPanel";
+import { HealthBreathingExercise } from "@/components/health/HealthBreathingExercise";
+import { HealthEnergyCurve } from "@/components/health/HealthEnergyCurve";
+import { HealthDataExport } from "@/components/health/HealthDataExport";
+import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
 
 export default function Health() {
@@ -35,12 +41,16 @@ export default function Health() {
   const { user } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
+  const [showBreathing, setShowBreathing] = useState(false);
   
   const { data: settings, isLoading: settingsLoading } = useHealthSettings(user?.id);
   const healthScore = useHealthScore(user?.id);
   
   const bmi = calculateBMI(settings?.height_cm ?? null, settings?.weight_kg ?? null);
   const bmiCategory = getBMICategory(bmi);
+
+  // Activate health reminders
+  useHealthReminders();
 
   if (settingsLoading) {
     return (
@@ -77,7 +87,7 @@ export default function Health() {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between"
+          className="flex items-center justify-between flex-wrap gap-4"
         >
           <div className="flex items-center gap-4">
             <div className="relative">
@@ -96,10 +106,18 @@ export default function Health() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            {/* Streak badge */}
+          <div className="flex items-center gap-3 flex-wrap">
             <HealthStreakBadge size="md" />
-            
+            <HealthDataExport />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBreathing(true)}
+              className="border-teal-500/30 text-teal-600 dark:text-teal-400 hover:bg-teal-500/10"
+            >
+              <Wind className="w-4 h-4 mr-2" />
+              {t("health.breathing.title")}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -135,58 +153,30 @@ export default function Health() {
         {/* Metric Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {settings?.show_sleep !== false && (
-            <HealthMetricCard
-              icon={Moon}
-              title={t("health.metrics.sleep")}
-              description={t("health.metrics.sleepDesc")}
-              color="blue"
-              metricKey="sleep"
-            />
+            <HealthMetricCard icon={Moon} title={t("health.metrics.sleep")} description={t("health.metrics.sleepDesc")} color="blue" metricKey="sleep" />
           )}
-          
           {settings?.show_activity !== false && (
-            <HealthMetricCard
-              icon={Activity}
-              title={t("health.metrics.activity")}
-              description={t("health.metrics.activityDesc")}
-              color="green"
-              metricKey="activity"
-            />
+            <HealthMetricCard icon={Activity} title={t("health.metrics.activity")} description={t("health.metrics.activityDesc")} color="green" metricKey="activity" />
           )}
-          
           {settings?.show_stress !== false && (
-            <HealthMetricCard
-              icon={Brain}
-              title={t("health.metrics.stress")}
-              description={t("health.metrics.stressDesc")}
-              color="purple"
-              metricKey="stress"
-            />
+            <HealthMetricCard icon={Brain} title={t("health.metrics.stress")} description={t("health.metrics.stressDesc")} color="purple" metricKey="stress" />
           )}
-          
           {settings?.show_hydration !== false && (
-            <HealthMetricCard
-              icon={Droplets}
-              title={t("health.metrics.hydration")}
-              description={t("health.metrics.hydrationDesc")}
-              color="cyan"
-              metricKey="hydration"
-            />
+            <HealthMetricCard icon={Droplets} title={t("health.metrics.hydration")} description={t("health.metrics.hydrationDesc")} color="cyan" metricKey="hydration" />
           )}
-          
           {settings?.show_nutrition && (
-            <HealthMetricCard
-              icon={Apple}
-              title={t("health.metrics.nutrition")}
-              description={t("health.metrics.nutritionDesc")}
-              color="orange"
-              metricKey="nutrition"
-            />
+            <HealthMetricCard icon={Apple} title={t("health.metrics.nutrition")} description={t("health.metrics.nutritionDesc")} color="orange" metricKey="nutrition" />
           )}
         </div>
 
         {/* Weekly Overview Chart */}
         <HealthWeeklyChart />
+
+        {/* Energy Curve */}
+        <HealthEnergyCurve />
+
+        {/* AI Insights */}
+        <HealthInsightsPanel />
 
         {/* Extended History and Challenges */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -207,15 +197,9 @@ export default function Health() {
       </div>
 
       {/* Modals */}
-      <HealthSettingsModal 
-        open={showSettings} 
-        onOpenChange={setShowSettings} 
-      />
-      
-      <HealthDailyCheckin
-        open={showCheckin}
-        onOpenChange={setShowCheckin}
-      />
+      <HealthSettingsModal open={showSettings} onOpenChange={setShowSettings} />
+      <HealthDailyCheckin open={showCheckin} onOpenChange={setShowCheckin} />
+      <HealthBreathingExercise open={showBreathing} onOpenChange={setShowBreathing} />
     </div>
   );
 }
