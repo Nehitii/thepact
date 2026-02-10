@@ -440,7 +440,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               currentStep === 2 && "bg-purple-500/20",
               currentStep === 3 && "bg-cyan-500/20",
               currentStep === 4 && "bg-amber-500/20",
-              currentStep === 5 && "bg-pink-500/20"
+              currentStep === 5 && "bg-yellow-500/20",
+              currentStep === 6 && "bg-pink-500/20"
             )}>
               <Icon className={cn(
                 "w-5 h-5",
@@ -449,7 +450,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                 currentStep === 2 && "text-purple-600 dark:text-purple-400",
                 currentStep === 3 && "text-cyan-600 dark:text-cyan-400",
                 currentStep === 4 && "text-amber-600 dark:text-amber-400",
-                currentStep === 5 && "text-pink-600 dark:text-pink-400"
+                currentStep === 5 && "text-yellow-600 dark:text-yellow-400",
+                currentStep === 6 && "text-pink-600 dark:text-pink-400"
               )} />
             </div>
             {currentStepData.title}
