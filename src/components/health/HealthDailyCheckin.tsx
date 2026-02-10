@@ -133,8 +133,12 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       mental_load: mentalLoad,
       hydration_glasses: hydrationGlasses,
       meal_balance: mealBalance,
+      mood_level: moodLevel,
+      mood_journal: moodJournal || null,
+      energy_morning: energyMorning,
+      energy_afternoon: energyAfternoon,
+      energy_evening: energyEvening,
       notes: notes || null,
-      // Pass mood fields through extended input
     } as Record<string, unknown>);
     
     // Update streak after successful check-in
