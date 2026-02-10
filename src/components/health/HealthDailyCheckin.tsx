@@ -17,6 +17,7 @@ import {
   Brain, 
   Droplets,
   Smile,
+  Zap,
   ChevronRight,
   ChevronLeft,
   Check,
