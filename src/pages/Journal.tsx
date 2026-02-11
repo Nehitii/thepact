@@ -1,23 +1,24 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, BookOpen, Plus, Feather } from "lucide-react";
+import { ArrowLeft, Plus, Terminal, Star } from "lucide-react";
 import { format } from "date-fns";
-import { useJournalEntries, useDeleteJournalEntry, JournalEntry } from "@/hooks/useJournal";
+import { useJournalEntries, useDeleteJournalEntry } from "@/hooks/useJournal";
+import type { JournalEntry } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { motion, AnimatePresence } from "framer-motion";
-
-// Memoize dust particle positions to prevent re-renders causing jank
-const DUST_PARTICLES = Array.from({ length: 20 }, (_, i) => ({
-  id: i,
-  left: `${Math.random() * 100}%`,
-  top: `${Math.random() * 100}%`,
-  duration: 8 + Math.random() * 4,
-  delay: Math.random() * 5,
-}));
 
 export default function Journal() {
   const navigate = useNavigate();
@@ -25,263 +26,213 @@ export default function Journal() {
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
-  
-  const { data: entries = [], isLoading } = useJournalEntries(user?.id);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useJournalEntries(user?.id);
   const deleteEntry = useDeleteJournalEntry();
-  
+
+  // Flatten pages
+  const allEntries = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
+  const entries = useMemo(
+    () => (showFavoritesOnly ? allEntries.filter((e) => e.is_favorite) : allEntries),
+    [allEntries, showFavoritesOnly]
+  );
+
   // Group entries by month/year
   const groupedEntries = useMemo(() => {
     const groups: Record<string, JournalEntry[]> = {};
-    
     entries.forEach((entry) => {
-      const date = new Date(entry.created_at);
-      const key = format(date, "MMMM yyyy");
-      
-      if (!groups[key]) {
-        groups[key] = [];
-      }
+      const key = format(new Date(entry.created_at), "MMMM yyyy");
+      if (!groups[key]) groups[key] = [];
       groups[key].push(entry);
     });
-    
     return groups;
   }, [entries]);
-  
+
+  // Infinite scroll observer
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const sentinelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (observerRef.current) observerRef.current.disconnect();
+      if (!node || !hasNextPage) return;
+      observerRef.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+          }
+        },
+        { threshold: 0.1 }
+      );
+      observerRef.current.observe(node);
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage]
+  );
+
   const handleEdit = (entry: JournalEntry) => {
     setEditingEntry(entry);
     setIsNewEntryOpen(true);
   };
-  
+
   const handleDelete = async () => {
     if (!deletingEntryId || !user) return;
     await deleteEntry.mutateAsync({ id: deletingEntryId, userId: user.id });
     setDeletingEntryId(null);
   };
-  
+
   const handleCloseModal = (open: boolean) => {
     setIsNewEntryOpen(open);
-    if (!open) {
-      setEditingEntry(null);
-    }
+    if (!open) setEditingEntry(null);
   };
-  
+
   if (!user) return null;
-  
+
   return (
-    <div className="min-h-screen relative overflow-x-hidden overflow-y-auto" style={{
-      background: 'linear-gradient(180deg, #0c1018 0%, #0a0e17 25%, #080b12 50%, #060910 100%)'
-    }}>
-      {/* Premium cinematic background layers */}
+    <div className="min-h-screen relative overflow-x-hidden overflow-y-auto bg-background">
+      {/* Background effects */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Deep navy gradient orb - top */}
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1200px] h-[700px] rounded-full blur-[150px]" 
-          style={{ background: 'radial-gradient(ellipse, rgba(59, 130, 246, 0.04) 0%, transparent 70%)' }} 
+        <div
+          className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] rounded-full blur-[150px]"
+          style={{ background: "radial-gradient(ellipse, hsl(var(--primary) / 0.04) 0%, transparent 70%)" }}
         />
-        
-        {/* Subtle warm accent - bottom right */}
-        <div className="absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full blur-[120px]"
-          style={{ background: 'radial-gradient(ellipse, rgba(139, 92, 246, 0.02) 0%, transparent 70%)' }}
+        <div
+          className="absolute bottom-0 right-0 w-[500px] h-[300px] rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(ellipse, hsl(270 80% 60% / 0.03) 0%, transparent 70%)" }}
         />
-        
-        {/* Film grain - static image approach for performance */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: 'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAElBMVEUAAAAAAAAAAAAAAAAAAAAAAADgKxmiAAAABnRSTlMFBQUFBQUXpKxOAAAASklEQVQ4y2MYBaNg5ANWZxDFxMRkzMDAwJCV5QAiGCNBJCMjIyNIkpERpISRERlARDMyIgOwaEZGNIBqHgWjYBSMglEwCkbBwAAAqNAGQ0TqpCYAAAAASUVORK5CYII=")',
+        {/* Scan line */}
+        <div className="absolute inset-0 opacity-[0.015]" style={{
+          backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--primary) / 0.1) 2px, hsl(var(--primary) / 0.1) 3px)",
+          backgroundSize: "100% 4px",
         }} />
-        
-        {/* Soft vignette */}
-        <div className="absolute inset-0" style={{
-          background: 'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.4) 100%)'
-        }} />
-        
-        {/* Ambient dust particles - memoized positions */}
-        <div className="absolute inset-0 opacity-[0.02]">
-          {DUST_PARTICLES.map((particle) => (
-            <motion.div
-              key={particle.id}
-              className="absolute w-1 h-1 rounded-full bg-white/30"
-              style={{
-                left: particle.left,
-                top: particle.top,
-              }}
-              animate={{
-                y: [-20, 20],
-                opacity: [0.1, 0.3, 0.1],
-              }}
-              transition={{
-                duration: particle.duration,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: particle.delay,
-              }}
-            />
-          ))}
-        </div>
       </div>
-      
+
       <div className="max-w-2xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Header */}
-        <motion.div 
-          className="flex items-center justify-between pt-8 pb-6"
+        <motion.div
+          className="flex items-center justify-between pt-8 pb-5"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: 0.4 }}
         >
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/")}
-              className="text-slate-400 hover:text-slate-200 hover:bg-white/[0.03] transition-all duration-500 rounded-xl"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
-              <span className="text-sm font-light tracking-wide">Back</span>
-            </Button>
-          </div>
-          
-          {/* Premium New Entry CTA */}
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="text-muted-foreground hover:text-foreground hover:bg-card/40 rounded-lg font-mono text-xs"
           >
-            <button
-              onClick={() => setIsNewEntryOpen(true)}
-              className="relative group min-h-[44px] px-6 py-3 rounded-full border-0 transition-all duration-500 inline-flex items-center justify-center"
-              style={{
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(6, 182, 212, 0.1) 100%)',
-                boxShadow: '0 0 30px rgba(16, 185, 129, 0.1), inset 0 1px 0 rgba(255,255,255,0.05)'
-              }}
+            <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+            BACK
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`rounded-lg font-mono text-xs ${showFavoritesOnly ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
             >
-              {/* Glow effect - contained in separate layer */}
-              <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{ boxShadow: '0 0 40px rgba(16, 185, 129, 0.25)' }}
-              />
-              <Plus className="h-4 w-4 mr-2 text-emerald-400/90 shrink-0" />
-              <span className="text-emerald-300/90 font-light tracking-wide text-sm normal-case">New Entry</span>
-            </button>
-          </motion.div>
+              <Star className={`h-3.5 w-3.5 mr-1 ${showFavoritesOnly ? "fill-current" : ""}`} />
+              PINNED
+            </Button>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                onClick={() => setIsNewEntryOpen(true)}
+                className="bg-primary/15 text-primary hover:bg-primary/25 border border-primary/20 rounded-lg font-mono text-xs uppercase tracking-wider shadow-[0_0_20px_hsl(var(--primary)/0.1)]"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
+                NEW_LOG
+              </Button>
+            </motion.div>
+          </div>
         </motion.div>
 
-        {/* Title Section - Editorial Style */}
-        <motion.div 
-          className="mb-10"
+        {/* Title */}
+        <motion.div
+          className="mb-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+          transition={{ duration: 0.5, delay: 0.1 }}
         >
-          <div className="flex items-center gap-4 mb-3">
-            {/* Icon with soft glow */}
+          <div className="flex items-center gap-3 mb-2">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full blur-xl bg-cyan-500/20" />
-              <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-slate-800/80 to-slate-900/80 border border-white/[0.05] flex items-center justify-center backdrop-blur-sm">
-                <Feather className="h-5 w-5 text-cyan-400/80" />
+              <div className="absolute inset-0 rounded-lg blur-xl bg-primary/20" />
+              <div className="relative w-10 h-10 rounded-lg bg-card/80 border border-primary/20 flex items-center justify-center">
+                <Terminal className="h-5 w-5 text-primary" />
               </div>
             </div>
             <div>
-              <h1 className="text-3xl font-light text-white/90 tracking-tight" style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-                Journal
+              <h1 className="text-2xl font-mono font-bold text-foreground/90 tracking-wider uppercase">
+                Neural Log
               </h1>
+              <p className="text-xs font-mono text-muted-foreground/50 tracking-widest">
+                SYS://MEMORY.ARCHIVE
+              </p>
             </div>
           </div>
-          <p className="text-base text-slate-500 font-light ml-16 leading-relaxed italic">
-            A quiet space for your thoughts and memories
-          </p>
         </motion.div>
-        
+
         {/* Content */}
         {isLoading ? (
-          <motion.div 
-            className="flex items-center justify-center py-24"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <div className="flex flex-col items-center gap-4">
-              <motion.div 
-                className="w-8 h-8 rounded-full border-2 border-cyan-500/20 border-t-cyan-400/60"
+          <div className="flex items-center justify-center py-24">
+            <div className="flex flex-col items-center gap-3">
+              <motion.div
+                className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary/60"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
               />
-              <div className="text-slate-500 font-light text-sm tracking-wide">Loading memories...</div>
+              <div className="text-muted-foreground/50 font-mono text-xs tracking-wider">LOADING_LOGS...</div>
             </div>
-          </motion.div>
+          </div>
         ) : entries.length === 0 ? (
-          <motion.div 
-            className="flex flex-col items-center justify-center py-24 text-center"
+          <motion.div
+            className="flex flex-col items-center justify-center py-20 text-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <div className="relative mb-8">
-              <div className="absolute inset-0 rounded-full blur-2xl bg-slate-500/10" />
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-slate-800/60 to-slate-900/60 border border-white/[0.03] flex items-center justify-center backdrop-blur-sm">
-                <BookOpen className="h-9 w-9 text-slate-500/60" />
+            <div className="relative mb-6">
+              <div className="absolute inset-0 rounded-xl blur-2xl bg-primary/10" />
+              <div className="relative w-16 h-16 rounded-xl bg-card/60 border border-border/20 flex items-center justify-center">
+                <Terminal className="h-7 w-7 text-muted-foreground/40" />
               </div>
             </div>
-            <h3 className="text-2xl text-slate-400 font-light mb-3 tracking-tight">No entries yet</h3>
-            <p className="text-slate-500 text-sm max-w-sm leading-relaxed font-light">
-              Your journal is a private space for reflection. Begin recording your memories and thoughts.
+            <h3 className="text-lg font-mono text-foreground/70 mb-2 tracking-wider">NO_LOGS_FOUND</h3>
+            <p className="text-muted-foreground/40 text-xs font-mono max-w-xs mb-6">
+              Begin recording neural log entries to build your memory archive.
             </p>
-            <motion.div
-              className="mt-8"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <Button
+              onClick={() => setIsNewEntryOpen(true)}
+              className="bg-primary/15 text-primary hover:bg-primary/25 border border-primary/20 rounded-lg font-mono text-xs"
             >
-              <button
-                onClick={() => setIsNewEntryOpen(true)}
-                className="relative group min-h-[48px] px-7 py-3 rounded-full border-0 transition-all duration-500 inline-flex items-center justify-center"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 182, 212, 0.08) 100%)',
-                  boxShadow: '0 0 30px rgba(16, 185, 129, 0.08), inset 0 1px 0 rgba(255,255,255,0.03)'
-                }}
-              >
-                <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                  style={{ boxShadow: '0 0 50px rgba(16, 185, 129, 0.2)' }}
-                />
-                <Plus className="h-4 w-4 mr-2 text-emerald-400/80 shrink-0" />
-                <span className="text-emerald-300/80 font-light tracking-wide normal-case">Write your first entry</span>
-              </button>
-            </motion.div>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              INITIALIZE_FIRST_LOG
+            </Button>
           </motion.div>
         ) : (
-          <div className="space-y-16 pb-16">
+          <div className="space-y-12 pb-16">
             <AnimatePresence mode="wait">
-              {Object.entries(groupedEntries).map(([monthYear, monthEntries], groupIndex) => (
-                <motion.div 
-                  key={monthYear} 
-                  className="space-y-6"
-                  initial={{ opacity: 0, y: 20 }}
+              {Object.entries(groupedEntries).map(([monthYear, monthEntries], gi) => (
+                <motion.div
+                  key={monthYear}
+                  className="space-y-4"
+                  initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ 
-                    duration: 0.5, 
-                    delay: groupIndex * 0.1,
-                    ease: [0.25, 0.1, 0.25, 1] 
-                  }}
+                  transition={{ duration: 0.4, delay: gi * 0.08 }}
                 >
-                  {/* Month Header - Editorial Style */}
-                  <motion.div 
-                    className="flex items-center gap-4"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: groupIndex * 0.1 + 0.1 }}
-                  >
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                    <h2 className="text-sm font-light text-slate-500 tracking-[0.2em] uppercase px-4">
+                  {/* Month header */}
+                  <div className="flex items-center gap-3">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+                    <h2 className="text-[11px] font-mono text-primary/50 tracking-[0.25em] uppercase px-3">
                       {monthYear}
                     </h2>
-                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-                  </motion.div>
-                  
-                  {/* Entries */}
-                  <div className="space-y-5">
-                    {monthEntries.map((entry, entryIndex) => (
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border/30 to-transparent" />
+                  </div>
+
+                  <div className="space-y-3">
+                    {monthEntries.map((entry, ei) => (
                       <motion.div
                         key={entry.id}
-                        initial={{ opacity: 0, y: 15, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ 
-                          duration: 0.5,
-                          delay: groupIndex * 0.1 + entryIndex * 0.08,
-                          ease: [0.25, 0.1, 0.25, 1]
-                        }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: gi * 0.05 + ei * 0.05 }}
                       >
                         <JournalEntryCard
                           entry={entry}
@@ -294,10 +245,17 @@ export default function Journal() {
                 </motion.div>
               ))}
             </AnimatePresence>
+
+            {/* Infinite scroll sentinel */}
+            <div ref={sentinelRef} className="h-10 flex items-center justify-center">
+              {isFetchingNextPage && (
+                <div className="text-muted-foreground/40 font-mono text-[10px] tracking-wider">LOADING_MORE...</div>
+              )}
+            </div>
           </div>
         )}
       </div>
-      
+
       {/* New/Edit Entry Modal */}
       <JournalNewEntryModal
         open={isNewEntryOpen}
@@ -305,27 +263,28 @@ export default function Journal() {
         userId={user.id}
         editingEntry={editingEntry}
       />
-      
-      {/* Delete Confirmation - Premium styled */}
+
+      {/* Delete Confirmation */}
       <AlertDialog open={!!deletingEntryId} onOpenChange={() => setDeletingEntryId(null)}>
-        <AlertDialogContent className="border border-white/[0.05] shadow-2xl rounded-2xl"
-          style={{ background: 'linear-gradient(180deg, rgba(15, 20, 30, 0.98) 0%, rgba(10, 14, 22, 0.98) 100%)' }}
+        <AlertDialogContent
+          className="border border-border/20 shadow-2xl rounded-xl"
+          style={{ background: "linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--background)) 100%)" }}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-light text-white/90 tracking-tight">Delete Entry</AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-500 font-light leading-relaxed">
-              This entry will be permanently deleted. This action cannot be undone.
+            <AlertDialogTitle className="font-mono text-foreground/90 tracking-wider">PURGE_LOG</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground/60 font-mono text-xs">
+              This neural log entry will be permanently erased. This action cannot be reversed.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-3">
-            <AlertDialogCancel className="bg-white/[0.03] border-white/[0.05] text-slate-400 hover:bg-white/[0.06] hover:text-slate-300 rounded-xl transition-all duration-300">
-              Cancel
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel className="bg-card/40 border-border/20 text-muted-foreground rounded-lg font-mono text-xs">
+              ABORT
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-red-500/10 text-red-400/90 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition-all duration-300"
+              className="bg-destructive/10 text-destructive hover:bg-destructive/20 border border-destructive/20 rounded-lg font-mono text-xs"
             >
-              Delete
+              CONFIRM_PURGE
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
