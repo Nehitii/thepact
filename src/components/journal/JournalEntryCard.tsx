@@ -1,7 +1,10 @@
 import { format } from "date-fns";
-import { JournalEntry, MOOD_CONFIG, JournalMood } from "@/hooks/useJournal";
-import { Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import type { JournalEntry } from "@/types/journal";
+import { VALENCE_LABELS, ENERGY_LABELS } from "@/types/journal";
+import { Pencil, Trash2, Star, Link2, Zap, Heart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useToggleFavorite } from "@/hooks/useJournal";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 
 interface JournalEntryCardProps {
@@ -10,158 +13,134 @@ interface JournalEntryCardProps {
   onDelete?: (id: string) => void;
 }
 
+function formatNeuralDate(date: Date) {
+  return `LOG_${format(date, "yyyy.MM.dd")} // ${format(date, "HH:mm")}`;
+}
+
 export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardProps) {
-  const moodConfig = MOOD_CONFIG[entry.mood as JournalMood] || MOOD_CONFIG.reflective;
+  const { user } = useAuth();
+  const toggleFav = useToggleFavorite();
   const createdDate = new Date(entry.created_at);
-  
+  const valenceInfo = entry.valence_level ? VALENCE_LABELS[entry.valence_level - 1] : null;
+  const energyInfo = entry.energy_level ? ENERGY_LABELS[entry.energy_level - 1] : null;
+
+  const handleToggleFavorite = () => {
+    if (!user) return;
+    toggleFav.mutate({ id: entry.id, userId: user.id, isFavorite: !entry.is_favorite });
+  };
+
   return (
-    <motion.div 
-      className="group relative rounded-[20px] overflow-visible transition-all duration-500"
+    <motion.div
+      className="group relative rounded-xl overflow-hidden transition-all duration-300 border border-border/15 hover:border-primary/20"
       style={{
-        background: 'linear-gradient(180deg, rgba(20, 26, 38, 0.6) 0%, rgba(15, 20, 30, 0.5) 100%)',
-        boxShadow: '0 4px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03)',
+        background: "linear-gradient(180deg, hsl(var(--card) / 0.7) 0%, hsl(var(--card) / 0.4) 100%)",
+        boxShadow: "0 4px 30px hsl(var(--background) / 0.3), inset 0 1px 0 hsl(var(--foreground) / 0.02)",
       }}
-      whileHover={{ 
-        y: -2,
-        boxShadow: '0 8px 50px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04)',
-      }}
-      transition={{ duration: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
+      whileHover={{ y: -1, boxShadow: "0 8px 40px hsl(var(--background) / 0.4), 0 0 30px hsl(var(--primary) / 0.05)" }}
+      transition={{ duration: 0.3 }}
     >
-      {/* Glass-like inner border */}
-      <div className="absolute inset-[1px] rounded-[19px] pointer-events-none"
-        style={{ 
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 50%)',
-          border: '1px solid rgba(255,255,255,0.03)'
-        }}
-      />
-      
-      {/* Subtle mood-colored glow on hover */}
-      <motion.div 
-        className="absolute inset-0 rounded-[20px] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-        style={{
-          background: `radial-gradient(ellipse at 30% 0%, ${moodConfig.bgColor.replace('bg-', 'rgba(').replace('/20', ', 0.08)')} 0%, transparent 60%)`
-        }}
-      />
-      
-      <div className="relative z-10 p-7">
-        {/* Top Row: Mood Icon + Title */}
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div className="flex items-start gap-5">
-            {/* Mood Icon - Premium glossy style */}
-            <div className="relative shrink-0">
-              {/* Soft glow behind icon */}
-              <div 
-                className="absolute inset-0 rounded-2xl blur-xl opacity-40"
-                style={{ 
-                  background: moodConfig.bgColor.includes('indigo') ? 'rgba(99, 102, 241, 0.3)' :
-                              moodConfig.bgColor.includes('amber') ? 'rgba(245, 158, 11, 0.3)' :
-                              moodConfig.bgColor.includes('cyan') ? 'rgba(6, 182, 212, 0.3)' :
-                              moodConfig.bgColor.includes('slate') ? 'rgba(100, 116, 139, 0.3)' :
-                              moodConfig.bgColor.includes('emerald') ? 'rgba(16, 185, 129, 0.3)' :
-                              moodConfig.bgColor.includes('purple') ? 'rgba(139, 92, 246, 0.3)' :
-                              moodConfig.bgColor.includes('pink') ? 'rgba(236, 72, 153, 0.3)' :
-                              'rgba(59, 130, 246, 0.3)'
-                }}
-              />
-              <div 
-                className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-2xl"
-                style={{
-                  background: moodConfig.bgColor.includes('indigo') ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(79, 70, 229, 0.15) 100%)' :
-                              moodConfig.bgColor.includes('amber') ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.15) 100%)' :
-                              moodConfig.bgColor.includes('cyan') ? 'linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(8, 145, 178, 0.15) 100%)' :
-                              moodConfig.bgColor.includes('slate') ? 'linear-gradient(135deg, rgba(100, 116, 139, 0.2) 0%, rgba(71, 85, 105, 0.15) 100%)' :
-                              moodConfig.bgColor.includes('emerald') ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.15) 100%)' :
-                              moodConfig.bgColor.includes('purple') ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(124, 58, 237, 0.15) 100%)' :
-                              moodConfig.bgColor.includes('pink') ? 'linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(219, 39, 119, 0.15) 100%)' :
-                              'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.15) 100%)',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.1)',
-                  border: '1px solid rgba(255,255,255,0.05)'
-                }}
-              >
-                {moodConfig.icon}
-              </div>
+      {/* Favorite indicator bar */}
+      {entry.is_favorite && (
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
+      )}
+
+      <div className="relative z-10 p-5 sm:p-6">
+        {/* Header: date + actions */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="space-y-1.5">
+            <div className="font-mono text-[11px] text-primary/60 tracking-[0.2em] uppercase">
+              {formatNeuralDate(createdDate)}
             </div>
-            
-            <div className="pt-1">
-              <h3 className="text-xl font-normal text-white/90 tracking-tight leading-tight mb-2"
-                style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-              >
-                {entry.title}
-              </h3>
-              {/* Metadata Row */}
-              <div className="flex items-center gap-3 text-sm">
-                <span className="text-slate-500 font-light">{format(createdDate, "EEEE, MMMM d")}</span>
-                <span className="text-slate-700">·</span>
-                <span 
-                  className="capitalize font-light px-2.5 py-0.5 rounded-full text-xs"
-                  style={{
-                    background: moodConfig.bgColor.includes('indigo') ? 'rgba(99, 102, 241, 0.12)' :
-                                moodConfig.bgColor.includes('amber') ? 'rgba(245, 158, 11, 0.12)' :
-                                moodConfig.bgColor.includes('cyan') ? 'rgba(6, 182, 212, 0.12)' :
-                                moodConfig.bgColor.includes('slate') ? 'rgba(100, 116, 139, 0.12)' :
-                                moodConfig.bgColor.includes('emerald') ? 'rgba(16, 185, 129, 0.12)' :
-                                moodConfig.bgColor.includes('purple') ? 'rgba(139, 92, 246, 0.12)' :
-                                moodConfig.bgColor.includes('pink') ? 'rgba(236, 72, 153, 0.12)' :
-                                'rgba(59, 130, 246, 0.12)',
-                    color: moodConfig.bgColor.includes('indigo') ? 'rgba(165, 180, 252, 0.9)' :
-                           moodConfig.bgColor.includes('amber') ? 'rgba(252, 211, 77, 0.9)' :
-                           moodConfig.bgColor.includes('cyan') ? 'rgba(103, 232, 249, 0.9)' :
-                           moodConfig.bgColor.includes('slate') ? 'rgba(148, 163, 184, 0.9)' :
-                           moodConfig.bgColor.includes('emerald') ? 'rgba(110, 231, 183, 0.9)' :
-                           moodConfig.bgColor.includes('purple') ? 'rgba(196, 181, 253, 0.9)' :
-                           moodConfig.bgColor.includes('pink') ? 'rgba(249, 168, 212, 0.9)' :
-                           'rgba(147, 197, 253, 0.9)'
-                  }}
-                >
-                  {entry.mood}
-                </span>
-              </div>
-            </div>
+            <h3 className="text-lg font-medium text-foreground/90 tracking-tight leading-tight font-mono">
+              {entry.title}
+            </h3>
           </div>
-          
-          {/* Actions - Visible on mobile, fade on hover for desktop */}
-          <div 
-            className="flex items-center gap-2 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300"
-          >
+
+          <div className="flex items-center gap-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
+            <button
+              onClick={handleToggleFavorite}
+              className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
+                entry.is_favorite
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground/40 hover:text-primary/60 hover:bg-card/60"
+              }`}
+            >
+              <Star className={`h-3.5 w-3.5 ${entry.is_favorite ? "fill-current" : ""}`} />
+            </button>
             {onEdit && (
               <button
                 onClick={() => onEdit(entry)}
-                className="min-h-[40px] min-w-[40px] h-10 w-10 text-slate-500 hover:text-slate-300 hover:bg-white/[0.04] rounded-xl transition-all duration-300 inline-flex items-center justify-center"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-foreground/70 hover:bg-card/60 transition-all duration-200"
               >
-                <Pencil className="h-4 w-4 shrink-0" />
+                <Pencil className="h-3.5 w-3.5" />
               </button>
             )}
             {onDelete && (
               <button
                 onClick={() => onDelete(entry.id)}
-                className="min-h-[40px] min-w-[40px] h-10 w-10 text-slate-500 hover:text-red-400/80 hover:bg-red-500/[0.06] rounded-xl transition-all duration-300 inline-flex items-center justify-center"
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-destructive/70 hover:bg-destructive/5 transition-all duration-200"
               >
-                <Trash2 className="h-4 w-4 shrink-0" />
+                <Trash2 className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
         </div>
-        
-        {/* Main Content */}
-        <div 
-          className="text-slate-300/80 leading-[1.8] whitespace-pre-wrap text-[15px] font-light max-w-prose"
-          style={{ fontFamily: 'system-ui, -apple-system, sans-serif' }}
-        >
-          {entry.content}
-        </div>
-        
-        {/* Life Context - Editorial style */}
-        {entry.life_context && (
-          <motion.div 
-            className="mt-7 pt-5 border-t border-white/[0.04]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-          >
-            <p className="text-sm text-slate-500/80 italic font-light leading-relaxed">
-              "{entry.life_context}"
-            </p>
-          </motion.div>
+
+        {/* Metrics row */}
+        {(valenceInfo || energyInfo) && (
+          <div className="flex items-center gap-3 mb-3">
+            {valenceInfo && (
+              <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: valenceInfo.color }}>
+                <Heart className="h-3 w-3" />
+                <span>{valenceInfo.label}</span>
+              </div>
+            )}
+            {energyInfo && (
+              <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: energyInfo.color }}>
+                <Zap className="h-3 w-3" />
+                <span>{energyInfo.label}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tags */}
+        {entry.tags && entry.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-3">
+            {entry.tags.map((tag) => (
+              <Badge
+                key={tag}
+                variant="secondary"
+                className="bg-primary/8 text-primary/70 border-primary/15 font-mono text-[10px] py-0 h-5"
+              >
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Content - rendered as HTML */}
+        <div
+          className="text-foreground/70 leading-[1.8] text-sm max-w-prose journal-html-content"
+          style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+          dangerouslySetInnerHTML={{ __html: entry.content }}
+        />
+
+        {/* Footer: linked goal + life context */}
+        {(entry.linked_goal_id || entry.life_context) && (
+          <div className="mt-4 pt-3 border-t border-border/10 flex flex-wrap items-center gap-3">
+            {entry.linked_goal_id && (
+              <div className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground/50">
+                <Link2 className="h-3 w-3" />
+                <span>GOAL_LINKED</span>
+              </div>
+            )}
+            {entry.life_context && (
+              <p className="text-xs text-muted-foreground/40 italic font-light">
+                "{entry.life_context}"
+              </p>
+            )}
+          </div>
         )}
       </div>
     </motion.div>

@@ -958,34 +958,57 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          energy_level: number | null
           id: string
+          is_favorite: boolean | null
           life_context: string | null
+          linked_goal_id: string | null
           mood: string
+          tags: string[] | null
           title: string
           updated_at: string
           user_id: string
+          valence_level: number | null
         }
         Insert: {
           content: string
           created_at?: string
+          energy_level?: number | null
           id?: string
+          is_favorite?: boolean | null
           life_context?: string | null
+          linked_goal_id?: string | null
           mood?: string
+          tags?: string[] | null
           title: string
           updated_at?: string
           user_id: string
+          valence_level?: number | null
         }
         Update: {
           content?: string
           created_at?: string
+          energy_level?: number | null
           id?: string
+          is_favorite?: boolean | null
           life_context?: string | null
+          linked_goal_id?: string | null
           mood?: string
+          tags?: string[] | null
           title?: string
           updated_at?: string
           user_id?: string
+          valence_level?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "journal_entries_linked_goal_id_fkey"
+            columns: ["linked_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       monthly_finance_validations: {
         Row: {
