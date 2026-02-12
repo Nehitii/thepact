@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, Clock, Trash2, AlertTriangle, Tag, Briefcase, Heart, BookOpen, Cog, User, Sparkles, Pencil, Hourglass, CalendarClock, MapPin, Bell } from 'lucide-react';
+import { useState, useCallback, useRef } from 'react';
+import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from 'framer-motion';
+import { Check, Clock, Trash2, AlertTriangle, Tag, Briefcase, Heart, BookOpen, Cog, User, Sparkles, Pencil, Hourglass, CalendarClock, MapPin, Bell, Crosshair } from 'lucide-react';
 import { format, isPast, isToday, isTomorrow, addDays } from 'date-fns';
 import { TodoTask } from '@/hooks/useTodoList';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import { cn } from '@/lib/utils';
 import { useParticleEffect } from '@/components/ParticleEffect';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '@/contexts/SoundContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TodoGamifiedTaskCardProps {
   task: TodoTask;
@@ -31,9 +32,11 @@ interface TodoGamifiedTaskCardProps {
   onPostpone: (newDeadline: string) => void;
   onDelete: () => void;
   onEdit: () => void;
+  onFocus?: () => void;
+  variant?: 'expanded' | 'compact';
+  isDragging?: boolean;
 }
 
-// Priority styles with game-like colors
 const priorityConfig = {
   low: {
     border: 'border-emerald-500/30',
@@ -58,7 +61,6 @@ const priorityConfig = {
   },
 };
 
-// Category icons and colors
 const categoryConfig: Record<string, { icon: React.ElementType; color: string }> = {
   work: { icon: Briefcase, color: 'text-blue-400' },
   health: { icon: Heart, color: 'text-red-400' },
@@ -68,7 +70,6 @@ const categoryConfig: Record<string, { icon: React.ElementType; color: string }>
   general: { icon: Tag, color: 'text-muted-foreground' },
 };
 
-// Task type badges - updated with new types
 const taskTypeConfig: Record<string, { icon: React.ElementType; color: string; labelKey: string }> = {
   rendezvous: { icon: CalendarClock, color: 'bg-purple-500/20 text-purple-300', labelKey: 'todo.taskTypes.rendezvous' },
   deadline: { icon: Clock, color: 'bg-red-500/20 text-red-300', labelKey: 'todo.taskTypes.deadline' },
@@ -76,13 +77,21 @@ const taskTypeConfig: Record<string, { icon: React.ElementType; color: string; l
   waiting: { icon: Hourglass, color: 'bg-amber-500/20 text-amber-300', labelKey: 'todo.taskTypes.waiting' },
 };
 
-export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, onEdit }: TodoGamifiedTaskCardProps) {
+const SWIPE_THRESHOLD = 100;
+
+export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, onEdit, onFocus, variant = 'expanded', isDragging }: TodoGamifiedTaskCardProps) {
   const { t } = useTranslation();
   const sound = useSound();
+  const isMobile = useIsMobile();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
+  const [swiped, setSwiped] = useState<'left' | 'right' | null>(null);
   const { trigger, ParticleEffects } = useParticleEffect();
   
+  const x = useMotionValue(0);
+  const bgRight = useTransform(x, [0, SWIPE_THRESHOLD], ['rgba(16,185,129,0)', 'rgba(16,185,129,0.3)']);
+  const bgLeft = useTransform(x, [-SWIPE_THRESHOLD, 0], ['rgba(239,68,68,0.3)', 'rgba(239,68,68,0)']);
+
   const deadlineDate = task.deadline ? new Date(task.deadline) : null;
   const isOverdue = deadlineDate && isPast(deadlineDate) && !isToday(deadlineDate);
   
@@ -109,54 +118,152 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
 
   const handleComplete = useCallback((e: React.MouseEvent) => {
     setIsCompleting(true);
-
-    // Reward cue (separate from UI click)
     sound.play('success', 'reward');
-    
-    // Trigger particle effect based on priority
     const particleCount = task.priority === 'high' ? 30 : task.priority === 'medium' ? 20 : 15;
     trigger(e, config.accent, particleCount);
-    
-    // Delay the actual completion to show animation
-    setTimeout(() => {
-      onComplete();
-    }, 400);
+    setTimeout(() => onComplete(), 400);
   }, [onComplete, trigger, config.accent, sound, task.priority]);
 
+  const handleSwipeEnd = useCallback((_: any, info: PanInfo) => {
+    if (info.offset.x > SWIPE_THRESHOLD) {
+      setSwiped('right');
+      setTimeout(() => onComplete(), 300);
+    } else if (info.offset.x < -SWIPE_THRESHOLD) {
+      setSwiped('left');
+      setTimeout(() => onDelete(), 300);
+    }
+  }, [onComplete, onDelete]);
+
+  // ====== COMPACT VIEW ======
+  if (variant === 'compact') {
+    return (
+      <>
+        <ParticleEffects />
+        <AnimatePresence>
+          {!isCompleting && !swiped && (
+            <motion.div
+              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, x: swiped === 'right' ? 100 : swiped === 'left' ? -100 : 0 }}
+              drag={isMobile ? 'x' : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.3}
+              onDragEnd={handleSwipeEnd}
+              style={{ x }}
+              className={cn(
+                "group relative flex items-center gap-3 h-10 px-3 rounded-lg border transition-all",
+                "bg-card/40 backdrop-blur-sm hover:bg-card/60",
+                config.border,
+                isDragging && "opacity-50",
+                isOverdue && "border-red-500/40"
+              )}
+            >
+              {/* Priority dot */}
+              <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: config.accent }} />
+              
+              {/* Complete checkbox */}
+              <motion.button
+                onClick={handleComplete}
+                whileTap={{ scale: 0.9 }}
+                className="flex-shrink-0 w-5 h-5 rounded border border-primary/30 flex items-center justify-center hover:border-primary hover:bg-primary/10 transition-colors"
+              >
+                <Check className="w-3 h-3 text-transparent group-hover:text-primary transition-colors" />
+              </motion.button>
+
+              {/* Title */}
+              <span className="flex-1 text-sm text-foreground truncate font-mono">{task.name}</span>
+
+              {/* Mini badges */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {task.is_urgent && (
+                  <AlertTriangle className="w-3 h-3 text-red-400" />
+                )}
+                <span className={cn("text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border", config.badge)}>
+                  {task.priority[0].toUpperCase()}
+                </span>
+                {deadlineDate && (
+                  <span className={cn(
+                    "text-[10px] font-mono",
+                    isOverdue ? "text-red-400" : "text-muted-foreground"
+                  )}>
+                    {formatDeadline()}
+                  </span>
+                )}
+              </div>
+
+              {/* Hover actions */}
+              <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                {onFocus && (
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={onFocus}>
+                    <Crosshair className="w-3 h-3" />
+                  </Button>
+                )}
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={onEdit}>
+                  <Pencil className="w-3 h-3" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-red-400" onClick={() => setShowDeleteConfirm(true)}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <AlertDialogContent className="bg-card/95 backdrop-blur-xl border-border">
+            <AlertDialogHeader>
+              <AlertDialogTitle>{t('todo.taskCard.deleteTitle')}</AlertDialogTitle>
+              <AlertDialogDescription>{t('todo.taskCard.deleteDesc')}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="bg-muted text-foreground border-border">{t('common.cancel')}</AlertDialogCancel>
+              <AlertDialogAction onClick={onDelete} className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30">{t('todo.taskCard.delete')}</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
+    );
+  }
+
+  // ====== EXPANDED VIEW ======
   return (
     <>
       <ParticleEffects />
       <AnimatePresence>
-        {!isCompleting && (
+        {!isCompleting && !swiped && (
           <motion.div
             layout
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8, y: -10 }}
+            exit={{ opacity: 0, scale: 0.8, y: -10, x: swiped === 'right' ? 100 : swiped === 'left' ? -100 : 0 }}
             transition={{ duration: 0.3 }}
+            drag={isMobile ? 'x' : false}
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.3}
+            onDragEnd={handleSwipeEnd}
+            style={{ x }}
             className={cn(
               'group relative rounded-2xl border backdrop-blur-sm overflow-hidden transition-all duration-300',
               'hover:shadow-xl hover:scale-[1.01]',
               config.border,
+              isDragging && 'opacity-50',
               isCompleting && 'scale-95 opacity-50'
             )}
           >
+            {/* Swipe backgrounds */}
+            {isMobile && (
+              <>
+                <motion.div className="absolute inset-0 rounded-2xl" style={{ backgroundColor: bgRight }} />
+                <motion.div className="absolute inset-0 rounded-2xl" style={{ backgroundColor: bgLeft }} />
+              </>
+            )}
+
             {/* Gradient background */}
             <div className={cn('absolute inset-0 bg-gradient-to-br opacity-80', config.bg)} />
+            <div className={cn('absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-2xl', config.glow)} />
+            <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: config.accent }} />
             
-            {/* Hover glow effect */}
-            <div className={cn(
-              'absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-2xl',
-              config.glow
-            )} />
-            
-            {/* Priority indicator line */}
-            <div 
-              className="absolute left-0 top-0 bottom-0 w-1"
-              style={{ backgroundColor: config.accent }}
-            />
-            
-            {/* Urgent indicator */}
             {task.is_urgent && (
               <motion.div 
                 className="absolute top-0 right-0 w-0 h-0 border-t-[40px] border-l-[40px] border-t-red-500/80 border-l-transparent"
@@ -167,33 +274,27 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
             
             <div className="relative p-4 pl-5">
               <div className="flex items-start gap-4">
-                {/* Complete button - Game style */}
+                {/* Complete button */}
                 <motion.button
                   onClick={handleComplete}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   className={cn(
-                    'flex-shrink-0 w-10 h-10 rounded-xl border-2 transition-all duration-200',
-                    'flex items-center justify-center',
-                    'hover:shadow-lg',
+                    'flex-shrink-0 w-10 h-10 rounded-xl border-2 transition-all duration-200 flex items-center justify-center hover:shadow-lg',
                     task.is_urgent 
                       ? 'border-red-400/50 hover:border-red-400 hover:bg-red-500/20 hover:shadow-red-500/20' 
                       : 'border-primary/40 hover:border-primary hover:bg-primary/20 hover:shadow-primary/20'
                   )}
-                  style={{
-                    boxShadow: `0 0 0 0 ${config.accent}40`,
-                  }}
                 >
                   <Check className="w-5 h-5 text-transparent group-hover:text-primary transition-colors" />
                 </motion.button>
 
-                {/* Task content */}
+                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1">
                       <p className="text-foreground font-semibold text-base leading-snug">{task.name}</p>
                       
-                      {/* Location for rendezvous */}
                       {task.location && taskType === 'rendezvous' && (
                         <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                           <MapPin className="w-3 h-3" />
@@ -202,24 +303,20 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                       )}
                       
                       <div className="flex items-center gap-2 mt-3 flex-wrap">
-                        {/* Category badge */}
                         <span className={cn('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium bg-card/50 border border-border/50', categoryColor)}>
                           <CategoryIcon className="w-3 h-3" />
                           {t(`todo.categories.${category}`)}
                         </span>
                         
-                        {/* Task type badge */}
                         <span className={cn('flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border border-transparent', typeConfig.color)}>
                           <TypeIcon className="w-3 h-3" />
                           {t(typeConfig.labelKey)}
                         </span>
                         
-                        {/* Priority badge */}
                         <span className={cn('px-2 py-1 rounded-lg text-xs font-medium border', config.badge)}>
                           {task.priority.toUpperCase()}
                         </span>
                         
-                        {/* Reminder active badge - for waiting type */}
                         {task.reminder_enabled && taskType === 'waiting' && (
                           <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-xs font-medium border border-amber-500/30">
                             <Bell className="w-3 h-3" />
@@ -227,7 +324,6 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                           </span>
                         )}
                         
-                        {/* Urgent badge */}
                         {task.is_urgent && (
                           <motion.span 
                             animate={{ scale: [1, 1.05, 1] }}
@@ -239,13 +335,10 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                           </motion.span>
                         )}
                         
-                        {/* Deadline */}
                         {deadlineDate && (
                           <span className={cn(
                             'flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border',
-                            isOverdue 
-                              ? 'bg-red-500/20 text-red-300 border-red-500/30' 
-                              : 'bg-muted/30 text-muted-foreground border-border/50'
+                            isOverdue ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-muted/30 text-muted-foreground border-border/50'
                           )}>
                             <Clock className="w-3 h-3" />
                             {formatDeadline()}
@@ -253,59 +346,38 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
                           </span>
                         )}
                         
-                        {/* Postpone count */}
                         {task.postpone_count > 0 && (
-                          <span className="text-xs text-muted-foreground/70">
-                            ↻ {task.postpone_count}
-                          </span>
+                          <span className="text-xs text-muted-foreground/70">↻ {task.postpone_count}</span>
                         )}
                       </div>
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {/* Edit button */}
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10"
-                        onClick={onEdit}
-                      >
+                      {onFocus && (
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={onFocus}>
+                          <Crosshair className="w-4 h-4" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10" onClick={onEdit}>
                         <Pencil className="w-4 h-4" />
                       </Button>
-
-                      {/* Postpone dropdown */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card/50"
-                          >
+                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-card/50">
                             <Clock className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="bg-card/95 backdrop-blur-xl border-border">
                           <div className="px-2 py-1.5 text-xs text-muted-foreground">{t('todo.taskCard.postponeTo')}</div>
                           {postponeOptions.map((option) => (
-                            <DropdownMenuItem
-                              key={option.label}
-                              onClick={() => onPostpone(option.date.toISOString())}
-                              className="cursor-pointer"
-                            >
+                            <DropdownMenuItem key={option.label} onClick={() => onPostpone(option.date.toISOString())} className="cursor-pointer">
                               {option.label}
                             </DropdownMenuItem>
                           ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
-
-                      {/* Delete button */}
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-9 w-9 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10"
-                        onClick={() => setShowDeleteConfirm(true)}
-                      >
+                      <Button variant="ghost" size="icon" className="h-9 w-9 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10" onClick={() => setShowDeleteConfirm(true)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -317,23 +389,15 @@ export function TodoGamifiedTaskCard({ task, onComplete, onPostpone, onDelete, o
         )}
       </AnimatePresence>
 
-      {/* Delete confirmation */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent className="bg-card/95 backdrop-blur-xl border-border">
           <AlertDialogHeader>
             <AlertDialogTitle>{t('todo.taskCard.deleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('todo.taskCard.deleteDesc')}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{t('todo.taskCard.deleteDesc')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel className="bg-muted text-foreground border-border">{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={onDelete}
-              className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30"
-            >
-              {t('todo.taskCard.delete')}
-            </AlertDialogAction>
+            <AlertDialogAction onClick={onDelete} className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30">{t('todo.taskCard.delete')}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

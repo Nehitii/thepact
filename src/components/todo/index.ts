@@ -12,3 +12,7 @@ export { TodoGamifiedCreateForm } from "./TodoGamifiedCreateForm";
 export { TodoGamifiedHeader } from "./TodoGamifiedHeader";
 export { TodoGamifiedTaskCard } from "./TodoGamifiedTaskCard";
 export { TodoHistoryPanel } from "./TodoHistoryPanel";
+export { QuickTaskInput } from "./QuickTaskInput";
+export { MentalLoadIndicator } from "./MentalLoadIndicator";
+export { FocusOverlay } from "./FocusOverlay";
+export { BootSequence } from "./BootSequence";
