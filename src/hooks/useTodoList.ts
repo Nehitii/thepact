@@ -409,6 +409,43 @@ export function useTodoList() {
     },
   });
 
+  // Reorder tasks mutation (for drag & drop)
+  const reorderTasks = useMutation({
+    mutationFn: async (orderedIds: string[]) => {
+      if (!userId) throw new Error('Not authenticated');
+      // Update each task's position
+      const updates = orderedIds.map((id, index) =>
+        supabase
+          .from('todo_tasks')
+          .update({ position: index })
+          .eq('id', id)
+      );
+      await Promise.all(updates);
+    },
+    onMutate: async (orderedIds: string[]) => {
+      // Optimistic update
+      await queryClient.cancelQueries({ queryKey: ['todo-tasks', userId] });
+      const previous = queryClient.getQueryData<TodoTask[]>(['todo-tasks', userId]);
+      if (previous) {
+        const ordered = orderedIds.map((id, i) => {
+          const task = previous.find(t => t.id === id);
+          return task ? { ...task, position: i } : null;
+        }).filter(Boolean) as TodoTask[];
+        queryClient.setQueryData(['todo-tasks', userId], ordered);
+      }
+      return { previous };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['todo-tasks', userId], context.previous);
+      }
+      toast.error('Failed to reorder tasks');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
+    },
+  });
+
   // Generate insights based on history
   const insights = generateInsights(history, tasks);
 
@@ -428,6 +465,7 @@ export function useTodoList() {
     deleteTask,
     updateTask,
     clearHistory,
+    reorderTasks,
   };
 }
 
