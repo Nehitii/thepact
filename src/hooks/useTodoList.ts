@@ -23,6 +23,7 @@ export interface TodoTask {
   updated_at: string;
   category: string | null;
   task_type: string | null;
+  position: number;
   // New fields
   reminder_enabled: boolean;
   reminder_frequency: ReminderFrequency | null;
