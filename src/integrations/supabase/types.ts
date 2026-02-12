@@ -2022,6 +2022,7 @@ export type Database = {
           is_urgent: boolean
           location: string | null
           name: string
+          position: number | null
           postpone_count: number
           priority: Database["public"]["Enums"]["todo_priority"]
           reminder_enabled: boolean | null
@@ -2042,6 +2043,7 @@ export type Database = {
           is_urgent?: boolean
           location?: string | null
           name: string
+          position?: number | null
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
           reminder_enabled?: boolean | null
@@ -2062,6 +2064,7 @@ export type Database = {
           is_urgent?: boolean
           location?: string | null
           name?: string
+          position?: number | null
           postpone_count?: number
           priority?: Database["public"]["Enums"]["todo_priority"]
           reminder_enabled?: boolean | null
