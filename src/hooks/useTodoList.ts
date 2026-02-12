@@ -89,9 +89,7 @@ export function useTodoList() {
         .select('*')
         .eq('user_id', userId)
         .eq('status', 'active')
-        .order('is_urgent', { ascending: false })
-        .order('priority', { ascending: false })
-        .order('deadline', { ascending: true, nullsFirst: false })
+        .order('position', { ascending: true })
         .order('created_at', { ascending: false });
       
       if (error) throw error;
