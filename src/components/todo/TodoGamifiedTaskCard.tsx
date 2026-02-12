@@ -271,7 +271,6 @@ export function TodoGamifiedTaskCard({
           )}
         </AnimatePresence>
 
-        {/* Modals */}
         <DeleteDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm} onConfirm={onDelete} />
       </>
     );
@@ -293,7 +292,8 @@ export function TodoGamifiedTaskCard({
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.3}
             onDragEnd={handleSwipeEnd}
-            style={{ x }}
+            // Correction de l'erreur TS : fusion des props style
+            style={{ x, borderLeftColor: config.accent }}
             className={cn(
               "group relative mb-3 rounded-r-xl border-l-[3px] overflow-hidden transition-all duration-300",
               "bg-gradient-to-r backdrop-blur-md",
@@ -302,10 +302,9 @@ export function TodoGamifiedTaskCard({
               isDragging && "opacity-50 grayscale",
               isCompleting && "scale-95 opacity-50 brightness-150",
             )}
-            style={{ borderLeftColor: config.accent }}
           >
             {/* Tech Decoration Lines */}
-            <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-50 transition-opacity">
+            <div className="absolute top-0 right-0 p-2 opacity-20 group-hover:opacity-50 transition-opacity pointer-events-none">
               <div className="flex gap-1">
                 <div className="w-1 h-1 bg-current rounded-full" />
                 <div className="w-1 h-1 bg-current rounded-full" />
