@@ -1,6 +1,9 @@
-import { useState, useMemo } from 'react';
-import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Pencil } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Pencil, List, LayoutGrid } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useTodoList, TodoTask } from '@/hooks/useTodoList';
 import { TodoGamifiedHeader } from '@/components/todo/TodoGamifiedHeader';
 import { TodoGamifiedTaskCard } from '@/components/todo/TodoGamifiedTaskCard';
@@ -10,6 +13,10 @@ import { TodoHistoryPanel } from '@/components/todo/TodoHistoryPanel';
 import { TodoCalendarView } from '@/components/todo/TodoCalendarView';
 import { TodoFilterSort, SortField, SortDirection } from '@/components/todo/TodoFilterSort';
 import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
+import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
+import { MentalLoadIndicator } from '@/components/todo/MentalLoadIndicator';
+import { FocusOverlay } from '@/components/todo/FocusOverlay';
+import { BootSequence } from '@/components/todo/BootSequence';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,37 +25,71 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { cn } from '@/lib/utils';
 
 type ActivePanel = 'none' | 'create' | 'stats' | 'history' | 'calendar' | 'edit';
+type ViewMode = 'expanded' | 'compact';
+
+// Sortable wrapper component
+function SortableTaskCard({ task, viewMode, onComplete, onPostpone, onDelete, onEdit, onFocus }: {
+  task: TodoTask;
+  viewMode: ViewMode;
+  onComplete: () => void;
+  onPostpone: (d: string) => void;
+  onDelete: () => void;
+  onEdit: () => void;
+  onFocus: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <TodoGamifiedTaskCard
+        task={task}
+        variant={viewMode}
+        onComplete={onComplete}
+        onPostpone={onPostpone}
+        onDelete={onDelete}
+        onEdit={onEdit}
+        onFocus={onFocus}
+        isDragging={isDragging}
+      />
+    </div>
+  );
+}
 
 export default function TodoList() {
   const { t } = useTranslation();
+  const [booted, setBooted] = useState(false);
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
   const [selectedTaskType, setSelectedTaskType] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [editingTask, setEditingTask] = useState<TodoTask | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('expanded');
+  const [focusTask, setFocusTask] = useState<TodoTask | null>(null);
   
   const { 
-    tasks, 
-    stats, 
-    history,
-    insights,
-    isLoading, 
-    activeTaskCount, 
-    maxTasks,
-    canAddTask,
-    createTask,
-    completeTask,
-    postponeTask,
-    deleteTask,
-    updateTask,
+    tasks, stats, history, insights, isLoading, activeTaskCount, maxTasks, canAddTask,
+    createTask, completeTask, postponeTask, deleteTask, updateTask, reorderTasks,
   } = useTodoList();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+  );
+
   const handleCreateTask = (input: Parameters<typeof createTask.mutate>[0]) => {
-    createTask.mutate(input, {
-      onSuccess: () => setActivePanel('none'),
-    });
+    createTask.mutate(input, { onSuccess: () => setActivePanel('none') });
+  };
+
+  const handleQuickCreate = (input: Parameters<typeof createTask.mutate>[0]) => {
+    createTask.mutate(input);
   };
 
   const handleEditTask = (task: TodoTask) => {
@@ -58,10 +99,7 @@ export default function TodoList() {
 
   const handleUpdateTask = (input: UpdateTaskInput) => {
     updateTask.mutate(input, {
-      onSuccess: () => {
-        setActivePanel('none');
-        setEditingTask(null);
-      },
+      onSuccess: () => { setActivePanel('none'); setEditingTask(null); },
     });
   };
 
@@ -70,6 +108,21 @@ export default function TodoList() {
     setSortDirection(direction);
   };
 
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = filteredAndSortedTasks.findIndex(t => t.id === active.id);
+    const newIndex = filteredAndSortedTasks.findIndex(t => t.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = [...filteredAndSortedTasks];
+    const [moved] = newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, moved);
+
+    reorderTasks.mutate(newOrder.map(t => t.id));
+  }, [reorderTasks]);
+
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
     let result = tasks.filter(task => {
@@ -77,16 +130,13 @@ export default function TodoList() {
       return true;
     });
 
-    // Sort tasks
     result.sort((a, b) => {
       let comparison = 0;
-      
       switch (sortField) {
         case 'created_at':
           comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           break;
         case 'deadline':
-          // Tasks without deadline go last
           if (!a.deadline && !b.deadline) comparison = 0;
           else if (!a.deadline) comparison = 1;
           else if (!b.deadline) comparison = -1;
@@ -106,278 +156,240 @@ export default function TodoList() {
           comparison = (a.is_urgent ? 1 : 0) - (b.is_urgent ? 1 : 0);
           break;
       }
-      
       return sortDirection === 'asc' ? comparison : -comparison;
     });
 
     return result;
   }, [tasks, selectedTaskType, sortField, sortDirection]);
 
+  // Boot sequence on first load
+  if (!booted) {
+    return <BootSequence onComplete={() => setBooted(true)} />;
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex flex-col items-center gap-4"
-        >
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground">{t('todo.loadingQuests')}</p>
+          <p className="text-muted-foreground font-mono text-sm">{t('todo.loadingQuests')}</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden overflow-y-auto">
-      {/* Ambient background with game-like effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
-        {/* Grid overlay */}
-        <div 
-          className="absolute inset-0 opacity-[0.02]"
-          style={{
-            backgroundImage: `linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px),
-                              linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px',
+    <>
+      {/* Focus Overlay */}
+      {focusTask && (
+        <FocusOverlay
+          task={focusTask}
+          onComplete={() => {
+            completeTask.mutate(focusTask.id);
+            setFocusTask(null);
           }}
+          onExit={() => setFocusTask(null)}
         />
-      </div>
+      )}
 
-      <div className="relative z-10 p-6 max-w-5xl mx-auto space-y-6">
-        {/* Gamified Header */}
-        <TodoGamifiedHeader
-          stats={stats}
-          activeTaskCount={activeTaskCount}
-          maxTasks={maxTasks}
-        />
+      <div className="min-h-screen bg-background relative overflow-x-hidden overflow-y-auto">
+        {/* Ambient background */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
+          <div className="absolute inset-0 opacity-[0.02]" style={{
+            backgroundImage: `linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px',
+          }} />
+        </div>
 
-        {/* Action bar */}
-        {/* Contextual stats based on selected filter */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center justify-between flex-wrap gap-3"
-        >
-          <span className="text-sm text-muted-foreground">
-            {selectedTaskType 
-              ? t('todo.filteredQuestsCount', { 
-                  count: filteredAndSortedTasks.length, 
-                  type: t(`todo.filters.types.${selectedTaskType}`)
-                })
-              : t('todo.activeQuestsCount', { count: activeTaskCount, max: maxTasks })
-            }
-          </span>
-          
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActivePanel('calendar')}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <CalendarIcon className="w-4 h-4 mr-1.5" />
-              {t('todo.calendar')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActivePanel('history')}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <History className="w-4 h-4 mr-1.5" />
-              {t('todo.history')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setActivePanel('stats')}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <BarChart3 className="w-4 h-4 mr-1.5" />
-              {t('todo.stats')}
-            </Button>
-            <Button
-              onClick={() => setActivePanel('create')}
-              disabled={!canAddTask}
-              className="bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
-            >
-              <Plus className="w-4 h-4 mr-1.5" />
-              {t('todo.newQuest')}
-            </Button>
+        <div className="relative z-10 p-6 max-w-5xl mx-auto space-y-6">
+          {/* Header + Mental Load */}
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1">
+              <TodoGamifiedHeader stats={stats} activeTaskCount={activeTaskCount} maxTasks={maxTasks} />
+            </div>
+            <MentalLoadIndicator tasks={tasks} />
           </div>
-        </motion.div>
 
-        {/* Filter & Sort Panel - Always visible */}
-        <TodoFilterSort
-          selectedTaskType={selectedTaskType}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onTaskTypeChange={setSelectedTaskType}
-          onSortChange={handleSortChange}
-        />
+          {/* Neural Input (Quick Command Bar) */}
+          <QuickTaskInput
+            onSubmit={handleQuickCreate}
+            isLoading={createTask.isPending}
+            disabled={!canAddTask}
+          />
 
-        {/* Insights */}
-        <AnimatePresence>
-          {insights.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="space-y-2"
-            >
-              {insights.map((insight, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-card/50 to-card/30 border border-border/30 text-sm text-muted-foreground backdrop-blur-sm"
-                >
-                  💡 {insight}
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Task limit warning */}
-        {!canAddTask && (
+          {/* Action bar */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+            className="flex items-center justify-between flex-wrap gap-3"
           >
-            ⚠️ {t('todo.questLogFull')}
-          </motion.div>
-        )}
-
-        {/* Tasks list */}
-        <div className="space-y-3">
-          <AnimatePresence mode="popLayout">
-            {filteredAndSortedTasks.length === 0 ? (
-              <motion.div 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-16"
-              >
-                <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-card/50 to-card/30 border border-border/50 flex items-center justify-center">
-                  <CheckSquare className="w-10 h-10 text-muted-foreground" />
-                </div>
-                <h3 className="text-xl font-light text-foreground mb-2">{t('todo.noActiveQuests')}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{t('todo.noActiveQuestsDesc')}</p>
-                <Button
-                  onClick={() => setActivePanel('create')}
-                  className="bg-gradient-to-r from-primary/20 to-accent/20 hover:from-primary/30 hover:to-accent/30 text-primary border border-primary/30"
+            <span className="text-sm text-muted-foreground font-mono">
+              {selectedTaskType 
+                ? t('todo.filteredQuestsCount', { count: filteredAndSortedTasks.length, type: t(`todo.filters.types.${selectedTaskType}`) })
+                : t('todo.activeQuestsCount', { count: activeTaskCount, max: maxTasks })
+              }
+            </span>
+            
+            <div className="flex items-center gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-0.5 p-0.5 rounded-lg border border-border/50 bg-card/40">
+                <button
+                  onClick={() => setViewMode('expanded')}
+                  className={cn(
+                    "p-1.5 rounded-md transition-colors",
+                    viewMode === 'expanded' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
                 >
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  {t('todo.newQuest')}
-                </Button>
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('compact')}
+                  className={cn(
+                    "p-1.5 rounded-md transition-colors",
+                    viewMode === 'compact' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+              </div>
+
+              <Button variant="ghost" size="sm" onClick={() => setActivePanel('calendar')} className="text-muted-foreground hover:text-foreground">
+                <CalendarIcon className="w-4 h-4 mr-1.5" /> {t('todo.calendar')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setActivePanel('history')} className="text-muted-foreground hover:text-foreground">
+                <History className="w-4 h-4 mr-1.5" /> {t('todo.history')}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setActivePanel('stats')} className="text-muted-foreground hover:text-foreground">
+                <BarChart3 className="w-4 h-4 mr-1.5" /> {t('todo.stats')}
+              </Button>
+              <Button onClick={() => setActivePanel('create')} disabled={!canAddTask}
+                className="bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
+              >
+                <Plus className="w-4 h-4 mr-1.5" /> {t('todo.newQuest')}
+              </Button>
+            </div>
+          </motion.div>
+
+          {/* Filter & Sort */}
+          <TodoFilterSort
+            selectedTaskType={selectedTaskType} sortField={sortField} sortDirection={sortDirection}
+            onTaskTypeChange={setSelectedTaskType} onSortChange={handleSortChange}
+          />
+
+          {/* Insights */}
+          <AnimatePresence>
+            {insights.length > 0 && (
+              <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2">
+                {insights.map((insight, i) => (
+                  <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-card/50 to-card/30 border border-border/30 text-sm text-muted-foreground backdrop-blur-sm font-mono"
+                  >
+                    💡 {insight}
+                  </motion.div>
+                ))}
               </motion.div>
-            ) : (
-              filteredAndSortedTasks.map((task) => (
-                <TodoGamifiedTaskCard
-                  key={task.id}
-                  task={task}
-                  onComplete={() => completeTask.mutate(task.id)}
-                  onPostpone={(newDeadline) => postponeTask.mutate({ taskId: task.id, newDeadline })}
-                  onDelete={() => deleteTask.mutate(task.id)}
-                  onEdit={() => handleEditTask(task)}
-                />
-              ))
             )}
           </AnimatePresence>
-        </div>
-      </div>
 
-      {/* Create Task Dialog */}
-      <Dialog open={activePanel === 'create'} onOpenChange={(open) => !open && setActivePanel('none')}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
-              <Plus className="w-5 h-5 text-primary" />
-              {t('todo.create.title')}
-            </DialogTitle>
-          </DialogHeader>
-          <TodoGamifiedCreateForm
-            onSubmit={handleCreateTask}
-            onCancel={() => setActivePanel('none')}
-            isLoading={createTask.isPending}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Task Dialog */}
-      <Dialog 
-        open={activePanel === 'edit' && editingTask !== null} 
-        onOpenChange={(open) => {
-          if (!open) {
-            setActivePanel('none');
-            setEditingTask(null);
-          }
-        }}
-      >
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
-              <Pencil className="w-5 h-5 text-primary" />
-              {t('todo.editQuest')}
-            </DialogTitle>
-          </DialogHeader>
-          {editingTask && (
-            <TodoEditForm
-              task={editingTask}
-              onSubmit={handleUpdateTask}
-              onCancel={() => {
-                setActivePanel('none');
-                setEditingTask(null);
-              }}
-              isLoading={updateTask.isPending}
-            />
+          {/* Task limit warning */}
+          {!canAddTask && (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              className="px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-sm font-mono"
+            >
+              ⚠️ {t('todo.questLogFull')}
+            </motion.div>
           )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Stats Panel Dialog */}
-      <Dialog open={activePanel === 'stats'} onOpenChange={(open) => !open && setActivePanel('none')}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-primary" />
-              {t('todo.questAnalytics')}
-            </DialogTitle>
-          </DialogHeader>
-          <TodoAdvancedStats />
-        </DialogContent>
-      </Dialog>
+          {/* Tasks list with DnD */}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={filteredAndSortedTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+              <div className={cn("space-y-1", viewMode === 'expanded' && "space-y-3")}>
+                <AnimatePresence mode="popLayout">
+                  {filteredAndSortedTasks.length === 0 ? (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-16">
+                      <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-card/50 to-card/30 border border-border/50 flex items-center justify-center">
+                        <CheckSquare className="w-10 h-10 text-muted-foreground" />
+                      </div>
+                      <h3 className="text-xl font-light text-foreground mb-2">{t('todo.noActiveQuests')}</h3>
+                      <p className="text-sm text-muted-foreground mb-6">{t('todo.noActiveQuestsDesc')}</p>
+                    </motion.div>
+                  ) : (
+                    filteredAndSortedTasks.map((task) => (
+                      <SortableTaskCard
+                        key={task.id}
+                        task={task}
+                        viewMode={viewMode}
+                        onComplete={() => completeTask.mutate(task.id)}
+                        onPostpone={(newDeadline) => postponeTask.mutate({ taskId: task.id, newDeadline })}
+                        onDelete={() => deleteTask.mutate(task.id)}
+                        onEdit={() => handleEditTask(task)}
+                        onFocus={() => setFocusTask(task)}
+                      />
+                    ))
+                  )}
+                </AnimatePresence>
+              </div>
+            </SortableContext>
+          </DndContext>
+        </div>
 
-      {/* History Panel Dialog */}
-      <Dialog open={activePanel === 'history'} onOpenChange={(open) => !open && setActivePanel('none')}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
-              <History className="w-5 h-5 text-primary" />
-              {t('todo.questHistory')}
-            </DialogTitle>
-          </DialogHeader>
-          <TodoHistoryPanel />
-        </DialogContent>
-      </Dialog>
+        {/* Dialogs */}
+        <Dialog open={activePanel === 'create'} onOpenChange={(open) => !open && setActivePanel('none')}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
+                <Plus className="w-5 h-5 text-primary" /> {t('todo.create.title')}
+              </DialogTitle>
+            </DialogHeader>
+            <TodoGamifiedCreateForm onSubmit={handleCreateTask} onCancel={() => setActivePanel('none')} isLoading={createTask.isPending} />
+          </DialogContent>
+        </Dialog>
 
-      {/* Calendar View Dialog */}
-      <Dialog open={activePanel === 'calendar'} onOpenChange={(open) => !open && setActivePanel('none')}>
-        <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-4xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-primary" />
-              {t('todo.questCalendar')}
-            </DialogTitle>
-          </DialogHeader>
-          <TodoCalendarView tasks={tasks} />
-        </DialogContent>
-      </Dialog>
-    </div>
+        <Dialog open={activePanel === 'edit' && editingTask !== null} onOpenChange={(open) => { if (!open) { setActivePanel('none'); setEditingTask(null); } }}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-primary" /> {t('todo.editQuest')}
+              </DialogTitle>
+            </DialogHeader>
+            {editingTask && <TodoEditForm task={editingTask} onSubmit={handleUpdateTask} onCancel={() => { setActivePanel('none'); setEditingTask(null); }} isLoading={updateTask.isPending} />}
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={activePanel === 'stats'} onOpenChange={(open) => !open && setActivePanel('none')}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" /> {t('todo.questAnalytics')}
+              </DialogTitle>
+            </DialogHeader>
+            <TodoAdvancedStats />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={activePanel === 'history'} onOpenChange={(open) => !open && setActivePanel('none')}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-2xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
+                <History className="w-5 h-5 text-primary" /> {t('todo.questHistory')}
+              </DialogTitle>
+            </DialogHeader>
+            <TodoHistoryPanel />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={activePanel === 'calendar'} onOpenChange={(open) => !open && setActivePanel('none')}>
+          <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-primary" /> {t('todo.questCalendar')}
+              </DialogTitle>
+            </DialogHeader>
+            <TodoCalendarView tasks={tasks} />
+          </DialogContent>
+        </Dialog>
+      </div>
+    </>
   );
 }
