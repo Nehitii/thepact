@@ -1,19 +1,17 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Gift, Zap, ShieldCheck, TrendingUp, Star } from "lucide-react";
+import { Sparkles, Gift, Zap, ShieldCheck, TrendingUp, Star, Crown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondPacks, useBondBalance, useSpecialOffers } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";
 import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils"; // Utilitaire classique pour condenser les classes
 
 // Animation Variants
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const itemVariants = {
@@ -34,99 +32,101 @@ export function BondsShop() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="space-y-10 max-w-4xl mx-auto p-4"
+      className="space-y-12 max-w-5xl mx-auto p-6 pb-20"
     >
-      {/* 1. Header & Balance Section */}
-      <section className="relative overflow-hidden rounded-3xl p-8 bg-slate-950 border border-white/10 shadow-2xl">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-purple-500/10" />
+      {/* --- HEADER SECTION --- */}
+      <section className="relative overflow-hidden rounded-[2.5rem] p-1 border border-white/10 shadow-2xl bg-slate-900">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-transparent to-purple-600/20" />
 
-        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center md:text-left">
-            <h1 className="text-3xl font-orbitron font-black tracking-tighter text-white">
-              BOND <span className="text-primary">CENTRAL</span>
+        <div className="relative flex flex-col md:flex-row items-center justify-between gap-8 p-8 md:p-12">
+          <div className="space-y-4 text-center md:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold tracking-[0.2em] uppercase">
+              <Sparkles className="w-3 h-3" /> Galactic Currency
+            </div>
+            <h1 className="text-4xl md:text-6xl font-orbitron font-black tracking-tighter text-white">
+              BOND{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-purple-400">CENTRAL</span>
             </h1>
-            <p className="text-muted-foreground font-rajdhani text-sm uppercase tracking-widest">
-              Upgrade your cosmic experience
+            <p className="text-muted-foreground font-rajdhani text-lg max-w-sm">
+              Fuel your journey with premium credits. Secure, fast, and cosmic.
             </p>
           </div>
 
-          <div className="flex items-center gap-6 px-6 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-            <div className="relative group">
-              <BondIcon size={52} className="relative z-10 transition-transform group-hover:scale-110" />
-              <div className="absolute inset-0 bg-primary/40 blur-2xl rounded-full animate-pulse" />
-            </div>
-            <div>
-              <p className="text-[10px] text-primary/70 font-orbitron uppercase">Credits Available</p>
-              {loadingBalance ? (
-                <Skeleton className="h-8 w-20 bg-white/10" />
-              ) : (
-                <p className="text-4xl font-orbitron font-bold text-white tabular-nums">
-                  {balance?.balance?.toLocaleString() || 0}
-                </p>
-              )}
+          <div className="relative group">
+            {/* Balance Card */}
+            <div className="flex items-center gap-6 px-8 py-6 rounded-3xl bg-black/40 border border-white/10 backdrop-blur-xl transition-all group-hover:border-primary/50">
+              <div className="relative">
+                <BondIcon size={64} className="relative z-10 drop-shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                <div className="absolute inset-0 bg-primary/30 blur-3xl rounded-full animate-pulse" />
+              </div>
+              <div>
+                <p className="text-[10px] text-primary font-orbitron uppercase tracking-widest mb-1">Total Balance</p>
+                {loadingBalance ? (
+                  <Skeleton className="h-10 w-24 bg-white/10" />
+                ) : (
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-5xl font-orbitron font-bold text-white tracking-tighter">
+                      {balance?.balance?.toLocaleString() || 0}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. Promo Code */}
-      <motion.div variants={itemVariants}>
+      {/* --- PROMO CODE --- */}
+      <motion.div variants={itemVariants} className="max-w-md mx-auto w-full">
         <PromoCodeRedemption />
       </motion.div>
 
-      {/* 3. Special Limited Offers */}
+      {/* --- SPECIAL OFFERS (TIMED ANOMALIES) --- */}
       <AnimatePresence>
         {offers.length > 0 && (
-          <motion.section variants={itemVariants} className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="p-2 rounded-lg bg-amber-500/20">
-                  <Star className="w-5 h-5 text-amber-400 fill-amber-400/20" />
-                </div>
-                <h2 className="font-orbitron text-xl text-white tracking-wide">Timed Anomalies</h2>
-              </div>
-              <span className="text-[10px] font-orbitron text-amber-500 animate-pulse">LIMITED TIME</span>
+          <motion.section variants={itemVariants} className="space-y-6">
+            <div className="flex items-center justify-between px-2">
+              <h2 className="flex items-center gap-3 font-orbitron text-2xl text-white">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                </span>
+                Timed Anomalies
+              </h2>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-6">
               {offers.map((offer) => (
                 <div
                   key={offer.id}
-                  className="group relative p-1 rounded-2xl overflow-hidden bg-gradient-to-r from-amber-500/50 to-purple-500/50 hover:from-amber-400 hover:to-purple-400 transition-all duration-500"
+                  className="group relative p-[2px] rounded-3xl overflow-hidden transition-all hover:scale-[1.01]"
                 >
-                  <div className="relative flex flex-col sm:flex-row items-center gap-6 p-6 rounded-[14px] bg-slate-950/90 backdrop-blur-xl">
-                    <div className="relative w-24 h-24 shrink-0">
-                      {offer.image_url ? (
-                        <img
-                          src={offer.image_url}
-                          alt=""
-                          className="w-full h-full rounded-xl object-cover border border-white/10"
-                        />
-                      ) : (
-                        <div className="w-full h-full rounded-xl bg-gradient-to-br from-amber-500/20 to-transparent flex items-center justify-center border border-amber-500/20">
-                          <Sparkles className="w-10 h-10 text-amber-400" />
-                        </div>
-                      )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-purple-500 to-amber-500 animate-shimmer bg-[length:200%_100%]" />
+                  <div className="relative flex flex-col md:flex-row items-center gap-8 p-8 rounded-[22px] bg-slate-950/95 backdrop-blur-2xl">
+                    <div className="relative h-32 w-32 shrink-0">
+                      <div className="absolute inset-0 bg-amber-500/20 blur-2xl rounded-full" />
+                      <img
+                        src={offer.image_url || "/api/placeholder/128/128"}
+                        className="relative z-10 w-full h-full object-contain"
+                        alt=""
+                      />
                     </div>
 
-                    <div className="flex-1 text-center sm:text-left">
-                      <h3 className="font-orbitron text-xl text-white group-hover:text-amber-400 transition-colors">
+                    <div className="flex-1 text-center md:text-left space-y-2">
+                      <h3 className="font-orbitron text-2xl font-bold text-white group-hover:text-amber-400 transition-colors">
                         {offer.name}
                       </h3>
-                      <p className="text-sm text-muted-foreground font-rajdhani line-clamp-2 max-w-md">
-                        {offer.description}
-                      </p>
+                      <p className="text-muted-foreground font-rajdhani text-lg line-clamp-2">{offer.description}</p>
                     </div>
 
-                    <div className="flex flex-col items-center sm:items-end gap-2">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-sm text-muted-foreground line-through opacity-50">
-                          €{offer.original_price_eur}
-                        </span>
-                        <span className="text-3xl font-orbitron font-bold text-amber-400">€{offer.price_eur}</span>
+                    <div className="flex flex-col items-center md:items-end gap-4 min-w-[200px]">
+                      <div className="text-right font-orbitron">
+                        <span className="block text-sm text-white/40 line-through">€{offer.original_price_eur}</span>
+                        <span className="text-4xl font-black text-amber-400 italic">€{offer.price_eur}</span>
                       </div>
-                      <Button className="w-full sm:w-auto px-8 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold uppercase tracking-tighter">
-                        Claim Offer
+                      <Button className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black uppercase italic px-10 py-7 rounded-2xl shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+                        Seize Pack <ChevronRight className="ml-2 w-5 h-5" />
                       </Button>
                     </div>
                   </div>
@@ -137,74 +137,81 @@ export function BondsShop() {
         )}
       </AnimatePresence>
 
-      {/* 4. Standard Bond Packs */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-lg bg-primary/20">
-            <Zap className="w-5 h-5 text-primary fill-primary/20" />
-          </div>
-          <h2 className="font-orbitron text-xl text-white tracking-wide">Standard Supply</h2>
-        </div>
+      {/* --- STANDARD PACKS --- */}
+      <section className="space-y-8">
+        <h2 className="flex items-center gap-3 font-orbitron text-2xl text-white px-2">
+          <Zap className="text-primary fill-primary/20" /> Standard Supply
+        </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {isLoading
             ? Array(6)
                 .fill(0)
-                .map((_, i) => <Skeleton key={i} className="h-[240px] rounded-2xl bg-white/5" />)
+                .map((_, i) => <Skeleton key={i} className="h-80 rounded-3xl bg-white/5" />)
             : packs.map((pack) => {
-                const isBestValue = pack.bonus_percentage >= 30;
+                // Définition d'un pack "Epic" vs "Normal"
+                const isEpic = pack.bonus_percentage >= 30;
+
                 return (
                   <motion.div
                     key={pack.id}
                     variants={itemVariants}
-                    whileHover={{ y: -5 }}
-                    className={`group relative p-6 rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
-                      isBestValue
-                        ? "border-amber-500/50 bg-amber-500/[0.03] shadow-[0_0_30px_-10px_rgba(245,158,11,0.3)]"
-                        : "border-white/5 bg-white/[0.02] hover:border-primary/50"
-                    }`}
+                    whileHover={{ y: -10 }}
+                    className={cn(
+                      "group relative p-8 rounded-[2rem] border transition-all duration-500",
+                      isEpic
+                        ? "bg-gradient-to-b from-amber-500/[0.08] to-transparent border-amber-500/50 shadow-[0_20px_50px_-20px_rgba(245,158,11,0.2)]"
+                        : "bg-white/[0.02] border-white/10 hover:border-primary/40",
+                    )}
                   >
-                    {/* Visual Flourish for Premium Packs */}
-                    {isBestValue && (
-                      <div className="absolute -top-12 -right-12 w-24 h-24 bg-amber-500/20 blur-3xl rounded-full" />
+                    {/* Badge Différencié */}
+                    {pack.bonus_percentage > 0 && (
+                      <div
+                        className={cn(
+                          "absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1.5 rounded-full text-[10px] font-black font-orbitron z-20 shadow-xl",
+                          isEpic ? "bg-amber-500 text-black" : "bg-primary text-white",
+                        )}
+                      >
+                        {isEpic && <Crown className="inline-block w-3 h-3 mr-1 mb-0.5" />}+{pack.bonus_percentage}%
+                        BONUS
+                      </div>
                     )}
 
-                    <div className="relative flex flex-col h-full space-y-6">
-                      <div className="flex justify-between items-start">
-                        <div className={`p-3 rounded-xl ${isBestValue ? "bg-amber-500/20" : "bg-primary/20"}`}>
-                          <BondIcon size={32} />
+                    <div className="relative z-10 flex flex-col h-full">
+                      <div className="flex justify-center mb-6">
+                        <div
+                          className={cn(
+                            "p-5 rounded-3xl transition-transform group-hover:scale-110 duration-500",
+                            isEpic ? "bg-amber-500/20 shadow-[0_0_30px_rgba(245,158,11,0.2)]" : "bg-white/5",
+                          )}
+                        >
+                          <BondIcon size={48} />
                         </div>
-                        {pack.bonus_percentage > 0 && (
-                          <div
-                            className={`px-3 py-1 rounded-full text-[10px] font-black font-orbitron border animate-bounce ${
-                              isBestValue
-                                ? "bg-amber-500/20 border-amber-500 text-amber-400"
-                                : "bg-primary/20 border-primary text-primary"
-                            }`}
-                          >
-                            +{pack.bonus_percentage}% BONUS
-                          </div>
-                        )}
                       </div>
 
-                      <div>
-                        <h3 className="text-3xl font-orbitron font-bold text-white tabular-nums">
+                      <div className="text-center space-y-1 mb-8">
+                        <h3 className="text-4xl font-orbitron font-black text-white tracking-tighter">
                           {pack.bond_amount.toLocaleString()}
                         </h3>
-                        <p className="text-xs font-rajdhani font-semibold text-muted-foreground uppercase tracking-widest group-hover:text-white/80 transition-colors">
+                        <p className="text-xs font-rajdhani font-bold text-muted-foreground uppercase tracking-[0.2em]">
                           {pack.name}
                         </p>
                       </div>
 
                       <Button
-                        className={`w-full mt-auto py-6 font-orbitron font-bold text-lg transition-all ${
-                          isBestValue
-                            ? "bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.4)]"
-                            : "bg-white/10 hover:bg-primary text-white"
-                        }`}
+                        className={cn(
+                          "w-full py-7 rounded-2xl font-orbitron font-black text-xl transition-all",
+                          isEpic
+                            ? "bg-amber-500 text-black hover:bg-amber-400"
+                            : "bg-white/5 hover:bg-primary text-white",
+                        )}
                       >
                         €{pack.price_eur}
                       </Button>
+
+                      <p className="mt-4 text-center text-[10px] text-muted-foreground font-rajdhani uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                        Instant Delivery
+                      </p>
                     </div>
                   </motion.div>
                 );
@@ -212,23 +219,22 @@ export function BondsShop() {
         </div>
       </section>
 
-      {/* 5. Footer Trust Info */}
+      {/* --- TRUST FOOTER --- */}
       <motion.footer
         variants={itemVariants}
-        className="flex flex-wrap items-center justify-center gap-8 pt-8 border-t border-white/5"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 border-t border-white/5"
       >
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
-          <span className="text-xs font-rajdhani uppercase tracking-tight">Secure Encryption</span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Zap className="w-4 h-4 text-primary" />
-          <span className="text-xs font-rajdhani uppercase tracking-tight">Instant Delivery</span>
-        </div>
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <TrendingUp className="w-4 h-4 text-purple-500" />
-          <span className="text-xs font-rajdhani uppercase tracking-tight">Best Market Rate</span>
-        </div>
+        {[
+          { icon: ShieldCheck, color: "text-emerald-500", label: "Secure Protocol", desc: "Military grade encryption" },
+          { icon: Zap, color: "text-primary", label: "Instant Infusion", desc: "Credits delivered in < 1s" },
+          { icon: TrendingUp, color: "text-purple-500", label: "Market Leader", desc: "Best value per credit" },
+        ].map((feature, i) => (
+          <div key={i} className="flex flex-col items-center text-center p-4">
+            <feature.icon className={cn("w-6 h-6 mb-2", feature.color)} />
+            <h4 className="text-white font-orbitron text-xs uppercase tracking-wider">{feature.label}</h4>
+            <p className="text-muted-foreground font-rajdhani text-[10px] uppercase">{feature.desc}</p>
+          </div>
+        ))}
       </motion.footer>
     </motion.div>
   );
