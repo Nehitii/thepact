@@ -22,20 +22,8 @@ interface CyberItemCardProps {
   index?: number;
 }
 
-const rarityConfig: Record<string, {
-  border: string;
-  bg: string;
-  text: string;
-  glow: string;
-  animated: boolean;
-}> = {
-  common: {
-    border: "border-slate-500/30",
-    bg: "bg-slate-500/5",
-    text: "text-slate-400",
-    glow: "",
-    animated: false,
-  },
+const rarityConfig: Record<string, { border: string; bg: string; text: string; glow: string; animated: boolean }> = {
+  common: { border: "border-slate-500/30", bg: "bg-slate-500/5", text: "text-slate-400", glow: "", animated: false },
   rare: {
     border: "border-blue-500/40",
     bg: "bg-blue-500/5",
@@ -87,27 +75,22 @@ export function CyberItemCard({
         config.border,
         config.glow,
         config.animated && "cyber-card--animated",
-        owned && "opacity-80",
-        !isComingSoon && !owned && "hover:scale-[1.02] hover:border-primary/50"
+        owned && "opacity-80 grayscale-[0.3]",
+        !isComingSoon && !owned && "hover:scale-[1.02] hover:border-primary/50",
       )}
     >
-      {/* Scanline overlay on hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-[1]">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--primary) / 0.03) 2px, hsl(var(--primary) / 0.03) 4px)",
-            animation: "scanline-scroll 4s linear infinite",
-          }}
-        />
+      {/* Scanline Effect */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-[1] mix-blend-overlay">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent animate-scan" />
       </div>
 
-      {/* Blueprint grid for modules */}
+      {/* Blueprint Grid for Modules */}
       {itemType === "module" && (
         <div
-          className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          className="absolute inset-0 opacity-[0.05] pointer-events-none"
           style={{
-            backgroundImage: "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
+            backgroundImage:
+              "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
             backgroundSize: "20px 20px",
           }}
         />
@@ -115,73 +98,74 @@ export function CyberItemCard({
 
       {/* Wishlist */}
       {!owned && !isComingSoon && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="absolute top-2 right-2 z-20">
           <WishlistButton itemId={id} itemType={isCosmetic ? "cosmetic" : "module"} size="sm" />
         </div>
       )}
 
       {/* Preview Area */}
-      <div className={cn(
-        "relative flex items-center justify-center p-4",
-        itemType === "module" ? "min-h-[100px]" : "min-h-[120px]"
-      )}>
+      <div
+        className={cn(
+          "relative flex items-center justify-center p-6",
+          itemType === "module" ? "min-h-[120px]" : "min-h-[140px]",
+        )}
+      >
         {preview}
-
-        {/* Owned badge */}
         {owned && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40">
+          <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40">
             <Check className="w-3 h-3 text-emerald-400" />
-            <span className="text-[10px] font-orbitron text-emerald-400 tracking-wider">
-              OWNED
-            </span>
+            <span className="text-[10px] font-orbitron text-emerald-400 tracking-wider">OWNED</span>
           </div>
         )}
-
-        {/* Coming Soon */}
         {isComingSoon && (
-          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center z-10">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-muted/50 border border-muted-foreground/30">
               <Lock className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs font-orbitron text-muted-foreground tracking-wider">SOON</span>
+              <span className="text-xs font-orbitron text-muted-foreground tracking-wider">LOCKED</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Info */}
-      <div className="relative z-[2] px-4 pb-4 space-y-3 border-t border-primary/10 pt-3">
+      {/* Footer Info */}
+      <div className="relative z-[2] px-4 pb-4 space-y-3 border-t border-primary/10 pt-3 bg-card/30">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-orbitron text-sm text-foreground font-medium tracking-wide truncate flex-1">
-            {name}
-          </h3>
-          <span className={cn("text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border", config.bg, config.text, config.border)}>
+          <h3 className="font-orbitron text-sm text-foreground font-medium tracking-wide truncate flex-1">{name}</h3>
+          <span
+            className={cn(
+              "text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full border",
+              config.bg,
+              config.text,
+              config.border,
+            )}
+          >
             {rarity}
           </span>
         </div>
 
-        {/* Price + Actions */}
         <div className="flex items-center justify-between">
           {owned ? (
             <span className="text-xs text-emerald-400 font-rajdhani font-medium flex items-center gap-1">
-              <Check className="w-3 h-3" /> Unlocked
+              <Check className="w-3 h-3" /> Acquired
             </span>
           ) : isComingSoon ? (
-            <span className="text-xs text-muted-foreground font-rajdhani">TBA</span>
+            <span className="text-xs text-muted-foreground font-rajdhani">Coming Soon</span>
           ) : (
             <div className="flex items-center gap-1.5 font-orbitron text-sm text-primary">
-              <BondIcon size={16} />
-              {price.toLocaleString()}
+              <BondIcon size={16} /> {price.toLocaleString()}
             </div>
           )}
 
           {!owned && !isComingSoon && (
-            <div className="flex items-center gap-1.5">
-              {/* Preview button for cosmetics */}
+            <div className="flex items-center gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
               {isCosmetic && onPreview && (
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={(e) => { e.stopPropagation(); onPreview(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPreview();
+                  }}
                   className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
                 >
                   <Eye className="w-4 h-4" />
@@ -192,7 +176,7 @@ export function CyberItemCard({
                 variant="outline"
                 disabled={!canAfford}
                 onClick={onPurchase}
-                className="text-xs border-primary/30 hover:bg-primary/10 font-rajdhani"
+                className="h-8 text-xs border-primary/30 hover:bg-primary/10 font-rajdhani"
               >
                 {canAfford ? "BUY" : <Lock className="w-3 h-3" />}
               </Button>
