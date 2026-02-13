@@ -1900,3 +1900,45 @@ All colors MUST be HSL.
   opacity: 1;
   animation: scan-line 2s linear infinite;
 }
+
+/* Scanline scroll for CyberItemCard */
+@keyframes scanline-scroll {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+/* Animated glow border for Epic/Legendary cyber cards */
+.cyber-card--animated {
+  position: relative;
+}
+
+.cyber-card--animated::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from var(--cyber-glow-angle, 0deg),
+    transparent 40%,
+    hsl(var(--primary) / 0.5) 50%,
+    transparent 60%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: cyber-glow-rotate 4s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes cyber-glow-rotate {
+  0% { --cyber-glow-angle: 0deg; }
+  100% { --cyber-glow-angle: 360deg; }
+}
+
+@property --cyber-glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}

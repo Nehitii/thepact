@@ -1,23 +1,25 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image, Frame, Crown, Check, Lock, Type } from "lucide-react";
+import { Image, Frame, Crown } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  useShopFrames, 
-  useShopBanners, 
+import {
+  useShopFrames,
+  useShopBanners,
   useShopTitles,
-  useUserCosmetics, 
-  usePurchaseCosmetic, 
-  useBondBalance 
+  useUserCosmetics,
+  useBondBalance,
+  CosmeticFrame,
+  CosmeticBanner,
+  CosmeticTitle,
 } from "@/hooks/useShop";
-import { Button } from "@/components/ui/button";
 import { FramePreview } from "@/components/ui/avatar-frame";
-import { BondIcon } from "@/components/ui/bond-icon";
 import { ShopFilters, ShopFilterState, applyShopFilters } from "./ShopFilters";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { ShopLoadingState } from "./ShopLoadingState";
-import { WishlistButton } from "./WishlistButton";
 import { UnlockAnimation } from "./UnlockAnimation";
+import { CyberItemCard } from "./CyberItemCard";
+import { FittingRoom } from "./FittingRoom";
+import { useShopTransaction } from "@/hooks/useShopTransaction";
 
 type CosmeticCategory = "frames" | "banners" | "titles";
 
@@ -27,54 +29,72 @@ const categories = [
   { id: "titles" as const, label: "Titles", icon: Crown },
 ];
 
-const rarityColors: Record<string, { border: string; bg: string; text: string; glow: string }> = {
-  common: { border: "border-slate-400/50", bg: "bg-slate-500/10", text: "text-slate-400", glow: "" },
-  rare: { border: "border-blue-400/50", bg: "bg-blue-500/10", text: "text-blue-400", glow: "shadow-[0_0_15px_rgba(59,130,246,0.2)]" },
-  epic: { border: "border-purple-400/50", bg: "bg-purple-500/10", text: "text-purple-400", glow: "shadow-[0_0_15px_rgba(168,85,247,0.2)]" },
-  legendary: { border: "border-amber-400/50", bg: "bg-amber-500/10", text: "text-amber-400", glow: "shadow-[0_0_20px_rgba(245,158,11,0.3)]" },
-};
-
 export function CosmeticShop() {
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState<CosmeticCategory>("frames");
   const [purchaseItem, setPurchaseItem] = useState<PurchaseItem | null>(null);
   const [showUnlock, setShowUnlock] = useState(false);
-  const [unlockedItem, setUnlockedItem] = useState<{ name: string; rarity: string } | null>(null);
   const [filters, setFilters] = useState<ShopFilterState>({
     search: "",
     sort: "price-asc",
     rarity: "all",
     hideOwned: false,
   });
-  
+
+  // Fitting Room state
+  const [fittingItem, setFittingItem] = useState<
+    | { type: "frame"; data: CosmeticFrame }
+    | { type: "banner"; data: CosmeticBanner }
+    | { type: "title"; data: CosmeticTitle }
+    | null
+  >(null);
+
   const { data: frames = [], isLoading: framesLoading } = useShopFrames();
   const { data: banners = [], isLoading: bannersLoading } = useShopBanners();
   const { data: titles = [], isLoading: titlesLoading } = useShopTitles();
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
   const { data: balance } = useBondBalance(user?.id);
-  const purchaseCosmetic = usePurchaseCosmetic();
 
-  const isLoading = activeCategory === "frames" ? framesLoading : 
-                    activeCategory === "banners" ? bannersLoading : titlesLoading;
+  const transaction = useShopTransaction();
+
+  const isLoading = activeCategory === "frames" ? framesLoading :
+    activeCategory === "banners" ? bannersLoading : titlesLoading;
 
   const handlePurchaseClick = (item: PurchaseItem) => {
     setPurchaseItem(item);
   };
 
-  const handleConfirmPurchase = () => {
-    if (!user?.id || !purchaseItem) return;
-    purchaseCosmetic.mutate({
-      userId: user.id,
-      cosmeticId: purchaseItem.id,
-      cosmeticType: purchaseItem.type as "frame" | "banner" | "title",
+  const handleConfirmPurchase = async () => {
+    if (!purchaseItem) return;
+    const success = await transaction.initiatePurchase({
+      itemId: purchaseItem.id,
+      itemName: purchaseItem.name,
+      itemType: purchaseItem.type as "frame" | "banner" | "title",
       price: purchaseItem.price,
-    }, {
-      onSuccess: () => {
-        setUnlockedItem({ name: purchaseItem.name, rarity: purchaseItem.rarity || "common" });
-        setShowUnlock(true);
-        setPurchaseItem(null);
-      },
+      rarity: purchaseItem.rarity,
     });
+    if (success) {
+      setShowUnlock(true);
+      setPurchaseItem(null);
+    }
+  };
+
+  const handleFittingPurchase = async () => {
+    if (!fittingItem) return;
+    const itemName = fittingItem.type === "title"
+      ? (fittingItem.data as CosmeticTitle).title_text
+      : fittingItem.data.name;
+    const success = await transaction.initiatePurchase({
+      itemId: fittingItem.data.id,
+      itemName,
+      itemType: fittingItem.type,
+      price: fittingItem.data.price,
+      rarity: fittingItem.data.rarity,
+    });
+    if (success) {
+      setFittingItem(null);
+      setShowUnlock(true);
+    }
   };
 
   const isOwned = (id: string, type: "frame" | "banner" | "title") => {
@@ -84,30 +104,27 @@ export function CosmeticShop() {
     return ownedCosmetics.titles.includes(id);
   };
 
-  // Apply filters to current category items
-  const filteredFrames = useMemo(() => 
-    applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame")), 
+  const filteredFrames = useMemo(() =>
+    applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame")),
     [frames, filters, ownedCosmetics]
   );
-  
-  const filteredBanners = useMemo(() => 
-    applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner")), 
+  const filteredBanners = useMemo(() =>
+    applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner")),
     [banners, filters, ownedCosmetics]
   );
-  
-  const filteredTitles = useMemo(() => 
+  const filteredTitles = useMemo(() =>
     applyShopFilters(
-      titles.map(t => ({ ...t, name: t.title_text })), 
-      filters, 
+      titles.map(t => ({ ...t, name: t.title_text })),
+      filters,
       (t) => isOwned(t.id, "title")
-    ), 
+    ),
     [titles, filters, ownedCosmetics]
   );
 
-  const totalItems = activeCategory === "frames" ? frames.length : 
-                     activeCategory === "banners" ? banners.length : titles.length;
-  const visibleItems = activeCategory === "frames" ? filteredFrames.length : 
-                       activeCategory === "banners" ? filteredBanners.length : filteredTitles.length;
+  const totalItems = activeCategory === "frames" ? frames.length :
+    activeCategory === "banners" ? banners.length : titles.length;
+  const visibleItems = activeCategory === "frames" ? filteredFrames.length :
+    activeCategory === "banners" ? filteredBanners.length : filteredTitles.length;
 
   return (
     <div className="flex gap-6 h-full">
@@ -119,18 +136,16 @@ export function CosmeticShop() {
         {categories.map((cat) => {
           const isActive = activeCategory === cat.id;
           const Icon = cat.icon;
-          const count = cat.id === "frames" ? frames.length : 
-                       cat.id === "banners" ? banners.length : titles.length;
-          
+          const count = cat.id === "frames" ? frames.length :
+            cat.id === "banners" ? banners.length : titles.length;
           return (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${
-                isActive
-                  ? "bg-primary/10 border border-primary/30 text-primary"
-                  : "hover:bg-card/50 text-muted-foreground hover:text-foreground border border-transparent"
-              }`}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${isActive
+                ? "bg-primary/10 border border-primary/30 text-primary"
+                : "hover:bg-card/50 text-muted-foreground hover:text-foreground border border-transparent"
+                }`}
             >
               <div className="flex items-center gap-3">
                 <Icon className="w-5 h-5" />
@@ -142,9 +157,8 @@ export function CosmeticShop() {
         })}
       </div>
 
-      {/* Right panel - Items */}
+      {/* Right panel */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Filters */}
         <div className="flex-shrink-0 mb-4">
           <ShopFilters
             filters={filters}
@@ -154,7 +168,6 @@ export function CosmeticShop() {
           />
         </div>
 
-        {/* Items Grid */}
         <div className="flex-1 overflow-y-auto hide-scrollbar">
           {isLoading ? (
             <ShopLoadingState type="cosmetics" count={6} />
@@ -168,233 +181,97 @@ export function CosmeticShop() {
                 transition={{ duration: 0.2 }}
                 className="grid grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                {/* Frames */}
-                {activeCategory === "frames" && filteredFrames.map((frame) => {
-                  const owned = isOwned(frame.id, "frame") || frame.is_default;
-                  const rarity = rarityColors[frame.rarity] || rarityColors.common;
-                  const canAfford = (balance?.balance || 0) >= frame.price;
-                  
-                  return (
-                    <div
-                      key={frame.id}
-                      className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
-                    >
-                      {!owned && (
-                        <div className="absolute top-2 right-2 z-10">
-                          <WishlistButton itemId={frame.id} itemType="cosmetic" size="sm" />
-                        </div>
-                      )}
-                      <div className="flex justify-center mb-4">
-                        <FramePreview
-                          size="lg"
-                          frameImage={frame.preview_url}
-                          borderColor={frame.border_color}
-                          glowColor={frame.glow_color}
-                          frameScale={frame.frame_scale}
-                          frameOffsetX={frame.frame_offset_x}
-                          frameOffsetY={frame.frame_offset_y}
-                        />
-                      </div>
-                      
-                      <div className="space-y-2 text-center">
-                        <h4 className="font-rajdhani font-semibold text-foreground">{frame.name}</h4>
-                        <div className={`text-xs uppercase tracking-wider ${rarity.text}`}>
-                          {frame.rarity}
-                        </div>
-                        
-                        {owned ? (
-                          <div className="flex items-center justify-center gap-1 text-green-400 text-sm mt-3">
-                            <Check className="w-4 h-4" />
-                            Owned
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
-                              <BondIcon size={18} />
-                              {frame.price}
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={!canAfford}
-                              onClick={() => handlePurchaseClick({
-                                id: frame.id,
-                                name: frame.name,
-                                type: "frame",
-                                price: frame.price,
-                                rarity: frame.rarity,
-                                previewElement: (
-                                  <FramePreview
-                                    size="md"
-                                    frameImage={frame.preview_url}
-                                    borderColor={frame.border_color}
-                                    glowColor={frame.glow_color}
-                                  />
-                                ),
-                              })}
-                              className="text-xs border-primary/30 hover:bg-primary/10"
-                            >
-                              {canAfford ? "Buy" : <Lock className="w-3 h-3" />}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                {activeCategory === "frames" && filteredFrames.map((frame, i) => (
+                  <CyberItemCard
+                    key={frame.id}
+                    id={frame.id}
+                    name={frame.name}
+                    rarity={frame.rarity}
+                    price={frame.price}
+                    owned={isOwned(frame.id, "frame") || frame.is_default}
+                    canAfford={(balance?.balance || 0) >= frame.price}
+                    itemType="frame"
+                    index={i}
+                    preview={
+                      <FramePreview
+                        size="lg"
+                        frameImage={frame.preview_url}
+                        borderColor={frame.border_color}
+                        glowColor={frame.glow_color}
+                        frameScale={frame.frame_scale}
+                        frameOffsetX={frame.frame_offset_x}
+                        frameOffsetY={frame.frame_offset_y}
+                      />
+                    }
+                    onPurchase={() => handlePurchaseClick({
+                      id: frame.id, name: frame.name, type: "frame",
+                      price: frame.price, rarity: frame.rarity,
+                    })}
+                    onPreview={() => setFittingItem({ type: "frame", data: frame })}
+                  />
+                ))}
 
-                {/* Banners */}
-                {activeCategory === "banners" && filteredBanners.map((banner) => {
-                  const owned = isOwned(banner.id, "banner") || banner.is_default;
-                  const rarity = rarityColors[banner.rarity] || rarityColors.common;
-                  const canAfford = (balance?.balance || 0) >= banner.price;
-                  
-                  return (
-                    <div
-                      key={banner.id}
-                      className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
-                    >
-                      {!owned && (
-                        <div className="absolute top-2 right-2 z-10">
-                          <WishlistButton itemId={banner.id} itemType="cosmetic" size="sm" />
-                        </div>
-                      )}
+                {activeCategory === "banners" && filteredBanners.map((banner, i) => (
+                  <CyberItemCard
+                    key={banner.id}
+                    id={banner.id}
+                    name={banner.name}
+                    rarity={banner.rarity}
+                    price={banner.price}
+                    owned={isOwned(banner.id, "banner") || banner.is_default}
+                    canAfford={(balance?.balance || 0) >= banner.price}
+                    itemType="banner"
+                    index={i}
+                    preview={
                       <div
-                        className="w-full h-16 rounded-lg mb-4"
+                        className="w-full h-16 rounded-lg"
                         style={{
                           background: banner.banner_url
                             ? `url(${banner.banner_url}) center/cover`
                             : `linear-gradient(135deg, ${banner.gradient_start || '#0a0a12'}, ${banner.gradient_end || '#1a1a2e'})`,
                         }}
                       />
-                      
-                      <div className="space-y-2">
-                        <h4 className="font-rajdhani font-semibold text-foreground">{banner.name}</h4>
-                        <div className={`text-xs uppercase tracking-wider ${rarity.text}`}>
-                          {banner.rarity}
-                        </div>
-                        
-                        {owned ? (
-                          <div className="flex items-center justify-center gap-1 text-green-400 text-sm mt-3">
-                            <Check className="w-4 h-4" />
-                            Owned
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
-                              <BondIcon size={18} />
-                              {banner.price}
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={!canAfford}
-                              onClick={() => handlePurchaseClick({
-                                id: banner.id,
-                                name: banner.name,
-                                type: "banner",
-                                price: banner.price,
-                                rarity: banner.rarity,
-                                previewElement: (
-                                  <div 
-                                    className="w-16 h-8 rounded"
-                                    style={{
-                                      background: banner.banner_url
-                                        ? `url(${banner.banner_url}) center/cover`
-                                        : `linear-gradient(135deg, ${banner.gradient_start || '#0a0a12'}, ${banner.gradient_end || '#1a1a2e'})`,
-                                    }}
-                                  />
-                                ),
-                              })}
-                              className="text-xs border-primary/30 hover:bg-primary/10"
-                            >
-                              {canAfford ? "Buy" : <Lock className="w-3 h-3" />}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                    }
+                    onPurchase={() => handlePurchaseClick({
+                      id: banner.id, name: banner.name, type: "banner",
+                      price: banner.price, rarity: banner.rarity,
+                    })}
+                    onPreview={() => setFittingItem({ type: "banner", data: banner })}
+                  />
+                ))}
 
-                {/* Titles */}
-                {activeCategory === "titles" && filteredTitles.map((title) => {
-                  const owned = isOwned(title.id, "title") || title.is_default;
-                  const rarity = rarityColors[title.rarity] || rarityColors.common;
-                  const canAfford = (balance?.balance || 0) >= title.price;
-                  
+                {activeCategory === "titles" && filteredTitles.map((title, i) => {
+                  const originalTitle = titles.find(t => t.id === title.id);
                   return (
-                    <div
+                    <CyberItemCard
                       key={title.id}
-                      className={`relative p-4 rounded-xl border ${rarity.border} ${rarity.bg} backdrop-blur-sm shop-card overflow-hidden`}
-                    >
-                      {!owned && (
-                        <div className="absolute top-2 right-2 z-10">
-                          <WishlistButton itemId={title.id} itemType="cosmetic" size="sm" />
-                        </div>
-                      )}
-                      <div className="flex justify-center items-center h-16 mb-4">
+                      id={title.id}
+                      name={title.name}
+                      rarity={title.rarity}
+                      price={title.price}
+                      owned={isOwned(title.id, "title") || title.is_default}
+                      canAfford={(balance?.balance || 0) >= title.price}
+                      itemType="title"
+                      index={i}
+                      preview={
                         <span
                           className="font-orbitron text-lg font-bold tracking-wider"
                           style={{
-                            color: title.text_color || '#5bb4ff',
-                            textShadow: title.glow_color 
-                              ? `0 0 10px ${title.glow_color}, 0 0 20px ${title.glow_color}` 
+                            color: originalTitle?.text_color || '#5bb4ff',
+                            textShadow: originalTitle?.glow_color
+                              ? `0 0 10px ${originalTitle.glow_color}, 0 0 20px ${originalTitle.glow_color}`
                               : undefined,
                           }}
                         >
-                          {title.title_text}
+                          {originalTitle?.title_text || title.name}
                         </span>
-                      </div>
-                      
-                      <div className="space-y-2 text-center">
-                        <div className={`text-xs uppercase tracking-wider ${rarity.text}`}>
-                          {title.rarity}
-                        </div>
-                        
-                        {owned ? (
-                          <div className="flex items-center justify-center gap-1 text-green-400 text-sm mt-3">
-                            <Check className="w-4 h-4" />
-                            Owned
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-1.5 text-primary font-orbitron text-sm">
-                              <BondIcon size={18} />
-                              {title.price}
-                            </div>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={!canAfford}
-                              onClick={() => handlePurchaseClick({
-                                id: title.id,
-                                name: title.title_text,
-                                type: "title",
-                                price: title.price,
-                                rarity: title.rarity,
-                                previewElement: (
-                                  <span
-                                    className="font-orbitron text-sm font-bold"
-                                    style={{
-                                      color: title.text_color || '#5bb4ff',
-                                      textShadow: title.glow_color 
-                                        ? `0 0 8px ${title.glow_color}` 
-                                        : undefined,
-                                    }}
-                                  >
-                                    {title.title_text}
-                                  </span>
-                                ),
-                              })}
-                              className="text-xs border-primary/30 hover:bg-primary/10"
-                            >
-                              {canAfford ? "Buy" : <Lock className="w-3 h-3" />}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                      }
+                      onPurchase={() => handlePurchaseClick({
+                        id: title.id, name: title.name, type: "title",
+                        price: title.price, rarity: title.rarity,
+                      })}
+                      onPreview={() => originalTitle && setFittingItem({ type: "title", data: originalTitle })}
+                    />
                   );
                 })}
 
@@ -436,20 +313,31 @@ export function CosmeticShop() {
         item={purchaseItem}
         currentBalance={balance?.balance || 0}
         onConfirm={handleConfirmPurchase}
-        isPending={purchaseCosmetic.isPending}
+        isPending={transaction.isPending}
+      />
+
+      {/* Fitting Room */}
+      <FittingRoom
+        open={!!fittingItem}
+        onOpenChange={(open) => !open && setFittingItem(null)}
+        previewItem={fittingItem}
+        onPurchase={handleFittingPurchase}
+        isPending={transaction.isPending}
+        canAfford={fittingItem ? transaction.canAfford(fittingItem.data.price) : false}
+        currentBalance={transaction.currentBalance}
       />
 
       {/* Unlock Animation */}
-      {unlockedItem && (
+      {transaction.lastPurchased && (
         <UnlockAnimation
           isOpen={showUnlock}
           onComplete={() => {
             setShowUnlock(false);
-            setUnlockedItem(null);
+            transaction.clearLastPurchased();
           }}
-          itemName={unlockedItem.name}
+          itemName={transaction.lastPurchased.name}
           itemType="cosmetic"
-          rarity={unlockedItem.rarity}
+          rarity={transaction.lastPurchased.rarity}
         />
       )}
     </div>
