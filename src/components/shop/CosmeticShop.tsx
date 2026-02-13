@@ -7,6 +7,7 @@ import {
   useShopBanners,
   useShopTitles,
   useUserCosmetics,
+  useBondBalance,
   CosmeticFrame,
   CosmeticBanner,
   CosmeticTitle,
@@ -21,6 +22,7 @@ import { FittingRoom } from "./FittingRoom";
 import { useShopTransaction } from "@/hooks/useShopTransaction";
 
 type CosmeticCategory = "frames" | "banners" | "titles";
+
 const categories = [
   { id: "frames" as const, label: "Frames", icon: Frame },
   { id: "banners" as const, label: "Banners", icon: Image },
@@ -38,6 +40,8 @@ export function CosmeticShop() {
     rarity: "all",
     hideOwned: false,
   });
+
+  // Fitting Room state
   const [fittingItem, setFittingItem] = useState<
     | { type: "frame"; data: CosmeticFrame }
     | { type: "banner"; data: CosmeticBanner }
@@ -45,27 +49,27 @@ export function CosmeticShop() {
     | null
   >(null);
 
-  const { data: frames = [], isLoading: fLoad } = useShopFrames();
-  const { data: banners = [], isLoading: bLoad } = useShopBanners();
-  const { data: titles = [], isLoading: tLoad } = useShopTitles();
+  const { data: frames = [], isLoading: framesLoading } = useShopFrames();
+  const { data: banners = [], isLoading: bannersLoading } = useShopBanners();
+  const { data: titles = [], isLoading: titlesLoading } = useShopTitles();
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
+  const { data: balance } = useBondBalance(user?.id);
+
   const transaction = useShopTransaction();
 
-  const isOwned = (id: string, type: "frame" | "banner" | "title") => {
-    if (!ownedCosmetics) return false;
-    if (type === "frame") return ownedCosmetics.frames.includes(id);
-    if (type === "banner") return ownedCosmetics.banners.includes(id);
-    return ownedCosmetics.titles.includes(id);
-  };
+  const isLoading = activeCategory === "frames" ? framesLoading :
+    activeCategory === "banners" ? bannersLoading : titlesLoading;
 
-  const handlePurchaseClick = (item: PurchaseItem) => setPurchaseItem(item);
+  const handlePurchaseClick = (item: PurchaseItem) => {
+    setPurchaseItem(item);
+  };
 
   const handleConfirmPurchase = async () => {
     if (!purchaseItem) return;
     const success = await transaction.initiatePurchase({
       itemId: purchaseItem.id,
       itemName: purchaseItem.name,
-      itemType: purchaseItem.type as any,
+      itemType: purchaseItem.type as "frame" | "banner" | "title",
       price: purchaseItem.price,
       rarity: purchaseItem.rarity,
     });
@@ -77,10 +81,12 @@ export function CosmeticShop() {
 
   const handleFittingPurchase = async () => {
     if (!fittingItem) return;
-    const name = fittingItem.type === "title" ? (fittingItem.data as CosmeticTitle).title_text : fittingItem.data.name;
+    const itemName = fittingItem.type === "title"
+      ? (fittingItem.data as CosmeticTitle).title_text
+      : fittingItem.data.name;
     const success = await transaction.initiatePurchase({
       itemId: fittingItem.data.id,
-      itemName: name,
+      itemName,
       itemType: fittingItem.type,
       price: fittingItem.data.price,
       rarity: fittingItem.data.rarity,
@@ -91,165 +97,237 @@ export function CosmeticShop() {
     }
   };
 
-  const filteredFrames = useMemo(
-    () => applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame")),
-    [frames, filters, ownedCosmetics],
+  const isOwned = (id: string, type: "frame" | "banner" | "title") => {
+    if (!ownedCosmetics) return false;
+    if (type === "frame") return ownedCosmetics.frames.includes(id);
+    if (type === "banner") return ownedCosmetics.banners.includes(id);
+    return ownedCosmetics.titles.includes(id);
+  };
+
+  const filteredFrames = useMemo(() =>
+    applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame")),
+    [frames, filters, ownedCosmetics]
   );
-  const filteredBanners = useMemo(
-    () => applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner")),
-    [banners, filters, ownedCosmetics],
+  const filteredBanners = useMemo(() =>
+    applyShopFilters(banners, filters, (b) => isOwned(b.id, "banner")),
+    [banners, filters, ownedCosmetics]
   );
-  const filteredTitles = useMemo(
-    () =>
-      applyShopFilters(
-        titles.map((t) => ({ ...t, name: t.title_text })),
-        filters,
-        (t) => isOwned(t.id, "title"),
-      ),
-    [titles, filters, ownedCosmetics],
+  const filteredTitles = useMemo(() =>
+    applyShopFilters(
+      titles.map(t => ({ ...t, name: t.title_text })),
+      filters,
+      (t) => isOwned(t.id, "title")
+    ),
+    [titles, filters, ownedCosmetics]
   );
 
-  const isLoading = activeCategory === "frames" ? fLoad : activeCategory === "banners" ? bLoad : tLoad;
+  const totalItems = activeCategory === "frames" ? frames.length :
+    activeCategory === "banners" ? banners.length : titles.length;
+  const visibleItems = activeCategory === "frames" ? filteredFrames.length :
+    activeCategory === "banners" ? filteredBanners.length : filteredTitles.length;
 
   return (
     <div className="flex gap-6 h-full">
+      {/* Left sidebar - Categories */}
       <div className="w-48 flex-shrink-0 space-y-2">
-        {categories.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeCategory === cat.id ? "bg-primary/10 border border-primary/30 text-primary" : "hover:bg-card/50 text-muted-foreground"}`}
-          >
-            <cat.icon className="w-5 h-5" /> <span className="font-rajdhani font-medium">{cat.label}</span>
-          </button>
-        ))}
+        <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-orbitron mb-4 px-2">
+          Categories
+        </h3>
+        {categories.map((cat) => {
+          const isActive = activeCategory === cat.id;
+          const Icon = cat.icon;
+          const count = cat.id === "frames" ? frames.length :
+            cat.id === "banners" ? banners.length : titles.length;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${isActive
+                ? "bg-primary/10 border border-primary/30 text-primary"
+                : "hover:bg-card/50 text-muted-foreground hover:text-foreground border border-transparent"
+                }`}
+            >
+              <div className="flex items-center gap-3">
+                <Icon className="w-5 h-5" />
+                <span className="font-rajdhani font-medium">{cat.label}</span>
+              </div>
+              <span className="text-xs opacity-60">{count}</span>
+            </button>
+          );
+        })}
       </div>
 
+      {/* Right panel */}
       <div className="flex-1 flex flex-col min-h-0">
-        <ShopFilters filters={filters} onFiltersChange={setFilters} totalItems={0} visibleItems={0} />
-        <div className="flex-1 overflow-y-auto hide-scrollbar mt-4">
+        <div className="flex-shrink-0 mb-4">
+          <ShopFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            totalItems={totalItems}
+            visibleItems={visibleItems}
+          />
+        </div>
+
+        <div className="flex-1 overflow-y-auto hide-scrollbar">
           {isLoading ? (
             <ShopLoadingState type="cosmetics" count={6} />
           ) : (
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeCategory}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
                 className="grid grid-cols-2 lg:grid-cols-3 gap-4"
               >
-                {activeCategory === "frames" &&
-                  filteredFrames.map((f, i) => (
+                {activeCategory === "frames" && filteredFrames.map((frame, i) => (
+                  <CyberItemCard
+                    key={frame.id}
+                    id={frame.id}
+                    name={frame.name}
+                    rarity={frame.rarity}
+                    price={frame.price}
+                    owned={isOwned(frame.id, "frame") || frame.is_default}
+                    canAfford={(balance?.balance || 0) >= frame.price}
+                    itemType="frame"
+                    index={i}
+                    preview={
+                      <FramePreview
+                        size="lg"
+                        frameImage={frame.preview_url}
+                        borderColor={frame.border_color}
+                        glowColor={frame.glow_color}
+                        frameScale={frame.frame_scale}
+                        frameOffsetX={frame.frame_offset_x}
+                        frameOffsetY={frame.frame_offset_y}
+                      />
+                    }
+                    onPurchase={() => handlePurchaseClick({
+                      id: frame.id, name: frame.name, type: "frame",
+                      price: frame.price, rarity: frame.rarity,
+                    })}
+                    onPreview={() => setFittingItem({ type: "frame", data: frame })}
+                  />
+                ))}
+
+                {activeCategory === "banners" && filteredBanners.map((banner, i) => (
+                  <CyberItemCard
+                    key={banner.id}
+                    id={banner.id}
+                    name={banner.name}
+                    rarity={banner.rarity}
+                    price={banner.price}
+                    owned={isOwned(banner.id, "banner") || banner.is_default}
+                    canAfford={(balance?.balance || 0) >= banner.price}
+                    itemType="banner"
+                    index={i}
+                    preview={
+                      <div
+                        className="w-full h-16 rounded-lg"
+                        style={{
+                          background: banner.banner_url
+                            ? `url(${banner.banner_url}) center/cover`
+                            : `linear-gradient(135deg, ${banner.gradient_start || '#0a0a12'}, ${banner.gradient_end || '#1a1a2e'})`,
+                        }}
+                      />
+                    }
+                    onPurchase={() => handlePurchaseClick({
+                      id: banner.id, name: banner.name, type: "banner",
+                      price: banner.price, rarity: banner.rarity,
+                    })}
+                    onPreview={() => setFittingItem({ type: "banner", data: banner })}
+                  />
+                ))}
+
+                {activeCategory === "titles" && filteredTitles.map((title, i) => {
+                  const originalTitle = titles.find(t => t.id === title.id);
+                  return (
                     <CyberItemCard
-                      key={f.id}
-                      id={f.id}
-                      name={f.name}
-                      rarity={f.rarity}
-                      price={f.price}
-                      owned={isOwned(f.id, "frame")}
-                      canAfford={transaction.canAfford(f.price)}
-                      itemType="frame"
-                      index={i}
-                      preview={
-                        <FramePreview
-                          size="lg"
-                          frameImage={f.preview_url}
-                          borderColor={f.border_color}
-                          glowColor={f.glow_color}
-                        />
-                      }
-                      onPurchase={() =>
-                        handlePurchaseClick({ id: f.id, name: f.name, type: "frame", price: f.price, rarity: f.rarity })
-                      }
-                      onPreview={() => setFittingItem({ type: "frame", data: f })}
-                    />
-                  ))}
-                {activeCategory === "banners" &&
-                  filteredBanners.map((b, i) => (
-                    <CyberItemCard
-                      key={b.id}
-                      id={b.id}
-                      name={b.name}
-                      rarity={b.rarity}
-                      price={b.price}
-                      owned={isOwned(b.id, "banner")}
-                      canAfford={transaction.canAfford(b.price)}
-                      itemType="banner"
-                      index={i}
-                      preview={
-                        <div
-                          className="w-full h-16 rounded-lg"
-                          style={{
-                            background: b.banner_url
-                              ? `url(${b.banner_url}) center/cover`
-                              : `linear-gradient(135deg, ${b.gradient_start}, ${b.gradient_end})`,
-                          }}
-                        />
-                      }
-                      onPurchase={() =>
-                        handlePurchaseClick({
-                          id: b.id,
-                          name: b.name,
-                          type: "banner",
-                          price: b.price,
-                          rarity: b.rarity,
-                        })
-                      }
-                      onPreview={() => setFittingItem({ type: "banner", data: b })}
-                    />
-                  ))}
-                {activeCategory === "titles" &&
-                  filteredTitles.map((t, i) => (
-                    <CyberItemCard
-                      key={t.id}
-                      id={t.id}
-                      name={t.name}
-                      rarity={t.rarity}
-                      price={t.price}
-                      owned={isOwned(t.id, "title")}
-                      canAfford={transaction.canAfford(t.price)}
+                      key={title.id}
+                      id={title.id}
+                      name={title.name}
+                      rarity={title.rarity}
+                      price={title.price}
+                      owned={isOwned(title.id, "title") || title.is_default}
+                      canAfford={(balance?.balance || 0) >= title.price}
                       itemType="title"
                       index={i}
                       preview={
                         <span
-                          className="font-orbitron font-bold"
+                          className="font-orbitron text-lg font-bold tracking-wider"
                           style={{
-                            color: t.text_color || "#5bb4ff",
-                            textShadow: t.glow_color ? `0 0 10px ${t.glow_color}` : undefined,
+                            color: originalTitle?.text_color || '#5bb4ff',
+                            textShadow: originalTitle?.glow_color
+                              ? `0 0 10px ${originalTitle.glow_color}, 0 0 20px ${originalTitle.glow_color}`
+                              : undefined,
                           }}
                         >
-                          {t.name}
+                          {originalTitle?.title_text || title.name}
                         </span>
                       }
-                      onPurchase={() =>
-                        handlePurchaseClick({ id: t.id, name: t.name, type: "title", price: t.price, rarity: t.rarity })
-                      }
-                      onPreview={() => setFittingItem({ type: "title", data: t as any })}
+                      onPurchase={() => handlePurchaseClick({
+                        id: title.id, name: title.name, type: "title",
+                        price: title.price, rarity: title.rarity,
+                      })}
+                      onPreview={() => originalTitle && setFittingItem({ type: "title", data: originalTitle })}
                     />
-                  ))}
+                  );
+                })}
+
+                {/* Empty states */}
+                {activeCategory === "frames" && filteredFrames.length === 0 && !framesLoading && (
+                  <div className="col-span-full text-center py-12 text-muted-foreground">
+                    <Frame className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="font-rajdhani">
+                      {frames.length === 0 ? "No frames available yet" : "No frames match your filters"}
+                    </p>
+                  </div>
+                )}
+                {activeCategory === "banners" && filteredBanners.length === 0 && !bannersLoading && (
+                  <div className="col-span-full text-center py-12 text-muted-foreground">
+                    <Image className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="font-rajdhani">
+                      {banners.length === 0 ? "No banners available yet" : "No banners match your filters"}
+                    </p>
+                  </div>
+                )}
+                {activeCategory === "titles" && filteredTitles.length === 0 && !titlesLoading && (
+                  <div className="col-span-full text-center py-12 text-muted-foreground">
+                    <Crown className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p className="font-rajdhani">
+                      {titles.length === 0 ? "No titles available yet" : "No titles match your filters"}
+                    </p>
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
           )}
         </div>
       </div>
 
+      {/* Purchase Confirmation Modal */}
       <PurchaseConfirmModal
         open={!!purchaseItem}
-        onOpenChange={(v) => !v && setPurchaseItem(null)}
+        onOpenChange={(open) => !open && setPurchaseItem(null)}
         item={purchaseItem}
-        currentBalance={transaction.currentBalance}
+        currentBalance={balance?.balance || 0}
         onConfirm={handleConfirmPurchase}
         isPending={transaction.isPending}
       />
+
+      {/* Fitting Room */}
       <FittingRoom
         open={!!fittingItem}
-        onOpenChange={(v) => !v && setFittingItem(null)}
+        onOpenChange={(open) => !open && setFittingItem(null)}
         previewItem={fittingItem}
         onPurchase={handleFittingPurchase}
         isPending={transaction.isPending}
         canAfford={fittingItem ? transaction.canAfford(fittingItem.data.price) : false}
         currentBalance={transaction.currentBalance}
       />
+
+      {/* Unlock Animation */}
       {transaction.lastPurchased && (
         <UnlockAnimation
           isOpen={showUnlock}

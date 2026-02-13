@@ -3,13 +3,7 @@ import { motion } from "framer-motion";
 import { Zap, Clock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyDeals, DailyDealWithItem } from "@/hooks/useDailyDeals";
-import {
-  useBondBalance,
-  useUserCosmetics,
-  useUserModulePurchases,
-  usePurchaseCosmetic,
-  usePurchaseModule,
-} from "@/hooks/useShop";
+import { useBondBalance, useUserCosmetics, useUserModulePurchases, usePurchaseCosmetic, usePurchaseModule } from "@/hooks/useShop";
 import { DailyDealCard } from "./DailyDealCard";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { UnlockAnimation } from "./UnlockAnimation";
@@ -22,16 +16,12 @@ export function DailyDealsSection() {
   const { data: ownedModules = [] } = useUserModulePurchases(user?.id);
   const purchaseCosmetic = usePurchaseCosmetic();
   const purchaseModule = usePurchaseModule();
-
+  
   const [selectedDeal, setSelectedDeal] = useState<DailyDealWithItem | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
-  const [unlockedItem, setUnlockedItem] = useState<{
-    name: string;
-    rarity: string;
-    type: "cosmetic" | "module";
-  } | null>(null);
-
+  const [unlockedItem, setUnlockedItem] = useState<{ name: string; rarity: string; type: "cosmetic" | "module" } | null>(null);
+  
   const isOwned = (deal: DailyDealWithItem) => {
     if (deal.item_type === "module") {
       return ownedModules.includes(deal.item_id);
@@ -47,15 +37,15 @@ export function DailyDealsSection() {
     }
     return false;
   };
-
+  
   const handlePurchaseClick = (deal: DailyDealWithItem) => {
     setSelectedDeal(deal);
     setShowConfirm(true);
   };
-
+  
   const handleConfirmPurchase = () => {
     if (!user || !selectedDeal) return;
-
+    
     const onSuccess = () => {
       setShowConfirm(false);
       setUnlockedItem({
@@ -65,36 +55,34 @@ export function DailyDealsSection() {
       });
       setShowUnlock(true);
     };
-
+    
     if (selectedDeal.item_type === "module") {
       purchaseModule.mutate(
         { userId: user.id, moduleId: selectedDeal.item_id, price: selectedDeal.discounted_price },
-        { onSuccess },
+        { onSuccess }
       );
     } else {
       const cosmeticType = selectedDeal.item_type.replace("cosmetic_", "") as "frame" | "banner" | "title";
       purchaseCosmetic.mutate(
         { userId: user.id, cosmeticId: selectedDeal.item_id, cosmeticType, price: selectedDeal.discounted_price },
-        { onSuccess },
+        { onSuccess }
       );
     }
   };
-
+  
   if (isLoading || deals.length === 0) {
     return null; // Don't show section if no deals
   }
-
-  const purchaseItem: PurchaseItem | null = selectedDeal
-    ? {
-        id: selectedDeal.item_id,
-        name: selectedDeal.item?.name || "Daily Deal",
-        price: selectedDeal.discounted_price,
-        rarity: selectedDeal.item?.rarity || "common",
-        type: selectedDeal.item_type === "module" ? "module" : "cosmetic",
-        originalPrice: selectedDeal.item?.price,
-      }
-    : null;
-
+  
+  const purchaseItem: PurchaseItem | null = selectedDeal ? {
+    id: selectedDeal.item_id,
+    name: selectedDeal.item?.name || "Daily Deal",
+    price: selectedDeal.discounted_price,
+    rarity: selectedDeal.item?.rarity || "common",
+    type: selectedDeal.item_type === "module" ? "module" : "cosmetic",
+    originalPrice: selectedDeal.item?.price,
+  } : null;
+  
   return (
     <div className="space-y-4 mb-8">
       <div className="flex items-center gap-2">
@@ -104,13 +92,15 @@ export function DailyDealsSection() {
         >
           <Zap className="w-5 h-5 text-amber-400" />
         </motion.div>
-        <h2 className="font-orbitron text-lg text-foreground tracking-wide">Daily Deals</h2>
+        <h2 className="font-orbitron text-lg text-foreground tracking-wide">
+          Daily Deals
+        </h2>
         <div className="flex items-center gap-1 ml-2 text-xs text-amber-400/70">
           <Clock className="w-3 h-3" />
           <span>Refreshes daily</span>
         </div>
       </div>
-
+      
       <div className="grid gap-4">
         {deals.map((deal, index) => (
           <motion.div
@@ -128,7 +118,7 @@ export function DailyDealsSection() {
           </motion.div>
         ))}
       </div>
-
+      
       {/* Purchase confirmation */}
       {purchaseItem && (
         <PurchaseConfirmModal
@@ -137,11 +127,10 @@ export function DailyDealsSection() {
           onConfirm={handleConfirmPurchase}
           item={purchaseItem}
           currentBalance={balance?.balance || 0}
-          // CORRECTION: isPurchasing -> isPending
-          isPending={purchaseCosmetic.isPending || purchaseModule.isPending}
+          isPurchasing={purchaseCosmetic.isPending || purchaseModule.isPending}
         />
       )}
-
+      
       {/* Unlock animation */}
       {unlockedItem && (
         <UnlockAnimation

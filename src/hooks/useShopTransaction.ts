@@ -1,3 +1,7 @@
+/**
+ * Unified shop transaction hook.
+ * Centralizes purchase logic for all item types (module, frame, banner, title).
+ */
 import { useState, useCallback } from "react";
 import { usePurchaseCosmetic, usePurchaseModule, useBondBalance } from "@/hooks/useShop";
 import { useAuth } from "@/contexts/AuthContext";
@@ -25,7 +29,10 @@ export function useShopTransaction() {
   const [error, setError] = useState<string | null>(null);
   const [lastPurchased, setLastPurchased] = useState<{ name: string; rarity: string } | null>(null);
 
-  const canAfford = useCallback((price: number) => (balance?.balance ?? 0) >= price, [balance]);
+  const canAfford = useCallback(
+    (price: number) => (balance?.balance ?? 0) >= price,
+    [balance]
+  );
 
   const initiatePurchase = useCallback(
     async (input: TransactionInput): Promise<boolean> => {
@@ -39,23 +46,20 @@ export function useShopTransaction() {
         return false;
       }
 
-      play("ui", "click"); // Son de début
+      play("ui");
       setTransactionStatus("pending");
       setError(null);
 
       return new Promise((resolve) => {
         const onSuccess = () => {
-          play("success", "reward"); // Son de succès
+          play("success", "reward");
           setTransactionStatus("success");
           setLastPurchased({ name: input.itemName, rarity: input.rarity || "common" });
-
-          // Reset status after a brief delay to allow animations
-          setTimeout(() => setTransactionStatus("idle"), 500);
+          setTimeout(() => setTransactionStatus("idle"), 100);
           resolve(true);
         };
 
         const onError = (err: Error) => {
-          play("ui", "error");
           setError(err.message);
           setTransactionStatus("error");
           setTimeout(() => setTransactionStatus("idle"), 2000);
@@ -65,7 +69,7 @@ export function useShopTransaction() {
         if (input.itemType === "module") {
           purchaseModule.mutate(
             { userId: user.id, moduleId: input.itemId, price: input.price },
-            { onSuccess, onError },
+            { onSuccess, onError }
           );
         } else {
           purchaseCosmetic.mutate(
@@ -75,15 +79,18 @@ export function useShopTransaction() {
               cosmeticType: input.itemType as "frame" | "banner" | "title",
               price: input.price,
             },
-            { onSuccess, onError },
+            { onSuccess, onError }
           );
         }
       });
     },
-    [user, canAfford, play, purchaseModule, purchaseCosmetic],
+    [user, canAfford, play, purchaseModule, purchaseCosmetic]
   );
 
-  const isPending = transactionStatus === "pending" || purchaseCosmetic.isPending || purchaseModule.isPending;
+  const isPending =
+    transactionStatus === "pending" ||
+    purchaseCosmetic.isPending ||
+    purchaseModule.isPending;
 
   return {
     initiatePurchase,
