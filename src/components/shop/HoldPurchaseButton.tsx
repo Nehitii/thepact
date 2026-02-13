@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
-import { Lock } from "lucide-react";
+import { Lock, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface HoldPurchaseButtonProps {
@@ -13,31 +13,33 @@ interface HoldPurchaseButtonProps {
 
 type ButtonPhase = "idle" | "holding" | "authorizing" | "acquired";
 
-const HOLD_MS = 1500;
+const DEFAULT_HOLD_MS = 1500;
 
 export function HoldPurchaseButton({
   onComplete,
   disabled = false,
   isPending = false,
   className,
-  holdDuration = HOLD_MS,
+  holdDuration = DEFAULT_HOLD_MS,
 }: HoldPurchaseButtonProps) {
   const [phase, setPhase] = useState<ButtonPhase>(isPending ? "authorizing" : "idle");
   const progress = useMotionValue(0);
   const animRef = useRef<ReturnType<typeof animate> | null>(null);
   const completedRef = useRef(false);
 
-  // Sync isPending from outside
+  // Sync isPending state
   useEffect(() => {
     if (isPending && phase !== "acquired") setPhase("authorizing");
+    if (!isPending && phase === "authorizing") setPhase("idle");
   }, [isPending, phase]);
 
   const progressPercent = useTransform(progress, [0, 1], [0, 100]);
 
+  // Shake effect when nearing completion
   const shakeX = useTransform(progress, (v) => {
     if (v < 0.7) return 0;
-    const intensity = (v - 0.7) / 0.3; // 0→1 in last 30%
-    return Math.sin(v * 80) * intensity * 3;
+    const intensity = (v - 0.7) / 0.3;
+    return Math.sin(v * 50) * intensity * 4;
   });
 
   const startHold = useCallback(() => {
@@ -68,9 +70,9 @@ export function HoldPurchaseButton({
   const label = (() => {
     switch (phase) {
       case "holding":
-        return "HOLD";
+        return "HOLD...";
       case "authorizing":
-        return "AUTHORIZING...";
+        return "AUTHORIZING";
       case "acquired":
         return "ACQUIRED";
       default:
@@ -87,43 +89,37 @@ export function HoldPurchaseButton({
       onPointerLeave={cancelHold}
       style={{ x: shakeX }}
       className={cn(
-        "relative w-full h-12 rounded-lg overflow-hidden select-none",
-        "border-2 font-orbitron text-sm tracking-wider uppercase",
-        "transition-colors duration-200",
+        "relative w-full h-11 rounded-lg overflow-hidden select-none",
+        "border font-orbitron text-sm tracking-wider uppercase",
+        "transition-colors duration-200 flex items-center justify-center",
         disabled
-          ? "border-muted-foreground/30 text-muted-foreground cursor-not-allowed opacity-50"
+          ? "border-muted-foreground/20 text-muted-foreground/50 cursor-not-allowed bg-muted/10"
           : phase === "authorizing"
-            ? "border-primary/60 text-primary cursor-wait"
-            : "border-primary/40 text-primary hover:border-primary/60 cursor-pointer",
-        className
+            ? "border-primary/50 text-primary bg-primary/10 cursor-wait"
+            : "border-primary/40 text-primary hover:border-primary/80 hover:bg-primary/5 cursor-pointer",
+        className,
       )}
     >
-      {/* Background fill */}
+      {/* Background Progress Fill */}
       <motion.div
-        className="absolute inset-0 bg-primary/20"
+        className="absolute inset-0 bg-primary/20 origin-left"
         style={{ width: useTransform(progressPercent, (v) => `${v}%`) }}
       />
 
-      {/* Neon glow on holding */}
+      {/* Glow Effect while holding */}
       {phase === "holding" && (
         <motion.div
           className="absolute inset-0 pointer-events-none"
-          animate={{ boxShadow: ["inset 0 0 10px hsl(var(--primary)/.2)", "inset 0 0 25px hsl(var(--primary)/.4)"] }}
-          transition={{ duration: 0.6, repeat: Infinity, repeatType: "reverse" }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 0.5, repeat: Infinity }}
+          style={{ boxShadow: "inset 0 0 15px hsl(var(--primary)/0.4)" }}
         />
       )}
 
-      {/* Label */}
-      <span className="relative z-10 flex items-center justify-center gap-2 h-full">
-        {disabled && <Lock className="w-4 h-4" />}
-        {phase === "authorizing" && (
-          <motion.span
-            animate={{ opacity: [1, 0.4] }}
-            transition={{ duration: 0.5, repeat: Infinity, repeatType: "reverse" }}
-          >
-            ◈
-          </motion.span>
-        )}
+      {/* Text Label */}
+      <span className="relative z-10 flex items-center gap-2">
+        {disabled && <Lock className="w-3 h-3" />}
+        {phase === "authorizing" && <Loader2 className="w-3 h-3 animate-spin" />}
         {label}
       </span>
     </motion.button>
