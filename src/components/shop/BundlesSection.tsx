@@ -16,14 +16,14 @@ export function BundlesSection() {
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
   const { data: ownedModules = [] } = useUserModulePurchases(user?.id);
   const purchaseBundle = usePurchaseBundle();
-  
+
   const [selectedBundle, setSelectedBundle] = useState<ShopBundle | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
   const [unlockedItem, setUnlockedItem] = useState<{ name: string; rarity: string } | null>(null);
-  
+
   const getOwnedCount = (bundle: ShopBundle) => {
-    return bundle.items.filter(item => {
+    return bundle.items.filter((item) => {
       if (item.item_type === "module") {
         return ownedModules.includes(item.item_id);
       }
@@ -31,15 +31,15 @@ export function BundlesSection() {
       return ownedCosmetics?.[cosmeticType]?.includes(item.item_id) || false;
     }).length;
   };
-  
+
   const handlePurchaseClick = (bundle: ShopBundle) => {
     setSelectedBundle(bundle);
     setShowConfirm(true);
   };
-  
+
   const handleConfirmPurchase = () => {
     if (!user || !selectedBundle) return;
-    
+
     purchaseBundle.mutate(
       { userId: user.id, bundle: selectedBundle },
       {
@@ -48,46 +48,42 @@ export function BundlesSection() {
           setUnlockedItem({ name: selectedBundle.name, rarity: selectedBundle.rarity });
           setShowUnlock(true);
         },
-      }
+      },
     );
   };
-  
+
   if (isLoading) {
     return <ShopLoadingState type="modules" />;
   }
-  
+
   if (bundles.length === 0) {
     return (
       <div className="text-center py-12">
         <Package className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
         <h3 className="font-orbitron text-lg text-foreground mb-2">No Bundles Available</h3>
-        <p className="text-sm text-muted-foreground">
-          Check back later for special bundle deals
-        </p>
+        <p className="text-sm text-muted-foreground">Check back later for special bundle deals</p>
       </div>
     );
   }
-  
-  const purchaseItem: PurchaseItem | null = selectedBundle ? {
-    id: selectedBundle.id,
-    name: selectedBundle.name,
-    price: selectedBundle.price_bonds,
-    rarity: selectedBundle.rarity,
-    type: "bundle",
-  } : null;
-  
+
+  const purchaseItem: PurchaseItem | null = selectedBundle
+    ? {
+        id: selectedBundle.id,
+        name: selectedBundle.name,
+        price: selectedBundle.price_bonds,
+        rarity: selectedBundle.rarity,
+        type: "bundle",
+      }
+    : null;
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2">
         <Package className="w-5 h-5 text-purple-400" />
-        <h2 className="font-orbitron text-lg text-foreground tracking-wide">
-          Bundles
-        </h2>
-        <span className="text-xs text-muted-foreground ml-2">
-          Save more with bundles
-        </span>
+        <h2 className="font-orbitron text-lg text-foreground tracking-wide">Bundles</h2>
+        <span className="text-xs text-muted-foreground ml-2">Save more with bundles</span>
       </div>
-      
+
       <div className="grid gap-4">
         {bundles.map((bundle, index) => (
           <motion.div
@@ -105,7 +101,7 @@ export function BundlesSection() {
           </motion.div>
         ))}
       </div>
-      
+
       {/* Purchase confirmation */}
       {purchaseItem && (
         <PurchaseConfirmModal
@@ -114,10 +110,11 @@ export function BundlesSection() {
           onConfirm={handleConfirmPurchase}
           item={purchaseItem}
           currentBalance={balance?.balance || 0}
-          isPurchasing={purchaseBundle.isPending}
+          // CORRECTION: isPurchasing -> isPending
+          isPending={purchaseBundle.isPending}
         />
       )}
-      
+
       {/* Unlock animation */}
       {unlockedItem && (
         <UnlockAnimation
