@@ -1,99 +1,113 @@
 
-# Avatar Frame UX Fixes & Admin Border Control
 
-## Issues Identified
+# Reset Pact Function -- Delete All Goals & Steps
 
-1. **Upload overlay misaligned**: The upload circle (`div` with `rounded-full` at line 378) covers `absolute inset-0` of the parent wrapper, but the parent wrapper includes the glow effect which extends beyond the avatar. The overlay needs to be scoped to the avatar element only, not the full `AvatarFrame` wrapper.
+## What It Does
+Adds a "Reset Pact" function that wipes all goals, steps, and related data for a user's pact, bringing it back to a fresh state. The pact itself is preserved (name, mantra, symbol stay), but all progress data is cleared.
 
-2. **Upload overlay triggers on card hover**: The `group` class is on the outer wrapper (line 357), so hovering anywhere on the card area triggers the overlay. The `group` + `group-hover` must be moved to a tighter container around just the avatar.
+## Data Cascade
 
-3. **Blue border always visible**: The `AvatarFrame` component hardcodes `border-2` on the Avatar (line 54). Some frames (like Rapunzel, Cherry Blossom) cover the avatar entirely, making the border look bad. This should be configurable per frame.
+When resetting, the following tables need cleanup (in dependency order):
 
-4. **No color preview for RGBA inputs**: The admin form has plain text inputs for `border_color` and `glow_color` with no visual swatch.
+```text
+pact (kept)
+  |
+  +-- goals (deleted)
+  |     |-- steps (deleted via FK cascade or manually)
+  |     |     +-- step_status_history (deleted via FK cascade)
+  |     |-- goal_tags (deleted via FK cascade)
+  |     |-- goal_cost_items (deleted via FK cascade)
+  |     +-- active_missions (deleted -- references goal_id)
+  |
+  +-- pact fields reset:
+        - points -> 0
+        - global_progress -> 0
+        - checkin_streak -> 0
+        - checkin_total_count -> 0
+```
 
----
+## Implementation
 
-## Plan
+### Step 1: Database Function (Migration)
 
-### Step 1: Database Migration -- Add `show_border` and `avatar_border_color` to `cosmetic_frames`
+Create a `SECURITY DEFINER` function `reset_pact_data(p_pact_id UUID)` that:
+1. Verifies the caller owns the pact (`auth.uid() = user_id`)
+2. Deletes all `active_missions` for the user (they reference goals)
+3. Deletes all `goals` where `pact_id = p_pact_id` (FK cascades handle steps, tags, cost_items, step_status_history)
+4. Resets pact counters: `points = 0`, `global_progress = 0`, `checkin_streak = 0`, `checkin_total_count = 0`
+5. Resets `achievement_tracking` counters for the user back to 0
+6. Returns a success indicator
 
-Add two new columns:
-- `show_border` (BOOLEAN, default TRUE) -- whether to display the avatar border ring
-- `avatar_border_color` (TEXT, default '#5bb4ff') -- customizable border color per frame
+Using a single DB function ensures atomicity -- either everything resets or nothing does.
 
-This lets admins decide per-frame whether the border appears and what color it is.
+### Step 2: Client Hook -- `useResetPact`
 
-### Step 2: Fix Upload Overlay Alignment in `ProfileBoundedProfile.tsx`
+New hook in `src/hooks/useResetPact.ts`:
+- Calls `supabase.rpc("reset_pact_data", { p_pact_id: pactId })`
+- Invalidates all relevant React Query caches: `["pact"]`, `["goals"]`, `["ranks"]`, `["active-mission"]`
+- Shows success/error toast
 
-- Move the `group` class from the outer wrapper (line 357) to a new inner wrapper that wraps only the `AvatarFrame` component
-- Scope the upload overlay `div` to sit exactly over the avatar, not the glow area
-- Change hover detection: only show upload icon when hovering directly over the avatar circle
+### Step 3: UI -- Add Reset Button to Pact Settings
 
-### Step 3: Update `AvatarFrame` Component -- Conditional Border
-
-- Add `showBorder` prop (default `true`) to `AvatarFrame`
-- When `showBorder` is false, remove the `border-2` class from the Avatar element
-- The `borderColor` prop already exists, so it continues to work when border is shown
-
-### Step 4: Wire Frame Border Settings Through the System
-
-- Update `CosmeticFrame` interfaces in `ProfileBoundedProfile.tsx` and `AdminCosmeticsManager.tsx` to include `show_border` and `avatar_border_color`
-- Pass `showBorder={activeFrame?.show_border !== false}` and `borderColor={activeFrame?.avatar_border_color || activeFrame?.border_color}` to `AvatarFrame`
-- Do the same in `FittingRoom.tsx` (Shop preview)
-
-### Step 5: Admin Form -- Add Border Control Fields
-
-In the Frame creation/editing dialog of `AdminCosmeticsManager.tsx`:
-- Add a "Show Avatar Border" toggle (Switch) -- visible for both Classic and Image modes
-- Add an "Avatar Border Color" input with a color swatch preview
-
-### Step 6: Add Color Preview Swatches to All Color Inputs
-
-For every color/RGBA text input in the admin forms (border_color, glow_color, gradient_start, gradient_end, text_color, avatar_border_color):
-- Add a small colored square (`div`) next to the input that renders the current value as its `backgroundColor`
-- This gives immediate visual feedback without needing a full color picker
-
----
+In `ProfilePactSettings` (or `PactSettingsCard`), add a "Reset Pact" danger button:
+- Guarded by an AlertDialog confirmation with explicit warning text
+- Requires typing the pact name to confirm (prevents accidental resets)
+- Shows loading state during the operation
 
 ## Technical Details
 
-**Migration SQL:**
+**Database function:**
 ```text
-ALTER TABLE cosmetic_frames
-  ADD COLUMN show_border BOOLEAN DEFAULT TRUE,
-  ADD COLUMN avatar_border_color TEXT DEFAULT '#5bb4ff';
+CREATE OR REPLACE FUNCTION public.reset_pact_data(p_pact_id UUID)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $$
+DECLARE
+  v_user_id UUID;
+BEGIN
+  -- Verify ownership
+  SELECT user_id INTO v_user_id
+  FROM pacts WHERE id = p_pact_id;
+
+  IF v_user_id IS NULL OR v_user_id != auth.uid() THEN
+    RAISE EXCEPTION 'Unauthorized';
+  END IF;
+
+  -- Delete active missions (references goals)
+  DELETE FROM active_missions WHERE user_id = v_user_id;
+
+  -- Delete all goals (FK cascades handle steps, tags, cost_items, history)
+  DELETE FROM goals WHERE pact_id = p_pact_id;
+
+  -- Reset pact counters
+  UPDATE pacts SET
+    points = 0,
+    global_progress = 0,
+    checkin_streak = 0,
+    checkin_total_count = 0
+  WHERE id = p_pact_id;
+
+  -- Reset achievement tracking
+  UPDATE achievement_tracking SET
+    total_goals_created = 0, easy_goals_created = 0,
+    medium_goals_created = 0, hard_goals_created = 0,
+    extreme_goals_created = 0, impossible_goals_created = 0,
+    custom_goals_created = 0, goals_completed_total = 0,
+    easy_goals_completed = 0, medium_goals_completed = 0,
+    hard_goals_completed = 0, extreme_goals_completed = 0,
+    impossible_goals_completed = 0, custom_goals_completed = 0,
+    steps_completed_total = 0
+  WHERE user_id = v_user_id;
+
+  RETURN TRUE;
+END;
+$$;
 ```
 
-**AvatarFrame prop change:**
-```text
-// New prop
-showBorder?: boolean;  // default true
+**Files to create/modify:**
+- `supabase/migrations/` -- new migration with the `reset_pact_data` function
+- `src/hooks/useResetPact.ts` -- new hook
+- `src/components/profile/PactSettingsCard.tsx` -- add reset button with confirmation dialog
 
-// Avatar element: conditionally apply border
-<Avatar className={cn(
-  showBorder ? "border-2" : "",
-  "relative z-10 bg-background",
-  sizeMap[size]
-)} style={{ borderColor: showBorder ? borderColor : "transparent" }}>
-```
-
-**Upload overlay fix (ProfileBoundedProfile):**
-The current structure nests the overlay as a sibling to `AvatarFrame` inside a `group` div. The fix wraps only the `Avatar` area in the `group` scope and positions the overlay to match the avatar dimensions using the same `sizeMap` classes.
-
-**Color swatch pattern for admin inputs:**
-```text
-<div className="flex items-center gap-2">
-  <div
-    className="w-8 h-8 rounded border border-primary/30 shrink-0"
-    style={{ backgroundColor: value }}
-  />
-  <Input value={value} onChange={...} />
-</div>
-```
-
-**Files to modify:**
-- `supabase/migrations/` -- new migration for `show_border` + `avatar_border_color`
-- `src/components/ui/avatar-frame.tsx` -- add `showBorder` prop
-- `src/components/profile/ProfileBoundedProfile.tsx` -- fix overlay, wire new props
-- `src/pages/AdminCosmeticsManager.tsx` -- add border toggle, color swatches
-- `src/components/shop/FittingRoom.tsx` -- wire new props to preview
