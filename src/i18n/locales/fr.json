@@ -1040,7 +1040,13 @@
       "color": "Couleur",
       "projectDates": "Chronologie du projet",
       "startDate": "Date de début",
-      "endDate": "Date de fin"
+      "endDate": "Date de fin",
+      "resetPact": "Réinitialiser le Pacte",
+      "resetPactDesc": "Supprimer tous les objectifs, étapes et progrès. Ton identité de pacte est conservée.",
+      "resetPactWarning": "Cette action est irréversible. Tous tes objectifs, étapes, missions et compteurs de progression seront définitivement supprimés.",
+      "resetPactConfirm": "Tape le nom de ton pacte pour confirmer",
+      "resetPactButton": "Tout réinitialiser",
+      "resetting": "Réinitialisation…"
     },
     "account": {
       "title": "Informations du compte",

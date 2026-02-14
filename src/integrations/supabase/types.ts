@@ -2443,6 +2443,7 @@ export type Database = {
         Returns: undefined
       }
       redeem_promo_code: { Args: { p_code: string }; Returns: Json }
+      reset_pact_data: { Args: { p_pact_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "user" | "admin"

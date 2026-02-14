@@ -1040,7 +1040,13 @@
       "color": "Color",
       "projectDates": "Project Timeline",
       "startDate": "Start Date",
-      "endDate": "End Date"
+      "endDate": "End Date",
+      "resetPact": "Reset Pact",
+      "resetPactDesc": "Delete all goals, steps and progress. Your pact identity is kept.",
+      "resetPactWarning": "This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.",
+      "resetPactConfirm": "Type your pact name to confirm",
+      "resetPactButton": "Reset everything",
+      "resetting": "Resetting…"
     },
     "account": {
       "title": "Account Information",
