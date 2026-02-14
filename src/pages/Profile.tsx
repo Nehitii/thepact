@@ -5,7 +5,7 @@ import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSetti
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
-import { Loader2, Fingerprint } from "lucide-react";
+import { Fingerprint, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Profile() {
@@ -60,14 +60,14 @@ export default function Profile() {
       floating={user ? <ProfileDevilNote isVisible={isAtBottom} /> : null}
       containerClassName="max-w-5xl"
     >
-      <div className="relative space-y-8 pb-20">
+      <div className="pb-20">
         {loading ? (
           <div className="space-y-8">
-            <Skeleton className="h-[350px] w-full bg-primary/5 rounded-[2rem]" />
-            <Skeleton className="h-[250px] w-full bg-primary/5 rounded-[2rem]" />
+            <Skeleton className="h-[300px] w-full bg-primary/5 rounded-[2.5rem]" />
+            <Skeleton className="h-[400px] w-full bg-primary/5 rounded-[2.5rem]" />
           </div>
         ) : user && initialData ? (
-          <div className="animate-in fade-in zoom-in-95 duration-500">
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <ProfileAccountSettings userId={user.id} initialData={initialData} />
           </div>
         ) : (
