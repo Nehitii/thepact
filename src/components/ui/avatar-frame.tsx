@@ -13,6 +13,7 @@ interface AvatarFrameProps {
   frameScale?: number;
   frameOffsetX?: number;
   frameOffsetY?: number;
+  showBorder?: boolean;
 }
 
 const sizeMap = {
@@ -34,6 +35,7 @@ export function AvatarFrame({
   frameScale = 1,
   frameOffsetX = 0,
   frameOffsetY = 0,
+  showBorder = true,
 }: AvatarFrameProps) {
   const { transform, transformOrigin } = computeFrameTransform({
     frameScale,
@@ -51,7 +53,7 @@ export function AvatarFrame({
 
       {/* Main Avatar (L'image ronde) */}
       {/* z-10 assure que l'avatar est au-dessus du fond mais en-dessous du cadre */}
-      <Avatar className={cn("border-2 relative z-10 bg-background", sizeMap[size])} style={{ borderColor }}>
+      <Avatar className={cn(showBorder ? "border-2" : "border-0", "relative z-10 bg-background", sizeMap[size])} style={{ borderColor: showBorder ? borderColor : "transparent" }}>
         <AvatarImage src={avatarUrl || undefined} className="object-cover h-full w-full" />
         <AvatarFallback className="bg-muted text-muted-foreground font-orbitron">{fallback}</AvatarFallback>
       </Avatar>
