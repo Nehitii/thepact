@@ -68,7 +68,6 @@ const SettingRow = ({
   <div className="flex flex-col md:flex-row gap-4 py-6 first:pt-0 last:pb-0">
     <div className="md:w-1/3 space-y-1">
       <div className="flex items-center gap-2">
-        {/* MODIFICATION: rounded-xl pour l'icône */}
         <div className="p-2 rounded-xl bg-primary/10 text-primary">
           <Icon size={16} />
         </div>
@@ -91,21 +90,14 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
   const [formData, setFormData] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Styles Glassmorphism
+  // Styles Glassmorphism arrondis
   const styles = useMemo(
     () => ({
-      // MODIFICATION: Ajout de rounded-xl sur les inputs
       input:
         "bg-background/40 backdrop-blur-sm border-primary/20 focus:border-primary/50 transition-all font-rajdhani rounded-xl",
-
-      // MODIFICATION: Ajout de rounded-xl sur les triggers
       selectTrigger:
         "bg-background/40 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all font-rajdhani rounded-xl",
-
-      // MODIFICATION: Ajout de rounded-2xl sur les contenus déroulants
       selectContent: "bg-popover/95 backdrop-blur-xl border-primary/20 shadow-2xl rounded-2xl overflow-hidden",
-
-      // MODIFICATION: Ajout de rounded-3xl sur les cartes principales
       card: "bg-card/30 backdrop-blur-md border-primary/10 shadow-lg rounded-3xl overflow-hidden",
     }),
     [],
@@ -145,17 +137,16 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* SECTION 1: IDENTITÉ */}
+      {/* SECTION 1: INFORMATIONS PERSONNELLES */}
       <Card className={styles.card}>
         <CardContent className="p-6">
           <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
-            <User className="h-5 w-5" /> {t("profile.sections.identity")}
+            {/* CHANGEMENT ICI : Titre plus clair */}
+            <User className="h-5 w-5" /> Informations Personnelles
           </h3>
 
           <div className="divide-y divide-primary/5">
             <SettingRow icon={Mail} label={t("common.email")} description={t("profile.emailCantChange")}>
-              {/* Note: L'input désactivé hérite aussi du rounded-xl via className={styles.input} si on l'ajoutait, 
-                  mais ici il a des classes manuelles. Je lui ajoute rounded-xl manuellement. */}
               <Input value={formData.email} disabled className="opacity-50 cursor-not-allowed bg-muted/20 rounded-xl" />
             </SettingRow>
 
@@ -203,11 +194,12 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         </CardContent>
       </Card>
 
-      {/* SECTION 2: RÉGIONALISATION */}
+      {/* SECTION 2: PRÉFÉRENCES RÉGIONALES */}
       <Card className={styles.card}>
         <CardContent className="p-6">
           <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
-            <Globe className="h-5 w-5" /> {t("profile.sections.localization")}
+            {/* CHANGEMENT ICI : Titre plus clair */}
+            <Globe className="h-5 w-5" /> Préférences Régionales
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
@@ -272,13 +264,11 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         </CardContent>
       </Card>
 
-      {/* BOUTON D'ACTION FIXE OU FLOTTANT */}
       <div className="flex justify-end pt-4">
         <Button
           onClick={handleSave}
           disabled={isSaving}
           size="lg"
-          // MODIFICATION: rounded-xl ajouté ici
           className="rounded-xl min-w-[200px] bg-primary hover:bg-primary/80 text-primary-foreground font-orbitron shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all hover:scale-105 active:scale-95"
         >
           {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
