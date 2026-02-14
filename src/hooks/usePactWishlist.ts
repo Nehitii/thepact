@@ -22,6 +22,9 @@ export interface PactWishlistItem {
   acquired: boolean;
   acquired_at: string | null;
   notes: string | null;
+  url: string | null;
+  source_type: string;
+  source_goal_cost_id: string | null;
   created_at: string;
   updated_at: string;
   goal?: PactWishlistGoalLink | null;
@@ -52,6 +55,9 @@ export function usePactWishlistItems(userId: string | undefined) {
           acquired,
           acquired_at,
           notes,
+          url,
+          source_type,
+          source_goal_cost_id,
           created_at,
           updated_at,
           goal:goals(id,name,type,status)
@@ -80,6 +86,7 @@ export function useCreatePactWishlistItem() {
       category?: string | null;
       goalId?: string | null;
       notes?: string | null;
+      url?: string | null;
     }) => {
       const { data, error } = await supabase
         .from("wishlist_items")
@@ -91,6 +98,7 @@ export function useCreatePactWishlistItem() {
           category: input.category ?? null,
           goal_id: input.goalId ?? null,
           notes: input.notes ?? null,
+          url: input.url ?? null,
         })
         .select("id")
         .single();
@@ -123,7 +131,7 @@ export function useUpdatePactWishlistItem() {
     mutationFn: async (input: {
       userId: string;
       id: string;
-      patch: Partial<Pick<PactWishlistItem, "name" | "category" | "estimated_cost" | "item_type" | "goal_id" | "acquired" | "notes">>;
+      patch: Partial<Pick<PactWishlistItem, "name" | "category" | "estimated_cost" | "item_type" | "goal_id" | "acquired" | "notes" | "url">>;
     }) => {
       const { error } = await supabase
         .from("wishlist_items")

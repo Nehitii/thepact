@@ -2342,7 +2342,10 @@ export type Database = {
           item_type: string
           name: string
           notes: string | null
+          source_goal_cost_id: string | null
+          source_type: string
           updated_at: string
+          url: string | null
           user_id: string
         }
         Insert: {
@@ -2356,7 +2359,10 @@ export type Database = {
           item_type?: string
           name: string
           notes?: string | null
+          source_goal_cost_id?: string | null
+          source_type?: string
           updated_at?: string
+          url?: string | null
           user_id: string
         }
         Update: {
@@ -2370,7 +2376,10 @@ export type Database = {
           item_type?: string
           name?: string
           notes?: string | null
+          source_goal_cost_id?: string | null
+          source_type?: string
           updated_at?: string
+          url?: string | null
           user_id?: string
         }
         Relationships: [
