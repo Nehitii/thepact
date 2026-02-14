@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { InlineFramePreview } from "@/components/ui/avatar-frame";
+import { FramePreview as InlineFramePreview } from "@/components/ui/avatar-frame";
 import { computeFrameTransform } from "@/components/ui/unified-frame-renderer";
 import { 
   Shield, 
@@ -437,8 +437,7 @@ export default function AdminCosmeticsManager() {
                                 frameOffsetX={editingFrame.frame_offset_x}
                                 frameOffsetY={editingFrame.frame_offset_y}
                                 glowColor={editingFrame.glow_color}
-                                containerSize={80}
-                                label="Shop"
+                                size="sm"
                               />
                               {/* Admin/reference preview (96px) */}
                               <InlineFramePreview
@@ -447,9 +446,7 @@ export default function AdminCosmeticsManager() {
                                 frameOffsetX={editingFrame.frame_offset_x}
                                 frameOffsetY={editingFrame.frame_offset_y}
                                 glowColor={editingFrame.glow_color}
-                                containerSize={96}
-                                showGuides
-                                label="Editor"
+                                size="md"
                               />
                               {/* Profile preview (128px) */}
                               <InlineFramePreview
@@ -458,8 +455,7 @@ export default function AdminCosmeticsManager() {
                                 frameOffsetX={editingFrame.frame_offset_x}
                                 frameOffsetY={editingFrame.frame_offset_y}
                                 glowColor={editingFrame.glow_color}
-                                containerSize={128}
-                                label="Profile"
+                                size="2xl"
                               />
                             </div>
                           </div>

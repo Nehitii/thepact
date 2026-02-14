@@ -7,7 +7,14 @@ export interface Rank {
   id: string;
   name: string;
   min_points: number;
+  max_points?: number | null;
   image_url?: string | null;
+  logo_url?: string | null;
+  background_url?: string | null;
+  background_opacity?: number | null;
+  frame_color?: string | null;
+  glow_color?: string | null;
+  quote?: string | null;
 }
 
 // --- RANK BADGE ---
@@ -67,17 +74,23 @@ export function RankBadge({ rank, currentXP, nextRankMinXP, size = "md", classNa
 }
 
 // --- RANK CARD (Composant Principal) ---
-interface RankCardProps {
-  currentRank: Rank;
+export interface RankCardProps {
+  rank?: Rank;
+  currentRank?: Rank;
   nextRank?: Rank | null;
   currentXP: number;
+  nextRankMinXP?: number;
+  totalMaxXP?: number;
+  isActive?: boolean;
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
-export function RankCard({ currentRank, nextRank, currentXP, className }: RankCardProps) {
+export function RankCard({ rank, currentRank: currentRankProp, nextRank, currentXP, nextRankMinXP, totalMaxXP, isActive, size = "md", className }: RankCardProps) {
+  const currentRank = rank || currentRankProp!;
   // Calcul de la progression
   const currentRankMin = currentRank.min_points;
-  const nextRankMin = nextRank?.min_points || currentRankMin * 1.5; // Fallback si max rank
+  const nextRankMin = nextRankMinXP || nextRank?.min_points || currentRankMin * 1.5;
 
   // XP gagnée DANS ce rang (ex: j'ai 1500xp, rang commence à 1000, j'ai fait 500 dans ce rang)
   const xpInRank = Math.max(0, currentXP - currentRankMin);
@@ -116,8 +129,7 @@ export function RankCard({ currentRank, nextRank, currentXP, className }: RankCa
           <div className="relative h-2 w-full bg-secondary/30 rounded-full overflow-hidden">
             <Progress
               value={progressPercent}
-              className="h-full bg-transparent"
-              indicatorClassName="bg-primary shadow-[0_0_10px_rgba(91,180,255,0.5)]"
+              className="h-full [&>div]:bg-primary [&>div]:shadow-[0_0_10px_rgba(91,180,255,0.5)]"
             />
           </div>
         </div>
