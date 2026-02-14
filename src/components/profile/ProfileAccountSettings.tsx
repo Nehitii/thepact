@@ -68,7 +68,8 @@ const SettingRow = ({
   <div className="flex flex-col md:flex-row gap-4 py-6 first:pt-0 last:pb-0">
     <div className="md:w-1/3 space-y-1">
       <div className="flex items-center gap-2">
-        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+        {/* MODIFICATION: rounded-xl pour l'icône */}
+        <div className="p-2 rounded-xl bg-primary/10 text-primary">
           <Icon size={16} />
         </div>
         <Label className="text-sm font-semibold uppercase tracking-wider font-rajdhani">{label}</Label>
@@ -93,11 +94,19 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
   // Styles Glassmorphism
   const styles = useMemo(
     () => ({
-      input: "bg-background/40 backdrop-blur-sm border-primary/20 focus:border-primary/50 transition-all font-rajdhani",
+      // MODIFICATION: Ajout de rounded-xl sur les inputs
+      input:
+        "bg-background/40 backdrop-blur-sm border-primary/20 focus:border-primary/50 transition-all font-rajdhani rounded-xl",
+
+      // MODIFICATION: Ajout de rounded-xl sur les triggers
       selectTrigger:
-        "bg-background/40 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all font-rajdhani",
-      selectContent: "bg-popover/95 backdrop-blur-xl border-primary/20 shadow-2xl",
-      card: "bg-card/30 backdrop-blur-md border-primary/10 shadow-lg",
+        "bg-background/40 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all font-rajdhani rounded-xl",
+
+      // MODIFICATION: Ajout de rounded-2xl sur les contenus déroulants
+      selectContent: "bg-popover/95 backdrop-blur-xl border-primary/20 shadow-2xl rounded-2xl overflow-hidden",
+
+      // MODIFICATION: Ajout de rounded-3xl sur les cartes principales
+      card: "bg-card/30 backdrop-blur-md border-primary/10 shadow-lg rounded-3xl overflow-hidden",
     }),
     [],
   );
@@ -145,7 +154,9 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
           <div className="divide-y divide-primary/5">
             <SettingRow icon={Mail} label={t("common.email")} description={t("profile.emailCantChange")}>
-              <Input value={formData.email} disabled className="opacity-50 cursor-not-allowed bg-muted/20" />
+              {/* Note: L'input désactivé hérite aussi du rounded-xl via className={styles.input} si on l'ajoutait, 
+                  mais ici il a des classes manuelles. Je lui ajoute rounded-xl manuellement. */}
+              <Input value={formData.email} disabled className="opacity-50 cursor-not-allowed bg-muted/20 rounded-xl" />
             </SettingRow>
 
             <SettingRow icon={ShieldCheck} label={t("profile.displayName")}>
@@ -267,7 +278,8 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
           onClick={handleSave}
           disabled={isSaving}
           size="lg"
-          className="min-w-[200px] bg-primary hover:bg-primary/80 text-primary-foreground font-orbitron shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all hover:scale-105 active:scale-95"
+          // MODIFICATION: rounded-xl ajouté ici
+          className="rounded-xl min-w-[200px] bg-primary hover:bg-primary/80 text-primary-foreground font-orbitron shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all hover:scale-105 active:scale-95"
         >
           {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
           {isSaving ? t("common.saving") : t("common.saveChanges")}
