@@ -1,289 +1,278 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { format } from "date-fns";
+import {
+  Calendar as CalendarIcon,
+  Loader2,
+  User,
+  Globe,
+  Mail,
+  ShieldCheck,
+  CreditCard,
+  ChevronRight,
+} from "lucide-react";
+import { useTranslation } from "react-i18next";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent } from "@/components/ui/card";
+
 import { supabase } from "@/lib/supabase";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useTranslation } from "react-i18next";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+
+// --- Types & Constants ---
+const TIMEZONES = [
+  "UTC",
+  "Europe/Paris",
+  "Europe/London",
+  "America/New_York",
+  "America/Los_Angeles",
+  "Asia/Tokyo",
+  "Asia/Shanghai",
+  "Australia/Sydney",
+] as const;
+const COUNTRIES = ["us", "uk", "fr", "de", "jp", "cn", "au", "ca", "es", "it", "br", "in", "other"] as const;
 
 interface ProfileAccountSettingsProps {
   userId: string;
-  email: string;
-  displayName: string;
-  timezone: string;
-  language: string;
-  currency: string;
-  birthday: Date | undefined;
-  country: string;
-  onDisplayNameChange: (value: string) => void;
-  onTimezoneChange: (value: string) => void;
-  onLanguageChange: (value: string) => void;
-  onCurrencyChange: (value: string) => void;
-  onBirthdayChange: (date: Date | undefined) => void;
-  onCountryChange: (value: string) => void;
+  initialData: {
+    email: string;
+    displayName: string;
+    timezone: string;
+    language: string;
+    currency: string;
+    birthday: Date | undefined;
+    country: string;
+  };
 }
 
-const timezones = [
-  { value: "UTC" },
-  { value: "Europe/Paris" },
-  { value: "Europe/London" },
-  { value: "America/New_York" },
-  { value: "America/Los_Angeles" },
-  { value: "Asia/Tokyo" },
-  { value: "Asia/Shanghai" },
-  { value: "Australia/Sydney" },
-] as const;
+// --- Sous-composant pour les lignes du formulaire ---
+const SettingRow = ({
+  icon: Icon,
+  label,
+  children,
+  description,
+}: {
+  icon: any;
+  label: string;
+  children: React.ReactNode;
+  description?: string;
+}) => (
+  <div className="flex flex-col md:flex-row gap-4 py-6 first:pt-0 last:pb-0">
+    <div className="md:w-1/3 space-y-1">
+      <div className="flex items-center gap-2">
+        <div className="p-2 rounded-lg bg-primary/10 text-primary">
+          <Icon size={16} />
+        </div>
+        <Label className="text-sm font-semibold uppercase tracking-wider font-rajdhani">{label}</Label>
+      </div>
+      {description && (
+        <p className="text-xs text-muted-foreground pl-10 leading-relaxed font-rajdhani">{description}</p>
+      )}
+    </div>
+    <div className="md:w-2/3">{children}</div>
+  </div>
+);
 
-const countries = [
-  { value: "us" },
-  { value: "uk" },
-  { value: "fr" },
-  { value: "de" },
-  { value: "jp" },
-  { value: "cn" },
-  { value: "au" },
-  { value: "ca" },
-  { value: "es" },
-  { value: "it" },
-  { value: "br" },
-  { value: "in" },
-  { value: "other" },
-] as const;
-
-export function ProfileAccountSettings({
-  userId,
-  email,
-  displayName,
-  timezone,
-  language,
-  currency,
-  birthday,
-  country,
-  onDisplayNameChange,
-  onTimezoneChange,
-  onLanguageChange,
-  onCurrencyChange,
-  onBirthdayChange,
-  onCountryChange,
-}: ProfileAccountSettingsProps) {
+export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSettingsProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = useDateFnsLocale();
   const { toast } = useToast();
   const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
-  const [saving, setSaving] = useState(false);
 
-  const persistLanguage = async (nextLanguage: string) => {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ language: nextLanguage })
-      .eq("id", userId);
-    if (error) {
-      // eslint-disable-next-line no-console
-      console.warn("[i18n] Failed to persist language", error);
-    }
-  };
+  const [formData, setFormData] = useState(initialData);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleLanguageChange = async (next: string) => {
-    onLanguageChange(next);
-    await i18n.changeLanguage(next);
-    await persistLanguage(next);
-  };
+  // Styles Glassmorphism
+  const styles = useMemo(
+    () => ({
+      input: "bg-background/40 backdrop-blur-sm border-primary/20 focus:border-primary/50 transition-all font-rajdhani",
+      selectTrigger:
+        "bg-background/40 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all font-rajdhani",
+      selectContent: "bg-popover/95 backdrop-blur-xl border-primary/20 shadow-2xl",
+      card: "bg-card/30 backdrop-blur-md border-primary/10 shadow-lg",
+    }),
+    [],
+  );
 
   const handleSave = async () => {
-    setSaving(true);
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          display_name: formData.displayName.trim() || null,
+          timezone: formData.timezone,
+          language: formData.language,
+          currency: formData.currency,
+          birthday: formData.birthday ? format(formData.birthday, "yyyy-MM-dd") : null,
+          country: formData.country || null,
+        })
+        .eq("id", userId);
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        display_name: displayName.trim() || null,
-        timezone,
-        language,
-        currency,
-        birthday: birthday ? birthday.toISOString().split('T')[0] : null,
-        country: country || null,
-      })
-      .eq("id", userId);
+      if (error) throw error;
 
-    if (error) {
-      toast({
-        title: t("common.error"),
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      updateGlobalCurrency(currency);
+      if (formData.language !== i18n.language) {
+        await i18n.changeLanguage(formData.language);
+      }
+
+      updateGlobalCurrency(formData.currency);
       await refreshCurrency();
-      toast({
-        title: t("profile.updatedTitle"),
-        description: t("profile.updatedDesc"),
-      });
-    }
 
-    setSaving(false);
+      toast({ title: t("profile.updatedTitle"), description: t("profile.updatedDesc") });
+    } catch (error: any) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // Shop-aligned, lighter glass styles (semantic tokens only)
-  const labelStyle = "text-primary/80 font-rajdhani uppercase tracking-wide text-sm";
-  const inputStyle = "bg-card/60 border-primary/20 text-foreground placeholder:text-muted-foreground font-rajdhani focus-visible:ring-1 focus-visible:ring-primary/30";
-  const selectTriggerStyle = "bg-card/60 border-primary/20 text-foreground font-rajdhani hover:border-primary/40 hover:bg-card/70 focus:ring-1 focus:ring-primary/30";
-  const selectContentStyle = "bg-popover/95 backdrop-blur-xl border-primary/20";
-  const selectItemStyle = "text-foreground font-rajdhani focus:bg-primary/10 focus:text-foreground";
-
   return (
-    <div className="space-y-6">
-      {/* Email (disabled) */}
-      <div className="space-y-2">
-        <Label htmlFor="email" className={labelStyle}>
-          {t("common.email")}
-        </Label>
-        <Input 
-          id="email" 
-          value={email} 
-          disabled 
-          className="bg-card/40 border-primary/15 text-muted-foreground font-rajdhani cursor-not-allowed" 
-        />
-        <p className="text-xs text-muted-foreground font-rajdhani">{t("profile.emailCantChange")}</p>
-      </div>
+    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* SECTION 1: IDENTITÉ */}
+      <Card className={styles.card}>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
+            <User className="h-5 w-5" /> {t("profile.sections.identity")}
+          </h3>
 
-      {/* Display Name */}
-      <div className="space-y-2">
-        <Label htmlFor="displayName" className={labelStyle}>
-          {t("profile.displayName")}
-        </Label>
-        <Input
-          id="displayName"
-          placeholder={t("profile.displayNamePlaceholder")}
-          value={displayName}
-          onChange={(e) => onDisplayNameChange(e.target.value)}
-          maxLength={100}
-          className={inputStyle}
-        />
-      </div>
+          <div className="divide-y divide-primary/5">
+            <SettingRow icon={Mail} label={t("common.email")} description={t("profile.emailCantChange")}>
+              <Input value={formData.email} disabled className="opacity-50 cursor-not-allowed bg-muted/20" />
+            </SettingRow>
 
-      {/* Birthday */}
-      <div className="space-y-2">
-        <Label className={labelStyle}>
-          {t("profile.birthday")}
-        </Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                selectTriggerStyle,
-                !birthday && "text-muted-foreground"
-              )}
-            >
-              <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
-              {birthday ? (
-                  <span className="text-foreground">{format(birthday, "PPP", { locale: dateLocale })}</span>
-              ) : (
-                  <span className="text-muted-foreground">{t("profile.birthdayPlaceholder")}</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className={cn("w-auto p-0 z-50", selectContentStyle)} align="start">
-            <Calendar
-              mode="single"
-              selected={birthday}
-              onSelect={onBirthdayChange}
-              initialFocus
-              captionLayout="dropdown-buttons"
-              fromYear={1920}
-              toYear={new Date().getFullYear()}
-              className="pointer-events-auto [&_.rdp-caption_select]:bg-card [&_.rdp-caption_select]:text-foreground [&_.rdp-caption_select]:border-primary/20 [&_.rdp-day]:text-foreground [&_.rdp-day_button:hover]:bg-primary/10 [&_.rdp-day_button.rdp-day_selected]:bg-primary/20 [&_.rdp-day_button.rdp-day_selected]:text-foreground [&_.rdp-head_cell]:text-primary/80 [&_.rdp-nav_button]:text-primary [&_.rdp-nav_button:hover]:bg-primary/10"
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+            <SettingRow icon={ShieldCheck} label={t("profile.displayName")}>
+              <Input
+                placeholder={t("profile.displayNamePlaceholder")}
+                value={formData.displayName}
+                onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
+                className={styles.input}
+              />
+            </SettingRow>
 
-      {/* Country */}
-      <div className="space-y-2">
-        <Label htmlFor="country" className={labelStyle}>
-          {t("profile.country")}
-        </Label>
-        <Select value={country} onValueChange={onCountryChange}>
-          <SelectTrigger id="country" className={selectTriggerStyle}>
-            <SelectValue placeholder={t("profile.countryPlaceholder")} className="text-[#6b9ec4]" />
-          </SelectTrigger>
-          <SelectContent className={selectContentStyle}>
-            {countries.map((c) => (
-              <SelectItem key={c.value} value={c.value} className={selectItemStyle}>
-                {t(`profile.countries.${c.value}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+            <SettingRow icon={CalendarIcon} label={t("profile.birthday")}>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-between text-left",
+                      styles.selectTrigger,
+                      !formData.birthday && "text-muted-foreground",
+                    )}
+                  >
+                    <span className="flex items-center gap-2">
+                      {formData.birthday
+                        ? format(formData.birthday, "PPP", { locale: dateLocale })
+                        : t("profile.birthdayPlaceholder")}
+                    </span>
+                    <ChevronRight className="h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className={cn("w-auto p-0", styles.selectContent)} align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.birthday}
+                    onSelect={(date) => setFormData((p) => ({ ...p, birthday: date }))}
+                    fromYear={1920}
+                    toYear={new Date().getFullYear()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </SettingRow>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Time Zone */}
-      <div className="space-y-2">
-        <Label htmlFor="timezone" className={labelStyle}>
-          {t("profile.timezone")}
-        </Label>
-        <Select value={timezone} onValueChange={onTimezoneChange}>
-          <SelectTrigger id="timezone" className={selectTriggerStyle}>
-            <SelectValue placeholder={t("profile.timezonePlaceholder")} className="text-[#6b9ec4]" />
-          </SelectTrigger>
-          <SelectContent className={selectContentStyle}>
-            {timezones.map((tz) => (
-              <SelectItem key={tz.value} value={tz.value} className={selectItemStyle}>
-                {t(`profile.timezones.${tz.value}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {/* SECTION 2: RÉGIONALISATION */}
+      <Card className={styles.card}>
+        <CardContent className="p-6">
+          <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
+            <Globe className="h-5 w-5" /> {t("profile.sections.localization")}
+          </h3>
 
-      {/* Language */}
-      <div className="space-y-2">
-        <Label htmlFor="language" className={labelStyle}>
-          {t("profile.language")}
-        </Label>
-        <Select value={language} onValueChange={handleLanguageChange}>
-          <SelectTrigger id="language" className={selectTriggerStyle}>
-            <SelectValue placeholder={t("profile.languagePlaceholder")} className="text-[#6b9ec4]" />
-          </SelectTrigger>
-          <SelectContent className={selectContentStyle}>
-            <SelectItem value="en" className={selectItemStyle}>{t("profile.languages.en")}</SelectItem>
-            <SelectItem value="fr" className={selectItemStyle}>{t("profile.languages.fr")}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-primary/70">{t("profile.country")}</Label>
+              <Select value={formData.country} onValueChange={(val) => setFormData((p) => ({ ...p, country: val }))}>
+                <SelectTrigger className={styles.selectTrigger}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className={styles.selectContent}>
+                  {COUNTRIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {t(`profile.countries.${c}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Currency */}
-      <div className="space-y-2">
-        <Label htmlFor="currency" className={labelStyle}>
-          {t("profile.currency")}
-        </Label>
-        <Select value={currency} onValueChange={onCurrencyChange}>
-          <SelectTrigger id="currency" className={selectTriggerStyle}>
-            <SelectValue placeholder={t("profile.currencyPlaceholder")} className="text-[#6b9ec4]" />
-          </SelectTrigger>
-          <SelectContent className={selectContentStyle}>
-            <SelectItem value="eur" className={selectItemStyle}>{t("profile.currencies.eur")}</SelectItem>
-            <SelectItem value="usd" className={selectItemStyle}>{t("profile.currencies.usd")}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-primary/70">{t("profile.timezone")}</Label>
+              <Select value={formData.timezone} onValueChange={(val) => setFormData((p) => ({ ...p, timezone: val }))}>
+                <SelectTrigger className={styles.selectTrigger}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className={styles.selectContent}>
+                  {TIMEZONES.map((tz) => (
+                    <SelectItem key={tz} value={tz}>
+                      {tz}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-      {/* Save Button */}
-      <Button
-        onClick={handleSave}
-        disabled={saving}
-        className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider transition-all duration-300"
-      >
-        {saving ? t("common.saving") : t("common.saveChanges")}
-      </Button>
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-primary/70">{t("profile.language")}</Label>
+              <Select value={formData.language} onValueChange={(val) => setFormData((p) => ({ ...p, language: val }))}>
+                <SelectTrigger className={styles.selectTrigger}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className={styles.selectContent}>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="fr">Français</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs uppercase text-primary/70">{t("profile.currency")}</Label>
+              <Select value={formData.currency} onValueChange={(val) => setFormData((p) => ({ ...p, currency: val }))}>
+                <SelectTrigger className={styles.selectTrigger}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className={styles.selectContent}>
+                  <SelectItem value="eur">EUR (€)</SelectItem>
+                  <SelectItem value="usd">USD ($)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* BOUTON D'ACTION FIXE OU FLOTTANT */}
+      <div className="flex justify-end pt-4">
+        <Button
+          onClick={handleSave}
+          disabled={isSaving}
+          size="lg"
+          className="min-w-[200px] bg-primary hover:bg-primary/80 text-primary-foreground font-orbitron shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all hover:scale-105 active:scale-95"
+        >
+          {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+          {isSaving ? t("common.saving") : t("common.saveChanges")}
+        </Button>
+      </div>
     </div>
   );
 }
