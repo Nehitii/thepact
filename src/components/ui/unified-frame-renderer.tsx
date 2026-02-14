@@ -63,15 +63,4 @@ export const FRAME_CONTAINER_SIZES = {
   profileXl: 128, // Profile avatar xl
 } as const;
 
-/**
- * Size configuration for frame containers.
- * Maps size names to Tailwind classes and numeric values.
- */
-export const frameSizeConfig = {
-  sm: { container: 48, avatarClass: "w-10 h-10", frameClass: "w-12 h-12" },
-  md: { container: 64, avatarClass: "w-14 h-14", frameClass: "w-16 h-16" },
-  lg: { container: 96, avatarClass: "w-20 h-20", frameClass: "w-24 h-24" },
-  xl: { container: 128, avatarClass: "w-28 h-28", frameClass: "w-32 h-32" },
-} as const;
-
-export type FrameSize = keyof typeof frameSizeConfig;
+export type FrameSize = "sm" | "md" | "lg" | "xl" | "2xl";

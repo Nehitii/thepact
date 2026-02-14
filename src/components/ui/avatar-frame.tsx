@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { computeFrameTransform } from "@/components/ui/unified-frame-renderer";
 
 interface AvatarFrameProps {
   avatarUrl: string | null;
@@ -18,16 +19,8 @@ const sizeMap = {
   sm: "h-8 w-8",
   md: "h-12 w-12",
   lg: "h-24 w-24",
-  xl: "h-28 w-28", // Ajusté
-  "2xl": "h-32 w-32", // Réduit de 40 à 32 (128px) pour mieux s'intégrer
-};
-
-const frameSizeMap = {
-  sm: "scale-[1.2]",
-  md: "scale-[1.3]",
-  lg: "scale-[1.35]",
-  xl: "scale-[1.4]",
-  "2xl": "scale-[1.4]", // Scale standardisé pour éviter que ça "flotte" trop
+  xl: "h-28 w-28",
+  "2xl": "h-32 w-32",
 };
 
 export function AvatarFrame({
@@ -42,9 +35,11 @@ export function AvatarFrame({
   frameOffsetX = 0,
   frameOffsetY = 0,
 }: AvatarFrameProps) {
-  // Calcul de l'échelle : on part de la map et on multiplie par l'ajustement manuel
-  const baseScale = parseFloat(frameSizeMap[size].replace("scale-[", "").replace("]", ""));
-  const finalScale = baseScale * (frameScale || 1);
+  const { transform, transformOrigin } = computeFrameTransform({
+    frameScale,
+    frameOffsetX,
+    frameOffsetY,
+  });
 
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)}>
@@ -66,10 +61,7 @@ export function AvatarFrame({
       {frameImage && (
         <div
           className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center"
-          style={{
-            // On applique la transformation sur un conteneur qui fait exactement la taille du parent
-            transform: `scale(${finalScale}) translate(${frameOffsetX}px, ${frameOffsetY}px)`,
-          }}
+          style={{ transform, transformOrigin }}
         >
           <img src={frameImage} alt="" className="w-full h-full object-contain" />
         </div>
