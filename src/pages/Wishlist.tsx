@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { CyberBackground } from "@/components/CyberBackground";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
@@ -24,14 +24,15 @@ import {
 } from "@/hooks/usePactWishlist";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
-import { ArrowLeft, Check, Edit, Plus, ShoppingBag, Target, Trash2 } from "lucide-react";
+import { useWishlistGoalSync } from "@/hooks/useWishlistGoalSync";
+import { ArrowLeft, Check, Edit, ExternalLink, Link, Plus, Trophy } from "lucide-react";
 import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/wishlist/DuplicateMergeDialog";
+import { NeedVsWantChart } from "@/components/wishlist/NeedVsWantChart";
+import { WishlistItemCard } from "@/components/wishlist/WishlistItemCard";
+import { AnimatePresence } from "framer-motion";
 
 function normalizeWishlistName(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
 function findDuplicateByNameAndGoal(opts: {
@@ -63,28 +64,36 @@ export default function Wishlist() {
   const updateItem = useUpdatePactWishlistItem();
   const deleteItem = useDeletePactWishlistItem();
 
+  const { data: pact } = usePact(user?.id);
+  const { data: goals = [] } = useGoals(pact?.id);
+
+  // Goal sync
+  useWishlistGoalSync(user?.id, pact?.id, items);
+
   const [filterType, setFilterType] = useState<"all" | PactWishlistItemType>("all");
   const [sortBy, setSortBy] = useState<"recent" | "cost_desc" | "cost_asc">("recent");
   const [search, setSearch] = useState("");
 
-  const [newName, setNewName] = useState("");
-  const [newCost, setNewCost] = useState<string>("");
-  const [newType, setNewType] = useState<PactWishlistItemType>("optional");
-  const [newCategory, setNewCategory] = useState<string>("");
+  // New item form
   const [newOpen, setNewOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newCost, setNewCost] = useState("");
+  const [newType, setNewType] = useState<PactWishlistItemType>("optional");
+  const [newCategory, setNewCategory] = useState("");
+  const [newUrl, setNewUrl] = useState("");
 
-  const { data: pact } = usePact(user?.id);
-  const { data: goals = [] } = useGoals(pact?.id);
-
+  // Edit form
   const [editOpen, setEditOpen] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("");
-  const [editCost, setEditCost] = useState<string>("");
+  const [editCost, setEditCost] = useState("");
   const [editType, setEditType] = useState<PactWishlistItemType>("optional");
   const [editNotes, setEditNotes] = useState("");
-  const [editGoalId, setEditGoalId] = useState<string>("none");
+  const [editGoalId, setEditGoalId] = useState("none");
+  const [editUrl, setEditUrl] = useState("");
 
+  // Merge state
   const [mergeOpen, setMergeOpen] = useState(false);
   const [mergeBusy, setMergeBusy] = useState(false);
   const [mergeMode, setMergeMode] = useState<"create" | "edit" | null>(null);
@@ -105,6 +114,7 @@ export default function Wishlist() {
     setEditType(item.item_type);
     setEditNotes(item.notes ?? "");
     setEditGoalId(item.goal_id ?? "none");
+    setEditUrl(item.url ?? "");
     setEditOpen(true);
   };
 
@@ -116,12 +126,7 @@ export default function Wishlist() {
     const nextGoalId = editGoalId === "none" ? null : editGoalId;
 
     if (!opts?.skipDuplicateCheck) {
-      const dupe = findDuplicateByNameAndGoal({
-        items,
-        name: trimmed,
-        goalId: nextGoalId,
-        excludeId: editId,
-      });
+      const dupe = findDuplicateByNameAndGoal({ items, name: trimmed, goalId: nextGoalId, excludeId: editId });
       if (dupe) {
         const dupeFull = items.find((i) => i.id === dupe.id);
         setMergeMode("edit");
@@ -159,16 +164,18 @@ export default function Wishlist() {
         item_type: editType,
         notes: editNotes.trim() || null,
         goal_id: nextGoalId,
+        url: editUrl.trim() || null,
       },
     });
-
     setEditOpen(false);
   };
 
   const derived = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
+    const active = items.filter((i) => !i.acquired);
+    const acquired = items.filter((i) => i.acquired);
 
-    let filtered = items;
+    let filtered = active;
     if (filterType !== "all") {
       filtered = filtered.filter((i) => i.item_type === filterType);
     }
@@ -189,28 +196,16 @@ export default function Wishlist() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-    const requiredTotal = items
-      .filter((i) => i.item_type === "required")
-      .reduce((sum, i) => sum + Number(i.estimated_cost || 0), 0);
-    const optionalTotal = items
-      .filter((i) => i.item_type === "optional")
-      .reduce((sum, i) => sum + Number(i.estimated_cost || 0), 0);
+    const requiredTotal = active.reduce((sum, i) => sum + (i.item_type === "required" ? Number(i.estimated_cost || 0) : 0), 0);
+    const optionalTotal = active.reduce((sum, i) => sum + (i.item_type === "optional" ? Number(i.estimated_cost || 0) : 0), 0);
 
-    return {
-      list: sorted,
-      totals: {
-        required: requiredTotal,
-        optional: optionalTotal,
-        all: requiredTotal + optionalTotal,
-      },
-    };
+    return { list: sorted, acquired, totals: { required: requiredTotal, optional: optionalTotal } };
   }, [items, filterType, sortBy, search]);
 
   const createNew = async (opts?: { skipDuplicateCheck?: boolean }) => {
     if (!user) return;
     const trimmed = newName.trim();
     if (!trimmed) return;
-
     const parsedCost = Number((newCost || "0").replace(",", "."));
 
     if (!opts?.skipDuplicateCheck) {
@@ -220,22 +215,13 @@ export default function Wishlist() {
         setMergeMode("create");
         setMergeDuplicateId(dupe.id);
         setMergeExistingPreview({
-          name: dupeFull?.name ?? dupe.name,
-          goalId: dupeFull?.goal_id ?? null,
-          goalName: dupeFull?.goal?.name ?? null,
-          category: dupeFull?.category ?? null,
-          estimatedCost: Number(dupeFull?.estimated_cost ?? 0),
-          itemType: (dupeFull?.item_type ?? "optional") as any,
-          notes: dupeFull?.notes ?? null,
+          name: dupeFull?.name ?? dupe.name, goalId: dupeFull?.goal_id ?? null, goalName: dupeFull?.goal?.name ?? null,
+          category: dupeFull?.category ?? null, estimatedCost: Number(dupeFull?.estimated_cost ?? 0),
+          itemType: (dupeFull?.item_type ?? "optional") as any, notes: dupeFull?.notes ?? null,
         });
         setMergeIncomingPreview({
-          name: trimmed,
-          goalId: null,
-          goalName: null,
-          category: newCategory.trim() || null,
-          estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
-          itemType: newType,
-          notes: null,
+          name: trimmed, goalId: null, goalName: null, category: newCategory.trim() || null,
+          estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0, itemType: newType, notes: null,
         });
         setMergeOpen(true);
         return;
@@ -243,46 +229,30 @@ export default function Wishlist() {
     }
 
     await createItem.mutateAsync({
-      userId: user.id,
-      name: trimmed,
+      userId: user.id, name: trimmed,
       estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
-      itemType: newType,
-      category: newCategory.trim() || null,
+      itemType: newType, category: newCategory.trim() || null,
+      url: newUrl.trim() || null,
     });
-
-    setNewName("");
-    setNewCost("");
-    setNewCategory("");
-    setNewType("optional");
-    setNewOpen(false);
+    setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional"); setNewUrl(""); setNewOpen(false);
   };
 
   const performMerge = async () => {
     if (!user || !mergeMode || !mergeDuplicateId || !mergeExistingPreview || !mergeIncomingPreview) return;
     try {
       setMergeBusy(true);
-
       const dupeItem = items.find((i) => i.id === mergeDuplicateId);
       const currentItem = editId ? items.find((i) => i.id === editId) : null;
-
       const mergedCost = Number(dupeItem?.estimated_cost ?? 0) + Number(mergeIncomingPreview.estimatedCost ?? 0);
       const mergedType: PactWishlistItemType =
         (dupeItem?.item_type === "required" || mergeIncomingPreview.itemType === "required") ? "required" : "optional";
       const mergedCategory = (dupeItem?.category ?? "").trim() || (mergeIncomingPreview.category ?? "").trim() || null;
-      const mergedNotes =
-        [dupeItem?.notes?.trim(), mergeIncomingPreview.notes?.trim()].filter(Boolean).join("\n\n") || null;
+      const mergedNotes = [dupeItem?.notes?.trim(), mergeIncomingPreview.notes?.trim()].filter(Boolean).join("\n\n") || null;
 
       await updateItem.mutateAsync({
-        userId: user.id,
-        id: mergeDuplicateId,
-        patch: {
-          name: dupeItem?.name ?? mergeIncomingPreview.name,
-          goal_id: dupeItem?.goal_id ?? mergeIncomingPreview.goalId ?? null,
-          estimated_cost: mergedCost,
-          item_type: mergedType,
-          category: mergedCategory,
-          notes: mergedNotes,
-        },
+        userId: user.id, id: mergeDuplicateId,
+        patch: { name: dupeItem?.name ?? mergeIncomingPreview.name, goal_id: dupeItem?.goal_id ?? mergeIncomingPreview.goalId ?? null,
+          estimated_cost: mergedCost, item_type: mergedType, category: mergedCategory, notes: mergedNotes },
       });
 
       if (mergeMode === "edit" && currentItem && currentItem.id !== mergeDuplicateId) {
@@ -290,17 +260,9 @@ export default function Wishlist() {
         setEditOpen(false);
       }
 
-      toast({
-        title: "Merged",
-        description: "Duplicates combined into a single wishlist item.",
-      });
-
-      setMergeOpen(false);
-      setMergeMode(null);
-      setMergeDuplicateId(null);
-      setMergeExistingPreview(null);
-      setMergeIncomingPreview(null);
-      setNewOpen(false);
+      toast({ title: "Merged", description: "Duplicates combined into a single wishlist item." });
+      setMergeOpen(false); setMergeMode(null); setMergeDuplicateId(null);
+      setMergeExistingPreview(null); setMergeIncomingPreview(null); setNewOpen(false);
     } finally {
       setMergeBusy(false);
     }
@@ -309,11 +271,18 @@ export default function Wishlist() {
   const keepBoth = async () => {
     if (!mergeMode) return;
     setMergeOpen(false);
-    if (mergeMode === "create") {
-      await createNew({ skipDuplicateCheck: true });
-      return;
-    }
+    if (mergeMode === "create") { await createNew({ skipDuplicateCheck: true }); return; }
     await saveEdit({ skipDuplicateCheck: true });
+  };
+
+  const handleToggleAcquired = (id: string, acquired: boolean) => {
+    if (!user) return;
+    updateItem.mutate({ userId: user.id, id, patch: { acquired } });
+  };
+
+  const handleDelete = (id: string) => {
+    if (!user) return;
+    deleteItem.mutate({ userId: user.id, id });
   };
 
   return (
@@ -321,103 +290,64 @@ export default function Wishlist() {
       <CyberBackground />
 
       <DuplicateMergeDialog
-        open={mergeOpen}
-        onOpenChange={setMergeOpen}
-        existing={
-          mergeExistingPreview ??
-          ({ name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any)
-        }
-        incoming={
-          mergeIncomingPreview ??
-          ({ name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any)
-        }
-        isBusy={mergeBusy}
-        onMerge={performMerge}
-        onKeepBoth={keepBoth}
+        open={mergeOpen} onOpenChange={setMergeOpen}
+        existing={mergeExistingPreview ?? { name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any}
+        incoming={mergeIncomingPreview ?? { name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any}
+        isBusy={mergeBusy} onMerge={performMerge} onKeepBoth={keepBoth}
       />
 
-      {/* Edit modal (single instance for smooth UX) */}
+      {/* Edit modal */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="animate-enter">
+        <DialogContent className="bg-card/90 backdrop-blur-2xl border-primary/20">
           <DialogHeader>
-            <DialogTitle>Edit wishlist item</DialogTitle>
+            <DialogTitle className="font-orbitron text-primary tracking-wider">Edit Item</DialogTitle>
           </DialogHeader>
-
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Name</Label>
+              <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Name</Label>
               <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="e.g. Running shoes" />
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Estimated cost</Label>
+                <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Estimated cost</Label>
                 <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder="0" inputMode="decimal" />
               </div>
-
               <div className="space-y-2">
-                <Label>Category</Label>
+                <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Category</Label>
                 <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} placeholder="e.g. Equipment" />
               </div>
             </div>
-
-            <div className="flex items-center justify-between rounded-lg border border-border p-3">
+            <div className="space-y-2">
+              <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Link className="h-3.5 w-3.5" /> URL (optional)
+              </Label>
+              <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} placeholder="https://..." type="url" />
+            </div>
+            <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 p-3">
               <div className="space-y-0.5">
-                <p className="text-sm font-medium">Required for Pact</p>
+                <p className="text-sm font-rajdhani font-semibold">Required for Pact</p>
                 <p className="text-xs text-muted-foreground">Mark necessities that support goal completion.</p>
               </div>
               <Switch checked={editType === "required"} onCheckedChange={(v) => setEditType(v ? "required" : "optional")} />
             </div>
-
             <div className="space-y-2">
-              <Label>Link to Goal (optional)</Label>
+              <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Link to Goal</Label>
               <Select value={editGoalId} onValueChange={setEditGoalId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a goal" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Select a goal" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No goal</SelectItem>
-                  {goals.map((g) => (
-                    <SelectItem key={g.id} value={g.id}>
-                      {g.name}
-                    </SelectItem>
-                  ))}
+                  {goals.map((g) => (<SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>))}
                 </SelectContent>
               </Select>
-              {editingItem?.goal?.name && (
-                <p className="text-xs text-muted-foreground">
-                  Currently linked: <span className="text-foreground/80">{editingItem.goal.name}</span>
-                </p>
-              )}
             </div>
-
             <div className="space-y-2">
-              <Label>Notes</Label>
-              <Textarea
-                value={editNotes}
-                onChange={(e) => setEditNotes(e.target.value)}
-                placeholder="Why is this needed? When do you want it?"
-                rows={4}
-              />
+              <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Notes</Label>
+              <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="Why is this needed?" rows={3} />
             </div>
-
             <div className="flex items-center justify-between gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditOpen(false);
-                }}
-                className="flex-1"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => saveEdit()}
-                disabled={!editName.trim() || updateItem.isPending}
-                className="flex-1"
-              >
-                <Check className="h-4 w-4 mr-2" />
-                Save
+              <Button variant="outline" onClick={() => setEditOpen(false)} className="flex-1">Cancel</Button>
+              <Button onClick={() => saveEdit()} disabled={!editName.trim() || updateItem.isPending} className="flex-1">
+                <Check className="h-4 w-4 mr-2" /> Save
               </Button>
             </div>
           </div>
@@ -425,6 +355,7 @@ export default function Wishlist() {
       </Dialog>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-6">
+        {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <button
             onClick={() => navigate("/")}
@@ -433,205 +364,162 @@ export default function Wishlist() {
             <ArrowLeft className="h-4 w-4" />
             <span>Back</span>
           </button>
-
           <Dialog open={newOpen} onOpenChange={setNewOpen}>
             <DialogTrigger asChild>
-              <Button variant="hud" className="rounded-xl">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Item
+              <Button variant="hud" className="rounded-xl font-orbitron text-xs tracking-wider">
+                <Plus className="h-4 w-4 mr-2" /> ADD ITEM
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-card/90 backdrop-blur-2xl border-primary/20">
               <DialogHeader>
-                <DialogTitle>New wishlist item</DialogTitle>
+                <DialogTitle className="font-orbitron text-primary tracking-wider">New Item</DialogTitle>
               </DialogHeader>
-
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Name</Label>
+                  <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Name</Label>
                   <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Running shoes" />
                 </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Estimated cost</Label>
+                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Estimated cost</Label>
                     <Input value={newCost} onChange={(e) => setNewCost(e.target.value)} placeholder="0" inputMode="decimal" />
                   </div>
-
                   <div className="space-y-2">
-                    <Label>Category (optional)</Label>
+                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Category</Label>
                     <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Equipment" />
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between rounded-lg border border-border p-3">
+                <div className="space-y-2">
+                  <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Link className="h-3.5 w-3.5" /> URL (optional)
+                  </Label>
+                  <Input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="https://..." type="url" />
+                </div>
+                <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 p-3">
                   <div className="space-y-0.5">
-                    <p className="text-sm font-medium">Required for Pact</p>
+                    <p className="text-sm font-rajdhani font-semibold">Required for Pact</p>
                     <p className="text-xs text-muted-foreground">Use this for goal-linked necessities.</p>
                   </div>
                   <Switch checked={newType === "required"} onCheckedChange={(v) => setNewType(v ? "required" : "optional")} />
                 </div>
-
-                <Button onClick={() => createNew()} disabled={!newName.trim() || createItem.isPending}>
-                  Save
+                <Button onClick={() => createNew()} disabled={!newName.trim() || createItem.isPending} className="w-full">
+                  <Plus className="h-4 w-4 mr-2" /> Add to Wishlist
                 </Button>
               </div>
             </DialogContent>
           </Dialog>
         </div>
 
+        {/* Title */}
         <div className="space-y-1">
-          <h1 className="text-3xl font-orbitron font-bold tracking-wider text-primary">Wishlist</h1>
+          <h1 className="text-3xl font-orbitron font-bold tracking-wider text-primary drop-shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
+            Wishlist
+          </h1>
           <p className="text-sm text-muted-foreground font-rajdhani">
-            A calm planning space to separate what moves your pact forward from what can wait.
+            Strategic acquisition planning — separate needs from wants.
           </p>
         </div>
 
-        <Card className="bg-card/70 backdrop-blur-xl">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-primary" />
-              Financial overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="rounded-lg border border-border p-3">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Required</p>
-                <p className="text-lg font-semibold">{formatCurrency(derived.totals.required, currency)}</p>
-              </div>
-              <div className="rounded-lg border border-border p-3">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Optional</p>
-                <p className="text-lg font-semibold">{formatCurrency(derived.totals.optional, currency)}</p>
-              </div>
-              <div className="rounded-lg border border-border p-3">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Total</p>
-                <p className="text-lg font-semibold">{formatCurrency(derived.totals.all, currency)}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Need vs Want visualization */}
+        <NeedVsWantChart
+          requiredTotal={derived.totals.required}
+          optionalTotal={derived.totals.optional}
+          currency={currency}
+        />
 
-        <Card className="bg-card/70 backdrop-blur-xl">
-          <CardHeader className="pb-3">
-            <CardTitle>Items</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col md:flex-row gap-3">
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by item, category, or goal…"
-              />
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-3">
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by item, category, or goal…"
+            className="bg-card/50 backdrop-blur-sm border-primary/15"
+          />
+          <Select value={filterType} onValueChange={(v) => setFilterType(v as any)}>
+            <SelectTrigger className="md:w-48 bg-card/50 backdrop-blur-sm border-primary/15">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="required">Required</SelectItem>
+              <SelectItem value="optional">Optional</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
+            <SelectTrigger className="md:w-48 bg-card/50 backdrop-blur-sm border-primary/15">
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Most recent</SelectItem>
+              <SelectItem value="cost_desc">Cost (high → low)</SelectItem>
+              <SelectItem value="cost_asc">Cost (low → high)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-              <Select value={filterType} onValueChange={(v) => setFilterType(v as any)}>
-                <SelectTrigger className="md:w-48">
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="required">Required</SelectItem>
-                  <SelectItem value="optional">Optional</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Active items */}
+        {isLoading ? (
+          <div className="py-8 text-center text-sm text-muted-foreground font-rajdhani">Loading…</div>
+        ) : derived.list.length === 0 ? (
+          <div className="py-10 text-center space-y-2 rounded-2xl border border-dashed border-primary/20 bg-card/30 backdrop-blur-xl">
+            <p className="text-sm text-muted-foreground font-rajdhani">No active wishlist items.</p>
+            <p className="text-xs text-muted-foreground">Add an item or link a goal cost to get started.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <AnimatePresence mode="popLayout">
+              {derived.list.map((item) => (
+                <WishlistItemCard
+                  key={item.id}
+                  item={item}
+                  currency={currency}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                  onToggleAcquired={handleToggleAcquired}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
 
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v as any)}>
-                <SelectTrigger className="md:w-48">
-                  <SelectValue placeholder="Sort" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recent">Most recent</SelectItem>
-                  <SelectItem value="cost_desc">Cost (high → low)</SelectItem>
-                  <SelectItem value="cost_asc">Cost (low → high)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Separator />
-
-            {isLoading ? (
-              <div className="py-8 text-center text-sm text-muted-foreground">Loading…</div>
-            ) : derived.list.length === 0 ? (
-              <div className="py-10 text-center space-y-2">
-                <p className="text-sm text-muted-foreground">No wishlist items yet.</p>
-                <p className="text-xs text-muted-foreground">Add one to start clarifying what’s essential vs optional.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {derived.list.map((item) => {
-                  const required = item.item_type === "required";
-                  return (
-                    <div
-                      key={item.id}
-                      className="rounded-xl border border-border bg-muted/20 p-4 flex flex-col md:flex-row md:items-center gap-3 animate-fade-in"
-                    >
-                      <div className="flex-1 min-w-0 space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-medium truncate">{item.name}</p>
-                          <Badge variant={required ? "default" : "secondary"} className="font-rajdhani">
-                            {required ? "Required" : "Optional"}
-                          </Badge>
-                          {item.category && (
-                            <Badge variant="outline" className="font-rajdhani">
-                              {item.category}
-                            </Badge>
-                          )}
-                        </div>
-                        {item.goal?.name && (
-                          <button
-                            onClick={() => navigate(`/goals/${item.goal?.id}`)}
-                            className="inline-flex items-center gap-2 text-sm text-primary/80 hover:text-primary font-rajdhani"
-                          >
-                            <Target className="h-4 w-4" />
-                            <span className="truncate">{item.goal.name}</span>
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-3 justify-between md:justify-end">
-                        <div className="text-right">
-                          <p className="text-sm font-semibold">{formatCurrency(Number(item.estimated_cost || 0), currency)}</p>
-                          <div className="flex items-center gap-2 justify-end mt-1">
-                            <Label className="text-xs text-muted-foreground">Already acquired?</Label>
-                            <Switch
-                              checked={item.acquired}
-                              onCheckedChange={(v) => {
-                                if (!user) return;
-                                updateItem.mutate({
-                                  userId: user.id,
-                                  id: item.id,
-                                  patch: { acquired: v },
-                                });
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => openEdit(item)}
-                          className="text-primary/70 hover:text-primary"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => user && deleteItem.mutate({ userId: user.id, id: item.id })}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+        {/* Victory Archive (acquired items) */}
+        {derived.acquired.length > 0 && (
+          <Accordion type="single" collapsible className="mt-12">
+            <AccordionItem value="history" className="border-none">
+              <AccordionTrigger className="hover:no-underline py-2 px-4 bg-muted/20 rounded-t-xl border border-border">
+                <span className="font-orbitron text-xs tracking-[0.15em] uppercase flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-amber-400" /> Acquisition Archive
+                  <Badge variant="outline" className="ml-2 text-[10px]">{derived.acquired.length}</Badge>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="bg-muted/10 p-4 rounded-b-xl border-x border-b border-border space-y-3">
+                {derived.acquired.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/50 bg-card/30 opacity-70"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-rajdhani text-sm line-through text-muted-foreground truncate">{item.name}</p>
+                      {item.goal?.name && (
+                        <p className="text-xs text-muted-foreground/60 truncate">{item.goal.name}</p>
+                      )}
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs font-orbitron text-muted-foreground">
+                        {formatCurrency(Number(item.estimated_cost || 0), currency)}
+                      </span>
+                      <Switch
+                        checked={item.acquired}
+                        onCheckedChange={(v) => handleToggleAcquired(item.id, v)}
+                        className="scale-75"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        )}
       </div>
     </div>
   );
