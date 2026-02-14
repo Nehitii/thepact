@@ -25,6 +25,8 @@ interface CosmeticFrame {
   frame_scale?: number;
   frame_offset_x?: number;
   frame_offset_y?: number;
+  show_border?: boolean;
+  avatar_border_color?: string;
 }
 
 interface CosmeticBanner {
@@ -354,29 +356,35 @@ export function ProfileBoundedProfile({
               {/* Main Profile Info */}
               <div className="flex flex-col items-center">
                 {/* Avatar Area - Centered and sitting on the gradient boundary */}
-                <div className="relative mb-4 group cursor-pointer" onClick={() => setShowAvatarDialog(true)}>
+                <div className="relative mb-4">
                   {/* Glow effect behind avatar */}
                   <div
                     className="absolute inset-0 rounded-full blur-2xl opacity-40 transition-opacity duration-500"
                     style={{ backgroundColor: activeFrame?.glow_color || "#5bb4ff" }}
                   />
 
-                  <AvatarFrame
-                    avatarUrl={avatarUrl}
-                    fallback={displayName?.[0] || "?"}
-                    size="2xl"
-                    frameImage={activeFrame?.preview_url}
-                    borderColor={activeFrame?.border_color || "#5bb4ff"}
-                    glowColor={activeFrame?.glow_color || "rgba(91,180,255,0.5)"}
-                    frameScale={activeFrame?.frame_scale}
-                    frameOffsetX={activeFrame?.frame_offset_x}
-                    frameOffsetY={activeFrame?.frame_offset_y}
-                    className="transition-transform duration-300 group-hover:scale-105 shadow-2xl"
-                  />
+                  {/* Avatar hover group - scoped to avatar only */}
+                  <div className="relative group cursor-pointer" onClick={() => setShowAvatarDialog(true)}>
+                    <AvatarFrame
+                      avatarUrl={avatarUrl}
+                      fallback={displayName?.[0] || "?"}
+                      size="2xl"
+                      frameImage={activeFrame?.preview_url}
+                      borderColor={activeFrame?.avatar_border_color || activeFrame?.border_color || "#5bb4ff"}
+                      glowColor={activeFrame?.glow_color || "rgba(91,180,255,0.5)"}
+                      frameScale={activeFrame?.frame_scale}
+                      frameOffsetX={activeFrame?.frame_offset_x}
+                      frameOffsetY={activeFrame?.frame_offset_y}
+                      showBorder={activeFrame?.show_border !== false}
+                      className="transition-transform duration-300 group-hover:scale-105 shadow-2xl"
+                    />
 
-                  {/* Edit overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full z-30 backdrop-blur-[2px]">
-                    <Upload className="w-8 h-8 text-white drop-shadow-lg" />
+                    {/* Edit overlay - sized to match the avatar circle (h-32 w-32 = 2xl) */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="h-32 w-32 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 z-30 backdrop-blur-[2px]">
+                        <Upload className="w-8 h-8 text-white drop-shadow-lg" />
+                      </div>
+                    </div>
                   </div>
                 </div>
 

@@ -464,6 +464,7 @@ export type Database = {
       }
       cosmetic_frames: {
         Row: {
+          avatar_border_color: string | null
           border_color: string
           created_at: string
           frame_offset_x: number | null
@@ -477,10 +478,12 @@ export type Database = {
           preview_url: string | null
           price: number
           rarity: string
+          show_border: boolean | null
           transform_version: number | null
           updated_at: string
         }
         Insert: {
+          avatar_border_color?: string | null
           border_color?: string
           created_at?: string
           frame_offset_x?: number | null
@@ -494,10 +497,12 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          show_border?: boolean | null
           transform_version?: number | null
           updated_at?: string
         }
         Update: {
+          avatar_border_color?: string | null
           border_color?: string
           created_at?: string
           frame_offset_x?: number | null
@@ -511,6 +516,7 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          show_border?: boolean | null
           transform_version?: number | null
           updated_at?: string
         }

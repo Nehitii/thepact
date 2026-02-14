@@ -126,11 +126,12 @@ export function FittingRoom({
                       avatarUrl={profile?.avatar_url}
                       fallback={(profile?.display_name || "U")[0]}
                       frameImage={displayFrame.preview_url}
-                      borderColor={displayFrame.border_color}
+                      borderColor={(displayFrame as any).avatar_border_color || displayFrame.border_color}
                       glowColor={displayFrame.glow_color}
                       frameScale={displayFrame.frame_scale}
                       frameOffsetX={displayFrame.frame_offset_x}
                       frameOffsetY={displayFrame.frame_offset_y}
+                      showBorder={(displayFrame as any).show_border !== false}
                     />
                     {previewItem.type === "frame" && (
                       <div className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-[8px] font-orbitron text-primary">

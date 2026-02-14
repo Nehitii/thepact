@@ -45,6 +45,8 @@ interface CosmeticFrame {
   frame_scale?: number;
   frame_offset_x?: number;
   frame_offset_y?: number;
+  show_border?: boolean;
+  avatar_border_color?: string;
 }
 
 interface CosmeticBanner {
@@ -151,6 +153,8 @@ export default function AdminCosmeticsManager() {
       frame_scale: editingFrame.frame_scale ?? 1.0,
       frame_offset_x: editingFrame.frame_offset_x ?? 0,
       frame_offset_y: editingFrame.frame_offset_y ?? 0,
+      show_border: editingFrame.show_border ?? true,
+      avatar_border_color: editingFrame.avatar_border_color || "#5bb4ff",
     };
 
     if (editingFrame.id) {
@@ -373,6 +377,32 @@ export default function AdminCosmeticsManager() {
                     </Select>
                   </div>
 
+                  {/* Show Border Toggle - common to both modes */}
+                  <div className="flex items-center justify-between">
+                    <Label className="text-primary/80">Show Avatar Border</Label>
+                    <Switch
+                      checked={editingFrame?.show_border ?? true}
+                      onCheckedChange={(c) => setEditingFrame({ ...editingFrame, show_border: c })}
+                    />
+                  </div>
+                  
+                  {(editingFrame?.show_border ?? true) && (
+                    <div>
+                      <Label className="text-primary/80">Avatar Border Color</Label>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-8 h-8 rounded border border-primary/30 shrink-0"
+                          style={{ backgroundColor: editingFrame?.avatar_border_color || "#5bb4ff" }}
+                        />
+                        <Input
+                          value={editingFrame?.avatar_border_color || "#5bb4ff"}
+                          onChange={(e) => setEditingFrame({ ...editingFrame, avatar_border_color: e.target.value })}
+                          className="bg-card/50 border-primary/30 text-primary"
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {(frameCreationMode === "image" || (editingFrame?.id && editingFrame?.preview_url)) ? (
                     <>
                       <div>
@@ -587,19 +617,31 @@ export default function AdminCosmeticsManager() {
                     <>
                       <div>
                         <Label className="text-primary/80">Border Color (hex)</Label>
-                        <Input
-                          value={editingFrame?.border_color || "#5bb4ff"}
-                          onChange={(e) => setEditingFrame({ ...editingFrame, border_color: e.target.value })}
-                          className="bg-card/50 border-primary/30 text-primary"
-                        />
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-8 h-8 rounded border border-primary/30 shrink-0"
+                            style={{ backgroundColor: editingFrame?.border_color || "#5bb4ff" }}
+                          />
+                          <Input
+                            value={editingFrame?.border_color || "#5bb4ff"}
+                            onChange={(e) => setEditingFrame({ ...editingFrame, border_color: e.target.value })}
+                            className="bg-card/50 border-primary/30 text-primary"
+                          />
+                        </div>
                       </div>
                       <div>
                         <Label className="text-primary/80">Glow Color (rgba)</Label>
-                        <Input
-                          value={editingFrame?.glow_color || "rgba(91,180,255,0.5)"}
-                          onChange={(e) => setEditingFrame({ ...editingFrame, glow_color: e.target.value })}
-                          className="bg-card/50 border-primary/30 text-primary"
-                        />
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-8 h-8 rounded border border-primary/30 shrink-0"
+                            style={{ backgroundColor: editingFrame?.glow_color || "rgba(91,180,255,0.5)" }}
+                          />
+                          <Input
+                            value={editingFrame?.glow_color || "rgba(91,180,255,0.5)"}
+                            onChange={(e) => setEditingFrame({ ...editingFrame, glow_color: e.target.value })}
+                            className="bg-card/50 border-primary/30 text-primary"
+                          />
+                        </div>
                       </div>
                     </>
                   )}
@@ -769,19 +811,31 @@ export default function AdminCosmeticsManager() {
                     <>
                       <div>
                         <Label className="text-primary/80">Gradient Start Color</Label>
-                        <Input
-                          value={editingBanner?.gradient_start || "#0a0a12"}
-                          onChange={(e) => setEditingBanner({ ...editingBanner, gradient_start: e.target.value })}
-                          className="bg-card/50 border-primary/30 text-primary"
-                        />
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-8 h-8 rounded border border-primary/30 shrink-0"
+                            style={{ backgroundColor: editingBanner?.gradient_start || "#0a0a12" }}
+                          />
+                          <Input
+                            value={editingBanner?.gradient_start || "#0a0a12"}
+                            onChange={(e) => setEditingBanner({ ...editingBanner, gradient_start: e.target.value })}
+                            className="bg-card/50 border-primary/30 text-primary"
+                          />
+                        </div>
                       </div>
                       <div>
                         <Label className="text-primary/80">Gradient End Color</Label>
-                        <Input
-                          value={editingBanner?.gradient_end || "#1a1a2e"}
-                          onChange={(e) => setEditingBanner({ ...editingBanner, gradient_end: e.target.value })}
-                          className="bg-card/50 border-primary/30 text-primary"
-                        />
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-8 h-8 rounded border border-primary/30 shrink-0"
+                            style={{ backgroundColor: editingBanner?.gradient_end || "#1a1a2e" }}
+                          />
+                          <Input
+                            value={editingBanner?.gradient_end || "#1a1a2e"}
+                            onChange={(e) => setEditingBanner({ ...editingBanner, gradient_end: e.target.value })}
+                            className="bg-card/50 border-primary/30 text-primary"
+                          />
+                        </div>
                       </div>
                     </>
                   )}
@@ -890,19 +944,31 @@ export default function AdminCosmeticsManager() {
                   </div>
                   <div>
                     <Label className="text-primary/80">Text Color (hex)</Label>
-                    <Input
-                      value={editingTitle?.text_color || "#5bb4ff"}
-                      onChange={(e) => setEditingTitle({ ...editingTitle, text_color: e.target.value })}
-                      className="bg-card/50 border-primary/30 text-primary"
-                    />
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded border border-primary/30 shrink-0"
+                        style={{ backgroundColor: editingTitle?.text_color || "#5bb4ff" }}
+                      />
+                      <Input
+                        value={editingTitle?.text_color || "#5bb4ff"}
+                        onChange={(e) => setEditingTitle({ ...editingTitle, text_color: e.target.value })}
+                        className="bg-card/50 border-primary/30 text-primary"
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label className="text-primary/80">Glow Color (rgba)</Label>
-                    <Input
-                      value={editingTitle?.glow_color || "rgba(91,180,255,0.5)"}
-                      onChange={(e) => setEditingTitle({ ...editingTitle, glow_color: e.target.value })}
-                      className="bg-card/50 border-primary/30 text-primary"
-                    />
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-8 h-8 rounded border border-primary/30 shrink-0"
+                        style={{ backgroundColor: editingTitle?.glow_color || "rgba(91,180,255,0.5)" }}
+                      />
+                      <Input
+                        value={editingTitle?.glow_color || "rgba(91,180,255,0.5)"}
+                        onChange={(e) => setEditingTitle({ ...editingTitle, glow_color: e.target.value })}
+                        className="bg-card/50 border-primary/30 text-primary"
+                      />
+                    </div>
                   </div>
                   <div>
                     <Label className="text-primary/80">Price (Bonds)</Label>
