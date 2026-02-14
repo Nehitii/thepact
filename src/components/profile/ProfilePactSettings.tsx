@@ -1,12 +1,29 @@
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
 import { RanksCard } from "./RanksCard";
 import { PactIdentityCard } from "./PactIdentityCard";
+import { PactSettingsCard } from "./PactSettingsCard";
+import { useResetPact } from "@/hooks/useResetPact";
+import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface ProfilePactSettingsProps {
   userId: string;
   pactId: string | null;
-  // Pact identity fields
   pactName: string;
   pactMantra: string;
   pactSymbol: string;
@@ -15,12 +32,10 @@ interface ProfilePactSettingsProps {
   onPactSymbolChange: (value: string) => void;
   onSavePactIdentity: () => Promise<void>;
   isSavingIdentity?: boolean;
-  // Timeline fields
   projectStartDate: Date | undefined;
   projectEndDate: Date | undefined;
   onProjectStartDateChange: (date: Date | undefined) => void;
   onProjectEndDateChange: (date: Date | undefined) => void;
-  // Custom difficulty fields
   customDifficultyName: string;
   customDifficultyActive: boolean;
   customDifficultyColor: string;
@@ -51,9 +66,20 @@ export function ProfilePactSettings({
   onCustomDifficultyActiveChange,
   onCustomDifficultyColorChange,
 }: ProfilePactSettingsProps) {
+  const { t } = useTranslation();
+  const resetPact = useResetPact();
+  const [confirmName, setConfirmName] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleReset = async () => {
+    if (!pactId) return;
+    await resetPact.mutateAsync(pactId);
+    setConfirmName("");
+    setDialogOpen(false);
+  };
+
   return (
     <div className="space-y-6">
-      {/* Pact Identity Card - NEW */}
       <PactIdentityCard
         pactId={pactId}
         pactName={pactName}
@@ -66,7 +92,6 @@ export function ProfilePactSettings({
         isSaving={isSavingIdentity}
       />
 
-      {/* Project Timeline Card */}
       <ProjectTimelineCard
         pactId={pactId}
         projectStartDate={projectStartDate}
@@ -75,7 +100,6 @@ export function ProfilePactSettings({
         onProjectEndDateChange={onProjectEndDateChange}
       />
 
-      {/* Custom Difficulty Card */}
       <CustomDifficultyCard
         userId={userId}
         customDifficultyName={customDifficultyName}
@@ -86,8 +110,59 @@ export function ProfilePactSettings({
         onCustomDifficultyColorChange={onCustomDifficultyColorChange}
       />
 
-      {/* Ranks Card */}
       <RanksCard userId={userId} />
+
+      {/* Danger Zone — Reset Pact */}
+      {pactId && (
+        <PactSettingsCard
+          icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
+          title={t("profile.pact.resetPact")}
+          description={t("profile.pact.resetPactDesc")}
+        >
+          <p className="text-sm text-muted-foreground">
+            {t("profile.pact.resetPactWarning")}
+          </p>
+
+          <AlertDialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setConfirmName(""); }}>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="w-full">
+                {t("profile.pact.resetPact")}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("profile.pact.resetPact")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t("profile.pact.resetPactWarning")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <div className="space-y-2 py-2">
+                <p className="text-sm text-muted-foreground">
+                  {t("profile.pact.resetPactConfirm")}: <strong className="text-foreground">{pactName}</strong>
+                </p>
+                <Input
+                  value={confirmName}
+                  onChange={(e) => setConfirmName(e.target.value)}
+                  placeholder={pactName}
+                  autoComplete="off"
+                />
+              </div>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                <Button
+                  variant="destructive"
+                  disabled={confirmName !== pactName || resetPact.isPending}
+                  onClick={handleReset}
+                >
+                  {resetPact.isPending ? t("profile.pact.resetting") : t("profile.pact.resetPactButton")}
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </PactSettingsCard>
+      )}
     </div>
   );
 }
