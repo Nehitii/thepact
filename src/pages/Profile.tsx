@@ -5,21 +5,23 @@ import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSetti
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
-import { Fingerprint, Loader2 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { User, Loader2 } from "lucide-react";
 
 export default function Profile() {
   const { t } = useTranslation();
   const { user } = useAuth();
 
+  // On ne garde qu'un seul état pour les données chargées
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAtBottom, setIsAtBottom] = useState(false);
 
   const handleScroll = useCallback(() => {
+    const scrollTop = window.scrollY || document.documentElement.scrollTop;
     const scrollHeight = document.documentElement.scrollHeight;
-    const currentScroll = window.scrollY + window.innerHeight;
-    setIsAtBottom(scrollHeight - currentScroll <= 50);
+    const clientHeight = window.innerHeight;
+    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+    setIsAtBottom(distanceFromBottom <= 50);
   }, []);
 
   useEffect(() => {
@@ -56,27 +58,20 @@ export default function Profile() {
     <ProfileSettingsShell
       title={t("profile.title")}
       subtitle={t("profile.subtitle")}
-      icon={<Fingerprint className="h-8 w-8 text-primary animate-pulse" />}
+      icon={<User className="h-7 w-7 text-primary" />}
       floating={user ? <ProfileDevilNote isVisible={isAtBottom} /> : null}
-      containerClassName="max-w-5xl"
+      containerClassName="max-w-4xl" // Augmenté pour correspondre au nouveau design
     >
-      <div className="pb-20">
-        {loading ? (
-          <div className="space-y-8">
-            <Skeleton className="h-[300px] w-full bg-primary/5 rounded-[2.5rem]" />
-            <Skeleton className="h-[400px] w-full bg-primary/5 rounded-[2.5rem]" />
-          </div>
-        ) : user && initialData ? (
-          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <ProfileAccountSettings userId={user.id} initialData={initialData} />
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <Loader2 className="h-10 w-10 animate-spin mb-4 text-primary" />
-            <p className="font-rajdhani uppercase tracking-widest">{t("common.loading")}</p>
-          </div>
-        )}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : user && initialData ? (
+        <div className="space-y-6">
+          <ProfileAccountSettings userId={user.id} initialData={initialData} />
+        </div>
+      ) : null}
+      <div className="h-16" />
     </ProfileSettingsShell>
   );
 }
