@@ -12,7 +12,6 @@ import {
   RefreshCw,
   Clock,
   Coins,
-  ChevronDown,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
@@ -52,14 +51,10 @@ export function ProfileAccountSettings({ userId, initialData }: { userId: string
   // --- STYLES SYSTEM ---
   const styles = useMemo(
     () => ({
-      // Cartes avec effet de verre et bordures subtiles
       card: "relative overflow-hidden bg-card/10 backdrop-blur-2xl border-primary/10 hover:border-primary/20 transition-all duration-500 rounded-[2rem] shadow-xl group",
-      // Inputs massifs et lisibles
       input:
         "h-14 bg-background/30 border-primary/10 focus:border-primary/40 focus:ring-primary/20 font-rajdhani text-lg transition-all rounded-2xl placeholder:text-muted-foreground/30",
-      // Labels techniques style HUD
       label: "text-[10px] font-orbitron uppercase tracking-[0.25em] text-primary/60 mb-2 block px-2",
-      // Icônes flottantes dans les inputs
       inputIcon:
         "absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-primary/40 group-focus-within:text-primary transition-colors duration-300",
     }),
@@ -108,7 +103,6 @@ export function ProfileAccountSettings({ userId, initialData }: { userId: string
         </div>
 
         <Card className={styles.card}>
-          {/* Background Decoration */}
           <div className="absolute top-0 right-0 p-12 opacity-[0.02] pointer-events-none group-hover:opacity-[0.05] transition-opacity duration-700">
             <User size={300} />
           </div>
@@ -141,7 +135,7 @@ export function ProfileAccountSettings({ userId, initialData }: { userId: string
               </div>
             </div>
 
-            {/* --- CALENDRIER REFAIT --- */}
+            {/* --- CALENDRIER CORRIGÉ --- */}
             <div className="space-y-2 md:col-span-2">
               <Label className={styles.label}>{t("profile.birthday")}</Label>
               <Popover>
@@ -168,17 +162,16 @@ export function ProfileAccountSettings({ userId, initialData }: { userId: string
                 </PopoverTrigger>
 
                 <PopoverContent
-                  className="w-auto p-0 border-primary/20 bg-popover/95 backdrop-blur-3xl shadow-[0_20px_60px_-10px_rgba(var(--primary),0.3)] rounded-[2rem] overflow-hidden"
+                  className="w-[350px] p-0 border-primary/20 bg-popover/95 backdrop-blur-3xl shadow-[0_20px_60px_-10px_rgba(var(--primary),0.3)] rounded-[2rem] overflow-hidden"
                   align="start"
                   sideOffset={10}
                 >
-                  {/* Calendar Header Visual */}
                   <div className="bg-gradient-to-r from-primary/20 to-primary/5 p-6 border-b border-primary/10 flex justify-between items-center">
                     <div>
                       <p className="text-[10px] font-orbitron uppercase tracking-widest text-primary/80 mb-1">
                         Target Date
                       </p>
-                      <p className="text-2xl font-rajdhani font-bold text-foreground tracking-wide">
+                      <p className="text-xl font-rajdhani font-bold text-foreground tracking-wide">
                         {formData.birthday
                           ? format(formData.birthday, "dd MMMM yyyy", { locale: dateLocale })
                           : "NOT SET"}
@@ -187,28 +180,24 @@ export function ProfileAccountSettings({ userId, initialData }: { userId: string
                     <CalendarIcon className="h-10 w-10 text-primary/20" />
                   </div>
 
-                  {/* Calendar Grid Container */}
                   <div className="p-6 bg-background/40">
                     <Calendar
                       mode="single"
                       selected={formData.birthday}
                       onSelect={(d) => setFormData({ ...formData, birthday: d })}
-                      captionLayout="dropdown-buttons" // Active les dropdowns
+                      captionLayout="dropdown-buttons"
                       fromYear={1920}
                       toYear={new Date().getFullYear()}
-                      className="w-full flex justify-center pointer-events-auto" // Centrage global
+                      className="w-full flex justify-center pointer-events-auto"
                       classNames={{
-                        // Grille principale
                         month: "space-y-4 w-full",
                         table: "w-full border-collapse space-y-1",
                         head_row: "flex justify-between w-full mb-2",
                         row: "flex w-full mt-2 justify-between",
-
-                        // Cellules
                         head_cell:
-                          "text-muted-foreground rounded-md w-10 font-normal text-[0.7rem] font-orbitron uppercase text-center",
-                        cell: "h-10 w-10 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-                        day: "h-10 w-10 p-0 font-medium aria-selected:opacity-100 hover:bg-primary/20 hover:text-primary rounded-xl transition-all font-rajdhani text-base",
+                          "text-muted-foreground rounded-md w-9 font-normal text-[0.7rem] font-orbitron uppercase text-center",
+                        cell: "h-9 w-9 text-center text-sm p-0 relative focus-within:relative focus-within:z-20",
+                        day: "h-9 w-9 p-0 font-medium aria-selected:opacity-100 hover:bg-primary/20 hover:text-primary rounded-xl transition-all font-rajdhani text-base",
                         day_selected:
                           "!bg-primary !text-primary-foreground shadow-[0_0_15px_rgba(var(--primary),0.4)] hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
                         day_today: "bg-primary/10 text-primary font-bold border border-primary/20",
@@ -216,26 +205,25 @@ export function ProfileAccountSettings({ userId, initialData }: { userId: string
                         day_disabled: "text-muted-foreground opacity-30",
                         day_hidden: "invisible",
 
-                        // Navigation & Caption
-                        caption: "flex justify-center pt-1 relative items-center mb-4 w-full",
-                        caption_label: "hidden", // CACHE LE TEXTE "Janvier 2024" par défaut pour éviter le doublon
-                        caption_dropdowns: "flex justify-center gap-3 w-full", // Flex container pour les dropdowns
-                        nav: "space-x-1 flex items-center absolute inset-0 justify-between pointer-events-none", // Navigation flèches
+                        // --- NAVIGATION & DROPDOWNS FIX ---
+                        // Le conteneur de navigation couvre tout mais laisse passer les clics (pointer-events-none)
+                        nav: "flex items-center absolute inset-0 justify-between px-2 pointer-events-none z-10",
+                        // Les boutons réactivent les clics
                         nav_button:
-                          "h-8 w-8 bg-background/80 hover:bg-primary/20 border border-primary/20 rounded-lg opacity-50 hover:opacity-100 transition-all pointer-events-auto",
-                        nav_button_previous: "relative z-10",
-                        nav_button_next: "relative z-10",
+                          "h-8 w-8 bg-background/80 hover:bg-primary/20 border border-primary/20 rounded-lg opacity-70 hover:opacity-100 transition-all pointer-events-auto flex items-center justify-center",
+                        // Le caption est centré
+                        caption: "flex justify-center pt-1 relative items-center mb-4 w-full",
+                        caption_label: "hidden",
+                        caption_dropdowns: "flex justify-center gap-2 relative z-20", // Z-index pour passer au-dessus de nav si besoin
 
-                        // Styling des Dropdowns natifs injectés par react-day-picker
                         dropdown:
-                          "bg-card border border-primary/20 rounded-lg py-1 px-3 text-sm font-rajdhani focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer hover:bg-primary/10 transition-colors shadow-sm",
-                        dropdown_month: "flex-1 order-1",
-                        dropdown_year: "order-2",
+                          "bg-card border border-primary/20 rounded-lg py-1 px-2 text-sm font-rajdhani focus:outline-none focus:ring-1 focus:ring-primary appearance-none cursor-pointer hover:bg-primary/10 transition-colors shadow-sm",
+                        dropdown_month: "flex-1",
+                        dropdown_year: "",
                       }}
                     />
                   </div>
 
-                  {/* Calendar Footer Actions */}
                   <div className="p-4 bg-primary/5 border-t border-primary/10 flex justify-between gap-4">
                     <Button
                       variant="ghost"
