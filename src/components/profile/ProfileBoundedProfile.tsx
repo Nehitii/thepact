@@ -11,9 +11,9 @@ import { usePact } from "@/hooks/usePact";
 import { supabase } from "@/lib/supabase";
 import { useToast } from "@/hooks/use-toast";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Check, Save, Loader2, Shield } from "lucide-react";
+import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield } from "lucide-react";
 
-// --- TYPES ---
+// --- TYPES (inchangés) ---
 interface CosmeticFrame {
   id: string;
   name: string;
@@ -59,9 +59,8 @@ interface ProfileBoundedProfileProps {
   onDisplayedBadgesChange: (badges: string[]) => void;
 }
 
-// --- SUB-COMPONENTS (AESTHETIC) ---
+// --- SUB-COMPONENTS (FIXED LAYOUT) ---
 
-// 1. Holographic Tilt Card Wrapper
 function HolographicCard({ children }: { children: React.ReactNode }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -69,8 +68,8 @@ function HolographicCard({ children }: { children: React.ReactNode }) {
   const mouseX = useSpring(x, { stiffness: 500, damping: 100 });
   const mouseY = useSpring(y, { stiffness: 500, damping: 100 });
 
-  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["7deg", "-7deg"]);
-  const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-7deg", "7deg"]);
+  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["5deg", "-5deg"]); // Réduit l'angle pour moins de distortion
+  const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-5deg", "5deg"]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -98,38 +97,39 @@ function HolographicCard({ children }: { children: React.ReactNode }) {
       onMouseLeave={handleMouseLeave}
       className="relative w-full transition-all duration-200 ease-out"
     >
-      <div className="relative transform-style-3d shadow-2xl shadow-black/50 rounded-2xl overflow-hidden">
-        {children}
-        {/* Holographic Overlay */}
+      <div className="relative transform-style-3d shadow-2xl shadow-black/50 rounded-2xl overflow-hidden bg-black/40 border border-white/10">
+        {/* Layer 1: Holographic Background Effects (DERRIÈRE le contenu) */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-20 z-50 mix-blend-overlay"
+          className="absolute inset-0 pointer-events-none opacity-10 z-0 mix-blend-screen"
           style={{
-            background: `linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.4) 45%, rgba(0,0,0,0.1) 55%, transparent 100%)`,
+            background: `linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.1) 45%, rgba(0,0,0,0.5) 55%, transparent 100%)`,
           }}
         />
-        {/* Border Glow */}
-        <div className="absolute inset-0 border border-white/10 rounded-2xl pointer-events-none z-50" />
+
+        {/* Layer 2: CONTENT (Z-INDEX 10 pour passer au dessus des effets) */}
+        <div className="relative z-10">{children}</div>
+
+        {/* Layer 3: Scanlines Overlay (Optionnel, très subtil par dessus tout) */}
+        <div className="absolute inset-0 z-20 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
     </motion.div>
   );
 }
 
-// 2. Cyber Glitch Text
 const CyberText = ({ text, className }: { text: string; className?: string }) => {
   return (
     <div className={`relative group inline-block ${className}`}>
       <span className="relative z-10">{text}</span>
-      <span className="absolute top-0 left-0 -z-10 w-full h-full text-cyan-400 opacity-0 group-hover:opacity-70 group-hover:translate-x-[2px] transition-all duration-75 select-none blur-[0.5px]">
+      <span className="absolute top-0 left-0 -z-10 w-full h-full text-cyan-400 opacity-0 group-hover:opacity-70 group-hover:translate-x-[1px] transition-all duration-75 select-none blur-[0.5px]">
         {text}
       </span>
-      <span className="absolute top-0 left-0 -z-10 w-full h-full text-red-500 opacity-0 group-hover:opacity-70 group-hover:-translate-x-[2px] transition-all duration-75 delay-75 select-none blur-[0.5px]">
+      <span className="absolute top-0 left-0 -z-10 w-full h-full text-red-500 opacity-0 group-hover:opacity-70 group-hover:-translate-x-[1px] transition-all duration-75 delay-75 select-none blur-[0.5px]">
         {text}
       </span>
     </div>
   );
 };
 
-// 3. Rarity Colors Configuration
 const rarityColors: Record<string, { bg: string; text: string; glow: string; border: string }> = {
   common: { bg: "bg-slate-500/10", text: "text-slate-400", glow: "", border: "border-slate-500/30" },
   rare: { bg: "bg-blue-500/10", text: "text-blue-400", glow: "shadow-blue-500/20", border: "border-blue-500/50" },
@@ -259,7 +259,6 @@ export function ProfileBoundedProfile({
         .upload(filePath, file, { upsert: true });
       if (uploadError) throw uploadError;
 
-      // Note: Idealement utiliser getPublicUrl si le bucket est public. Ici on garde signedUrl par sécurité.
       const { data: signedUrlData } = await supabase.storage
         .from("goal-images")
         .createSignedUrl(filePath, 60 * 60 * 24 * 365);
@@ -298,16 +297,16 @@ export function ProfileBoundedProfile({
     setSaving(false);
   };
 
-  // --- RENDER ---
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* 1. PREVIEW SECTION (HOLOGRAPHIC) */}
+      {/* 1. PREVIEW SECTION */}
       <div className="flex justify-center py-4">
         <div className="w-full max-w-[500px]">
           <HolographicCard>
-            {/* Banner Background with Scanlines */}
+            {/* Banner Background */}
+            {/* H-32 pour réduire la hauteur */}
             <div
-              className="relative h-40 overflow-hidden"
+              className="relative h-32 overflow-hidden w-full"
               style={{
                 background: activeBanner?.banner_url
                   ? `url(${activeBanner.banner_url}) center/cover`
@@ -323,20 +322,18 @@ export function ProfileBoundedProfile({
                 }}
               />
 
-              {/* Overlay Gradients */}
-              <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent z-20" />
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent animate-cyber-shimmer z-20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
 
               {/* HUD Elements */}
-              <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/50 backdrop-blur-md border border-white/10 rounded text-[10px] text-white/70 font-mono tracking-widest z-30">
+              <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/50 backdrop-blur-md border border-white/10 rounded text-[10px] text-white/70 font-mono tracking-widest z-20">
                 ID-ENTITY // {pact?.name || "INITIATE"}
               </div>
             </div>
 
             {/* Profile Content */}
-            <div className="relative px-6 pb-6 bg-card/95 backdrop-blur-xl">
-              <div className="flex flex-col items-center -mt-16 relative z-30">
-                {/* Avatar */}
+            <div className="relative px-6 pb-6 bg-[#0a0a0f]/90 backdrop-blur-xl border-t border-white/5">
+              <div className="flex flex-col items-center -mt-12 relative z-30">
+                {/* Avatar with reduced margin top (-mt-12) */}
                 <div className="relative group cursor-pointer" onClick={() => setShowAvatarDialog(true)}>
                   <AvatarFrame
                     avatarUrl={avatarUrl}
@@ -348,16 +345,16 @@ export function ProfileBoundedProfile({
                     frameScale={activeFrame?.frame_scale}
                     frameOffsetX={activeFrame?.frame_offset_x}
                     frameOffsetY={activeFrame?.frame_offset_y}
-                    className="transition-transform duration-300 group-hover:scale-105"
+                    className="transition-transform duration-300 group-hover:scale-105 shadow-xl shadow-black/50"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full z-40 backdrop-blur-sm">
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full z-40 backdrop-blur-sm pointer-events-none">
                     <Upload className="w-6 h-6 text-white" />
                   </div>
                 </div>
 
                 {/* Name & Title */}
-                <div className="mt-4 text-center space-y-1">
-                  <h3 className="text-2xl font-orbitron font-bold text-white tracking-widest">
+                <div className="mt-3 text-center space-y-2">
+                  <h3 className="text-xl font-orbitron font-bold text-white tracking-widest">
                     <CyberText text={displayName || "UNKNOWN USER"} />
                   </h3>
 
@@ -408,23 +405,18 @@ export function ProfileBoundedProfile({
 
       {/* 2. ARMORY (CUSTOMIZATION) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Frame Selector Trigger */}
         <CustomizationTrigger
           icon={<Sparkles className="w-5 h-5" />}
           label="Avatar Frame"
           value={activeFrame?.name}
           onClick={() => setShowFrameDialog(true)}
         />
-
-        {/* Banner Selector Trigger */}
         <CustomizationTrigger
           icon={<ImageIcon className="w-5 h-5" />}
           label="Profile Banner"
           value={activeBanner?.name}
           onClick={() => setShowBannerDialog(true)}
         />
-
-        {/* Title Selector Trigger */}
         <CustomizationTrigger
           icon={<Crown className="w-5 h-5" />}
           label="Honorific Title"
@@ -447,8 +439,6 @@ export function ProfileBoundedProfile({
       </Button>
 
       {/* --- DIALOGS --- */}
-
-      {/* Avatar Dialog */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
         <DialogContent className="bg-background/95 backdrop-blur-xl border-primary/20">
           <DialogHeader>
@@ -487,14 +477,12 @@ export function ProfileBoundedProfile({
         </DialogContent>
       </Dialog>
 
-      {/* Frame Selection Dialog (Inventory Style) */}
       <SelectionDialog open={showFrameDialog} onOpenChange={setShowFrameDialog} title="Select Frame">
         <div className="grid grid-cols-3 gap-3 p-1">
           {frames.map((frame) => {
             const owned = ownedFrameIds.has(frame.id) || frame.is_default;
             const active = activeFrameId === frame.id || (!activeFrameId && frame.is_default);
             const rarity = rarityColors[frame.rarity] || rarityColors.common;
-
             return (
               <InventorySlot
                 key={frame.id}
@@ -523,14 +511,12 @@ export function ProfileBoundedProfile({
         </div>
       </SelectionDialog>
 
-      {/* Banner Selection Dialog */}
       <SelectionDialog open={showBannerDialog} onOpenChange={setShowBannerDialog} title="Select Banner">
         <div className="grid grid-cols-2 gap-3 p-1">
           {banners.map((banner) => {
             const owned = ownedBannerIds.has(banner.id) || banner.is_default;
             const active = activeBannerId === banner.id || (!activeBannerId && banner.is_default);
             const rarity = rarityColors[banner.rarity] || rarityColors.common;
-
             return (
               <InventorySlot
                 key={banner.id}
@@ -554,14 +540,12 @@ export function ProfileBoundedProfile({
         </div>
       </SelectionDialog>
 
-      {/* Title Selection Dialog */}
       <SelectionDialog open={showTitleDialog} onOpenChange={setShowTitleDialog} title="Select Title">
         <div className="grid grid-cols-2 gap-3 p-1">
           {titles.map((title) => {
             const owned = ownedTitleIds.has(title.id) || title.is_default;
             const active = activeTitleId === title.id || (!activeTitleId && title.is_default);
             const rarity = rarityColors[title.rarity] || rarityColors.common;
-
             return (
               <InventorySlot
                 key={title.id}
@@ -588,8 +572,6 @@ export function ProfileBoundedProfile({
   );
 }
 
-// --- HELPER COMPONENTS ---
-
 function CustomizationTrigger({
   icon,
   label,
@@ -613,7 +595,6 @@ function CustomizationTrigger({
       <span className="text-sm font-bold text-foreground font-rajdhani truncate w-full text-center">
         {value || "Default"}
       </span>
-      {/* Corner Accents */}
       <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-primary/30 opacity-0 group-hover:opacity-100 transition-opacity" />
       <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-primary/30 opacity-0 group-hover:opacity-100 transition-opacity" />
     </button>
@@ -674,13 +655,11 @@ function InventorySlot({
         }
       `}
     >
-      {/* Tech Corners */}
       <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-white/20" />
       <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-white/20" />
 
       {children}
 
-      {/* Status Indicators */}
       {active && (
         <div className="absolute top-0 right-0 bg-primary text-black text-[9px] font-bold px-1.5 py-0.5 rounded-bl font-mono">
           EQP
