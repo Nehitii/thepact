@@ -167,23 +167,31 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Validate token (Lovable Cloud signing-keys compatible)
-    let claimsData: unknown;
-    try {
-      const res = await supabaseClient.auth.getClaims(token);
-      claimsData = res.data as unknown;
-    } catch (e) {
-      // auth-js can THROW (e.g. "JWT has expired")
-      console.error("two-factor auth claims threw", e);
-      return jsonResponse({ error: "Invalid or expired token" }, 401);
+    // Validate token — prefer server-side getUser (tolerates clock skew)
+    // then fall back to local getClaims.
+    let userId = "";
+    let userEmail: string | null = null;
+
+    // Try server-side validation first (most reliable)
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (!userError && userData?.user) {
+      userId = userData.user.id;
+      userEmail = userData.user.email ?? null;
+    } else {
+      // Fallback: local claims validation
+      try {
+        const res = await supabaseClient.auth.getClaims(token);
+        const claims: any = (res.data as any)?.claims;
+        userId = typeof claims?.sub === "string" ? claims.sub : "";
+        userEmail = typeof claims?.email === "string" ? claims.email : null;
+      } catch (e) {
+        console.error("two-factor auth validation failed", e);
+        return jsonResponse({ error: "Invalid or expired token" }, 401);
+      }
     }
 
-    const claims: any = (claimsData as any)?.claims;
-    const userId = typeof claims?.sub === "string" ? claims.sub : "";
-    const userEmail = typeof claims?.email === "string" ? claims.email : null;
     if (!userId) return jsonResponse({ error: "Invalid or expired token" }, 401);
 
-    // Keep a minimal "user" shape used throughout this function
     const user = { id: userId, email: userEmail };
 
     const body = (await req.json().catch(() => ({}))) as {
