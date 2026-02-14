@@ -7,97 +7,39 @@ import {
   Globe,
   Mail,
   ShieldCheck,
-  CreditCard,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-
 import { supabase } from "@/lib/supabase";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
-// --- Types & Constants ---
-const TIMEZONES = [
-  "UTC",
-  "Europe/Paris",
-  "Europe/London",
-  "America/New_York",
-  "America/Los_Angeles",
-  "Asia/Tokyo",
-  "Asia/Shanghai",
-  "Australia/Sydney",
-] as const;
 const COUNTRIES = ["us", "uk", "fr", "de", "jp", "cn", "au", "ca", "es", "it", "br", "in", "other"] as const;
 
-interface ProfileAccountSettingsProps {
-  userId: string;
-  initialData: {
-    email: string;
-    displayName: string;
-    timezone: string;
-    language: string;
-    currency: string;
-    birthday: Date | undefined;
-    country: string;
-  };
-}
-
-// --- Sous-composant pour les lignes du formulaire ---
-const SettingRow = ({
-  icon: Icon,
-  label,
-  children,
-  description,
-}: {
-  icon: any;
-  label: string;
-  children: React.ReactNode;
-  description?: string;
-}) => (
-  <div className="flex flex-col md:flex-row gap-4 py-6 first:pt-0 last:pb-0">
-    <div className="md:w-1/3 space-y-1">
-      <div className="flex items-center gap-2">
-        <div className="p-2 rounded-lg bg-primary/10 text-primary">
-          <Icon size={16} />
-        </div>
-        <Label className="text-sm font-semibold uppercase tracking-wider font-rajdhani">{label}</Label>
-      </div>
-      {description && (
-        <p className="text-xs text-muted-foreground pl-10 leading-relaxed font-rajdhani">{description}</p>
-      )}
-    </div>
-    <div className="md:w-2/3">{children}</div>
-  </div>
-);
-
-export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSettingsProps) {
+export function ProfileAccountSettings({ userId, initialData }: { userId: string; initialData: any }) {
   const { t, i18n } = useTranslation();
   const dateLocale = useDateFnsLocale();
   const { toast } = useToast();
   const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
-
   const [formData, setFormData] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Styles Glassmorphism
   const styles = useMemo(
     () => ({
-      input: "bg-background/40 backdrop-blur-sm border-primary/20 focus:border-primary/50 transition-all font-rajdhani",
-      selectTrigger:
-        "bg-background/40 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all font-rajdhani",
-      selectContent: "bg-popover/95 backdrop-blur-xl border-primary/20 shadow-2xl",
-      card: "bg-card/30 backdrop-blur-md border-primary/10 shadow-lg",
+      card: "group relative overflow-hidden bg-card/20 backdrop-blur-xl border-primary/10 hover:border-primary/30 transition-all duration-500 rounded-3xl",
+      input:
+        "h-12 bg-background/50 border-primary/10 focus:border-primary/40 focus:ring-primary/20 font-rajdhani text-lg",
+      label: "text-xs font-orbitron uppercase tracking-[0.2em] text-primary/60 mb-2 block",
     }),
     [],
   );
@@ -118,158 +60,137 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         .eq("id", userId);
 
       if (error) throw error;
-
-      if (formData.language !== i18n.language) {
-        await i18n.changeLanguage(formData.language);
-      }
-
+      if (formData.language !== i18n.language) await i18n.changeLanguage(formData.language);
       updateGlobalCurrency(formData.currency);
       await refreshCurrency();
-
       toast({ title: t("profile.updatedTitle"), description: t("profile.updatedDesc") });
-    } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e.message, variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* SECTION 1: IDENTITÉ */}
-      <Card className={styles.card}>
-        <CardContent className="p-6">
-          <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
-            <User className="h-5 w-5" /> {t("profile.sections.identity")}
-          </h3>
+    <div className="space-y-10">
+      {/* SECTION IDENTITÉ */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3 px-2">
+          <div className="h-10 w-1 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+          <h2 className="text-xl font-orbitron tracking-tighter uppercase">{t("profile.sections.identity")}</h2>
+        </div>
 
-          <div className="divide-y divide-primary/5">
-            <SettingRow icon={Mail} label={t("common.email")} description={t("profile.emailCantChange")}>
-              <Input value={formData.email} disabled className="opacity-50 cursor-not-allowed bg-muted/20" />
-            </SettingRow>
+        <Card className={styles.card}>
+          <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+            <User size={120} />
+          </div>
+          <CardContent className="p-8 grid md:grid-cols-2 gap-8">
+            <div className="space-y-2">
+              <Label className={styles.label}>{t("common.email")}</Label>
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input value={formData.email} disabled className={cn(styles.input, "pl-11 opacity-60 bg-muted/10")} />
+              </div>
+            </div>
 
-            <SettingRow icon={ShieldCheck} label={t("profile.displayName")}>
-              <Input
-                placeholder={t("profile.displayNamePlaceholder")}
-                value={formData.displayName}
-                onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
-                className={styles.input}
-              />
-            </SettingRow>
+            <div className="space-y-2">
+              <Label className={styles.label}>{t("profile.displayName")}</Label>
+              <div className="relative">
+                <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
+                <Input
+                  value={formData.displayName}
+                  onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                  className={cn(styles.input, "pl-11")}
+                />
+              </div>
+            </div>
 
-            <SettingRow icon={CalendarIcon} label={t("profile.birthday")}>
+            <div className="space-y-2 md:col-span-2">
+              <Label className={styles.label}>{t("profile.birthday")}</Label>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-between text-left",
-                      styles.selectTrigger,
-                      !formData.birthday && "text-muted-foreground",
-                    )}
-                  >
-                    <span className="flex items-center gap-2">
+                  <Button variant="outline" className={cn(styles.input, "w-full justify-between px-4")}>
+                    <span className="flex items-center gap-3">
+                      <CalendarIcon className="h-4 w-4 text-primary" />
                       {formData.birthday
                         ? format(formData.birthday, "PPP", { locale: dateLocale })
                         : t("profile.birthdayPlaceholder")}
                     </span>
-                    <ChevronRight className="h-4 w-4 opacity-50" />
+                    <ChevronRight className="h-4 w-4 opacity-40" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className={cn("w-auto p-0", styles.selectContent)} align="start">
+                <PopoverContent className="w-auto p-0 bg-popover/95 backdrop-blur-xl border-primary/20">
                   <Calendar
                     mode="single"
                     selected={formData.birthday}
-                    onSelect={(date) => setFormData((p) => ({ ...p, birthday: date }))}
-                    fromYear={1920}
-                    toYear={new Date().getFullYear()}
-                    initialFocus
+                    onSelect={(d) => setFormData({ ...formData, birthday: d })}
                   />
                 </PopoverContent>
               </Popover>
-            </SettingRow>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* SECTION 2: RÉGIONALISATION */}
-      <Card className={styles.card}>
-        <CardContent className="p-6">
-          <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
-            <Globe className="h-5 w-5" /> {t("profile.sections.localization")}
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.country")}</Label>
-              <Select value={formData.country} onValueChange={(val) => setFormData((p) => ({ ...p, country: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
-                  {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>
-                      {t(`profile.countries.${c}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
+          </CardContent>
+        </Card>
+      </section>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.timezone")}</Label>
-              <Select value={formData.timezone} onValueChange={(val) => setFormData((p) => ({ ...p, timezone: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
-                  {TIMEZONES.map((tz) => (
-                    <SelectItem key={tz} value={tz}>
-                      {tz}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      {/* SECTION PRÉFÉRENCES RÉGIONALES */}
+      <section className="space-y-6">
+        <div className="flex items-center gap-3 px-2">
+          <div className="h-10 w-1 bg-primary rounded-full shadow-[0_0_10px_rgba(var(--primary),0.5)]" />
+          <h2 className="text-xl font-orbitron tracking-tighter uppercase">{t("profile.sections.localization")}</h2>
+        </div>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.language")}</Label>
-              <Select value={formData.language} onValueChange={(val) => setFormData((p) => ({ ...p, language: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {[
+            {
+              id: "country",
+              label: t("profile.country"),
+              icon: Globe,
+              options: COUNTRIES.map((c) => ({ v: c, l: t(`profile.countries.${c}`) })),
+            },
+            {
+              id: "language",
+              label: t("profile.language"),
+              icon: Sparkles,
+              options: [
+                { v: "en", l: "English" },
+                { v: "fr", l: "Français" },
+              ],
+            },
+          ].map((field) => (
+            <Card key={field.id} className={styles.card}>
+              <CardContent className="p-6 space-y-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <field.icon className="h-4 w-4 text-primary/70" />
+                  <Label className="text-[10px] font-orbitron uppercase tracking-widest text-muted-foreground">
+                    {field.label}
+                  </Label>
+                </div>
+                <Select value={formData[field.id]} onValueChange={(v) => setFormData({ ...formData, [field.id]: v })}>
+                  <SelectTrigger className="bg-transparent border-none p-0 h-auto text-lg font-rajdhani focus:ring-0">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover/95 backdrop-blur-2xl border-primary/20">
+                    {field.options.map((opt) => (
+                      <SelectItem key={opt.v} value={opt.v} className="font-rajdhani">
+                        {opt.l}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.currency")}</Label>
-              <Select value={formData.currency} onValueChange={(val) => setFormData((p) => ({ ...p, currency: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
-                  <SelectItem value="eur">EUR (€)</SelectItem>
-                  <SelectItem value="usd">USD ($)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* BOUTON D'ACTION FIXE OU FLOTTANT */}
-      <div className="flex justify-end pt-4">
+      {/* BOUTON SAUVEGARDE FLOTTANT / LARGE */}
+      <div className="sticky bottom-8 z-20 flex justify-center pt-10">
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          size="lg"
-          className="min-w-[200px] bg-primary hover:bg-primary/80 text-primary-foreground font-orbitron shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all hover:scale-105 active:scale-95"
+          className="h-16 px-12 rounded-2xl bg-primary text-primary-foreground font-orbitron text-lg tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_10px_40px_rgba(var(--primary),0.4)]"
         >
-          {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+          {isSaving ? <Loader2 className="mr-3 h-6 w-6 animate-spin" /> : <ShieldCheck className="mr-3 h-6 w-6" />}
           {isSaving ? t("common.saving") : t("common.saveChanges")}
         </Button>
       </div>
