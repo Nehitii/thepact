@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield } from "lucide-react";
 
-// --- TYPES (inchangés) ---
+// --- TYPES ---
 interface CosmeticFrame {
   id: string;
   name: string;
@@ -59,7 +59,7 @@ interface ProfileBoundedProfileProps {
   onDisplayedBadgesChange: (badges: string[]) => void;
 }
 
-// --- SUB-COMPONENTS (FIXED LAYOUT) ---
+// --- SUB-COMPONENTS ---
 
 function HolographicCard({ children }: { children: React.ReactNode }) {
   const x = useMotionValue(0);
@@ -68,7 +68,7 @@ function HolographicCard({ children }: { children: React.ReactNode }) {
   const mouseX = useSpring(x, { stiffness: 500, damping: 100 });
   const mouseY = useSpring(y, { stiffness: 500, damping: 100 });
 
-  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["5deg", "-5deg"]); // Réduit l'angle pour moins de distortion
+  const rotateX = useTransform(mouseY, [-0.5, 0.5], ["5deg", "-5deg"]);
   const rotateY = useTransform(mouseX, [-0.5, 0.5], ["-5deg", "5deg"]);
 
   function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
@@ -89,28 +89,34 @@ function HolographicCard({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
       style={{
-        perspective: 1000,
+        perspective: 1200,
         rotateX,
         rotateY,
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative w-full transition-all duration-200 ease-out"
+      className="relative w-full h-full transition-all duration-200 ease-out"
     >
-      <div className="relative transform-style-3d shadow-2xl shadow-black/50 rounded-2xl overflow-hidden bg-black/40 border border-white/10">
-        {/* Layer 1: Holographic Background Effects (DERRIÈRE le contenu) */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-10 z-0 mix-blend-screen"
+      <div className="relative h-full transform-style-3d shadow-2xl shadow-black/80 rounded-[20px] overflow-hidden bg-[#0a0a0f] border border-white/10 group">
+        {/* Holographic Shine Effect overlay on mouse move */}
+        <motion.div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-[60] mix-blend-overlay"
           style={{
-            background: `linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.1) 45%, rgba(0,0,0,0.5) 55%, transparent 100%)`,
+            background: useTransform(
+              mouseX,
+              [-0.5, 0.5],
+              [
+                "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 55%, transparent 60%)",
+                "linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.3) 30%, rgba(255,255,255,0.1) 35%, transparent 40%)",
+              ],
+            ),
           }}
         />
 
-        {/* Layer 2: CONTENT (Z-INDEX 10 pour passer au dessus des effets) */}
-        <div className="relative z-10">{children}</div>
+        {children}
 
-        {/* Layer 3: Scanlines Overlay (Optionnel, très subtil par dessus tout) */}
-        <div className="absolute inset-0 z-20 pointer-events-none opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        {/* Static Noise Grain */}
+        <div className="absolute inset-0 z-[50] pointer-events-none opacity-[0.04] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
     </motion.div>
   );
@@ -299,42 +305,62 @@ export function ProfileBoundedProfile({
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
-      {/* 1. PREVIEW SECTION */}
-      <div className="flex justify-center py-4">
-        <div className="w-full max-w-[500px]">
+      {/* 1. PREVIEW SECTION (FULL CARD LAYOUT) */}
+      <div className="flex justify-center py-6">
+        {/* Container with Aspect Ratio closer to a real Trading Card (3:4 or 4:5) */}
+        <div className="w-full max-w-[420px] h-[580px]">
           <HolographicCard>
-            {/* Banner Background */}
-            {/* H-32 pour réduire la hauteur */}
+            {/* LAYER 1: Full Background Banner (Z-0) */}
             <div
-              className="relative h-32 overflow-hidden w-full"
+              className="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700 ease-in-out"
               style={{
                 background: activeBanner?.banner_url
-                  ? `url(${activeBanner.banner_url}) center/cover`
+                  ? `url(${activeBanner.banner_url}) center/cover no-repeat`
                   : `linear-gradient(135deg, ${activeBanner?.gradient_start || "#0a0a12"}, ${activeBanner?.gradient_end || "#1a1a2e"})`,
               }}
-            >
-              {/* Scanlines Effect */}
-              <div
-                className="absolute inset-0 z-10 opacity-30 pointer-events-none"
-                style={{
-                  backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, #000 3px)",
-                  backgroundSize: "100% 4px",
-                }}
-              />
+            />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10" />
+            {/* LAYER 2: The Fade/Gradient Overlay (Z-10) */}
+            {/* This creates the dark area for text legibility at the bottom */}
+            <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#050508] via-[#050508]/90 via-40% to-transparent to-70%" />
 
-              {/* HUD Elements */}
-              <div className="absolute top-3 left-3 px-2 py-0.5 bg-black/50 backdrop-blur-md border border-white/10 rounded text-[10px] text-white/70 font-mono tracking-widest z-20">
-                ID-ENTITY // {pact?.name || "INITIATE"}
+            {/* Optional: Add scanlines only on the banner part (top) */}
+            <div
+              className="absolute inset-0 z-[5] opacity-20 pointer-events-none"
+              style={{
+                backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 2px, #000 3px)",
+                backgroundSize: "100% 4px",
+                maskImage: "linear-gradient(to bottom, black 50%, transparent 100%)", // Fade out scanlines at bottom
+              }}
+            />
+
+            {/* LAYER 3: Content Container (Z-20) */}
+            <div className="absolute inset-0 z-20 flex flex-col justify-end pb-8 px-6">
+              {/* HUD Top Label */}
+              <div className="absolute top-4 left-4 right-4 flex justify-between items-start opacity-70">
+                <div className="px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded text-[10px] text-white/80 font-mono tracking-widest">
+                  // {pact?.name || "INITIATE"}
+                </div>
+                {/* Rarity/Theme Badge (Optional) */}
+                {activeBanner?.rarity && activeBanner.rarity !== "common" && (
+                  <div
+                    className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border ${rarityColors[activeBanner.rarity].bg} ${rarityColors[activeBanner.rarity].text} ${rarityColors[activeBanner.rarity].border}`}
+                  >
+                    {activeBanner.rarity}
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Profile Content */}
-            <div className="relative px-6 pb-6 bg-[#0a0a0f]/90 backdrop-blur-xl border-t border-white/5">
-              <div className="flex flex-col items-center -mt-12 relative z-30">
-                {/* Avatar with reduced margin top (-mt-12) */}
-                <div className="relative group cursor-pointer" onClick={() => setShowAvatarDialog(true)}>
+              {/* Main Profile Info */}
+              <div className="flex flex-col items-center">
+                {/* Avatar Area - Centered and sitting on the gradient boundary */}
+                <div className="relative mb-4 group cursor-pointer" onClick={() => setShowAvatarDialog(true)}>
+                  {/* Glow effect behind avatar */}
+                  <div
+                    className="absolute inset-0 rounded-full blur-2xl opacity-40 transition-opacity duration-500"
+                    style={{ backgroundColor: activeFrame?.glow_color || "#5bb4ff" }}
+                  />
+
                   <AvatarFrame
                     avatarUrl={avatarUrl}
                     fallback={displayName?.[0] || "?"}
@@ -345,58 +371,64 @@ export function ProfileBoundedProfile({
                     frameScale={activeFrame?.frame_scale}
                     frameOffsetX={activeFrame?.frame_offset_x}
                     frameOffsetY={activeFrame?.frame_offset_y}
-                    className="transition-transform duration-300 group-hover:scale-105 shadow-xl shadow-black/50"
+                    className="transition-transform duration-300 group-hover:scale-105 shadow-2xl"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 rounded-full z-40 backdrop-blur-sm pointer-events-none">
-                    <Upload className="w-6 h-6 text-white" />
+
+                  {/* Edit overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-full z-30 backdrop-blur-[2px]">
+                    <Upload className="w-8 h-8 text-white drop-shadow-lg" />
                   </div>
                 </div>
 
-                {/* Name & Title */}
-                <div className="mt-3 text-center space-y-2">
-                  <h3 className="text-xl font-orbitron font-bold text-white tracking-widest">
-                    <CyberText text={displayName || "UNKNOWN USER"} />
+                {/* Identity Text */}
+                <div className="text-center space-y-3 w-full">
+                  <h3 className="text-2xl md:text-3xl font-orbitron font-black text-white tracking-wider drop-shadow-lg">
+                    <CyberText text={displayName || "UNKNOWN"} />
                   </h3>
 
-                  <div
-                    className="inline-flex items-center px-3 py-1 rounded-sm border backdrop-blur-md"
-                    style={{
-                      borderColor: activeTitle?.text_color ? `${activeTitle.text_color}40` : "#ffffff20",
-                      background: `linear-gradient(90deg, ${activeTitle?.text_color || "#5bb4ff"}10, transparent)`,
-                    }}
-                  >
-                    <Crown className="w-3 h-3 mr-2" style={{ color: activeTitle?.text_color || "#5bb4ff" }} />
-                    <span
-                      className="text-xs font-rajdhani uppercase tracking-widest font-semibold"
+                  {/* Title Badge */}
+                  <div className="flex justify-center">
+                    <div
+                      className="inline-flex items-center px-4 py-1.5 rounded-full border backdrop-blur-md shadow-lg"
                       style={{
-                        color: activeTitle?.text_color || "#5bb4ff",
-                        textShadow: `0 0 10px ${activeTitle?.glow_color || "rgba(91,180,255,0.5)"}`,
+                        borderColor: activeTitle?.text_color ? `${activeTitle.text_color}40` : "#ffffff20",
+                        background: `linear-gradient(90deg, ${activeTitle?.text_color || "#5bb4ff"}15, ${activeTitle?.text_color || "#5bb4ff"}05)`,
+                        boxShadow: `0 0 15px ${activeTitle?.glow_color || "transparent"}`,
                       }}
                     >
-                      {activeTitle?.title_text || "NO TITLE"}
+                      <Crown className="w-3.5 h-3.5 mr-2" style={{ color: activeTitle?.text_color || "#5bb4ff" }} />
+                      <span
+                        className="text-xs font-rajdhani uppercase tracking-[0.2em] font-bold"
+                        style={{ color: activeTitle?.text_color || "#5bb4ff" }}
+                      >
+                        {activeTitle?.title_text || "NO TITLE"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Stats / Rank */}
+                <div className="w-full mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-white/30 uppercase tracking-widest font-mono mb-1">
+                      Current Rank
                     </span>
+                    <div className="flex items-center gap-2 text-white/90 font-rajdhani font-semibold text-sm">
+                      <Shield className="w-4 h-4 text-primary" />
+                      {rankData?.currentRank?.name || "Unranked"}
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Stats / Rank Footer */}
-              <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-white/40 uppercase tracking-wider font-mono">Current Rank</span>
-                  <div className="flex items-center gap-2 text-primary font-rajdhani">
-                    <Shield className="w-4 h-4" />
-                    {rankData?.currentRank?.name || "Unranked"}
-                  </div>
+                  {rankData?.currentRank && (
+                    <RankBadge
+                      rank={rankData.currentRank}
+                      currentXP={rankData.currentXP}
+                      nextRankMinXP={rankData.nextRank?.min_points}
+                      size="sm"
+                      className="scale-110 origin-right"
+                    />
+                  )}
                 </div>
-
-                {rankData?.currentRank && (
-                  <RankBadge
-                    rank={rankData.currentRank}
-                    currentXP={rankData.currentXP}
-                    nextRankMinXP={rankData.nextRank?.min_points}
-                    size="sm"
-                  />
-                )}
               </div>
             </div>
           </HolographicCard>
@@ -438,7 +470,7 @@ export function ProfileBoundedProfile({
         <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
       </Button>
 
-      {/* --- DIALOGS --- */}
+      {/* --- DIALOGS (Keep existing implementation) --- */}
       <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
         <DialogContent className="bg-background/95 backdrop-blur-xl border-primary/20">
           <DialogHeader>
@@ -572,6 +604,7 @@ export function ProfileBoundedProfile({
   );
 }
 
+// Helper Components (unchanged)
 function CustomizationTrigger({
   icon,
   label,
