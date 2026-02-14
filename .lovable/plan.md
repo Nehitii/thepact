@@ -1,87 +1,99 @@
 
+# Avatar Frame UX Fixes & Admin Border Control
 
-# Avatar Frame Alignment Fix -- Audit & Standardization Plan
+## Issues Identified
 
-## Audit Summary
+1. **Upload overlay misaligned**: The upload circle (`div` with `rounded-full` at line 378) covers `absolute inset-0` of the parent wrapper, but the parent wrapper includes the glow effect which extends beyond the avatar. The overlay needs to be scoped to the avatar element only, not the full `AvatarFrame` wrapper.
 
-### The Problem
-The avatar frame overlay is misaligned on the Bounded Profile (and Shop Fitting Room) because **two competing transform systems** exist, and they disagree on units and scaling.
+2. **Upload overlay triggers on card hover**: The `group` class is on the outer wrapper (line 357), so hovering anywhere on the card area triggers the overlay. The `group` + `group-hover` must be moved to a tighter container around just the avatar.
 
-### System A: `AvatarFrame` component (`avatar-frame.tsx`)
-- Applies a **per-size base scale** from `frameSizeMap` (sm=1.2, md=1.3, lg=1.35, xl/2xl=1.4)
-- Multiplies that base by the DB `frameScale` value
-- Uses **pixel units** for offsets: `translate(${offsetX}px, ${offsetY}px)`
-- Used by: **Bounded Profile**, **Fitting Room**, **Admin previews** (via `FramePreview`)
+3. **Blue border always visible**: The `AvatarFrame` component hardcodes `border-2` on the Avatar (line 54). Some frames (like Rapunzel, Cherry Blossom) cover the avatar entirely, making the border look bad. This should be configurable per frame.
 
-### System B: `computeFrameTransform` (`unified-frame-renderer.tsx`)
-- Uses DB `frameScale` directly (no per-size base)
-- Uses **percentage units**: `translate(${offsetX}%, ${offsetY}%)`
-- Used by: **AdminCosmeticsManager** (imported but only for reference -- the actual preview components use System A)
-
-### The Mismatch
-1. **Admin calibrates** offsets labeled as "X Offset (%)" and "Y Offset (%)" -- values like 5 mean "5%"
-2. **AvatarFrame renders** those same values as `5px` -- completely different visual result
-3. The per-size `baseScale` multiplier (1.2-1.4) inflates the frame differently at each size, making admin calibration at one size look wrong at another
-4. `computeFrameTransform` exists as the "unified" solution but is never wired into `AvatarFrame`
-
-### Affected Surfaces
-| Surface | Component | Issue |
-|---|---|---|
-| Bounded Profile | `AvatarFrame` size="2xl" | Offsets treated as px instead of %, wrong base scale |
-| Shop Fitting Room | `AvatarFrame` size="lg" | Same transform bug, different size = different misalignment |
-| Admin Previews | `FramePreview` (alias of `AvatarFrame`) | Shows wrong result because same broken transform |
-| Admin Alignment Tool | Sliders write % values | Values stored correctly, but rendered incorrectly everywhere |
+4. **No color preview for RGBA inputs**: The admin form has plain text inputs for `border_color` and `glow_color` with no visual swatch.
 
 ---
 
-## Fix Plan
+## Plan
 
-### Step 1: Rewire `AvatarFrame` to use the Unified Transform
+### Step 1: Database Migration -- Add `show_border` and `avatar_border_color` to `cosmetic_frames`
 
-Replace the manual transform calculation in `avatar-frame.tsx` with `computeFrameTransform`:
-- Remove `frameSizeMap` (the per-size base scales)
-- Remove the manual `baseScale * frameScale` multiplication
-- Call `computeFrameTransform({ frameScale, frameOffsetX, frameOffsetY })` and apply the returned `transform` + `transformOrigin` directly to the frame overlay `div`
-- This ensures offsets are `%`-based and scale is applied uniformly
+Add two new columns:
+- `show_border` (BOOLEAN, default TRUE) -- whether to display the avatar border ring
+- `avatar_border_color` (TEXT, default '#5bb4ff') -- customizable border color per frame
 
-### Step 2: Update `FramePreview` in the same file
+This lets admins decide per-frame whether the border appears and what color it is.
 
-Since `FramePreview` delegates to `AvatarFrame`, it automatically inherits the fix. No separate change needed.
+### Step 2: Fix Upload Overlay Alignment in `ProfileBoundedProfile.tsx`
 
-### Step 3: Align Shop Fitting Room preview
+- Move the `group` class from the outer wrapper (line 357) to a new inner wrapper that wraps only the `AvatarFrame` component
+- Scope the upload overlay `div` to sit exactly over the avatar, not the glow area
+- Change hover detection: only show upload icon when hovering directly over the avatar circle
 
-The `FittingRoom.tsx` already passes `frameScale`, `frameOffsetX`, `frameOffsetY` to `AvatarFrame`. Once Step 1 is done, the Fitting Room preview will automatically match the Bounded Profile -- no code changes needed here.
+### Step 3: Update `AvatarFrame` Component -- Conditional Border
 
-### Step 4: Verify Admin previews
+- Add `showBorder` prop (default `true`) to `AvatarFrame`
+- When `showBorder` is false, remove the `border-2` class from the Avatar element
+- The `borderColor` prop already exists, so it continues to work when border is shown
 
-`AdminCosmeticsManager.tsx` uses `FramePreview` (aliased as `InlineFramePreview`). Since Step 1 fixes the underlying component, admin previews will also be correct. The `computeFrameTransform` import in AdminCosmeticsManager can remain for any direct usage.
+### Step 4: Wire Frame Border Settings Through the System
 
-### Step 5: Clean up the Unified Renderer module
+- Update `CosmeticFrame` interfaces in `ProfileBoundedProfile.tsx` and `AdminCosmeticsManager.tsx` to include `show_border` and `avatar_border_color`
+- Pass `showBorder={activeFrame?.show_border !== false}` and `borderColor={activeFrame?.avatar_border_color || activeFrame?.border_color}` to `AvatarFrame`
+- Do the same in `FittingRoom.tsx` (Shop preview)
 
-Remove `frameSizeConfig` from `unified-frame-renderer.tsx` since the avatar/frame sizing is handled by `sizeMap` in `avatar-frame.tsx` (Tailwind classes). Keep `computeFrameTransform`, `FrameTransformParams`, and `FRAME_CONTAINER_SIZES` as documentation.
+### Step 5: Admin Form -- Add Border Control Fields
+
+In the Frame creation/editing dialog of `AdminCosmeticsManager.tsx`:
+- Add a "Show Avatar Border" toggle (Switch) -- visible for both Classic and Image modes
+- Add an "Avatar Border Color" input with a color swatch preview
+
+### Step 6: Add Color Preview Swatches to All Color Inputs
+
+For every color/RGBA text input in the admin forms (border_color, glow_color, gradient_start, gradient_end, text_color, avatar_border_color):
+- Add a small colored square (`div`) next to the input that renders the current value as its `backgroundColor`
+- This gives immediate visual feedback without needing a full color picker
 
 ---
 
 ## Technical Details
 
-The core change in `avatar-frame.tsx` line 66-76 goes from:
-
+**Migration SQL:**
 ```text
-// BEFORE (broken)
-const baseScale = parseFloat(frameSizeMap[size]...);  // 1.2-1.4
-const finalScale = baseScale * (frameScale || 1);
-transform: scale(finalScale) translate(offsetX_px, offsetY_px)
+ALTER TABLE cosmetic_frames
+  ADD COLUMN show_border BOOLEAN DEFAULT TRUE,
+  ADD COLUMN avatar_border_color TEXT DEFAULT '#5bb4ff';
 ```
 
-to:
-
+**AvatarFrame prop change:**
 ```text
-// AFTER (unified)
-const { transform, transformOrigin } = computeFrameTransform({
-  frameScale, frameOffsetX, frameOffsetY
-});
-// Applied directly to the overlay div's style
+// New prop
+showBorder?: boolean;  // default true
+
+// Avatar element: conditionally apply border
+<Avatar className={cn(
+  showBorder ? "border-2" : "",
+  "relative z-10 bg-background",
+  sizeMap[size]
+)} style={{ borderColor: showBorder ? borderColor : "transparent" }}>
 ```
 
-This is a **single-file fix** (`avatar-frame.tsx`) that propagates to all 4 surfaces (Profile, Shop, Admin previews, Fitting Room) because they all use the same component.
+**Upload overlay fix (ProfileBoundedProfile):**
+The current structure nests the overlay as a sibling to `AvatarFrame` inside a `group` div. The fix wraps only the `Avatar` area in the `group` scope and positions the overlay to match the avatar dimensions using the same `sizeMap` classes.
 
+**Color swatch pattern for admin inputs:**
+```text
+<div className="flex items-center gap-2">
+  <div
+    className="w-8 h-8 rounded border border-primary/30 shrink-0"
+    style={{ backgroundColor: value }}
+  />
+  <Input value={value} onChange={...} />
+</div>
+```
+
+**Files to modify:**
+- `supabase/migrations/` -- new migration for `show_border` + `avatar_border_color`
+- `src/components/ui/avatar-frame.tsx` -- add `showBorder` prop
+- `src/components/profile/ProfileBoundedProfile.tsx` -- fix overlay, wire new props
+- `src/pages/AdminCosmeticsManager.tsx` -- add border toggle, color swatches
+- `src/components/shop/FittingRoom.tsx` -- wire new props to preview
