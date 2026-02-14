@@ -5,12 +5,13 @@ import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSetti
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
-import { User, Loader2, Fingerprint } from "lucide-react";
+import { Loader2, Fingerprint } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Profile() {
   const { t } = useTranslation();
   const { user } = useAuth();
+
   const [initialData, setInitialData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAtBottom, setIsAtBottom] = useState(false);
@@ -23,28 +24,32 @@ export default function Profile() {
 
   useEffect(() => {
     window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
   useEffect(() => {
     if (!user) return;
-    const loadData = async () => {
+
+    const loadProfileData = async () => {
       setLoading(true);
-      const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-      if (data) {
+      const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+
+      if (profile) {
         setInitialData({
           email: user.email || "",
-          displayName: data.display_name || "",
-          timezone: data.timezone || "UTC",
-          language: data.language || "en",
-          currency: data.currency || "eur",
-          birthday: data.birthday ? new Date(data.birthday) : undefined,
-          country: data.country || "",
+          displayName: profile.display_name || "",
+          timezone: profile.timezone || "UTC",
+          language: profile.language || "en",
+          currency: profile.currency || "eur",
+          birthday: profile.birthday ? new Date(profile.birthday) : undefined,
+          country: profile.country || "",
         });
       }
       setLoading(false);
     };
-    loadData();
+
+    loadProfileData();
   }, [user]);
 
   return (
@@ -57,9 +62,9 @@ export default function Profile() {
     >
       <div className="relative space-y-8 pb-20">
         {loading ? (
-          <div className="space-y-6">
-            <Skeleton className="h-[300px] w-full bg-primary/5 rounded-3xl" />
-            <Skeleton className="h-[400px] w-full bg-primary/5 rounded-3xl" />
+          <div className="space-y-8">
+            <Skeleton className="h-[350px] w-full bg-primary/5 rounded-[2rem]" />
+            <Skeleton className="h-[250px] w-full bg-primary/5 rounded-[2rem]" />
           </div>
         ) : user && initialData ? (
           <div className="animate-in fade-in zoom-in-95 duration-500">
