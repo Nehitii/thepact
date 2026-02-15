@@ -56,6 +56,8 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
+  const uiSoundBufferRef = useRef<AudioBuffer | null>(null);
+  const uiSoundLoadingRef = useRef(false);
   const lastPlayedRef = useRef<Record<SoundCategory, number>>({
     ui: 0,
     success: 0,
@@ -68,6 +70,15 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
     const Ctx = window.AudioContext || (window as any).webkitAudioContext;
     if (!Ctx) return null;
     audioCtxRef.current = new Ctx();
+    // Pre-load UI click sound
+    if (!uiSoundLoadingRef.current && !uiSoundBufferRef.current) {
+      uiSoundLoadingRef.current = true;
+      fetch("/sounds/ui-click.mp3")
+        .then((r) => r.arrayBuffer())
+        .then((buf) => audioCtxRef.current?.decodeAudioData(buf))
+        .then((decoded) => { if (decoded) uiSoundBufferRef.current = decoded; })
+        .catch(() => {});
+    }
     return audioCtxRef.current;
   }, []);
 
@@ -107,12 +118,22 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       const ctx = ensureAudio();
       if (!ctx) return;
 
-      // Browser may keep AudioContext suspended until a gesture occurs.
       if (ctx.state === "suspended") {
-        // Resume is best-effort; if blocked, the sound simply won’t play.
         void ctx.resume().catch(() => {});
       }
 
+      // For UI sounds, play the uploaded MP3 sample
+      if (category === "ui" && uiSoundBufferRef.current) {
+        const source = ctx.createBufferSource();
+        source.buffer = uiSoundBufferRef.current;
+        const gain = ctx.createGain();
+        gain.gain.value = clamp01(settings.volume);
+        source.connect(gain).connect(ctx.destination);
+        source.start();
+        return;
+      }
+
+      // Synth fallback for other categories
       const t0 = ctx.currentTime;
       const master = ctx.createGain();
       master.gain.value = clamp01(settings.volume);
@@ -124,7 +145,6 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       out.gain.exponentialRampToValueAtTime(0.0001, t0 + (variant === "reward" ? 0.16 : 0.08));
       out.connect(master);
 
-      // A touch of filtering for a clean, futuristic “digital” feel.
       const filter = ctx.createBiquadFilter();
       filter.type = "highpass";
       filter.frequency.setValueAtTime(220, t0);
@@ -135,11 +155,8 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
       const oscB = ctx.createOscillator();
       oscB.type = "sine";
 
-      // Frequency “motifs” by category.
       const motif = (() => {
         switch (category) {
-          case "ui":
-            return variant === "reward" ? [740, 980] : [560, 720];
           case "success":
             return [520, 780, 1040];
           case "progress":
@@ -150,13 +167,11 @@ export function SoundProvider({ children }: { children: React.ReactNode }) {
         }
       })();
 
-      // Subtle pitch glide.
       oscA.frequency.setValueAtTime(motif[0], t0);
       oscA.frequency.exponentialRampToValueAtTime(motif[motif.length - 1], t0 + (variant === "reward" ? 0.09 : 0.05));
       oscB.frequency.setValueAtTime(motif[0] * 0.5, t0);
       oscB.frequency.exponentialRampToValueAtTime(motif[motif.length - 1] * 0.5, t0 + (variant === "reward" ? 0.09 : 0.05));
 
-      // Mix levels
       const gainA = ctx.createGain();
       gainA.gain.value = variant === "reward" ? 0.8 : 0.65;
       const gainB = ctx.createGain();
