@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -29,7 +30,7 @@ import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { motion, AnimatePresence } from "framer-motion";
-import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "@/lib/goalConstants";
+import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel, getCostCategoryLabel } from "@/lib/goalConstants";
 import { SuperGoalChildList, SuperGoalEditModal, computeSuperGoalProgress, filterGoalsByRule, type SuperGoalRule, type SuperGoalChildInfo } from "@/components/goals/super";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
@@ -77,6 +78,7 @@ export default function GoalDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isModulePurchased } = useUserShop(user?.id);
+  const queryClient = useQueryClient();
   const createWishlistItem = useCreatePactWishlistItem();
   const [goal, setGoal] = useState<Goal | null>(null);
   const [steps, setSteps] = useState<Step[]>([]);
@@ -195,7 +197,7 @@ export default function GoalDetail() {
   // Sync cost items when loaded
   useEffect(() => {
     if (costItems.length > 0) {
-      setEditCostItems(costItems.map((item) => ({ id: item.id, name: item.name, price: item.price })));
+      setEditCostItems(costItems.map((item) => ({ id: item.id, name: item.name, price: item.price, category: item.category || undefined, stepId: item.step_id })));
     }
   }, [costItems]);
 
@@ -256,6 +258,22 @@ export default function GoalDetail() {
         setTimeout(() => { trackStepCompleted(user.id); }, 0);
         toast({ title: "Step Completed", description: "You're making progress!" });
       }
+    }
+
+    // Auto-acquisition: update wishlist items linked via cost items
+    const linkedCostItems = costItems.filter(ci => ci.step_id === stepId);
+    if (linkedCostItems.length > 0) {
+      const isAcquired = newStatus === "completed";
+      for (const ci of linkedCostItems) {
+        await supabase
+          .from("wishlist_items")
+          .update({
+            acquired: isAcquired,
+            acquired_at: isAcquired ? new Date().toISOString() : null,
+          })
+          .eq("source_goal_cost_id", ci.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ["pact-wishlist"] });
     }
   };
 
@@ -755,12 +773,29 @@ export default function GoalDetail() {
                   </div>
                   {costItems.length > 0 ? (
                     <div className="space-y-2">
-                      {costItems.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30">
-                          <span className="font-rajdhani text-foreground/90">{item.name}</span>
-                          <span className="font-orbitron font-bold" style={{ color: difficultyColor }}>{formatCurrency(item.price, currency)}</span>
-                        </div>
-                      ))}
+                      {costItems.map((item) => {
+                        const linkedStep = item.step_id ? steps.find(s => s.id === item.step_id) : null;
+                        return (
+                          <div key={item.id} className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 gap-3">
+                            <div className="flex-1 min-w-0">
+                              <span className="font-rajdhani text-foreground/90">{item.name}</span>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                {item.category && (
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary/70">
+                                    {getCostCategoryLabel(item.category, t)}
+                                  </Badge>
+                                )}
+                                {linkedStep && (
+                                  <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${linkedStep.status === "completed" ? "border-green-500/40 text-green-400" : "border-border text-muted-foreground"}`}>
+                                    ↳ {linkedStep.title}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <span className="font-orbitron font-bold flex-shrink-0" style={{ color: difficultyColor }}>{formatCurrency(item.price, currency)}</span>
+                          </div>
+                        );
+                      })}
                       <div className="flex items-center justify-between p-3 rounded-lg border border-primary/30 bg-primary/5">
                         <span className="font-rajdhani uppercase tracking-wider text-primary/70">Total</span>
                         <span className="font-orbitron font-bold text-lg text-primary">{formatCurrency(goal.estimated_cost, currency)}</span>
@@ -1045,7 +1080,8 @@ export default function GoalDetail() {
                       <CostItemsEditor 
                         items={editCostItems} 
                         onChange={setEditCostItems} 
-                        legacyTotal={goal.estimated_cost} 
+                        legacyTotal={goal.estimated_cost}
+                        steps={steps}
                         onAddToWishlist={
                           isModulePurchased("wishlist")
                             ? (item: CostItemData) => {
@@ -1064,7 +1100,7 @@ export default function GoalDetail() {
                                   name,
                                   estimatedCost: Number(item.price) || 0,
                                   itemType: "required",
-                                  category: goal.type ?? null,
+                                  category: item.category ?? goal.type ?? null,
                                   goalId: goal.id,
                                 });
                               }

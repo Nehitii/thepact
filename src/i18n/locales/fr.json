@@ -388,6 +388,21 @@
       "noActiveGoalsDesc": "Tous tes objectifs sont terminés ou en pause",
       "noCompletedGoals": "Pas encore d'objectifs terminés",
       "noCompletedGoalsDesc": "Termine ton premier objectif pour le voir ici"
+    },
+    "costCategories": {
+      "furniture": "Mobilier",
+      "clothing": "Vêtements",
+      "electronics": "Électronique",
+      "tools": "Outils & Équipement",
+      "materials": "Matériaux",
+      "software": "Logiciels",
+      "services": "Services",
+      "food": "Alimentation & Fournitures",
+      "transport": "Transport",
+      "education": "Éducation",
+      "health": "Santé",
+      "decoration": "Décoration",
+      "other": "Autre"
     }
   },
   "finance": {

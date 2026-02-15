@@ -184,7 +184,33 @@ export function getDifficultyIntensity(difficulty: string): number {
   }
 }
 
+// Cost Item Categories
+export const COST_ITEM_CATEGORIES = [
+  { value: "furniture", labelKey: "goals.costCategories.furniture" },
+  { value: "clothing", labelKey: "goals.costCategories.clothing" },
+  { value: "electronics", labelKey: "goals.costCategories.electronics" },
+  { value: "tools", labelKey: "goals.costCategories.tools" },
+  { value: "materials", labelKey: "goals.costCategories.materials" },
+  { value: "software", labelKey: "goals.costCategories.software" },
+  { value: "services", labelKey: "goals.costCategories.services" },
+  { value: "food", labelKey: "goals.costCategories.food" },
+  { value: "transport", labelKey: "goals.costCategories.transport" },
+  { value: "education", labelKey: "goals.costCategories.education" },
+  { value: "health", labelKey: "goals.costCategories.health" },
+  { value: "decoration", labelKey: "goals.costCategories.decoration" },
+  { value: "other", labelKey: "goals.costCategories.other" },
+] as const;
+
+// Helper: Get cost category label
+export function getCostCategoryLabel(category: string, t?: TFunction): string {
+  const found = COST_ITEM_CATEGORIES.find(c => c.value === category);
+  if (!found) return category.charAt(0).toUpperCase() + category.slice(1);
+  if (t) return t(found.labelKey);
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+
 // Type exports for TypeScript support
 export type GoalTag = typeof GOAL_TAGS[number];
 export type DifficultyOption = typeof DIFFICULTY_OPTIONS[number];
 export type StatusKey = keyof typeof STATUS_CONFIG;
+export type CostItemCategory = typeof COST_ITEM_CATEGORIES[number];
