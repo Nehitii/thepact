@@ -54,6 +54,7 @@ export default function NewGoal() {
   const [imageUrl, setImageUrl] = useState("");
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [stepNames, setStepNames] = useState<string[]>(Array.from({ length: 5 }, (_, i) => `Step ${i + 1}`));
 
   // Super Goal specific state
   const [superBuildMode, setSuperBuildMode] = useState<"manual" | "auto">("manual");
@@ -203,7 +204,7 @@ export default function NewGoal() {
       if (goalType === "normal" && validatedData.stepCount) {
         const steps = Array.from({ length: validatedData.stepCount }, (_, i) => ({
           goal_id: goalData.id,
-          title: `Step ${i + 1}`,
+          title: stepNames[i]?.trim() || `Step ${i + 1}`,
           description: "",
           notes: "",
           order: i + 1
@@ -551,6 +552,7 @@ export default function NewGoal() {
 
               {/* Steps / Duration based on goal type - not for super goals */}
               {goalType !== "super" && (
+              <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {goalType === "normal" ? (
                   <div className="space-y-3">
@@ -564,7 +566,21 @@ export default function NewGoal() {
                       min="1"
                       max="20"
                       value={stepCount}
-                      onChange={(e) => setStepCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                      onChange={(e) => {
+                        const newCount = Math.max(1, Math.min(20, parseInt(e.target.value) || 1));
+                        setStepCount(newCount);
+                        setStepNames(prev => {
+                          const updated = [...prev];
+                          if (newCount > updated.length) {
+                            for (let i = updated.length; i < newCount; i++) {
+                              updated.push(`Step ${i + 1}`);
+                            }
+                          } else {
+                            updated.length = newCount;
+                          }
+                          return updated;
+                        });
+                      }}
                       autoComplete="off"
                       variant="light"
                       className="h-12 text-base rounded-xl"
@@ -610,6 +626,38 @@ export default function NewGoal() {
                   />
                 </div>
               </div>
+
+              {/* Step Names Editor - only for normal goals */}
+              {goalType === "normal" && stepCount > 0 && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                    <ListOrdered className="h-4 w-4" />
+                    Name Your Steps
+                  </Label>
+                  <div className="space-y-2">
+                    {stepNames.map((sName, idx) => (
+                      <div key={idx} className="flex items-center gap-3">
+                        <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">{idx + 1}.</span>
+                        <Input
+                          value={sName}
+                          onChange={(e) => {
+                            const updated = [...stepNames];
+                            updated[idx] = e.target.value;
+                            setStepNames(updated);
+                          }}
+                          placeholder={`Step ${idx + 1}`}
+                          maxLength={100}
+                          autoComplete="off"
+                          variant="light"
+                          className="h-10 text-sm rounded-xl"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">You can rename them later from the goal detail page</p>
+                </div>
+              )}
+              </>
               )}
             </div>
 
