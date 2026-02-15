@@ -796,6 +796,17 @@ export default function GoalDetail() {
                           </div>
                         );
                       })}
+                      {(() => {
+                        const alreadyFinanced = costItems
+                          .filter(ci => ci.step_id && steps.find(s => s.id === ci.step_id && s.status === "completed"))
+                          .reduce((sum, ci) => sum + ci.price, 0);
+                        return alreadyFinanced > 0 ? (
+                          <div className="flex items-center justify-between p-3 rounded-lg border border-green-500/30 bg-green-500/5">
+                            <span className="font-rajdhani uppercase tracking-wider text-green-400/70">{t("goals.detail.alreadyFinanced")}</span>
+                            <span className="font-orbitron font-bold text-green-400">{formatCurrency(alreadyFinanced, currency)}</span>
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="flex items-center justify-between p-3 rounded-lg border border-primary/30 bg-primary/5">
                         <span className="font-rajdhani uppercase tracking-wider text-primary/70">Total</span>
                         <span className="font-orbitron font-bold text-lg text-primary">{formatCurrency(goal.estimated_cost, currency)}</span>

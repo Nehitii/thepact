@@ -376,6 +376,7 @@
       "focusHint": "Marque cet objectif comme prioritaire",
       "notes": "Notes",
       "costItems": "Éléments de coût",
+      "alreadyFinanced": "Déjà financé",
       "timeline": "Chronologie"
     },
     "views": {
