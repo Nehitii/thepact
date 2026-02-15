@@ -242,7 +242,7 @@ export function AppSidebar() {
                     )
                   }
                 >
-                  <m.config.icon size={14} className={isActive ? "text-primary" : "opacity-70"} />
+                  <m.config.icon size={14} className={location.pathname === m.config.route ? "text-primary" : "opacity-70"} />
                   {m.config.label}
                 </NavLink>
               ))}
