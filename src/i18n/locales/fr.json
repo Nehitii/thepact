@@ -322,14 +322,23 @@
       "updating": "Mise à jour…"
     },
     "tags": {
+      "arts": "Arts",
+      "buying_selling": "Achat & Vente",
+      "community": "Communauté",
+      "creative": "Créatif",
+      "diy": "Bricolage",
+      "financial": "Financier",
+      "health": "Santé",
+      "learning": "Apprentissage",
+      "lifestyle": "Lifestyle",
+      "nature": "Nature",
       "personal": "Personnel",
       "professional": "Professionnel",
-      "health": "Santé",
-      "creative": "Créatif",
-      "financial": "Financier",
-      "learning": "Apprentissage",
       "relationship": "Relationnel",
-      "diy": "Bricolage",
+      "spiritual": "Spirituel",
+      "tech": "Tech",
+      "travel": "Voyage",
+      "work": "Travail",
       "other": "Autre"
     },
     "difficulties": {

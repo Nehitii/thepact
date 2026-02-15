@@ -322,14 +322,23 @@
       "updating": "Updating…"
     },
     "tags": {
+      "arts": "Arts",
+      "buying_selling": "Buying & Selling",
+      "community": "Community",
+      "creative": "Creative",
+      "diy": "DIY",
+      "financial": "Financial",
+      "health": "Health",
+      "learning": "Learning",
+      "lifestyle": "Lifestyle",
+      "nature": "Nature",
       "personal": "Personal",
       "professional": "Professional",
-      "health": "Health",
-      "creative": "Creative",
-      "financial": "Financial",
-      "learning": "Learning",
       "relationship": "Relationship",
-      "diy": "DIY",
+      "spiritual": "Spiritual",
+      "tech": "Tech",
+      "travel": "Travel",
+      "work": "Work",
       "other": "Other"
     },
     "difficulties": {

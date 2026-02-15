@@ -1,0 +1,1 @@
+ALTER TABLE public.steps ADD COLUMN exclude_from_spin boolean NOT NULL DEFAULT false;

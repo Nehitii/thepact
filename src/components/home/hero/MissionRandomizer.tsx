@@ -161,6 +161,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
         .select("id, title")
         .eq("goal_id", winner.id)
         .eq("status", "pending")
+        .eq("exclude_from_spin", false)
         .order("order", { ascending: true })
         .limit(1);
 
