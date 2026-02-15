@@ -9,6 +9,7 @@ import { supabase } from "@/lib/supabase";
 export interface ProfileSettings {
   custom_difficulty_name: string | null;
   custom_difficulty_color: string | null;
+  custom_difficulty_active: boolean | null;
 }
 
 export function useProfile(userId: string | undefined) {
@@ -19,7 +20,7 @@ export function useProfile(userId: string | undefined) {
       
       const { data, error } = await supabase
         .from("profiles")
-        .select("custom_difficulty_name, custom_difficulty_color")
+        .select("custom_difficulty_name, custom_difficulty_color, custom_difficulty_active")
         .eq("id", userId)
         .maybeSingle();
 

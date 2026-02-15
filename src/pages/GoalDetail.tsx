@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -7,6 +7,8 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/lib/supabase";
 import { trackStepCompleted } from "@/lib/achievements";
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
+import { useGoalDetail } from "@/hooks/useGoalDetail";
+import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -66,8 +68,13 @@ import {
   GOAL_TAGS,
   DIFFICULTY_OPTIONS,
   getTagLabel,
-  getDifficultyLabel,
+  getTagColor,
+  getDifficultyLabel as getCentralizedDifficultyLabel,
+  getStatusLabel as getCentralizedStatusLabel,
+  getStatusColor as getCentralizedStatusColor,
+  getStatusBadgeClass,
   getCostCategoryLabel,
+  mapToValidTag,
 } from "@/lib/goalConstants";
 import {
   SuperGoalChildList,
@@ -98,7 +105,6 @@ interface Goal {
   goal_type?: string;
   habit_duration_days?: number;
   habit_checks?: boolean[];
-  // Super Goal fields
   child_goal_ids?: string[] | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   super_goal_rule?: any;
@@ -129,6 +135,7 @@ export default function GoalDetail() {
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [editName, setEditName] = useState("");
   const [editSteps, setEditSteps] = useState(0);
   const [editStartDate, setEditStartDate] = useState("");
@@ -139,20 +146,54 @@ export default function GoalDetail() {
   const [editNotes, setEditNotes] = useState("");
   const [editCostItems, setEditCostItems] = useState<CostItemData[]>([]);
   const [editStepItems, setEditStepItems] = useState<EditStepItem[]>([]);
-  const [customDifficultyName, setCustomDifficultyName] = useState("");
-  const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
-  const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
+
+  // Track initial edit state for unsaved changes guard
+  const editInitialStateRef = useRef<string>("");
 
   const { data: costItems = [] } = useCostItems(id);
   const saveCostItems = useSaveCostItems();
   const { data: goalTagsData = [] } = useGoalTags(id);
   const saveGoalTags = useSaveGoalTags();
 
+  // Use useProfile hook instead of raw fetch (Fix 2.2)
+  const { data: profile } = useProfile(user?.id);
+  const customDifficultyName = profile?.custom_difficulty_name || "";
+  const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
+  const customDifficultyActive = profile?.custom_difficulty_active || false;
+
+  // Use React Query for goal detail (Fix 2.1)
+  const { data: goalDetailData, isLoading: goalDetailLoading } = useGoalDetail(id, user?.id);
+
   // Fetch pact and all goals for Super Goal context
   const { data: pact } = usePact(user?.id);
   const { data: allGoals = [] } = useGoals(pact?.id, { includeStepCounts: true });
+
+  // Sync goal detail from React Query into local state
+  useEffect(() => {
+    if (goalDetailData) {
+      const g = goalDetailData.goal;
+      setGoal(g);
+      setEditName(g.name);
+      setEditSteps(g.total_steps || 0);
+      setEditStartDate(g.start_date?.split("T")[0] || "");
+      setEditCompletionDate(g.completion_date?.split("T")[0] || "");
+      setEditImage(g.image_url || "");
+      setEditDifficulty(g.difficulty || "medium");
+      setEditNotes(g.notes || "");
+      setSteps(goalDetailData.steps);
+      setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
+      setLoading(false);
+    }
+  }, [goalDetailData]);
+
+  // Also set loading false if query finishes with no data
+  useEffect(() => {
+    if (!goalDetailLoading && !goalDetailData) {
+      setLoading(false);
+    }
+  }, [goalDetailLoading, goalDetailData]);
 
   // Pre-compute child goals info for Super Goals (must be before early returns)
   const childGoalsInfo: SuperGoalChildInfo[] = useMemo(() => {
@@ -197,45 +238,6 @@ export default function GoalDetail() {
     });
   }, [goal, allGoals]);
 
-  useEffect(() => {
-    if (!user || !id) return;
-    const loadData = async () => {
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("custom_difficulty_name, custom_difficulty_color, custom_difficulty_active")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (profileData) {
-        setCustomDifficultyName(profileData.custom_difficulty_name || "");
-        setCustomDifficultyColor(profileData.custom_difficulty_color || "#a855f7");
-        setCustomDifficultyActive(profileData.custom_difficulty_active || false);
-      }
-      const { data: goalData } = await supabase.from("goals").select("*").eq("id", id).single();
-      if (goalData) {
-        setGoal(goalData);
-        setEditName(goalData.name);
-        setEditSteps(goalData.total_steps || 0);
-        setEditStartDate(goalData.start_date?.split("T")[0] || "");
-        setEditCompletionDate(goalData.completion_date?.split("T")[0] || "");
-        setEditImage(goalData.image_url || "");
-        setEditDifficulty(goalData.difficulty || "medium");
-        // Tags will be loaded from goalTagsData hook
-        setEditNotes(goalData.notes || "");
-        const { data: stepsData } = await supabase
-          .from("steps")
-          .select("*")
-          .eq("goal_id", id)
-          .order("order", { ascending: true });
-        if (stepsData) {
-          setSteps(stepsData);
-          setEditStepItems(stepsData.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
-        }
-      }
-      setLoading(false);
-    };
-    loadData();
-  }, [user, id]);
-
   // Sync tags from junction table when loaded
   useEffect(() => {
     if (goalTagsData.length > 0) {
@@ -262,6 +264,38 @@ export default function GoalDetail() {
     }
   }, [costItems]);
 
+  // Snapshot initial edit state when opening edit overlay
+  useEffect(() => {
+    if (editDialogOpen) {
+      editInitialStateRef.current = JSON.stringify({
+        editName, editDifficulty, editTags, editNotes,
+        editStartDate, editCompletionDate, editImage,
+        editStepItems: editStepItems.map(s => ({ dbId: s.dbId, name: s.name })),
+        editCostItems,
+      });
+    }
+  }, [editDialogOpen]);
+
+  const hasUnsavedChanges = useCallback(() => {
+    if (!editInitialStateRef.current) return false;
+    const current = JSON.stringify({
+      editName, editDifficulty, editTags, editNotes,
+      editStartDate, editCompletionDate, editImage,
+      editStepItems: editStepItems.map(s => ({ dbId: s.dbId, name: s.name })),
+      editCostItems,
+    });
+    return current !== editInitialStateRef.current;
+  }, [editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems, editCostItems]);
+
+  const handleCloseEdit = useCallback(() => {
+    if (hasUnsavedChanges()) {
+      if (!window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+        return;
+      }
+    }
+    setEditDialogOpen(false);
+  }, [hasUnsavedChanges]);
+
   const allDifficulties = [
     ...DIFFICULTY_OPTIONS,
     ...(customDifficultyActive
@@ -274,24 +308,11 @@ export default function GoalDetail() {
     setEditTags((prev) => (prev.includes(tagValue) ? prev.filter((t) => t !== tagValue) : [...prev, tagValue]));
   };
 
-  // Map old/invalid tags to valid ones
-  const mapToValidTag = (tag: string): string => {
-    const validValues = GOAL_TAGS.map((t) => t.value) as readonly string[];
-    const lowered = tag.toLowerCase();
-    if (validValues.includes(lowered)) return lowered;
-    // Map old tags like "Growth" to closest valid tag
-    const mapping: Record<string, string> = {
-      growth: "personal",
-      career: "professional",
-      fitness: "health",
-      art: "creative",
-      money: "financial",
-      education: "learning",
-      social: "relationship",
-      craft: "diy",
-    };
-    return mapping[lowered] || "other";
-  };
+  // Use centralized helpers (Fix 1.3, 1.4)
+  const getDifficultyLabel = (difficulty: string) => getCentralizedDifficultyLabel(difficulty, undefined, customDifficultyName);
+  const getDifficultyColor = (difficulty: string) => getUnifiedDifficultyColor(difficulty, customDifficultyColor);
+  const getStatusColor = (status: string) => getCentralizedStatusColor(status);
+  const getStatusLabel = (status: string) => getCentralizedStatusLabel(status);
 
   const handleToggleStep = async (stepId: string, currentStatus: string) => {
     if (!goal) return;
@@ -315,14 +336,21 @@ export default function GoalDetail() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
     }
-    setSteps(steps.map((s) => (s.id === stepId ? { ...s, status: newStatus } : s)));
-    const newValidatedCount = newStatus === "completed" ? goal.validated_steps + 1 : goal.validated_steps - 1;
+    
+    // Fix 1.2: Recount completed steps from the array instead of incrementing
+    const updatedSteps = steps.map((s) => (s.id === stepId ? { ...s, status: newStatus } : s));
+    setSteps(updatedSteps);
+    const newValidatedCount = updatedSteps.filter((s) => s.status === "completed").length;
+    
     const { error: goalError } = await supabase
       .from("goals")
       .update({ validated_steps: newValidatedCount })
       .eq("id", goal.id);
     if (!goalError) {
       setGoal({ ...goal, validated_steps: newValidatedCount });
+      // Invalidate React Query cache for goals
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
       if (newStatus === "completed" && user) {
         setTimeout(() => {
           trackStepCompleted(user.id);
@@ -382,6 +410,8 @@ export default function GoalDetail() {
       validated_steps: completedCount,
       status: isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started",
     });
+    queryClient.invalidateQueries({ queryKey: ["goals"] });
+    queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
     if (newChecks[dayIndex]) {
       setTimeout(() => {
         trackStepCompleted(user.id);
@@ -413,6 +443,8 @@ export default function GoalDetail() {
           .eq("goal_id", goal.id)
           .order("order", { ascending: true });
         if (updatedSteps) setSteps(updatedSteps);
+        queryClient.invalidateQueries({ queryKey: ["goals"] });
+        queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
         toast({ title: "Goal Completed! 🎉", description: "All steps have been marked as complete" });
       },
       (message) => {
@@ -422,101 +454,121 @@ export default function GoalDetail() {
   };
 
   const handleEditGoal = async () => {
-    if (!goal) return;
-    const { handleUpdateGoal } = await import("./GoalDetail_handlers");
-    const updates: any = {};
-    if (editName !== goal.name) updates.name = editName;
-    if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
-    if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
-    // Use first selected tag as primary type for DB compatibility
-    const primaryTag = editTags[0] || "personal";
-    if (primaryTag !== goal.type) updates.type = primaryTag;
-    if (editNotes !== (goal.notes || "")) updates.notes = editNotes || null;
-    if (editStartDate && editStartDate !== goal.start_date?.split("T")[0])
-      updates.start_date = new Date(editStartDate).toISOString();
-    if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0])
-      updates.completion_date = new Date(editCompletionDate).toISOString();
-    if (editImage !== goal.image_url) updates.image_url = editImage;
+    if (!goal || saving) return;
+    setSaving(true);
+    
+    try {
+      const { handleUpdateGoal } = await import("./GoalDetail_handlers");
+      const updates: Record<string, unknown> = {};
+      if (editName !== goal.name) updates.name = editName;
+      if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
+      if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
+      // Use first selected tag as primary type for DB compatibility
+      const primaryTag = editTags[0] || "personal";
+      if (primaryTag !== goal.type) updates.type = primaryTag;
+      if (editNotes !== (goal.notes || "")) updates.notes = editNotes || null;
+      if (editStartDate && editStartDate !== goal.start_date?.split("T")[0])
+        updates.start_date = new Date(editStartDate).toISOString();
+      if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0])
+        updates.completion_date = new Date(editCompletionDate).toISOString();
+      if (editImage !== goal.image_url) updates.image_url = editImage;
 
-    // Save cost items
-    if (id) {
-      try {
-        const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems });
-        updates.estimated_cost = newTotal;
-      } catch (err) {
-        toast({ title: "Error", description: "Failed to save cost items", variant: "destructive" });
+      // Save cost items
+      if (id) {
+        try {
+          const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems });
+          updates.estimated_cost = newTotal;
+        } catch (err) {
+          toast({ title: "Error", description: "Failed to save cost items", variant: "destructive" });
+        }
+
+        // Save tags to junction table
+        try {
+          await saveGoalTags.mutateAsync({ goalId: id, tags: editTags });
+        } catch (err) {
+          toast({ title: "Error", description: "Failed to save tags", variant: "destructive" });
+        }
       }
 
-      // Save tags to junction table
-      try {
-        await saveGoalTags.mutateAsync({ goalId: id, tags: editTags });
-      } catch (err) {
-        toast({ title: "Error", description: "Failed to save tags", variant: "destructive" });
-      }
+      handleUpdateGoal(
+        goal.id,
+        goal.total_steps,
+        updates as any,
+        async () => {
+          const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
+          if (updatedGoal) {
+            setGoal(updatedGoal);
+            setEditName(updatedGoal.name);
+            setEditSteps(updatedGoal.total_steps || 0);
+            setEditNotes(updatedGoal.notes || "");
+          }
+
+          // Fix 1.1: Batch DB operations for steps
+          if (goal.goal_type !== "habit" && goal.goal_type !== "super" && id) {
+            const existingIds = new Set(steps.map((s) => s.id));
+            const keptDbIds = new Set(editStepItems.filter((i) => i.dbId).map((i) => i.dbId!));
+
+            // Batch delete removed steps
+            const idsToDelete = steps.filter((s) => !keptDbIds.has(s.id)).map((s) => s.id);
+            if (idsToDelete.length > 0) {
+              await supabase.from("steps").delete().in("id", idsToDelete);
+            }
+
+            // Batch update existing + insert new steps
+            const updatePromises: Promise<any>[] = [];
+            const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number }[] = [];
+
+            for (let i = 0; i < editStepItems.length; i++) {
+              const item = editStepItems[i];
+              const title = item.name?.trim() || `Step ${i + 1}`;
+              if (item.dbId && existingIds.has(item.dbId)) {
+                updatePromises.push(
+                  Promise.resolve(supabase.from("steps").update({ title, order: i + 1 }).eq("id", item.dbId))
+                );
+              } else {
+                newStepsToInsert.push({
+                  goal_id: id,
+                  title,
+                  description: "",
+                  notes: "",
+                  order: i + 1,
+                });
+              }
+            }
+
+            // Execute updates in parallel and batch insert
+            await Promise.all([
+              ...updatePromises,
+              ...(newStepsToInsert.length > 0 ? [supabase.from("steps").insert(newStepsToInsert)] : []),
+            ]);
+          }
+
+          const { data: updatedSteps } = await supabase
+            .from("steps")
+            .select("*")
+            .eq("goal_id", goal.id)
+            .order("order", { ascending: true });
+          if (updatedSteps) {
+            setSteps(updatedSteps);
+            setEditStepItems(updatedSteps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
+          }
+          
+          // Invalidate caches
+          queryClient.invalidateQueries({ queryKey: ["goals"] });
+          queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+          
+          setEditDialogOpen(false);
+          setSaving(false);
+          toast({ title: "Goal Updated", description: "Changes saved successfully" });
+        },
+        (message) => {
+          setSaving(false);
+          toast({ title: "Error", description: message, variant: "destructive" });
+        },
+      );
+    } catch {
+      setSaving(false);
     }
-
-    handleUpdateGoal(
-      goal.id,
-      goal.total_steps,
-      updates,
-      async () => {
-        const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
-        if (updatedGoal) {
-          setGoal(updatedGoal);
-          setEditName(updatedGoal.name);
-          setEditSteps(updatedGoal.total_steps || 0);
-          setEditNotes(updatedGoal.notes || "");
-        }
-
-        // Save steps: reconcile with editStepItems (handles reorder, delete, add)
-        if (goal.goal_type !== "habit" && goal.goal_type !== "super" && id) {
-          const existingIds = new Set(steps.map((s) => s.id));
-          const keptDbIds = new Set(editStepItems.filter((i) => i.dbId).map((i) => i.dbId!));
-
-          // Delete steps that were removed
-          for (const s of steps) {
-            if (!keptDbIds.has(s.id)) {
-              await supabase.from("steps").delete().eq("id", s.id);
-            }
-          }
-
-          // Update existing steps (title + order) and insert new ones
-          for (let i = 0; i < editStepItems.length; i++) {
-            const item = editStepItems[i];
-            const title = item.name?.trim() || `Step ${i + 1}`;
-            if (item.dbId && existingIds.has(item.dbId)) {
-              await supabase
-                .from("steps")
-                .update({ title, order: i + 1 })
-                .eq("id", item.dbId);
-            } else {
-              await supabase.from("steps").insert({
-                goal_id: id,
-                title,
-                description: "",
-                notes: "",
-                order: i + 1,
-              });
-            }
-          }
-        }
-
-        const { data: updatedSteps } = await supabase
-          .from("steps")
-          .select("*")
-          .eq("goal_id", goal.id)
-          .order("order", { ascending: true });
-        if (updatedSteps) {
-          setSteps(updatedSteps);
-          setEditStepItems(updatedSteps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
-        }
-        setEditDialogOpen(false);
-        toast({ title: "Goal Updated", description: "Changes saved successfully" });
-      },
-      (message) => {
-        toast({ title: "Error", description: message, variant: "destructive" });
-      },
-    );
   };
 
   const handleDeleteGoal = async () => {
@@ -525,6 +577,7 @@ export default function GoalDetail() {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
       toast({ title: "Goal Deleted", description: "This evolution has been removed from your Pact" });
       navigate("/goals");
     }
@@ -574,59 +627,26 @@ export default function GoalDetail() {
     progress = (completedStepsCount / totalStepsCount) * 100;
   }
 
-  const getDifficultyLabel = (difficulty: string) => {
-    if (difficulty === "custom" && customDifficultyName) return customDifficultyName;
-    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-  };
-
-  const getDifficultyColor = (difficulty: string) => getUnifiedDifficultyColor(difficulty, customDifficultyColor);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "not_started":
-        return "bg-muted text-muted-foreground";
-      case "in_progress":
-        return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-      case "validated":
-        return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
-      case "fully_completed":
-        return "bg-green-500/10 text-green-400 border-green-500/20";
-      case "paused":
-        return "bg-orange-500/10 text-orange-400 border-orange-500/20";
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "not_started":
-        return "Not Started";
-      case "in_progress":
-        return "In Progress";
-      case "validated":
-        return "Validated";
-      case "fully_completed":
-        return "Completed";
-      case "paused":
-        return "Paused";
-      default:
-        return status;
-    }
-  };
-
   const difficultyColor = getDifficultyColor(goal.difficulty);
   const isCompleted = goal.status === "fully_completed";
 
   const toggleFocus = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const { error } = await supabase.from("goals").update({ is_focus: !goal.is_focus }).eq("id", goal.id);
-    if (!error) setGoal({ ...goal, is_focus: !goal.is_focus });
+    if (!error) {
+      setGoal({ ...goal, is_focus: !goal.is_focus });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+    }
   };
 
   // Common style for readable inputs in the edit modal
   const inputStyle =
     "bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
+
+  // Fix 3.4: Render tags from junction table data
+  const displayTags = goalTagsData.length > 0
+    ? goalTagsData.map((t) => t.tag)
+    : goal.type ? [mapToValidTag(goal.type)] : [];
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -733,10 +753,22 @@ export default function GoalDetail() {
                 >
                   {getDifficultyLabel(goal.difficulty)}
                 </Badge>
-                <Badge variant="outline" className="text-xs capitalize font-rajdhani border-primary/30 text-primary">
-                  {goal.type}
-                </Badge>
-                <Badge className={`text-xs ${getStatusColor(goal.status)} font-rajdhani font-bold uppercase`}>
+                {/* Fix 3.4: Show tags from junction table */}
+                {displayTags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="text-xs capitalize font-rajdhani"
+                    style={{
+                      borderColor: `${getTagColor(tag)}60`,
+                      color: getTagColor(tag),
+                      backgroundColor: `${getTagColor(tag)}15`,
+                    }}
+                  >
+                    {getTagLabel(tag, t)}
+                  </Badge>
+                ))}
+                <Badge className={`text-xs ${getStatusBadgeClass(goal.status)} font-rajdhani font-bold uppercase`}>
                   {getStatusLabel(goal.status)}
                 </Badge>
               </div>
@@ -1124,7 +1156,7 @@ export default function GoalDetail() {
                 >
                   <Button
                     variant="ghost"
-                    onClick={() => setEditDialogOpen(false)}
+                    onClick={handleCloseEdit}
                     className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
@@ -1226,7 +1258,7 @@ export default function GoalDetail() {
                         </h2>
                       </div>
 
-                      {/* Goal Type Display (read-only) */}
+                      {/* Goal Type Display (read-only) - Fix 3.2: Added Super Goal card */}
                       <div className="space-y-3">
                         <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
                           Goal Type
@@ -1234,14 +1266,14 @@ export default function GoalDetail() {
                         <div className="flex gap-3">
                           <div
                             className={`flex-1 p-4 rounded-xl border-2 text-center ${
-                              goal.goal_type !== "habit" ? "border-primary bg-primary/10" : "border-border bg-muted/30"
+                              goal.goal_type === "normal" || (!goal.goal_type || (goal.goal_type !== "habit" && goal.goal_type !== "super")) ? "border-primary bg-primary/10" : "border-border bg-muted/30"
                             }`}
                           >
                             <ListOrdered
-                              className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`}
+                              className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type === "normal" || (!goal.goal_type || (goal.goal_type !== "habit" && goal.goal_type !== "super")) ? "text-primary" : "text-muted-foreground"}`}
                             />
                             <span
-                              className={`text-sm font-rajdhani font-medium ${goal.goal_type !== "habit" ? "text-primary" : "text-muted-foreground"}`}
+                              className={`text-sm font-rajdhani font-medium ${goal.goal_type === "normal" || (!goal.goal_type || (goal.goal_type !== "habit" && goal.goal_type !== "super")) ? "text-primary" : "text-muted-foreground"}`}
                             >
                               Normal Goal
                             </span>
@@ -1258,6 +1290,20 @@ export default function GoalDetail() {
                               className={`text-sm font-rajdhani font-medium ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`}
                             >
                               Habit Goal
+                            </span>
+                          </div>
+                          <div
+                            className={`flex-1 p-4 rounded-xl border-2 text-center ${
+                              goal.goal_type === "super" ? "border-yellow-500 bg-yellow-500/10" : "border-border bg-muted/30"
+                            }`}
+                          >
+                            <Crown
+                              className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type === "super" ? "text-yellow-500" : "text-muted-foreground"}`}
+                            />
+                            <span
+                              className={`text-sm font-rajdhani font-medium ${goal.goal_type === "super" ? "text-yellow-500" : "text-muted-foreground"}`}
+                            >
+                              Super Goal
                             </span>
                           </div>
                         </div>
@@ -1430,11 +1476,12 @@ export default function GoalDetail() {
                       </div>
                     </div>
 
-                    {/* Action Buttons */}
+                    {/* Action Buttons - Fix 3.1: Added saving state */}
                     <div className="flex gap-4 pt-6 border-t border-primary/20">
                       <Button
                         variant="outline"
-                        onClick={() => setEditDialogOpen(false)}
+                        onClick={handleCloseEdit}
+                        disabled={saving}
                         className="flex-1 h-14 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 font-rajdhani uppercase tracking-wider text-base"
                       >
                         <X className="h-5 w-5 mr-2" />
@@ -1442,10 +1489,11 @@ export default function GoalDetail() {
                       </Button>
                       <Button
                         onClick={handleEditGoal}
+                        disabled={saving}
                         className="flex-1 h-14 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)]"
                       >
                         <Check className="h-5 w-5 mr-2" />
-                        Save Changes
+                        {saving ? "SAVING..." : "Save Changes"}
                       </Button>
                     </div>
                   </div>
@@ -1483,6 +1531,8 @@ export default function GoalDetail() {
             if (updatedGoal) {
               setGoal(updatedGoal);
             }
+            queryClient.invalidateQueries({ queryKey: ["goals"] });
+            queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
             toast({ title: "Super Goal Updated", description: "Child goals have been updated" });
           }}
           currentChildIds={goal.child_goal_ids || []}
