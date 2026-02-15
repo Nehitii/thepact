@@ -801,7 +801,7 @@ export default function Goals() {
                           return renderGoalCard(goal, i, isCompleted);
                         })}
                       </motion.div>
-                      {displayMode === "bar" && renderPagination(allCurrentPage, allTotalPages, setAllCurrentPage)}
+                      {renderPagination(allCurrentPage, allTotalPages, setAllCurrentPage)}
                     </>
                   )}
                 </motion.div>
@@ -839,8 +839,7 @@ export default function Goals() {
                       >
                         {paginatedActiveGoals.map((goal, i) => renderGoalCard(goal, i, false))}
                       </motion.div>
-                      {displayMode === "bar" &&
-                        renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
+                      {renderPagination(activeCurrentPage, activeTotalPages, setActiveCurrentPage)}
                     </>
                   )}
                 </motion.div>
@@ -874,20 +873,13 @@ export default function Goals() {
                       >
                         {paginatedCompletedGoals.map((goal, i) => renderGoalCard(goal, i, true))}
                       </motion.div>
-                      {displayMode === "bar" &&
-                        renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
+                      {renderPagination(completedCurrentPage, completedTotalPages, setCompletedCurrentPage)}
                     </>
                   )}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Pagination for non-bar views (kept as original behavior) */}
-            {displayMode !== "bar" && allGoals.length > 0 && (
-              <motion.div variants={containerVariants} initial="hidden" animate="visible">
-                {renderPagination(allCurrentPage, allTotalPages, setAllCurrentPage)}
-              </motion.div>
-            )}
           </div>
         )}
       </motion.div>
