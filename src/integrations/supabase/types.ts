@@ -1896,6 +1896,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           due_date: string | null
+          exclude_from_spin: boolean
           goal_id: string
           id: string
           notes: string | null
@@ -1910,6 +1911,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           due_date?: string | null
+          exclude_from_spin?: boolean
           goal_id: string
           id?: string
           notes?: string | null
@@ -1924,6 +1926,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           due_date?: string | null
+          exclude_from_spin?: boolean
           goal_id?: string
           id?: string
           notes?: string | null

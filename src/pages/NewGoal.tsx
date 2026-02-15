@@ -233,6 +233,7 @@ export default function NewGoal() {
           description: "",
           notes: "",
           order: i + 1,
+          exclude_from_spin: item.excludeFromSpin ?? false,
         }));
         const { data: stepsData, error: stepsError } = await supabase
           .from("steps")

@@ -6,14 +6,23 @@ import type { TFunction } from "i18next";
 
 // Goal Tags with colors - matches database goal_type enum
 export const GOAL_TAGS = [
+  { value: "arts", labelKey: "goals.tags.arts", color: "hsl(320 70% 55%)" },
+  { value: "buying_selling", labelKey: "goals.tags.buying_selling", color: "hsl(30 85% 55%)" },
+  { value: "community", labelKey: "goals.tags.community", color: "hsl(190 75% 50%)" },
+  { value: "creative", labelKey: "goals.tags.creative", color: "hsl(280 75% 55%)" },
+  { value: "diy", labelKey: "goals.tags.diy", color: "hsl(175 70% 45%)" },
+  { value: "financial", labelKey: "goals.tags.financial", color: "hsl(212 90% 55%)" },
+  { value: "health", labelKey: "goals.tags.health", color: "hsl(142 70% 50%)" },
+  { value: "learning", labelKey: "goals.tags.learning", color: "hsl(25 100% 60%)" },
+  { value: "lifestyle", labelKey: "goals.tags.lifestyle", color: "hsl(350 65% 55%)" },
+  { value: "nature", labelKey: "goals.tags.nature", color: "hsl(120 60% 45%)" },
   { value: "personal", labelKey: "goals.tags.personal", color: "hsl(200 100% 67%)" },
   { value: "professional", labelKey: "goals.tags.professional", color: "hsl(45 95% 55%)" },
-  { value: "health", labelKey: "goals.tags.health", color: "hsl(142 70% 50%)" },
-  { value: "creative", labelKey: "goals.tags.creative", color: "hsl(280 75% 55%)" },
-  { value: "financial", labelKey: "goals.tags.financial", color: "hsl(212 90% 55%)" },
-  { value: "learning", labelKey: "goals.tags.learning", color: "hsl(25 100% 60%)" },
   { value: "relationship", labelKey: "goals.tags.relationship", color: "hsl(340 75% 55%)" },
-  { value: "diy", labelKey: "goals.tags.diy", color: "hsl(175 70% 45%)" },
+  { value: "spiritual", labelKey: "goals.tags.spiritual", color: "hsl(260 65% 60%)" },
+  { value: "tech", labelKey: "goals.tags.tech", color: "hsl(195 85% 50%)" },
+  { value: "travel", labelKey: "goals.tags.travel", color: "hsl(165 70% 50%)" },
+  { value: "work", labelKey: "goals.tags.work", color: "hsl(15 80% 55%)" },
   { value: "other", labelKey: "goals.tags.other", color: "hsl(210 30% 50%)" },
 ] as const;
 
@@ -132,14 +141,23 @@ export function getTagLabel(type: string, t?: TFunction): string {
   if (t) return t(found.labelKey);
   // Fallback to English
   const fallbacks: Record<string, string> = {
+    arts: "Arts",
+    buying_selling: "Buying & Selling",
+    community: "Community",
+    creative: "Creative",
+    diy: "DIY",
+    financial: "Financial",
+    health: "Health",
+    learning: "Learning",
+    lifestyle: "Lifestyle",
+    nature: "Nature",
     personal: "Personal",
     professional: "Professional",
-    health: "Health",
-    creative: "Creative",
-    financial: "Financial",
-    learning: "Learning",
     relationship: "Relationship",
-    diy: "DIY",
+    spiritual: "Spiritual",
+    tech: "Tech",
+    travel: "Travel",
+    work: "Work",
     other: "Other",
   };
   return fallbacks[type] || type.charAt(0).toUpperCase() + type.slice(1);
@@ -162,11 +180,13 @@ export function mapToValidTag(tag: string): string {
     "growth": "personal",
     "career": "professional",
     "fitness": "health",
-    "art": "creative",
+    "art": "arts",
     "money": "financial",
     "education": "learning",
     "social": "relationship",
-    "craft": "diy"
+    "craft": "diy",
+    "sport": "health",
+    "job": "work",
   };
   return mapping[lowered] || "other";
 }

@@ -149,11 +149,13 @@ export function CostItemsEditor({ items, onChange, legacyTotal, onAddToWishlist,
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">No category</SelectItem>
-                    {COST_ITEM_CATEGORIES.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {t(cat.labelKey)}
-                      </SelectItem>
-                    ))}
+                    {[...COST_ITEM_CATEGORIES]
+                      .sort((a, b) => t(a.labelKey).localeCompare(t(b.labelKey)))
+                      .map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {t(cat.labelKey)}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>

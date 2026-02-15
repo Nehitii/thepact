@@ -18,7 +18,9 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { GripVertical, Trash2, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { GripVertical, Trash2, Plus, Dices } from "lucide-react";
 
 export interface EditStepItem {
   /** DB id if existing step, undefined if newly added */
@@ -26,6 +28,8 @@ export interface EditStepItem {
   name: string;
   /** Unique key for sortable */
   key: string;
+  /** If true, this step is excluded from the mission spin/randomizer */
+  excludeFromSpin?: boolean;
 }
 
 interface EditStepsListProps {
@@ -37,12 +41,14 @@ interface SortableStepProps {
   id: string;
   index: number;
   name: string;
+  excludeFromSpin?: boolean;
   onNameChange: (value: string) => void;
+  onExcludeChange: (checked: boolean) => void;
   onDelete: () => void;
   canDelete: boolean;
 }
 
-function SortableStep({ id, index, name, onNameChange, onDelete, canDelete }: SortableStepProps) {
+function SortableStep({ id, index, name, excludeFromSpin, onNameChange, onExcludeChange, onDelete, canDelete }: SortableStepProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
@@ -75,6 +81,25 @@ function SortableStep({ id, index, name, onNameChange, onDelete, canDelete }: So
         autoComplete="off"
         className="h-10 text-sm rounded-xl flex-1 bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
       />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            onClick={() => onExcludeChange(!excludeFromSpin)}
+            className={`p-1.5 rounded-lg transition-all duration-200 shrink-0 ${
+              excludeFromSpin
+                ? "text-amber-400 bg-amber-500/15"
+                : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/30"
+            }`}
+            title={excludeFromSpin ? "Excluded from spin" : "Included in spin"}
+          >
+            <Dices className="h-4 w-4" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="text-xs">
+          {excludeFromSpin ? "Excluded from Mission Roulette" : "Click to exclude from Mission Roulette"}
+        </TooltipContent>
+      </Tooltip>
       {canDelete && (
         <button
           type="button"
@@ -120,6 +145,15 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
     [items, onItemsChange],
   );
 
+  const handleExcludeChange = useCallback(
+    (index: number, checked: boolean) => {
+      const updated = [...items];
+      updated[index] = { ...updated[index], excludeFromSpin: checked };
+      onItemsChange(updated);
+    },
+    [items, onItemsChange],
+  );
+
   const handleDelete = useCallback(
     (index: number) => {
       onItemsChange(items.filter((_, i) => i !== index));
@@ -148,7 +182,9 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
               id={item.key}
               index={index}
               name={item.name}
+              excludeFromSpin={item.excludeFromSpin}
               onNameChange={(val) => handleNameChange(index, val)}
+              onExcludeChange={(checked) => handleExcludeChange(index, checked)}
               onDelete={() => handleDelete(index)}
               canDelete={items.length > 1}
             />

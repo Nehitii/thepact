@@ -161,7 +161,7 @@ export default function GoalDetail() {
       setEditDifficulty(g.difficulty || "medium");
       setEditNotes(g.notes || "");
       setSteps(goalDetailData.steps);
-      setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
+      setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: (s as any).exclude_from_spin ?? false })));
       setLoading(false);
     }
   }, [goalDetailData]);
@@ -494,14 +494,14 @@ export default function GoalDetail() {
 
             // Batch update existing + insert new steps
             const updatePromises: Promise<unknown>[] = [];
-            const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number }[] = [];
+            const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number; exclude_from_spin: boolean }[] = [];
 
             for (let i = 0; i < editStepItems.length; i++) {
               const item = editStepItems[i];
               const title = item.name?.trim() || `Step ${i + 1}`;
               if (item.dbId && existingIds.has(item.dbId)) {
                 updatePromises.push(
-                  Promise.resolve(supabase.from("steps").update({ title, order: i + 1 }).eq("id", item.dbId))
+                  Promise.resolve(supabase.from("steps").update({ title, order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false }).eq("id", item.dbId))
                 );
               } else {
                 newStepsToInsert.push({
@@ -510,6 +510,7 @@ export default function GoalDetail() {
                   description: "",
                   notes: "",
                   order: i + 1,
+                  exclude_from_spin: item.excludeFromSpin ?? false,
                 });
               }
             }
@@ -528,7 +529,7 @@ export default function GoalDetail() {
             .order("order", { ascending: true });
           if (updatedSteps) {
             setSteps(updatedSteps);
-            setEditStepItems(updatedSteps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
+            setEditStepItems(updatedSteps.map((s: any) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false })));
           }
           
           // Invalidate caches
