@@ -390,6 +390,8 @@
       "noCompletedGoalsDesc": "Complete your first goal to see it here"
     },
     "costCategories": {
+      "car": "For the Car",
+      "home": "For the Home",
       "furniture": "Furniture",
       "clothing": "Clothing",
       "electronics": "Electronics",
@@ -402,6 +404,12 @@
       "education": "Education",
       "health": "Health",
       "decoration": "Decoration",
+      "beauty": "Beauty & Care",
+      "sports": "Sports & Fitness",
+      "pets": "Pets",
+      "gifts": "Gifts",
+      "travel": "Travel",
+      "subscriptions": "Subscriptions",
       "other": "Other"
     }
   },
