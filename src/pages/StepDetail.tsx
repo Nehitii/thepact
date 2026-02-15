@@ -84,7 +84,7 @@ export default function StepDetail() {
 
       await recalculateGoalProgress(step.goal_id);
       toast({ title: "Success", description: "Step updated successfully" });
-      await loadStepData();
+      navigate(`/goals/${step.goal_id}`);
     } catch (error: any) {
       console.error("Error saving step:", error);
       toast({ title: "Error", description: error.message, variant: "destructive" });
