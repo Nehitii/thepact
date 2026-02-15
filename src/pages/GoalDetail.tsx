@@ -956,7 +956,10 @@ export default function GoalDetail() {
                             className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-200 ${step.status === "completed" ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`}
                             onClick={() => navigate(`/step/${step.id}`)}
                           >
-                            <div onClick={(e) => e.stopPropagation()}>
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-2 -m-2 flex items-center justify-center"
+                            >
                               <Checkbox
                                 checked={step.status === "completed"}
                                 onCheckedChange={() => handleToggleStep(step.id, step.status)}
