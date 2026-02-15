@@ -1,0 +1,2 @@
+ALTER TABLE public.goals DROP CONSTRAINT goals_goal_type_check;
+ALTER TABLE public.goals ADD CONSTRAINT goals_goal_type_check CHECK (goal_type = ANY (ARRAY['normal'::text, 'habit'::text, 'super'::text]));
