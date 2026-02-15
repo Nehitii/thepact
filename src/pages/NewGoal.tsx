@@ -32,6 +32,7 @@ import {
   Filter,
   HandIcon,
 } from "lucide-react";
+import { EditStepsList, EditStepItem } from "@/components/goals/EditStepsList";
 import { useToast } from "@/hooks/use-toast";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
@@ -86,7 +87,9 @@ export default function NewGoal() {
   const [imageUrl, setImageUrl] = useState("");
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
-  const [stepNames, setStepNames] = useState<string[]>(Array.from({ length: 5 }, (_, i) => `Step ${i + 1}`));
+  const [stepItems, setStepItems] = useState<EditStepItem[]>(
+    Array.from({ length: 5 }, (_, i) => ({ name: `Step ${i + 1}`, key: `init-${i}` }))
+  );
 
   // Super Goal specific state
   const [superBuildMode, setSuperBuildMode] = useState<"manual" | "auto">("manual");
@@ -205,7 +208,7 @@ export default function NewGoal() {
           difficulty: validatedData.difficulty as any,
           estimated_cost: totalEstimatedCost,
           notes: validatedData.notes || null,
-          total_steps: goalType === "normal" ? validatedData.stepCount : goalType === "habit" ? habitDurationDays : 0,
+          total_steps: goalType === "normal" ? stepItems.length : goalType === "habit" ? habitDurationDays : 0,
           potential_score: potentialScore,
           start_date: new Date(startDate).toISOString(),
           status: "not_started",
@@ -223,10 +226,10 @@ export default function NewGoal() {
       await insertGoalTags(goalData.id, selectedTags);
 
       let createdSteps: { id: string; order: number }[] = [];
-      if (goalType === "normal" && validatedData.stepCount) {
-        const stepsToInsert = Array.from({ length: validatedData.stepCount }, (_, i) => ({
+      if (goalType === "normal" && stepItems.length > 0) {
+        const stepsToInsert = stepItems.map((item, i) => ({
           goal_id: goalData.id,
-          title: stepNames[i]?.trim() || `Step ${i + 1}`,
+          title: item.name?.trim() || `Step ${i + 1}`,
           description: "",
           notes: "",
           order: i + 1,
@@ -638,37 +641,13 @@ export default function NewGoal() {
                     {goalType === "normal" ? (
                       <div className="space-y-3">
                         <Label
-                          htmlFor="steps"
                           className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
                         >
                           <ListOrdered className="h-4 w-4" />
-                          Number of Steps
+                          Steps ({stepItems.length}/20)
                         </Label>
-                        <Input
-                          id="steps"
-                          type="number"
-                          min="1"
-                          max="20"
-                          value={stepCount}
-                          onChange={(e) => {
-                            const newCount = Math.max(1, Math.min(20, parseInt(e.target.value) || 1));
-                            setStepCount(newCount);
-                            setStepNames((prev) => {
-                              const updated = [...prev];
-                              if (newCount > updated.length) {
-                                for (let i = updated.length; i < newCount; i++) {
-                                  updated.push(`Step ${i + 1}`);
-                                }
-                              } else {
-                                updated.length = newCount;
-                              }
-                              return updated;
-                            });
-                          }}
-                          autoComplete="off"
-                          className={inputStyle}
-                        />
-                        <p className="text-xs text-muted-foreground">1-20 steps allowed</p>
+                        <EditStepsList items={stepItems} onItemsChange={(items) => { setStepItems(items); setStepCount(items.length); }} />
+                        <p className="text-xs text-muted-foreground">Drag to reorder, delete with trash icon</p>
                       </div>
                     ) : (
                       <div className="space-y-3">
@@ -718,38 +697,7 @@ export default function NewGoal() {
                   </div>
 
                   {/* Step Names Editor - only for normal goals */}
-                  {goalType === "normal" && stepCount > 0 && (
-                    <div className="space-y-3">
-                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                        <ListOrdered className="h-4 w-4" />
-                        Name Your Steps
-                      </Label>
-                      <div className="space-y-2">
-                        {stepNames.map((sName, idx) => (
-                          <div key={idx} className="flex items-center gap-3">
-                            <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
-                              {idx + 1}.
-                            </span>
-                            <Input
-                              value={sName}
-                              onChange={(e) => {
-                                const updated = [...stepNames];
-                                updated[idx] = e.target.value;
-                                setStepNames(updated);
-                              }}
-                              placeholder={`Step ${idx + 1}`}
-                              maxLength={100}
-                              autoComplete="off"
-                              className={`${inputStyle} h-10 text-sm`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        You can rename them later from the goal detail page
-                      </p>
-                    </div>
-                  )}
+                  {/* Old step names editor removed — now using EditStepsList above */}
                 </>
               )}
             </div>
@@ -766,9 +714,9 @@ export default function NewGoal() {
                 onChange={setCostItems}
                 steps={
                   goalType === "normal"
-                    ? stepNames.map((name, i) => ({
+                    ? stepItems.map((item, i) => ({
                         id: `step-index-${i}`,
-                        title: name,
+                        title: item.name,
                         order: i + 1,
                       }))
                     : undefined
