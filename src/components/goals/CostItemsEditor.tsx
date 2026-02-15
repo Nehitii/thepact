@@ -54,7 +54,7 @@ export function CostItemsEditor({ items, onChange, legacyTotal, onAddToWishlist,
     if (field === "price") {
       newItems[index] = { ...newItems[index], price: Number(value) || 0 };
     } else if (field === "category") {
-      newItems[index] = { ...newItems[index], category: value as string || undefined };
+      newItems[index] = { ...newItems[index], category: (value as string) || undefined };
     } else if (field === "stepId") {
       newItems[index] = { ...newItems[index], stepId: value as string | null };
     } else {
@@ -96,8 +96,7 @@ export function CostItemsEditor({ items, onChange, legacyTotal, onAddToWishlist,
                   placeholder="Item name (e.g., Materials)"
                   value={item.name}
                   onChange={(e) => handleItemChange(index, "name", e.target.value)}
-                  variant="light"
-                  className="rounded-lg"
+                  className="rounded-lg bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
                 />
               </div>
               <div className="w-32 relative">
@@ -111,8 +110,7 @@ export function CostItemsEditor({ items, onChange, legacyTotal, onAddToWishlist,
                   placeholder="0.00"
                   value={item.price || ""}
                   onChange={(e) => handleItemChange(index, "price", e.target.value)}
-                  variant="light"
-                  className="pl-7 rounded-lg"
+                  className="pl-7 rounded-lg bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
                 />
               </div>
               {onAddToWishlist && (
@@ -193,9 +191,7 @@ export function CostItemsEditor({ items, onChange, legacyTotal, onAddToWishlist,
               <p className="text-sm font-rajdhani text-amber-400">
                 Legacy Cost: <span className="font-bold">{formatCurrency(legacyTotal!, currency)}</span>
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                This cost was set before itemization was available
-              </p>
+              <p className="text-xs text-muted-foreground mt-1">This cost was set before itemization was available</p>
             </div>
             <div className="flex gap-2">
               <Button
@@ -242,9 +238,7 @@ export function CostItemsEditor({ items, onChange, legacyTotal, onAddToWishlist,
 
       {/* Total display */}
       <div className="flex items-center justify-between p-4 rounded-xl border border-primary/30 bg-background/80 backdrop-blur-sm">
-        <span className="font-rajdhani uppercase tracking-wider text-primary/70 text-sm">
-          Total Estimated Cost
-        </span>
+        <span className="font-rajdhani uppercase tracking-wider text-primary/70 text-sm">Total Estimated Cost</span>
         <span className="font-orbitron font-bold text-lg text-primary drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
           {formatCurrency(displayTotal, currency)}
         </span>
