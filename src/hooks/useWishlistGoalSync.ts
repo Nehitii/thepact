@@ -130,10 +130,18 @@ export function useWishlistGoalSync(
         const promises: PromiseLike<any>[] = [];
 
         if (toInsert.length > 0) {
-          // Use individual inserts to handle potential unique constraint conflicts gracefully
+          // Use individual inserts; ignore duplicate errors from the partial unique index
           for (const item of toInsert) {
             promises.push(
-              supabase.from("wishlist_items").upsert(item, { onConflict: "user_id,source_goal_cost_id" }).then()
+              supabase.from("wishlist_items").insert(item).then(
+                (res) => {
+                  if (res.error && res.error.code === "23505") {
+                    // Duplicate — already exists, safe to ignore
+                    return;
+                  }
+                  if (res.error) throw res.error;
+                }
+              )
             );
           }
         }
