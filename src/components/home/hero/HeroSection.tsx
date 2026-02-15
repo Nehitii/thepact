@@ -62,10 +62,10 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
 
   // Stats for Mission Randomizer
   const hasIncompleteGoals = useMemo(() => {
-    return allGoals.some(g => {
-      if (g.goal_type === 'habit') return false;
+    return allGoals.some((g) => {
+      if (g.goal_type === "habit") return false;
       const remaining = (g.total_steps || 0) - (g.validated_steps || 0);
-      return remaining > 0 && g.status !== 'fully_completed' && g.status !== 'validated';
+      return remaining > 0 && g.status !== "fully_completed" && g.status !== "validated";
     });
   }, [allGoals]);
 
@@ -79,16 +79,13 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      // Réduction du padding vertical global (py-8 -> py-4)
       className={cn("relative w-full max-w-7xl mx-auto px-4 sm:px-6 z-10 py-4", className)}
     >
-      {/* 🔮 Background Layers & Spine */}
+      {/* 🔮 Background Layers & Spine (Grid removed) */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
         <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gradient-to-b from-transparent via-cyan-500/10 to-transparent -translate-x-1/2" />
       </div>
 
-      {/* Réduction de l'espace entre les blocs principaux (space-y-8 -> space-y-4) */}
       <div className="flex flex-col items-center space-y-4">
         {/* --- 1. IDENTITY BLOCK --- */}
         <motion.div
@@ -175,14 +172,12 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
           </div>
         </motion.div>
 
-        {/* --- 3. MISSION RANDOMIZER (Replaced redundant stats) --- */}
+        {/* --- 3. MISSION RANDOMIZER --- */}
         <motion.div variants={itemVariants} className="w-full max-w-md">
           <MissionRandomizer allGoals={allGoals} />
         </motion.div>
 
         {/* --- 4. DOCK ACTIONS --- */}
-        {/* Suppression de l'espaceur inutile ici pour coller le dock aux stats */}
-
         <motion.div variants={itemVariants} className="w-full sticky bottom-4 z-30">
           <QuickActionsBar ownedModules={ownedModules} />
         </motion.div>
