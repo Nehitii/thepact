@@ -50,12 +50,10 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
       const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from("goal-images")
-        .upload(fileName, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+      const { data, error } = await supabase.storage.from("goal-images").upload(fileName, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
 
       if (error) throw error;
 
@@ -94,7 +92,6 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
 
   return (
     <div className="space-y-3">
-      
       {/* Image preview - Square format */}
       {value && (
         <div className="relative w-full aspect-square max-w-[280px] mx-auto rounded-xl overflow-hidden border-2 border-primary/30 bg-card/50">
@@ -125,8 +122,7 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
           placeholder="https://... or upload an image"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          variant="light"
-          className="flex-1"
+          className="flex-1 bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
         />
         <input
           ref={fileInputRef}
@@ -143,17 +139,13 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
           disabled={uploading}
           className="border-primary/30 hover:border-primary/50"
         >
-          {uploading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Upload className="h-4 w-4" />
-          )}
+          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
         </Button>
       </div>
 
       {/* Empty state placeholder - Square format */}
       {!value && (
-        <div 
+        <div
           className="flex flex-col items-center justify-center w-full aspect-square max-w-[280px] mx-auto rounded-xl border-2 border-dashed border-primary/20 bg-card/30 cursor-pointer hover:border-primary/40 transition-colors"
           onClick={() => fileInputRef.current?.click()}
         >
