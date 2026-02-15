@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -25,6 +25,7 @@ import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { formatCurrency } from "@/lib/currency";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
+import { EditStepsList, type EditStepItem } from "@/components/goals/EditStepsList";
 import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
 import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
@@ -93,7 +94,7 @@ export default function GoalDetail() {
   const [editTags, setEditTags] = useState<string[]>([]);
   const [editNotes, setEditNotes] = useState("");
   const [editCostItems, setEditCostItems] = useState<CostItemData[]>([]);
-  const [editStepNames, setEditStepNames] = useState<string[]>([]);
+  const [editStepItems, setEditStepItems] = useState<EditStepItem[]>([]);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
   const [customDifficultyActive, setCustomDifficultyActive] = useState(false);
@@ -179,7 +180,7 @@ export default function GoalDetail() {
         const { data: stepsData } = await supabase.from("steps").select("*").eq("goal_id", id).order("order", { ascending: true });
         if (stepsData) {
           setSteps(stepsData);
-          setEditStepNames(stepsData.map(s => s.title));
+          setEditStepItems(stepsData.map(s => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
         }
       }
       setLoading(false);
@@ -362,40 +363,32 @@ export default function GoalDetail() {
         setEditNotes(updatedGoal.notes || "");
       }
 
-      // Save step titles (update existing, insert new, delete extra)
+      // Save steps: reconcile with editStepItems (handles reorder, delete, add)
       if (goal.goal_type !== "habit" && goal.goal_type !== "super" && id) {
-        const currentStepCount = steps.length;
-        const newStepCount = editSteps;
+        const existingIds = new Set(steps.map(s => s.id));
+        const keptDbIds = new Set(editStepItems.filter(i => i.dbId).map(i => i.dbId!));
 
-        // Update existing steps' titles
-        for (let i = 0; i < Math.min(currentStepCount, newStepCount); i++) {
-          const step = steps[i];
-          const newTitle = editStepNames[i]?.trim() || `Step ${i + 1}`;
-          if (step.title !== newTitle) {
-            await supabase.from("steps").update({ title: newTitle }).eq("id", step.id);
+        // Delete steps that were removed
+        for (const s of steps) {
+          if (!keptDbIds.has(s.id)) {
+            await supabase.from("steps").delete().eq("id", s.id);
           }
         }
 
-        // Insert new steps if count increased
-        if (newStepCount > currentStepCount) {
-          const newSteps = [];
-          for (let i = currentStepCount; i < newStepCount; i++) {
-            newSteps.push({
+        // Update existing steps (title + order) and insert new ones
+        for (let i = 0; i < editStepItems.length; i++) {
+          const item = editStepItems[i];
+          const title = item.name?.trim() || `Step ${i + 1}`;
+          if (item.dbId && existingIds.has(item.dbId)) {
+            await supabase.from("steps").update({ title, order: i + 1 }).eq("id", item.dbId);
+          } else {
+            await supabase.from("steps").insert({
               goal_id: id,
-              title: editStepNames[i]?.trim() || `Step ${i + 1}`,
+              title,
               description: "",
               notes: "",
               order: i + 1,
             });
-          }
-          await supabase.from("steps").insert(newSteps);
-        }
-
-        // Delete extra steps if count decreased
-        if (newStepCount < currentStepCount) {
-          const stepsToDelete = steps.slice(newStepCount);
-          for (const s of stepsToDelete) {
-            await supabase.from("steps").delete().eq("id", s.id);
           }
         }
       }
@@ -403,7 +396,7 @@ export default function GoalDetail() {
       const { data: updatedSteps } = await supabase.from("steps").select("*").eq("goal_id", goal.id).order("order", { ascending: true });
       if (updatedSteps) {
         setSteps(updatedSteps);
-        setEditStepNames(updatedSteps.map(s => s.title));
+        setEditStepItems(updatedSteps.map(s => ({ dbId: s.id, name: s.title, key: `db-${s.id}` })));
       }
       setEditDialogOpen(false);
       toast({ title: "Goal Updated", description: "Changes saved successfully" });
@@ -1073,70 +1066,20 @@ export default function GoalDetail() {
                         </div>
                       </div>
 
-                      {/* Number of Steps (only for normal goals) */}
-                      {goal.goal_type !== "habit" && (
+                      {/* Steps Editor with drag-and-drop (only for normal goals) */}
+                      {goal.goal_type !== "habit" && goal.goal_type !== "super" && (
                         <div className="space-y-3">
                           <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
                             <ListOrdered className="h-4 w-4" />
-                            Number of Steps
+                            Mission Steps
                           </Label>
-                          <Input 
-                            type="number" 
-                            min="1" 
-                            max="20"
-                            value={editSteps} 
-                            onChange={(e) => {
-                              const newCount = Math.max(1, Math.min(20, parseInt(e.target.value) || 1));
-                              setEditSteps(newCount);
-                              setEditStepNames(prev => {
-                                const updated = [...prev];
-                                if (newCount > updated.length) {
-                                  for (let i = updated.length; i < newCount; i++) {
-                                    updated.push(`Step ${i + 1}`);
-                                  }
-                                } else {
-                                  updated.length = newCount;
-                                }
-                                return updated;
-                              });
+                          <EditStepsList
+                            items={editStepItems}
+                            onItemsChange={(items) => {
+                              setEditStepItems(items);
+                              setEditSteps(items.length);
                             }}
-                            variant="light"
-                            className="h-12 text-base rounded-xl"
                           />
-                          <p className="text-xs text-muted-foreground">
-                            Warning: Changing step count may affect existing step data
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Step Names Editor - only for normal goals */}
-                      {goal.goal_type !== "habit" && goal.goal_type !== "super" && editSteps > 0 && (
-                        <div className="space-y-3">
-                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                            <ListOrdered className="h-4 w-4" />
-                            Name Your Steps
-                          </Label>
-                          <div className="space-y-2">
-                            {editStepNames.map((sName, idx) => (
-                              <div key={idx} className="flex items-center gap-3">
-                                <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">{idx + 1}.</span>
-                                <Input
-                                  value={sName}
-                                  onChange={(e) => {
-                                    const updated = [...editStepNames];
-                                    updated[idx] = e.target.value;
-                                    setEditStepNames(updated);
-                                  }}
-                                  placeholder={`Step ${idx + 1}`}
-                                  maxLength={100}
-                                  autoComplete="off"
-                                  variant="light"
-                                  className="h-10 text-sm rounded-xl"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                          <p className="text-xs text-muted-foreground">Rename steps directly here</p>
                         </div>
                       )}
                     </div>
