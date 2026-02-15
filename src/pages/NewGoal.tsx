@@ -14,7 +14,24 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Target, Sparkles, Calendar, ListOrdered, Image, StickyNote, DollarSign, Tag, Zap, Check, X, Crown, Layers, Filter, HandIcon } from "lucide-react";
+import {
+  ArrowLeft,
+  Target,
+  Sparkles,
+  Calendar,
+  ListOrdered,
+  Image,
+  StickyNote,
+  DollarSign,
+  Tag,
+  Zap,
+  Check,
+  X,
+  Crown,
+  Layers,
+  Filter,
+  HandIcon,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
@@ -23,14 +40,29 @@ import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "
 import { z } from "zod";
 import { motion } from "framer-motion";
 
+// ... (Le schéma Zod reste inchangé)
 const goalSchema = z.object({
-  name: z.string().trim().min(1, { message: "Goal name is required" }).max(100, { message: "Goal name must be less than 100 characters" }),
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "Goal name is required" })
+    .max(100, { message: "Goal name must be less than 100 characters" }),
   type: z.array(z.string()).min(1, { message: "At least one tag is required" }),
   difficulty: z.string(),
   goalType: z.enum(["normal", "habit", "super"]),
-  stepCount: z.number().int().min(1, { message: "Must have at least 1 step" }).max(20, { message: "Cannot have more than 20 steps" }).optional(),
-  habitDurationDays: z.number().int().min(1, { message: "Must be at least 1 day" }).max(365, { message: "Cannot exceed 365 days" }).optional(),
-  notes: z.string().max(500, { message: "Notes must be less than 500 characters" }).optional()
+  stepCount: z
+    .number()
+    .int()
+    .min(1, { message: "Must have at least 1 step" })
+    .max(20, { message: "Cannot have more than 20 steps" })
+    .optional(),
+  habitDurationDays: z
+    .number()
+    .int()
+    .min(1, { message: "Must be at least 1 day" })
+    .max(365, { message: "Cannot exceed 365 days" })
+    .optional(),
+  notes: z.string().max(500, { message: "Notes must be less than 500 characters" }).optional(),
 });
 
 export default function NewGoal() {
@@ -40,7 +72,7 @@ export default function NewGoal() {
   const { toast } = useToast();
   const { data: pactData } = usePact(user?.id);
   const { data: existingGoals = [] } = useGoals(pactData?.id, { includeStepCounts: true, includeTags: true });
-  
+
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>(["personal"]);
@@ -87,15 +119,13 @@ export default function NewGoal() {
 
   const allDifficulties = [
     ...DIFFICULTY_OPTIONS,
-    ...(customDifficultyActive ? [{ value: "custom" as const, label: customDifficultyName || "Custom", color: customDifficultyColor }] : [])
+    ...(customDifficultyActive
+      ? [{ value: "custom" as const, label: customDifficultyName || "Custom", color: customDifficultyColor }]
+      : []),
   ];
 
   const toggleTag = (tagValue: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagValue) 
-        ? prev.filter(t => t !== tagValue)
-        : [...prev, tagValue]
-    );
+    setSelectedTags((prev) => (prev.includes(tagValue) ? prev.filter((t) => t !== tagValue) : [...prev, tagValue]));
   };
 
   const handleCreate = async () => {
@@ -106,12 +136,17 @@ export default function NewGoal() {
 
     // Validate super goal has child goals
     if (goalType === "super") {
-      const childIds = superBuildMode === "manual" 
-        ? selectedChildGoalIds 
-        : filterGoalsByRule(existingGoals, superGoalRule).map(g => g.id);
-      
+      const childIds =
+        superBuildMode === "manual"
+          ? selectedChildGoalIds
+          : filterGoalsByRule(existingGoals, superGoalRule).map((g) => g.id);
+
       if (childIds.length === 0) {
-        toast({ title: "Error", description: "Super Goal must contain at least one child goal", variant: "destructive" });
+        toast({
+          title: "Error",
+          description: "Super Goal must contain at least one child goal",
+          variant: "destructive",
+        });
         return;
       }
     }
@@ -124,9 +159,9 @@ export default function NewGoal() {
         goalType,
         stepCount: goalType === "normal" ? stepCount : undefined,
         habitDurationDays: goalType === "habit" ? habitDurationDays : undefined,
-        notes: notes.trim()
+        notes: notes.trim(),
       });
-      
+
       setLoading(true);
 
       const { data: pactResult } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
@@ -141,11 +176,10 @@ export default function NewGoal() {
       const habitChecks = goalType === "habit" ? Array(habitDurationDays).fill(false) : null;
       const totalEstimatedCost = costItems.reduce((sum, item) => sum + (item.price || 0), 0);
 
-      // Use first tag as primary type for DB compatibility
       const primaryType = selectedTags[0] || "personal";
 
-      // Prepare Super Goal specific data
-      let superGoalData: { child_goal_ids?: string[]; super_goal_rule?: SuperGoalRule; is_dynamic_super?: boolean } = {};
+      let superGoalData: { child_goal_ids?: string[]; super_goal_rule?: SuperGoalRule; is_dynamic_super?: boolean } =
+        {};
       if (goalType === "super") {
         if (superBuildMode === "manual") {
           superGoalData = {
@@ -153,8 +187,7 @@ export default function NewGoal() {
             is_dynamic_super: false,
           };
         } else {
-          // Auto-build mode
-          const matchedIds = filterGoalsByRule(existingGoals, superGoalRule).map(g => g.id);
+          const matchedIds = filterGoalsByRule(existingGoals, superGoalRule).map((g) => g.id);
           superGoalData = {
             child_goal_ids: isDynamicSuper ? null : matchedIds,
             super_goal_rule: superGoalRule,
@@ -187,11 +220,8 @@ export default function NewGoal() {
 
       if (goalError) throw goalError;
 
-      // Insert all selected tags into goal_tags junction table
       await insertGoalTags(goalData.id, selectedTags);
 
-      // Insert cost items
-      // Create default steps only for normal goals (before cost items, so we can link)
       let createdSteps: { id: string; order: number }[] = [];
       if (goalType === "normal" && validatedData.stepCount) {
         const stepsToInsert = Array.from({ length: validatedData.stepCount }, (_, i) => ({
@@ -199,18 +229,18 @@ export default function NewGoal() {
           title: stepNames[i]?.trim() || `Step ${i + 1}`,
           description: "",
           notes: "",
-          order: i + 1
+          order: i + 1,
         }));
-        const { data: stepsData, error: stepsError } = await supabase.from("steps").insert(stepsToInsert).select("id, order");
+        const { data: stepsData, error: stepsError } = await supabase
+          .from("steps")
+          .insert(stepsToInsert)
+          .select("id, order");
         if (stepsError) throw stepsError;
         createdSteps = stepsData || [];
       }
 
-      // Insert cost items (resolve virtual step IDs to real ones)
       if (costItems.length > 0) {
-        const stepIndexToId = new Map(
-          createdSteps.map(s => [`step-index-${s.order - 1}`, s.id])
-        );
+        const stepIndexToId = new Map(createdSteps.map((s) => [`step-index-${s.order - 1}`, s.id]));
         const costItemsData = costItems.map((item) => ({
           goal_id: goalData.id,
           name: item.name,
@@ -221,8 +251,13 @@ export default function NewGoal() {
         await supabase.from("goal_cost_items").insert(costItemsData);
       }
 
-      setTimeout(() => { trackGoalCreated(user.id, difficulty); }, 0);
-      toast({ title: goalType === "super" ? "Super Goal Created" : "Goal Created", description: "Your Pact evolution has been added" });
+      setTimeout(() => {
+        trackGoalCreated(user.id, difficulty);
+      }, 0);
+      toast({
+        title: goalType === "super" ? "Super Goal Created" : "Goal Created",
+        description: "Your Pact evolution has been added",
+      });
       navigate(`/goals/${goalData.id}`);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
@@ -235,7 +270,11 @@ export default function NewGoal() {
     }
   };
 
-  const selectedDifficulty = allDifficulties.find(d => d.value === difficulty);
+  const selectedDifficulty = allDifficulties.find((d) => d.value === difficulty);
+
+  // Style commun pour les inputs pour assurer la lisibilité
+  const inputStyle =
+    "h-12 text-base rounded-xl bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
@@ -261,7 +300,7 @@ export default function NewGoal() {
 
       <div className="max-w-2xl mx-auto px-6 py-8 relative z-10">
         {/* Header */}
-        <motion.div 
+        <motion.div
           className="space-y-6 mb-10"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -275,19 +314,17 @@ export default function NewGoal() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Goals
           </Button>
-          
+
           <div className="text-center space-y-3">
             <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">
               Create New Goal
             </h1>
-            <p className="text-primary/60 tracking-wide font-rajdhani text-lg">
-              Add an evolution to your Pact journey
-            </p>
+            <p className="text-primary/60 tracking-wide font-rajdhani text-lg">Add an evolution to your Pact journey</p>
           </div>
         </motion.div>
 
         {/* Form Card */}
-        <motion.div 
+        <motion.div
           className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -295,19 +332,21 @@ export default function NewGoal() {
         >
           {/* Subtle glow effect */}
           <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-          
+
           <div className="relative p-8 md:p-10 space-y-10">
-            
             {/* Section 1: Basic Info */}
             <div className="space-y-6">
               <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
                 <Target className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Basic Information</h2>
               </div>
-              
+
               {/* Goal Name */}
               <div className="space-y-3">
-                <Label htmlFor="name" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
+                >
                   Goal Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
@@ -317,8 +356,7 @@ export default function NewGoal() {
                   onChange={(e) => setName(e.target.value)}
                   maxLength={100}
                   autoComplete="off"
-                  variant="light"
-                  className="h-12 text-base rounded-xl"
+                  className={inputStyle}
                 />
               </div>
 
@@ -338,15 +376,20 @@ export default function NewGoal() {
                         onClick={() => toggleTag(tag.value)}
                         className={`
                           relative px-4 py-2 rounded-xl font-rajdhani text-sm font-medium transition-all duration-200
-                          ${isSelected 
-                            ? 'text-white shadow-lg' 
-                            : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
+                          ${
+                            isSelected
+                              ? "text-white shadow-lg"
+                              : "bg-background/50 text-muted-foreground hover:bg-background/80 hover:text-foreground border border-white/10"
                           }
                         `}
-                        style={isSelected ? { 
-                          background: tag.color,
-                          boxShadow: `0 0 20px ${tag.color}40`
-                        } : {}}
+                        style={
+                          isSelected
+                            ? {
+                                background: tag.color,
+                                boxShadow: `0 0 20px ${tag.color}40`,
+                              }
+                            : {}
+                        }
                       >
                         <span className="flex items-center gap-1.5">
                           {isSelected && <Check className="h-3.5 w-3.5" />}
@@ -369,9 +412,7 @@ export default function NewGoal() {
 
               {/* Goal Type Selection */}
               <div className="space-y-3">
-                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                  Goal Type
-                </Label>
+                <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Goal Type</Label>
                 <div className="grid grid-cols-3 gap-3">
                   <button
                     type="button"
@@ -379,37 +420,49 @@ export default function NewGoal() {
                     className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
                       goalType === "normal"
                         ? "border-primary bg-primary/10 shadow-[0_0_30px_hsl(var(--primary)/0.2)]"
-                        : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                        : "border-white/10 bg-background/30 hover:border-primary/50 hover:bg-background/50"
                     }`}
                   >
-                    <div className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                      goalType === "normal" ? "border-primary bg-primary" : "border-muted-foreground/30"
-                    }`}>
+                    <div
+                      className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                        goalType === "normal" ? "border-primary bg-primary" : "border-muted-foreground/30"
+                      }`}
+                    >
                       {goalType === "normal" && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
                     </div>
-                    <ListOrdered className={`h-6 w-6 mb-2 ${goalType === "normal" ? "text-primary" : "text-muted-foreground"}`} />
-                    <div className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "normal" ? "text-primary" : "text-foreground"}`}>
+                    <ListOrdered
+                      className={`h-6 w-6 mb-2 ${goalType === "normal" ? "text-primary" : "text-muted-foreground"}`}
+                    />
+                    <div
+                      className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "normal" ? "text-primary" : "text-foreground"}`}
+                    >
                       Standard
                     </div>
                     <div className="text-xs text-muted-foreground">Steps-based progress</div>
                   </button>
-                  
+
                   <button
                     type="button"
                     onClick={() => setGoalType("habit")}
                     className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
                       goalType === "habit"
                         ? "border-primary bg-primary/10 shadow-[0_0_30px_hsl(var(--primary)/0.2)]"
-                        : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                        : "border-white/10 bg-background/30 hover:border-primary/50 hover:bg-background/50"
                     }`}
                   >
-                    <div className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                      goalType === "habit" ? "border-primary bg-primary" : "border-muted-foreground/30"
-                    }`}>
+                    <div
+                      className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                        goalType === "habit" ? "border-primary bg-primary" : "border-muted-foreground/30"
+                      }`}
+                    >
                       {goalType === "habit" && <Check className="h-2.5 w-2.5 text-primary-foreground" />}
                     </div>
-                    <Sparkles className={`h-6 w-6 mb-2 ${goalType === "habit" ? "text-primary" : "text-muted-foreground"}`} />
-                    <div className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "habit" ? "text-primary" : "text-foreground"}`}>
+                    <Sparkles
+                      className={`h-6 w-6 mb-2 ${goalType === "habit" ? "text-primary" : "text-muted-foreground"}`}
+                    />
+                    <div
+                      className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "habit" ? "text-primary" : "text-foreground"}`}
+                    >
                       Habit
                     </div>
                     <div className="text-xs text-muted-foreground">Daily check-ins</div>
@@ -421,16 +474,22 @@ export default function NewGoal() {
                     className={`group relative p-4 rounded-2xl border-2 transition-all duration-300 text-left overflow-hidden ${
                       goalType === "super"
                         ? "border-yellow-500 bg-yellow-500/10 shadow-[0_0_30px_rgba(234,179,8,0.3)]"
-                        : "border-border bg-muted/30 hover:border-yellow-500/50 hover:bg-muted/50"
+                        : "border-white/10 bg-background/30 hover:border-yellow-500/50 hover:bg-background/50"
                     }`}
                   >
-                    <div className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                      goalType === "super" ? "border-yellow-500 bg-yellow-500" : "border-muted-foreground/30"
-                    }`}>
+                    <div
+                      className={`absolute top-2 right-2 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
+                        goalType === "super" ? "border-yellow-500 bg-yellow-500" : "border-muted-foreground/30"
+                      }`}
+                    >
                       {goalType === "super" && <Check className="h-2.5 w-2.5 text-yellow-900" />}
                     </div>
-                    <Crown className={`h-6 w-6 mb-2 ${goalType === "super" ? "text-yellow-500" : "text-muted-foreground"}`} />
-                    <div className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "super" ? "text-yellow-500" : "text-foreground"}`}>
+                    <Crown
+                      className={`h-6 w-6 mb-2 ${goalType === "super" ? "text-yellow-500" : "text-muted-foreground"}`}
+                    />
+                    <div
+                      className={`font-rajdhani font-bold text-base mb-0.5 ${goalType === "super" ? "text-yellow-500" : "text-foreground"}`}
+                    >
                       Super Goal
                     </div>
                     <div className="text-xs text-muted-foreground">Meta-goal of goals</div>
@@ -448,7 +507,9 @@ export default function NewGoal() {
                 >
                   <div className="flex items-center gap-3">
                     <Crown className="h-5 w-5 text-yellow-500" />
-                    <h3 className="font-orbitron text-sm uppercase tracking-wider text-yellow-500">Super Goal Configuration</h3>
+                    <h3 className="font-orbitron text-sm uppercase tracking-wider text-yellow-500">
+                      Super Goal Configuration
+                    </h3>
                   </div>
 
                   {/* Build Mode Selection */}
@@ -459,11 +520,17 @@ export default function NewGoal() {
                       className={`p-3 rounded-xl border-2 text-left transition-all ${
                         superBuildMode === "manual"
                           ? "border-primary bg-primary/10"
-                          : "border-border bg-card/50 hover:border-primary/40"
+                          : "border-white/10 bg-background/50 hover:border-primary/40"
                       }`}
                     >
-                      <HandIcon className={`h-5 w-5 mb-1 ${superBuildMode === "manual" ? "text-primary" : "text-muted-foreground"}`} />
-                      <div className={`font-medium text-sm ${superBuildMode === "manual" ? "text-primary" : "text-foreground"}`}>Manual Selection</div>
+                      <HandIcon
+                        className={`h-5 w-5 mb-1 ${superBuildMode === "manual" ? "text-primary" : "text-muted-foreground"}`}
+                      />
+                      <div
+                        className={`font-medium text-sm ${superBuildMode === "manual" ? "text-primary" : "text-foreground"}`}
+                      >
+                        Manual Selection
+                      </div>
                       <div className="text-xs text-muted-foreground">Pick specific goals</div>
                     </button>
                     <button
@@ -472,11 +539,17 @@ export default function NewGoal() {
                       className={`p-3 rounded-xl border-2 text-left transition-all ${
                         superBuildMode === "auto"
                           ? "border-primary bg-primary/10"
-                          : "border-border bg-card/50 hover:border-primary/40"
+                          : "border-white/10 bg-background/50 hover:border-primary/40"
                       }`}
                     >
-                      <Filter className={`h-5 w-5 mb-1 ${superBuildMode === "auto" ? "text-primary" : "text-muted-foreground"}`} />
-                      <div className={`font-medium text-sm ${superBuildMode === "auto" ? "text-primary" : "text-foreground"}`}>Auto-Build</div>
+                      <Filter
+                        className={`h-5 w-5 mb-1 ${superBuildMode === "auto" ? "text-primary" : "text-muted-foreground"}`}
+                      />
+                      <div
+                        className={`font-medium text-sm ${superBuildMode === "auto" ? "text-primary" : "text-foreground"}`}
+                      >
+                        Auto-Build
+                      </div>
                       <div className="text-xs text-muted-foreground">Use smart rules</div>
                     </button>
                   </div>
@@ -502,11 +575,11 @@ export default function NewGoal() {
                         customDifficultyName={customDifficultyName}
                         customDifficultyActive={customDifficultyActive}
                       />
-                      
+
                       {/* Dynamic vs Static toggle */}
-                      <div className="flex items-center justify-between p-4 rounded-xl bg-card/80 border border-border">
+                      <div className="flex items-center justify-between p-4 rounded-xl bg-background/80 border border-white/10">
                         <div>
-                          <Label className="font-medium flex items-center gap-2">
+                          <Label className="font-medium flex items-center gap-2 text-foreground">
                             <Zap className="h-4 w-4 text-purple-500" />
                             Dynamic Super Goal
                           </Label>
@@ -514,10 +587,7 @@ export default function NewGoal() {
                             Auto-updates when new goals match rules
                           </p>
                         </div>
-                        <Switch
-                          checked={isDynamicSuper}
-                          onCheckedChange={setIsDynamicSuper}
-                        />
+                        <Switch checked={isDynamicSuper} onCheckedChange={setIsDynamicSuper} />
                       </div>
                     </div>
                   )}
@@ -527,9 +597,7 @@ export default function NewGoal() {
               {/* Difficulty Selection - hide for super goals since they aggregate */}
               {goalType !== "super" && (
                 <div className="space-y-3">
-                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                    Difficulty
-                  </Label>
+                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Difficulty</Label>
                   <div className="flex flex-wrap gap-2">
                     {allDifficulties.map((diff) => {
                       const isSelected = difficulty === diff.value;
@@ -540,15 +608,20 @@ export default function NewGoal() {
                           onClick={() => setDifficulty(diff.value)}
                           className={`
                             relative px-5 py-2.5 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200
-                            ${isSelected 
-                              ? 'text-white shadow-lg scale-105' 
-                              : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border'
+                            ${
+                              isSelected
+                                ? "text-white shadow-lg scale-105"
+                                : "bg-background/50 text-muted-foreground hover:bg-background/80 hover:text-foreground border border-white/10"
                             }
                           `}
-                          style={isSelected ? { 
-                            background: diff.color,
-                            boxShadow: `0 0 25px ${diff.color}50`
-                          } : {}}
+                          style={
+                            isSelected
+                              ? {
+                                  background: diff.color,
+                                  boxShadow: `0 0 25px ${diff.color}50`,
+                                }
+                              : {}
+                          }
                         >
                           {getDifficultyLabel(diff.value, t)}
                         </button>
@@ -560,112 +633,124 @@ export default function NewGoal() {
 
               {/* Steps / Duration based on goal type - not for super goals */}
               {goalType !== "super" && (
-              <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {goalType === "normal" ? (
-                  <div className="space-y-3">
-                    <Label htmlFor="steps" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                      <ListOrdered className="h-4 w-4" />
-                      Number of Steps
-                    </Label>
-                    <Input
-                      id="steps"
-                      type="number"
-                      min="1"
-                      max="20"
-                      value={stepCount}
-                      onChange={(e) => {
-                        const newCount = Math.max(1, Math.min(20, parseInt(e.target.value) || 1));
-                        setStepCount(newCount);
-                        setStepNames(prev => {
-                          const updated = [...prev];
-                          if (newCount > updated.length) {
-                            for (let i = updated.length; i < newCount; i++) {
-                              updated.push(`Step ${i + 1}`);
-                            }
-                          } else {
-                            updated.length = newCount;
-                          }
-                          return updated;
-                        });
-                      }}
-                      autoComplete="off"
-                      variant="light"
-                      className="h-12 text-base rounded-xl"
-                    />
-                    <p className="text-xs text-muted-foreground">1-20 steps allowed</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <Label htmlFor="habitDays" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
-                      Duration (Days)
-                    </Label>
-                    <Input
-                      id="habitDays"
-                      type="number"
-                      min="1"
-                      max="365"
-                      value={habitDurationDays}
-                      onChange={(e) => setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))}
-                      autoComplete="off"
-                      variant="light"
-                      className="h-12 text-base rounded-xl"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? "s" : ""}
-                    </p>
-                  </div>
-                )}
-
-                {/* Start Date */}
-                <div className="space-y-3">
-                  <Label htmlFor="startDate" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Start Date
-                  </Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    variant="light"
-                    className="h-12 text-base rounded-xl"
-                  />
-                </div>
-              </div>
-
-              {/* Step Names Editor - only for normal goals */}
-              {goalType === "normal" && stepCount > 0 && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                    <ListOrdered className="h-4 w-4" />
-                    Name Your Steps
-                  </Label>
-                  <div className="space-y-2">
-                    {stepNames.map((sName, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">{idx + 1}.</span>
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {goalType === "normal" ? (
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor="steps"
+                          className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
+                        >
+                          <ListOrdered className="h-4 w-4" />
+                          Number of Steps
+                        </Label>
                         <Input
-                          value={sName}
+                          id="steps"
+                          type="number"
+                          min="1"
+                          max="20"
+                          value={stepCount}
                           onChange={(e) => {
-                            const updated = [...stepNames];
-                            updated[idx] = e.target.value;
-                            setStepNames(updated);
+                            const newCount = Math.max(1, Math.min(20, parseInt(e.target.value) || 1));
+                            setStepCount(newCount);
+                            setStepNames((prev) => {
+                              const updated = [...prev];
+                              if (newCount > updated.length) {
+                                for (let i = updated.length; i < newCount; i++) {
+                                  updated.push(`Step ${i + 1}`);
+                                }
+                              } else {
+                                updated.length = newCount;
+                              }
+                              return updated;
+                            });
                           }}
-                          placeholder={`Step ${idx + 1}`}
-                          maxLength={100}
                           autoComplete="off"
-                          variant="light"
-                          className="h-10 text-sm rounded-xl"
+                          className={inputStyle}
                         />
+                        <p className="text-xs text-muted-foreground">1-20 steps allowed</p>
                       </div>
-                    ))}
+                    ) : (
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor="habitDays"
+                          className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
+                        >
+                          <Calendar className="h-4 w-4" />
+                          Duration (Days)
+                        </Label>
+                        <Input
+                          id="habitDays"
+                          type="number"
+                          min="1"
+                          max="365"
+                          value={habitDurationDays}
+                          onChange={(e) =>
+                            setHabitDurationDays(Math.max(1, Math.min(365, parseInt(e.target.value) || 1)))
+                          }
+                          autoComplete="off"
+                          className={inputStyle}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Complete daily for {habitDurationDays} day{habitDurationDays !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Start Date */}
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="startDate"
+                        className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
+                      >
+                        <Calendar className="h-4 w-4" />
+                        Start Date
+                      </Label>
+                      <Input
+                        id="startDate"
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className={inputStyle}
+                        style={{ colorScheme: "dark" }} // Force dark calendar icon
+                      />
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">You can rename them later from the goal detail page</p>
-                </div>
-              )}
-              </>
+
+                  {/* Step Names Editor - only for normal goals */}
+                  {goalType === "normal" && stepCount > 0 && (
+                    <div className="space-y-3">
+                      <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                        <ListOrdered className="h-4 w-4" />
+                        Name Your Steps
+                      </Label>
+                      <div className="space-y-2">
+                        {stepNames.map((sName, idx) => (
+                          <div key={idx} className="flex items-center gap-3">
+                            <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
+                              {idx + 1}.
+                            </span>
+                            <Input
+                              value={sName}
+                              onChange={(e) => {
+                                const updated = [...stepNames];
+                                updated[idx] = e.target.value;
+                                setStepNames(updated);
+                              }}
+                              placeholder={`Step ${idx + 1}`}
+                              maxLength={100}
+                              autoComplete="off"
+                              className={`${inputStyle} h-10 text-sm`}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        You can rename them later from the goal detail page
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 
@@ -675,15 +760,19 @@ export default function NewGoal() {
                 <DollarSign className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h2>
               </div>
-              
+
               <CostItemsEditor
                 items={costItems}
                 onChange={setCostItems}
-                steps={goalType === "normal" ? stepNames.map((name, i) => ({
-                  id: `step-index-${i}`,
-                  title: name,
-                  order: i + 1,
-                })) : undefined}
+                steps={
+                  goalType === "normal"
+                    ? stepNames.map((name, i) => ({
+                        id: `step-index-${i}`,
+                        title: name,
+                        order: i + 1,
+                      }))
+                    : undefined
+                }
               />
             </div>
 
@@ -695,13 +784,14 @@ export default function NewGoal() {
               </div>
 
               {/* Image Upload */}
-              {user && (
-                <GoalImageUpload value={imageUrl} onChange={setImageUrl} userId={user.id} />
-              )}
+              {user && <GoalImageUpload value={imageUrl} onChange={setImageUrl} userId={user.id} />}
 
               {/* Notes */}
               <div className="space-y-3">
-                <Label htmlFor="notes" className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                <Label
+                  htmlFor="notes"
+                  className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
+                >
                   <StickyNote className="h-4 w-4" />
                   Notes (optional)
                 </Label>
@@ -712,8 +802,7 @@ export default function NewGoal() {
                   onChange={(e) => setNotes(e.target.value)}
                   rows={4}
                   maxLength={500}
-                  variant="light"
-                  className="resize-none rounded-xl text-base"
+                  className="resize-none rounded-xl text-base bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
                 />
                 <p className="text-xs text-muted-foreground text-right">{notes.length}/500</p>
               </div>
@@ -724,7 +813,7 @@ export default function NewGoal() {
               <Button
                 variant="outline"
                 onClick={() => navigate("/goals")}
-                className="flex-1 h-12 rounded-xl border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 font-rajdhani tracking-wider text-base"
+                className="flex-1 h-12 rounded-xl border-2 border-primary/30 hover:bg-primary/10 hover:border-primary/50 font-rajdhani tracking-wider text-base text-foreground"
               >
                 <X className="h-4 w-4 mr-2" />
                 Cancel
