@@ -97,6 +97,188 @@ const withAlphaColor = (color: string, alpha: number): string => {
   return color;
 };
 
+// Fix 2.4: Pure utility functions moved outside component
+const normalizeString = (str: string): string => {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+const sortGoalsBy = (goalsToSort: Goal[], sortBy: SortOption, sortDirection: SortDirection): Goal[] => {
+  const sorted = [...goalsToSort];
+  const direction = sortDirection === "asc" ? 1 : -1;
+
+  switch (sortBy) {
+    case "difficulty": {
+      const difficultyOrder = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
+      return sorted.sort(
+        (a, b) => (difficultyOrder.indexOf(a.difficulty) - difficultyOrder.indexOf(b.difficulty)) * direction,
+      );
+    }
+    case "type":
+      return sorted.sort((a, b) => a.type.localeCompare(b.type) * direction);
+    case "points":
+      return sorted.sort((a, b) => ((a.potential_score || 0) - (b.potential_score || 0)) * direction);
+    case "created":
+      return sorted.sort((a, b) => (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * direction);
+    case "name":
+      return sorted.sort((a, b) => a.name.localeCompare(b.name) * direction);
+    case "status": {
+      const statusOrder = ["not_started", "in_progress", "fully_completed", "paused"];
+      return sorted.sort((a, b) => (statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status)) * direction);
+    }
+    case "start":
+      return sorted.sort((a, b) => {
+        if (!a.start_date) return 1;
+        if (!b.start_date) return -1;
+        return (new Date(a.start_date).getTime() - new Date(b.start_date).getTime()) * direction;
+      });
+    case "progression":
+      return sorted.sort((a, b) => {
+        const getProgression = (goal: Goal) => {
+          if (goal.goal_type === "habit" && goal.habit_checks && goal.habit_duration_days) {
+            return (goal.habit_checks.filter(Boolean).length / goal.habit_duration_days) * 100;
+          }
+          const total = goal.totalStepsCount || goal.total_steps || 0;
+          const completed = goal.completedStepsCount || goal.validated_steps || 0;
+          return total === 0 ? 0 : (completed / total) * 100;
+        };
+        return (getProgression(a) - getProgression(b)) * direction;
+      });
+    default:
+      return sorted;
+  }
+};
+
+const filterGoalsBySearchQuery = (goalsToFilter: Goal[], searchQuery: string): Goal[] => {
+  if (!searchQuery.trim()) return goalsToFilter;
+  const normalizedQuery = normalizeString(searchQuery);
+  return goalsToFilter.filter((goal) => {
+    const normalizedName = normalizeString(goal.name);
+    const normalizedType = normalizeString(goal.type || "");
+    const tagsMatch = goal.tags?.some((tag) => normalizeString(tag).includes(normalizedQuery)) || false;
+    return normalizedName.includes(normalizedQuery) || normalizedType.includes(normalizedQuery) || tagsMatch;
+  });
+};
+
+// Fix 2.3: Extract DifficultyBadge outside the component to prevent remounting
+const DifficultyBadge = ({ difficulty, isCompleted = false, getDifficultyColor, getDifficultyLabel }: {
+  difficulty: string;
+  isCompleted?: boolean;
+  getDifficultyColor: (d: string) => string;
+  getDifficultyLabel: (d: string) => string;
+}) => {
+  const difficultyColor = getDifficultyColor(difficulty);
+  const intensity = getDifficultyIntensity(difficulty);
+  const isHighTier = intensity >= 4;
+
+  const getTierBackground = () => {
+    switch (difficulty) {
+      case "easy":
+        return `linear-gradient(135deg, ${withAlphaColor(difficultyColor, 0.9)}, ${withAlphaColor(difficultyColor, 0.7)})`;
+      case "medium":
+        return `linear-gradient(135deg, ${withAlphaColor(difficultyColor, 0.95)}, ${withAlphaColor(difficultyColor, 0.75)})`;
+      case "hard":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlphaColor(difficultyColor, 0.8)})`;
+      case "extreme":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlphaColor(difficultyColor, 0.6)}, ${difficultyColor})`;
+      case "impossible":
+      case "custom":
+        return `linear-gradient(135deg, ${difficultyColor}, ${withAlphaColor(difficultyColor, 0.7)}, ${difficultyColor})`;
+      default:
+        return difficultyColor;
+    }
+  };
+
+  return (
+    <Badge
+      variant="outline"
+      className={`text-xs font-bold font-rajdhani uppercase tracking-wider relative overflow-hidden ${
+        isHighTier && !isCompleted ? "badge-pulse" : ""
+      }`}
+      style={{
+        borderColor: difficultyColor,
+        color: "#fff",
+        background: getTierBackground(),
+        boxShadow: isCompleted ? "none" : `0 0 ${8 + intensity * 3}px ${difficultyColor}50`,
+        textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+      }}
+    >
+      {isHighTier && !isCompleted && (
+        <span
+          className="absolute inset-0 badge-shimmer pointer-events-none"
+          style={{
+            background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
+            backgroundSize: "200% 100%",
+          }}
+        />
+      )}
+      <span className="relative z-10">{getDifficultyLabel(difficulty)}</span>
+    </Badge>
+  );
+};
+
+// Fix 2.3: Extract ProgressBar outside the component
+const ProgressBar = ({
+  progress,
+  difficultyColor,
+  difficulty,
+  isCompleted = false,
+}: {
+  progress: number;
+  difficultyColor: string;
+  difficulty: string;
+  isCompleted?: boolean;
+}) => {
+  const intensity = getDifficultyIntensity(difficulty);
+  const isHighTier = intensity >= 3;
+  const isComplete = progress >= 100;
+
+  return (
+    <div
+      className="h-2.5 w-full bg-muted/50 rounded-full overflow-hidden border border-border relative"
+      style={{ boxShadow: isComplete && !isCompleted ? `0 0 12px ${difficultyColor}60` : "none" }}
+    >
+      <motion.div
+        className={`h-full rounded-full relative ${isHighTier && !isCompleted ? "progress-shimmer" : ""}`}
+        initial={{ width: 0 }}
+        animate={{ width: `${progress}%` }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        style={{
+          background: isCompleted
+            ? "hsl(142 70% 45%)"
+            : `linear-gradient(90deg, hsl(var(--primary)), ${difficultyColor})`,
+          boxShadow:
+            isComplete && !isCompleted
+              ? `0 0 15px ${difficultyColor}, inset 0 0 10px rgba(255,255,255,0.2)`
+              : `0 0 ${4 + intensity * 2}px ${difficultyColor}60`,
+        }}
+      >
+        {isHighTier && !isCompleted && (
+          <span
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
+              animation: "progress-shimmer 1.5s ease-in-out infinite",
+            }}
+          />
+        )}
+        {intensity >= 4 && !isCompleted && progress > 10 && progress < 100 && (
+          <span
+            className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
+            style={{
+              background: "white",
+              boxShadow: `0 0 6px white, 0 0 12px ${difficultyColor}`,
+              animation: "progress-sparkle 1s ease-in-out infinite",
+            }}
+          />
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
 export default function Goals() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -112,14 +294,6 @@ export default function Goals() {
   const [searchQuery, setSearchQuery] = useState("");
   const [hideSuperGoals, setHideSuperGoals] = useState(false);
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
-
-  // Normalize string for accent-insensitive, case-insensitive comparison
-  const normalizeString = (str: string): string => {
-    return str
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-  };
 
   const { data: pact } = usePact(user?.id);
   const { data: goals = [], isLoading: goalsLoading } = useGoals(pact?.id, { includeStepCounts: true });
@@ -165,73 +339,23 @@ export default function Goals() {
   const handleSortChange = (newSortBy: SortOption) => setSortBy(newSortBy);
   const handleDirectionChange = (newDirection: SortDirection) => setSortDirection(newDirection);
 
-  const sortGoals = (goalsToSort: Goal[]) => {
-    const sorted = [...goalsToSort];
-    const direction = sortDirection === "asc" ? 1 : -1;
-
-    switch (sortBy) {
-      case "difficulty": {
-        const difficultyOrder = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
-        return sorted.sort(
-          (a, b) => (difficultyOrder.indexOf(a.difficulty) - difficultyOrder.indexOf(b.difficulty)) * direction,
-        );
-      }
-      case "type":
-        return sorted.sort((a, b) => a.type.localeCompare(b.type) * direction);
-      case "points":
-        return sorted.sort((a, b) => ((a.potential_score || 0) - (b.potential_score || 0)) * direction);
-      case "created":
-        return sorted.sort((a, b) => (new Date(a.created_at).getTime() - new Date(b.created_at).getTime()) * direction);
-      case "name":
-        return sorted.sort((a, b) => a.name.localeCompare(b.name) * direction);
-      case "status": {
-        const statusOrder = ["not_started", "in_progress", "fully_completed", "paused"];
-        return sorted.sort((a, b) => (statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status)) * direction);
-      }
-      case "start":
-        return sorted.sort((a, b) => {
-          if (!a.start_date) return 1;
-          if (!b.start_date) return -1;
-          return (new Date(a.start_date).getTime() - new Date(b.start_date).getTime()) * direction;
-        });
-      case "progression":
-        return sorted.sort((a, b) => {
-          const getProgression = (goal: Goal) => {
-            if (goal.goal_type === "habit" && goal.habit_checks && goal.habit_duration_days) {
-              return (goal.habit_checks.filter(Boolean).length / goal.habit_duration_days) * 100;
-            }
-            const total = goal.totalStepsCount || goal.total_steps || 0;
-            const completed = goal.completedStepsCount || goal.validated_steps || 0;
-            return total === 0 ? 0 : (completed / total) * 100;
-          };
-          return (getProgression(a) - getProgression(b)) * direction;
-        });
-      default:
-        return sorted;
-    }
+  // Fix 1.6: Reset pagination when switching tabs
+  const handleTabChange = (tab: "all" | "active" | "completed") => {
+    setActiveTab(tab);
+    setActiveCurrentPage(1);
+    setCompletedCurrentPage(1);
+    setAllCurrentPage(1);
   };
 
-  // Filter goals based on search query (accent-insensitive, case-insensitive)
-  const filterGoalsBySearch = (goalsToFilter: Goal[]): Goal[] => {
-    if (!searchQuery.trim()) return goalsToFilter;
-    const normalizedQuery = normalizeString(searchQuery);
-    return goalsToFilter.filter((goal) => {
-      const normalizedName = normalizeString(goal.name);
-      const normalizedType = normalizeString(goal.type || "");
-      const tagsMatch = goal.tags?.some((tag) => normalizeString(tag).includes(normalizedQuery)) || false;
-      return normalizedName.includes(normalizedQuery) || normalizedType.includes(normalizedQuery) || tagsMatch;
-    });
-  };
-
-  const searchFiltered = filterGoalsBySearch(displayGoals);
+  const searchFiltered = filterGoalsBySearchQuery(displayGoals, searchQuery);
   const filteredGoals = hideSuperGoals ? searchFiltered.filter(g => g.goal_type !== "super") : searchFiltered;
   const activeGoals = filteredGoals.filter((g) => g.status === "not_started" || g.status === "in_progress");
   const completedGoals = filteredGoals.filter((g) => g.status === "fully_completed" || g.status === "validated");
   const allGoals = filteredGoals;
 
-  const sortedActiveGoals = sortGoals(activeGoals);
-  const sortedCompletedGoals = sortGoals(completedGoals);
-  const sortedAllGoals = sortGoals(allGoals);
+  const sortedActiveGoals = sortGoalsBy(activeGoals, sortBy, sortDirection);
+  const sortedCompletedGoals = sortGoalsBy(completedGoals, sortBy, sortDirection);
+  const sortedAllGoals = sortGoalsBy(allGoals, sortBy, sortDirection);
 
   const activeTotalPages = Math.ceil(sortedActiveGoals.length / itemsPerPage);
   const completedTotalPages = Math.ceil(sortedCompletedGoals.length / itemsPerPage);
@@ -275,120 +399,6 @@ export default function Goals() {
       y: 0,
       transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const },
     },
-  };
-
-  // Phase 2: Enhanced Difficulty Badge Component
-  const DifficultyBadge = ({ difficulty, isCompleted = false }: { difficulty: string; isCompleted?: boolean }) => {
-    const difficultyColor = getDifficultyColor(difficulty);
-    const intensity = getDifficultyIntensity(difficulty);
-    const isHighTier = intensity >= 4;
-
-    const withAlpha = withAlphaColor;
-
-    const getTierBackground = () => {
-      switch (difficulty) {
-        case "easy":
-          return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.9)}, ${withAlpha(difficultyColor, 0.7)})`;
-        case "medium":
-          return `linear-gradient(135deg, ${withAlpha(difficultyColor, 0.95)}, ${withAlpha(difficultyColor, 0.75)})`;
-        case "hard":
-          return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.8)})`;
-        case "extreme":
-          return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.6)}, ${difficultyColor})`;
-        case "impossible":
-        case "custom":
-          return `linear-gradient(135deg, ${difficultyColor}, ${withAlpha(difficultyColor, 0.7)}, ${difficultyColor})`;
-        default:
-          return difficultyColor;
-      }
-    };
-
-    return (
-      <Badge
-        variant="outline"
-        className={`text-xs font-bold font-rajdhani uppercase tracking-wider relative overflow-hidden ${
-          isHighTier && !isCompleted ? "badge-pulse" : ""
-        }`}
-        style={{
-          borderColor: difficultyColor,
-          color: "#fff",
-          background: getTierBackground(),
-          boxShadow: isCompleted ? "none" : `0 0 ${8 + intensity * 3}px ${difficultyColor}50`,
-          textShadow: "0 1px 2px rgba(0,0,0,0.5)",
-        }}
-      >
-        {isHighTier && !isCompleted && (
-          <span
-            className="absolute inset-0 badge-shimmer pointer-events-none"
-            style={{
-              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)",
-              backgroundSize: "200% 100%",
-            }}
-          />
-        )}
-        <span className="relative z-10">{getDifficultyLabel(difficulty)}</span>
-      </Badge>
-    );
-  };
-
-  // Phase 3: Enhanced Progress Bar Component
-  const ProgressBar = ({
-    progress,
-    difficultyColor,
-    difficulty,
-    isCompleted = false,
-  }: {
-    progress: number;
-    difficultyColor: string;
-    difficulty: string;
-    isCompleted?: boolean;
-  }) => {
-    const intensity = getDifficultyIntensity(difficulty);
-    const isHighTier = intensity >= 3;
-    const isComplete = progress >= 100;
-
-    return (
-      <div
-        className="h-2.5 w-full bg-muted/50 rounded-full overflow-hidden border border-border relative"
-        style={{ boxShadow: isComplete && !isCompleted ? `0 0 12px ${difficultyColor}60` : "none" }}
-      >
-        <motion.div
-          className={`h-full rounded-full relative ${isHighTier && !isCompleted ? "progress-shimmer" : ""}`}
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          style={{
-            background: isCompleted
-              ? "hsl(142 70% 45%)"
-              : `linear-gradient(90deg, hsl(var(--primary)), ${difficultyColor})`,
-            boxShadow:
-              isComplete && !isCompleted
-                ? `0 0 15px ${difficultyColor}, inset 0 0 10px rgba(255,255,255,0.2)`
-                : `0 0 ${4 + intensity * 2}px ${difficultyColor}60`,
-          }}
-        >
-          {isHighTier && !isCompleted && (
-            <span
-              className="absolute inset-0 overflow-hidden"
-              style={{
-                background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)",
-                animation: "progress-shimmer 1.5s ease-in-out infinite",
-              }}
-            />
-          )}
-          {intensity >= 4 && !isCompleted && progress > 10 && progress < 100 && (
-            <span
-              className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full"
-              style={{
-                background: "white",
-                boxShadow: `0 0 6px white, 0 0 12px ${difficultyColor}`,
-                animation: "progress-sparkle 1s ease-in-out infinite",
-              }}
-            />
-          )}
-        </motion.div>
-      </div>
-    );
   };
 
   const renderGoalCard = (goal: Goal, index: number, isCompleted = false) => {
@@ -735,7 +745,7 @@ export default function Goals() {
                   return (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => handleTabChange(tab.id)}
                       className={`relative flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300 ${
                         isActive ? "text-primary" : "text-muted-foreground hover:text-primary/70"
                       }`}
