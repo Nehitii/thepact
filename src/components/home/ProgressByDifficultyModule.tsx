@@ -8,6 +8,9 @@ interface DifficultyProgress {
   completed: number;
   total: number;
   percentage: number;
+  totalSteps: number;
+  completedSteps: number;
+  remainingSteps: number;
 }
 
 interface ProgressByDifficultyModuleProps {
@@ -44,32 +47,41 @@ export function ProgressByDifficultyModule({
     ? difficultyProgress.filter(item => item.total > 0).slice(0, 4)
     : difficultyProgress.filter(item => item.total > 0);
 
-  const allDifficultiesBreakdown = (
-    <div className="space-y-3">
-      {difficultyProgress.map((item) => (
-        <div key={item.difficulty} className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div 
-                className="px-2 py-0.5 text-[10px] rounded border backdrop-blur font-bold uppercase tracking-wider font-orbitron"
-                style={{ 
-                  borderColor: getColor(item.difficulty),
-                  color: getColor(item.difficulty),
-                  backgroundColor: `${getColor(item.difficulty)}15`,
-                  boxShadow: `0 0 10px ${getColor(item.difficulty)}40`
-                }}
-              >
-                {getDifficultyLabel(item.difficulty)}
-              </div>
-              <span className="text-[10px] text-primary/50 font-rajdhani">
-                {item.completed} / {item.total}
-              </span>
+  const renderDifficultyRow = (item: DifficultyProgress, showSteps: boolean) => {
+    const stepsPercentage = item.totalSteps > 0 
+      ? (item.completedSteps / item.totalSteps) * 100 
+      : 0;
+    const remainingGoals = item.total - item.completed;
+
+    return (
+      <div key={item.difficulty} className="space-y-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div 
+              className="px-2 py-0.5 text-[10px] rounded border backdrop-blur font-bold uppercase tracking-wider font-orbitron"
+              style={{ 
+                borderColor: getColor(item.difficulty),
+                color: getColor(item.difficulty),
+                backgroundColor: `${getColor(item.difficulty)}15`,
+                boxShadow: `0 0 10px ${getColor(item.difficulty)}40`
+              }}
+            >
+              {getDifficultyLabel(item.difficulty)}
             </div>
-            <span className="text-xs font-bold font-orbitron" style={{ color: getColor(item.difficulty) }}>
-              {item.percentage.toFixed(0)}%
+          </div>
+        </div>
+
+        {/* Goals progress */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-[10px]">
+            <span className="text-primary/50 font-rajdhani">
+              Goals: {remainingGoals > 0 ? `${remainingGoals} remaining` : 'All done'}
+            </span>
+            <span className="font-bold font-orbitron" style={{ color: getColor(item.difficulty) }}>
+              {item.completed}/{item.total}
             </span>
           </div>
-          <div className="relative h-2 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/10">
+          <div className="relative h-1.5 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/10">
             <div
               className="h-full transition-all duration-1000"
               style={{
@@ -82,7 +94,39 @@ export function ProgressByDifficultyModule({
             </div>
           </div>
         </div>
-      ))}
+
+        {/* Steps progress (shown when there are steps) */}
+        {showSteps && item.totalSteps > 0 && (
+          <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px]">
+              <span className="text-primary/40 font-rajdhani">
+                Steps: {item.remainingSteps > 0 ? `${item.remainingSteps} remaining` : 'All done'}
+              </span>
+              <span className="font-orbitron text-primary/60" style={{ color: `${getColor(item.difficulty)}99` }}>
+                {item.completedSteps}/{item.totalSteps}
+              </span>
+            </div>
+            <div className="relative h-1 w-full bg-card/20 backdrop-blur rounded-full overflow-hidden border border-primary/5">
+              <div
+                className="h-full transition-all duration-1000 opacity-70"
+                style={{
+                  width: `${stepsPercentage}%`,
+                  backgroundColor: getColor(item.difficulty),
+                  boxShadow: `0 0 10px ${getColor(item.difficulty)}40`
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const allDifficultiesBreakdown = (
+    <div className="space-y-4">
+      {difficultyProgress
+        .filter(item => item.total > 0)
+        .map((item) => renderDifficultyRow(item, true))}
     </div>
   );
 
@@ -98,43 +142,7 @@ export function ProgressByDifficultyModule({
       <div className="flex-1 flex flex-col">
         {/* Compact: Show mini progress bars */}
         <div className={cn("space-y-3", isCompact && "flex-1")}>
-          {visibleProgress.map((item) => (
-            <div key={item.difficulty} className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="px-2 py-0.5 text-[10px] rounded border backdrop-blur font-bold uppercase tracking-wider font-orbitron"
-                    style={{ 
-                      borderColor: getColor(item.difficulty),
-                      color: getColor(item.difficulty),
-                      backgroundColor: `${getColor(item.difficulty)}15`,
-                      boxShadow: `0 0 10px ${getColor(item.difficulty)}40`
-                    }}
-                  >
-                    {getDifficultyLabel(item.difficulty)}
-                  </div>
-                  <span className="text-[10px] text-primary/50 font-rajdhani">
-                    {item.completed} / {item.total}
-                  </span>
-                </div>
-                <span className="text-xs font-bold font-orbitron" style={{ color: getColor(item.difficulty) }}>
-                  {item.percentage.toFixed(0)}%
-                </span>
-              </div>
-              <div className="relative h-2 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/10">
-                <div
-                  className="h-full transition-all duration-1000"
-                  style={{
-                    width: `${item.percentage}%`,
-                    backgroundColor: getColor(item.difficulty),
-                    boxShadow: `0 0 15px ${getColor(item.difficulty)}80`
-                  }}
-                >
-                  <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
-                </div>
-              </div>
-            </div>
-          ))}
+          {visibleProgress.map((item) => renderDifficultyRow(item, true))}
           
           {visibleProgress.length === 0 && (
             <div className="flex-1 flex items-center justify-center text-primary/50 font-rajdhani text-sm">

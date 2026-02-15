@@ -133,6 +133,8 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
   const eligibleGoals = useMemo(
     () =>
       allGoals.filter((g) => {
+        // Exclude habit goals - they track via habit_checks, not steps
+        if (g.goal_type === 'habit') return false;
         const remaining = (g.total_steps || 0) - (g.validated_steps || 0);
         return remaining > 0 && g.status !== "fully_completed" && g.status !== "validated";
       }),
