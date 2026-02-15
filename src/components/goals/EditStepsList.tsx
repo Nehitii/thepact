@@ -89,7 +89,7 @@ function SortableStep({ id, index, name, excludeFromSpin, onNameChange, onExclud
             className={`p-1.5 rounded-lg transition-all duration-200 shrink-0 ${
               excludeFromSpin
                 ? "text-amber-400 bg-amber-500/15"
-                : "text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/30"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
             }`}
             title={excludeFromSpin ? "Excluded from spin" : "Included in spin"}
           >
