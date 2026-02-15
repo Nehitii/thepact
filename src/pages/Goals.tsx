@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
 import { GridViewGoalCard } from "@/components/goals/GridViewGoalCard";
@@ -109,6 +110,7 @@ export default function Goals() {
   const [allCurrentPage, setAllCurrentPage] = useState(1);
   const [displayMode, setDisplayMode] = useState<DisplayMode>("bar");
   const [searchQuery, setSearchQuery] = useState("");
+  const [hideSuperGoals, setHideSuperGoals] = useState(false);
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
   // Normalize string for accent-insensitive, case-insensitive comparison
@@ -220,7 +222,8 @@ export default function Goals() {
     });
   };
 
-  const filteredGoals = filterGoalsBySearch(displayGoals);
+  const searchFiltered = filterGoalsBySearch(displayGoals);
+  const filteredGoals = hideSuperGoals ? searchFiltered.filter(g => g.goal_type !== "super") : searchFiltered;
   const activeGoals = filteredGoals.filter((g) => g.status === "not_started" || g.status === "in_progress");
   const completedGoals = filteredGoals.filter((g) => g.status === "fully_completed" || g.status === "validated");
   const allGoals = filteredGoals;
@@ -659,6 +662,20 @@ export default function Goals() {
                 </button>
               )}
             </div>
+
+            {/* Hide Super Goals */}
+            {displayGoals.some(g => g.goal_type === "super") && (
+              <>
+                <div className="h-6 w-px bg-border hidden md:block" />
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <Checkbox
+                    checked={hideSuperGoals}
+                    onCheckedChange={(checked) => setHideSuperGoals(checked === true)}
+                  />
+                  <span className="text-xs font-rajdhani tracking-wider text-foreground/60">Hide Super Goals</span>
+                </label>
+              </>
+            )}
 
             <div className="flex-1" />
 
