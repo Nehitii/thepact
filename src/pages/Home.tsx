@@ -39,7 +39,7 @@ export default function Home() {
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
   const { data: financeSettings } = useFinanceSettings(user?.id);
-
+  
   // Unified rank/XP data from hook
   const { data: rankData } = useRankXP(user?.id, pact?.id);
 
@@ -65,7 +65,14 @@ export default function Home() {
   } = useModuleLayout();
 
   // Compute derived data
-  const { focusGoals, habitGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
+  const {
+    focusGoals,
+    habitGoals,
+    dashboardData,
+    userState,
+    ownedModules,
+    lockedModules,
+  } = useMemo(() => {
     // Separate habit goals from normal/super goals
     const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
     const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
@@ -95,7 +102,7 @@ export default function Home() {
     // Steps from normal goals only
     const totalSteps = normalGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
     const totalStepsCompleted = normalGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-
+    
     // Habit tracking data
     const totalHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_duration_days || 0), 0);
     const completedHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_checks?.filter(Boolean).length || 0), 0);
