@@ -13,7 +13,6 @@ import {
   User,
   LogOut,
   ChevronDown,
-  ChevronRight,
   Shield,
   Database,
   Settings,
@@ -21,7 +20,6 @@ import {
   UserCircle,
   Bell,
   Inbox,
-  Puzzle,
   ListTodo,
   BookOpen,
   Wallet,
@@ -108,7 +106,6 @@ export function AppSidebar() {
   };
 
   return (
-    // CHANGEMENT ICI : sticky au lieu de fixed pour que le contenu soit "à côté"
     <aside className="sticky top-0 h-screen flex-shrink-0 z-40 w-72 flex flex-col bg-background/95 backdrop-blur-md border-r border-white/10 overflow-hidden font-rajdhani shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)]">
       <style
         dangerouslySetInnerHTML={{
@@ -121,7 +118,6 @@ export function AppSidebar() {
 
       {/* --- HEADER --- */}
       <div className="relative p-6 mb-2">
-        {/* Background glow decoration */}
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
 
         <div className="flex items-center gap-4 relative z-10">
@@ -158,7 +154,6 @@ export function AppSidebar() {
 
       {/* --- NAVIGATION --- */}
       <nav className="flex-1 px-3 space-y-6 overflow-y-auto hide-scrollbar relative z-10 pb-6">
-        {/* Main Menu */}
         <div className="space-y-1">
           <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 font-orbitron">
             Main_Interface
@@ -242,7 +237,10 @@ export function AppSidebar() {
                     )
                   }
                 >
-                  <m.config.icon size={14} className={location.pathname === m.config.route ? "text-primary" : "opacity-70"} />
+                  <m.config.icon
+                    size={14}
+                    className={location.pathname === m.config.route ? "text-primary" : "opacity-70"}
+                  />
                   {m.config.label}
                 </NavLink>
               ))}
@@ -270,7 +268,6 @@ export function AppSidebar() {
               isProfileExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0",
             )}
           >
-            {/* Ligne de connexion visuelle */}
             <div className="absolute left-[1.15rem] top-0 bottom-2 w-px bg-gradient-to-b from-white/10 to-transparent" />
 
             {profileSubItems.map((item) => (
@@ -285,14 +282,12 @@ export function AppSidebar() {
                   )
                 }
               >
-                {/* Petit point indicateur */}
                 <div
                   className={cn(
                     "absolute left-[1rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border border-background transition-all",
                     ({ isActive }: { isActive: boolean }) => (isActive ? "bg-primary scale-110" : "bg-slate-700"),
                   )}
                 />
-
                 {item.label}
               </NavLink>
             ))}
@@ -308,7 +303,6 @@ export function AppSidebar() {
           <DropdownMenuTrigger asChild>
             <button className="w-full group outline-none">
               <div className="flex items-center gap-3 p-2.5 transition-all duration-300 rounded-lg group-hover:bg-white/5 border border-transparent group-hover:border-white/10 relative overflow-hidden">
-                {/* Shine effect on hover */}
                 <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
 
                 <div className="relative">
@@ -318,9 +312,8 @@ export function AppSidebar() {
                       {profile?.display_name?.[0] || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-0.5 -right-0.5">
-                    <NotificationBadge count={totalUnread} size="sm" className="shadow-[0_0_5px_rgba(0,0,0,0.8)]" />
-                  </div>
+                  {/* Correction : Badge placé directement en sibling de l'Avatar, sans wrapper positionné */}
+                  <NotificationBadge count={totalUnread} size="sm" className="shadow-[0_0_5px_rgba(0,0,0,0.8)]" />
                 </div>
 
                 <div className="flex-1 text-left min-w-0">
