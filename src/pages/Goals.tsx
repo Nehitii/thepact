@@ -129,13 +129,14 @@ export default function Goals() {
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
   const loading = !user || goalsLoading;
 
+  // Fix 1.5: Sync localGoals unconditionally to avoid stale data
   const [localGoals, setLocalGoals] = useState<Goal[]>([]);
 
   useEffect(() => {
-    if (goals.length > 0) setLocalGoals(goals);
+    setLocalGoals(goals);
   }, [goals]);
 
-  const displayGoals = localGoals.length > 0 ? localGoals : goals;
+  const displayGoals = localGoals;
 
   const toggleFocus = async (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
     e.stopPropagation();

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ export default function StepDetail() {
   const { stepId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<Step | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -83,6 +85,9 @@ export default function StepDetail() {
       if (error) throw error;
 
       await recalculateGoalProgress(step.goal_id);
+      // Fix 1.7: Invalidate React Query caches
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", step.goal_id] });
       toast({ title: "Success", description: "Step updated successfully" });
       await loadStepData();
     } catch (error: any) {
