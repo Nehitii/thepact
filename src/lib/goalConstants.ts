@@ -186,6 +186,8 @@ export function getDifficultyIntensity(difficulty: string): number {
 
 // Cost Item Categories
 export const COST_ITEM_CATEGORIES = [
+  { value: "car", labelKey: "goals.costCategories.car" },
+  { value: "home", labelKey: "goals.costCategories.home" },
   { value: "furniture", labelKey: "goals.costCategories.furniture" },
   { value: "clothing", labelKey: "goals.costCategories.clothing" },
   { value: "electronics", labelKey: "goals.costCategories.electronics" },
@@ -198,6 +200,12 @@ export const COST_ITEM_CATEGORIES = [
   { value: "education", labelKey: "goals.costCategories.education" },
   { value: "health", labelKey: "goals.costCategories.health" },
   { value: "decoration", labelKey: "goals.costCategories.decoration" },
+  { value: "beauty", labelKey: "goals.costCategories.beauty" },
+  { value: "sports", labelKey: "goals.costCategories.sports" },
+  { value: "pets", labelKey: "goals.costCategories.pets" },
+  { value: "gifts", labelKey: "goals.costCategories.gifts" },
+  { value: "travel", labelKey: "goals.costCategories.travel" },
+  { value: "subscriptions", labelKey: "goals.costCategories.subscriptions" },
   { value: "other", labelKey: "goals.costCategories.other" },
 ] as const;
 
