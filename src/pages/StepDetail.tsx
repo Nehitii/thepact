@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { ArrowLeft, Target, Check, StickyNote, ListOrdered } from "lucide-react";
+import { ArrowLeft, Target, Check, StickyNote, ListOrdered, Dices } from "lucide-react";
 import { format } from "date-fns";
 import { CyberBackground } from "@/components/CyberBackground";
 import { motion } from "framer-motion";
@@ -24,6 +24,7 @@ interface Step {
   due_date?: string;
   completion_date?: string;
   validated_at?: string;
+  exclude_from_spin: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -39,6 +40,7 @@ export default function StepDetail() {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
   const [status, setStatus] = useState("pending");
+  const [excludeFromSpin, setExcludeFromSpin] = useState(false);
 
   useEffect(() => {
     if (user && stepId) {
@@ -55,6 +57,7 @@ export default function StepDetail() {
       setTitle(stepData.title);
       setNotes(stepData.notes || "");
       setStatus(stepData.status);
+      setExcludeFromSpin(stepData.exclude_from_spin ?? false);
     } catch (error: any) {
       console.error("Error loading step:", error);
       toast({ title: "Error", description: "Failed to load step details", variant: "destructive" });
@@ -71,6 +74,7 @@ export default function StepDetail() {
         title,
         notes,
         status,
+        exclude_from_spin: excludeFromSpin,
         updated_at: new Date().toISOString(),
       };
 
@@ -295,6 +299,38 @@ export default function StepDetail() {
                   </button>
                 </div>
               </div>
+            </div>
+
+            {/* Section: Spin Exclusion */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
+                <Dices className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Mission Roulette</h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setExcludeFromSpin(!excludeFromSpin)}
+                className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-300 text-left ${
+                  excludeFromSpin
+                    ? "border-amber-500/50 bg-amber-500/10"
+                    : "border-border bg-muted/30 hover:border-primary/50 hover:bg-muted/50"
+                }`}
+              >
+                <div className={`p-2 rounded-xl ${excludeFromSpin ? "bg-amber-500/20 text-amber-400" : "bg-muted text-muted-foreground"}`}>
+                  <Dices className="h-5 w-5" />
+                </div>
+                <div className="flex-1">
+                  <div className={`font-rajdhani font-bold text-lg ${excludeFromSpin ? "text-amber-400" : "text-foreground"}`}>
+                    {excludeFromSpin ? "Excluded from spin" : "Included in spin"}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {excludeFromSpin
+                      ? "This step will never appear in the Mission Roulette"
+                      : "This step can be randomly selected by the Mission Roulette"}
+                  </div>
+                </div>
+              </button>
             </div>
 
             {/* Section 2: Notes */}
