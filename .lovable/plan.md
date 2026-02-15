@@ -1,122 +1,102 @@
 
-# Link Cost Items to Steps + Categories + Auto-Acquisition
+# Fix Wishlist Duplicates, Step-Based Acquisition & "Already Financed"
 
-## Overview
+## Issues Found
 
-This feature connects cost items to specific steps within a goal. When a step is completed, its linked cost items are automatically marked as "acquired" in the wishlist. Additionally, cost items gain a **category** field (Furniture, Clothing, etc.) for better organization.
+### 1. Duplicate Wishlist Items on Refresh
+The `useSaveCostItems` hook uses a **delete-and-reinsert** pattern: every time cost items are saved, all existing items are deleted and new ones inserted with **fresh UUIDs**. Meanwhile, `useWishlistGoalSync` tracks synced wishlist items via `source_goal_cost_id`. After a save, the old cost item IDs no longer exist, so the sync sees them as "new" and creates duplicates on every page load.
 
-## What Changes
+**Fix**: Change `useWishlistGoalSync` to use a **unique constraint approach** -- before inserting, check if a wishlist item with the same `name + goal_id + source_type='goal_sync'` already exists. Also add a database unique index on `(user_id, source_goal_cost_id)` WHERE `source_goal_cost_id IS NOT NULL` to prevent duplicates at the DB level. Update the sync to reconcile by name+goal rather than only by cost ID.
 
-### 1. Database Schema Update
+### 2. Cache Invalidation Mismatch
+In `GoalDetail.tsx`, the auto-acquisition code invalidates `["pact-wishlist"]` but the actual query key is `["pact-wishlist", userId]`. This means the wishlist page doesn't refresh after step completion.
 
-Add two new columns to `goal_cost_items`:
-- **`step_id`** (UUID, nullable, FK to `steps.id` ON DELETE SET NULL) -- which step this cost item is linked to
-- **`category`** (TEXT, nullable) -- item category (furniture, clothing, electronics, etc.)
+**Fix**: Pass the correct query key with userId.
 
-No new RLS policies needed -- existing policies already cover CRUD via the goal/pact ownership chain.
+### 3. "Already Financed" Display
+Add a computed value in the GoalDetail details section showing the sum of cost items whose linked steps are completed. This gives users a clear picture of what's been "funded" per goal.
 
-### 2. Cost Item Categories
+---
 
-Define a reusable list of cost item categories in `src/lib/goalConstants.ts`:
+## Implementation
 
-| Value | Label |
-|-------|-------|
-| furniture | Furniture |
-| clothing | Clothing |
-| electronics | Electronics |
-| tools | Tools & Equipment |
-| materials | Materials |
-| software | Software |
-| services | Services |
-| food | Food & Supplies |
-| transport | Transport |
-| education | Education |
-| health | Health |
-| decoration | Decoration |
-| other | Other |
+### Step 1: Database -- Unique Index (Migration)
 
-### 3. CostItemsEditor Enhancement
+Add a unique partial index to prevent duplicate wishlist items for the same cost item:
+```text
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wishlist_unique_cost_source
+ON wishlist_items (user_id, source_goal_cost_id)
+WHERE source_goal_cost_id IS NOT NULL;
+```
 
-Update the editor UI to include:
-- A **category selector** (compact Select dropdown) per cost item row
-- A **step linker** (optional Select dropdown) to associate a cost item with a specific step
-- The step dropdown only appears in GoalDetail edit mode (where steps are known), not in NewGoal (steps don't exist yet)
+Also clean up any existing duplicates first (keep the oldest).
 
-The `CostItemData` interface gains `category?: string` and `stepId?: string | null`.
+### Step 2: Fix `useWishlistGoalSync.ts`
 
-### 4. Auto-Acquisition on Step Completion
+- When the sync finds a cost item without a matching `source_goal_cost_id` in the wishlist, also check by `name + goal_id + source_type='goal_sync'` before inserting.
+- Update existing wishlist items' `source_goal_cost_id` to the new cost item ID when matched by name+goal (handles the ID rotation from delete-and-reinsert).
+- Use `upsert` with the unique index as conflict target where possible.
 
-In `GoalDetail.tsx` `handleToggleStep`:
-- When a step is marked **completed**, find all cost items linked to that step (`step_id = stepId`)
-- For each linked cost item, find the corresponding `wishlist_items` entry (matched via `source_goal_cost_id`)
-- Mark those wishlist items as `acquired = true, acquired_at = now()`
-- When a step is **uncompleted**, reverse the process (set `acquired = false, acquired_at = null`)
-- Invalidate `pact-wishlist` query cache so the `/wishlist` page updates immediately
+### Step 3: Fix Cache Invalidation in `GoalDetail.tsx`
 
-### 5. Cost Tracking in /Home
+Change line 276 from:
+```text
+queryClient.invalidateQueries({ queryKey: ["pact-wishlist"] });
+```
+To:
+```text
+queryClient.invalidateQueries({ queryKey: ["pact-wishlist"] }); // partial match invalidates all pact-wishlist queries
+```
+Actually, React Query's `invalidateQueries` with a partial key `["pact-wishlist"]` should match `["pact-wishlist", userId]` by default. Let me verify -- the issue might be something else. We'll ensure it uses partial matching correctly.
 
-No changes needed to the cost tracking calculation itself. The existing logic already computes "Financed" from completed goals' `estimated_cost` + `already_funded`. Individual cost item acquisition doesn't change the macro-level tracking. The `/wishlist` page already shows acquired vs. active items.
+### Step 4: Add "Already Financed" to GoalDetail
 
-### 6. Save Logic Update
+In the Details/Cost Items section (around line 799), add a new summary row:
+- Compute: sum of `price` for cost items whose `step_id` matches a completed step
+- Display as "Already Financed: X / Total: Y" with a progress-like visual
 
-Update `useSaveCostItems` to persist the new `category` and `step_id` fields when saving cost items. The delete-and-reinsert pattern already used will naturally handle this.
+### Step 5: Sync Wishlist `step_id` Column
 
-### 7. Display Updates
-
-- **GoalDetail cost items list** (read-only view at lines 756-773): Show category badge and linked step name next to each cost item
-- **Wishlist**: Already shows `source_goal_cost_id` items with goal links -- no changes needed, acquired state auto-updates
+Update `useWishlistGoalSync` to also pass the `step_id` from cost items to wishlist items, and set `acquired` based on whether the linked step is completed, not just the whole goal.
 
 ---
 
 ## Technical Details
 
+**Files to modify:**
+- `supabase/migrations/` -- new migration: deduplicate existing rows + add unique partial index
+- `src/hooks/useWishlistGoalSync.ts` -- fix duplicate logic, reconcile by name+goal fallback, sync step-based acquisition
+- `src/pages/GoalDetail.tsx` -- add "Already Financed" display, fix cache key
+- `src/i18n/locales/en.json` -- add "alreadyFinanced" label
+- `src/i18n/locales/fr.json` -- add French translation
+
 **Migration SQL:**
 ```text
-ALTER TABLE goal_cost_items
-  ADD COLUMN step_id UUID REFERENCES steps(id) ON DELETE SET NULL,
-  ADD COLUMN category TEXT;
+-- Remove duplicates (keep oldest per source_goal_cost_id)
+DELETE FROM wishlist_items a
+USING wishlist_items b
+WHERE a.source_goal_cost_id IS NOT NULL
+  AND a.source_goal_cost_id = b.source_goal_cost_id
+  AND a.user_id = b.user_id
+  AND a.created_at > b.created_at;
+
+-- Unique index to prevent future duplicates
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wishlist_unique_cost_source
+ON wishlist_items (user_id, source_goal_cost_id)
+WHERE source_goal_cost_id IS NOT NULL;
 ```
 
-**Updated CostItemData interface:**
+**"Already Financed" computation (GoalDetail.tsx):**
 ```text
-export interface CostItemData {
-  id?: string;
-  name: string;
-  price: number;
-  category?: string;
-  stepId?: string | null;
-}
+const alreadyFinanced = useMemo(() => {
+  return costItems
+    .filter(ci => ci.step_id && steps.find(s => s.id === ci.step_id && s.status === "completed"))
+    .reduce((sum, ci) => sum + ci.price, 0);
+}, [costItems, steps]);
 ```
 
-**Auto-acquisition logic (in handleToggleStep):**
-```text
-// After step status update succeeds:
-if (newStatus === "completed") {
-  // Find cost items linked to this step
-  const linkedCostItems = costItems.filter(ci => ci.step_id === stepId);
-  // Mark corresponding wishlist items as acquired
-  for (const ci of linkedCostItems) {
-    await supabase.from("wishlist_items")
-      .update({ acquired: true, acquired_at: new Date().toISOString() })
-      .eq("source_goal_cost_id", ci.id);
-  }
-} else {
-  // Reverse: un-acquire
-  const linkedCostItems = costItems.filter(ci => ci.step_id === stepId);
-  for (const ci of linkedCostItems) {
-    await supabase.from("wishlist_items")
-      .update({ acquired: false, acquired_at: null })
-      .eq("source_goal_cost_id", ci.id);
-  }
-}
-queryClient.invalidateQueries({ queryKey: ["pact-wishlist"] });
-```
-
-**Files to modify:**
-- `supabase/migrations/` -- new migration for `step_id` + `category` columns
-- `src/lib/goalConstants.ts` -- add `COST_ITEM_CATEGORIES` array
-- `src/components/goals/CostItemsEditor.tsx` -- add category select + step linker
-- `src/hooks/useCostItems.ts` -- update interface + save logic for new fields
-- `src/pages/GoalDetail.tsx` -- auto-acquisition logic in `handleToggleStep`, pass steps to CostItemsEditor, display category/step in read-only view
-- `src/i18n/locales/en.json` -- category labels
-- `src/i18n/locales/fr.json` -- category labels (French)
+**Sync fix approach (useWishlistGoalSync.ts):**
+- Build a secondary lookup map: `Map<string, PactWishlistItem>` keyed by `normalizedName|goalId`
+- When no match by `source_goal_cost_id`, fall back to name+goal match
+- If found by fallback, update the wishlist item's `source_goal_cost_id` to the new cost item ID
+- For step-based acquisition: check each cost item's `step_id` against the steps data, mark acquired if step is completed
