@@ -8,6 +8,8 @@ interface ProgressOverviewModuleProps {
     totalGoals: number;
     totalStepsCompleted: number;
     totalSteps: number;
+    totalHabitChecks: number;
+    completedHabitChecks: number;
     statusCounts: {
       not_started: number;
       in_progress: number;
@@ -33,11 +35,23 @@ export function ProgressOverviewModule({
     ? ((data.totalStepsCompleted / data.totalSteps) * 100) 
     : 0;
 
+  const habitsPercentage = data.totalHabitChecks > 0
+    ? ((data.completedHabitChecks / data.totalHabitChecks) * 100)
+    : 0;
+
   // Calculate ring circumference (2 * PI * radius)
   const outerRadius = 50;
-  const innerRadius = 35;
+  const middleRadius = 38;
+  const innerRadius = 26;
   const outerCircumference = 2 * Math.PI * outerRadius;
+  const middleCircumference = 2 * Math.PI * middleRadius;
   const innerCircumference = 2 * Math.PI * innerRadius;
+
+  // Calculate overall including habits
+  const activeCounters = [goalsPercentage, stepsPercentage, ...(data.totalHabitChecks > 0 ? [habitsPercentage] : [])];
+  const overallPercentage = activeCounters.length > 0
+    ? activeCounters.reduce((sum, p) => sum + p, 0) / activeCounters.length
+    : 0;
 
   const statusBreakdown = (
     <div className="grid grid-cols-3 gap-2">
@@ -93,48 +107,40 @@ export function ProgressOverviewModule({
             viewBox="0 0 120 120"
           >
             {/* Outer ring background (Goals) */}
-            <circle
-              cx="60"
-              cy="60"
-              r={outerRadius}
-              stroke="hsl(var(--primary) / 0.15)"
-              strokeWidth="8"
-              fill="none"
-            />
+            <circle cx="60" cy="60" r={outerRadius} stroke="hsl(var(--primary) / 0.15)" strokeWidth="7" fill="none" />
             {/* Outer ring progress (Goals) */}
             <circle
-              cx="60"
-              cy="60"
-              r={outerRadius}
+              cx="60" cy="60" r={outerRadius}
               stroke="url(#goalGradientUnified)"
-              strokeWidth="8"
-              fill="none"
-              strokeLinecap="round"
+              strokeWidth="7" fill="none" strokeLinecap="round"
               strokeDasharray={`${(goalsPercentage / 100) * outerCircumference} ${outerCircumference}`}
               className="transition-all duration-1000 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]"
             />
             
-            {/* Inner ring background (Steps) */}
+            {/* Middle ring background (Steps) */}
+            <circle cx="60" cy="60" r={middleRadius} stroke="hsl(var(--primary) / 0.15)" strokeWidth="6" fill="none" />
+            {/* Middle ring progress (Steps) */}
             <circle
-              cx="60"
-              cy="60"
-              r={innerRadius}
-              stroke="hsl(var(--primary) / 0.15)"
-              strokeWidth="6"
-              fill="none"
-            />
-            {/* Inner ring progress (Steps) */}
-            <circle
-              cx="60"
-              cy="60"
-              r={innerRadius}
+              cx="60" cy="60" r={middleRadius}
               stroke="url(#stepGradientUnified)"
-              strokeWidth="6"
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray={`${(stepsPercentage / 100) * innerCircumference} ${innerCircumference}`}
+              strokeWidth="6" fill="none" strokeLinecap="round"
+              strokeDasharray={`${(stepsPercentage / 100) * middleCircumference} ${middleCircumference}`}
               className="transition-all duration-1000 drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]"
             />
+
+            {/* Inner ring background (Habits) */}
+            {data.totalHabitChecks > 0 && (
+              <>
+                <circle cx="60" cy="60" r={innerRadius} stroke="hsl(var(--primary) / 0.1)" strokeWidth="5" fill="none" />
+                <circle
+                  cx="60" cy="60" r={innerRadius}
+                  stroke="url(#habitGradientUnified)"
+                  strokeWidth="5" fill="none" strokeLinecap="round"
+                  strokeDasharray={`${(habitsPercentage / 100) * innerCircumference} ${innerCircumference}`}
+                  className="transition-all duration-1000 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]"
+                />
+              </>
+            )}
             
             <defs>
               <linearGradient id="goalGradientUnified" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -145,13 +151,17 @@ export function ProgressOverviewModule({
                 <stop offset="0%" stopColor="hsl(var(--primary))" />
                 <stop offset="100%" stopColor="hsl(var(--accent))" />
               </linearGradient>
+              <linearGradient id="habitGradientUnified" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="hsl(270 60% 60%)" />
+                <stop offset="100%" stopColor="hsl(290 60% 55%)" />
+              </linearGradient>
             </defs>
           </svg>
           
           {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <div className="text-xl font-bold text-primary font-orbitron drop-shadow-[0_0_10px_rgba(91,180,255,0.5)]">
-              {Math.round((goalsPercentage + stepsPercentage) / 2)}%
+              {Math.round(overallPercentage)}%
             </div>
             <div className="text-[8px] text-primary/50 font-rajdhani uppercase">
               Overall
@@ -160,8 +170,8 @@ export function ProgressOverviewModule({
         </div>
         
         {/* Legend */}
-        <div className="space-y-3">
-          <div className="space-y-1">
+        <div className="space-y-2.5">
+          <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gradient-to-r from-health to-green-500 shadow-[0_0_6px_rgba(74,222,128,0.5)]" />
               <span className="text-[9px] uppercase tracking-wider font-orbitron text-primary/70">Goals</span>
@@ -171,7 +181,7 @@ export function ProgressOverviewModule({
             </div>
           </div>
           
-          <div className="space-y-1">
+          <div className="space-y-0.5">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-gradient-to-r from-primary to-accent shadow-[0_0_6px_rgba(91,180,255,0.5)]" />
               <span className="text-[9px] uppercase tracking-wider font-orbitron text-primary/70">Steps</span>
@@ -180,6 +190,18 @@ export function ProgressOverviewModule({
               {data.totalStepsCompleted}/{data.totalSteps}
             </div>
           </div>
+
+          {data.totalHabitChecks > 0 && (
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-purple-500 to-purple-400 shadow-[0_0_6px_rgba(168,85,247,0.5)]" />
+                <span className="text-[9px] uppercase tracking-wider font-orbitron text-primary/70">Habits</span>
+              </div>
+              <div className="text-lg font-bold text-purple-400 font-orbitron">
+                {data.completedHabitChecks}/{data.totalHabitChecks}
+              </div>
+            </div>
+          )}
         </div>
       </div>
       

@@ -63,6 +63,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
   // Stats for Mission Randomizer
   const hasIncompleteGoals = useMemo(() => {
     return allGoals.some(g => {
+      if (g.goal_type === 'habit') return false;
       const remaining = (g.total_steps || 0) - (g.validated_steps || 0);
       return remaining > 0 && g.status !== 'fully_completed' && g.status !== 'validated';
     });

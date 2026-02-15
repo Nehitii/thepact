@@ -17,6 +17,7 @@ import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { ActionModuleCard } from "@/components/home/ActionModuleCard";
 import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
+import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
 import { usePact } from "@/hooks/usePact";
 import { useProfile } from "@/hooks/useProfile";
@@ -66,35 +67,53 @@ export default function Home() {
   // Compute derived data
   const {
     focusGoals,
+    habitGoals,
     dashboardData,
     userState,
     ownedModules,
     lockedModules,
   } = useMemo(() => {
-    const focusGoals = allGoals.filter((g) => g.is_focus && g.status !== "fully_completed");
+    // Separate habit goals from normal/super goals
+    const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
+    const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
+
+    const focusGoals = normalGoals.filter((g) => g.is_focus && g.status !== "fully_completed");
 
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
-      const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
+      // Goals remaining per difficulty (normal goals only)
+      const diffGoals = normalGoals.filter((g) => g.difficulty === difficulty);
       const completedGoals = diffGoals.filter((g) => g.status === "fully_completed").length;
       const totalGoals = diffGoals.length;
+      // Steps remaining per difficulty (normal goals only)
+      const totalStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+      const completedStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
       return {
         difficulty,
         completed: completedGoals,
         total: totalGoals,
         percentage: totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0,
+        totalSteps: totalStepsForDiff,
+        completedSteps: completedStepsForDiff,
+        remainingSteps: totalStepsForDiff - completedStepsForDiff,
       };
     });
 
-    const totalSteps = allGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-    const totalStepsCompleted = allGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-    const goalsCompleted = allGoals.filter((g) => g.status === "fully_completed").length;
-    const totalGoalsCount = allGoals.length;
+    // Steps from normal goals only
+    const totalSteps = normalGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+    const totalStepsCompleted = normalGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+    
+    // Habit tracking data
+    const totalHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_duration_days || 0), 0);
+    const completedHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_checks?.filter(Boolean).length || 0), 0);
+
+    const goalsCompleted = normalGoals.filter((g) => g.status === "fully_completed").length;
+    const totalGoalsCount = normalGoals.length;
 
     const statusCounts = {
-      not_started: allGoals.filter((g) => g.status === "not_started").length,
-      in_progress: allGoals.filter((g) => g.status === "in_progress").length,
-      fully_completed: allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
+      not_started: normalGoals.filter((g) => g.status === "not_started").length,
+      in_progress: normalGoals.filter((g) => g.status === "in_progress").length,
+      fully_completed: normalGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
     };
 
     const customTarget = Number(financeSettings?.project_funding_target) || 0;
@@ -139,10 +158,13 @@ export default function Home() {
 
     return {
       focusGoals,
+      habitGoals,
       dashboardData: {
         difficultyProgress,
         totalStepsCompleted,
         totalSteps,
+        totalHabitChecks,
+        completedHabitChecks,
         totalCostEngaged,
         totalCostPaid,
         goalsCompleted,
@@ -233,6 +255,15 @@ export default function Home() {
           <FocusGoalsModule
             goals={focusGoals}
             navigate={navigate}
+            displayMode={displayMode}
+            onToggleDisplayMode={handleToggle}
+          />
+        );
+      case "habits":
+        return (
+          <HabitsModule
+            habits={habitGoals}
+            customDifficultyColor={customDifficultyColor}
             displayMode={displayMode}
             onToggleDisplayMode={handleToggle}
           />

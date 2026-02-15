@@ -37,9 +37,11 @@ export function SmartProjectHeader({
   pendingValidations = 0 
 }: SmartProjectHeaderProps) {
   const metrics = useMemo((): SmartMetrics => {
-    const inProgressGoals = allGoals.filter(g => g.status === 'in_progress');
-    const completedGoals = allGoals.filter(g => g.status === 'fully_completed' || g.status === 'validated');
-    const totalStepsRemaining = allGoals.reduce(
+    // Exclude habit goals from step calculations
+    const nonHabitGoals = allGoals.filter(g => g.goal_type !== 'habit');
+    const inProgressGoals = nonHabitGoals.filter(g => g.status === 'in_progress');
+    const completedGoals = nonHabitGoals.filter(g => g.status === 'fully_completed' || g.status === 'validated');
+    const totalStepsRemaining = nonHabitGoals.reduce(
       (sum, g) => sum + Math.max(0, (g.total_steps || 0) - (g.validated_steps || 0)), 
       0
     );

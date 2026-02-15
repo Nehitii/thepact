@@ -25,11 +25,12 @@ const DEFAULT_MODULES: ModuleConfig[] = [
   // Display modules - paired sizes for visual consistency
   // All display modules use half size for uniform grid
   { id: 'focus-goals', name: 'Focus Goals', enabled: true, order: 0, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
-  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
-  { id: 'progress-overview', name: 'Progress Overview', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
-  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 3, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
-  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 4, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
-  { id: 'achievements', name: 'Achievements', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'habits', name: 'Habits', enabled: true, order: 1, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'progress-difficulty', name: 'Progress by Difficulty', enabled: true, order: 2, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'progress-overview', name: 'Progress Overview', enabled: true, order: 3, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'cost-tracking', name: 'Cost Tracking', enabled: true, order: 4, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'timeline', name: 'Project Timeline', enabled: true, order: 5, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
+  { id: 'achievements', name: 'Achievements', enabled: true, order: 6, size: 'half', category: 'display', allowedSizes: ['full', 'half'], displayMode: 'compact' },
   
   // Action modules - ALL use 'half' size for consistent appearance
   { id: 'the-call', name: 'The Call', enabled: true, order: 6, size: 'half', category: 'action', allowedSizes: ['full', 'half'] },
@@ -40,7 +41,7 @@ const DEFAULT_MODULES: ModuleConfig[] = [
   { id: 'wishlist', name: 'Wishlist', enabled: true, order: 11, size: 'half', category: 'action', allowedSizes: ['full', 'half'], isPlaceholder: true },
 ];
 
-const STORAGE_KEY = 'home-module-layout-v3';
+const STORAGE_KEY = 'home-module-layout-v4';
 const DISPLAY_MODE_KEY = 'home-widget-display-modes';
 
 export function useModuleLayout() {
