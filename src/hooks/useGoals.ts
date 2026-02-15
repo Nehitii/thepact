@@ -1,7 +1,8 @@
 /**
  * Goals data hook.
- * 
- * Provides access to user goals with optional step counts and tags.
+ *
+ * Fetches goals with relational tags via a single Supabase query.
+ * Step counts use a single batch query (not N+1).
  * Uses React Query for caching and automatic refetching.
  */
 import { useQuery } from "@tanstack/react-query";
@@ -33,81 +34,79 @@ export interface Goal {
   // Step counts from batch query
   completedStepsCount?: number;
   totalStepsCount?: number;
-  // Tags from junction table
+  // Tags from relational select
   tags?: string[];
 }
 
-export function useGoals(pactId: string | undefined, options?: { includeStepCounts?: boolean; includeTags?: boolean }) {
+interface UseGoalsOptions {
+  includeStepCounts?: boolean;
+  includeTags?: boolean;
+}
+
+export function useGoals(pactId: string | undefined, options?: UseGoalsOptions) {
+  const { includeStepCounts = false, includeTags = true } = options ?? {};
+
   return useQuery({
-    queryKey: ["goals", pactId, options?.includeStepCounts, options?.includeTags],
-    queryFn: async () => {
+    queryKey: ["goals", pactId, includeStepCounts, includeTags],
+    queryFn: async (): Promise<Goal[]> => {
       if (!pactId) return [];
 
-      // Fetch all goals for this pact
+      // Build select string — embed tags relationally when requested
+      const selectParts = ["*"];
+      if (includeTags) selectParts.push("goal_tags(tag)");
+
       const { data: goalsData, error: goalsError } = await supabase
         .from("goals")
-        .select("*")
+        .select(selectParts.join(", "))
         .eq("pact_id", pactId)
         .order("created_at", { ascending: false });
 
       if (goalsError) throw goalsError;
       if (!goalsData || goalsData.length === 0) return [];
 
-      const goalIds = goalsData.map((g) => g.id);
+      // Single batch query for step counts (not N+1)
+      let stepCountsByGoal: Map<string, { total: number; completed: number }> | null = null;
 
-      // Parallel fetch for step counts and tags
-      const [stepsResult, tagsResult] = await Promise.all([
-        // Fetch step counts if requested
-        options?.includeStepCounts
-          ? supabase.from("steps").select("goal_id, status").in("goal_id", goalIds)
-          : Promise.resolve({ data: null, error: null }),
-        // Fetch tags if requested (default: true for backwards compat)
-        options?.includeTags !== false
-          ? supabase.from("goal_tags").select("goal_id, tag").in("goal_id", goalIds)
-          : Promise.resolve({ data: null, error: null }),
-      ]);
+      if (includeStepCounts) {
+        const goalIds = goalsData.map((g: any) => g.id);
+        const { data: stepsData, error: stepsError } = await supabase
+          .from("steps")
+          .select("goal_id, status")
+          .in("goal_id", goalIds);
 
-      if (stepsResult.error) throw stepsResult.error;
-      if (tagsResult.error) throw tagsResult.error;
+        if (stepsError) throw stepsError;
 
-      // Aggregate step counts client-side
-      const stepCountsByGoal = new Map<string, { total: number; completed: number }>();
-      if (stepsResult.data) {
-        for (const step of stepsResult.data) {
-          const existing = stepCountsByGoal.get(step.goal_id) || { total: 0, completed: 0 };
-          existing.total++;
-          if (step.status === "completed") {
-            existing.completed++;
+        stepCountsByGoal = new Map();
+        if (stepsData) {
+          for (const step of stepsData) {
+            const existing = stepCountsByGoal.get(step.goal_id) || { total: 0, completed: 0 };
+            existing.total++;
+            if (step.status === "completed") existing.completed++;
+            stepCountsByGoal.set(step.goal_id, existing);
           }
-          stepCountsByGoal.set(step.goal_id, existing);
         }
       }
 
-      // Aggregate tags by goal
-      const tagsByGoal = new Map<string, string[]>();
-      if (tagsResult.data) {
-        for (const row of tagsResult.data) {
-          const existing = tagsByGoal.get(row.goal_id) || [];
-          existing.push(row.tag);
-          tagsByGoal.set(row.goal_id, existing);
-        }
-      }
+      // Map results — tags come from the relational join, no manual merge
+      return goalsData.map((goal: any) => {
+        const counts = stepCountsByGoal?.get(goal.id);
+        const relationalTags: string[] | undefined =
+          includeTags && Array.isArray(goal.goal_tags)
+            ? goal.goal_tags.map((t: { tag: string }) => t.tag)
+            : undefined;
 
-      // Merge step counts and tags into goals
-      const goalsWithExtras = goalsData.map((goal) => {
-        const counts = stepCountsByGoal.get(goal.id) || { total: 0, completed: 0 };
-        const tags = tagsByGoal.get(goal.id) || [];
+        // Destructure goal_tags out so it doesn't leak into the Goal type
+        const { goal_tags: _removed, ...goalFields } = goal;
+
         return {
-          ...goal,
-          totalStepsCount: options?.includeStepCounts ? counts.total : undefined,
-          completedStepsCount: options?.includeStepCounts ? counts.completed : undefined,
-          tags: tags.length > 0 ? tags : undefined,
-        };
+          ...goalFields,
+          totalStepsCount: counts?.total,
+          completedStepsCount: counts?.completed,
+          tags: relationalTags && relationalTags.length > 0 ? relationalTags : undefined,
+        } as Goal;
       });
-
-      return goalsWithExtras as Goal[];
     },
     enabled: !!pactId,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30_000,
   });
 }
