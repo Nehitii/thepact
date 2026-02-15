@@ -376,6 +376,7 @@
       "focusHint": "Star this goal to prioritize it",
       "notes": "Notes",
       "costItems": "Cost Items",
+      "alreadyFinanced": "Already Financed",
       "timeline": "Timeline"
     },
     "views": {
