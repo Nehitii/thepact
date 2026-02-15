@@ -117,7 +117,7 @@ export function AppSidebar() {
         cn(
           "group relative flex items-center gap-3 px-3 py-2.5 rounded-md transition-all duration-300 overflow-hidden mb-1",
           isActive
-            ? "text-primary bg-primary/10 border-l-2 border-primary shadow-[inset_10px_0_20px_-10px_rgba(var(--primary),0.3)]"
+            ? "active text-primary bg-primary/10 border-l-2 border-primary shadow-[inset_10px_0_20px_-10px_rgba(var(--primary),0.3)]"
             : "text-muted-foreground hover:text-foreground hover:bg-white/5 border-l-2 border-transparent",
         )
       }
@@ -218,8 +218,12 @@ export function AppSidebar() {
                     )
                   }
                 >
-                  <m.config.icon size={13} className={cn(isActive ? "text-primary" : "text-slate-500")} />
-                  {m.config.label}
+                  {({ isActive }) => (
+                    <>
+                      <m.config.icon size={13} className={cn(isActive ? "text-primary" : "text-slate-500")} />
+                      {m.config.label}
+                    </>
+                  )}
                 </NavLink>
               ))}
             </div>
