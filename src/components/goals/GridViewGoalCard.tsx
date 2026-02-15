@@ -1,8 +1,7 @@
 import React, { useMemo } from "react";
-import styled, { keyframes, css } from "styled-components";
-// Correction: Utilisation de 'CheckCircle' qui est plus standard que 'CheckCircle2'
 import { Star, Target, Zap, ImageOff, CheckCircle } from "lucide-react";
 import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
+import { cn } from "@/lib/utils";
 
 // --- Interfaces ---
 interface Goal {
@@ -69,18 +68,7 @@ export function GridViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: GridViewGoalCardProps) {
-  const {
-    difficulty,
-    isHabitGoal,
-    totalSteps,
-    completedSteps,
-    progress,
-    theme,
-    statusLabel,
-    displayTags,
-    remainingTagsCount,
-    intensity,
-  } = useMemo(() => {
+  const derived = useMemo(() => {
     const diff = goal.difficulty || "easy";
     const goalType = goal.goal_type || "standard";
     const isHabit = goalType === "habit";
@@ -99,9 +87,10 @@ export function GridViewGoalCard({
       statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
       displayTags: goal.tags?.slice(0, 2) || (goal.type ? [goal.type] : []),
       remainingTagsCount: Math.max(0, (goal.tags?.length || 0) - 2),
-      intensity: getDifficultyIntensity(diff),
     };
   }, [goal, isCompleted, customDifficultyColor]);
+
+  const { difficulty, isHabitGoal, totalSteps, completedSteps, progress, theme, statusLabel, displayTags, remainingTagsCount } = derived;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -110,446 +99,165 @@ export function GridViewGoalCard({
     }
   };
 
+  const cssVars = {
+    "--accent": theme.color,
+    "--accent-rgb": theme.rgb,
+    "--progress": `${progress}%`,
+  } as React.CSSProperties;
+
   return (
-    <StyledWrapper
-      $accentColor={theme.color}
-      $accentRgb={theme.rgb}
-      $progress={progress}
-      $isCompleted={isCompleted}
+    <article
+      style={cssVars}
       onClick={() => onNavigate(goal.id)}
       role="button"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      className="group"
+      className={cn(
+        "group relative w-full max-w-[340px] min-w-[260px] mx-auto cursor-pointer select-none rounded-[20px]",
+        "transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+        "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
+        "[perspective:1000px]",
+        isCompleted && "grayscale-[0.4] hover:grayscale-0",
+      )}
+      // Maintain aspect ratio via padding trick for broad compat
     >
-      <div className="card-inner">
-        {/* --- Background Image Layer --- */}
-        <div className="image-layer">
+      {/* Card Inner */}
+      <div
+        className={cn(
+          "relative w-full rounded-[20px] overflow-hidden",
+          "bg-[#09090b] border border-white/[0.08]",
+          "shadow-sm transition-all duration-400 ease-[cubic-bezier(0.25,0.8,0.25,1)]",
+          "group-hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.6),0_0_0_1px_rgba(var(--accent-rgb),0.3)]",
+          "group-hover:border-[rgba(var(--accent-rgb),0.3)]",
+        )}
+        style={{ aspectRatio: "4/5" }}
+      >
+        {/* Image Layer */}
+        <div className="absolute inset-0 z-0">
           {goal.image_url ? (
-            <img src={goal.image_url} alt={goal.name} loading="lazy" />
+            <img
+              src={goal.image_url}
+              alt={goal.name}
+              loading="lazy"
+              className="w-full h-full object-cover opacity-80 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"
+            />
           ) : (
-            <div className="fallback-pattern">
+            <div className="w-full h-full bg-[radial-gradient(circle_at_center,#1f2937,#111827)] flex items-center justify-center text-[#374151]">
               <ImageOff size={48} strokeWidth={1} opacity={0.3} />
             </div>
           )}
-          <div className="gradient-overlay" />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
         </div>
 
-        {/* --- Hover Shine Effect --- */}
-        <div className="shine-effect" />
+        {/* Shine Effect */}
+        <div className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-[shimmer_1s_forwards]" />
 
-        {/* --- Top Controls --- */}
-        <div className="top-bar">
-          <div className="difficulty-pill">
-            <span className="dot" />
+        {/* Top Bar */}
+        <div className="absolute top-0 left-0 right-0 p-3.5 flex justify-between items-start z-10">
+          {/* Difficulty Pill */}
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black/60 backdrop-blur-lg border border-white/10 rounded-full text-[10px] font-bold tracking-wider text-gray-100 uppercase">
+            <span
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
+            />
             {getDifficultyLabel(difficulty, customDifficultyName)}
           </div>
 
+          {/* Focus Button */}
           <button
-            className={`fav-btn ${goal.is_focus ? "active" : ""}`}
+            className={cn(
+              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 border",
+              "backdrop-blur-sm cursor-pointer",
+              goal.is_focus
+                ? "bg-[rgba(var(--accent-rgb),0.2)] border-[var(--accent)] text-[var(--accent)] shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]"
+                : "bg-black/40 border-white/10 text-white/60 hover:bg-white/20 hover:scale-110 hover:text-white",
+            )}
             onClick={(e) => {
               e.stopPropagation();
               onToggleFocus(goal.id, !!goal.is_focus, e);
             }}
             aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
           >
-            <Star className="icon" fill={goal.is_focus ? "currentColor" : "none"} strokeWidth={goal.is_focus ? 0 : 2} />
+            <Star className="w-4 h-4" fill={goal.is_focus ? "currentColor" : "none"} strokeWidth={goal.is_focus ? 0 : 2} />
           </button>
         </div>
 
-        {/* --- Main Content (Bottom) --- */}
-        <div className="content-area glass-panel">
-          {/* Primary Info */}
-          <div className="primary-info">
-            <div className="header-row">
-              <div className="icon-badge">
-                {isCompleted ? <CheckCircle size={14} /> : isHabitGoal ? <Zap size={14} /> : <Target size={14} />}
-              </div>
-              <div className="tags-row">
-                {displayTags.map((tag, i) => (
-                  <span key={i} className="mini-tag" style={{ borderColor: getTagColor(tag), color: getTagColor(tag) }}>
-                    {getTagLabel(tag)}
-                  </span>
-                ))}
-                {remainingTagsCount > 0 && <span className="mini-tag more">+{remainingTagsCount}</span>}
-              </div>
+        {/* Glass Panel Content */}
+        <div
+          className={cn(
+            "absolute bottom-3 left-3 right-3 p-4 rounded-2xl z-10",
+            "bg-[rgba(20,20,25,0.75)] backdrop-blur-xl border border-white/[0.08]",
+            "shadow-[0_4px_20px_rgba(0,0,0,0.4)]",
+            "flex flex-col gap-3 transition-all duration-300",
+            "group-hover:bg-[rgba(20,20,25,0.85)] group-hover:border-white/[0.15]",
+          )}
+        >
+          {/* Header Row */}
+          <div className="flex justify-between items-center mb-1.5">
+            <span className="text-[var(--accent)] drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.4)]">
+              {isCompleted ? <CheckCircle size={14} /> : isHabitGoal ? <Zap size={14} /> : <Target size={14} />}
+            </span>
+            <div className="flex gap-1">
+              {displayTags.map((tag, i) => (
+                <span
+                  key={i}
+                  className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border bg-black/40 uppercase"
+                  style={{ borderColor: getTagColor(tag), color: getTagColor(tag) }}
+                >
+                  {getTagLabel(tag)}
+                </span>
+              ))}
+              {remainingTagsCount > 0 && (
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-dashed border-gray-600 text-gray-400 bg-black/40 uppercase">
+                  +{remainingTagsCount}
+                </span>
+              )}
             </div>
-            <h3 className="title">{goal.name}</h3>
           </div>
 
-          {/* Progress Section */}
-          <div className="progress-section">
-            <div className="stats-row">
-              <span className="label status-text">{statusLabel}</span>
-              <span className="value">{progress}%</span>
+          {/* Title */}
+          <h3 className="text-base font-bold leading-tight text-white line-clamp-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
+            {goal.name}
+          </h3>
+
+          {/* Progress */}
+          <div className="flex flex-col gap-1.5">
+            <div className="flex justify-between items-center text-[11px] font-semibold">
+              <span className={cn("uppercase tracking-wider", isCompleted ? "text-[var(--accent)]" : "text-gray-400")}>
+                {statusLabel}
+              </span>
+              <span className="text-gray-100 tabular-nums">{progress}%</span>
             </div>
-            <div className="progress-track">
-              <div className="progress-fill" />
+            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-[width] duration-1000 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+                style={{
+                  width: `${progress}%`,
+                  background: "var(--accent)",
+                  boxShadow: "0 0 8px var(--accent)",
+                }}
+              />
             </div>
-            <div className="stats-detail">
-              <span className="dim">
+            <div className="flex justify-end">
+              <span className="text-[10px] text-gray-500">
                 {completedSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* --- Aesthetic borders --- */}
-        <div className="border-glow" />
+        {/* Border Glow */}
+        <div
+          className={cn(
+            "absolute inset-0 rounded-[20px] border border-transparent pointer-events-none z-20",
+            "transition-all duration-300",
+            "group-hover:border-[rgba(var(--accent-rgb),0.4)] group-hover:shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]",
+          )}
+        />
       </div>
-    </StyledWrapper>
+    </article>
   );
 }
-
-// --- STYLES ---
-
-const shimmer = keyframes`
-  0% { transform: translateX(-150%) skewX(-20deg); }
-  100% { transform: translateX(150%) skewX(-20deg); }
-`;
-
-const StyledWrapper = styled.article<{
-  $accentColor: string;
-  $accentRgb: string;
-  $progress: number;
-  $isCompleted: boolean;
-}>`
-  /* --- Variables CSS --- */
-  --accent: ${(props) => props.$accentColor};
-  --accent-rgb: ${(props) => props.$accentRgb};
-  --progress: ${(props) => props.$progress}%;
-  
-  position: relative;
-  
-  /* DIMENSIONS DE SÉCURITÉ RESTAURÉES */
-  width: 100%;
-  max-width: 340px;
-  min-width: 260px; /* Important pour éviter le collapse */
-  aspect-ratio: 4/5;
-  margin: 0 auto; /* Centrage */
-
-  perspective: 1000px;
-  cursor: pointer;
-  user-select: none;
-  border-radius: 20px;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* Fallback height strict */
-  @supports not (aspect-ratio: 4/5) {
-    height: 380px;
-  }
-
-  ${(props) =>
-    props.$isCompleted &&
-    css`
-    filter: grayscale(0.4);
-    &:hover { filter: grayscale(0); }
-  `}
-
-  /* --- CARD INTERIOR --- */
-  .card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 20px;
-    background: #09090b;
-    overflow: hidden;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  /* --- Images --- */
-  .image-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.7s ease-out;
-      opacity: 0.8;
-    }
-  }
-
-  .fallback-pattern {
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at center, #1f2937, #111827);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #374151;
-  }
-
-  .gradient-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to bottom,
-      rgba(0,0,0,0.1) 0%,
-      rgba(0,0,0,0.2) 50%,
-      rgba(0,0,0,0.9) 100%
-    );
-    z-index: 1;
-  }
-
-  /* --- Shine Effect --- */
-  .shine-effect {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.05) 50%,
-      rgba(255, 255, 255, 0) 100%
-    );
-    transform: translateX(-150%);
-    z-index: 2;
-    pointer-events: none;
-  }
-
-  /* --- Top Bar --- */
-  .top-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    z-index: 10;
-  }
-
-  .difficulty-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 99px;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: #f3f4f6;
-    text-transform: uppercase;
-    
-    .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 8px var(--accent);
-    }
-  }
-
-  .fav-btn {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(255,255,255,0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(255,255,255,0.6);
-    transition: all 0.2s;
-    cursor: pointer;
-
-    &:hover {
-      background: rgba(255,255,255,0.2);
-      transform: scale(1.1);
-      color: white;
-    }
-
-    &.active {
-      background: rgba(var(--accent-rgb), 0.2);
-      border-color: var(--accent);
-      color: var(--accent);
-      box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.3);
-    }
-    
-    .icon {
-      width: 16px;
-      height: 16px;
-    }
-  }
-
-  /* --- Glass Panel Content --- */
-  .glass-panel {
-    position: absolute;
-    bottom: 12px;
-    left: 12px;
-    right: 12px;
-    padding: 16px;
-    border-radius: 16px;
-    background: rgba(20, 20, 25, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    transform: translateY(0);
-    transition: transform 0.3s ease, background 0.3s ease;
-  }
-
-  .header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-  }
-
-  .icon-badge {
-    color: var(--accent);
-    filter: drop-shadow(0 0 4px rgba(var(--accent-rgb), 0.4));
-  }
-
-  .tags-row {
-    display: flex;
-    gap: 4px;
-  }
-
-  .mini-tag {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 6px;
-    border: 1px solid;
-    background: rgba(0,0,0,0.4);
-    text-transform: uppercase;
-    
-    &.more {
-      border-style: dashed;
-      color: #9ca3af !important;
-      border-color: #4b5563 !important;
-    }
-  }
-
-  .title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1.3;
-    color: #fff;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.8);
-  }
-
-  /* --- Progress Section --- */
-  .progress-section {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .stats-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  .status-text {
-    color: ${(props) => (props.$isCompleted ? "var(--accent)" : "#9ca3af")};
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .value {
-    color: #f3f4f6;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .progress-track {
-    width: 100%;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 99px;
-    overflow: hidden;
-  }
-
-  .progress-fill {
-    height: 100%;
-    width: var(--progress);
-    background: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-    border-radius: 99px;
-    transition: width 1s cubic-bezier(0.2, 0.8, 0.2, 1);
-  }
-  
-  .stats-detail {
-    display: flex;
-    justify-content: flex-end;
-    
-    .dim {
-      font-size: 10px;
-      color: #6b7280;
-    }
-  }
-
-  /* --- Borders & Glows --- */
-  .border-glow {
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    border: 1px solid transparent;
-    pointer-events: none;
-    z-index: 20;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  }
-
-  /* --- HOVER EFFECTS --- */
-  &:hover {
-    transform: translateY(-4px);
-    z-index: 20;
-    
-    .card-inner {
-      box-shadow: 
-        0 20px 40px -5px rgba(0,0,0,0.6),
-        0 0 0 1px rgba(var(--accent-rgb), 0.3);
-      border-color: rgba(var(--accent-rgb), 0.3);
-    }
-
-    .shine-effect {
-      animation: ${shimmer} 1s forwards;
-    }
-
-    .image-layer img {
-      transform: scale(1.05);
-      opacity: 1;
-    }
-
-    .glass-panel {
-      background: rgba(20, 20, 25, 0.85);
-      border-color: rgba(255,255,255,0.15);
-    }
-    
-    .border-glow {
-      border-color: rgba(var(--accent-rgb), 0.4);
-      box-shadow: inset 0 0 20px rgba(var(--accent-rgb), 0.05);
-    }
-  }
-  
-  &:active {
-    transform: scale(0.98);
-  }
-`;
 
 export default GridViewGoalCard;
