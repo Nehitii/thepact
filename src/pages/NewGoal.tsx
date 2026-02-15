@@ -191,26 +191,34 @@ export default function NewGoal() {
       await insertGoalTags(goalData.id, selectedTags);
 
       // Insert cost items
-      if (costItems.length > 0) {
-        const costItemsData = costItems.map((item) => ({
-          goal_id: goalData.id,
-          name: item.name,
-          price: item.price || 0
-        }));
-        await supabase.from("goal_cost_items").insert(costItemsData);
-      }
-
-      // Create default steps only for normal goals
+      // Create default steps only for normal goals (before cost items, so we can link)
+      let createdSteps: { id: string; order: number }[] = [];
       if (goalType === "normal" && validatedData.stepCount) {
-        const steps = Array.from({ length: validatedData.stepCount }, (_, i) => ({
+        const stepsToInsert = Array.from({ length: validatedData.stepCount }, (_, i) => ({
           goal_id: goalData.id,
           title: stepNames[i]?.trim() || `Step ${i + 1}`,
           description: "",
           notes: "",
           order: i + 1
         }));
-        const { error: stepsError } = await supabase.from("steps").insert(steps);
+        const { data: stepsData, error: stepsError } = await supabase.from("steps").insert(stepsToInsert).select("id, order");
         if (stepsError) throw stepsError;
+        createdSteps = stepsData || [];
+      }
+
+      // Insert cost items (resolve virtual step IDs to real ones)
+      if (costItems.length > 0) {
+        const stepIndexToId = new Map(
+          createdSteps.map(s => [`step-index-${s.order - 1}`, s.id])
+        );
+        const costItemsData = costItems.map((item) => ({
+          goal_id: goalData.id,
+          name: item.name,
+          price: item.price || 0,
+          category: item.category || null,
+          step_id: item.stepId ? stepIndexToId.get(item.stepId) || null : null,
+        }));
+        await supabase.from("goal_cost_items").insert(costItemsData);
       }
 
       setTimeout(() => { trackGoalCreated(user.id, difficulty); }, 0);
@@ -668,7 +676,15 @@ export default function NewGoal() {
                 <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h2>
               </div>
               
-              <CostItemsEditor items={costItems} onChange={setCostItems} />
+              <CostItemsEditor
+                items={costItems}
+                onChange={setCostItems}
+                steps={goalType === "normal" ? stepNames.map((name, i) => ({
+                  id: `step-index-${i}`,
+                  title: name,
+                  order: i + 1,
+                })) : undefined}
+              />
             </div>
 
             {/* Section 4: Media & Notes */}
