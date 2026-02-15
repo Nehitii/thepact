@@ -43,14 +43,7 @@ interface SortableStepProps {
 }
 
 function SortableStep({ id, index, name, onNameChange, onDelete, canDelete }: SortableStepProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -73,17 +66,14 @@ function SortableStep({ id, index, name, onNameChange, onDelete, canDelete }: So
       >
         <GripVertical className="h-4 w-4" />
       </button>
-      <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">
-        {index + 1}.
-      </span>
+      <span className="text-xs font-mono text-muted-foreground w-6 text-right shrink-0">{index + 1}.</span>
       <Input
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
         placeholder={`Step ${index + 1}`}
         maxLength={100}
         autoComplete="off"
-        variant="light"
-        className="h-10 text-sm rounded-xl flex-1"
+        className="h-10 text-sm rounded-xl flex-1 bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50"
       />
       {canDelete && (
         <button
@@ -104,7 +94,7 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
   const handleDragEnd = useCallback(
@@ -118,7 +108,7 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
 
       onItemsChange(arrayMove([...items], oldIndex, newIndex));
     },
-    [sortableIds, items, onItemsChange]
+    [sortableIds, items, onItemsChange],
   );
 
   const handleNameChange = useCallback(
@@ -127,14 +117,14 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
       updated[index] = { ...updated[index], name: value };
       onItemsChange(updated);
     },
-    [items, onItemsChange]
+    [items, onItemsChange],
   );
 
   const handleDelete = useCallback(
     (index: number) => {
       onItemsChange(items.filter((_, i) => i !== index));
     },
-    [items, onItemsChange]
+    [items, onItemsChange],
   );
 
   const handleAdd = useCallback(() => {
@@ -150,11 +140,7 @@ export function EditStepsList({ items, onItemsChange }: EditStepsListProps) {
 
   return (
     <div className="space-y-2">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
           {items.map((item, index) => (
             <SortableStep
