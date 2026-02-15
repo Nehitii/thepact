@@ -6,6 +6,8 @@ export interface CostItem {
   goal_id: string;
   name: string;
   price: number;
+  category: string | null;
+  step_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -38,7 +40,7 @@ export function useSaveCostItems() {
       items,
     }: {
       goalId: string;
-      items: { name: string; price: number; id?: string }[];
+      items: { name: string; price: number; id?: string; category?: string; stepId?: string | null }[];
     }) => {
       // Delete all existing items for this goal
       await supabase.from("goal_cost_items").delete().eq("goal_id", goalId);
@@ -49,6 +51,8 @@ export function useSaveCostItems() {
           goal_id: goalId,
           name: item.name,
           price: item.price,
+          category: item.category || null,
+          step_id: item.stepId || null,
         }));
 
         const { error } = await supabase.from("goal_cost_items").insert(insertData);

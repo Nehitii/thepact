@@ -388,6 +388,21 @@
       "noActiveGoalsDesc": "All your goals are either completed or paused",
       "noCompletedGoals": "No completed goals yet",
       "noCompletedGoalsDesc": "Complete your first goal to see it here"
+    },
+    "costCategories": {
+      "furniture": "Furniture",
+      "clothing": "Clothing",
+      "electronics": "Electronics",
+      "tools": "Tools & Equipment",
+      "materials": "Materials",
+      "software": "Software",
+      "services": "Services",
+      "food": "Food & Supplies",
+      "transport": "Transport",
+      "education": "Education",
+      "health": "Health",
+      "decoration": "Decoration",
+      "other": "Other"
     }
   },
   "finance": {

@@ -602,27 +602,33 @@ export type Database = {
       }
       goal_cost_items: {
         Row: {
+          category: string | null
           created_at: string
           goal_id: string
           id: string
           name: string
           price: number
+          step_id: string | null
           updated_at: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           goal_id: string
           id?: string
           name: string
           price?: number
+          step_id?: string | null
           updated_at?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           goal_id?: string
           id?: string
           name?: string
           price?: number
+          step_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -631,6 +637,13 @@ export type Database = {
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_cost_items_step_id_fkey"
+            columns: ["step_id"]
+            isOneToOne: false
+            referencedRelation: "steps"
             referencedColumns: ["id"]
           },
         ]
