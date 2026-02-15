@@ -488,7 +488,7 @@ export default function Goals() {
   const renderPagination = (currentPage: number, totalPages: number, setCurrentPage: (page: number) => void) => {
     if (totalPages <= 1) return null;
     return (
-      <motion.div variants={itemVariants} className="flex items-center justify-center gap-2 pt-6">
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex items-center justify-center gap-2 pt-6">
         <button
           onClick={() => setCurrentPage(Math.max(currentPage - 1, 1))}
           disabled={currentPage === 1}
@@ -555,7 +555,7 @@ export default function Goals() {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 py-8 space-y-6"
+        className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 pt-8 pb-24 space-y-6"
       >
         {/* Header - Centered */}
         <motion.div variants={itemVariants} className="flex flex-col items-center text-center gap-4">
