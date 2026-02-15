@@ -88,7 +88,7 @@ export default function NewGoal() {
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [stepItems, setStepItems] = useState<EditStepItem[]>(
-    Array.from({ length: 5 }, (_, i) => ({ name: `Step ${i + 1}`, key: `init-${i}` }))
+    Array.from({ length: 5 }, (_, i) => ({ name: `Step ${i + 1}`, key: `init-${i}` })),
   );
 
   // Super Goal specific state
@@ -637,16 +637,20 @@ export default function NewGoal() {
               {/* Steps / Duration based on goal type - not for super goals */}
               {goalType !== "super" && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-6">
                     {goalType === "normal" ? (
                       <div className="space-y-3">
-                        <Label
-                          className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
-                        >
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
                           <ListOrdered className="h-4 w-4" />
                           Steps ({stepItems.length}/20)
                         </Label>
-                        <EditStepsList items={stepItems} onItemsChange={(items) => { setStepItems(items); setStepCount(items.length); }} />
+                        <EditStepsList
+                          items={stepItems}
+                          onItemsChange={(items) => {
+                            setStepItems(items);
+                            setStepCount(items.length);
+                          }}
+                        />
                         <p className="text-xs text-muted-foreground">Drag to reorder, delete with trash icon</p>
                       </div>
                     ) : (
@@ -695,9 +699,6 @@ export default function NewGoal() {
                       />
                     </div>
                   </div>
-
-                  {/* Step Names Editor - only for normal goals */}
-                  {/* Old step names editor removed — now using EditStepsList above */}
                 </>
               )}
             </div>
