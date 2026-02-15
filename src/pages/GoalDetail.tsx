@@ -87,30 +87,8 @@ import {
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 
-interface Goal {
-  id: string;
-  name: string;
-  type: string;
-  difficulty: string;
-  status: string;
-  validated_steps: number;
-  total_steps: number;
-  estimated_cost: number;
-  notes: string | null;
-  potential_score: number;
-  start_date?: string;
-  completion_date?: string;
-  image_url?: string;
-  is_focus?: boolean;
-  goal_type?: string;
-  habit_duration_days?: number;
-  habit_checks?: boolean[];
-  child_goal_ids?: string[] | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  super_goal_rule?: any;
-  is_dynamic_super?: boolean;
-  pact_id?: string;
-}
+// Fix 4.2: Use shared types from useGoalDetail hook
+import type { GoalDetailData as Goal, StepData } from "@/hooks/useGoalDetail";
 
 interface Step {
   id: string;
@@ -515,7 +493,7 @@ export default function GoalDetail() {
             }
 
             // Batch update existing + insert new steps
-            const updatePromises: Promise<any>[] = [];
+            const updatePromises: Promise<unknown>[] = [];
             const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number }[] = [];
 
             for (let i = 0; i < editStepItems.length; i++) {

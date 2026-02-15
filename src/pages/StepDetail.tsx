@@ -57,7 +57,7 @@ export default function StepDetail() {
       setTitle(stepData.title);
       setNotes(stepData.notes || "");
       setStatus(stepData.status);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error loading step:", error);
       toast({ title: "Error", description: "Failed to load step details", variant: "destructive" });
     } finally {
@@ -69,7 +69,7 @@ export default function StepDetail() {
     if (!step) return;
     try {
       setSaving(true);
-      const updates: any = {
+      const updates: Record<string, unknown> = {
         title,
         notes,
         status,
@@ -90,9 +90,10 @@ export default function StepDetail() {
       queryClient.invalidateQueries({ queryKey: ["goal-detail", step.goal_id] });
       toast({ title: "Success", description: "Step updated successfully" });
       await loadStepData();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Failed to save step";
       console.error("Error saving step:", error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: message, variant: "destructive" });
     } finally {
       setSaving(false);
     }
