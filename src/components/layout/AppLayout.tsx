@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { AppSidebar } from "./AppSidebar";
-import { MobileSidebar } from "./MobileSidebar";
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -8,17 +8,20 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="min-h-screen flex w-full">
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
-        <AppSidebar />
-      </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* Mobile header with trigger */}
+        <header className="flex h-14 items-center gap-2 border-b border-border px-4 md:hidden">
+          <SidebarTrigger />
+          <span className="text-sm font-orbitron font-bold text-primary tracking-wider">THE PACT</span>
+        </header>
 
-      {/* Mobile Sidebar */}
-      <MobileSidebar />
-
-      {/* Main content - On aligne le margin-left (ml) sur la largeur de la sidebar (72) */}
-      <main className="flex-1 lg:ml-72 min-h-screen overflow-x-hidden pt-16 lg:pt-0">{children}</main>
-    </div>
+        {/* Main content */}
+        <div className="flex-1 overflow-x-hidden">
+          {children}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
