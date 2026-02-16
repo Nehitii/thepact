@@ -97,6 +97,8 @@ export function GoalsToolbar({
             <SelectItem value="status">Status</SelectItem>
             <SelectItem value="start">Start Date</SelectItem>
             <SelectItem value="progression">Progress</SelectItem>
+            <SelectItem value="super_first">Super First</SelectItem>
+            <SelectItem value="super_last">Super Last</SelectItem>
           </SelectContent>
         </Select>
 

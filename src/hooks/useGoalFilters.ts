@@ -4,13 +4,37 @@
  * Extracts all derived-state logic from Goals.tsx into a
  * composable, testable custom hook.
  */
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Goal } from "@/hooks/useGoals";
 
-export type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression";
+export type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression" | "super_first" | "super_last";
 export type SortDirection = "asc" | "desc";
 export type DisplayMode = "bar" | "grid" | "bookmark";
 export type GoalTab = "all" | "active" | "completed";
+
+const STORAGE_KEY = "goals-page-settings";
+
+interface PersistedSettings {
+  sortBy: SortOption;
+  sortDirection: SortDirection;
+  displayMode: DisplayMode;
+  itemsPerPage: number;
+  hideSuperGoals: boolean;
+}
+
+function loadSettings(): Partial<PersistedSettings> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {};
+}
+
+function saveSettings(s: PersistedSettings) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  } catch {}
+}
 
 // ── Utilities ──────────────────────────────────────────────
 
@@ -58,6 +82,20 @@ function sortGoals(goals: Goal[], sortBy: SortOption, dir: SortDirection): Goal[
       });
     case "progression":
       return sorted.sort((a, b) => (getProgression(a) - getProgression(b)) * d);
+    case "super_first":
+      return sorted.sort((a, b) => {
+        const aSuper = a.goal_type === "super" ? 0 : 1;
+        const bSuper = b.goal_type === "super" ? 0 : 1;
+        if (aSuper !== bSuper) return (aSuper - bSuper) * d;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
+    case "super_last":
+      return sorted.sort((a, b) => {
+        const aSuper = a.goal_type === "super" ? 1 : 0;
+        const bSuper = b.goal_type === "super" ? 1 : 0;
+        if (aSuper !== bSuper) return (aSuper - bSuper) * d;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
     default:
       return sorted;
   }
@@ -77,13 +115,20 @@ function filterBySearch(goals: Goal[], query: string): Goal[] {
 // ── Hook ───────────────────────────────────────────────────
 
 export function useGoalFilters(goals: Goal[]) {
-  const [sortBy, setSortBy] = useState<SortOption>("created");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
+  const saved = useMemo(() => loadSettings(), []);
+
+  const [sortBy, setSortBy] = useState<SortOption>(saved.sortBy || "created");
+  const [sortDirection, setSortDirection] = useState<SortDirection>(saved.sortDirection || "desc");
   const [activeTab, setActiveTab] = useState<GoalTab>("active");
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(saved.itemsPerPage || 10);
   const [searchQuery, setSearchQuery] = useState("");
-  const [hideSuperGoals, setHideSuperGoals] = useState(false);
-  const [displayMode, setDisplayMode] = useState<DisplayMode>("bar");
+  const [hideSuperGoals, setHideSuperGoals] = useState(saved.hideSuperGoals ?? false);
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(saved.displayMode || "bar");
+
+  // Persist settings on change
+  useEffect(() => {
+    saveSettings({ sortBy, sortDirection, displayMode, itemsPerPage, hideSuperGoals });
+  }, [sortBy, sortDirection, displayMode, itemsPerPage, hideSuperGoals]);
 
   // Per-tab pagination
   const [pages, setPages] = useState({ all: 1, active: 1, completed: 1 });
