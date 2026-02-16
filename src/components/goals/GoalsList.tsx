@@ -94,6 +94,7 @@ export function GoalsList({
             onClick={(id) => navigate(`/goals/${id}`)}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
+            displayMode={displayMode}
           />
         </motion.div>
       );
