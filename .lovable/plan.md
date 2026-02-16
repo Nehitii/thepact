@@ -1,100 +1,84 @@
 
 
-# Super Goal View Adaptation
+# Super Goal Cards: Visual Integration Fix
 
 ## Problem
-The `SuperGoalCard` is a single component that ignores the current display mode (Grid / Bar / Bookmark). It renders as a large, wide card in every view, breaking visual consistency with the regular goal cards around it.
+The three Super Goal card variants (Grid, Bar, Bookmark) have sizing and styling issues that make them look inconsistent with regular goal cards:
+- The "SUPER" tag is a separate floating badge that doesn't integrate with the card's tag system
+- The Crown icon takes up the entire image area instead of being part of the tag
+- Super goals don't display images like regular cards do (they show a giant Crown instead)
+- In Bookmark view, the "SUPER" badge crowds the top alongside the difficulty badge
 
 ## Solution
-Create three Super Goal card variants -- one per view -- that mirror the layout, dimensions, and style of their regular counterparts, while adding distinct "Super Goal" visual markers (crown icon, gold/amber accents, child-goal count instead of step count).
+
+Treat Super Goal cards as visually identical to their regular counterparts, with one distinctive addition: a premium "SUPER" tag that combines the Crown icon and text into a single, eye-catching badge.
 
 ---
 
-## Visual Identity: What Makes a Super Goal Distinct
+## Changes Per View
 
-Across all three views, Super Goals will share these consistent differentiators:
-- **Crown icon** (Lucide `Crown`) replaces the Target/Zap icon
-- **Gold/amber accent border** with a subtle shimmer, layered on top of the difficulty color
-- **"SUPER" badge** -- small, gold, always visible
-- **Child goals count** ("3/5 goals") instead of "steps" or "days"
-- **Progress** = percentage of child goals completed
+### 1. Grid View (SuperGoalGridCard.tsx)
+- **Image area**: Use the same image/placeholder logic as `GridViewGoalCard` -- show `goal.image_url` if available, otherwise show an `ImageOff` placeholder (not a giant Crown)
+- **Remove**: The separate gold border glow overlay, the large Crown in the image area, and the small Crown in the glass panel header
+- **"SUPER" tag**: Replace the current amber badge in the top-right with a distinctive tag placed in the glass panel's header row (where regular cards show tags). The tag uses a gold gradient background with a small inline Crown icon: `[Crown] SUPER`. Give it a shimmer/glow effect to stand out
+- **Size**: Already matches regular grid cards (max-w-340, aspect 4/5) -- no change needed
 
----
+### 2. Bar View (SuperGoalBarCard.tsx)
+- **Image area**: Accept an `image_url` prop. Show the image in the frame if available, Crown placeholder only if no image (same as regular BarViewGoalCard shows Target placeholder)
+- **"SUPER" tag**: Keep it inline in the `.tags-row` but restyle it as a distinctive gold gradient pill (matching the new tag design) with a small inline Crown icon. Same size as the difficulty tag
+- **Size**: Already matches regular bar cards (max-w-680, 120px) -- no change needed
 
-## Component Architecture
-
-```text
-src/components/goals/super/
-  SuperGoalCard.tsx         --> becomes a router: picks the right variant
-  SuperGoalGridCard.tsx     --> NEW: mirrors GridViewGoalCard
-  SuperGoalBarCard.tsx      --> NEW: mirrors BarViewGoalCard  
-  SuperGoalBookmarkCard.tsx --> NEW: mirrors UIVerseGoalCard
-```
-
-### 1. SuperGoalGridCard (mirrors GridViewGoalCard)
-- Same dimensions (max-w-340, aspect 4/5), same glass panel layout
-- Image area shows a radial gradient with the Crown icon (no image for super goals)
-- Gold "SUPER" badge in the top-left alongside the difficulty pill
-- Bottom glass panel: goal name, "X/Y goals completed", progress bar
-- Difficulty-based accent color preserved, with an additional gold border glow
-
-### 2. SuperGoalBarCard (mirrors BarViewGoalCard)
-- Same horizontal layout (max-w-680, 120px height), same 3D tilt grid
-- Uses `styled-components` (matching the existing BarViewGoalCard pattern)
-- Left: Crown icon in a framed container (replaces goal image)
-- Right: goal name, "SUPER" tag next to difficulty, child count, progress bar
-- Gold-tinted border on hover instead of pure accent color
-
-### 3. SuperGoalBookmarkCard (mirrors UIVerseGoalCard)
-- Same dimensions (210x280), same cutout/skew decorations
-- Top section: gradient background with large Crown icon
-- "SUPER" badge alongside the difficulty badge
-- Bottom: goal name, child count progress, same gamer-style progress bar
-- Additional gold outer glow in the box-shadow
+### 3. Bookmark View (SuperGoalBookmarkCard.tsx)
+- **Image area**: Accept an `image_url` prop. Show the image in the top section if available, otherwise show a gradient with Target/Crown placeholder (same as regular UIVerseGoalCard)
+- **"SUPER" tag**: Remove it from the top-right corner. Place it **below the card name** as a centered, distinctive gold gradient badge with Crown icon
+- **Size**: Already matches regular bookmark cards (210x280) -- no change needed
 
 ---
 
-## Routing Logic (GoalsList.tsx)
+## The "SUPER" Tag Design (shared across all 3 views)
 
-The `renderGoalCard` function in `GoalsList.tsx` will be updated to pick the correct Super Goal variant based on `displayMode`:
-
-```text
-if goal_type === "super":
-  displayMode === "grid"     --> SuperGoalGridCard
-  displayMode === "bookmark" --> SuperGoalBookmarkCard
-  displayMode === "bar"      --> SuperGoalBarCard
-```
-
-The existing `SuperGoalCard.tsx` will become a thin wrapper that delegates to the correct variant, or the routing logic moves entirely into `GoalsList.tsx`.
+A distinctive tag that truly stands out from difficulty and regular tags:
+- Gold gradient background (`linear-gradient(135deg, #b8860b, #fbbf24, #b8860b)`)
+- White text (for contrast against gold)
+- Small Crown icon (10-12px) inline before the text
+- Subtle gold glow/box-shadow: `0 0 8px rgba(251, 191, 36, 0.5)`
+- Same font-size and padding as difficulty tags for visual harmony
+- A subtle inner glossy highlight (matching the difficulty badge pattern in Bookmark view)
 
 ---
 
-## Props (shared interface)
+## Props Changes
 
-All three variants receive the same props (matching the current `SuperGoalCard` interface):
-- `id`, `name`, `childCount`, `completedCount`
-- `isDynamic`, `rule`, `difficulty`
-- `customDifficultyName`, `customDifficultyColor`
-- `onClick`
-
-No new data fetching or database changes are needed.
+All three variants need an optional `image_url?: string` prop added to their interfaces. This will be passed from `GoalsList.tsx` where we have access to the full `goal` object. Currently the super goal rendering in `GoalsList.tsx` only passes limited props -- we'll add `imageUrl={goal.image_url}` to the `SuperGoalCard` call.
 
 ---
 
 ## Technical Details
 
-- **SuperGoalGridCard**: Pure Tailwind + `cn()`, CSS variables for accent colors (same pattern as `GridViewGoalCard`)
-- **SuperGoalBarCard**: `styled-components` with the same 3D tilt tracker grid (same pattern as `BarViewGoalCard`)
-- **SuperGoalBookmarkCard**: Inline styles + Tailwind (same pattern as `UIVerseGoalCard`)
-- The `index.ts` barrel export will be updated to export the new components
-- Dynamic rule label ("Auto: Focus, Active") preserved in all three variants as a subtle footer line
+### Files to Edit
 
-## Files to Create
-- `src/components/goals/super/SuperGoalGridCard.tsx`
-- `src/components/goals/super/SuperGoalBarCard.tsx`
-- `src/components/goals/super/SuperGoalBookmarkCard.tsx`
+1. **`src/components/goals/super/SuperGoalGridCard.tsx`**
+   - Add `imageUrl?: string | null` to props interface
+   - Replace Crown hero section with regular image/placeholder logic (same as GridViewGoalCard)
+   - Remove the gold border overlay div
+   - Move "SUPER" tag into the glass panel header row as a gold gradient badge with inline Crown icon
+   - Remove standalone Crown icon from glass panel header
 
-## Files to Edit
-- `src/components/goals/super/SuperGoalCard.tsx` -- simplify or keep as fallback
-- `src/components/goals/super/index.ts` -- export new components
-- `src/components/goals/GoalsList.tsx` -- route to correct variant based on `displayMode`
+2. **`src/components/goals/super/SuperGoalBarCard.tsx`**
+   - Add `imageUrl?: string | null` to props interface
+   - Update image-frame to show `img` when imageUrl exists, Crown placeholder otherwise
+   - Restyle `.super-tag` as a gold gradient pill with white text and inline Crown icon, matching difficulty-tag sizing
+
+3. **`src/components/goals/super/SuperGoalBookmarkCard.tsx`**
+   - Add `imageUrl?: string | null` to props interface
+   - Update top section to show image when available (same pattern as UIVerseGoalCard)
+   - Remove "SUPER" badge from top-right
+   - Add "SUPER" tag below the card name as a centered gold gradient badge
+
+4. **`src/components/goals/super/SuperGoalCard.tsx`**
+   - Add `imageUrl?: string | null` to the router props interface
+   - Pass it through to each variant
+
+5. **`src/components/goals/GoalsList.tsx`**
+   - Pass `imageUrl={goal.image_url}` to the `SuperGoalCard` component
+
