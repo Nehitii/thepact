@@ -16,6 +16,7 @@ interface SuperGoalCardProps {
   customDifficultyName?: string;
   customDifficultyColor?: string;
   displayMode?: "grid" | "bar" | "bookmark";
+  imageUrl?: string | null;
 }
 
 export const SuperGoalCard = memo(function SuperGoalCard({

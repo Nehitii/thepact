@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 import styled, { keyframes } from "styled-components";
-import { Crown, Sparkles, Zap, Trophy, TrendingUp } from "lucide-react";
+import { Crown, Zap, Trophy, TrendingUp } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getDifficultyIntensity } from "@/lib/goalConstants";
 import { getDifficultyLabel } from "@/lib/goalConstants";
 import type { SuperGoalRule } from "./types";
@@ -16,6 +16,7 @@ interface SuperGoalBarCardProps {
   onClick: (id: string) => void;
   customDifficultyName?: string;
   customDifficultyColor?: string;
+  imageUrl?: string | null;
 }
 
 const getDifficultyTheme = (difficulty: string, customColor?: string) => {
@@ -46,6 +47,7 @@ const getDiffLabel = (difficulty: string, customName: string): string => {
 export const SuperGoalBarCard = memo(function SuperGoalBarCard({
   id, name, childCount, completedCount, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
+  imageUrl,
 }: SuperGoalBarCardProps) {
   const { theme, difficultyLabel, progressPercent, intensity, ruleLabel, isComplete } = useMemo(() => {
     const diff = difficulty || "medium";
@@ -84,17 +86,19 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
 
           <div id="card">
             <div className="noise-overlay" />
-            {/* Gold border accent */}
-            <div className="gold-border" />
 
             <div className="card-content">
-              {/* Crown Icon Section */}
+              {/* Image Section */}
               <div className="visual-container">
                 <div className="image-glow" />
                 <div className="image-frame">
-                  <div className="placeholder">
-                    <Crown size={24} />
-                  </div>
+                  {imageUrl ? (
+                    <img src={imageUrl} alt={name} loading="lazy" className="goal-image" />
+                  ) : (
+                    <div className="placeholder">
+                      <Crown size={24} />
+                    </div>
+                  )}
                 </div>
                 {childCount > 0 && (
                   <div
@@ -119,7 +123,7 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
                       {difficultyLabel}
                     </div>
                     <div className="super-tag">
-                      <Sparkles size={9} />
+                      <Crown size={9} className="super-crown" />
                       SUPER
                     </div>
                     {isDynamic && (
@@ -199,20 +203,10 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     background: linear-gradient(145deg, #1e1e1e, #131313);
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    border: 1px solid rgba(251, 191, 36, 0.2);
+    border: 1px solid rgba(${(props) => props.$accentRgb}, 0.15);
     box-shadow:
       0 4px 12px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(251, 191, 36, 0.08),
       inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  }
-
-  .gold-border {
-    position: absolute;
-    inset: 0;
-    border-radius: 20px;
-    pointer-events: none;
-    z-index: 3;
-    box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.15);
   }
 
   .noise-overlay {
@@ -273,9 +267,15 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     border-radius: 18px;
     overflow: hidden;
     background: #000;
-    border: 2px solid rgba(251, 191, 36, 0.25);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.3), 0 0 12px rgba(251, 191, 36, 0.1);
+    border: 2px solid rgba(${(props) => props.$accentRgb}, 0.25);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     z-index: 2;
+  }
+
+  .goal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   .placeholder {
@@ -284,8 +284,8 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(0,0,0,0.4));
-    color: #fbbf24;
+    background: linear-gradient(135deg, rgba(${(props) => props.$accentRgb}, 0.15), rgba(0,0,0,0.4));
+    color: rgba(${(props) => props.$accentRgb}, 0.6);
   }
 
   .mini-progress-ring {
@@ -357,15 +357,19 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
     display: flex;
     align-items: center;
     gap: 3px;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: #fbbf24;
-    background: rgba(251, 191, 36, 0.12);
-    padding: 3px 7px;
+    letter-spacing: 0.06em;
+    color: #fff;
+    background: linear-gradient(135deg, #b8860b, #fbbf24, #b8860b);
+    padding: 3px 8px;
     border-radius: 6px;
-    border: 1px solid rgba(251, 191, 36, 0.25);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.4), inset 0 1px 1px rgba(255,255,255,0.2);
+  }
+
+  .super-crown {
+    fill: currentColor;
   }
 
   .dynamic-tag {
@@ -460,11 +464,10 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   .tr-9:hover ~ #card { transform: rotateX(-5deg) rotateY(5deg); }
 
   .tracker:hover ~ #card {
-    border-color: rgba(251, 191, 36, 0.4);
+    border-color: rgba(${(props) => props.$accentRgb}, 0.4);
     box-shadow:
       0 15px 35px rgba(0, 0, 0, 0.6),
-      0 0 0 1px rgba(251, 191, 36, 0.3),
-      0 0 20px rgba(251, 191, 36, 0.1);
+      0 0 0 1px rgba(${(props) => props.$accentRgb}, 0.3);
   }
 
   .tracker:hover ~ #card .image-glow {
