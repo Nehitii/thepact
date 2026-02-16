@@ -100,6 +100,17 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
       onClick={() => onNavigate(goal.id)}
     >
       <div className="container noselect">
+        {/* Focus button sits OUTSIDE canvas to avoid tracker z-index blocking */}
+        <button
+          className={`focus-btn ${goal.is_focus ? "active" : ""}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFocus(goal.id, !!goal.is_focus, e);
+          }}
+        >
+          <Star className="star-icon" size={14} fill={goal.is_focus ? theme.color : "none"} />
+        </button>
+
         {/* Grille de détection pour l'effet 3D */}
         <div className="canvas">
           {[...Array(9)].map((_, i) => (
@@ -145,17 +156,6 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                     <span className="dot" />
                     {difficultyLabel}
                   </div>
-
-                  {/* Bouton Favoris toujours visible mais dimmed */}
-                  <button
-                    className={`focus-btn ${goal.is_focus ? "active" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleFocus(goal.id, !!goal.is_focus, e);
-                    }}
-                  >
-                    <Star className="star-icon" size={14} fill={goal.is_focus ? theme.color : "none"} />
-                  </button>
                 </div>
 
                 <h3 className="goal-name">{goal.name}</h3>
@@ -382,12 +382,13 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   }
 
   .focus-btn {
-    position: relative;
+    position: absolute;
+    top: 14px;
+    right: 18px;
     z-index: 60;
     background: transparent;
     border: none;
     padding: 6px;
-    margin: -6px;
     cursor: pointer;
     opacity: 0.3;
     transition: all 0.2s;
