@@ -382,10 +382,12 @@ const StyledWrapper = styled.div<{ $accentColor: string; $accentRgb: string; $in
   }
 
   .focus-btn {
+    position: relative;
+    z-index: 60;
     background: transparent;
     border: none;
     padding: 6px;
-    margin: -6px; /* Agrandir la zone de clic sans décaler le layout */
+    margin: -6px;
     cursor: pointer;
     opacity: 0.3;
     transition: all 0.2s;
