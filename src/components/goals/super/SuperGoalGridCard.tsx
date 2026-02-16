@@ -1,5 +1,5 @@
 import React, { useMemo, memo } from "react";
-import { Crown, Sparkles, Zap, ImageOff } from "lucide-react";
+import { Crown, Zap, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDifficultyLabel, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
 import type { SuperGoalRule } from "./types";
@@ -15,6 +15,7 @@ interface SuperGoalGridCardProps {
   onClick: (id: string) => void;
   customDifficultyName?: string;
   customDifficultyColor?: string;
+  imageUrl?: string | null;
 }
 
 const getDifficultyTheme = (difficulty: string, customColor?: string) => {
@@ -44,6 +45,7 @@ const getDiffLabel = (diff: string, customName?: string): string => {
 export const SuperGoalGridCard = memo(function SuperGoalGridCard({
   id, name, childCount, completedCount, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
+  imageUrl,
 }: SuperGoalGridCardProps) {
   const { progress, theme, ruleLabel } = useMemo(() => {
     const prog = childCount > 0 ? Math.round((completedCount / childCount) * 100) : 0;
@@ -92,45 +94,44 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
         )}
         style={{ aspectRatio: "4/5" }}
       >
-        {/* Gold border glow for super goals */}
-        <div
-          className="absolute inset-0 rounded-[20px] pointer-events-none z-30 transition-opacity duration-300 opacity-60 group-hover:opacity-100"
-          style={{
-            boxShadow: "inset 0 0 0 1.5px rgba(251, 191, 36, 0.35), 0 0 20px rgba(251, 191, 36, 0.1)",
-          }}
-        />
-
-        {/* Image Layer - Crown icon gradient */}
+        {/* Image Layer */}
         <div className="absolute inset-0 z-0">
-          <div
-            className="w-full h-full flex items-center justify-center"
-            style={{
-              background: `radial-gradient(circle at center, rgba(var(--accent-rgb), 0.25), rgba(var(--accent-rgb), 0.05) 60%, #111827)`,
-            }}
-          >
-            <Crown className="w-16 h-16 text-amber-400/40 drop-shadow-[0_0_20px_rgba(251,191,36,0.3)]" />
-          </div>
-          <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
+          {imageUrl ? (
+            <>
+              <img
+                src={imageUrl}
+                alt={name}
+                loading="lazy"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
+            </>
+          ) : (
+            <>
+              <div
+                className="w-full h-full flex items-center justify-center"
+                style={{
+                  background: `radial-gradient(circle at center, rgba(var(--accent-rgb), 0.25), rgba(var(--accent-rgb), 0.05) 60%, #111827)`,
+                }}
+              >
+                <ImageOff className="w-12 h-12 text-white/20" />
+              </div>
+              <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
+            </>
+          )}
         </div>
 
         {/* Shine Effect */}
         <div className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-[shimmer_1s_forwards]" />
 
-        {/* Top Bar */}
+        {/* Top Bar - Difficulty only */}
         <div className="absolute top-0 left-0 right-0 p-3.5 flex justify-between items-start z-10">
-          {/* Difficulty Pill */}
           <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black/60 backdrop-blur-lg border border-white/10 rounded-full text-[10px] font-bold tracking-wider text-gray-100 uppercase">
             <span
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
             />
             {getDiffLabel(difficulty, customDifficultyName)}
-          </div>
-
-          {/* SUPER badge */}
-          <div className="flex items-center gap-1 px-2 py-1 bg-amber-500/20 backdrop-blur-lg border border-amber-400/40 rounded-full text-[9px] font-bold tracking-widest text-amber-300 uppercase">
-            <Sparkles className="w-3 h-3" />
-            SUPER
           </div>
         </div>
 
@@ -144,11 +145,19 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
             "group-hover:bg-[rgba(20,20,25,0.85)] group-hover:border-white/[0.15]",
           )}
         >
-          {/* Header Row */}
+          {/* Header Row with SUPER tag */}
           <div className="flex justify-between items-center mb-1.5">
-            <span className="text-amber-400 drop-shadow-[0_0_4px_rgba(251,191,36,0.4)]">
-              <Crown size={14} />
-            </span>
+            <div
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
+              style={{
+                background: "linear-gradient(135deg, #b8860b, #fbbf24, #b8860b)",
+                color: "#fff",
+                boxShadow: "0 0 10px rgba(251, 191, 36, 0.5), inset 0 1px 1px rgba(255,255,255,0.25)",
+              }}
+            >
+              <Crown size={10} className="fill-current" />
+              SUPER
+            </div>
             {isDynamic && (
               <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-purple-500/30 text-purple-400 bg-black/40 uppercase">
                 <Zap className="w-2.5 h-2.5 inline mr-0.5" />Dynamic

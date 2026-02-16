@@ -95,6 +95,7 @@ export function GoalsList({
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
             displayMode={displayMode}
+            imageUrl={goal.image_url}
           />
         </motion.div>
       );

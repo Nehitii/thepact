@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Crown, Sparkles, Zap, CheckCircle2 } from "lucide-react";
+import { Crown, Zap, CheckCircle2, ImageOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { getDifficultyLabel } from "@/lib/goalConstants";
@@ -17,6 +17,7 @@ interface SuperGoalBookmarkCardProps {
   onClick: (id: string) => void;
   customDifficultyName?: string;
   customDifficultyColor?: string;
+  imageUrl?: string | null;
 }
 
 const getDifficultyIntensity = (difficulty: string): number => {
@@ -57,6 +58,7 @@ const getDiffLabel = (diff: string, customName?: string): string => {
 export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
   id, name, childCount, completedCount, isDynamic, rule,
   difficulty = "medium", onClick, customDifficultyName = "", customDifficultyColor = "#a855f7",
+  imageUrl,
 }: SuperGoalBookmarkCardProps) {
   const { progress, difficultyColor, intensity, ruleLabel, isComplete } = useMemo(() => {
     const diff = difficulty || "medium";
@@ -114,10 +116,9 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
           padding: "5px",
           boxShadow: `
             0 18px 45px rgba(0,0,0,0.85),
-            0 0 25px ${withAlpha(difficultyColor, 0.35)},
-            0 0 40px rgba(251, 191, 36, 0.12)
+            0 0 25px ${withAlpha(difficultyColor, 0.35)}
           `,
-          border: "1px solid rgba(251, 191, 36, 0.15)",
+          border: `1px solid ${withAlpha(difficultyColor, 0.15)}`,
         }}
       >
         {/* Difficulty Badge */}
@@ -141,21 +142,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
           <span className="relative z-10">{getDiffLabel(difficulty, customDifficultyName)}</span>
         </Badge>
 
-        {/* SUPER badge */}
-        <div
-          className="absolute top-1 right-2 z-10 flex items-center gap-1 px-2 py-1 rounded-full text-[8px] font-bold tracking-widest uppercase"
-          style={{
-            color: "#fbbf24",
-            background: "rgba(251, 191, 36, 0.15)",
-            border: "1px solid rgba(251, 191, 36, 0.3)",
-            boxShadow: "0 0 8px rgba(251, 191, 36, 0.2)",
-          }}
-        >
-          <Sparkles className="w-2.5 h-2.5" />
-          SUPER
-        </div>
-
-        {/* Top Section - Crown */}
+        {/* Top Section - Image or placeholder */}
         <div
           className="relative overflow-hidden flex-shrink-0"
           style={{
@@ -165,9 +152,19 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
             background: `linear-gradient(45deg, ${withAlpha(difficultyColor, 0.7)} 0%, ${difficultyColor} 40%, ${withAlpha(difficultyColor, 0.4)} 100%)`,
           }}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Crown className="w-14 h-14 text-amber-300/90 drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]" />
-          </div>
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name}
+              loading="lazy"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ borderRadius: "16px" }}
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ImageOff className="w-10 h-10 text-white/30" />
+            </div>
+          )}
 
           {/* Cutout decorations */}
           <div
@@ -185,7 +182,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
         </div>
 
         {/* Separator */}
-        <div style={{ marginTop: "8px", marginBottom: "6px", width: "100%", height: "2px", borderRadius: "999px", background: "linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.3), transparent)", opacity: 0.9 }} />
+        <div style={{ marginTop: "8px", marginBottom: "6px", width: "100%", height: "2px", borderRadius: "999px", background: `linear-gradient(90deg, transparent, ${withAlpha(difficultyColor, 0.3)}, transparent)`, opacity: 0.9 }} />
 
         {/* Bottom Section */}
         <div className="px-2 pb-2 flex-1 flex flex-col min-h-0">
@@ -199,8 +196,23 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
             </h3>
           </div>
 
+          {/* SUPER tag below name */}
+          <div className="flex justify-center mt-1 mb-1">
+            <div
+              className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
+              style={{
+                background: "linear-gradient(135deg, #b8860b, #fbbf24, #b8860b)",
+                color: "#fff",
+                boxShadow: "0 0 10px rgba(251, 191, 36, 0.5), inset 0 1px 1px rgba(255,255,255,0.25)",
+              }}
+            >
+              <Crown size={10} style={{ fill: "currentColor" }} />
+              SUPER
+            </div>
+          </div>
+
           {/* Goals + Progress */}
-          <div className="mt-3 space-y-2 px-1">
+          <div className="mt-1 space-y-2 px-1">
             <div className="flex items-center justify-between text-xs font-rajdhani">
               <span style={{ color: "#7f8ca9" }}>Goals</span>
               <span className="font-bold" style={{ color: isComplete ? "#4ade80" : difficultyColor }}>
