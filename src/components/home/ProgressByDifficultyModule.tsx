@@ -34,7 +34,6 @@ export function ProgressByDifficultyModule({
   onToggleDisplayMode,
 }: ProgressByDifficultyModuleProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("goals");
-  const isCompact = displayMode === 'compact';
   
   const getDifficultyLabel = (difficulty: string) => {
     if (difficulty === 'custom' && customDifficultyName) {
@@ -47,19 +46,19 @@ export function ProgressByDifficultyModule({
     return getDifficultyColor(difficulty, customDifficultyColor);
   };
 
-  const visibleProgress = isCompact 
-    ? difficultyProgress.filter(item => item.total > 0).slice(0, 5)
-    : difficultyProgress.filter(item => item.total > 0);
+  const visibleProgress = difficultyProgress.filter(item => {
+    if (viewMode === "steps") return item.totalSteps > 0;
+    return item.total > 0;
+  });
 
-  // Mode toggle rendered as headerAction
   const modeToggle = (
     <div className="flex items-center rounded-md bg-white/[0.04] border border-white/[0.08] p-0.5">
       <button
         onClick={() => setViewMode("goals")}
         className={cn(
-          "flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-orbitron uppercase tracking-wider transition-all duration-300",
+          "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-orbitron uppercase tracking-wider transition-all duration-300",
           viewMode === "goals"
-            ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_8px_hsl(var(--primary)/0.2)]"
+            ? "bg-primary/20 text-primary border border-primary/30"
             : "text-white/40 hover:text-white/60"
         )}
       >
@@ -69,9 +68,9 @@ export function ProgressByDifficultyModule({
       <button
         onClick={() => setViewMode("steps")}
         className={cn(
-          "flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-orbitron uppercase tracking-wider transition-all duration-300",
+          "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-orbitron uppercase tracking-wider transition-all duration-300",
           viewMode === "steps"
-            ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_8px_hsl(var(--primary)/0.2)]"
+            ? "bg-primary/20 text-primary border border-primary/30"
             : "text-white/40 hover:text-white/60"
         )}
       >
@@ -81,84 +80,6 @@ export function ProgressByDifficultyModule({
     </div>
   );
 
-  const renderRow = (item: DifficultyProgress, index: number) => {
-    const color = getColor(item.difficulty);
-    const isGoals = viewMode === "goals";
-    const completed = isGoals ? item.completed : item.completedSteps;
-    const total = isGoals ? item.total : item.totalSteps;
-    const remaining = total - completed;
-    const pct = total > 0 ? (completed / total) * 100 : 0;
-
-    // In steps mode, hide difficulties with no steps
-    if (!isGoals && item.totalSteps === 0) return null;
-
-    return (
-      <motion.div
-        key={`${item.difficulty}-${viewMode}`}
-        initial={{ opacity: 0, x: -8 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.05, duration: 0.3 }}
-        className="group/row"
-      >
-        <div className="flex items-center gap-3">
-          {/* Difficulty badge */}
-          <div
-            className="shrink-0 px-2 py-0.5 text-[9px] rounded border backdrop-blur font-bold uppercase tracking-wider font-orbitron min-w-[60px] text-center"
-            style={{ 
-              borderColor: `${color}60`,
-              color: color,
-              backgroundColor: `${color}10`,
-            }}
-          >
-            {getDifficultyLabel(item.difficulty)}
-          </div>
-
-          {/* Progress bar area */}
-          <div className="flex-1 flex items-center gap-2.5">
-            <div className="flex-1 relative h-2 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.06]">
-              <motion.div
-                className="h-full rounded-full relative"
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.8, ease: "easeOut", delay: index * 0.08 }}
-                style={{
-                  backgroundColor: color,
-                  boxShadow: `0 0 12px ${color}50, inset 0 1px 0 rgba(255,255,255,0.2)`
-                }}
-              />
-            </div>
-
-            {/* Count */}
-            <span
-              className="text-[10px] font-orbitron font-bold tabular-nums min-w-[32px] text-right"
-              style={{ color }}
-            >
-              {completed}/{total}
-            </span>
-          </div>
-        </div>
-
-        {/* Remaining label */}
-        {remaining > 0 && (
-          <div className="mt-0.5 pl-[72px]">
-            <span className="text-[9px] text-white/30 font-rajdhani">
-              {remaining} remaining
-            </span>
-          </div>
-        )}
-      </motion.div>
-    );
-  };
-
-  // Summary stats for footer
-  const totalItems = visibleProgress.reduce((sum, item) => {
-    return sum + (viewMode === "goals" ? item.total : item.totalSteps);
-  }, 0);
-  const completedItems = visibleProgress.reduce((sum, item) => {
-    return sum + (viewMode === "goals" ? item.completed : item.completedSteps);
-  }, 0);
-  const overallPct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
-
   return (
     <DashboardWidgetShell
       title="By Difficulty"
@@ -167,34 +88,69 @@ export function ProgressByDifficultyModule({
       onToggleDisplayMode={onToggleDisplayMode}
       accentColor="primary"
       headerAction={modeToggle}
-      footer={
-        totalItems > 0 ? (
-          <span>
-            Overall: {completedItems}/{totalItems} ({overallPct}%)
-          </span>
-        ) : undefined
-      }
     >
-      <div className="flex-1 flex flex-col">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={viewMode}
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.2 }}
-            className={cn("space-y-3", isCompact && "flex-1")}
-          >
-            {visibleProgress.map((item, i) => renderRow(item, i))}
-            
-            {visibleProgress.length === 0 && (
-              <div className="flex-1 flex items-center justify-center text-white/30 font-rajdhani text-sm py-8">
-                No goals created yet
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={viewMode}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="flex flex-col gap-2"
+        >
+          {visibleProgress.map((item, i) => {
+            const color = getColor(item.difficulty);
+            const isGoals = viewMode === "goals";
+            const completed = isGoals ? item.completed : item.completedSteps;
+            const total = isGoals ? item.total : item.totalSteps;
+            const pct = total > 0 ? (completed / total) * 100 : 0;
+
+            return (
+              <div key={item.difficulty} className="flex items-center gap-2">
+                {/* Difficulty badge - fixed width */}
+                <div
+                  className="shrink-0 w-[62px] text-center px-1 py-0.5 text-[8px] rounded border font-bold uppercase tracking-wider font-orbitron"
+                  style={{ 
+                    borderColor: `${color}50`,
+                    color: color,
+                    backgroundColor: `${color}0d`,
+                  }}
+                >
+                  {getDifficultyLabel(item.difficulty)}
+                </div>
+
+                {/* Progress bar */}
+                <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.06]">
+                  <motion.div
+                    className="h-full rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${pct}%` }}
+                    transition={{ duration: 0.6, ease: "easeOut", delay: i * 0.06 }}
+                    style={{
+                      backgroundColor: color,
+                      boxShadow: `0 0 8px ${color}60`
+                    }}
+                  />
+                </div>
+
+                {/* Count */}
+                <span
+                  className="shrink-0 text-[9px] font-orbitron font-bold tabular-nums w-[28px] text-right"
+                  style={{ color }}
+                >
+                  {completed}/{total}
+                </span>
               </div>
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+            );
+          })}
+          
+          {visibleProgress.length === 0 && (
+            <div className="flex items-center justify-center text-white/30 font-rajdhani text-sm py-6">
+              No {viewMode} yet
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </DashboardWidgetShell>
   );
 }
