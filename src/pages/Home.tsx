@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion"; // Assure-toi d'avoir framer-motion, sinon retire les balises motion.
+import { motion, Variants } from "framer-motion"; // Ajout de Variants
 
 // Components
 import { PactTimeline } from "@/components/PactTimeline";
@@ -35,8 +35,8 @@ import { useRankXP } from "@/hooks/useRankXP";
 // User state types for adaptive dashboard
 type UserState = "onboarding" | "active" | "advanced";
 
-// Animation Variants
-const containerVariants = {
+// Animation Variants (TYPAGE CORRIGÉ)
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -47,13 +47,14 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { y: 20, opacity: 0, scale: 0.98 },
   visible: {
     y: 0,
     opacity: 1,
     scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 20 },
+    // Utilisation de 'as const' pour forcer le type littéral "spring"
+    transition: { type: "spring" as const, stiffness: 100, damping: 20 },
   },
 };
 
