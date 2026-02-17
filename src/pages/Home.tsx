@@ -370,29 +370,22 @@ export default function Home() {
 
           <ModuleGrid modules={visibleModules} isEditMode={isEditMode} onReorder={reorderModules}>
             {visibleModules.map((module) => (
-              // Correction : Ajout de "h-full" ici est CRUCIAL pour que les cartes ne s'écrasent pas
-              <motion.div
+              <ModuleCard
                 key={module.id}
-                layoutId={module.id}
-                className="h-full"
-                transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
+                id={module.id}
+                name={module.name}
+                isEditMode={isEditMode}
+                isEnabled={module.enabled}
+                onToggle={() => toggleModule(module.id)}
+                onCycleSize={() => cycleModuleSize(module.id)}
+                size={module.size}
+                category={module.category}
+                allowedSizes={module.allowedSizes}
+                isPlaceholder={module.isPlaceholder}
+                className="h-full border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg hover:shadow-primary/5 hover:border-white/10 transition-all duration-300 rounded-2xl overflow-hidden group flex flex-col"
               >
-                <ModuleCard
-                  id={module.id}
-                  name={module.name}
-                  isEditMode={isEditMode}
-                  isEnabled={module.enabled}
-                  onToggle={() => toggleModule(module.id)}
-                  onCycleSize={() => cycleModuleSize(module.id)}
-                  size={module.size}
-                  category={module.category}
-                  allowedSizes={module.allowedSizes}
-                  isPlaceholder={module.isPlaceholder}
-                  className="h-full border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg hover:shadow-primary/5 hover:border-white/10 transition-all duration-300 rounded-2xl overflow-hidden group flex flex-col"
-                >
-                  <div className="flex-1 h-full w-full">{renderModule(module.id, module.size)}</div>
-                </ModuleCard>
-              </motion.div>
+                <div className="flex-1 h-full w-full">{renderModule(module.id, module.size)}</div>
+              </ModuleCard>
             ))}
           </ModuleGrid>
         </motion.div>
