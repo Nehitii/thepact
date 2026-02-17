@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { PactTimeline } from "@/components/PactTimeline";
@@ -64,28 +64,23 @@ export default function Home() {
     getAllModules,
   } = useModuleLayout();
 
-  // Compute derived data
-  const {
-    focusGoals,
-    habitGoals,
-    dashboardData,
-    userState,
-    ownedModules,
-    lockedModules,
-  } = useMemo(() => {
-    // Separate habit goals from normal/super goals
-    const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
-    const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
+  // === Split derived data into focused memos ===
 
-    const focusGoals = normalGoals.filter((g) => g.is_focus && g.status !== "fully_completed");
+  /** Goals separated by type */
+  const { normalGoals, focusGoals, habitGoals } = useMemo(() => {
+    const normal = allGoals.filter((g) => g.goal_type !== "habit");
+    const habits = allGoals.filter((g) => g.goal_type === "habit");
+    const focus = normal.filter((g) => g.is_focus && g.status !== "fully_completed");
+    return { normalGoals: normal, focusGoals: focus, habitGoals: habits };
+  }, [allGoals]);
 
+  /** Dashboard metrics derived from goals + finance */
+  const dashboardData = useMemo(() => {
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
-      // Goals remaining per difficulty (normal goals only)
       const diffGoals = normalGoals.filter((g) => g.difficulty === difficulty);
       const completedGoals = diffGoals.filter((g) => g.status === "fully_completed").length;
       const totalGoals = diffGoals.length;
-      // Steps remaining per difficulty (normal goals only)
       const totalStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
       const completedStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
       return {
@@ -99,17 +94,12 @@ export default function Home() {
       };
     });
 
-    // Steps from normal goals only
     const totalSteps = normalGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
     const totalStepsCompleted = normalGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-    
-    // Habit tracking data
     const totalHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_duration_days || 0), 0);
     const completedHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_checks?.filter(Boolean).length || 0), 0);
-
     const goalsCompleted = normalGoals.filter((g) => g.status === "fully_completed").length;
     const totalGoalsCount = normalGoals.length;
-
     const statusCounts = {
       not_started: normalGoals.filter((g) => g.status === "not_started").length,
       in_progress: normalGoals.filter((g) => g.status === "in_progress").length,
@@ -118,7 +108,6 @@ export default function Home() {
 
     const customTarget = Number(financeSettings?.project_funding_target) || 0;
     const isCustomMode = customTarget > 0;
-
     const totalCostEngaged = isCustomMode
       ? customTarget
       : allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
@@ -128,55 +117,45 @@ export default function Home() {
       const completedGoalsCost = allGoals
         .filter((g) => g.status === "completed" || g.status === "fully_completed" || g.status === "validated")
         .reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
-
       const alreadyFunded = Number(financeSettings?.already_funded) || 0;
       totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
     }
 
+    return {
+      difficultyProgress,
+      totalStepsCompleted,
+      totalSteps,
+      totalHabitChecks,
+      completedHabitChecks,
+      totalCostEngaged,
+      totalCostPaid,
+      goalsCompleted,
+      totalGoals: totalGoalsCount,
+      statusCounts,
+      isCustomMode,
+    };
+  }, [normalGoals, habitGoals, allGoals, financeSettings]);
+
+  /** User state for adaptive dashboard */
+  const userState = useMemo<UserState>(() => {
     const daysSincePactCreation = pact?.created_at
       ? Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
+    if (dashboardData.totalGoals <= 1 && daysSincePactCreation < 7) return "onboarding";
+    if (dashboardData.goalsCompleted >= 5) return "advanced";
+    return "active";
+  }, [pact?.created_at, dashboardData.totalGoals, dashboardData.goalsCompleted]);
 
-    let userState: UserState = "active";
-    if (totalGoalsCount <= 1 && daysSincePactCreation < 7) {
-      userState = "onboarding";
-    } else if (goalsCompleted >= 5) {
-      userState = "advanced";
-    }
-
-    const moduleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
-    const ownedModules = {
-      "the-call": isModulePurchased?.("the-call") ?? false,
-      finance: isModulePurchased?.("finance") ?? false,
-      "todo-list": isModulePurchased?.("todo-list") ?? false,
-      journal: isModulePurchased?.("journal") ?? false,
-      "track-health": isModulePurchased?.("track-health") ?? false,
-      wishlist: isModulePurchased?.("wishlist") ?? false,
-    };
-
-    const lockedModules = moduleKeys.filter((key) => !ownedModules[key as keyof typeof ownedModules]);
-
-    return {
-      focusGoals,
-      habitGoals,
-      dashboardData: {
-        difficultyProgress,
-        totalStepsCompleted,
-        totalSteps,
-        totalHabitChecks,
-        completedHabitChecks,
-        totalCostEngaged,
-        totalCostPaid,
-        goalsCompleted,
-        totalGoals: totalGoalsCount,
-        statusCounts,
-        isCustomMode,
-      },
-      userState,
-      ownedModules,
-      lockedModules,
-    };
-  }, [allGoals, financeSettings, pact?.created_at, isModulePurchased]);
+  /** Module ownership */
+  const { ownedModules, lockedModules } = useMemo(() => {
+    const moduleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"] as const;
+    const owned = Object.fromEntries(moduleKeys.map((key) => [key, isModulePurchased?.(key) ?? false])) as Record<
+      (typeof moduleKeys)[number],
+      boolean
+    >;
+    const locked = moduleKeys.filter((key) => !owned[key]);
+    return { ownedModules: owned, lockedModules: locked as string[] };
+  }, [isModulePurchased]);
 
   // Loading & Redirects - AFTER all hooks
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
@@ -322,7 +301,7 @@ export default function Home() {
       </div>
 
       <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-8 relative z-10">
-        {/* ===== HERO SECTION (Refactored) ===== */}
+        {/* ===== HERO SECTION ===== */}
         <HeroSection
           pact={pact}
           focusGoals={focusGoals}

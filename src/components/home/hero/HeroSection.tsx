@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { motion, Variants } from "framer-motion";
 import { Trophy, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { PactVisual } from "@/components/PactVisual";
 import { SmartProjectHeader } from "./SmartProjectHeader";
@@ -50,6 +51,7 @@ const itemVariants: Variants = {
 };
 
 export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules, className }: HeroSectionProps) {
+  const { t } = useTranslation();
   const progressPercentage = Number(pact.global_progress) || 0;
 
   const { currentRank, nextRank, currentXP, progressInCurrentRank } = rankData;
@@ -60,28 +62,19 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
     return index >= 0 ? index + 1 : 1;
   }, [currentRank, rankData.ranks]);
 
-  // Stats for Mission Randomizer
-  const hasIncompleteGoals = useMemo(() => {
-    return allGoals.some((g) => {
-      if (g.goal_type === "habit") return false;
-      const remaining = (g.total_steps || 0) - (g.validated_steps || 0);
-      return remaining > 0 && g.status !== "fully_completed" && g.status !== "validated";
-    });
-  }, [allGoals]);
-
   const isMaxRank = !nextRank && rankData.ranks.length > 0;
   const currentRankMin = currentRank?.min_points || 0;
   const nextRankMin = nextRank?.min_points || currentRankMin + 1000;
-  const nextRankName = nextRank?.name || "Next Rank";
+  const nextRankName = nextRank?.name || t("home.hero.nextRank", "Next Rank");
 
   return (
     <motion.section
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className={cn("relative w-full max-w-7xl mx-auto px-4 sm:px-6 z-10 py-4", className)}
+      className={cn("relative w-full max-w-4xl mx-auto px-4 sm:px-6 z-10 py-4", className)}
     >
-      {/* 🔮 Background Layers & Spine (Grid removed) */}
+      {/* Background spine */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none -z-10 overflow-hidden">
         <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gradient-to-b from-transparent via-cyan-500/10 to-transparent -translate-x-1/2" />
       </div>
@@ -95,7 +88,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
           <div className="group relative flex justify-center mb-4">
             <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
             <div className="relative transform transition-transform duration-500 hover:scale-105">
-              <PactVisual symbol={pact.symbol} progress={progressPercentage} size="lg" />
+              <PactVisual symbol={pact.symbol} progress={progressPercentage} size="md" />
             </div>
           </div>
 
@@ -114,7 +107,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
             </div>
           )}
 
-          {/* SMART PROJECT HEADER - Dynamic next action with metrics */}
+          {/* SMART PROJECT HEADER */}
           <div className="flex justify-center">
             <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} />
           </div>
@@ -133,7 +126,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
             <div className="flex items-end justify-between mb-4">
               <div className="flex flex-col gap-1.5">
                 <span className="text-[10px] text-cyan-400 font-orbitron uppercase tracking-widest flex items-center gap-2">
-                  <Trophy size={12} /> Rang Actuel
+                  <Trophy size={12} /> {t("home.hero.currentRank", "Current Rank")}
                 </span>
                 <CurrentRankBadge
                   rank={currentRank}
@@ -146,7 +139,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
               </div>
               <div className="text-right flex flex-col items-end gap-1.5">
                 <span className="text-[10px] text-muted-foreground font-orbitron uppercase tracking-widest">
-                  Prochain Palier
+                  {t("home.hero.nextTier", "Next Tier")}
                 </span>
                 <div className="flex items-center gap-2 text-white/90 font-bold font-orbitron text-sm">
                   {nextRankName} <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />
