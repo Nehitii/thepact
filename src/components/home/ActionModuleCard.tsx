@@ -134,7 +134,6 @@ export function ActionModuleCard({
         onClick={onClick}
         className={cn(
           "relative w-full h-full min-h-[140px] flex flex-col bg-gradient-to-br backdrop-blur-xl border-2 rounded-lg overflow-hidden transition-all duration-500",
-          // RETRAIT DU "h-[120px]" FIXE ICI
           theme.cardBg,
           theme.border,
           theme.shadow,
