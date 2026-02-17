@@ -913,6 +913,11 @@
       "nextMilestone": "Prochaine étape",
       "quickActions": "Actions rapides"
     },
+    "hero": {
+      "currentRank": "Rang Actuel",
+      "nextTier": "Prochain Palier",
+      "nextRank": "Prochain Rang"
+    },
     "emptyStates": {
       "noFocusGoals": "Pas d'objectifs prioritaires",
       "noFocusGoalsDesc": "Marque des objectifs pour les prioriser",

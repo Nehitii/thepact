@@ -913,6 +913,11 @@
       "nextMilestone": "Next Milestone",
       "quickActions": "Quick Actions"
     },
+    "hero": {
+      "currentRank": "Current Rank",
+      "nextTier": "Next Tier",
+      "nextRank": "Next Rank"
+    },
     "emptyStates": {
       "noFocusGoals": "No focus goals",
       "noFocusGoalsDesc": "Star some goals to prioritize them",

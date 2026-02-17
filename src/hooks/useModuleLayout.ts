@@ -160,14 +160,14 @@ export function useModuleLayout() {
 
   const getVisibleModules = useCallback(() => {
     const source = isEditMode ? pendingModules : modules;
-    return source
+    return [...source]
       .filter(m => m.enabled)
       .sort((a, b) => a.order - b.order);
   }, [modules, pendingModules, isEditMode]);
 
   const getAllModules = useCallback(() => {
     const source = isEditMode ? pendingModules : modules;
-    return source.sort((a, b) => a.order - b.order);
+    return [...source].sort((a, b) => a.order - b.order);
   }, [modules, pendingModules, isEditMode]);
 
   return {
