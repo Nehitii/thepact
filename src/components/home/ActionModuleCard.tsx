@@ -9,13 +9,11 @@ interface ActionModuleCardProps {
   icon: LucideIcon | ReactNode;
   onClick: () => void;
   size?: ModuleSize;
-  // Color theme
   accentColor: "orange" | "amber" | "indigo" | "cyan" | "teal" | "primary";
   children?: ReactNode;
-  className?: string; // Ajout de la prop manquante
+  className?: string;
 }
 
-// Unified color classes for each accent
 const colorThemes = {
   orange: {
     glow: "bg-orange-500/10",
@@ -109,9 +107,6 @@ const colorThemes = {
   },
 };
 
-// FIX #4: Unified fixed height for all action modules
-const MODULE_HEIGHT = "h-[120px]"; // Fixed height for consistency
-
 export function ActionModuleCard({
   title,
   subtitle,
@@ -120,16 +115,15 @@ export function ActionModuleCard({
   size = "half",
   accentColor,
   children,
-  className, // Réception de la prop className
+  className,
 }: ActionModuleCardProps) {
   const theme = colorThemes[accentColor];
 
-  // Check if icon is a React component (function or forwardRef object)
   const isIconComponent =
     typeof icon === "function" || (typeof icon === "object" && icon !== null && "$$typeof" in icon);
 
   return (
-    <div className="animate-fade-in relative group h-full">
+    <div className="animate-fade-in relative group h-full w-full">
       {/* Glow effects */}
       <div
         className={cn("absolute inset-0 rounded-lg blur-3xl transition-all duration-500", theme.glow, theme.glowHover)}
@@ -139,12 +133,12 @@ export function ActionModuleCard({
       <button
         onClick={onClick}
         className={cn(
-          "relative w-full bg-gradient-to-br backdrop-blur-xl border-2 rounded-lg overflow-hidden transition-all duration-500",
-          MODULE_HEIGHT, // Fixed height
+          "relative w-full h-full min-h-[140px] flex flex-col bg-gradient-to-br backdrop-blur-xl border-2 rounded-lg overflow-hidden transition-all duration-500",
+          // RETRAIT DU "h-[120px]" FIXE ICI
           theme.cardBg,
           theme.border,
           theme.shadow,
-          className, // Application de la classe personnalisée
+          className,
         )}
       >
         {/* Inner border */}
@@ -152,10 +146,10 @@ export function ActionModuleCard({
           <div className={cn("absolute inset-[2px] border rounded-[6px]", theme.innerBorder)} />
         </div>
 
-        {/* Main content - always centered */}
-        <div className="relative z-10 h-full flex flex-col items-center justify-center p-4 gap-2">
+        {/* Main content - Centered but flexible */}
+        <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-4 gap-3">
           {/* Icon */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <div className={cn("absolute inset-0 blur-lg rounded-full", theme.iconGlow)} />
             {isIconComponent ? (
               React.createElement(icon as LucideIcon, {
@@ -166,24 +160,30 @@ export function ActionModuleCard({
             )}
           </div>
 
-          {/* Title */}
-          <span
-            className={cn(
-              "font-bold uppercase tracking-[0.12em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r text-sm text-center",
-              theme.textGradient,
-            )}
-          >
-            {title}
-          </span>
-
-          {/* Subtitle - only when not quarter size */}
-          {subtitle && size !== "quarter" && (
-            <span className={cn("text-xs font-rajdhani tracking-wide text-center", theme.subtitleColor)}>
-              {subtitle}
+          <div className="flex flex-col items-center gap-1">
+            {/* Title */}
+            <span
+              className={cn(
+                "font-bold uppercase tracking-[0.12em] font-orbitron text-transparent bg-clip-text bg-gradient-to-r text-sm text-center leading-tight",
+                theme.textGradient,
+              )}
+            >
+              {title}
             </span>
-          )}
 
-          {/* Optional children for custom content */}
+            {/* Subtitle */}
+            {subtitle && size !== "quarter" && (
+              <span
+                className={cn(
+                  "text-xs font-rajdhani tracking-wide text-center leading-tight line-clamp-2",
+                  theme.subtitleColor,
+                )}
+              >
+                {subtitle}
+              </span>
+            )}
+          </div>
+
           {children}
         </div>
 
