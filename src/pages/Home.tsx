@@ -1,12 +1,11 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion, Variants } from "framer-motion"; // Correction : Import ajouté
+
+// Components
 import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
-
-import { Flame, ListTodo, BookOpen, ShoppingCart, Heart } from "lucide-react";
-import { useTodoReminders } from "@/hooks/useTodoReminders";
-import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { ModuleCard } from "@/components/home/ModuleCard";
 import { ModuleGrid } from "@/components/home/ModuleGrid";
 import { ModuleManager } from "@/components/home/ModuleManager";
@@ -19,6 +18,13 @@ import { ActionModuleCard } from "@/components/home/ActionModuleCard";
 import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
 import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
+
+// Icons
+import { Flame, ListTodo, BookOpen, ShoppingCart, Heart, Activity } from "lucide-react";
+
+// Hooks
+import { useTodoReminders } from "@/hooks/useTodoReminders";
+import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { usePact } from "@/hooks/usePact";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals } from "@/hooks/useGoals";
@@ -28,6 +34,28 @@ import { useRankXP } from "@/hooks/useRankXP";
 
 // User state types for adaptive dashboard
 type UserState = "onboarding" | "active" | "advanced";
+
+// Animation Variants
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0, scale: 0.98 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    scale: 1,
+    transition: { type: "spring", stiffness: 100, damping: 20 },
+  },
+};
 
 export default function Home() {
   const { user } = useAuth();
@@ -39,8 +67,6 @@ export default function Home() {
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
   const { data: financeSettings } = useFinanceSettings(user?.id);
-
-  // Unified rank/XP data from hook
   const { data: rankData } = useRankXP(user?.id, pact?.id);
 
   // Initialize todo reminders
@@ -66,19 +92,15 @@ export default function Home() {
 
   // Compute derived data
   const { focusGoals, habitGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
-    // Separate habit goals from normal/super goals
     const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
     const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
-
     const focusGoals = normalGoals.filter((g) => g.is_focus && g.status !== "fully_completed");
 
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
-      // Goals remaining per difficulty (normal goals only)
       const diffGoals = normalGoals.filter((g) => g.difficulty === difficulty);
       const completedGoals = diffGoals.filter((g) => g.status === "fully_completed").length;
       const totalGoals = diffGoals.length;
-      // Steps remaining per difficulty (normal goals only)
       const totalStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
       const completedStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
       return {
@@ -92,14 +114,10 @@ export default function Home() {
       };
     });
 
-    // Steps from normal goals only
     const totalSteps = normalGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
     const totalStepsCompleted = normalGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
-
-    // Habit tracking data
     const totalHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_duration_days || 0), 0);
     const completedHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_checks?.filter(Boolean).length || 0), 0);
-
     const goalsCompleted = normalGoals.filter((g) => g.status === "fully_completed").length;
     const totalGoalsCount = normalGoals.length;
 
@@ -111,7 +129,6 @@ export default function Home() {
 
     const customTarget = Number(financeSettings?.project_funding_target) || 0;
     const isCustomMode = customTarget > 0;
-
     const totalCostEngaged = isCustomMode
       ? customTarget
       : allGoals.reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
@@ -121,7 +138,6 @@ export default function Home() {
       const completedGoalsCost = allGoals
         .filter((g) => g.status === "completed" || g.status === "fully_completed" || g.status === "validated")
         .reduce((sum, g) => sum + (Number(g.estimated_cost) || 0), 0);
-
       const alreadyFunded = Number(financeSettings?.already_funded) || 0;
       totalCostPaid = Math.min(completedGoalsCost + alreadyFunded, totalCostEngaged);
     }
@@ -129,13 +145,9 @@ export default function Home() {
     const daysSincePactCreation = pact?.created_at
       ? Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24))
       : 0;
-
     let userState: UserState = "active";
-    if (totalGoalsCount <= 1 && daysSincePactCreation < 7) {
-      userState = "onboarding";
-    } else if (goalsCompleted >= 5) {
-      userState = "advanced";
-    }
+    if (totalGoalsCount <= 1 && daysSincePactCreation < 7) userState = "onboarding";
+    else if (goalsCompleted >= 5) userState = "advanced";
 
     const moduleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
     const ownedModules = {
@@ -146,7 +158,6 @@ export default function Home() {
       "track-health": isModulePurchased?.("track-health") ?? false,
       wishlist: isModulePurchased?.("wishlist") ?? false,
     };
-
     const lockedModules = moduleKeys.filter((key) => !ownedModules[key as keyof typeof ownedModules]);
 
     return {
@@ -171,7 +182,6 @@ export default function Home() {
     };
   }, [allGoals, financeSettings, pact?.created_at, isModulePurchased]);
 
-  // Loading & Redirects - AFTER all hooks
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
 
   if (!pactLoading && !pact && user) {
@@ -181,27 +191,27 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading your Pact...</p>
+      <div className="flex min-h-screen items-center justify-center bg-background/95 backdrop-blur-sm">
+        <div className="text-center space-y-4">
+          <div className="relative">
+            <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
+            <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-primary/20 mx-auto" />
+          </div>
+          <p className="text-muted-foreground animate-pulse tracking-wide text-sm font-medium uppercase">
+            Initialisation...
+          </p>
         </div>
       </div>
     );
   }
 
-  if (!pact) {
-    return null;
-  }
+  if (!pact) return null;
 
   const sortedModules = getAllModules();
-
   const visibleModules = sortedModules.filter((m) => {
     if (m.category === "display") return m.enabled;
     const actionModuleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
-    if (actionModuleKeys.includes(m.id)) {
-      return m.enabled && ownedModules[m.id as keyof typeof ownedModules];
-    }
+    if (actionModuleKeys.includes(m.id)) return m.enabled && ownedModules[m.id as keyof typeof ownedModules];
     return m.enabled;
   });
 
@@ -280,7 +290,6 @@ export default function Home() {
     }
   };
 
-  // Default rank data if not loaded yet
   const safeRankData = rankData || {
     ranks: [],
     currentRank: null,
@@ -293,85 +302,112 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Deep space background with radial glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-      </div>
-
-      {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
+    <div className="min-h-screen bg-background relative overflow-x-hidden selection:bg-primary/20">
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-900/10 rounded-full blur-[120px] animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-indigo-900/10 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
+        <div className="absolute top-[20%] right-[20%] w-[30vw] h-[30vw] bg-primary/5 rounded-full blur-[100px] animate-float" />
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 opacity-[0.03]"
           style={{
-            backgroundImage: `
-            linear-gradient(hsl(var(--primary) / 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--primary) / 0.1) 1px, transparent 1px)
-          `,
-            backgroundSize: "50px 50px",
+            backgroundImage: `linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)`,
+            backgroundSize: "4rem 4rem",
+            maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
           }}
         />
+        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] mix-blend-overlay" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background/80" />
       </div>
 
-      <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-8 relative z-10">
-        {/* ===== HERO SECTION (Refactored) ===== */}
-        <HeroSection
-          pact={pact}
-          focusGoals={focusGoals}
-          allGoals={allGoals}
-          rankData={safeRankData}
-          ownedModules={{
-            todo: ownedModules["todo-list"],
-            journal: ownedModules["journal"],
-            health: ownedModules["track-health"],
-          }}
-        />
+      <motion.div
+        className="max-w-6xl mx-auto p-4 md:p-8 space-y-10 relative z-10"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* HERO */}
+        <motion.div variants={itemVariants} className="relative">
+          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-purple-500/20 to-indigo-500/20 rounded-3xl blur-xl opacity-30 animate-pulse" />
+          <div className="relative">
+            <HeroSection
+              pact={pact}
+              focusGoals={focusGoals}
+              allGoals={allGoals}
+              rankData={safeRankData}
+              ownedModules={{
+                todo: ownedModules["todo-list"],
+                journal: ownedModules["journal"],
+                health: ownedModules["track-health"],
+              }}
+            />
+          </div>
+        </motion.div>
 
-        {/* ===== USER-STATE ADAPTIVE SECTION ===== */}
+        {/* ONBOARDING */}
         {userState === "onboarding" && (
-          <GettingStartedCard
-            hasGoals={dashboardData.totalGoals > 0}
-            hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
-            hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
-          />
+          <motion.div variants={itemVariants}>
+            <GettingStartedCard
+              hasGoals={dashboardData.totalGoals > 0}
+              hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
+              hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
+            />
+          </motion.div>
         )}
 
-        {/* ===== MODULAR SECTION ===== */}
-        <ModuleGrid modules={visibleModules} isEditMode={isEditMode} onReorder={reorderModules}>
-          {visibleModules.map((module) => (
-            <motion.div
-              key={module.id}
-              layoutId={module.id}
-              className="h-full" // <--- AJOUT CRUCIAL : Force le div d'animation à prendre toute la hauteur
-              transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
-            >
-              <ModuleCard
-                id={module.id}
-                name={module.name}
-                isEditMode={isEditMode}
-                isEnabled={module.enabled}
-                onToggle={() => toggleModule(module.id)}
-                onCycleSize={() => cycleModuleSize(module.id)}
-                size={module.size}
-                category={module.category}
-                allowedSizes={module.allowedSizes}
-                isPlaceholder={module.isPlaceholder}
-                // On s'assure que ModuleCard prend aussi toute la hauteur
-                className="h-full border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg hover:shadow-primary/5 hover:border-white/10 transition-all duration-300 rounded-2xl overflow-hidden group flex flex-col"
+        {/* GRID */}
+        <motion.div variants={itemVariants} className="relative">
+          {isEditMode && (
+            <div className="mb-6 flex items-center justify-between bg-primary/10 border border-primary/20 p-4 rounded-xl backdrop-blur-md">
+              <span className="text-primary font-bold tracking-wide flex items-center gap-2">
+                <Activity className="w-5 h-5" /> MODE ÉDITION ACTIVÉ
+              </span>
+              <span className="text-xs text-primary/80 uppercase tracking-widest">
+                Réorganisez votre tableau de bord
+              </span>
+            </div>
+          )}
+
+          <ModuleGrid modules={visibleModules} isEditMode={isEditMode} onReorder={reorderModules}>
+            {visibleModules.map((module) => (
+              // Correction : Ajout de "h-full" ici est CRUCIAL pour que les cartes ne s'écrasent pas
+              <motion.div
+                key={module.id}
+                layoutId={module.id}
+                className="h-full"
+                transition={{ type: "spring" as const, stiffness: 300, damping: 30 }}
               >
-                {/* Le container interne du module doit pouvoir s'étendre */}
-                <div className="flex-1 h-full w-full">{renderModule(module.id, module.size)}</div>
-              </ModuleCard>
-            </motion.div>
-          ))}
-        </ModuleGrid>
+                <ModuleCard
+                  id={module.id}
+                  name={module.name}
+                  isEditMode={isEditMode}
+                  isEnabled={module.enabled}
+                  onToggle={() => toggleModule(module.id)}
+                  onCycleSize={() => cycleModuleSize(module.id)}
+                  size={module.size}
+                  category={module.category}
+                  allowedSizes={module.allowedSizes}
+                  isPlaceholder={module.isPlaceholder}
+                  className="h-full border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg hover:shadow-primary/5 hover:border-white/10 transition-all duration-300 rounded-2xl overflow-hidden group flex flex-col"
+                >
+                  <div className="flex-1 h-full w-full">{renderModule(module.id, module.size)}</div>
+                </ModuleCard>
+              </motion.div>
+            ))}
+          </ModuleGrid>
+        </motion.div>
 
-        {/* Locked Modules Teaser */}
-        {lockedModules.length > 0 && !isEditMode && <LockedModulesTeaser lockedModules={lockedModules} />}
-      </div>
+        {/* LOCKED */}
+        {lockedModules.length > 0 && !isEditMode && (
+          <motion.div variants={itemVariants} className="pt-8 border-t border-white/5">
+            <h3 className="text-lg font-semibold text-muted-foreground mb-6 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-muted-foreground/50" /> Modules Disponibles
+            </h3>
+            <LockedModulesTeaser lockedModules={lockedModules} />
+          </motion.div>
+        )}
+      </motion.div>
 
-      {/* Module Manager */}
       <ModuleManager
         isEditMode={isEditMode}
         onEnterEdit={enterEditMode}
@@ -383,82 +419,82 @@ export default function Home() {
   );
 }
 
-// ===== ACTION MODULE COMPONENTS =====
-
+// Helper Components
 function TheCallModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="The Call"
-      subtitle="Daily meditation & alignment"
+      subtitle="Alignment & Focus"
       icon={Flame}
       onClick={() => navigate("/the-call")}
       size={size}
       accentColor="orange"
+      className="h-full bg-gradient-to-br from-orange-500/5 to-transparent hover:from-orange-500/10"
     />
   );
 }
-
 function FinanceModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
   return (
     <ActionModuleCard
-      title="Track Finance"
-      subtitle="Budget & projections"
+      title="Finance"
+      subtitle="Budget & Projections"
       icon="💰"
       onClick={() => navigate("/finance")}
       size={size}
       accentColor="amber"
+      className="h-full bg-gradient-to-br from-amber-500/5 to-transparent hover:from-amber-500/10"
     />
   );
 }
-
 function JournalModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="Journal"
-      subtitle="Your memory timeline"
+      subtitle="Memory Timeline"
       icon={BookOpen}
       onClick={() => navigate("/journal")}
       size={size}
       accentColor="indigo"
+      className="h-full bg-gradient-to-br from-indigo-500/5 to-transparent hover:from-indigo-500/10"
     />
   );
 }
-
 function TodoListModuleCard({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
   return (
     <ActionModuleCard
-      title="To-Do List"
-      subtitle="Tasks & productivity"
+      title="Tasks"
+      subtitle="Productivity System"
       icon={ListTodo}
       onClick={() => navigate("/todo")}
       size={size}
       accentColor="cyan"
+      className="h-full bg-gradient-to-br from-cyan-500/5 to-transparent hover:from-cyan-500/10"
     />
   );
 }
-
 function HealthModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
   return (
     <ActionModuleCard
-      title="Track Health"
-      subtitle="Balance & awareness"
+      title="Vitality"
+      subtitle="Body & Mind"
       icon={Heart}
       onClick={() => navigate("/health")}
       size={size}
       accentColor="teal"
+      className="h-full bg-gradient-to-br from-teal-500/5 to-transparent hover:from-teal-500/10"
     />
   );
 }
-
 function WishlistModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
   return (
     <ActionModuleCard
       title="Wishlist"
-      subtitle="Plan what you truly need"
+      subtitle="Material Goals"
       icon={ShoppingCart}
       onClick={() => navigate("/wishlist")}
       size={size}
       accentColor="primary"
+      className="h-full bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10"
     />
   );
 }
