@@ -9,6 +9,7 @@ import { WishlistPanel } from "@/components/shop/WishlistPanel";
 import { PurchaseHistory } from "@/components/shop/PurchaseHistory";
 import { DailyDealsSection } from "@/components/shop/DailyDealsSection";
 import { BundlesSection } from "@/components/shop/BundlesSection";
+import { ShopSpotlight } from "@/components/shop/ShopSpotlight";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
@@ -155,6 +156,7 @@ export default function Shop() {
           >
             {activeTab === "cosmetics" && (
               <div className="space-y-8">
+                <ShopSpotlight />
                 <DailyDealsSection />
                 <BundlesSection />
                 <CosmeticShop />
