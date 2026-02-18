@@ -1,84 +1,158 @@
 
+# Shop Overhaul: Gamified Video Game Store Experience
 
-# Super Goal Cards: Visual Integration Fix
+## Current State Assessment
 
-## Problem
-The three Super Goal card variants (Grid, Bar, Bookmark) have sizing and styling issues that make them look inconsistent with regular goal cards:
-- The "SUPER" tag is a separate floating badge that doesn't integrate with the card's tag system
-- The Crown icon takes up the entire image area instead of being part of the tag
-- Super goals don't display images like regular cards do (they show a giant Crown instead)
-- In Bookmark view, the "SUPER" badge crowds the top alongside the difficulty badge
+The shop already has solid foundations: rarity-based styling, Hold-to-Buy mechanic, Fitting Room preview, UnlockAnimation, CyberItemCard with scanlines, and a tabbed layout. However, the experience still feels like a standard e-commerce page rather than a true in-game store.
 
-## Solution
-
-Treat Super Goal cards as visually identical to their regular counterparts, with one distinctive addition: a premium "SUPER" tag that combines the Crown icon and text into a single, eye-catching badge.
-
----
-
-## Changes Per View
-
-### 1. Grid View (SuperGoalGridCard.tsx)
-- **Image area**: Use the same image/placeholder logic as `GridViewGoalCard` -- show `goal.image_url` if available, otherwise show an `ImageOff` placeholder (not a giant Crown)
-- **Remove**: The separate gold border glow overlay, the large Crown in the image area, and the small Crown in the glass panel header
-- **"SUPER" tag**: Replace the current amber badge in the top-right with a distinctive tag placed in the glass panel's header row (where regular cards show tags). The tag uses a gold gradient background with a small inline Crown icon: `[Crown] SUPER`. Give it a shimmer/glow effect to stand out
-- **Size**: Already matches regular grid cards (max-w-340, aspect 4/5) -- no change needed
-
-### 2. Bar View (SuperGoalBarCard.tsx)
-- **Image area**: Accept an `image_url` prop. Show the image in the frame if available, Crown placeholder only if no image (same as regular BarViewGoalCard shows Target placeholder)
-- **"SUPER" tag**: Keep it inline in the `.tags-row` but restyle it as a distinctive gold gradient pill (matching the new tag design) with a small inline Crown icon. Same size as the difficulty tag
-- **Size**: Already matches regular bar cards (max-w-680, 120px) -- no change needed
-
-### 3. Bookmark View (SuperGoalBookmarkCard.tsx)
-- **Image area**: Accept an `image_url` prop. Show the image in the top section if available, otherwise show a gradient with Target/Crown placeholder (same as regular UIVerseGoalCard)
-- **"SUPER" tag**: Remove it from the top-right corner. Place it **below the card name** as a centered, distinctive gold gradient badge with Crown icon
-- **Size**: Already matches regular bookmark cards (210x280) -- no change needed
+### Key Weaknesses Identified
+- **Shop.tsx header** is flat text -- no immersive "entering the shop" feeling
+- **ShopTabs** are plain pills with no gaming personality
+- **CosmeticShop** uses a desktop sidebar layout that breaks on mobile and feels static
+- **CyberItemCard** has scanlines/grid but lacks dynamic hover interactions (no 3D tilt, no particle trails, no rarity shimmer on borders)
+- **DailyDealCard** is a basic horizontal card -- should feel urgent and premium like a "featured item" showcase
+- **BundleCard** is functional but flat -- no visual hierarchy between rarities
+- **WishlistPanel** and **PurchaseHistory** are plain list UIs with no gamified flavor
+- **UnlockAnimation** plays a basic burst -- could be more cinematic with rarity-specific effects
+- **ShopBondDisplay** is a simple pill -- should feel like a HUD currency counter
+- **No ambient effects** -- no floating particles, no background pulse on tab changes
+- **No "Featured/Spotlight" hero banner** at the top of the Cosmetics tab
 
 ---
 
-## The "SUPER" Tag Design (shared across all 3 views)
+## Improvement Plan (8 Phases)
 
-A distinctive tag that truly stands out from difficulty and regular tags:
-- Gold gradient background (`linear-gradient(135deg, #b8860b, #fbbf24, #b8860b)`)
-- White text (for contrast against gold)
-- Small Crown icon (10-12px) inline before the text
-- Subtle gold glow/box-shadow: `0 0 8px rgba(251, 191, 36, 0.5)`
-- Same font-size and padding as difficulty tags for visual harmony
-- A subtle inner glossy highlight (matching the difficulty badge pattern in Bookmark view)
+### Phase 1: Immersive Shop Header and HUD Currency
 
----
+**Shop.tsx -- Cinematic Header**
+- Replace flat h1/subtitle with a full-width "shop entrance" hero banner
+- Add a subtle animated grid/circuit-board background behind the title
+- Title rendered with animated gradient shimmer (left-to-right sweep)
+- Tagline uses a typewriter-style reveal on mount
+- Add floating particle emitters (2-3 slow-moving orbs) behind the header
 
-## Props Changes
+**ShopBondDisplay -- HUD-Style Currency Counter**
+- Redesign as a "holographic HUD" element with animated border segments
+- Bond balance animates (count-up) when it changes
+- Add a subtle pulse glow when balance is low (< 500 bonds)
+- Show a small "+Buy" button that switches to the Bonds tab
 
-All three variants need an optional `image_url?: string` prop added to their interfaces. This will be passed from `GoalsList.tsx` where we have access to the full `goal` object. Currently the super goal rendering in `GoalsList.tsx` only passes limited props -- we'll add `imageUrl={goal.image_url}` to the `SuperGoalCard` call.
+### Phase 2: Premium Tab Navigation
+
+**ShopTabs -- Game Menu Style**
+- Replace pill bar with segmented HUD-style tabs featuring:
+  - Active tab gets an animated underline beam (left-to-right sweep)
+  - Icon gets a glow effect when active
+  - Tab labels use Orbitron font with letter-spacing animation on hover
+  - Add a subtle "click" haptic-style scale animation on tab change
+  - Wishlist tab heart icon pulses when count > 0
+
+### Phase 3: Featured Spotlight Section (New Component)
+
+**ShopSpotlight.tsx (NEW)**
+- Large hero card at the top of the Cosmetics tab (replaces current plain DailyDeals position)
+- Full-width card featuring the rarest/most expensive item with:
+  - Large preview image/frame with parallax-on-hover effect
+  - Rarity-specific animated border (rainbow shimmer for legendary)
+  - Countdown timer with dramatic styling
+  - "FEATURED" holographic badge
+  - One-click "Quick Buy" or "Preview" CTA
+
+### Phase 4: CyberItemCard V2 -- 3D Hover and Rarity Shimmer
+
+**CyberItemCard.tsx -- Visual Upgrade**
+- Add CSS perspective + rotateX/rotateY on mouse move for 3D tilt effect
+- Legendary/Epic cards get animated gradient border shimmer (rotating conic-gradient)
+- On hover: card slightly lifts (translateZ), inner glow intensifies, item name gets text-shadow
+- Rarity badge becomes a glowing chip with animated dot
+- Price display: Bond icon gets a micro-spin animation
+- "BUY" button replaced with a mini Hold-to-Buy bar for consistency
+- Owned state: display a holographic "ACQUIRED" stamp overlay instead of just opacity reduction
+
+### Phase 5: Daily Deals and Bundles -- Premium Showcase
+
+**DailyDealsSection.tsx -- Urgent & Cinematic**
+- Section header gets a pulsing "LIVE" dot + animated countdown timer
+- Cards arranged in a horizontal scroll carousel (snap scrolling) instead of vertical stack
+- Each deal card gets a "glitch" text effect on the discount percentage
+- Timer display with flip-clock style digits
+
+**BundlesSection.tsx -- Loot Crate Aesthetic**
+- Bundle cards redesigned as "crate" visuals with a 3D box perspective
+- Items inside shown as stacked layers with a peek/reveal animation on hover
+- Savings amount displayed as a glowing "VALUE" badge
+- Legendary bundles get particle effects around the card border
+
+### Phase 6: Wishlist and History -- Gamified Lists
+
+**WishlistPanel.tsx -- Inventory Style**
+- Redesign as a "mission loadout" interface
+- Items displayed in a grid (2 columns) instead of a plain list
+- Each item gets a mini rarity border glow
+- "Can afford" items get a pulsing green indicator
+- Add a "Total Cost" summary bar at the bottom with a "Buy All Affordable" button
+- Empty state: animated hologram placeholder
+
+**PurchaseHistory.tsx -- Mission Log**
+- Redesign as a "transaction ledger" with terminal-style rows
+- Dates shown as "mission timestamps" with monospace font
+- Add subtle scan-line animation across the list
+- Earning transactions get a green "CREDIT" tag, spending gets amber "DEBIT"
+- Summary cards at bottom get animated count-up numbers
+
+### Phase 7: Enhanced Purchase Flow
+
+**PurchaseConfirmModal.tsx -- Dramatic Confirmation**
+- Add a rarity-specific background animation (particle field)
+- Item preview area gets a spotlight/glow effect
+- Price breakdown uses animated number transitions
+- "Confirm" button replaced with HoldPurchaseButton for consistency across all purchase flows
+- Add a "Balance Warning" threshold indicator when purchase leaves < 100 bonds
+
+**UnlockAnimation.tsx -- Cinematic Reveal**
+- Stage 1 (burst): Screen flash + shockwave ring expanding outward
+- Stage 2 (reveal): Item materializes with a "digital assembly" effect (scanlines converging)
+- Stage 3 (complete): Rarity-specific confetti (gold for legendary, purple sparks for epic)
+- Add rarity-specific sound variations (deeper/more dramatic for higher rarity)
+- Show "+1 [item type]" floating text that fades up
+
+### Phase 8: Ambient Effects and Polish
+
+**Global Shop Atmosphere**
+- Add a subtle vignette overlay to the shop page edges
+- CyberBackground gets shop-specific configuration (slower particles, rarity-colored based on active tab)
+- Tab transitions use a brief "static/glitch" flash effect
+- Scroll position triggers parallax on background elements
+- Add a subtle ambient hum/drone sound option (respecting sound settings)
 
 ---
 
 ## Technical Details
 
-### Files to Edit
+### Files Modified
+| File | Change |
+|---|---|
+| `src/pages/Shop.tsx` | Header redesign, vignette overlay, ambient config |
+| `src/components/shop/ShopTabs.tsx` | HUD beam tabs, glow effects, animations |
+| `src/components/shop/ShopBondDisplay.tsx` | HUD counter, count-up animation, low-balance pulse |
+| `src/components/shop/CyberItemCard.tsx` | 3D tilt, shimmer borders, ACQUIRED stamp, enhanced hover |
+| `src/components/shop/CosmeticShop.tsx` | Integrate Spotlight, responsive sidebar |
+| `src/components/shop/DailyDealsSection.tsx` | Carousel layout, flip timer, glitch discount |
+| `src/components/shop/DailyDealCard.tsx` | Urgent styling, flip-clock timer |
+| `src/components/shop/BundlesSection.tsx` | Crate aesthetic, particle borders |
+| `src/components/shop/BundleCard.tsx` | 3D crate look, hover reveal, VALUE badge |
+| `src/components/shop/WishlistPanel.tsx` | Grid layout, loadout style, "Buy All" button |
+| `src/components/shop/PurchaseHistory.tsx` | Terminal ledger, scan-lines, animated counters |
+| `src/components/shop/PurchaseConfirmModal.tsx` | Hold-to-Buy integration, particle bg, spotlight |
+| `src/components/shop/UnlockAnimation.tsx` | Shockwave, digital assembly, rarity confetti |
 
-1. **`src/components/goals/super/SuperGoalGridCard.tsx`**
-   - Add `imageUrl?: string | null` to props interface
-   - Replace Crown hero section with regular image/placeholder logic (same as GridViewGoalCard)
-   - Remove the gold border overlay div
-   - Move "SUPER" tag into the glass panel header row as a gold gradient badge with inline Crown icon
-   - Remove standalone Crown icon from glass panel header
+### New Files
+| File | Purpose |
+|---|---|
+| `src/components/shop/ShopSpotlight.tsx` | Featured item hero banner with parallax |
 
-2. **`src/components/goals/super/SuperGoalBarCard.tsx`**
-   - Add `imageUrl?: string | null` to props interface
-   - Update image-frame to show `img` when imageUrl exists, Crown placeholder otherwise
-   - Restyle `.super-tag` as a gold gradient pill with white text and inline Crown icon, matching difficulty-tag sizing
+### Dependencies
+- No new packages needed -- all effects built with existing `framer-motion`, Tailwind CSS, and vanilla CSS
 
-3. **`src/components/goals/super/SuperGoalBookmarkCard.tsx`**
-   - Add `imageUrl?: string | null` to props interface
-   - Update top section to show image when available (same pattern as UIVerseGoalCard)
-   - Remove "SUPER" badge from top-right
-   - Add "SUPER" tag below the card name as a centered gold gradient badge
-
-4. **`src/components/goals/super/SuperGoalCard.tsx`**
-   - Add `imageUrl?: string | null` to the router props interface
-   - Pass it through to each variant
-
-5. **`src/components/goals/GoalsList.tsx`**
-   - Pass `imageUrl={goal.image_url}` to the `SuperGoalCard` component
-
+### Implementation Order
+Phases 1-2 first (header + tabs = immediate visual impact), then 4 (cards = most visible), then 3 + 5 (sections), then 6-7 (flows), then 8 (polish).
