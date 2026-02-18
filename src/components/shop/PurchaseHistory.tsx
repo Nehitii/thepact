@@ -1,129 +1,191 @@
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { History, ArrowDownLeft, ArrowUpRight, Package, Sparkles, Star, Gift } from "lucide-react";
+import { History, ArrowDownLeft, ArrowUpRight, Package, Sparkles, Star, Terminal } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAllTransactions, PurchaseHistoryItem } from "@/hooks/usePurchaseHistory";
 import { BondIcon } from "@/components/ui/bond-icon";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
+function AnimatedCounter({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+  const prev = useRef(0);
+
+  useEffect(() => {
+    const start = prev.current;
+    const diff = value - start;
+    if (diff === 0) { setDisplay(value); return; }
+    const steps = 20;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      setDisplay(Math.round(start + diff * (step / steps)));
+      if (step >= steps) { clearInterval(timer); setDisplay(value); prev.current = value; }
+    }, 30);
+    return () => clearInterval(timer);
+  }, [value]);
+
+  return <>{display.toLocaleString()}</>;
+}
 
 export function PurchaseHistory() {
   const { user } = useAuth();
   const { data: transactions = [], isLoading } = useAllTransactions(user?.id);
-  
+
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-2">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="h-16 rounded-xl bg-card/30 animate-pulse" />
+          <div key={i} className="h-12 rounded-lg bg-card/30 animate-pulse" />
         ))}
       </div>
     );
   }
-  
+
   if (transactions.length === 0) {
     return (
-      <div className="text-center py-12">
-        <History className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-        <h3 className="font-orbitron text-lg text-foreground mb-2">No Transactions Yet</h3>
-        <p className="text-sm text-muted-foreground">
-          Your purchase and earning history will appear here
+      <div className="text-center py-16">
+        <motion.div
+          className="w-16 h-16 mx-auto mb-4 rounded-full border-2 flex items-center justify-center"
+          style={{ borderColor: "hsl(var(--primary) / 0.15)", background: "hsl(var(--primary) / 0.03)" }}
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 3, repeat: Infinity }}
+        >
+          <Terminal className="w-7 h-7 text-muted-foreground/40" />
+        </motion.div>
+        <h3 className="font-orbitron text-sm text-foreground mb-1 tracking-wider">No Transactions</h3>
+        <p className="text-xs text-muted-foreground font-rajdhani">
+          Your transaction ledger will appear here
         </p>
       </div>
     );
   }
-  
+
   const getIcon = (item: PurchaseHistoryItem) => {
-    if (item.transaction_type === "earn" || item.amount > 0) {
-      return <ArrowDownLeft className="w-4 h-4 text-emerald-400" />;
-    }
-    
+    if (item.transaction_type === "earn" || item.amount > 0) return <ArrowDownLeft className="w-3.5 h-3.5" style={{ color: "hsl(142 70% 50%)" }} />;
     switch (item.reference_type) {
-      case "bundle":
-        return <Package className="w-4 h-4 text-purple-400" />;
-      case "module":
-        return <Star className="w-4 h-4 text-amber-400" />;
-      case "cosmetic":
-        return <Sparkles className="w-4 h-4 text-blue-400" />;
-      default:
-        return <ArrowUpRight className="w-4 h-4 text-rose-400" />;
+      case "bundle": return <Package className="w-3.5 h-3.5" style={{ color: "hsl(270 80% 60%)" }} />;
+      case "module": return <Star className="w-3.5 h-3.5" style={{ color: "hsl(45 100% 60%)" }} />;
+      case "cosmetic": return <Sparkles className="w-3.5 h-3.5 text-primary" />;
+      default: return <ArrowUpRight className="w-3.5 h-3.5" style={{ color: "hsl(350 80% 55%)" }} />;
     }
   };
-  
-  const formatAmount = (amount: number) => {
-    if (amount > 0) {
-      return `+${amount}`;
-    }
-    return amount.toString();
-  };
-  
+
+  const totalEarned = transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+  const totalSpent = Math.abs(transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0));
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-6">
-        <History className="w-5 h-5 text-primary" />
-        <h2 className="font-orbitron text-lg text-foreground">Transaction History</h2>
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Terminal className="w-4 h-4 text-primary" />
+        <h2 className="font-orbitron text-sm text-foreground tracking-wider">Transaction Ledger</h2>
+        <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+          {transactions.length} records
+        </span>
       </div>
-      
-      <ScrollArea className="h-[400px] pr-4">
-        <div className="space-y-3">
-          {transactions.map((tx, index) => (
-            <motion.div
-              key={tx.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-              className="flex items-center gap-4 p-4 rounded-xl bg-card/30 border border-primary/10 hover:border-primary/20 transition-colors"
-            >
-              {/* Icon */}
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                tx.amount > 0 
-                  ? "bg-emerald-500/20 border border-emerald-500/30"
-                  : "bg-rose-500/10 border border-rose-500/20"
-              }`}>
-                {getIcon(tx)}
-              </div>
-              
-              {/* Details */}
-              <div className="flex-1 min-w-0">
-                <div className="font-rajdhani font-medium text-foreground truncate">
-                  {tx.description || (tx.amount > 0 ? "Earned Bonds" : "Purchase")}
+
+      {/* Terminal-style ledger */}
+      <ScrollArea className="h-[380px]">
+        <div
+          className="relative rounded-lg border overflow-hidden"
+          style={{
+            borderColor: "hsl(var(--primary) / 0.15)",
+            background: "hsl(var(--card) / 0.4)",
+          }}
+        >
+          {/* Scan-line animation */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
+            <div
+              className="absolute w-full h-[1px]"
+              style={{
+                background: "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.6), transparent)",
+                animation: "scan-line 5s linear infinite",
+              }}
+            />
+          </div>
+
+          {/* Rows */}
+          {transactions.map((tx, index) => {
+            const isCredit = tx.amount > 0;
+            const color = isCredit ? "hsl(142 70% 50%)" : "hsl(350 80% 55%)";
+
+            return (
+              <motion.div
+                key={tx.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.03 }}
+                className="flex items-center gap-3 px-4 py-2.5 border-b hover:bg-primary/[0.03] transition-colors"
+                style={{ borderColor: "hsl(var(--primary) / 0.06)" }}
+              >
+                {/* Timestamp */}
+                <span className="text-[9px] font-mono text-muted-foreground/60 w-[70px] shrink-0 tabular-nums">
+                  {format(new Date(tx.created_at), "dd/MM HH:mm")}
+                </span>
+
+                {/* Icon */}
+                <div
+                  className="w-6 h-6 shrink-0 rounded flex items-center justify-center"
+                  style={{ background: color + "12" }}
+                >
+                  {getIcon(tx)}
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(tx.created_at), { addSuffix: true })}
+
+                {/* Description */}
+                <div className="flex-1 min-w-0 text-xs font-rajdhani text-foreground/80 truncate">
+                  {tx.description || (isCredit ? "Earned Bonds" : "Purchase")}
                 </div>
-              </div>
-              
-              {/* Amount */}
-              <div className={`flex items-center gap-1 font-orbitron font-bold ${
-                tx.amount > 0 ? "text-emerald-400" : "text-rose-400"
-              }`}>
-                <BondIcon size={16} />
-                {formatAmount(tx.amount)}
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Type tag */}
+                <span
+                  className="shrink-0 px-1.5 py-0.5 rounded text-[8px] font-orbitron font-bold tracking-widest uppercase"
+                  style={{
+                    color,
+                    background: color + "12",
+                  }}
+                >
+                  {isCredit ? "Credit" : "Debit"}
+                </span>
+
+                {/* Amount */}
+                <span
+                  className="shrink-0 w-[60px] text-right text-xs font-orbitron font-bold tabular-nums flex items-center justify-end gap-0.5"
+                  style={{ color }}
+                >
+                  <BondIcon size={12} />
+                  {isCredit ? "+" : ""}{tx.amount}
+                </span>
+              </motion.div>
+            );
+          })}
         </div>
       </ScrollArea>
-      
-      {/* Summary */}
-      <div className="pt-4 border-t border-primary/10">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-            <div className="text-xs text-emerald-400/70 uppercase tracking-wider mb-1">
-              Total Earned
-            </div>
-            <div className="flex items-center gap-2 text-xl font-orbitron font-bold text-emerald-400">
-              <BondIcon size={18} />
-              {transactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0)}
-            </div>
+
+      {/* Summary with animated counters */}
+      <div className="grid grid-cols-2 gap-3">
+        <div
+          className="p-3 rounded-lg border"
+          style={{ borderColor: "hsl(142 70% 50% / 0.15)", background: "hsl(142 70% 50% / 0.05)" }}
+        >
+          <div className="text-[9px] font-orbitron tracking-[0.15em] uppercase mb-1" style={{ color: "hsl(142 70% 50% / 0.6)" }}>
+            Total Earned
           </div>
-          <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20">
-            <div className="text-xs text-rose-400/70 uppercase tracking-wider mb-1">
-              Total Spent
-            </div>
-            <div className="flex items-center gap-2 text-xl font-orbitron font-bold text-rose-400">
-              <BondIcon size={18} />
-              {Math.abs(transactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0))}
-            </div>
+          <div className="flex items-center gap-1.5 text-lg font-orbitron font-bold" style={{ color: "hsl(142 70% 50%)" }}>
+            <BondIcon size={16} />
+            <AnimatedCounter value={totalEarned} />
+          </div>
+        </div>
+        <div
+          className="p-3 rounded-lg border"
+          style={{ borderColor: "hsl(350 80% 55% / 0.15)", background: "hsl(350 80% 55% / 0.05)" }}
+        >
+          <div className="text-[9px] font-orbitron tracking-[0.15em] uppercase mb-1" style={{ color: "hsl(350 80% 55% / 0.6)" }}>
+            Total Spent
+          </div>
+          <div className="flex items-center gap-1.5 text-lg font-orbitron font-bold" style={{ color: "hsl(350 80% 55%)" }}>
+            <BondIcon size={16} />
+            <AnimatedCounter value={totalSpent} />
           </div>
         </div>
       </div>
