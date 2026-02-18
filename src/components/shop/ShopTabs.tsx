@@ -20,43 +20,87 @@ const tabs = [
 
 export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabsProps) {
   return (
-    <div className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl overflow-x-auto hide-scrollbar">
+    <div className="relative flex gap-0.5 p-1 rounded-lg bg-card/40 border border-primary/15 backdrop-blur-xl overflow-x-auto hide-scrollbar">
+      {/* Subtle grid overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.03] rounded-lg"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      />
+
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
-        
+        const isWishlistFull = tab.id === "wishlist" && wishlistCount > 0;
+
         return (
-          <button
+          <motion.button
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
-            className={`relative flex-1 flex items-center justify-center gap-2 py-3 px-3 sm:px-4 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300 whitespace-nowrap ${
-              isActive 
-                ? "text-primary" 
+            whileTap={{ scale: 0.96 }}
+            className={`relative flex-1 flex items-center justify-center gap-2 py-2.5 px-3 sm:px-4 rounded-md font-orbitron text-[10px] sm:text-xs font-semibold tracking-wider uppercase transition-colors duration-200 whitespace-nowrap ${
+              isActive
+                ? "text-primary"
                 : "text-muted-foreground hover:text-primary/70"
             }`}
           >
+            {/* Active background + beam underline */}
             {isActive && (
-              <motion.div
-                layoutId="activeTab"
-                className="absolute inset-0 bg-primary/10 border border-primary/30 rounded-lg"
-                initial={false}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
+              <>
+                <motion.div
+                  layoutId="shopActiveTab"
+                  className="absolute inset-0 rounded-md"
+                  style={{
+                    background: "linear-gradient(180deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.04))",
+                    border: "1px solid hsl(var(--primary) / 0.25)",
+                  }}
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+                {/* Animated beam underline */}
+                <motion.div
+                  layoutId="shopTabBeam"
+                  className="absolute bottom-0 left-[20%] right-[20%] h-[2px] rounded-full"
+                  style={{
+                    background: "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)",
+                    boxShadow: "0 0 8px hsl(var(--primary) / 0.6), 0 0 16px hsl(var(--primary) / 0.3)",
+                  }}
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                />
+              </>
             )}
+
+            {/* Icon with glow */}
             {tab.isImage ? (
-              <BondIcon size={16} className="relative z-10" />
+              <BondIcon
+                size={15}
+                className={`relative z-10 transition-all duration-200 ${isActive ? "drop-shadow-[0_0_6px_hsl(var(--primary)/0.8)]" : ""}`}
+              />
             ) : Icon ? (
-              <Icon className={`w-4 h-4 relative z-10 ${tab.id === 'wishlist' && wishlistCount > 0 ? 'text-rose-400' : ''}`} />
+              <Icon
+                className={`w-3.5 h-3.5 relative z-10 transition-all duration-200 ${
+                  isActive ? "drop-shadow-[0_0_6px_hsl(var(--primary)/0.8)]" : ""
+                } ${isWishlistFull ? "text-rose-400" : ""}`}
+              />
             ) : null}
+
             <span className="relative z-10 hidden sm:block">{tab.label}</span>
-            
-            {/* Wishlist badge */}
-            {tab.id === 'wishlist' && wishlistCount > 0 && (
-              <span className="relative z-10 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full bg-rose-500/20 text-rose-400 text-xs font-bold">
-                {wishlistCount > 9 ? '9+' : wishlistCount}
-              </span>
+
+            {/* Wishlist badge with pulse */}
+            {isWishlistFull && (
+              <motion.span
+                className="relative z-10 min-w-[16px] h-[16px] flex items-center justify-center px-1 rounded-full bg-rose-500/20 text-rose-400 text-[9px] font-bold"
+                animate={{ scale: [1, 1.15, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                {wishlistCount > 9 ? "9+" : wishlistCount}
+              </motion.span>
             )}
-          </button>
+          </motion.button>
         );
       })}
     </div>
