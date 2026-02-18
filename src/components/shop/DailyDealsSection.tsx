@@ -16,36 +16,27 @@ export function DailyDealsSection() {
   const { data: ownedModules = [] } = useUserModulePurchases(user?.id);
   const purchaseCosmetic = usePurchaseCosmetic();
   const purchaseModule = usePurchaseModule();
-  
+
   const [selectedDeal, setSelectedDeal] = useState<DailyDealWithItem | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showUnlock, setShowUnlock] = useState(false);
   const [unlockedItem, setUnlockedItem] = useState<{ name: string; rarity: string; type: "cosmetic" | "module" } | null>(null);
-  
+
   const isOwned = (deal: DailyDealWithItem) => {
-    if (deal.item_type === "module") {
-      return ownedModules.includes(deal.item_id);
-    }
-    if (deal.item_type === "cosmetic_frame") {
-      return ownedCosmetics?.frames.includes(deal.item_id) || false;
-    }
-    if (deal.item_type === "cosmetic_banner") {
-      return ownedCosmetics?.banners.includes(deal.item_id) || false;
-    }
-    if (deal.item_type === "cosmetic_title") {
-      return ownedCosmetics?.titles.includes(deal.item_id) || false;
-    }
+    if (deal.item_type === "module") return ownedModules.includes(deal.item_id);
+    if (deal.item_type === "cosmetic_frame") return ownedCosmetics?.frames.includes(deal.item_id) || false;
+    if (deal.item_type === "cosmetic_banner") return ownedCosmetics?.banners.includes(deal.item_id) || false;
+    if (deal.item_type === "cosmetic_title") return ownedCosmetics?.titles.includes(deal.item_id) || false;
     return false;
   };
-  
+
   const handlePurchaseClick = (deal: DailyDealWithItem) => {
     setSelectedDeal(deal);
     setShowConfirm(true);
   };
-  
+
   const handleConfirmPurchase = () => {
     if (!user || !selectedDeal) return;
-    
     const onSuccess = () => {
       setShowConfirm(false);
       setUnlockedItem({
@@ -55,7 +46,6 @@ export function DailyDealsSection() {
       });
       setShowUnlock(true);
     };
-    
     if (selectedDeal.item_type === "module") {
       purchaseModule.mutate(
         { userId: user.id, moduleId: selectedDeal.item_id, price: selectedDeal.discounted_price },
@@ -69,11 +59,9 @@ export function DailyDealsSection() {
       );
     }
   };
-  
-  if (isLoading || deals.length === 0) {
-    return null; // Don't show section if no deals
-  }
-  
+
+  if (isLoading || deals.length === 0) return null;
+
   const purchaseItem: PurchaseItem | null = selectedDeal ? {
     id: selectedDeal.item_id,
     name: selectedDeal.item?.name || "Daily Deal",
@@ -82,32 +70,42 @@ export function DailyDealsSection() {
     type: selectedDeal.item_type === "module" ? "module" : "cosmetic",
     originalPrice: selectedDeal.item?.price,
   } : null;
-  
+
   return (
     <div className="space-y-4 mb-8">
+      {/* Header with LIVE dot */}
       <div className="flex items-center gap-2">
+        <div className="relative flex items-center gap-1.5">
+          <motion.div
+            className="w-2 h-2 rounded-full"
+            style={{ background: "hsl(0 90% 55%)" }}
+            animate={{ opacity: [1, 0.3, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          />
+          <span className="text-[10px] font-orbitron tracking-[0.2em] uppercase" style={{ color: "hsl(0 90% 55%)" }}>
+            Live
+          </span>
+        </div>
         <motion.div
           animate={{ rotate: [0, 10, -10, 0] }}
           transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
         >
-          <Zap className="w-5 h-5 text-amber-400" />
+          <Zap className="w-4 h-4" style={{ color: "hsl(45 100% 60%)" }} />
         </motion.div>
-        <h2 className="font-orbitron text-lg text-foreground tracking-wide">
+        <h2 className="font-orbitron text-base text-foreground tracking-wide">
           Daily Deals
         </h2>
-        <div className="flex items-center gap-1 ml-2 text-xs text-amber-400/70">
-          <Clock className="w-3 h-3" />
-          <span>Refreshes daily</span>
-        </div>
       </div>
-      
-      <div className="grid gap-4">
+
+      {/* Horizontal snap-scroll carousel */}
+      <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
         {deals.map((deal, index) => (
           <motion.div
             key={deal.id}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
+            className="min-w-[340px] sm:min-w-[400px] flex-shrink-0 snap-start"
           >
             <DailyDealCard
               deal={deal}
@@ -118,8 +116,7 @@ export function DailyDealsSection() {
           </motion.div>
         ))}
       </div>
-      
-      {/* Purchase confirmation */}
+
       {purchaseItem && (
         <PurchaseConfirmModal
           isOpen={showConfirm}
@@ -130,15 +127,11 @@ export function DailyDealsSection() {
           isPurchasing={purchaseCosmetic.isPending || purchaseModule.isPending}
         />
       )}
-      
-      {/* Unlock animation */}
+
       {unlockedItem && (
         <UnlockAnimation
           isOpen={showUnlock}
-          onComplete={() => {
-            setShowUnlock(false);
-            setUnlockedItem(null);
-          }}
+          onComplete={() => { setShowUnlock(false); setUnlockedItem(null); }}
           itemName={unlockedItem.name}
           itemType={unlockedItem.type}
           rarity={unlockedItem.rarity}
