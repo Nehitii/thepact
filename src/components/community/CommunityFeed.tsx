@@ -1,19 +1,36 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Users, RefreshCw, Activity } from "lucide-react";
+import { Plus, Users, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CommunityPostCard } from "./CommunityPostCard";
 import { CreatePostModal } from "./CreatePostModal";
 import { PostFilters } from "./PostFilters";
-import { useCommunityPosts, useCommunityStats, PostFilterType, PostSortOption } from "@/hooks/useCommunity";
+import { useCommunityPosts, PostFilterType, PostSortOption } from "@/hooks/useCommunity";
 import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 export function CommunityFeed() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filter, setFilter] = useState<PostFilterType>('all');
   const [sort, setSort] = useState<PostSortOption>('recent');
   const { user } = useAuth();
+  const { data: profile } = useQuery({
+    queryKey: ["my-community-profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name, avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user,
+    staleTime: 60 * 1000,
+  });
 
   const {
     data,
@@ -25,54 +42,38 @@ export function CommunityFeed() {
     isRefetching,
   } = useCommunityPosts(filter, sort);
 
-  const { data: stats } = useCommunityStats();
-
   const allPosts = data?.pages.flatMap((page) => page.posts) || [];
 
-  return (
-    <div className="space-y-6">
-      {/* Header with stats */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Users className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h2 className="font-orbitron text-lg font-semibold">Community Feed</h2>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              {stats && (
-                <>
-                  <span className="flex items-center gap-1">
-                    <Activity className="w-3 h-3" />
-                    {stats.activeMembers} active
-                  </span>
-                  <span>•</span>
-                  <span>{stats.postsThisWeek} posts this week</span>
-                </>
-              )}
-              {!stats && <span>Share reflections, progress, and support</span>}
-            </div>
-          </div>
-        </div>
+  const displayName = profile?.display_name || "You";
+  const initials = displayName.slice(0, 2).toUpperCase();
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-            className="border-border/50"
+  return (
+    <div className="space-y-5">
+      {/* Compose bar */}
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="w-full flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 cursor-pointer transition-all hover:shadow-md hover:shadow-primary/5 group"
           >
-            <RefreshCw className={`w-4 h-4 ${isRefetching ? 'animate-spin' : ''}`} />
-          </Button>
-          {user && (
-            <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              New Post
-            </Button>
-          )}
-        </div>
-      </div>
+            <Avatar className="w-9 h-9 ring-2 ring-primary/20 shrink-0">
+              <AvatarImage src={profile?.avatar_url || undefined} />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold font-orbitron">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <span className="flex-1 text-left text-sm text-muted-foreground group-hover:text-foreground/60 transition-colors">
+              Share a reflection, progress update, or request support…
+            </span>
+            <span className="shrink-0 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-full shadow-sm shadow-primary/25 font-mono tracking-wide">
+              + POST
+            </span>
+          </button>
+        </motion.div>
+      )}
 
       {/* Filters */}
       <PostFilters
@@ -81,6 +82,20 @@ export function CommunityFeed() {
         activeSort={sort}
         onSortChange={setSort}
       />
+
+      {/* Refresh */}
+      <div className="flex justify-end">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => refetch()}
+          disabled={isRefetching}
+          className="gap-1.5 text-xs text-muted-foreground"
+        >
+          <RefreshCw className={`w-3 h-3 ${isRefetching ? 'animate-spin' : ''}`} />
+          Refresh
+        </Button>
+      </div>
 
       {/* Posts list */}
       {isLoading ? (

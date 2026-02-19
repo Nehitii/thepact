@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, ChevronDown, Trophy, Film, Plus } from "lucide-react";
+import { ChevronUp, ChevronDown, Trophy, Film, Plus, Play, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VictoryReelCard } from "./VictoryReelCard";
 import { CreateReelModal } from "./CreateReelModal";
@@ -9,11 +9,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Card, CardContent } from "@/components/ui/card";
-import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
+
+const thumbGradients = [
+  "from-indigo-950 via-indigo-900 to-blue-800",
+  "from-emerald-950 via-emerald-900 to-teal-800",
+  "from-red-950 via-red-900 to-rose-800",
+  "from-purple-950 via-purple-900 to-violet-800",
+];
 
 export function VictoryReelsFeed() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -130,84 +135,107 @@ export function VictoryReelsFeed() {
   return (
     <div className="relative">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <Film className="w-5 h-5 text-primary" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-base shadow-md shadow-primary/25">
+            🏆
           </div>
-          <div>
-            <h2 className="font-orbitron text-lg font-semibold">Victory Reels</h2>
-            <p className="text-sm text-muted-foreground">Celebrate completed goals</p>
-          </div>
+          <span className="font-orbitron text-base font-bold tracking-wide">Victory Reels</span>
         </div>
 
         {user && (
-          <Button onClick={() => setShowCreateModal(true)} variant="outline" className="gap-2">
-            <Plus className="w-4 h-4" />
-            Share Victory
+          <Button onClick={() => setShowCreateModal(true)} variant="outline" className="gap-2 font-mono text-xs border-border/50">
+            🎬 Share Victory
           </Button>
         )}
       </div>
 
-      {/* Desktop: card-based scrollable list */}
+      {/* Desktop: 2-column grid */}
       {!isMobile ? (
-        <div className="space-y-4">
-          {reels.map((reel) => {
+        <div className="grid grid-cols-2 gap-4">
+          {reels.map((reel, index) => {
             const isDiscoverable = reel.profile?.community_profile_discoverable ?? true;
             const displayName = isDiscoverable ? (reel.profile?.display_name || "Anonymous") : "Anonymous";
             const avatarUrl = isDiscoverable ? reel.profile?.avatar_url || undefined : undefined;
+            const initials = displayName.slice(0, 2).toUpperCase();
+            const gradientClass = thumbGradients[index % thumbGradients.length];
 
             return (
-              <Card key={reel.id} className="bg-card/80 backdrop-blur-sm border-border/50 overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="flex flex-col sm:flex-row">
-                    {/* Video preview */}
-                    <div className="sm:w-72 h-48 sm:h-auto bg-black flex-shrink-0">
-                      <video
-                        src={reel.video_url}
-                        poster={reel.thumbnail_url || undefined}
-                        className="w-full h-full object-cover"
-                        controls
-                        preload="metadata"
-                      />
-                    </div>
-                    {/* Info */}
-                    <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-2">
-                          <Avatar className="w-8 h-8 ring-1 ring-primary/20">
-                            <AvatarImage src={avatarUrl} />
-                            <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                              {displayName.slice(0, 2).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <span className="text-sm font-medium">{displayName}</span>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(reel.created_at), { addSuffix: true })}
-                            </p>
-                          </div>
-                        </div>
-                        {reel.goal?.name && (
-                          <Badge variant="outline" className="mb-2 bg-primary/10 text-primary border-primary/30">
-                            <Trophy className="w-3 h-3 mr-1" />
-                            {reel.goal.name}
-                          </Badge>
-                        )}
-                        {reel.caption && (
-                          <p className="text-sm text-foreground line-clamp-2">{reel.caption}</p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span>{reel.view_count} views</span>
-                        <span>❤️ {reel.reactions_count?.support || 0}</span>
-                        <span>🏆 {reel.reactions_count?.respect || 0}</span>
-                        <span>✨ {reel.reactions_count?.inspired || 0}</span>
-                      </div>
-                    </div>
+              <motion.div
+                key={reel.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="rounded-2xl border border-border/50 overflow-hidden bg-card group cursor-pointer hover:border-primary/30 hover:-translate-y-1 transition-all hover:shadow-xl hover:shadow-primary/10"
+              >
+                {/* Thumbnail */}
+                <div className={cn(
+                  "relative h-44 bg-gradient-to-br flex items-center justify-center overflow-hidden",
+                  gradientClass
+                )}>
+                  {/* Grid pattern overlay */}
+                  <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                      backgroundImage: 'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
+                      backgroundSize: '24px 24px',
+                    }}
+                  />
+
+                  {/* Trophy badge */}
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-semibold z-10">
+                    🏆 COMPLETED
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Play button */}
+                  <div className="w-13 h-13 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center z-10 group-hover:bg-primary group-hover:border-primary group-hover:shadow-lg group-hover:shadow-primary/30 group-hover:scale-110 transition-all">
+                    <Play className="w-5 h-5 text-white fill-white ml-0.5" />
+                  </div>
+
+                  {/* Duration */}
+                  {reel.duration_seconds > 0 && (
+                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-[11px] font-mono text-muted-foreground z-10">
+                      {Math.floor(reel.duration_seconds / 60)}:{(reel.duration_seconds % 60).toString().padStart(2, '0')}
+                    </div>
+                  )}
+                </div>
+
+                {/* Body */}
+                <div className="p-4">
+                  {/* User row */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <Avatar className="w-7 h-7">
+                      <AvatarImage src={avatarUrl} />
+                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-orbitron font-bold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-semibold text-foreground">{displayName}</span>
+                    <span className="text-[10px] text-muted-foreground font-mono ml-auto">
+                      {formatDistanceToNow(new Date(reel.created_at), { addSuffix: true })}
+                    </span>
+                  </div>
+
+                  {/* Goal title */}
+                  {reel.goal?.name && (
+                    <div className="text-sm font-semibold text-foreground mb-1 line-clamp-1">{reel.goal.name}</div>
+                  )}
+
+                  {/* Caption */}
+                  {reel.caption && (
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{reel.caption}</p>
+                  )}
+
+                  {/* Stats row */}
+                  <div className="flex gap-3 text-[11px] font-mono text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" /> <span className="text-foreground/70">{reel.view_count}</span>
+                    </span>
+                    <span>💪 <span className="text-foreground/70">{reel.reactions_count?.support || 0}</span></span>
+                    <span>⚡ <span className="text-foreground/70">{reel.reactions_count?.inspired || 0}</span></span>
+                  </div>
+                </div>
+              </motion.div>
             );
           })}
         </div>

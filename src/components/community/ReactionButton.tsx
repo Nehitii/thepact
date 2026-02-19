@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Heart, Trophy, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ReactionType = 'support' | 'respect' | 'inspired';
@@ -12,58 +11,47 @@ interface ReactionButtonProps {
   size?: 'sm' | 'md';
 }
 
-const reactionConfig: Record<ReactionType, { icon: typeof Heart; label: string; activeClass: string }> = {
+const reactionConfig: Record<ReactionType, { emoji: string; label: string; activeClasses: string }> = {
   support: {
-    icon: Heart,
+    emoji: "💪",
     label: "Support",
-    activeClass: "text-rose-500 fill-rose-500"
+    activeClasses: "bg-emerald-500/15 border-emerald-500/50 text-emerald-300"
   },
   respect: {
-    icon: Trophy,
+    emoji: "🫡",
     label: "Respect",
-    activeClass: "text-amber-500 fill-amber-500"
+    activeClasses: "bg-amber-500/15 border-amber-500/50 text-amber-300"
   },
   inspired: {
-    icon: Sparkles,
+    emoji: "⚡",
     label: "Inspired",
-    activeClass: "text-primary fill-primary"
+    activeClasses: "bg-violet-500/15 border-violet-500/50 text-violet-300"
   }
 };
 
 export function ReactionButton({ type, count, isActive, onToggle, size = 'md' }: ReactionButtonProps) {
   const config = reactionConfig[type];
-  const Icon = config.icon;
-  
-  const iconSize = size === 'sm' ? 14 : 18;
-  
+
   return (
     <motion.button
       onClick={onToggle}
       whileTap={{ scale: 0.9 }}
       className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all",
-        "bg-muted/50 hover:bg-muted border border-border/50",
-        size === 'sm' && "px-2 py-1 gap-1"
+        "flex items-center gap-1.5 rounded-full transition-all border font-medium",
+        size === 'sm' ? "px-2 py-1 gap-1 text-[10px]" : "px-3.5 py-1.5 text-xs",
+        isActive
+          ? config.activeClasses
+          : "bg-card border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
       )}
     >
-      <motion.div
+      <motion.span
         animate={isActive ? { scale: [1, 1.3, 1] } : {}}
         transition={{ duration: 0.3 }}
+        className="text-sm"
       >
-        <Icon 
-          className={cn(
-            "transition-colors",
-            isActive ? config.activeClass : "text-muted-foreground"
-          )}
-          size={iconSize}
-        />
-      </motion.div>
-      <span className={cn(
-        "text-xs font-medium",
-        isActive ? "text-foreground" : "text-muted-foreground"
-      )}>
-        {count > 0 ? count : config.label}
-      </span>
+        {config.emoji}
+      </motion.span>
+      <span>{count > 0 ? count : config.label}</span>
     </motion.button>
   );
 }
