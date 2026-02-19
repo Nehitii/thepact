@@ -1,6 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Rank } from "@/hooks/useRankXP";
-import { useEffect, useRef, useState } from "react";
 
 interface CurrentRankBadgeProps {
   rank: Rank | null;
@@ -19,157 +21,103 @@ export function CurrentRankBadge({
   className,
   hideProgress = false,
 }: CurrentRankBadgeProps) {
-  const rankName = rank?.name || "Novice";
-  const frameColor = rank?.frame_color || "#6b7280";
-  const [animated, setAnimated] = useState(false);
-  const barRef = useRef<HTMLDivElement>(null);
+  const rankName = rank?.name ?? "Novice";
+  const frameColor = rank?.frame_color ?? "#6b7280";
 
-  // Trigger animation on mount
+  // Defer bar animation to avoid mount-flash glitch
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 100);
-    return () => clearTimeout(t);
+    const id = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(id);
   }, []);
 
-  // Derive a dimmed/glow version of the frame color
-  const glowColor = frameColor + "55"; // ~33% alpha for glow
-  const dimColor = frameColor + "22"; // subtle tint bg
+  // Derived colours — all from frameColor, computed once
+  const c = {
+    full: frameColor,
+    glow: `${frameColor}88`,
+    mid: `${frameColor}44`,
+    dim: `${frameColor}18`,
+    text: `${frameColor}cc`,
+  };
 
   return (
-    <div
-      className={cn("relative flex flex-col gap-0 select-none", className)}
-      style={{ fontFamily: "'Orbitron', 'Share Tech Mono', monospace" }}
-    >
-      {/* ── Top Row ─────────────────────────────────────────── */}
+    <div className={cn("flex flex-col gap-2", className)}>
+      {/* ── Name + Level row ──────────────────────────────── */}
       <div className="flex items-center gap-3">
-        {/* Decorative left accent bar */}
+        {/* Vertical accent bar */}
         <div
-          className="w-[3px] h-8 rounded-full flex-shrink-0"
+          className="w-[3px] h-7 rounded-full shrink-0"
           style={{
-            background: `linear-gradient(to bottom, ${frameColor}, transparent)`,
-            boxShadow: `0 0 8px ${frameColor}`,
+            background: `linear-gradient(to bottom, ${c.full}, transparent)`,
+            boxShadow: `0 0 8px ${c.glow}`,
           }}
         />
 
-        {/* Rank name with glow */}
+        {/* Rank name */}
         <span
-          className="font-black text-lg md:text-xl tracking-[0.15em] uppercase leading-none"
+          className="font-orbitron font-black text-base md:text-lg tracking-[0.15em] uppercase leading-none"
           style={{
-            color: frameColor,
-            textShadow: `0 0 12px ${glowColor}, 0 0 24px ${glowColor}`,
-            letterSpacing: "0.15em",
+            color: c.full,
+            filter: `drop-shadow(0 0 8px ${c.glow})`,
           }}
         >
           {rankName}
         </span>
 
-        {/* Level badge — clipped hexagonal shape via clip-path */}
-        <div className="relative flex-shrink-0 ml-1">
-          <div
-            className="relative px-2.5 py-[3px] text-[9px] font-black tracking-[0.2em] uppercase"
-            style={{
-              color: frameColor,
-              background: dimColor,
-              border: `1px solid ${frameColor}55`,
-              clipPath: "polygon(6px 0%, calc(100% - 6px) 0%, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0% 50%)",
-              boxShadow: `inset 0 0 8px ${glowColor}`,
-            }}
-          >
-            LVL&nbsp;{level}
-          </div>
+        {/* Level chip — parallelogram shape */}
+        <div
+          className="px-2.5 py-[3px] font-orbitron font-black text-[9px] tracking-[0.2em] uppercase shrink-0"
+          style={{
+            color: c.full,
+            background: c.dim,
+            border: `1px solid ${c.mid}`,
+            clipPath: "polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%)",
+          }}
+        >
+          LVL {level}
         </div>
       </div>
 
-      {/* ── Progress Bar ─────────────────────────────────────── */}
+      {/* ── Progress bar ──────────────────────────────────── */}
       {!hideProgress && (
-        <div className="mt-3 flex flex-col gap-1.5">
-          {/* XP label + percentage */}
-          <div className="flex items-center justify-between px-[2px]">
-            <span className="text-[9px] tracking-[0.2em] uppercase opacity-60" style={{ color: frameColor }}>
-              XP Progress
-            </span>
-            <span
-              className="text-[9px] tracking-[0.1em] font-bold tabular-nums"
-              style={{ color: frameColor, opacity: 0.8 }}
-            >
-              {Math.round(progressToNext)}%
-            </span>
-          </div>
-
+        <div className="flex flex-col gap-1.5 pl-[7px]">
           {/* Track */}
           <div
-            className="relative h-[6px] w-full rounded-none overflow-hidden"
+            className="relative h-[5px] w-full overflow-hidden"
             style={{
-              background: dimColor,
-              boxShadow: `inset 0 0 0 1px ${frameColor}22`,
+              background: c.dim,
+              border: `1px solid ${c.mid}`,
+              clipPath: "polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%)",
             }}
           >
-            {/* Filled portion */}
+            {/* Fill */}
             <div
-              ref={barRef}
-              className="absolute inset-y-0 left-0 transition-[width] duration-[1200ms] ease-out"
+              className="absolute top-0 bottom-0 left-0"
               style={{
-                width: animated ? `${progressToNext}%` : "0%",
-                background: `linear-gradient(90deg, ${frameColor}88, ${frameColor})`,
-                boxShadow: `0 0 8px ${frameColor}, 0 0 16px ${glowColor}`,
+                width: mounted ? `${progressToNext}%` : "0%",
+                transition: mounted ? "width 1s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+                background: `linear-gradient(90deg, ${c.mid}, ${c.full})`,
+                boxShadow: `0 0 6px ${c.glow}`,
               }}
             />
-
-            {/* Animated shimmer sweep */}
-            <div
-              className="absolute inset-y-0 left-0 pointer-events-none"
-              style={{
-                width: animated ? `${progressToNext}%` : "0%",
-                transition: "width 1200ms ease-out",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                className="absolute inset-y-0 w-12"
-                style={{
-                  background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)`,
-                  animation: "shimmer-sweep 2.4s ease-in-out 0.8s infinite",
-                }}
-              />
-            </div>
-
-            {/* Tick marks every 25% */}
-            {[25, 50, 75].map((pct) => (
-              <div
-                key={pct}
-                className="absolute top-0 bottom-0 w-px"
-                style={{
-                  left: `${pct}%`,
-                  background: `${frameColor}33`,
-                }}
-              />
-            ))}
           </div>
 
-          {/* Segment dots */}
-          <div className="flex justify-between px-[1px]">
-            {[0, 25, 50, 75, 100].map((pct) => (
+          {/* Dot indicators */}
+          <div className="flex justify-between">
+            {[0, 25, 50, 75, 100].map((t) => (
               <div
-                key={pct}
-                className="w-[5px] h-[5px] rounded-full transition-all duration-700"
+                key={t}
+                className="w-[5px] h-[5px] rounded-full"
                 style={{
-                  background: progressToNext >= pct ? frameColor : `${frameColor}22`,
-                  boxShadow: progressToNext >= pct ? `0 0 6px ${frameColor}` : "none",
-                  transitionDelay: `${pct * 8}ms`,
+                  background: progressToNext >= t ? c.full : c.dim,
+                  boxShadow: progressToNext >= t ? `0 0 5px ${c.full}` : "none",
+                  transition: "background 0.5s, box-shadow 0.5s",
                 }}
               />
             ))}
           </div>
         </div>
       )}
-
-      {/* Shimmer keyframe injection */}
-      <style>{`
-        @keyframes shimmer-sweep {
-          0%   { transform: translateX(-100%); }
-          60%  { transform: translateX(350%); }
-          100% { transform: translateX(350%); }
-        }
-      `}</style>
     </div>
   );
 }
