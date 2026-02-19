@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Target, ChevronDown, ChevronUp, Flag, Pencil, Trash2, Check, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -28,13 +28,13 @@ interface CommunityPostCardProps {
   post: CommunityPost;
 }
 
-const postTypeBorderColors: Record<CommunityPost['post_type'], string> = {
-  reflection: 'border-l-blue-400/60',
-  progress: 'border-l-amber-400/60',
-  obstacle: 'border-l-red-400/60',
-  mindset: 'border-l-violet-400/60',
-  help_request: 'border-l-orange-400/60',
-  encouragement: 'border-l-emerald-400/60',
+const postTypeGradients: Record<CommunityPost['post_type'], { top: string; bottom: string; glowRgba: string }> = {
+  reflection:    { top: '#3b82f6', bottom: '#1d4ed8', glowRgba: '59,130,246' },
+  progress:      { top: '#f59e0b', bottom: '#d97706', glowRgba: '245,158,11' },
+  obstacle:      { top: '#f43f5e', bottom: '#be123c', glowRgba: '244,63,94' },
+  mindset:       { top: '#a855f7', bottom: '#7c3aed', glowRgba: '168,85,247' },
+  help_request:  { top: '#fb923c', bottom: '#ea580c', glowRgba: '251,146,60' },
+  encouragement: { top: '#10b981', bottom: '#059669', glowRgba: '16,185,129' },
 };
 
 export function CommunityPostCard({ post }: CommunityPostCardProps) {
@@ -45,6 +45,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const [replyFocused, setReplyFocused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const { data: replies, isLoading: repliesLoading } = usePostReplies(showReplies ? post.id : undefined);
   const addReaction = useAddReaction();
@@ -56,6 +57,14 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
 
   const isOwner = user?.id === post.user_id;
   const isEdited = post.updated_at !== post.created_at;
+
+  const gradient = postTypeGradients[post.post_type];
+
+  const cardStyle = useMemo(() => ({
+    borderLeft: `3px solid transparent`,
+    borderImage: `linear-gradient(to bottom, ${gradient.top}, ${gradient.bottom}) 1`,
+    boxShadow: isHovered ? `0 8px 40px rgba(0,0,0,0.4), -4px 0 20px rgba(${gradient.glowRgba}, 0.12)` : undefined,
+  }), [gradient, isHovered]);
 
   const handleReaction = (type: 'support' | 'respect' | 'inspired') => {
     if (!user) return;
@@ -105,16 +114,18 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className={cn(
-        "bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors border-l-4",
-        postTypeBorderColors[post.post_type]
-      )}>
+      <Card
+        className="bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/20 transition-all rounded-2xl overflow-hidden"
+        style={cardStyle}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <CardContent className="p-5">
           {/* Header */}
           <div className="flex items-start gap-3 mb-4">
             <Avatar className="w-10 h-10 ring-2 ring-primary/20">
               <AvatarImage src={avatarUrl} />
-              <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium font-orbitron">
                 {initials}
               </AvatarFallback>
             </Avatar>
@@ -122,16 +133,16 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-foreground">{displayName}</span>
+                <span className="text-xs text-muted-foreground font-mono">
+                  · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                </span>
+              </div>
+              <div className="mt-1">
                 <PostTypeTag type={post.post_type} />
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-muted-foreground">
-                  {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                </span>
-                {isEdited && (
-                  <span className="text-xs text-muted-foreground/60 italic">• edited</span>
-                )}
-              </div>
+              {isEdited && (
+                <span className="text-[10px] text-muted-foreground/60 italic font-mono">edited</span>
+              )}
             </div>
 
             {/* Actions menu */}
@@ -154,17 +165,6 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
             </div>
           </div>
 
-          {/* Goal link (denormalized) */}
-          {post.goal_name && canShowGoals && (
-            <div className="mb-3 flex items-center gap-2 p-2 rounded-lg bg-muted/50 border border-border/50">
-              <Target className="w-4 h-4 text-primary" />
-              <span className="text-sm text-muted-foreground">Linked to:</span>
-              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                {post.goal_name}
-              </Badge>
-            </div>
-          )}
-
           {/* Content (editable) */}
           {isEditing ? (
             <div className="space-y-2 mb-4">
@@ -184,9 +184,19 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
               </div>
             </div>
           ) : (
-            <p className="text-foreground leading-relaxed mb-4 whitespace-pre-wrap">
+            <p className="text-foreground/90 leading-relaxed mb-4 whitespace-pre-wrap text-sm">
               {post.content}
             </p>
+          )}
+
+          {/* Goal link (denormalized) */}
+          {post.goal_name && canShowGoals && (
+            <div className="mb-4 flex items-center gap-2 p-2.5 rounded-xl bg-muted/50 border border-border/50 hover:border-primary/30 transition-colors cursor-pointer">
+              <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
+                <Target className="w-3 h-3 text-primary" />
+              </div>
+              <span className="text-sm font-medium text-foreground/80">{post.goal_name}</span>
+            </div>
           )}
 
           {/* Reactions and replies */}
@@ -210,16 +220,12 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
               onToggle={() => handleReaction('inspired')}
             />
 
-            <Button
-              variant="ghost"
-              size="sm"
+            <button
               onClick={() => setShowReplies(!showReplies)}
-              className="ml-auto gap-1.5 text-muted-foreground hover:text-foreground"
+              className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-mono px-2 py-1.5 rounded-lg transition-colors"
             >
-              <MessageCircle className="w-4 h-4" />
-              {post.replies_count || 0}
-              {showReplies ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </Button>
+              💬 {post.replies_count || 0}
+            </button>
           </div>
 
           {/* Replies section */}
@@ -253,7 +259,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
                           <div className="flex-1 bg-muted/50 rounded-lg p-2.5">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="text-sm font-medium">{replyName}</span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-xs text-muted-foreground font-mono">
                                 {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
                               </span>
                               {isReplyOwner && (
