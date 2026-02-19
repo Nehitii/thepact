@@ -61,7 +61,7 @@ export function FinanceOverviewCard({
         </div>
 
         {/* Stats Grid */}
-        <div className={`grid gap-4 mb-8 ${isCustomMode ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
+        <div className={`grid gap-4 mb-8 ${isCustomMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
           {/* Total Target */}
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
@@ -75,7 +75,7 @@ export function FinanceOverviewCard({
                 {isCustomMode ? 'Custom Target' : 'Total Target'}
               </span>
             </div>
-            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tabular-nums tracking-tight truncate">
+            <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight break-all">
               {formatCurrency(totalEstimated, currency)}
             </p>
             {isCustomMode && (
@@ -102,7 +102,7 @@ export function FinanceOverviewCard({
                     Financed
                   </span>
                 </div>
-                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-400 tabular-nums tracking-tight truncate">
+                <p className="text-2xl sm:text-3xl font-bold text-emerald-400 tabular-nums tracking-tight break-all">
                   {formatCurrency(totalPaid, currency)}
                 </p>
               </div>
@@ -124,7 +124,7 @@ export function FinanceOverviewCard({
                   Remaining
                 </span>
               </div>
-              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400 tabular-nums tracking-tight truncate">
+              <p className="text-2xl sm:text-3xl font-bold text-amber-400 tabular-nums tracking-tight break-all">
                 {formatCurrency(totalRemaining, currency)}
               </p>
             </div>
