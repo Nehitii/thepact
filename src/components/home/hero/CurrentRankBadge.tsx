@@ -19,7 +19,6 @@ function deriveColors(hex: string) {
     glow: `${hex}99`,
     mid: `${hex}44`,
     dim: `${hex}18`,
-    text: `${hex}99`,
   };
 }
 
@@ -35,20 +34,68 @@ export function CurrentRankBadge({
   const frameColor = rank?.frame_color ?? "#6b7280";
   const c = deriveColors(frameColor);
 
-  // double rAF: avoids mount flash on transition
+  // double rAF avoids mount-flash on CSS transition
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setMounted(true)));
     return () => cancelAnimationFrame(id);
   }, []);
 
+  // Scoped class name so multiple instances don't clash
+  const uid = `crb-${rankName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+
   return (
     <div className={cn("flex flex-col gap-2.5 select-none", className)}>
-      {/* ── Rank name + Level ──────────────────────────────── */}
+      {/* ── Glitch CSS — real class so ::before/::after + attr(data-text) work ── */}
+      <style>{`
+        .${uid} {
+          position: relative;
+          display: inline-block;
+        }
+        .${uid}::before,
+        .${uid}::after {
+          content: attr(data-text);
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%;
+          overflow: hidden;
+          opacity: 0;
+          font: inherit;
+          color: inherit;
+          letter-spacing: inherit;
+          text-transform: inherit;
+          pointer-events: none;
+        }
+        .${uid}::before {
+          color: #ff003c;
+          clip-path: polygon(0 18%, 100% 18%, 100% 42%, 0 42%);
+          animation: ${uid}-g1 5.5s infinite;
+        }
+        .${uid}::after {
+          color: #00d4ff;
+          clip-path: polygon(0 58%, 100% 58%, 100% 80%, 0 80%);
+          animation: ${uid}-g2 5.5s infinite;
+        }
+        @keyframes ${uid}-g1 {
+          0%,87%,100% { opacity:0; transform:none; }
+          89%  { opacity:.75; transform:translateX(-3px); }
+          91%  { opacity:0; }
+          93%  { opacity:.5; transform:translateX(2px); }
+          95%  { opacity:0; }
+        }
+        @keyframes ${uid}-g2 {
+          0%,87%,100% { opacity:0; transform:none; }
+          90%  { opacity:.65; transform:translateX(3px); }
+          92%  { opacity:0; }
+          94%  { opacity:.45; transform:translateX(-2px); }
+          96%  { opacity:0; }
+        }
+      `}</style>
+
+      {/* ── Name + Level row ──────────────────────────────── */}
       <div className="flex items-center gap-3">
-        {/* Accent column: top diamond + gradient bar */}
-        <div className="flex flex-col items-center gap-0 shrink-0" style={{ width: 3 }}>
-          {/* Diamond pip */}
+        {/* Accent column: diamond pip + gradient bar */}
+        <div className="flex flex-col items-center shrink-0" style={{ width: 3 }}>
           <div
             style={{
               width: 7,
@@ -56,10 +103,8 @@ export function CurrentRankBadge({
               background: frameColor,
               clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
               boxShadow: `0 0 6px ${frameColor}`,
-              flexShrink: 0,
             }}
           />
-          {/* Bar */}
           <div
             style={{
               width: 3,
@@ -70,9 +115,9 @@ export function CurrentRankBadge({
           />
         </div>
 
-        {/* Name with periodic glitch */}
+        {/* Rank name with glitch via real CSS class */}
         <span
-          className="font-orbitron font-black text-base md:text-lg tracking-[0.15em] uppercase leading-none relative"
+          className={`${uid} font-orbitron font-black text-base md:text-lg tracking-[0.15em] uppercase leading-none`}
           data-text={rankName}
           style={{
             color: c.full,
@@ -80,32 +125,9 @@ export function CurrentRankBadge({
           }}
         >
           {rankName}
-          {/* CSS glitch ghost layers via pseudo — injected inline for portability */}
-          <style>{`
-            .rank-glitch::before, .rank-glitch::after {
-              content: attr(data-text);
-              position: absolute;
-              top: 0; left: 0;
-              overflow: hidden;
-            }
-            .rank-glitch::before {
-              color: #ff003c;
-              clip-path: polygon(0 20%, 100% 20%, 100% 45%, 0 45%);
-              animation: rg1 5s infinite;
-              opacity: 0;
-            }
-            .rank-glitch::after {
-              color: #00d4ff;
-              clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
-              animation: rg2 5s infinite;
-              opacity: 0;
-            }
-            @keyframes rg1 { 0%,88%,100%{opacity:0;transform:none} 90%{opacity:.7;transform:translateX(-3px)} 92%{opacity:0} 94%{opacity:.5;transform:translateX(2px)} 96%{opacity:0} }
-            @keyframes rg2 { 0%,88%,100%{opacity:0;transform:none} 91%{opacity:.6;transform:translateX(3px)} 93%{opacity:0} 95%{opacity:.4;transform:translateX(-2px)} 97%{opacity:0} }
-          `}</style>
         </span>
 
-        {/* Level chip */}
+        {/* Level chip — parallelogram */}
         <div
           className="font-orbitron font-black text-[9px] tracking-[0.22em] uppercase px-2.5 py-[4px] shrink-0"
           style={{
@@ -134,7 +156,6 @@ export function CurrentRankBadge({
               clipPath: "polygon(4px 0%, calc(100% - 4px) 0%, 100% 100%, 0% 100%)",
             }}
           >
-            {/* Fill */}
             <div
               className="absolute top-0 bottom-0 left-0"
               style={{
@@ -144,12 +165,11 @@ export function CurrentRankBadge({
                 boxShadow: `0 0 6px ${c.glow}`,
               }}
             >
-              {/* Top gloss */}
               <div
                 className="absolute top-0 left-0 right-0"
                 style={{
                   height: 1,
-                  background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)`,
+                  background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent)",
                 }}
               />
             </div>
