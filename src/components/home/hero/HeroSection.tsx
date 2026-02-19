@@ -119,8 +119,8 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
             </div>
           )}
 
-          <div className="flex justify-center">
-            <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} />
+          <div className="flex justify-center w-full">
+            <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} pact={pact} />
           </div>
         </motion.div>
 
