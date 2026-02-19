@@ -112,64 +112,140 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
             <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} />
           </div>
         </motion.div>
-
         {/* --- 2. RANK & XP --- */}
+        // APRÈS — colle ceci à la place
         <motion.div variants={itemVariants} className="w-full max-w-2xl relative">
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-cyan-500/10 rounded-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100 blur-md" />
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-black/60 backdrop-blur-md p-5 sm:p-6 shadow-2xl">
-            {/* Decorative corners */}
-            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-white/20 rounded-tl-xl" />
-            <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-white/20 rounded-tr-xl" />
-            <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-white/20 rounded-bl-xl" />
-            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-white/20 rounded-br-xl" />
-
-            <div className="flex items-end justify-between mb-4">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] text-cyan-400 font-orbitron uppercase tracking-widest flex items-center gap-2">
-                  <Trophy size={12} /> {t("home.hero.currentRank", "Current Rank")}
-                </span>
-                <CurrentRankBadge
-                  rank={currentRank}
-                  level={level}
-                  currentXP={currentXP}
-                  progressToNext={progressInCurrentRank}
-                  hideProgress={true}
-                  className="items-start scale-105 origin-left"
-                />
-              </div>
-              <div className="text-right flex flex-col items-end gap-1.5">
-                <span className="text-[10px] text-muted-foreground font-orbitron uppercase tracking-widest">
-                  {t("home.hero.nextTier", "Next Tier")}
-                </span>
-                <div className="flex items-center gap-2 text-white/90 font-bold font-orbitron text-sm">
-                  {nextRankName} <Zap size={14} className="text-amber-400 fill-amber-400 animate-pulse" />
-                </div>
-              </div>
-            </div>
-
-            <XPProgressBar
-              currentXP={currentXP}
-              currentRankXP={currentRankMin}
-              nextRankXP={nextRankMin}
-              nextRankName={nextRankName}
-              isMaxRank={isMaxRank}
-              frameColor={currentRank?.frame_color}
-              showLabels={false}
-              className="h-4"
+          {/* Panel cyberpunk — fond sombre, coin biseautés, scanlines */}
+          <div
+            className="relative overflow-hidden p-5 sm:p-6"
+            style={{
+              background: "linear-gradient(135deg, #0d2030 0%, #080f14 50%, #060c11 100%)",
+              border: "1px solid rgba(0,255,163,0.18)",
+              clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
+            }}
+          >
+            {/* Scanlines overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)",
+              }}
+            />
+            {/* Grid cyberpunk */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage:
+                  "linear-gradient(rgba(0,255,163,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,163,0.025) 1px, transparent 1px)",
+                backgroundSize: "40px 40px",
+              }}
+            />
+            {/* Coin accent top-right */}
+            <div
+              className="absolute top-0 right-0 pointer-events-none"
+              style={{
+                width: 0,
+                height: 0,
+                borderTop: "20px solid rgba(0,255,163,0.35)",
+                borderLeft: "20px solid transparent",
+                filter: "drop-shadow(0 0 4px rgba(0,255,163,0.6))",
+              }}
+            />
+            {/* Coin accent bottom-left */}
+            <div
+              className="absolute bottom-0 left-0 pointer-events-none"
+              style={{
+                width: 0,
+                height: 0,
+                borderBottom: "20px solid rgba(0,255,163,0.35)",
+                borderRight: "20px solid transparent",
+                filter: "drop-shadow(0 0 4px rgba(0,255,163,0.6))",
+              }}
+            />
+            {/* Ligne basse lumineuse */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-px pointer-events-none"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, rgba(0,255,163,0.5) 30%, rgba(0,255,163,0.9) 50%, rgba(0,255,163,0.5) 70%, transparent)",
+              }}
             />
 
-            <div className="flex justify-between mt-2 text-[10px] font-mono text-white/30">
-              <span>{currentXP.toLocaleString()} XP</span>
-              <span>{nextRankMin.toLocaleString()} XP</span>
+            {/* Contenu — relatif pour passer au-dessus des overlays */}
+            <div className="relative z-10">
+              <div className="flex items-end justify-between mb-4">
+                <div className="flex flex-col gap-1.5">
+                  <span
+                    className="text-[9px] font-orbitron uppercase tracking-[0.3em] flex items-center gap-2"
+                    style={{ color: "rgba(0,255,163,0.5)" }}
+                  >
+                    <Trophy size={10} /> {t("home.hero.currentRank", "Current Rank")}
+                  </span>
+                  <CurrentRankBadge
+                    rank={currentRank}
+                    level={level}
+                    currentXP={currentXP}
+                    progressToNext={progressInCurrentRank}
+                    hideProgress={true}
+                    className="items-start"
+                  />
+                </div>
+                <div className="text-right flex flex-col items-end gap-1.5">
+                  <span
+                    className="text-[9px] font-orbitron uppercase tracking-[0.3em]"
+                    style={{ color: "rgba(0,255,163,0.4)" }}
+                  >
+                    {t("home.hero.nextTier", "Next Tier")}
+                  </span>
+                  <div
+                    className="flex items-center gap-2 font-orbitron font-black text-sm tracking-wide"
+                    style={{ color: "#ffb400", filter: "drop-shadow(0 0 8px #ffb40088)" }}
+                  >
+                    {nextRankName}
+                    <div
+                      style={{
+                        width: 16,
+                        height: 16,
+                        background: "#ffb40020",
+                        border: "1px solid #ffb40055",
+                        clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Zap size={8} style={{ color: "#ffb400", fill: "#ffb400" }} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <XPProgressBar
+                currentXP={currentXP}
+                currentRankXP={currentRankMin}
+                nextRankXP={nextRankMin}
+                nextRankName={nextRankName}
+                isMaxRank={isMaxRank}
+                frameColor={currentRank?.frame_color ?? "#00ffa3"}
+                showLabels={false}
+              />
+
+              <div className="flex justify-between mt-2">
+                <span className="font-mono text-[10px] tabular-nums" style={{ color: "rgba(0,255,163,0.35)" }}>
+                  {currentXP.toLocaleString()} XP
+                </span>
+                <span className="font-mono text-[10px] tabular-nums" style={{ color: "rgba(0,255,163,0.35)" }}>
+                  {nextRankMin.toLocaleString()} XP
+                </span>
+              </div>
             </div>
           </div>
         </motion.div>
-
         {/* --- 3. MISSION RANDOMIZER --- */}
         <motion.div variants={itemVariants} className="w-full max-w-md">
           <MissionRandomizer allGoals={allGoals} />
         </motion.div>
-
         {/* --- 4. DOCK ACTIONS --- */}
         <motion.div variants={itemVariants} className="w-full sticky bottom-4 z-30">
           <QuickActionsBar ownedModules={ownedModules} />
