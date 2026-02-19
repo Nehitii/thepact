@@ -29,7 +29,7 @@ interface SmartMetrics {
 
 /**
  * Smart Optimization Engine - Intelligent project header
- * Calculates dynamic "Next Best Action" with time estimates and efficiency metrics
+ * Calculates dynamic "Next Best Action" based on real goal progress data
  */
 export function SmartProjectHeader({ 
   focusGoals, 
@@ -45,21 +45,6 @@ export function SmartProjectHeader({
       (sum, g) => sum + Math.max(0, (g.total_steps || 0) - (g.validated_steps || 0)), 
       0
     );
-    
-    // Estimated time calculation (15 min per step average)
-    const estimatedMinutes = totalStepsRemaining * 15;
-    const estimatedHours = Math.ceil(estimatedMinutes / 60);
-    const estimatedTimeText = estimatedHours >= 24 
-      ? `~${Math.ceil(estimatedHours / 24)}d`
-      : estimatedHours > 0 
-        ? `~${estimatedHours}h` 
-        : '<15min';
-
-    // Weekly efficiency calculation (mock - would use real historical data)
-    const completionRate = allGoals.length > 0 
-      ? Math.round((completedGoals.length / allGoals.length) * 100) 
-      : 0;
-    const efficiencyDelta = completionRate > 50 ? `+${completionRate - 50}%` : `${completionRate - 50}%`;
 
     // Priority 1: Finance validations pending (critical)
     if (pendingValidations > 0) {
@@ -80,16 +65,12 @@ export function SmartProjectHeader({
     const primaryFocus = focusGoals[0];
     if (primaryFocus) {
       const remainingSteps = Math.max(0, (primaryFocus.total_steps || 0) - (primaryFocus.validated_steps || 0));
-      const focusEstimate = remainingSteps * 15;
-      const focusTimeText = focusEstimate >= 60 
-        ? `~${Math.ceil(focusEstimate / 60)}h` 
-        : `~${focusEstimate}min`;
 
       if (remainingSteps > 0) {
         return {
           icon: Target,
           headline: `${remainingSteps} step${remainingSteps > 1 ? 's' : ''} on focus`,
-          subMetrics: [focusTimeText, 'Priority Target'],
+          subMetrics: [`${primaryFocus.validated_steps || 0}/${primaryFocus.total_steps || 0} steps done`, 'Priority Target'],
           colorClass: 'text-primary',
           bgClass: 'from-primary/20 via-primary/10 to-transparent',
           borderClass: 'border-primary/40',
@@ -118,7 +99,7 @@ export function SmartProjectHeader({
       return {
         icon: TrendingUp,
         headline: `${totalStepsRemaining} steps remaining`,
-        subMetrics: [estimatedTimeText, `${inProgressGoals.length} active goal${inProgressGoals.length > 1 ? 's' : ''}`],
+        subMetrics: [`${inProgressGoals.length} active goal${inProgressGoals.length > 1 ? 's' : ''}`, `${totalStepsRemaining} steps left`],
         colorClass: 'text-primary',
         bgClass: 'from-primary/20 via-primary/10 to-transparent',
         borderClass: 'border-primary/30',
@@ -127,12 +108,12 @@ export function SmartProjectHeader({
       };
     }
 
-    // Priority 4: All caught up - show efficiency
+    // Priority 4: All caught up
     if (completedGoals.length > 0) {
       return {
         icon: Zap,
-        headline: `Efficiency: ${efficiencyDelta} this week`,
-        subMetrics: [`${completedGoals.length} completed`, 'On track'],
+        headline: 'All goals completed!',
+        subMetrics: [`${completedGoals.length} goal${completedGoals.length > 1 ? 's' : ''} done`, 'Keep momentum'],
         colorClass: 'text-health',
         bgClass: 'from-health/20 via-health/10 to-transparent',
         borderClass: 'border-health/30',
