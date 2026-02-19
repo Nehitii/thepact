@@ -5,44 +5,62 @@ import { CommunityFeed } from "@/components/community/CommunityFeed";
 import { VictoryReelsFeed } from "@/components/community/VictoryReelsFeed";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
-import { useCommunityStats } from "@/hooks/useCommunity";
+import { useCommunityStats, useCommunityPosts } from "@/hooks/useCommunity";
 
 type CommunityTab = 'feed' | 'reels';
 
 function LiveTicker() {
   const { data: stats } = useCommunityStats();
-  const items = [
-    { emoji: "👥", label: "Active members", value: stats?.activeMembers ?? 0 },
-    { emoji: "📝", label: "Posts this week", value: stats?.postsThisWeek ?? 0 },
-    { emoji: "🏆", label: "Goals completed today", value: "—" },
-    { emoji: "⚡", label: "Reactions given", value: "—" },
-    { emoji: "🎬", label: "Victory Reels", value: "—" },
+  const { data: postsData } = useCommunityPosts('all', 'recent');
+  const allPosts = postsData?.pages.flatMap((page) => page.posts) || [];
+
+  // Build ticker items from real posts + stats
+  const postSnippets = allPosts.slice(0, 12).map((post) => {
+    const typeEmoji: Record<string, string> = {
+      reflection: '💡', progress: '📈', obstacle: '⚠️',
+      mindset: '🧠', help_request: '🆘', encouragement: '💚',
+    };
+    const snippet = post.content.length > 60 ? post.content.slice(0, 57) + '…' : post.content;
+    const name = post.profile?.display_name || 'Agent';
+    return { emoji: typeEmoji[post.post_type] || '📝', text: `${name}: "${snippet}"` };
+  });
+
+  const statsItems = [
+    { emoji: "👥", text: `Active members: ${stats?.activeMembers ?? 0}` },
+    { emoji: "📝", text: `Posts this week: ${stats?.postsThisWeek ?? 0}` },
   ];
 
+  const items = postSnippets.length > 0 ? [...postSnippets, ...statsItems] : [
+    ...statsItems,
+    { emoji: "🏆", text: "Goals completed today: —" },
+    { emoji: "⚡", text: "Reactions given: —" },
+    { emoji: "🎬", text: "Victory Reels: —" },
+  ];
+
+  // Duplicate for seamless infinite loop
   const tickerContent = [...items, ...items];
 
   return (
-    <div className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-xl"
+    <div className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-xl overflow-hidden"
       style={{ background: 'linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--card)) 100%)' }}
     >
-      <div className="flex items-center gap-2 px-6 py-2 overflow-hidden">
+      <div className="flex items-center gap-2 px-3 py-2 overflow-hidden">
         <div className="flex items-center gap-1.5 shrink-0">
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
           </span>
-          <span className="font-mono text-[11px] font-medium tracking-wider uppercase text-primary">NETWORK</span>
+          <span className="font-mono text-[10px] font-medium tracking-wider uppercase text-primary">LIVE</span>
         </div>
-        <div className="overflow-hidden flex-1">
+        <div className="overflow-hidden flex-1 min-w-0">
           <motion.div
             className="flex gap-8 whitespace-nowrap"
             animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: Math.max(20, items.length * 4), repeat: Infinity, ease: "linear" }}
           >
             {tickerContent.map((item, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
-                {item.emoji} {item.label}{" "}
-                <b className="text-foreground font-medium">{item.value}</b>
+              <span key={i} className="inline-flex items-center gap-1.5 font-mono text-[10px] text-muted-foreground">
+                {item.emoji} <span className="text-foreground/70">{item.text}</span>
               </span>
             ))}
           </motion.div>
@@ -63,12 +81,12 @@ export default function Community() {
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-hidden">
       <CyberBackground />
 
       <LiveTicker />
 
-      <div className="relative z-10 mx-auto px-4 pb-20 max-w-[760px]">
+      <div className="relative z-10 mx-auto px-3 sm:px-4 pb-20 max-w-2xl">
         {/* Hero Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -91,7 +109,7 @@ export default function Community() {
           </motion.div>
 
           <h1 className="font-orbitron font-black tracking-wider mb-3"
-            style={{ fontSize: 'clamp(28px, 6vw, 48px)', lineHeight: 1.1 }}
+            style={{ fontSize: 'clamp(24px, 5vw, 40px)', lineHeight: 1.1 }}
           >
             <span className="bg-clip-text text-transparent"
               style={{ backgroundImage: 'linear-gradient(135deg, #fff 0%, rgba(123,92,250,0.9) 40%, hsl(var(--primary)) 100%)' }}
