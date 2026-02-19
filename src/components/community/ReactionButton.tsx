@@ -41,13 +41,13 @@ export function ReactionButton({ type, count, isActive, onToggle, size = 'md' }:
         size === 'sm' ? "px-2 py-1 gap-1 text-[10px]" : "px-3.5 py-1.5 text-xs",
         isActive
           ? config.activeClasses
-          : "bg-card border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground"
+          : "bg-muted border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground hover:bg-primary/8"
       )}
     >
       <motion.span
         animate={isActive ? { scale: [1, 1.3, 1] } : {}}
         transition={{ duration: 0.3 }}
-        className="text-sm"
+        className={size === 'sm' ? "text-xs" : "text-sm"}
       >
         {config.emoji}
       </motion.span>

@@ -57,18 +57,18 @@ export function CommunityFeed() {
         >
           <button
             onClick={() => setShowCreateModal(true)}
-            className="w-full flex items-center gap-3 p-4 rounded-2xl bg-card border border-border/50 hover:border-primary/30 cursor-pointer transition-all hover:shadow-md hover:shadow-primary/5 group"
+            className="w-full flex items-center gap-3 p-3.5 px-[18px] rounded-2xl bg-card border border-border/50 hover:border-primary/30 cursor-pointer transition-all hover:shadow-[0_4px_20px_rgba(123,92,250,0.1)] group"
           >
             <Avatar className="w-9 h-9 ring-2 ring-primary/20 shrink-0">
               <AvatarImage src={profile?.avatar_url || undefined} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold font-orbitron">
+              <AvatarFallback className="bg-gradient-to-br from-indigo-950 to-indigo-900 text-indigo-300 text-xs font-bold font-orbitron">
                 {initials}
               </AvatarFallback>
             </Avatar>
-            <span className="flex-1 text-left text-sm text-muted-foreground group-hover:text-foreground/60 transition-colors">
+            <span className="flex-1 text-left text-sm text-muted-foreground">
               Share a reflection, progress update, or request support…
             </span>
-            <span className="shrink-0 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-full shadow-sm shadow-primary/25 font-mono tracking-wide">
+            <span className="shrink-0 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-full shadow-sm shadow-primary/25 font-mono tracking-wider">
               + POST
             </span>
           </button>
@@ -101,9 +101,9 @@ export function CommunityFeed() {
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="p-5 rounded-xl bg-card/50 border border-border/50 space-y-3">
+            <div key={i} className="p-5 rounded-[20px] bg-card border border-border/50 space-y-3">
               <div className="flex items-center gap-3">
-                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="w-[42px] h-[42px] rounded-full" />
                 <div className="space-y-1">
                   <Skeleton className="h-4 w-24" />
                   <Skeleton className="h-3 w-16" />
@@ -127,7 +127,7 @@ export function CommunityFeed() {
               hidden: { opacity: 0 },
               show: {
                 opacity: 1,
-                transition: { staggerChildren: 0.08 }
+                transition: { staggerChildren: 0.06 }
               }
             }}
           >
@@ -136,7 +136,6 @@ export function CommunityFeed() {
             ))}
           </motion.div>
 
-          {/* Load more */}
           {hasNextPage && (
             <div className="flex justify-center pt-2">
               <Button
@@ -154,7 +153,7 @@ export function CommunityFeed() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center py-16 px-6 rounded-xl bg-card/30 border border-dashed border-border/50"
+          className="text-center py-16 px-6 rounded-[20px] bg-card/30 border border-dashed border-border/50"
         >
           <Users className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
