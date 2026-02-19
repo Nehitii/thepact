@@ -9,38 +9,41 @@ import { useCommunityStats } from "@/hooks/useCommunity";
 
 type CommunityTab = "feed" | "reels";
 
+/* ── LIVE TICKER ──────────────────────────────────────────── */
 function LiveTicker() {
   const { data: stats } = useCommunityStats();
   const items = [
-    { emoji: "👥", label: "Active members", value: stats?.activeMembers ?? 0 },
-    { emoji: "📝", label: "Posts this week", value: stats?.postsThisWeek ?? 0 },
+    { emoji: "👥", label: "Active members", value: stats?.activeMembers ?? "—" },
+    { emoji: "📝", label: "Posts this week", value: stats?.postsThisWeek ?? "—" },
     { emoji: "🏆", label: "Goals completed today", value: "—" },
     { emoji: "⚡", label: "Reactions given", value: "—" },
     { emoji: "🎬", label: "Victory Reels", value: "—" },
   ];
-
-  const tickerContent = [...items, ...items];
+  const doubled = [...items, ...items];
 
   return (
     <div
-      className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-xl w-full overflow-hidden"
-      style={{ background: "linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--card)) 100%)" }}
+      className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-xl overflow-hidden"
+      style={{ background: "linear-gradient(90deg, hsl(var(--card)) 0%, hsl(var(--muted)/0.6) 100%)" }}
     >
-      <div className="flex items-center gap-2 px-4 sm:px-6 py-2 w-full">
+      <div className="flex items-center gap-3 px-6 py-2">
+        {/* Label */}
         <div className="flex items-center gap-1.5 shrink-0">
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
           </span>
-          <span className="font-mono text-[11px] font-medium tracking-wider uppercase text-primary">NETWORK</span>
+          <span className="font-mono text-[11px] font-medium tracking-widest uppercase text-primary">NETWORK</span>
         </div>
-        <div className="overflow-hidden flex-1 min-w-0">
+
+        {/* Scrolling ticker */}
+        <div className="overflow-hidden flex-1">
           <motion.div
             className="flex gap-8 whitespace-nowrap"
             animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
           >
-            {tickerContent.map((item, i) => (
+            {doubled.map((item, i) => (
               <span key={i} className="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
                 {item.emoji} {item.label} <b className="text-foreground font-medium">{item.value}</b>
               </span>
@@ -52,181 +55,202 @@ function LiveTicker() {
   );
 }
 
+/* ── STAT CARD ────────────────────────────────────────────── */
+function StatCard({ value, label, color }: { value: string | number; label: string; color?: "accent" | "violet" }) {
+  return (
+    <div className="relative bg-card border border-border/50 rounded-2xl p-4 text-center overflow-hidden transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 group cursor-default">
+      {/* Top shimmer line */}
+      <div
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-px"
+        style={{
+          background: "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)",
+        }}
+      />
+      <span
+        className={cn(
+          "block font-orbitron text-[22px] font-bold",
+          color === "accent" && "text-primary",
+          color === "violet" && "text-violet-400",
+          !color && "text-foreground",
+        )}
+      >
+        {value}
+      </span>
+      <span className="block font-mono text-[10px] text-muted-foreground uppercase tracking-[0.08em] mt-1">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+/* ── MODE BUTTON ──────────────────────────────────────────── */
+function ModeButton({
+  active,
+  emoji,
+  title,
+  desc,
+  count,
+  onClick,
+}: {
+  active: boolean;
+  emoji: string;
+  title: string;
+  desc: string;
+  count: string | number;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        "relative flex items-center gap-3.5 p-[18px] rounded-[18px] border text-left overflow-hidden transition-all duration-250 w-full",
+        active
+          ? "border-primary bg-gradient-to-br from-primary/12 to-card shadow-[0_0_0_1px_rgba(123,92,250,0.3),0_8px_32px_rgba(123,92,250,0.15),inset_0_1px_0_rgba(255,255,255,0.08)]"
+          : "border-border/50 bg-card hover:border-primary/25 hover:-translate-y-px",
+      )}
+    >
+      {/* Glow overlay when active */}
+      {active && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: "linear-gradient(135deg, rgba(123,92,250,0.12) 0%, transparent 60%)",
+          }}
+        />
+      )}
+
+      {/* Icon */}
+      <div
+        className={cn(
+          "relative z-10 w-[42px] h-[42px] rounded-xl flex items-center justify-center text-xl shrink-0 transition-all",
+          active ? "bg-primary shadow-[0_4px_16px_rgba(123,92,250,0.35)]" : "bg-muted",
+        )}
+      >
+        {emoji}
+      </div>
+
+      {/* Text */}
+      <div className="relative z-10 min-w-0">
+        <div
+          className={cn(
+            "font-orbitron text-[13px] font-semibold tracking-[0.03em]",
+            active ? "text-white" : "text-foreground",
+          )}
+        >
+          {title}
+        </div>
+        <div className="font-mono text-[11px] text-muted-foreground mt-0.5">{desc}</div>
+      </div>
+
+      {/* Count badge */}
+      <div
+        className={cn(
+          "absolute top-3 right-3.5 font-mono text-[10px] text-primary border border-primary/30 px-2 py-0.5 rounded-full",
+          active ? "bg-primary/25" : "bg-primary/8",
+        )}
+      >
+        {count}
+      </div>
+    </button>
+  );
+}
+
+/* ── MAIN PAGE ────────────────────────────────────────────── */
 export default function Community() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<CommunityTab>("feed");
   const { data: stats } = useCommunityStats();
 
-  const tabs: { id: CommunityTab; emoji: string; title: string; desc: string; count: number | string }[] = [
-    {
-      id: "feed",
-      emoji: "👥",
-      title: t("community.tabs.feed"),
-      desc: "reflections · progress · help",
-      count: stats?.postsThisWeek ?? 0,
-    },
-    { id: "reels", emoji: "🎬", title: t("community.tabs.reels"), desc: "celebrate completions", count: "—" },
-  ];
-
   return (
-    // 1. RACINE : Aucun overflow ici. Le sticky marchera sans encombre.
-    <div className="min-h-screen bg-background relative w-full flex flex-col min-w-0">
+    <div className="min-h-screen">
       <CyberBackground />
 
-      {/* 2. LE TICKER : Indépendant et libre de coller en haut */}
+      {/* Sticky ticker */}
       <LiveTicker />
 
-      {/* 3. LE BOUCLIER : Conteneur strict qui cache tout débordement horizontal */}
-      <div className="w-full overflow-hidden flex-1 min-w-0">
-        <div className="relative z-10 w-full mx-auto px-4 sm:px-6 pb-20 max-w-3xl">
-          {/* Hero Header */}
+      <div className="relative z-10 max-w-[760px] mx-auto px-4 pb-20">
+        {/* ── HERO ── */}
+        <div className="pt-12 pb-8 text-center">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/8 border border-primary/35 mb-5"
+          >
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
+            </span>
+            <span className="font-mono text-[11px] font-medium text-primary tracking-[0.1em] uppercase">
+              Neural Network · Live
+            </span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center pt-12 pb-8"
+            transition={{ delay: 0.1, duration: 0.5 }}
+            className="font-orbitron font-black text-[clamp(28px,6vw,48px)] leading-[1.1] tracking-[0.04em] mb-3"
+            style={{
+              background: "linear-gradient(135deg, #fff 0%, rgba(123,92,250,0.9) 40%, hsl(var(--primary)) 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
           >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/8 border border-primary/35 mb-5"
-            >
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-              </span>
-              <span className="font-mono text-[11px] font-medium tracking-[0.1em] uppercase text-primary">
-                NEURAL NETWORK · LIVE
-              </span>
-            </motion.div>
+            COMMUNITY HUB
+          </motion.h1>
 
-            <h1
-              className="font-orbitron font-black tracking-wider mb-3"
-              style={{ fontSize: "clamp(28px, 6vw, 48px)", lineHeight: 1.1 }}
-            >
-              <span
-                className="bg-clip-text text-transparent"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(135deg, #fff 0%, rgba(123,92,250,0.9) 40%, hsl(var(--primary)) 100%)",
-                }}
-              >
-                {t("community.title")}
-              </span>
-            </h1>
-            <p className="text-sm text-muted-foreground leading-relaxed">{t("community.subtitle")}</p>
-          </motion.div>
-
-          {/* Stats Row */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="grid grid-cols-3 gap-2 sm:gap-3 mb-7"
+            transition={{ delay: 0.15, duration: 0.5 }}
+            className="text-sm text-muted-foreground leading-relaxed"
           >
-            {[
-              { value: stats?.activeMembers ?? 0, label: "Online now", colorClass: "text-primary" },
-              { value: stats?.postsThisWeek ?? 0, label: "Posts / week", colorClass: "text-foreground" },
-              { value: "—", label: "Goals completed", colorClass: "text-violet-400" },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="relative bg-card border border-border/50 rounded-2xl p-2 sm:p-4 text-center overflow-hidden group hover:border-primary/30 transition-all hover:-translate-y-0.5 cursor-default"
-              >
-                {/* Top accent line */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/5 h-px bg-gradient-to-r from-transparent via-primary to-transparent" />
-                <span className={cn("font-orbitron text-[16px] sm:text-[22px] font-bold block", stat.colorClass)}>
-                  {stat.value}
-                </span>
-                <span className="font-mono text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wider mt-1 block truncate">
-                  {stat.label}
-                </span>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* Mode Switcher */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7"
-          >
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={cn(
-                    "relative text-left p-[18px] rounded-[18px] border transition-all overflow-hidden group",
-                    isActive
-                      ? "border-primary shadow-[0_0_0_1px_rgba(123,92,250,0.3),0_8px_32px_rgba(123,92,250,0.15)]"
-                      : "border-border/50 bg-card hover:border-primary/30 hover:-translate-y-px",
-                  )}
-                  style={
-                    isActive
-                      ? {
-                          background: "linear-gradient(135deg, rgba(123,92,250,0.12) 0%, hsl(var(--card)) 100%)",
-                        }
-                      : undefined
-                  }
-                >
-                  {/* Glow overlay for active */}
-                  {isActive && (
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/15 to-transparent pointer-events-none" />
-                  )}
-
-                  {/* Count badge */}
-                  <span
-                    className={cn(
-                      "absolute top-3 right-3.5 font-mono text-[10px] px-2 py-0.5 rounded-full border",
-                      isActive
-                        ? "bg-primary/25 border-primary/40 text-primary"
-                        : "bg-primary/8 border-primary/20 text-primary/70",
-                    )}
-                  >
-                    {tab.count}
-                  </span>
-
-                  <div className="relative z-10 flex items-center gap-3.5">
-                    <div
-                      className={cn(
-                        "w-[42px] h-[42px] rounded-xl flex items-center justify-center text-xl shrink-0 transition-all",
-                        isActive ? "bg-primary shadow-[0_4px_16px_rgba(123,92,250,0.25)]" : "bg-muted",
-                      )}
-                    >
-                      {tab.emoji}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div
-                        className={cn(
-                          "font-orbitron text-[13px] font-semibold tracking-wide truncate",
-                          isActive ? "text-white" : "text-foreground",
-                        )}
-                      >
-                        {tab.title}
-                      </div>
-                      <div className="font-mono text-[11px] text-muted-foreground mt-0.5 truncate">{tab.desc}</div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </motion.div>
-
-          {/* Content */}
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, x: activeTab === "feed" ? -20 : 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.3 }}
-            className="w-full"
-          >
-            {activeTab === "feed" ? <CommunityFeed /> : <VictoryReelsFeed />}
-          </motion.div>
+            Share your journey. Fuel others. Grow together.
+          </motion.p>
         </div>
+
+        {/* ── STATS ROW ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-3 gap-3 mb-7"
+        >
+          <StatCard value={stats?.activeMembers ?? "—"} label="Online now" color="accent" />
+          <StatCard value={stats?.postsThisWeek ?? "—"} label="Posts / week" />
+          <StatCard value="38" label="Goals completed" color="violet" />
+        </motion.div>
+
+        {/* ── MODE SWITCHER ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="grid grid-cols-2 gap-3 mb-7"
+        >
+          <ModeButton
+            active={activeTab === "feed"}
+            emoji="👥"
+            title={t("community.tabs.feed")}
+            desc="reflections · progress · help"
+            count={stats?.postsThisWeek ? `${Math.round(((stats.postsThisWeek as number) / 1000) * 10) / 10}K` : "—"}
+            onClick={() => setActiveTab("feed")}
+          />
+          <ModeButton
+            active={activeTab === "reels"}
+            emoji="🎬"
+            title={t("community.tabs.reels")}
+            desc="celebrate completions"
+            count="184"
+            onClick={() => setActiveTab("reels")}
+          />
+        </motion.div>
+
+        {/* ── PANELS ── */}
+        {activeTab === "feed" && <CommunityFeed />}
+        {activeTab === "reels" && <VictoryReelsFeed />}
       </div>
     </div>
   );

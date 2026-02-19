@@ -1,22 +1,23 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, Users, RefreshCw } from "lucide-react";
+import { Users, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CommunityPostCard } from "./CommunityPostCard";
 import { CreatePostModal } from "./CreatePostModal";
 import { PostFilters } from "./PostFilters";
 import { useCommunityPosts, PostFilterType, PostSortOption } from "@/hooks/useCommunity";
 import { useAuth } from "@/contexts/AuthContext";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 
 export function CommunityFeed() {
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [filter, setFilter] = useState<PostFilterType>('all');
-  const [sort, setSort] = useState<PostSortOption>('recent');
+  const [filter, setFilter] = useState<PostFilterType>("all");
+  const [sort, setSort] = useState<PostSortOption>("recent");
   const { user } = useAuth();
+
   const { data: profile } = useQuery({
     queryKey: ["my-community-profile", user?.id],
     queryFn: async () => {
@@ -32,29 +33,20 @@ export function CommunityFeed() {
     staleTime: 60 * 1000,
   });
 
-  const {
-    data,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-    isRefetching,
-  } = useCommunityPosts(filter, sort);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, refetch, isRefetching } = useCommunityPosts(
+    filter,
+    sort,
+  );
 
   const allPosts = data?.pages.flatMap((page) => page.posts) || [];
-
   const displayName = profile?.display_name || "You";
   const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <div className="space-y-5">
-      {/* Compose bar */}
+      {/* ── Compose bar ── */}
       {user && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <button
             onClick={() => setShowCreateModal(true)}
             className="w-full flex items-center gap-3 p-3.5 px-[18px] rounded-2xl bg-card border border-border/50 hover:border-primary/30 cursor-pointer transition-all hover:shadow-[0_4px_20px_rgba(123,92,250,0.1)] group"
@@ -65,25 +57,22 @@ export function CommunityFeed() {
                 {initials}
               </AvatarFallback>
             </Avatar>
+
             <span className="flex-1 text-left text-sm text-muted-foreground">
               Share a reflection, progress update, or request support…
             </span>
-            <span className="shrink-0 px-4 py-1.5 bg-primary text-primary-foreground text-xs font-semibold rounded-full shadow-sm shadow-primary/25 font-mono tracking-wider">
+
+            <span className="shrink-0 px-4 py-1.5 bg-primary text-white text-xs font-semibold rounded-full shadow-[0_2px_12px_rgba(123,92,250,0.35)] font-mono tracking-wider">
               + POST
             </span>
           </button>
         </motion.div>
       )}
 
-      {/* Filters */}
-      <PostFilters
-        activeFilter={filter}
-        onFilterChange={setFilter}
-        activeSort={sort}
-        onSortChange={setSort}
-      />
+      {/* ── Filters ── */}
+      <PostFilters activeFilter={filter} onFilterChange={setFilter} activeSort={sort} onSortChange={setSort} />
 
-      {/* Refresh */}
+      {/* ── Refresh button ── */}
       <div className="flex justify-end">
         <Button
           variant="ghost"
@@ -92,12 +81,12 @@ export function CommunityFeed() {
           disabled={isRefetching}
           className="gap-1.5 text-xs text-muted-foreground"
         >
-          <RefreshCw className={`w-3 h-3 ${isRefetching ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3 h-3 ${isRefetching ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
 
-      {/* Posts list */}
+      {/* ── Posts ── */}
       {isLoading ? (
         <div className="space-y-4">
           {[...Array(3)].map((_, i) => (
@@ -125,10 +114,7 @@ export function CommunityFeed() {
             animate="show"
             variants={{
               hidden: { opacity: 0 },
-              show: {
-                opacity: 1,
-                transition: { staggerChildren: 0.06 }
-              }
+              show: { opacity: 1, transition: { staggerChildren: 0.06 } },
             }}
           >
             {allPosts.map((post) => (
@@ -144,7 +130,7 @@ export function CommunityFeed() {
                 disabled={isFetchingNextPage}
                 className="w-full max-w-xs"
               >
-                {isFetchingNextPage ? "Loading more..." : "Load more posts"}
+                {isFetchingNextPage ? "Loading more…" : "Load more posts"}
               </Button>
             </div>
           )}
@@ -162,7 +148,6 @@ export function CommunityFeed() {
           </p>
           {user && (
             <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
               Create First Post
             </Button>
           )}

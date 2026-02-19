@@ -11,106 +11,121 @@ interface PostFiltersProps {
 const filterOptions: {
   value: PostFilterType;
   label: string;
-  dotColor: string;
-  activeClasses: string;
+  dot: string;
+  activeBg: string;
+  activeBorder: string;
+  activeText: string;
 }[] = [
   {
     value: "all",
     label: "All",
-    dotColor: "bg-primary",
-    activeClasses: "bg-primary/18 border-primary/40 text-violet-300 font-semibold",
+    dot: "#7b5cfa",
+    activeBg: "rgba(123,92,250,0.18)",
+    activeBorder: "rgba(123,92,250,0.4)",
+    activeText: "#c4b5fd",
   },
   {
     value: "reflection",
     label: "Reflections",
-    dotColor: "bg-blue-500",
-    activeClasses: "bg-blue-500/15 border-blue-500/40 text-blue-300 font-semibold",
+    dot: "#3b82f6",
+    activeBg: "rgba(59,130,246,0.15)",
+    activeBorder: "rgba(59,130,246,0.4)",
+    activeText: "#93c5fd",
   },
   {
     value: "progress",
     label: "Progress",
-    dotColor: "bg-amber-500",
-    activeClasses: "bg-amber-500/15 border-amber-500/40 text-amber-300 font-semibold",
+    dot: "#f59e0b",
+    activeBg: "rgba(245,158,11,0.15)",
+    activeBorder: "rgba(245,158,11,0.4)",
+    activeText: "#fcd34d",
   },
   {
     value: "obstacle",
     label: "Obstacles",
-    dotColor: "bg-rose-500",
-    activeClasses: "bg-rose-500/15 border-rose-500/40 text-rose-300 font-semibold",
+    dot: "#f43f5e",
+    activeBg: "rgba(244,63,94,0.15)",
+    activeBorder: "rgba(244,63,94,0.4)",
+    activeText: "#fda4af",
   },
   {
     value: "mindset",
     label: "Mindset",
-    dotColor: "bg-violet-500",
-    activeClasses: "bg-violet-500/15 border-violet-500/40 text-violet-300 font-semibold",
+    dot: "#a855f7",
+    activeBg: "rgba(168,85,247,0.15)",
+    activeBorder: "rgba(168,85,247,0.4)",
+    activeText: "#d8b4fe",
   },
   {
     value: "help_request",
     label: "Help Needed",
-    dotColor: "bg-orange-500",
-    activeClasses: "bg-orange-500/15 border-orange-500/40 text-orange-300 font-semibold",
+    dot: "#fb923c",
+    activeBg: "rgba(251,146,60,0.15)",
+    activeBorder: "rgba(251,146,60,0.4)",
+    activeText: "#fdba74",
   },
   {
     value: "encouragement",
     label: "Support",
-    dotColor: "bg-emerald-500",
-    activeClasses: "bg-emerald-500/15 border-emerald-500/40 text-emerald-300 font-semibold",
+    dot: "#10b981",
+    activeBg: "rgba(16,185,129,0.15)",
+    activeBorder: "rgba(16,185,129,0.4)",
+    activeText: "#6ee7b7",
   },
 ];
 
 export function PostFilters({ activeFilter, onFilterChange, activeSort, onSortChange }: PostFiltersProps) {
   return (
     <div className="space-y-3">
-      {/* Label */}
+      {/* Section label */}
       <div className="font-mono text-[10px] text-muted-foreground tracking-[0.1em] uppercase">Filter by type</div>
 
-      {/* Filter chips
-          ✅ FIX 1 : "-mx-1 px-1" supprimés — ils faisaient déborder le container
-                     et déclenchaient un scroll horizontal sur la page.
-          ✅ FIX 2 : "scrollbar-none" remplacé par "scrollbar-hide" (classe native
-                     de tailwind-scrollbar-hide) OU par le style inline ci-dessous,
-                     qui fonctionne sans plugin supplémentaire.
-      */}
-      <div className="flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        <style>{`.hide-scrollbar::-webkit-scrollbar { display: none; }`}</style>
-        {filterOptions.map(({ value, label, dotColor, activeClasses }) => {
-          const isActive = activeFilter === value;
+      {/* Filter chips */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
+        {filterOptions.map((opt) => {
+          const isActive = activeFilter === opt.value;
           return (
             <button
-              key={value}
-              onClick={() => onFilterChange(value)}
+              key={opt.value}
+              onClick={() => onFilterChange(opt.value)}
               className={cn(
                 "inline-flex items-center gap-1.5 px-3.5 py-[7px] rounded-full text-xs font-medium transition-all whitespace-nowrap shrink-0 border",
-                isActive
-                  ? activeClasses
-                  : "bg-card text-muted-foreground border-border/50 hover:border-primary/30 hover:text-foreground",
+                !isActive &&
+                  "bg-card border-border/50 text-muted-foreground hover:border-primary/25 hover:text-foreground",
               )}
+              style={
+                isActive
+                  ? {
+                      background: opt.activeBg,
+                      borderColor: opt.activeBorder,
+                      color: opt.activeText,
+                      fontWeight: 600,
+                    }
+                  : undefined
+              }
             >
-              <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", dotColor)} />
-              {label}
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: opt.dot }} />
+              {opt.label}
             </button>
           );
         })}
       </div>
 
-      {/* Sort toggle */}
-      <div className="flex items-center gap-2 mt-3">
+      {/* Sort row */}
+      <div className="flex items-center gap-2">
         <span className="font-mono text-[11px] text-muted-foreground">Sort:</span>
-        {[
-          { value: "recent" as PostSortOption, label: "⏱ Recent" },
-          { value: "popular" as PostSortOption, label: "🔥 Popular" },
-        ].map(({ value, label }) => (
+        {(["recent", "popular"] as PostSortOption[]).map((s) => (
           <button
-            key={value}
-            onClick={() => onSortChange(value)}
+            key={s}
+            onClick={() => onSortChange(s)}
             className={cn(
-              "px-3 py-1.5 rounded-lg text-[11px] font-medium font-mono border transition-all flex items-center gap-1.5",
-              activeSort === value
-                ? "bg-primary border-primary text-primary-foreground shadow-sm shadow-primary/25"
-                : "bg-transparent border-border/50 text-muted-foreground hover:border-primary/30",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium border transition-all",
+              activeSort === s
+                ? "bg-primary border-primary text-white shadow-[0_2px_12px_rgba(123,92,250,0.35)]"
+                : "bg-transparent border-border/50 text-muted-foreground hover:border-primary/25",
             )}
           >
-            {label}
+            {s === "recent" ? "⏱" : "🔥"} {s === "recent" ? "Recent" : "Popular"}
           </button>
         ))}
       </div>
