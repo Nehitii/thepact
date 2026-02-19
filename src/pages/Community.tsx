@@ -38,7 +38,7 @@ function LiveTicker() {
           </span>
           <span className="font-mono text-[11px] font-medium tracking-wider uppercase text-primary">NETWORK</span>
         </div>
-        <div className="overflow-hidden flex-1">
+        <div className="overflow-hidden flex-1 min-w-0">
           <motion.div
             className="flex gap-8 whitespace-nowrap"
             animate={{ x: ["0%", "-50%"] }}
