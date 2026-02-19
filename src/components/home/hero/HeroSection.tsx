@@ -281,12 +281,12 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
 
         {/* ── 4. Quick actions ── */}
         <motion.div variants={itemVariants} className="w-full">
-          <QuickActionsBar pact={pact} ownedModules={ownedModules} />
+          <QuickActionsBar ownedModules={ownedModules} />
         </motion.div>
 
         {/* ── 5. Mission randomizer ── */}
         <motion.div variants={itemVariants} className="w-full">
-          <MissionRandomizer goals={focusGoals.length ? focusGoals : allGoals} />
+          <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
         </motion.div>
       </div>
     </motion.section>
