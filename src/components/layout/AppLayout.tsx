@@ -18,7 +18,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         {/* Main content */}
-        <div className="flex-1 overflow-x-clip">{children}</div>
+        <div className="flex-1 min-w-0 overflow-x-clip">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
