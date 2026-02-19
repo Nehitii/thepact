@@ -96,7 +96,7 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
         {/* ── 1. Identity block (Visual + name + SmartProjectHeader) ── */}
         <motion.div
           variants={itemVariants}
-          className="relative z-20 text-center w-full flex flex-col items-center pt-2"
+          className="relative z-20 text-center w-full flex flex-col items-center pt-12"
         >
           <div className="group relative flex justify-center mb-4">
             <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
