@@ -67,7 +67,7 @@ export function FinanceOverviewCard({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="neu-inset p-5 rounded-xl"
+            className="neu-inset p-5 rounded-xl min-w-0"
           >
             <div className="flex items-center gap-2 mb-3">
               <Target className="h-4 w-4 text-slate-400" />
@@ -75,7 +75,7 @@ export function FinanceOverviewCard({
                 {isCustomMode ? 'Custom Target' : 'Total Target'}
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight">
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tabular-nums tracking-tight truncate">
               {formatCurrency(totalEstimated, currency)}
             </p>
             {isCustomMode && (
@@ -92,7 +92,7 @@ export function FinanceOverviewCard({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15 }}
-              className="neu-inset p-5 rounded-xl relative overflow-hidden"
+              className="neu-inset p-5 rounded-xl relative overflow-hidden min-w-0"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.08] to-transparent" />
               <div className="relative">
@@ -102,7 +102,7 @@ export function FinanceOverviewCard({
                     Financed
                   </span>
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold text-emerald-400 tabular-nums tracking-tight">
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-emerald-400 tabular-nums tracking-tight truncate">
                   {formatCurrency(totalPaid, currency)}
                 </p>
               </div>
@@ -114,7 +114,7 @@ export function FinanceOverviewCard({
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="neu-inset p-5 rounded-xl relative overflow-hidden"
+            className="neu-inset p-5 rounded-xl relative overflow-hidden min-w-0"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/[0.08] to-transparent" />
             <div className="relative">
@@ -124,7 +124,7 @@ export function FinanceOverviewCard({
                   Remaining
                 </span>
               </div>
-              <p className="text-2xl sm:text-3xl font-bold text-amber-400 tabular-nums tracking-tight">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-400 tabular-nums tracking-tight truncate">
                 {formatCurrency(totalRemaining, currency)}
               </p>
             </div>
