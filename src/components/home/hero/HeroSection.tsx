@@ -93,14 +93,35 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
       </div>
 
       <div className="flex flex-col items-center space-y-4">
-        {/* ── 1. Pact header ── */}
-        <motion.div variants={itemVariants} className="w-full">
-          <SmartProjectHeader pact={pact} allGoals={allGoals} />
-        </motion.div>
+        {/* ── 1. Identity block (Visual + name + SmartProjectHeader) ── */}
+        <motion.div
+          variants={itemVariants}
+          className="relative z-20 text-center w-full flex flex-col items-center pt-2"
+        >
+          <div className="group relative flex justify-center mb-4">
+            <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
+            <div className="relative transform transition-transform duration-500 hover:scale-105">
+              <PactVisual symbol={pact.symbol} progress={progressPercentage} size="md" />
+            </div>
+          </div>
 
-        {/* ── 2. Pact visual ── */}
-        <motion.div variants={itemVariants}>
-          <PactVisual pact={pact} progress={progressPercentage} />
+          <h1 className="text-4xl sm:text-6xl font-black font-orbitron tracking-tight text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.2)] mb-2">
+            {pact.name}
+          </h1>
+
+          {pact.mantra && (
+            <div className="flex items-center gap-4 mb-3 opacity-80">
+              <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent to-primary/50" />
+              <p className="text-xs sm:text-sm font-rajdhani font-medium uppercase tracking-[0.25em] text-primary/80 whitespace-nowrap">
+                {pact.mantra}
+              </p>
+              <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent to-primary/50" />
+            </div>
+          )}
+
+          <div className="flex justify-center">
+            <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} />
+          </div>
         </motion.div>
 
         {/* ══════════════════════════════════════════════════════
