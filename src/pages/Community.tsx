@@ -77,8 +77,8 @@ export default function Community() {
       <LiveTicker />
 
       {/* 3. LE BOUCLIER : Conteneur strict qui cache tout débordement horizontal */}
-      <div className="w-full overflow-hidden flex-1">
-        <div className="relative z-10 w-full mx-auto px-4 pb-20 max-w-[760px]">
+      <div className="w-full overflow-hidden flex-1 min-w-0">
+        <div className="relative z-10 w-full mx-auto px-4 sm:px-6 pb-20 max-w-3xl">
           {/* Hero Header */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
