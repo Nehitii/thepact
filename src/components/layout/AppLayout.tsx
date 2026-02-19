@@ -10,7 +10,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0 overflow-x-hidden">
         {/* Mobile header with trigger */}
         <header className="flex h-14 items-center gap-2 border-b border-border px-4 md:hidden">
           <SidebarTrigger />
