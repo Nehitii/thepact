@@ -1,234 +1,252 @@
 "use client";
 
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  Target, CheckCircle, Clock, TrendingUp, Sparkles, 
-  Zap, AlertTriangle, Trophy, Timer, Brain 
-} from 'lucide-react';
-import { Goal } from '@/hooks/useGoals';
-import { cn } from '@/lib/utils';
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Brain, Activity, Shield } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Goal } from "@/hooks/useGoals";
+import { Pact } from "@/hooks/usePact";
+import {
+  usePactAnalysis,
+  SCAN_PHASES,
+  SCAN_PHASE_DURATION_MS,
+} from "@/hooks/usePactAnalysis";
+import { InsightCard } from "./InsightCard";
+
+// ─── types ──────────────────────────────────────────────────────────────────
 
 interface SmartProjectHeaderProps {
   focusGoals: Goal[];
   allGoals: Goal[];
+  pact?: Pact | null;
   pendingValidations?: number;
 }
 
-interface SmartMetrics {
-  icon: React.ElementType;
-  headline: string;
-  subMetrics: string[];
-  colorClass: string;
-  bgClass: string;
-  borderClass: string;
-  glowClass: string;
-  priority: 'critical' | 'high' | 'medium' | 'low';
-  pulseActive?: boolean;
+// ─── status dot colours ─────────────────────────────────────────────────────
+
+const STATUS_DOT: Record<string, string> = {
+  optimal: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]",
+  attention: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]",
+  critical: "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]",
+};
+
+const STATUS_LABEL: Record<string, string> = {
+  optimal: "Systems Optimal",
+  attention: "Attention Required",
+  critical: "Critical Alert",
+};
+
+// ─── scan boot animation ────────────────────────────────────────────────────
+
+function useScanBoot() {
+  const [phase, setPhase] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    if (done) return;
+    if (phase >= SCAN_PHASES.length) {
+      setDone(true);
+      return;
+    }
+    const t = setTimeout(() => setPhase((p) => p + 1), SCAN_PHASE_DURATION_MS);
+    return () => clearTimeout(t);
+  }, [phase, done]);
+
+  return { phase, done, currentText: SCAN_PHASES[Math.min(phase, SCAN_PHASES.length - 1)] };
 }
 
-/**
- * Smart Optimization Engine - Intelligent project header
- * Calculates dynamic "Next Best Action" based on real goal progress data
- */
-export function SmartProjectHeader({ 
-  focusGoals, 
-  allGoals,
-  pendingValidations = 0 
-}: SmartProjectHeaderProps) {
-  const metrics = useMemo((): SmartMetrics => {
-    // Exclude habit goals from step calculations
-    const nonHabitGoals = allGoals.filter(g => g.goal_type !== 'habit');
-    const inProgressGoals = nonHabitGoals.filter(g => g.status === 'in_progress');
-    const completedGoals = nonHabitGoals.filter(g => g.status === 'fully_completed' || g.status === 'validated');
-    const totalStepsRemaining = nonHabitGoals.reduce(
-      (sum, g) => sum + Math.max(0, (g.total_steps || 0) - (g.validated_steps || 0)), 
-      0
-    );
+// ─── typewriter text ────────────────────────────────────────────────────────
 
-    // Priority 1: Finance validations pending (critical)
-    if (pendingValidations > 0) {
-      return {
-        icon: AlertTriangle,
-        headline: `${pendingValidations} validation${pendingValidations > 1 ? 's' : ''} required`,
-        subMetrics: ['Action needed', 'Finance module'],
-        colorClass: 'text-amber-400',
-        bgClass: 'from-amber-500/20 via-amber-500/10 to-transparent',
-        borderClass: 'border-amber-500/40',
-        glowClass: 'shadow-[0_0_30px_rgba(245,158,11,0.4)]',
-        priority: 'critical',
-        pulseActive: true,
-      };
-    }
+function TypewriterText({ text }: { text: string }) {
+  const [displayed, setDisplayed] = useState("");
 
-    // Priority 2: Focus goal with remaining steps
-    const primaryFocus = focusGoals[0];
-    if (primaryFocus) {
-      const remainingSteps = Math.max(0, (primaryFocus.total_steps || 0) - (primaryFocus.validated_steps || 0));
-
-      if (remainingSteps > 0) {
-        return {
-          icon: Target,
-          headline: `${remainingSteps} step${remainingSteps > 1 ? 's' : ''} on focus`,
-          subMetrics: [`${primaryFocus.validated_steps || 0}/${primaryFocus.total_steps || 0} steps done`, 'Priority Target'],
-          colorClass: 'text-primary',
-          bgClass: 'from-primary/20 via-primary/10 to-transparent',
-          borderClass: 'border-primary/40',
-          glowClass: 'shadow-[0_0_25px_rgba(0,212,255,0.35)]',
-          priority: 'high',
-          pulseActive: true,
-        };
-      }
-      
-      // Focus goal is complete
-      return {
-        icon: Trophy,
-        headline: 'Focus ready to validate!',
-        subMetrics: ['100% complete', primaryFocus.name.slice(0, 20)],
-        colorClass: 'text-health',
-        bgClass: 'from-health/20 via-health/10 to-transparent',
-        borderClass: 'border-health/40',
-        glowClass: 'shadow-[0_0_25px_rgba(34,197,94,0.35)]',
-        priority: 'high',
-        pulseActive: true,
-      };
-    }
-
-    // Priority 3: Active goals in progress
-    if (inProgressGoals.length > 0) {
-      return {
-        icon: TrendingUp,
-        headline: `${totalStepsRemaining} steps remaining`,
-        subMetrics: [`${inProgressGoals.length} active goal${inProgressGoals.length > 1 ? 's' : ''}`, `${totalStepsRemaining} steps left`],
-        colorClass: 'text-primary',
-        bgClass: 'from-primary/20 via-primary/10 to-transparent',
-        borderClass: 'border-primary/30',
-        glowClass: 'shadow-[0_0_20px_rgba(0,212,255,0.25)]',
-        priority: 'medium',
-      };
-    }
-
-    // Priority 4: All caught up
-    if (completedGoals.length > 0) {
-      return {
-        icon: Zap,
-        headline: 'All goals completed!',
-        subMetrics: [`${completedGoals.length} goal${completedGoals.length > 1 ? 's' : ''} done`, 'Keep momentum'],
-        colorClass: 'text-health',
-        bgClass: 'from-health/20 via-health/10 to-transparent',
-        borderClass: 'border-health/30',
-        glowClass: 'shadow-[0_0_20px_rgba(34,197,94,0.25)]',
-        priority: 'low',
-      };
-    }
-
-    // Priority 5: No goals yet
-    if (allGoals.length === 0) {
-      return {
-        icon: Sparkles,
-        headline: 'Begin your journey',
-        subMetrics: ['Create first goal', 'Start now'],
-        colorClass: 'text-accent',
-        bgClass: 'from-accent/20 via-accent/10 to-transparent',
-        borderClass: 'border-accent/30',
-        glowClass: 'shadow-[0_0_20px_rgba(0,212,255,0.2)]',
-        priority: 'low',
-      };
-    }
-
-    // Default: All caught up
-    return {
-      icon: CheckCircle,
-      headline: 'All systems nominal',
-      subMetrics: ['No pending actions', 'Keep momentum'],
-      colorClass: 'text-health',
-      bgClass: 'from-health/20 via-health/10 to-transparent',
-      borderClass: 'border-health/30',
-      glowClass: 'shadow-[0_0_20px_rgba(34,197,94,0.25)]',
-      priority: 'low',
-    };
-  }, [focusGoals, allGoals, pendingValidations]);
-
-  const IconComponent = metrics.icon;
+  useEffect(() => {
+    setDisplayed("");
+    let i = 0;
+    const iv = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) clearInterval(iv);
+    }, 18);
+    return () => clearInterval(iv);
+  }, [text]);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: -10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ type: "spring", stiffness: 100, damping: 15 }}
-      className={cn(
-        "relative inline-flex items-center gap-3 px-5 py-3 rounded-2xl",
-        "bg-gradient-to-r backdrop-blur-xl",
-        "border transition-all duration-300",
-        "hover:scale-[1.02] hover:brightness-110 cursor-default",
-        metrics.bgClass,
-        metrics.borderClass,
-        metrics.glowClass
-      )}
-    >
-      {/* Active pulse ring for critical/high priority */}
-      {metrics.pulseActive && (
-        <div className="absolute -inset-0.5 rounded-2xl animate-pulse opacity-50">
-          <div className={cn("absolute inset-0 rounded-2xl", metrics.bgClass)} />
-        </div>
-      )}
+    <span className="font-rajdhani text-primary/90 text-xs tracking-wider">
+      {displayed}
+      <span className="animate-pulse text-primary">▌</span>
+    </span>
+  );
+}
 
-      {/* Progress ring indicator */}
-      <div className="relative">
-        <div className={cn(
-          "absolute inset-0 rounded-full blur-md",
-          metrics.priority === 'critical' && "bg-amber-500/40",
-          metrics.priority === 'high' && "bg-primary/40",
-          metrics.priority === 'medium' && "bg-primary/20",
-          metrics.priority === 'low' && "bg-health/20",
-        )} />
-        <div className={cn(
-          "relative p-2 rounded-full border",
-          metrics.borderClass,
-          "bg-black/40"
-        )}>
-          <IconComponent 
-            className={cn(
-              "w-5 h-5 flex-shrink-0",
-              metrics.pulseActive && "animate-glow-pulse",
-              metrics.colorClass
-            )} 
-          />
-        </div>
-      </div>
+// ─── main component ─────────────────────────────────────────────────────────
 
-      {/* Text content */}
-      <div className="flex flex-col items-start min-w-0">
-        <span className={cn(
-          "text-sm font-orbitron font-bold tracking-wide",
-          metrics.colorClass
-        )}>
-          {metrics.headline}
-        </span>
-        <div className="flex items-center gap-2 mt-0.5">
-          {metrics.subMetrics.map((metric, i) => (
-            <span 
-              key={i}
-              className={cn(
-                "text-[10px] font-rajdhani uppercase tracking-wider",
-                "text-muted-foreground/70",
-                i > 0 && "before:content-['•'] before:mr-2 before:text-muted-foreground/30"
-              )}
+export function SmartProjectHeader({
+  focusGoals,
+  allGoals,
+  pact,
+  pendingValidations = 0,
+}: SmartProjectHeaderProps) {
+  const { insights, systemStatus } = usePactAnalysis({
+    pact,
+    goals: allGoals,
+    isLoading: false,
+  });
+
+  const scan = useScanBoot();
+  const [expanded, setExpanded] = useState(false);
+
+  // Auto-expand after scan completes
+  useEffect(() => {
+    if (scan.done) {
+      const t = setTimeout(() => setExpanded(true), 300);
+      return () => clearTimeout(t);
+    }
+  }, [scan.done]);
+
+  return (
+    <div className="w-full max-w-2xl mx-auto">
+      {/* ── Main shell ── */}
+      <motion.div
+        initial={{ opacity: 0, y: -12, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 80, damping: 14 }}
+        className={cn(
+          "relative overflow-hidden rounded-xl",
+          "border border-primary/20",
+          "bg-black/40 backdrop-blur-xl",
+          "shadow-[0_0_30px_rgba(0,212,255,0.08)]",
+        )}
+      >
+        {/* Scanline overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none z-0 opacity-[0.03]"
+          style={{
+            background:
+              "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.06) 3px, rgba(0,212,255,0.06) 4px)",
+          }}
+        />
+
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+
+        {/* ── Header bar ── */}
+        <button
+          onClick={() => scan.done && setExpanded((e) => !e)}
+          className="relative z-10 w-full flex items-center gap-3 px-4 py-3 text-left group"
+        >
+          {/* Brain icon with glow */}
+          <div className="relative flex-shrink-0">
+            <div className="absolute inset-0 rounded-full blur-md bg-primary/30" />
+            <div className="relative p-2 rounded-full border border-primary/30 bg-black/50">
+              <Brain
+                className={cn(
+                  "w-4 h-4 text-primary",
+                  !scan.done && "animate-pulse",
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Title + status */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-orbitron font-bold uppercase tracking-[0.2em] text-primary">
+                Pact Nexus
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
+
+              {/* Status indicator */}
+              <div className="flex items-center gap-1.5">
+                <div
+                  className={cn(
+                    "w-2 h-2 rounded-full animate-pulse",
+                    scan.done ? STATUS_DOT[systemStatus] : "bg-primary/50",
+                  )}
+                />
+                <span className="text-[9px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/60">
+                  {scan.done ? STATUS_LABEL[systemStatus] : "Scanning"}
+                </span>
+              </div>
+            </div>
+
+            {/* Scan phase text or summary */}
+            <div className="mt-0.5 h-4 overflow-hidden">
+              <AnimatePresence mode="wait">
+                {!scan.done ? (
+                  <motion.div
+                    key={`scan-${scan.phase}`}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <TypewriterText text={scan.currentText} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="summary"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    <span className="text-[10px] font-rajdhani text-muted-foreground/70 tracking-wider">
+                      {insights.length > 0
+                        ? `${insights.length} insight${insights.length > 1 ? "s" : ""} detected — tap to ${expanded ? "collapse" : "expand"}`
+                        : "All systems nominal — no action required"}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Expand chevron */}
+          {scan.done && insights.length > 0 && (
+            <motion.div
+              animate={{ rotate: expanded ? 180 : 0 }}
+              transition={{ duration: 0.25 }}
+              className="text-primary/40"
             >
-              {metric}
-            </span>
-          ))}
-        </div>
-      </div>
+              <Activity className="w-4 h-4" />
+            </motion.div>
+          )}
+        </button>
 
-      {/* Priority indicator dot */}
-      <div className={cn(
-        "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-black/50",
-        metrics.priority === 'critical' && "bg-amber-500 animate-pulse",
-        metrics.priority === 'high' && "bg-primary animate-pulse",
-        metrics.priority === 'medium' && "bg-primary/60",
-        metrics.priority === 'low' && "bg-health/60",
-      )} />
-    </motion.div>
+        {/* ── Insight cards panel ── */}
+        <AnimatePresence>
+          {expanded && insights.length > 0 && (
+            <motion.div
+              key="insights"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 120, damping: 18 }}
+              className="overflow-hidden"
+            >
+              <div className="px-3 pb-3 space-y-2">
+                {/* Separator */}
+                <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+
+                {insights.map((insight, i) => (
+                  <InsightCard key={insight.id} insight={insight} index={i} />
+                ))}
+
+                {/* Footer */}
+                <div className="flex items-center justify-center gap-2 pt-1">
+                  <Shield className="w-3 h-3 text-muted-foreground/30" />
+                  <span className="text-[9px] font-orbitron uppercase tracking-[0.2em] text-muted-foreground/30">
+                    Nexus Engine v1.0
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Bottom accent line */}
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+      </motion.div>
+    </div>
   );
 }
