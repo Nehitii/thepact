@@ -75,7 +75,7 @@ export default function Community() {
   return (
     // ✅ FIX: "overflow-hidden" → "overflow-x-hidden" pour ne pas bloquer le sticky
     // et éviter que le scroll horizontal soit causé par un enfant débordant.
-    <div className="min-h-screen bg-background relative overflow-x-hidden">
+    <div className="min-h-screen bg-background relative overflow-x-clip">
       <CyberBackground />
 
       {/* ✅ FIX: LiveTicker sorti du container centré max-w-[760px]
