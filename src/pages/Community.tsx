@@ -23,7 +23,7 @@ function LiveTicker() {
 
   return (
     <div
-      className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-xl w-full"
+      className="sticky top-0 z-50 border-b border-border/50 backdrop-blur-xl w-full overflow-hidden"
       style={{ background: "linear-gradient(90deg, hsl(var(--muted)) 0%, hsl(var(--card)) 100%)" }}
     >
       <div className="flex items-center gap-2 px-4 sm:px-6 py-2 w-full">
@@ -70,7 +70,7 @@ export default function Community() {
 
   return (
     // 1. RACINE : Aucun overflow ici. Le sticky marchera sans encombre.
-    <div className="min-h-screen bg-background relative w-full flex flex-col">
+    <div className="min-h-screen bg-background relative w-full flex flex-col min-w-0">
       <CyberBackground />
 
       {/* 2. LE TICKER : Indépendant et libre de coller en haut */}
