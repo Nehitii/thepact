@@ -73,9 +73,8 @@ export default function Community() {
   ];
 
   return (
-    // ✅ FIX: "overflow-hidden" → "overflow-x-hidden" pour ne pas bloquer le sticky
-    // et éviter que le scroll horizontal soit causé par un enfant débordant.
-    <div className="min-h-screen bg-background relative overflow-x-clip">
+    // ✅ FIX: "overflow-x-clip" + "w-full" pour empêcher le scroll sans bloquer le sticky
+    <div className="min-h-screen bg-background relative w-full overflow-x-clip">
       <CyberBackground />
 
       {/* ✅ FIX: LiveTicker sorti du container centré max-w-[760px]
@@ -84,7 +83,8 @@ export default function Community() {
           n'a plus overflow-hidden. */}
       <LiveTicker />
 
-      <div className="relative z-10 mx-auto px-4 pb-20 max-w-[760px]">
+      {/* ✅ FIX: Ajout de w-full pour que le mx-auto calcule sur la bonne base */}
+      <div className="relative z-10 w-full mx-auto px-4 pb-20 max-w-[760px]">
         {/* Hero Header */}
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center pt-12 pb-8">
           <motion.div
@@ -145,11 +145,12 @@ export default function Community() {
         </motion.div>
 
         {/* Mode Switcher */}
+        {/* ✅ FIX: Passage à grid-cols-1 sur mobile, et sm:grid-cols-2 sur plus grand écran */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 gap-3 mb-7"
+          className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-7"
         >
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;

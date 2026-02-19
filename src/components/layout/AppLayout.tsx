@@ -17,7 +17,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <span className="text-sm font-orbitron font-bold text-primary tracking-wider">THE PACT</span>
         </header>
 
-        {/* Main content */}
+        {/* Main content - Ajout de min-w-0 ici pour empêcher Flexbox de déborder */}
         <div className="flex-1 min-w-0 overflow-x-clip">{children}</div>
       </SidebarInset>
     </SidebarProvider>
