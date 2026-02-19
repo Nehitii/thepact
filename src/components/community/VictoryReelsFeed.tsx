@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronUp, ChevronDown, Trophy, Film, Plus, Play, Eye } from "lucide-react";
+import { ChevronUp, ChevronDown, Trophy, Plus, Play, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VictoryReelCard } from "./VictoryReelCard";
 import { CreateReelModal } from "./CreateReelModal";
@@ -41,7 +41,6 @@ export function VictoryReelsFeed() {
     }
   };
 
-  // Handle wheel/touch swipe (mobile only)
   useEffect(() => {
     if (!isMobile) return;
     const container = containerRef.current;
@@ -79,7 +78,6 @@ export function VictoryReelsFeed() {
     };
   }, [currentIndex, reels, isMobile]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowDown' || e.key === 'j') goToNext();
@@ -136,17 +134,22 @@ export function VictoryReelsFeed() {
     <div className="relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-base shadow-md shadow-primary/25">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-[10px] flex items-center justify-center text-base shadow-[0_4px_16px_rgba(123,92,250,0.25)]"
+            style={{ background: 'linear-gradient(135deg, hsl(var(--primary)), #a855f7)' }}
+          >
             🏆
           </div>
           <span className="font-orbitron text-base font-bold tracking-wide">Victory Reels</span>
         </div>
 
         {user && (
-          <Button onClick={() => setShowCreateModal(true)} variant="outline" className="gap-2 font-mono text-xs border-border/50">
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="px-[18px] py-2 rounded-xl border border-border/50 bg-transparent text-muted-foreground text-xs font-medium font-mono hover:border-primary/30 hover:text-foreground transition-all flex items-center gap-1.5"
+          >
             🎬 Share Victory
-          </Button>
+          </button>
         )}
       </div>
 
@@ -166,29 +169,29 @@ export function VictoryReelsFeed() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="rounded-2xl border border-border/50 overflow-hidden bg-card group cursor-pointer hover:border-primary/30 hover:-translate-y-1 transition-all hover:shadow-xl hover:shadow-primary/10"
+                className="rounded-[20px] border border-border/50 overflow-hidden bg-card group cursor-pointer hover:border-primary/30 hover:-translate-y-[3px] transition-all duration-250 hover:shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(123,92,250,0.2)]"
               >
                 {/* Thumbnail */}
                 <div className={cn(
-                  "relative h-44 bg-gradient-to-br flex items-center justify-center overflow-hidden",
+                  "relative h-[180px] bg-gradient-to-br flex items-center justify-center overflow-hidden",
                   gradientClass
                 )}>
                   {/* Grid pattern overlay */}
                   <div
-                    className="absolute inset-0 opacity-10"
+                    className="absolute inset-0"
                     style={{
-                      backgroundImage: 'linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)',
+                      backgroundImage: 'linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)',
                       backgroundSize: '24px 24px',
                     }}
                   />
 
                   {/* Trophy badge */}
-                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[10px] font-mono font-semibold z-10">
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-semibold z-10">
                     🏆 COMPLETED
                   </div>
 
                   {/* Play button */}
-                  <div className="w-13 h-13 rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center z-10 group-hover:bg-primary group-hover:border-primary group-hover:shadow-lg group-hover:shadow-primary/30 group-hover:scale-110 transition-all">
+                  <div className="w-[52px] h-[52px] rounded-full bg-white/15 backdrop-blur-sm border-2 border-white/30 flex items-center justify-center z-10 group-hover:bg-primary group-hover:border-primary group-hover:shadow-[0_0_24px_rgba(123,92,250,0.25)] group-hover:scale-110 transition-all">
                     <Play className="w-5 h-5 text-white fill-white ml-0.5" />
                   </div>
 
@@ -206,11 +209,11 @@ export function VictoryReelsFeed() {
                   <div className="flex items-center gap-2 mb-2">
                     <Avatar className="w-7 h-7">
                       <AvatarImage src={avatarUrl} />
-                      <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-orbitron font-bold">
+                      <AvatarFallback className="text-[10px] bg-gradient-to-br from-indigo-950 to-indigo-900 text-indigo-300 font-orbitron font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm font-semibold text-foreground">{displayName}</span>
+                    <span className="text-[13px] font-semibold text-foreground">{displayName}</span>
                     <span className="text-[10px] text-muted-foreground font-mono ml-auto">
                       {formatDistanceToNow(new Date(reel.created_at), { addSuffix: true })}
                     </span>
@@ -218,18 +221,18 @@ export function VictoryReelsFeed() {
 
                   {/* Goal title */}
                   {reel.goal?.name && (
-                    <div className="text-sm font-semibold text-foreground mb-1 line-clamp-1">{reel.goal.name}</div>
+                    <div className="text-[13px] font-semibold text-foreground mb-1 line-clamp-1">{reel.goal.name}</div>
                   )}
 
                   {/* Caption */}
                   {reel.caption && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{reel.caption}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3 leading-relaxed">{reel.caption}</p>
                   )}
 
                   {/* Stats row */}
                   <div className="flex gap-3 text-[11px] font-mono text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" /> <span className="text-foreground/70">{reel.view_count}</span>
+                      👁 <span className="text-foreground/70">{reel.view_count}</span>
                     </span>
                     <span>💪 <span className="text-foreground/70">{reel.reactions_count?.support || 0}</span></span>
                     <span>⚡ <span className="text-foreground/70">{reel.reactions_count?.inspired || 0}</span></span>
@@ -258,7 +261,6 @@ export function VictoryReelsFeed() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation buttons */}
           <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-10">
             <Button size="icon" variant="ghost" onClick={goToPrev} disabled={currentIndex === 0}
               className="w-10 h-10 rounded-full bg-black/40 backdrop-blur-sm text-white hover:bg-black/60 disabled:opacity-30">
@@ -270,7 +272,6 @@ export function VictoryReelsFeed() {
             </Button>
           </div>
 
-          {/* Progress indicators */}
           <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-1.5 z-10">
             {reels.slice(0, 10).map((_, i) => (
               <button key={i} onClick={() => setCurrentIndex(i)}
@@ -280,7 +281,6 @@ export function VictoryReelsFeed() {
             {reels.length > 10 && <span className="text-white/50 text-xs">+{reels.length - 10}</span>}
           </div>
 
-          {/* Swipe hint */}
           <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-2 text-white/50 text-xs">
             <ChevronUp className="w-3 h-3 animate-bounce" />
             <span>Swipe to explore</span>
