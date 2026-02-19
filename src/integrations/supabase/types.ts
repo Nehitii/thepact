@@ -304,9 +304,13 @@ export type Database = {
           content: string
           created_at: string
           goal_id: string | null
+          goal_name: string | null
           id: string
+          inspired_count: number
           is_public: boolean
           post_type: string
+          respect_count: number
+          support_count: number
           updated_at: string
           user_id: string
         }
@@ -314,9 +318,13 @@ export type Database = {
           content: string
           created_at?: string
           goal_id?: string | null
+          goal_name?: string | null
           id?: string
+          inspired_count?: number
           is_public?: boolean
           post_type?: string
+          respect_count?: number
+          support_count?: number
           updated_at?: string
           user_id: string
         }
@@ -324,9 +332,13 @@ export type Database = {
           content?: string
           created_at?: string
           goal_id?: string | null
+          goal_name?: string | null
           id?: string
+          inspired_count?: number
           is_public?: boolean
           post_type?: string
+          respect_count?: number
+          support_count?: number
           updated_at?: string
           user_id?: string
         }
@@ -413,6 +425,61 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      community_reports: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string | null
+          reason: string
+          reel_id: string | null
+          reply_id: string | null
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          reason: string
+          reel_id?: string | null
+          reply_id?: string | null
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string | null
+          reason?: string
+          reel_id?: string | null
+          reply_id?: string | null
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "community_reports_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_reports_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "victory_reels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "community_reports_reply_id_fkey"
+            columns: ["reply_id"]
+            isOneToOne: false
+            referencedRelation: "community_replies"
             referencedColumns: ["id"]
           },
         ]
@@ -2309,7 +2376,10 @@ export type Database = {
           duration_seconds: number
           goal_id: string
           id: string
+          inspired_count: number
           is_public: boolean
+          respect_count: number
+          support_count: number
           thumbnail_url: string | null
           updated_at: string
           user_id: string
@@ -2322,7 +2392,10 @@ export type Database = {
           duration_seconds: number
           goal_id: string
           id?: string
+          inspired_count?: number
           is_public?: boolean
+          respect_count?: number
+          support_count?: number
           thumbnail_url?: string | null
           updated_at?: string
           user_id: string
@@ -2335,7 +2408,10 @@ export type Database = {
           duration_seconds?: number
           goal_id?: string
           id?: string
+          inspired_count?: number
           is_public?: boolean
+          respect_count?: number
+          support_count?: number
           thumbnail_url?: string | null
           updated_at?: string
           user_id?: string
@@ -2454,6 +2530,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_reel_view: { Args: { p_reel_id: string }; Returns: undefined }
       increment_tracking_counter: {
         Args: { p_field: string; p_increment?: number; p_user_id: string }
         Returns: undefined

@@ -1,36 +1,22 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  X, 
-  Target, 
-  Lightbulb, 
-  TrendingUp, 
-  AlertTriangle, 
-  Brain, 
-  HelpCircle, 
-  Heart,
-  Send
+import {
+  X, Target, Lightbulb, TrendingUp, AlertTriangle, Brain, HelpCircle, Heart, Send
 } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { useCreatePost, CommunityPost, useCompletedGoals } from "@/hooks/useCommunity";
+import { useCreatePost, CommunityPost, useUserGoals } from "@/hooks/useCommunity";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
+import { Badge } from "@/components/ui/badge";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -50,20 +36,19 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
   const [content, setContent] = useState("");
   const [postType, setPostType] = useState<CommunityPost['post_type']>('reflection');
   const [selectedGoalId, setSelectedGoalId] = useState<string>("");
-  
+
   const createPost = useCreatePost();
-  const { data: completedGoals } = useCompletedGoals();
+  const { data: userGoals } = useUserGoals();
   const { profile } = useProfileSettings();
-  
-  // Use completed goals for linking - they represent user's goals
-  const activeGoals = completedGoals || [];
-  
+
+  const selectedGoal = userGoals?.find(g => g.id === selectedGoalId);
+
   const handleSubmit = async () => {
     if (!content.trim()) {
       toast.error("Please write something to share");
       return;
     }
-    
+
     try {
       if (selectedGoalId && (profile?.share_goals_progress ?? true) === false) {
         toast.error("Your privacy settings prevent sharing goal-linked posts.");
@@ -74,20 +59,21 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
         content: content.trim(),
         post_type: postType,
         goal_id: selectedGoalId || undefined,
+        goal_name: selectedGoal?.name || undefined,
       });
-      
+
       toast.success("Post shared with the community!");
       setContent("");
       setPostType('reflection');
       setSelectedGoalId("");
       onClose();
-    } catch (error) {
+    } catch {
       toast.error("Failed to create post");
     }
   };
-  
+
   const selectedType = postTypes.find(t => t.value === postType);
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-background/95 backdrop-blur-lg border-border/50">
@@ -97,7 +83,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
             Share with Community
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-5 mt-2">
           {/* Post type selector */}
           <div className="space-y-2">
@@ -112,8 +98,8 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                     onClick={() => setPostType(type.value)}
                     className={cn(
                       "flex flex-col items-center gap-1.5 p-3 rounded-lg border transition-all",
-                      isSelected 
-                        ? "border-primary bg-primary/10 text-primary" 
+                      isSelected
+                        ? "border-primary bg-primary/10 text-primary"
                         : "border-border/50 bg-muted/30 text-muted-foreground hover:border-primary/50"
                     )}
                   >
@@ -127,8 +113,8 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
               <p className="text-xs text-muted-foreground mt-1">{selectedType.description}</p>
             )}
           </div>
-          
-          {/* Optional goal link */}
+
+          {/* Goal link — shows ALL goals (active + completed) */}
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground flex items-center gap-2">
               <Target className="w-4 h-4" />
@@ -151,15 +137,20 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">No goal linked</SelectItem>
-                {activeGoals.map((goal) => (
+                {userGoals?.map((goal) => (
                   <SelectItem key={goal.id} value={goal.id}>
-                    {goal.name}
+                    <div className="flex items-center gap-2">
+                      {goal.name}
+                      <Badge variant={goal.status === 'fully_completed' ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0">
+                        {goal.status === 'fully_completed' ? '✓ Done' : 'Active'}
+                      </Badge>
+                    </div>
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
+
           {/* Content textarea */}
           <div className="space-y-2">
             <Label className="text-sm text-muted-foreground">Your message</Label>
@@ -174,14 +165,14 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
               {content.length}/500
             </div>
           </div>
-          
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={!content.trim() || createPost.isPending}
               className="gap-2"
             >

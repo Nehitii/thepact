@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, Target, ChevronDown, ChevronUp } from "lucide-react";
+import { MessageCircle, Target, ChevronDown, ChevronUp, Flag, Pencil, Trash2, Check, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -9,33 +9,56 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ReactionButton } from "./ReactionButton";
 import { PostTypeTag } from "./PostTypeTag";
-import { 
-  CommunityPost, 
-  useAddReaction, 
-  useRemoveReaction, 
+import { ReportModal } from "./ReportModal";
+import {
+  CommunityPost,
+  useAddReaction,
+  useRemoveReaction,
   usePostReplies,
-  useAddReply
+  useAddReply,
+  useDeleteReply,
+  useUpdatePost,
+  useDeletePost,
 } from "@/hooks/useCommunity";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface CommunityPostCardProps {
   post: CommunityPost;
 }
 
+const postTypeBorderColors: Record<CommunityPost['post_type'], string> = {
+  reflection: 'border-l-blue-400/60',
+  progress: 'border-l-amber-400/60',
+  obstacle: 'border-l-red-400/60',
+  mindset: 'border-l-violet-400/60',
+  help_request: 'border-l-orange-400/60',
+  encouragement: 'border-l-emerald-400/60',
+};
+
 export function CommunityPostCard({ post }: CommunityPostCardProps) {
   const { user } = useAuth();
   const [showReplies, setShowReplies] = useState(false);
   const [replyContent, setReplyContent] = useState("");
-  
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [replyFocused, setReplyFocused] = useState(false);
+
   const { data: replies, isLoading: repliesLoading } = usePostReplies(showReplies ? post.id : undefined);
   const addReaction = useAddReaction();
   const removeReaction = useRemoveReaction();
   const addReply = useAddReply();
-  
+  const deleteReply = useDeleteReply();
+  const updatePost = useUpdatePost();
+  const deletePost = useDeletePost();
+
+  const isOwner = user?.id === post.user_id;
+  const isEdited = post.updated_at !== post.created_at;
+
   const handleReaction = (type: 'support' | 'respect' | 'inspired') => {
     if (!user) return;
-    
     const isActive = post.user_reactions?.includes(type);
     if (isActive) {
       removeReaction.mutate({ post_id: post.id, reaction_type: type });
@@ -43,28 +66,49 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
       addReaction.mutate({ post_id: post.id, reaction_type: type });
     }
   };
-  
+
   const handleSubmitReply = () => {
     if (!replyContent.trim() || !user) return;
     addReply.mutate(
       { post_id: post.id, content: replyContent },
-      { onSuccess: () => setReplyContent("") }
+      { onSuccess: () => { setReplyContent(""); setReplyFocused(false); } }
     );
   };
-  
+
+  const handleSaveEdit = () => {
+    if (!editContent.trim()) return;
+    updatePost.mutate(
+      { id: post.id, content: editContent.trim() },
+      {
+        onSuccess: () => { setIsEditing(false); toast.success("Post updated"); },
+        onError: () => toast.error("Failed to update post"),
+      }
+    );
+  };
+
+  const handleDelete = () => {
+    deletePost.mutate(post.id, {
+      onSuccess: () => toast.success("Post deleted"),
+      onError: () => toast.error("Failed to delete post"),
+    });
+  };
+
   const isDiscoverable = post.profile?.community_profile_discoverable ?? true;
   const canShowGoals = post.profile?.share_goals_progress ?? true;
   const displayName = isDiscoverable ? (post.profile?.display_name || "Anonymous") : "Anonymous";
   const initials = displayName.slice(0, 2).toUpperCase();
   const avatarUrl = isDiscoverable ? post.profile?.avatar_url || undefined : undefined;
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors">
+      <Card className={cn(
+        "bg-card/80 backdrop-blur-sm border-border/50 hover:border-primary/30 transition-colors border-l-4",
+        postTypeBorderColors[post.post_type]
+      )}>
         <CardContent className="p-5">
           {/* Header */}
           <div className="flex items-start gap-3 mb-4">
@@ -74,39 +118,77 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
                 {initials}
               </AvatarFallback>
             </Avatar>
-            
+
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-semibold text-foreground">{displayName}</span>
                 <PostTypeTag type={post.post_type} />
               </div>
-              <span className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-muted-foreground">
+                  {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                </span>
+                {isEdited && (
+                  <span className="text-xs text-muted-foreground/60 italic">• edited</span>
+                )}
+              </div>
+            </div>
+
+            {/* Actions menu */}
+            <div className="flex items-center gap-1">
+              {isOwner && (
+                <>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => { setIsEditing(true); setEditContent(post.content); }}>
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={handleDelete}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </>
+              )}
+              {user && !isOwner && (
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => setShowReportModal(true)}>
+                  <Flag className="w-3.5 h-3.5" />
+                </Button>
+              )}
             </div>
           </div>
-          
-          {/* Goal link */}
-          {post.goal && canShowGoals && (
+
+          {/* Goal link (denormalized) */}
+          {post.goal_name && canShowGoals && (
             <div className="mb-3 flex items-center gap-2 p-2 rounded-lg bg-muted/50 border border-border/50">
               <Target className="w-4 h-4 text-primary" />
               <span className="text-sm text-muted-foreground">Linked to:</span>
               <Badge variant="outline" className="bg-primary/10 text-primary border-primary/30">
-                {post.goal.name}
+                {post.goal_name}
               </Badge>
-              {post.goal.type && (
-                <Badge variant="secondary" className="text-xs">
-                  {post.goal.type}
-                </Badge>
-              )}
             </div>
           )}
-          
-          {/* Content */}
-          <p className="text-foreground leading-relaxed mb-4 whitespace-pre-wrap">
-            {post.content}
-          </p>
-          
+
+          {/* Content (editable) */}
+          {isEditing ? (
+            <div className="space-y-2 mb-4">
+              <Textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[80px] resize-none bg-muted/30"
+                maxLength={500}
+              />
+              <div className="flex items-center gap-2 justify-end">
+                <Button size="sm" variant="ghost" onClick={() => setIsEditing(false)} className="gap-1">
+                  <X className="w-3 h-3" /> Cancel
+                </Button>
+                <Button size="sm" onClick={handleSaveEdit} disabled={updatePost.isPending} className="gap-1">
+                  <Check className="w-3 h-3" /> Save
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-foreground leading-relaxed mb-4 whitespace-pre-wrap">
+              {post.content}
+            </p>
+          )}
+
           {/* Reactions and replies */}
           <div className="flex items-center gap-2 flex-wrap">
             <ReactionButton
@@ -127,7 +209,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
               isActive={post.user_reactions?.includes('inspired') || false}
               onToggle={() => handleReaction('inspired')}
             />
-            
+
             <Button
               variant="ghost"
               size="sm"
@@ -139,7 +221,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
               {showReplies ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </Button>
           </div>
-          
+
           {/* Replies section */}
           <AnimatePresence>
             {showReplies && (
@@ -154,45 +236,78 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
                   {repliesLoading ? (
                     <div className="text-sm text-muted-foreground text-center py-2">Loading replies...</div>
                   ) : replies && replies.length > 0 ? (
-                    replies.map((reply) => (
-                      <div key={reply.id} className="flex gap-2">
-                        <Avatar className="w-7 h-7">
-                          <AvatarImage src={reply.profile?.avatar_url || undefined} />
-                          <AvatarFallback className="text-xs bg-muted">
-                            {(reply.profile?.display_name || "A").slice(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 bg-muted/50 rounded-lg p-2.5">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-medium">{reply.profile?.display_name || "Anonymous"}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
-                            </span>
+                    replies.map((reply) => {
+                      const replyDiscoverable = reply.profile?.community_profile_discoverable ?? true;
+                      const replyName = replyDiscoverable ? (reply.profile?.display_name || "Anonymous") : "Anonymous";
+                      const replyAvatar = replyDiscoverable ? reply.profile?.avatar_url || undefined : undefined;
+                      const isReplyOwner = user?.id === reply.user_id;
+
+                      return (
+                        <div key={reply.id} className="flex gap-2 group">
+                          <Avatar className="w-7 h-7">
+                            <AvatarImage src={replyAvatar} />
+                            <AvatarFallback className="text-xs bg-muted">
+                              {replyName.slice(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 bg-muted/50 rounded-lg p-2.5">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-sm font-medium">{replyName}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
+                              </span>
+                              {isReplyOwner && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                                  onClick={() => deleteReply.mutate({ replyId: reply.id, postId: post.id })}
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </Button>
+                              )}
+                            </div>
+                            <p className="text-sm text-foreground">{reply.content}</p>
                           </div>
-                          <p className="text-sm text-foreground">{reply.content}</p>
                         </div>
-                      </div>
-                    ))
+                      );
+                    })
                   ) : (
                     <div className="text-sm text-muted-foreground text-center py-2">No replies yet. Be the first!</div>
                   )}
-                  
+
+                  {/* Compact reply input */}
                   {user && (
                     <div className="flex gap-2 mt-3">
-                      <Textarea
-                        placeholder="Write a supportive reply..."
-                        value={replyContent}
-                        onChange={(e) => setReplyContent(e.target.value)}
-                        className="min-h-[60px] resize-none bg-muted/30"
-                      />
-                      <Button
-                        onClick={handleSubmitReply}
-                        disabled={!replyContent.trim() || addReply.isPending}
-                        size="sm"
-                        className="self-end"
-                      >
-                        Reply
-                      </Button>
+                      {replyFocused ? (
+                        <>
+                          <Textarea
+                            placeholder="Write a supportive reply..."
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            className="min-h-[60px] resize-none bg-muted/30"
+                            autoFocus
+                            onBlur={() => {
+                              if (!replyContent.trim()) setReplyFocused(false);
+                            }}
+                          />
+                          <Button
+                            onClick={handleSubmitReply}
+                            disabled={!replyContent.trim() || addReply.isPending}
+                            size="sm"
+                            className="self-end"
+                          >
+                            Reply
+                          </Button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setReplyFocused(true)}
+                          className="w-full text-left px-3 py-2 rounded-lg bg-muted/30 border border-border/50 text-sm text-muted-foreground hover:border-primary/30 transition-colors"
+                        >
+                          Reply...
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -201,6 +316,12 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
           </AnimatePresence>
         </CardContent>
       </Card>
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        postId={post.id}
+      />
     </motion.div>
   );
 }
