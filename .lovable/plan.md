@@ -1,62 +1,104 @@
 
+# Audit and Improvement Plan: Pact Settings Menu
 
-# Fix Pact Settings: Connect Symbol Picker to PactVisual and Remove Emojis
+## Current State Audit
 
-## Problems Found
+The Pact Settings page (`/profile/pact-settings`) consists of 5 sections stacked vertically:
 
-### 1. Symbol Picker Uses Emojis Instead of PactVisual Symbols
-The `PactIdentityCard.tsx` component (lines 11-16) has a hardcoded grid of 32 Unicode emojis. Meanwhile, `PactVisual.tsx` only supports 4 SVG-animated symbols: `flame`, `heart`, `target`, `sparkles`. When the user selects an emoji like "diamond", the value stored is the raw emoji string (e.g. `"💎"`), which PactVisual cannot match -- it silently falls back to `flame` every time. This is why the Home Hero logo never reflects the chosen symbol.
+1. **Pact Identity Card** -- Name, Why statement, Symbol picker (4 PactVisual options)
+2. **Project Timeline Card** -- Start/End date pickers with save
+3. **Custom Difficulty Card** -- Name, color, active toggle for a custom difficulty tier
+4. **Ranks Card** -- Full CRUD for XP-based rank progression
+5. **Reset Pact (Danger Zone)** -- Destructive reset with confirmation
 
-### 2. No PactVisual Preview in Settings
-The current symbol picker shows the raw emoji character in a 64x64 button. It should instead render the actual `PactVisual` component so the user sees exactly what their logo will look like on the Home page.
+---
 
-### 3. i18n Keys Are Present (Not Broken)
-The console warnings about `profile.pact.resetPactDesc` etc. are false alarms -- the keys exist in both `en.json` (line 1083) and `fr.json` (line 1083). This is likely a render-timing issue where the component renders before the i18n bundle is fully loaded. No code change needed here; the keys resolve correctly on re-render.
+## Issues Found
 
-## Plan
+### A. Bugs and Functional Problems
 
-### File: `src/components/profile/PactIdentityCard.tsx`
+| Issue | Severity | Details |
+|---|---|---|
+| Default symbol fallback still emoji | Medium | `PactSettings.tsx` line 16: `useState("🎯")` -- if the DB has no symbol set, the state initializes with an emoji string, which PactVisual cannot render. Should default to `"flame"`. |
+| Default symbol fallback on load | Medium | `PactSettings.tsx` line 58: `pactData.symbol \|\| "🎯"` -- same emoji fallback on DB read. Should be `"flame"`. |
+| `color` field exists in DB but is unused | Low | The `pacts` table has a `color` column. The `usePact` interface exposes it. The i18n has a `pact.color` key. But the UI has no way to set it, and nothing reads it. |
+| Hardcoded English strings | Medium | `PactIdentityCard`, `ProjectTimelineCard`, `CustomDifficultyCard`, and `RanksCard` all have hardcoded English text instead of using i18n `t()` keys. Only the Reset Pact section and the page shell use translations. |
+| PactTimeline "Set dates" navigates to `/profile` | Low | `PactTimeline.tsx` line 102: the "Set dates in Pact Settings" button navigates to `/profile` instead of `/profile/pact-settings`. |
 
-**A. Replace the emoji grid with a PactVisual symbol selector**
+### B. Visual and UX Issues
 
-- Remove the `EMOJI_OPTIONS` array (lines 11-16)
-- Add a `SYMBOL_OPTIONS` array with the 4 PactVisual keys: `flame`, `heart`, `target`, `sparkles`, each with a human-readable label
-- Import `PactVisual` from `@/components/PactVisual`
-
-**B. Replace the emoji display button with a PactVisual preview**
-
-- Instead of showing `{pactSymbol || "🎯"}` as raw text in a 64x64 button, render `<PactVisual symbol={pactSymbol} size="sm" />` inside the button
-- This gives the user an animated preview of their actual logo
-
-**C. Replace the emoji picker grid with a symbol card selector**
-
-- Replace the 8-column emoji grid with a 4-item row (or 2x2 grid)
-- Each option renders a small `<PactVisual symbol={key} size="sm" />` with the label underneath
-- The selected symbol gets a highlighted border (ring-2 ring-primary)
-- Clicking a symbol calls `onPactSymbolChange(key)` with the string key (e.g. `"heart"`)
-
-**D. Update helper text**
-
-- Change "Choose an emoji that represents your pact's essence" to "Choose an animated symbol for your pact logo"
-
-### No Other Files Need Changes
-
-- `PactVisual.tsx` already handles the fallback (`REGISTRY[symbol] ?? REGISTRY.flame`) so existing emoji values in the DB will gracefully render as `flame` until the user picks a new symbol
-- `HeroSection.tsx` already passes `pact.symbol` to `PactVisual` -- once the DB stores `"flame"` / `"heart"` / `"target"` / `"sparkles"`, everything connects automatically
-- `usePactMutation.ts` already handles updating the `symbol` field
-- The i18n keys for Reset Pact are correct and functional
-
-## Summary
-
-| What | Status |
+| Issue | Details |
 |---|---|
-| Emoji picker in PactIdentityCard | Replace with 4 PactVisual symbol cards |
-| PactVisual preview in settings | Add animated preview using PactVisual component |
-| Home Hero logo sync | Already works once DB stores valid symbol keys |
-| Reset Pact i18n keys | Already present, no fix needed |
-| Timeline card | Working correctly |
-| Custom difficulty card | Working correctly |
-| Ranks card | Working correctly |
+| No live preview of identity | User edits name/mantra/symbol but can't preview what the Home Hero will look like. Adding a mini HeroSection preview would give instant feedback. |
+| Inconsistent save patterns | Identity Card has one Save button. Timeline Card has its own Save button. Custom Difficulty has its own. Three separate saves on one page for related data feels fragmented. |
+| No Pact color picker | The `color` DB field exists but has no UI. This could let users customize their pact's accent/glow color across the app. |
+| No Pact age/stats summary | There's no "Pact Overview" at the top showing creation date, total days active, goals created, points earned -- basic stats about the user's journey. |
+| No character count indicators | Name (50 char max) and Mantra (200 char max) have `maxLength` but no visible counter showing remaining characters. |
+| Symbol selector has no labels translated | The 4 PactVisual labels ("Flame", "Heart", "Target", "Sparkles") are hardcoded English. |
+| PactSettingsCard has unused `useState` import | Minor cleanup. |
 
-One file modified: `src/components/profile/PactIdentityCard.tsx`
+### C. Missing Features (Enhancement Opportunities)
 
+| Feature | Impact | Description |
+|---|---|---|
+| Pact Color Customization | High | Add a color picker that writes to the existing `pacts.color` column. This color could tint the PactVisual glow, the Hero section accent, and rank borders. |
+| Pact Stats Overview Card | Medium | A read-only card at the top showing: Pact created date, total days active, total goals, completed goals, current points, current rank, check-in streak. Gives users a sense of their journey. |
+| Live Identity Preview | Medium | A mini preview panel showing the PactVisual + name + mantra as it would appear on the Home Hero. |
+| Character counters | Low | Show "12/50" and "45/200" under name and mantra inputs. |
+| Consolidated Save | Medium | Merge Identity + Timeline into a single save action since they both write to the `pacts` table. Reduces cognitive load from 3 saves to 2. |
+
+---
+
+## Proposed Changes
+
+### 1. Fix emoji fallbacks in `PactSettings.tsx`
+- Line 16: Change `useState("🎯")` to `useState("flame")`
+- Line 58: Change `pactData.symbol || "🎯"` to `pactData.symbol || "flame"`
+
+### 2. Fix PactTimeline navigation
+- `PactTimeline.tsx` line 102: Change `/profile` to `/profile/pact-settings`
+
+### 3. Add Pact Color Picker to `PactIdentityCard.tsx`
+- Add a color picker similar to CustomDifficultyCard's, writing to `pacts.color`
+- Wire it through the existing prop chain (PactSettings -> ProfilePactSettings -> PactIdentityCard)
+- Update `usePactMutation` call in `handleSavePactIdentity` to include `color`
+
+### 4. Add character counters to `PactIdentityCard.tsx`
+- Show `{pactName.length}/50` under the name input
+- Show `{pactMantra.length}/200` under the mantra textarea
+
+### 5. Add Pact Stats Overview Card
+- New component `PactOverviewCard.tsx` placed at the top of ProfilePactSettings
+- Reads from `usePact` and `useGoals` hooks to display:
+  - Pact creation date
+  - Days active
+  - Total/completed goals count
+  - Current points and rank
+  - Check-in streak
+- Read-only, no save button needed
+
+### 6. Add Live Identity Preview to `PactIdentityCard.tsx`
+- A small preview box at the top of the card showing the PactVisual with the current symbol, the pact name, and mantra as they would appear
+
+### 7. Internationalize all hardcoded strings
+- Add i18n keys under `profile.pact.*` for all Pact Settings cards
+- Replace hardcoded strings in PactIdentityCard, ProjectTimelineCard, CustomDifficultyCard, and RanksCard with `t()` calls
+
+---
+
+## Technical Summary
+
+| File | Changes |
+|---|---|
+| `src/pages/profile/PactSettings.tsx` | Fix emoji defaults to `"flame"`, add `pactColor` state, pass to children |
+| `src/components/profile/PactIdentityCard.tsx` | Add color picker, character counters, live preview panel, i18n |
+| `src/components/profile/ProjectTimelineCard.tsx` | i18n for all strings |
+| `src/components/profile/CustomDifficultyCard.tsx` | i18n for all strings |
+| `src/components/profile/RanksCard.tsx` | i18n for all strings |
+| `src/components/profile/ProfilePactSettings.tsx` | Add PactOverviewCard, pass color props |
+| `src/components/profile/PactOverviewCard.tsx` | New component: read-only pact stats summary |
+| `src/components/PactTimeline.tsx` | Fix navigation path to `/profile/pact-settings` |
+| `src/i18n/locales/en.json` | Add ~30 new i18n keys under `profile.pact.*` |
+| `src/i18n/locales/fr.json` | Add matching French translations |
+
+No database migrations needed -- the `color` column already exists in the `pacts` table.
