@@ -1,52 +1,62 @@
 
 
-# Plan: Clean Up SmartProjectHeader — Remove Fake Time Calculations
+# Fix Pact Settings: Connect Symbol Picker to PactVisual and Remove Emojis
 
-## What Changes
+## Problems Found
 
-Remove the two fake time-based metrics (the arbitrary "15 min per step" estimates and the misleading "efficiency this week" calculation) and replace them with meaningful, data-backed sub-metrics.
+### 1. Symbol Picker Uses Emojis Instead of PactVisual Symbols
+The `PactIdentityCard.tsx` component (lines 11-16) has a hardcoded grid of 32 Unicode emojis. Meanwhile, `PactVisual.tsx` only supports 4 SVG-animated symbols: `flame`, `heart`, `target`, `sparkles`. When the user selects an emoji like "diamond", the value stored is the raw emoji string (e.g. `"💎"`), which PactVisual cannot match -- it silently falls back to `flame` every time. This is why the Home Hero logo never reflects the chosen symbol.
 
-## Detailed Changes
+### 2. No PactVisual Preview in Settings
+The current symbol picker shows the raw emoji character in a 64x64 button. It should instead render the actual `PactVisual` component so the user sees exactly what their logo will look like on the Home page.
 
-### File: `src/components/home/hero/SmartProjectHeader.tsx`
+### 3. i18n Keys Are Present (Not Broken)
+The console warnings about `profile.pact.resetPactDesc` etc. are false alarms -- the keys exist in both `en.json` (line 1083) and `fr.json` (line 1083). This is likely a render-timing issue where the component renders before the i18n bundle is fully loaded. No code change needed here; the keys resolve correctly on re-render.
 
-**1. Delete the time estimation block (lines 49-56)**
-Remove the `estimatedMinutes`, `estimatedHours`, and `estimatedTimeText` variables entirely.
+## Plan
 
-**2. Delete the fake efficiency block (lines 58-62)**
-Remove `completionRate` and `efficiencyDelta` variables.
+### File: `src/components/profile/PactIdentityCard.tsx`
 
-**3. Update Priority 2 (Focus goal with steps, lines 88-100)**
-Replace `focusTimeText` (lines 83-86) and its usage in `subMetrics` with a real progress fraction:
-- Before: `subMetrics: [focusTimeText, 'Priority Target']`
-- After: `subMetrics: [`${primaryFocus.validated_steps || 0}/${primaryFocus.total_steps || 0} steps done`, 'Priority Target']`
+**A. Replace the emoji grid with a PactVisual symbol selector**
 
-**4. Update Priority 3 (In-progress goals, lines 117-128)**
-Replace `estimatedTimeText` in `subMetrics` with the count of in-progress goals only (already present as second metric), and a completion fraction:
-- Before: `subMetrics: [estimatedTimeText, '3 active goals']`
-- After: `subMetrics: [`${inProgressGoals.length} active goal${inProgressGoals.length > 1 ? 's' : ''}`, `${totalStepsRemaining} steps left`]`
+- Remove the `EMOJI_OPTIONS` array (lines 11-16)
+- Add a `SYMBOL_OPTIONS` array with the 4 PactVisual keys: `flame`, `heart`, `target`, `sparkles`, each with a human-readable label
+- Import `PactVisual` from `@/components/PactVisual`
 
-**5. Update Priority 4 (All caught up, lines 131-142)**
-Replace the fake weekly efficiency with a real completion count:
-- Before: `subMetrics: ['Efficiency: +23% this week', ...]` (headline) + `subMetrics: ['5 completed', 'On track']`
-- After: `headline: 'All goals completed!'` and `subMetrics: [`${completedGoals.length} goal${completedGoals.length > 1 ? 's' : ''} done`, 'Keep momentum']`
+**B. Replace the emoji display button with a PactVisual preview**
 
-## Summary of Removals
+- Instead of showing `{pactSymbol || "🎯"}` as raw text in a 64x64 button, render `<PactVisual symbol={pactSymbol} size="sm" />` inside the button
+- This gives the user an animated preview of their actual logo
 
-| Removed | Why |
+**C. Replace the emoji picker grid with a symbol card selector**
+
+- Replace the 8-column emoji grid with a 4-item row (or 2x2 grid)
+- Each option renders a small `<PactVisual symbol={key} size="sm" />` with the label underneath
+- The selected symbol gets a highlighted border (ring-2 ring-primary)
+- Clicking a symbol calls `onPactSymbolChange(key)` with the string key (e.g. `"heart"`)
+
+**D. Update helper text**
+
+- Change "Choose an emoji that represents your pact's essence" to "Choose an animated symbol for your pact logo"
+
+### No Other Files Need Changes
+
+- `PactVisual.tsx` already handles the fallback (`REGISTRY[symbol] ?? REGISTRY.flame`) so existing emoji values in the DB will gracefully render as `flame` until the user picks a new symbol
+- `HeroSection.tsx` already passes `pact.symbol` to `PactVisual` -- once the DB stores `"flame"` / `"heart"` / `"target"` / `"sparkles"`, everything connects automatically
+- `usePactMutation.ts` already handles updating the `symbol` field
+- The i18n keys for Reset Pact are correct and functional
+
+## Summary
+
+| What | Status |
 |---|---|
-| `estimatedMinutes`, `estimatedHours`, `estimatedTimeText` | Arbitrary 15min/step constant with no data basis |
-| `focusEstimate`, `focusTimeText` | Same arbitrary constant applied to focus goal |
-| `completionRate`, `efficiencyDelta` | Misleading "this week" label on an all-time ratio minus 50 |
+| Emoji picker in PactIdentityCard | Replace with 4 PactVisual symbol cards |
+| PactVisual preview in settings | Add animated preview using PactVisual component |
+| Home Hero logo sync | Already works once DB stores valid symbol keys |
+| Reset Pact i18n keys | Already present, no fix needed |
+| Timeline card | Working correctly |
+| Custom difficulty card | Working correctly |
+| Ranks card | Working correctly |
 
-## What Stays Unchanged
+One file modified: `src/components/profile/PactIdentityCard.tsx`
 
-- The 6-level priority cascade logic (critical/high/medium/low/empty/default)
-- All visual theming (colors, glows, borders, pulse)
-- The Framer Motion entrance animation
-- Habit goal exclusion filter
-- The component's props interface and usage in HeroSection
-
-## Technical Details
-
-Only one file is modified: `src/components/home/hero/SmartProjectHeader.tsx`. No new dependencies, no database changes, no hook modifications. The `Goal` interface fields used (`validated_steps`, `total_steps`, `status`, `goal_type`, `name`) remain the same.
