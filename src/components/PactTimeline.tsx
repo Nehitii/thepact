@@ -97,7 +97,7 @@ export function PactTimeline({
             No project timeline set yet.
           </p>
           <Button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/profile/pact-settings")}
             variant="outline"
             className="bg-primary/10 border-primary/30 hover:border-primary/50 hover:bg-primary/20 text-primary font-orbitron text-xs uppercase tracking-wider"
           >

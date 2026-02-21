@@ -13,7 +13,8 @@ export default function PactSettings() {
   const [pactId, setPactId] = useState<string | null>(null);
   const [pactName, setPactName] = useState("");
   const [pactMantra, setPactMantra] = useState("");
-  const [pactSymbol, setPactSymbol] = useState("🎯");
+  const [pactSymbol, setPactSymbol] = useState("flame");
+  const [pactColor, setPactColor] = useState("#f59e0b");
   
   // Timeline state
   const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
@@ -47,7 +48,7 @@ export default function PactSettings() {
       // Load pact data (including identity fields)
       const { data: pactData } = await supabase
         .from("pacts")
-        .select("id, name, mantra, symbol, project_start_date, project_end_date")
+        .select("id, name, mantra, symbol, color, project_start_date, project_end_date")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -55,7 +56,8 @@ export default function PactSettings() {
         setPactId(pactData.id);
         setPactName(pactData.name || "");
         setPactMantra(pactData.mantra || "");
-        setPactSymbol(pactData.symbol || "🎯");
+        setPactSymbol(pactData.symbol || "flame");
+        if (pactData.color) setPactColor(pactData.color);
         if (pactData.project_start_date) {
           setProjectStartDate(new Date(pactData.project_start_date));
         }
@@ -74,8 +76,9 @@ export default function PactSettings() {
       name: pactName.trim(),
       mantra: pactMantra.trim(),
       symbol: pactSymbol,
+      color: pactColor,
     });
-  }, [updatePact, pactName, pactMantra, pactSymbol]);
+  }, [updatePact, pactName, pactMantra, pactSymbol, pactColor]);
 
   if (!user) return null;
 
@@ -96,6 +99,8 @@ export default function PactSettings() {
         onPactNameChange={setPactName}
         onPactMantraChange={setPactMantra}
         onPactSymbolChange={setPactSymbol}
+        pactColor={pactColor}
+        onPactColorChange={setPactColor}
         onSavePactIdentity={handleSavePactIdentity}
         isSavingIdentity={isUpdating}
         // Timeline props
