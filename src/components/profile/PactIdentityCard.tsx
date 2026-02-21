@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { Sparkles, Save, Loader2 } from "lucide-react";
 import { PactSettingsCard } from "./PactSettingsCard";
 import { Input } from "@/components/ui/input";
@@ -6,13 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { PactVisual } from "@/components/PactVisual";
 
-// Common emoji options for pact symbol
-const EMOJI_OPTIONS = [
-  "🔥", "⚡", "🎯", "💎", "🌟", "🚀", "💪", "🏆", 
-  "🌙", "☀️", "🌈", "🦋", "🐉", "🦅", "🐺", "🦁",
-  "⚔️", "🛡️", "👑", "🎭", "🎨", "📚", "💡", "🔮",
-  "🌊", "🌸", "🍀", "🌿", "🔷", "❤️", "💜", "🖤",
+const SYMBOL_OPTIONS = [
+  { key: "flame", label: "Flame" },
+  { key: "heart", label: "Heart" },
+  { key: "target", label: "Target" },
+  { key: "sparkles", label: "Sparkles" },
 ];
 
 interface PactIdentityCardProps {
@@ -44,7 +44,7 @@ export function PactIdentityCard({
   onSave,
   isSaving = false,
 }: PactIdentityCardProps) {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  
 
   const handleSave = useCallback(async () => {
     if (!pactId) {
@@ -68,9 +68,8 @@ export function PactIdentityCard({
     await onSave();
   }, [pactId, pactName, onSave]);
 
-  const handleEmojiSelect = (emoji: string) => {
-    onPactSymbolChange(emoji);
-    setShowEmojiPicker(false);
+  const handleSymbolSelect = (key: string) => {
+    onPactSymbolChange(key);
   };
 
   return (
@@ -117,50 +116,31 @@ export function PactIdentityCard({
           </p>
         </div>
 
-        {/* Pact Logo / Symbol */}
-        <div className="space-y-2">
+        {/* Pact Symbol */}
+        <div className="space-y-3">
           <Label className="text-sm font-medium text-foreground">
             Pact Symbol
           </Label>
-          <div className="flex items-center gap-3">
-            {/* Current Symbol Display */}
-            <button
-              type="button"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="flex items-center justify-center w-16 h-16 rounded-xl border-2 border-primary/30 bg-background/50 hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-3xl"
-              aria-label="Select pact symbol"
-            >
-              {pactSymbol || "🎯"}
-            </button>
-            <div className="flex-1">
-              <p className="text-sm text-foreground font-medium">
-                Click to change symbol
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Choose an emoji that represents your pact's essence.
-              </p>
-            </div>
+          <p className="text-xs text-muted-foreground">
+            Choose an animated symbol for your pact logo.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {SYMBOL_OPTIONS.map(({ key, label }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => handleSymbolSelect(key)}
+                className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200 ${
+                  pactSymbol === key
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/40"
+                    : "border-primary/20 bg-background/50 hover:border-primary/50 hover:bg-primary/5"
+                }`}
+              >
+                <PactVisual symbol={key} size="sm" />
+                <span className="text-xs font-medium text-muted-foreground">{label}</span>
+              </button>
+            ))}
           </div>
-
-          {/* Emoji Picker Grid */}
-          {showEmojiPicker && (
-            <div className="mt-3 p-3 rounded-lg border border-primary/20 bg-card/80 animate-fade-in">
-              <div className="grid grid-cols-8 gap-2">
-                {EMOJI_OPTIONS.map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => handleEmojiSelect(emoji)}
-                    className={`flex items-center justify-center w-10 h-10 rounded-lg text-xl hover:bg-primary/20 transition-colors ${
-                      pactSymbol === emoji ? "bg-primary/30 ring-2 ring-primary" : "bg-background/30"
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Save Button */}
