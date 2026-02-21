@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -25,21 +24,20 @@ export function ProjectTimelineCard({
   onProjectStartDateChange,
   onProjectEndDateChange,
 }: ProjectTimelineCardProps) {
-  const { t } = useTranslation();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
 
   const dateValidationError = projectStartDate && projectEndDate && projectEndDate <= projectStartDate
-    ? t("profile.pact.timeline.validationError")
+    ? "End date must be after start date."
     : null;
 
   const handleSave = async () => {
     if (dateValidationError) {
-      toast({ title: t("profile.pact.timeline.validationTitle"), description: dateValidationError, variant: "destructive" });
+      toast({ title: "Validation Error", description: dateValidationError, variant: "destructive" });
       return;
     }
     if (!pactId) {
-      toast({ title: t("common.error"), description: t("profile.pact.timeline.noPact"), variant: "destructive" });
+      toast({ title: "Error", description: "No pact found to update.", variant: "destructive" });
       return;
     }
 
@@ -53,9 +51,9 @@ export function ProjectTimelineCard({
       .eq("id", pactId);
 
     if (error) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: t("profile.pact.timeline.savedTitle"), description: t("profile.pact.timeline.savedDesc") });
+      toast({ title: "Timeline Updated", description: "Your project timeline has been saved." });
     }
     setSaving(false);
   };
@@ -68,8 +66,8 @@ export function ProjectTimelineCard({
   return (
     <PactSettingsCard
       icon={<Clock className="h-5 w-5 text-primary" />}
-      title={t("profile.pact.timeline.title")}
-      description={t("profile.pact.timeline.description")}
+      title="Project Timeline"
+      description="Set your pact journey start and end dates"
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-2">
@@ -78,30 +76,16 @@ export function ProjectTimelineCard({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Start Date */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest flex items-center gap-1.5 drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
               <div className="w-2 h-2 rounded-full bg-primary/80 shadow-[0_0_6px_rgba(91,180,255,0.6)]" />
-              {t("profile.pact.timeline.startDate")}
+              Start Date
             </label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full h-11 justify-start text-left font-normal px-3",
-                    "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]",
-                    "border border-primary/40 rounded-lg",
-                    "text-[#e0f0ff] font-rajdhani text-sm",
-                    "hover:border-primary/60 hover:bg-[#0d1a2d]",
-                    "focus:ring-1 focus:ring-primary/50",
-                    !projectStartDate && "text-[#6b9ec4]"
-                  )}
-                >
+                <Button variant="outline" className={cn("w-full h-11 justify-start text-left font-normal px-3", "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]", "border border-primary/40 rounded-lg", "text-[#e0f0ff] font-rajdhani text-sm", "hover:border-primary/60 hover:bg-[#0d1a2d]", "focus:ring-1 focus:ring-primary/50", !projectStartDate && "text-[#6b9ec4]")}>
                   <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF] flex-shrink-0" />
-                  <span className="truncate">
-                    {projectStartDate ? formatDisplayDate(projectStartDate) : t("profile.pact.timeline.selectStart")}
-                  </span>
+                  <span className="truncate">{projectStartDate ? formatDisplayDate(projectStartDate) : "Select start"}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 z-[100] bg-[#0a1525] border-primary/40 shadow-[0_0_30px_rgba(91,180,255,0.2)]" align="start">
@@ -110,30 +94,16 @@ export function ProjectTimelineCard({
             </Popover>
           </div>
 
-          {/* End Date */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest flex items-center gap-1.5 drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
               <div className="w-2 h-2 rounded-full bg-primary/60 shadow-[0_0_6px_rgba(91,180,255,0.4)]" />
-              {t("profile.pact.timeline.endDate")}
+              End Date
             </label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full h-11 justify-start text-left font-normal px-3",
-                    "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]",
-                    "border border-primary/40 rounded-lg",
-                    "text-[#e0f0ff] font-rajdhani text-sm",
-                    "hover:border-primary/60 hover:bg-[#0d1a2d]",
-                    "focus:ring-1 focus:ring-primary/50",
-                    !projectEndDate && "text-[#6b9ec4]"
-                  )}
-                >
+                <Button variant="outline" className={cn("w-full h-11 justify-start text-left font-normal px-3", "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]", "border border-primary/40 rounded-lg", "text-[#e0f0ff] font-rajdhani text-sm", "hover:border-primary/60 hover:bg-[#0d1a2d]", "focus:ring-1 focus:ring-primary/50", !projectEndDate && "text-[#6b9ec4]")}>
                   <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF] flex-shrink-0" />
-                  <span className="truncate">
-                    {projectEndDate ? formatDisplayDate(projectEndDate) : t("profile.pact.timeline.selectEnd")}
-                  </span>
+                  <span className="truncate">{projectEndDate ? formatDisplayDate(projectEndDate) : "Select end"}</span>
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0 z-[100] bg-[#0a1525] border-primary/40 shadow-[0_0_30px_rgba(91,180,255,0.2)]" align="start">
@@ -145,23 +115,13 @@ export function ProjectTimelineCard({
 
         {dateValidationError && (
           <p className="text-xs text-destructive font-rajdhani px-1 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
-            {dateValidationError}
+            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />{dateValidationError}
           </p>
         )}
 
-        <Button
-          onClick={handleSave}
-          disabled={saving || !!dateValidationError}
-          className={cn(
-            "w-full h-10 font-orbitron uppercase tracking-wider text-xs",
-            "bg-primary/20 border border-primary/40 rounded-lg",
-            "text-primary hover:bg-primary/30 hover:border-primary/60",
-            "disabled:opacity-50 disabled:cursor-not-allowed",
-            "transition-all duration-200"
-          )}
-        >
-          {saving ? t("profile.pact.timeline.saving") : t("profile.pact.timeline.saveButton")}
+        <Button onClick={handleSave} disabled={saving || !!dateValidationError}
+          className={cn("w-full h-10 font-orbitron uppercase tracking-wider text-xs", "bg-primary/20 border border-primary/40 rounded-lg", "text-primary hover:bg-primary/30 hover:border-primary/60", "disabled:opacity-50 disabled:cursor-not-allowed", "transition-all duration-200")}>
+          {saving ? "SAVING…" : "SAVE TIMELINE"}
         </Button>
       </div>
     </PactSettingsCard>
