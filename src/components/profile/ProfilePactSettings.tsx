@@ -125,30 +125,30 @@ export function ProfilePactSettings({
       {pactId && (
         <PactSettingsCard
           icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
-          title={t("profile.pact.resetPact")}
-          description={t("profile.pact.resetPactDesc")}
+          title="Reset Pact"
+          description="Delete all goals, steps and progress. Your pact identity is kept."
         >
           <p className="text-sm text-muted-foreground">
-            {t("profile.pact.resetPactWarning")}
+            This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
           </p>
 
           <AlertDialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setConfirmName(""); }}>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" className="w-full">
-                {t("profile.pact.resetPact")}
+                Reset Pact
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>{t("profile.pact.resetPact")}</AlertDialogTitle>
+                <AlertDialogTitle>Reset Pact</AlertDialogTitle>
                 <AlertDialogDescription>
-                  {t("profile.pact.resetPactWarning")}
+                  This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
                 </AlertDialogDescription>
               </AlertDialogHeader>
 
               <div className="space-y-2 py-2">
                 <p className="text-sm text-muted-foreground">
-                  {t("profile.pact.resetPactConfirm")}: <strong className="text-foreground">{pactName}</strong>
+                  Type your pact name to confirm: <strong className="text-foreground">{pactName}</strong>
                 </p>
                 <Input
                   value={confirmName}
@@ -159,13 +159,13 @@ export function ProfilePactSettings({
               </div>
 
               <AlertDialogFooter>
-                <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
                 <Button
                   variant="destructive"
                   disabled={confirmName !== pactName || resetPact.isPending}
                   onClick={handleReset}
                 >
-                  {resetPact.isPending ? t("profile.pact.resetting") : t("profile.pact.resetPactButton")}
+                  {resetPact.isPending ? "Resetting…" : "Reset everything"}
                 </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
