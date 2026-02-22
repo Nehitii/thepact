@@ -187,7 +187,7 @@ async function sendEmailViaResend(to: string, code: string): Promise<boolean> {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Pacte <onboarding@resend.dev>",
+        from: Deno.env.get("RESEND_FROM_EMAIL") || "Pacte <onboarding@resend.dev>",
         to: [to],
         subject: `${code} — Your Pacte verification code`,
         html,
