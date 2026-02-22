@@ -10,12 +10,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { Card } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance";
 
 export default function DataPortability() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [exportCategory, setExportCategory] = useState<ExportCategory>("all");
   const [isExporting, setIsExporting] = useState(false);
 
@@ -228,13 +230,13 @@ export default function DataPortability() {
       URL.revokeObjectURL(url);
 
       toast({
-        title: "Export Complete",
-        description: `Your ${getCategoryLabel(exportCategory).toLowerCase()} has been exported successfully.`,
+        title: t("profile.data.exportComplete"),
+        description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }),
       });
     } catch (error) {
       toast({
-        title: "Export Failed",
-        description: "There was an error exporting your data.",
+        title: t("profile.data.exportFailed"),
+        description: t("profile.data.exportError"),
         variant: "destructive",
       });
     } finally {
@@ -244,50 +246,25 @@ export default function DataPortability() {
 
   const getCategoryLabel = (category: ExportCategory): string => {
     switch (category) {
-      case "all":
-        return "All Data";
-      case "goals-steps":
-        return "Goals & Steps";
-      case "journal":
-        return "Journal Entries";
-      case "finance":
-        return "Finance Data";
-      default:
-        return "Data";
+      case "all": return t("profile.data.categories.all");
+      case "goals-steps": return t("profile.data.categories.goalsSteps");
+      case "journal": return t("profile.data.categories.journal");
+      case "finance": return t("profile.data.categories.finance");
+      default: return t("profile.data.categories.data");
     }
   };
 
   const exportOptions: { value: ExportCategory; label: string; icon: React.ReactNode; description: string }[] = [
-    {
-      value: "all",
-      label: "All Data",
-      icon: <Database className="h-4 w-4" />,
-      description: "Complete backup of all your data",
-    },
-    {
-      value: "goals-steps",
-      label: "Goals & Steps",
-      icon: <Target className="h-4 w-4" />,
-      description: "Your goals and their steps only",
-    },
-    {
-      value: "journal",
-      label: "Journal",
-      icon: <BookOpen className="h-4 w-4" />,
-      description: "Your journal entries only",
-    },
-    {
-      value: "finance",
-      label: "Finance",
-      icon: <Wallet className="h-4 w-4" />,
-      description: "Your finance module data only",
-    },
+    { value: "all", label: t("profile.data.categories.all"), icon: <Database className="h-4 w-4" />, description: t("profile.data.allDesc") },
+    { value: "goals-steps", label: t("profile.data.categories.goalsSteps"), icon: <Target className="h-4 w-4" />, description: t("profile.data.goalsDesc") },
+    { value: "journal", label: t("profile.data.categories.journal"), icon: <BookOpen className="h-4 w-4" />, description: t("profile.data.journalDesc") },
+    { value: "finance", label: t("profile.data.categories.finance"), icon: <Wallet className="h-4 w-4" />, description: t("profile.data.financeDesc") },
   ];
 
   return (
     <ProfileSettingsShell
-      title="Data & Portability"
-      subtitle="Your data, your control"
+      title={t("profile.data.title")}
+      subtitle={t("profile.data.subtitle")}
       icon={<Database className="h-7 w-7 text-primary" />}
       containerClassName="max-w-2xl"
     >
@@ -296,24 +273,24 @@ export default function DataPortability() {
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
               <BarChart3 className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">Your Data</h2>
+              <h2 className="text-xl font-orbitron font-semibold text-primary">{t("profile.data.yourData")}</h2>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-card/60 border border-primary/15 rounded-lg p-4 text-center">
                 <div className="text-3xl font-orbitron font-bold text-primary">{stats?.goalsCreated || 0}</div>
-                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">Goals Created</div>
+                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">{t("profile.data.stats.goalsCreated")}</div>
               </div>
               <div className="bg-card/60 border border-primary/15 rounded-lg p-4 text-center">
                 <div className="text-3xl font-orbitron font-bold text-primary">{stats?.stepsCompleted || 0}</div>
-                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">Steps Completed</div>
+                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">{t("profile.data.stats.stepsCompleted")}</div>
               </div>
               <div className="bg-card/60 border border-primary/15 rounded-lg p-4 text-center">
                 <div className="text-3xl font-orbitron font-bold text-primary">{stats?.journalEntries || 0}</div>
-                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">Journal Entries</div>
+                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">{t("profile.data.stats.journalEntries")}</div>
               </div>
               <div className="bg-card/60 border border-primary/15 rounded-lg p-4 text-center">
                 <div className="text-3xl font-orbitron font-bold text-primary">{stats?.achievementsUnlocked || 0}</div>
-                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">Achievements</div>
+                <div className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider mt-1">{t("profile.data.stats.achievements")}</div>
               </div>
             </div>
           </div>
@@ -323,10 +300,10 @@ export default function DataPortability() {
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
               <Download className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">Export Your Data</h2>
+              <h2 className="text-xl font-orbitron font-semibold text-primary">{t("profile.data.exportTitle")}</h2>
             </div>
             <p className="text-muted-foreground font-rajdhani text-sm">
-              Download a copy of your data in JSON format. Choose what you want to export:
+              {t("profile.data.exportDesc")}
             </p>
             <RadioGroup
               value={exportCategory}
@@ -372,7 +349,7 @@ export default function DataPortability() {
               className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider disabled:opacity-50"
             >
               <Download className="mr-2 h-4 w-4" />
-              {isExporting ? "Exporting..." : `Download ${getCategoryLabel(exportCategory)}`}
+              {isExporting ? t("profile.data.exporting") : t("profile.data.download", { category: getCategoryLabel(exportCategory) })}
             </Button>
           </div>
         </Card>
@@ -381,15 +358,15 @@ export default function DataPortability() {
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
               <Scale className="h-5 w-5 text-primary" />
-              <h2 className="text-xl font-orbitron font-semibold text-primary">Terms & Legal</h2>
+              <h2 className="text-xl font-orbitron font-semibold text-primary">{t("profile.data.termsTitle")}</h2>
             </div>
             <p className="text-muted-foreground font-rajdhani text-sm">
-              Review our terms of service, privacy policy, and legal information.
+              {t("profile.data.termsDesc")}
             </p>
             <Link to="/legal">
               <Button className="w-full bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider">
                 <Scale className="mr-2 h-4 w-4" />
-                View Terms & Legal
+                {t("profile.data.viewTerms")}
               </Button>
             </Link>
           </div>

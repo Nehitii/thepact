@@ -9,6 +9,9 @@ import {
   ShieldCheck,
   CreditCard,
   ChevronRight,
+  Lock,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -142,7 +145,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         <CardContent className="p-6">
           <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
             {/* CHANGEMENT ICI : Titre plus clair */}
-            <User className="h-5 w-5" /> Informations Personnelles
+            <User className="h-5 w-5" /> {t("profile.personalInfo")}
           </h3>
 
           <div className="divide-y divide-primary/5">
@@ -199,7 +202,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         <CardContent className="p-6">
           <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
             {/* CHANGEMENT ICI : Titre plus clair */}
-            <Globe className="h-5 w-5" /> Préférences Régionales
+            <Globe className="h-5 w-5" /> {t("profile.regionalPreferences")}
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
@@ -264,6 +267,9 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         </CardContent>
       </Card>
 
+      {/* SECTION 3: CHANGE PASSWORD */}
+      <ChangePasswordSection styles={styles} />
+
       <div className="flex justify-end pt-4">
         <Button
           onClick={handleSave}
@@ -276,5 +282,86 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         </Button>
       </div>
     </div>
+  );
+}
+
+function ChangePasswordSection({ styles }: { styles: { card: string; input: string } }) {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleChangePassword = async () => {
+    if (newPassword.length < 6) {
+      toast({ title: t("common.error"), description: t("profile.changePassword.minLength"), variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: t("common.error"), description: t("profile.changePassword.mismatch"), variant: "destructive" });
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      setNewPassword("");
+      setConfirmPassword("");
+      toast({ title: t("common.success"), description: t("profile.changePassword.success") });
+    } catch (error: any) {
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <Card className={styles.card}>
+      <CardContent className="p-6">
+        <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
+          <Lock className="h-5 w-5" /> {t("profile.changePassword.title")}
+        </h3>
+        <div className="space-y-4 max-w-md">
+          <div className="space-y-2">
+            <Label className="text-xs uppercase text-primary/70">{t("profile.changePassword.newPassword")}</Label>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                className={styles.input}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs uppercase text-primary/70">{t("profile.changePassword.confirmPassword")}</Label>
+            <Input
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="••••••••"
+              className={styles.input}
+            />
+          </div>
+          <Button
+            onClick={handleChangePassword}
+            disabled={isSaving || !newPassword || !confirmPassword}
+            className="bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
+          >
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
+            {isSaving ? t("common.saving") : t("profile.changePassword.update")}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
