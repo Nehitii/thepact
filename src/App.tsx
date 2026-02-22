@@ -75,9 +75,9 @@ const App = () => (
               <Route
                 path="/two-factor"
                 element={
-                  <ProtectedRoute>
+                  <ProtectedWithLayout>
                     <TwoFactor />
-                  </ProtectedRoute>
+                  </ProtectedWithLayout>
                 }
               />
               <Route

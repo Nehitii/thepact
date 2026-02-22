@@ -27,7 +27,6 @@ import {
   Heart,
   Sparkles,
   Trophy,
-  ShieldCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -58,7 +57,6 @@ const profileSubItems = [
   { to: "/profile/notifications", icon: Bell, label: "Notifications" },
   { to: "/profile/privacy", icon: Shield, label: "Privacy & Control" },
   { to: "/profile/data", icon: Database, label: "Data & Portability" },
-  { to: "/two-factor", icon: ShieldCheck, label: "Two-Factor Auth" },
 ];
 
 const moduleConfig: Record<string, { icon: any; route: string; label: string }> = {
