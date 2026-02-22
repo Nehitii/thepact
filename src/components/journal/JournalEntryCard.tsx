@@ -1,148 +1,325 @@
+import { useState } from "react";
 import { format } from "date-fns";
 import type { JournalEntry } from "@/types/journal";
-import { VALENCE_LABELS, ENERGY_LABELS } from "@/types/journal";
-import { Pencil, Trash2, Star, Link2, Zap, Heart } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { getAccent, getMood, getFont, getSize, getAlign } from "@/types/journal";
 import { useToggleFavorite } from "@/hooks/useJournal";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { HUDStatusLine } from "./JournalDecorations";
 
 interface JournalEntryCardProps {
   entry: JournalEntry;
+  index: number;
   onEdit?: (entry: JournalEntry) => void;
   onDelete?: (id: string) => void;
 }
 
-function formatNeuralDate(date: Date) {
-  return `LOG_${format(date, "yyyy.MM.dd")} // ${format(date, "HH:mm")}`;
-}
-
-export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardProps) {
+export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntryCardProps) {
   const { user } = useAuth();
   const toggleFav = useToggleFavorite();
+  const [hovered, setHovered] = useState(false);
+  const [menu, setMenu] = useState(false);
+
+  const accent = getAccent(entry.accent_color);
+  const mood = getMood(entry.mood);
+  const font = getFont(entry.font_id);
+  const size = getSize(entry.size_id);
+  const align = getAlign(entry.align_id);
   const createdDate = new Date(entry.created_at);
-  const valenceInfo = entry.valence_level ? VALENCE_LABELS[entry.valence_level - 1] : null;
-  const energyInfo = entry.energy_level ? ENERGY_LABELS[entry.energy_level - 1] : null;
 
   const handleToggleFavorite = () => {
     if (!user) return;
     toggleFav.mutate({ id: entry.id, userId: user.id, isFavorite: !entry.is_favorite });
   };
 
-  return (
-    <motion.div
-      className="group relative rounded-xl overflow-hidden transition-all duration-300 border border-border/15 hover:border-primary/20"
-      style={{
-        background: "linear-gradient(180deg, hsl(var(--card) / 0.7) 0%, hsl(var(--card) / 0.4) 100%)",
-        boxShadow: "0 4px 30px hsl(var(--background) / 0.3), inset 0 1px 0 hsl(var(--foreground) / 0.02)",
-      }}
-      whileHover={{ y: -1, boxShadow: "0 8px 40px hsl(var(--background) / 0.4), 0 0 30px hsl(var(--primary) / 0.05)" }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Favorite indicator bar */}
-      {entry.is_favorite && (
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
-      )}
+  // Extract text from HTML for line numbers
+  const textContent = entry.content.replace(/<[^>]+>/g, "");
+  const sentences = textContent.split(". ").filter(Boolean);
 
-      <div className="relative z-10 p-5 sm:p-6">
-        {/* Header: date + actions */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="space-y-1.5">
-            <div className="font-mono text-[11px] text-primary/60 tracking-[0.2em] uppercase">
-              {formatNeuralDate(createdDate)}
-            </div>
-            <h3 className="text-lg font-medium text-foreground/90 tracking-tight leading-tight font-mono">
-              {entry.title}
-            </h3>
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.97 }}
+      transition={{ duration: 0.5, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => { setHovered(false); setMenu(false); }}
+      className="relative w-full mb-0.5"
+    >
+      <motion.div
+        animate={{ borderColor: hovered ? accent.hex + "22" : "rgba(255,255,255,0.06)" }}
+        transition={{ duration: 0.35 }}
+        className="relative z-[1] rounded-md overflow-hidden"
+        style={{
+          background: "linear-gradient(160deg, rgba(11,12,20,0.85) 0%, rgba(6,7,13,0.7) 100%)",
+          border: "1px solid rgba(255,255,255,0.06)",
+          padding: "28px 32px 24px",
+        }}
+      >
+        {/* Left accent line */}
+        <div
+          className="absolute left-0 rounded-sm transition-all duration-300"
+          style={{
+            top: "18px",
+            bottom: "18px",
+            width: "2px",
+            background: `linear-gradient(to bottom, transparent, ${accent.hex}${hovered ? "90" : "40"}, transparent)`,
+          }}
+        />
+
+        {/* Pinned glow bar */}
+        {entry.is_favorite && (
+          <div
+            className="absolute top-0"
+            style={{
+              left: "15%",
+              right: "15%",
+              height: "1px",
+              background: `linear-gradient(90deg, transparent, ${accent.hex}, transparent)`,
+            }}
+          />
+        )}
+
+        {/* Entry index watermark */}
+        <div
+          className="absolute select-none"
+          style={{
+            right: "14px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: "9px",
+            color: accent.hex,
+            opacity: 0.13,
+            writingMode: "vertical-rl",
+            letterSpacing: "0.2em",
+          }}
+        >
+          {`ENTRY::${String(index + 1).padStart(3, "0")}`}
+        </div>
+
+        {/* META ROW */}
+        <div className="flex items-center gap-4 mb-3.5 flex-wrap">
+          {/* Mood badge */}
+          <div
+            className="flex items-center gap-[7px] px-2.5 py-[3px] rounded-sm"
+            style={{
+              border: `1px solid ${mood.color}28`,
+              background: `${mood.color}08`,
+            }}
+          >
+            <div
+              className="w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ background: mood.color }}
+            />
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "9px",
+                color: mood.color,
+                letterSpacing: "0.12em",
+              }}
+            >
+              {mood.label}
+            </span>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-200">
-            <button
-              onClick={handleToggleFavorite}
-              className={`h-8 w-8 rounded-lg flex items-center justify-center transition-all duration-200 ${
-                entry.is_favorite
-                  ? "text-primary bg-primary/10"
-                  : "text-muted-foreground/40 hover:text-primary/60 hover:bg-card/60"
-              }`}
+          {/* Date */}
+          <span
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "9px",
+              color: "rgba(255,255,255,0.25)",
+              letterSpacing: "0.12em",
+            }}
+          >
+            {format(createdDate, "yyyy.MM.dd")}{" "}
+            <span style={{ color: accent.hex, opacity: 0.6 }}>//</span>{" "}
+            {format(createdDate, "HH:mm")}
+          </span>
+
+          {entry.is_favorite && (
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "9px",
+                color: accent.hex,
+                opacity: 0.6,
+                letterSpacing: "0.1em",
+              }}
             >
-              <Star className={`h-3.5 w-3.5 ${entry.is_favorite ? "fill-current" : ""}`} />
+              ◈ PIN
+            </span>
+          )}
+
+          <div className="flex-1" />
+
+          {/* Action menu */}
+          <div className="relative">
+            <button
+              onClick={() => setMenu(!menu)}
+              className="flex items-center justify-center transition-all duration-150 cursor-pointer"
+              style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: "4px",
+                background: menu ? accent.dim : "transparent",
+                border: `1px solid ${menu ? accent.hex + "50" : "rgba(255,255,255,0.08)"}`,
+                color: menu ? accent.hex : "rgba(255,255,255,0.3)",
+                fontSize: "13px",
+              }}
+            >
+              ⋮
             </button>
-            {onEdit && (
-              <button
-                onClick={() => onEdit(entry)}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-foreground/70 hover:bg-card/60 transition-all duration-200"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            )}
-            {onDelete && (
-              <button
-                onClick={() => onDelete(entry.id)}
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-destructive/70 hover:bg-destructive/5 transition-all duration-200"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            )}
+
+            <AnimatePresence>
+              {menu && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                  className="absolute right-0 overflow-hidden z-50"
+                  style={{
+                    top: "34px",
+                    background: "#0c0e18",
+                    border: `1px solid ${accent.hex}20`,
+                    borderRadius: "6px",
+                    minWidth: "150px",
+                    boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
+                  }}
+                >
+                  {[
+                    { icon: "◈", label: "EDIT", fn: () => { onEdit?.(entry); setMenu(false); } },
+                    { icon: "◉", label: entry.is_favorite ? "UNPIN" : "PIN", fn: () => { handleToggleFavorite(); setMenu(false); } },
+                    { icon: "◯", label: "DELETE", fn: () => { onDelete?.(entry.id); setMenu(false); }, danger: true },
+                  ].map((a) => (
+                    <button
+                      key={a.label}
+                      onClick={a.fn}
+                      className="w-full text-left flex items-center gap-2 transition-colors duration-150 cursor-pointer hover:bg-white/5"
+                      style={{
+                        padding: "9px 14px",
+                        background: "transparent",
+                        border: "none",
+                        color: a.danger ? "#ff375f" : "rgba(255,255,255,0.55)",
+                        fontSize: "10px",
+                        fontFamily: "'JetBrains Mono', monospace",
+                        letterSpacing: "0.1em",
+                      }}
+                    >
+                      {a.icon} {a.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
-        {/* Metrics row */}
-        {(valenceInfo || energyInfo) && (
-          <div className="flex items-center gap-3 mb-3">
-            {valenceInfo && (
-              <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: valenceInfo.color }}>
-                <Heart className="h-3 w-3" />
-                <span>{valenceInfo.label}</span>
-              </div>
-            )}
-            {energyInfo && (
-              <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: energyInfo.color }}>
-                <Zap className="h-3 w-3" />
-                <span>{energyInfo.label}</span>
-              </div>
-            )}
-          </div>
-        )}
+        {/* TITLE */}
+        <h2
+          style={{
+            fontFamily: "'Orbitron', monospace",
+            fontSize: "clamp(15px, 2vw, 19px)",
+            fontWeight: 700,
+            letterSpacing: "-0.01em",
+            color: "rgba(255,255,255,0.92)",
+            marginBottom: "16px",
+            lineHeight: 1.25,
+            textAlign: align.val,
+            paddingRight: "28px",
+          }}
+        >
+          {entry.title}
+        </h2>
 
-        {/* Tags */}
-        {entry.tags && entry.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {entry.tags.map((tag) => (
-              <Badge
-                key={tag}
-                variant="secondary"
-                className="bg-primary/8 text-primary/70 border-primary/15 font-mono text-[10px] py-0 h-5"
+        {/* BODY */}
+        <div style={{ textAlign: align.val, marginBottom: "20px" }}>
+          {entry.line_numbers ? (
+            <div className="flex gap-3.5">
+              <div className="shrink-0 pt-px">
+                {sentences.map((_, i) => (
+                  <div
+                    key={i}
+                    className="select-none text-right"
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: "9px",
+                      color: accent.hex,
+                      opacity: 0.2,
+                      lineHeight: "1.9",
+                    }}
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </div>
+                ))}
+              </div>
+              <div
+                className="journal-html-content"
+                style={{
+                  fontFamily: font.css,
+                  fontStyle: font.style,
+                  fontSize: `${size.px}px`,
+                  lineHeight: 1.9,
+                  color: "rgba(255,255,255,0.58)",
+                  letterSpacing: font.id === "raj" ? "0.02em" : "-0.01em",
+                }}
+                dangerouslySetInnerHTML={{ __html: entry.content }}
+              />
+            </div>
+          ) : (
+            <div
+              className="journal-html-content"
+              style={{
+                fontFamily: font.css,
+                fontStyle: font.style,
+                fontSize: `${size.px}px`,
+                lineHeight: 1.9,
+                color: "rgba(255,255,255,0.58)",
+                letterSpacing: font.id === "raj" ? "0.02em" : "-0.01em",
+              }}
+              dangerouslySetInnerHTML={{ __html: entry.content }}
+            />
+          )}
+        </div>
+
+        {/* FOOTER */}
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          {/* Tags */}
+          <div className="flex gap-1.5 flex-wrap">
+            {entry.tags?.map((t) => (
+              <span
+                key={t}
+                className="rounded-sm"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "9px",
+                  color: accent.hex,
+                  opacity: 0.75,
+                  background: accent.dim,
+                  border: `1px solid ${accent.hex}22`,
+                  padding: "2px 8px",
+                  letterSpacing: "0.08em",
+                }}
               >
-                #{tag}
-              </Badge>
+                /{t}
+              </span>
             ))}
           </div>
-        )}
 
-        {/* Content - rendered as HTML */}
-        <div
-          className="text-foreground/70 leading-[1.8] text-sm max-w-prose journal-html-content"
-          style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
-          dangerouslySetInnerHTML={{ __html: entry.content }}
-        />
-
-        {/* Footer: linked goal + life context */}
-        {(entry.linked_goal_id || entry.life_context) && (
-          <div className="mt-4 pt-3 border-t border-border/10 flex flex-wrap items-center gap-3">
-            {entry.linked_goal_id && (
-              <div className="flex items-center gap-1 text-[10px] font-mono text-muted-foreground/50">
-                <Link2 className="h-3 w-3" />
-                <span>GOAL_LINKED</span>
-              </div>
-            )}
-            {entry.life_context && (
-              <p className="text-xs text-muted-foreground/40 italic font-light">
-                "{entry.life_context}"
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-    </motion.div>
+          {/* Valence / Energy bars */}
+          {(entry.valence_level || entry.energy_level) && (
+            <div className="flex flex-col gap-1.5 min-w-[120px]">
+              {entry.valence_level && (
+                <HUDStatusLine label="V" value={entry.valence_level} color={accent.hex} />
+              )}
+              {entry.energy_level && (
+                <HUDStatusLine label="E" value={entry.energy_level} color={accent.hex} />
+              )}
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.article>
   );
 }
