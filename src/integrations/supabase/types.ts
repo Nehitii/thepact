@@ -1042,14 +1042,19 @@ export type Database = {
       }
       journal_entries: {
         Row: {
+          accent_color: string | null
+          align_id: string | null
           content: string
           created_at: string
           energy_level: number | null
+          font_id: string | null
           id: string
           is_favorite: boolean | null
           life_context: string | null
+          line_numbers: boolean | null
           linked_goal_id: string | null
           mood: string
+          size_id: string | null
           tags: string[] | null
           title: string
           updated_at: string
@@ -1057,14 +1062,19 @@ export type Database = {
           valence_level: number | null
         }
         Insert: {
+          accent_color?: string | null
+          align_id?: string | null
           content: string
           created_at?: string
           energy_level?: number | null
+          font_id?: string | null
           id?: string
           is_favorite?: boolean | null
           life_context?: string | null
+          line_numbers?: boolean | null
           linked_goal_id?: string | null
           mood?: string
+          size_id?: string | null
           tags?: string[] | null
           title: string
           updated_at?: string
@@ -1072,14 +1082,19 @@ export type Database = {
           valence_level?: number | null
         }
         Update: {
+          accent_color?: string | null
+          align_id?: string | null
           content?: string
           created_at?: string
           energy_level?: number | null
+          font_id?: string | null
           id?: string
           is_favorite?: boolean | null
           life_context?: string | null
+          line_numbers?: boolean | null
           linked_goal_id?: string | null
           mood?: string
+          size_id?: string | null
           tags?: string[] | null
           title?: string
           updated_at?: string

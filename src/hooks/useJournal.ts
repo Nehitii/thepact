@@ -55,12 +55,17 @@ export function useCreateJournalEntry() {
       title: string;
       content: string;
       mood: string;
-      life_context?: string;
-      energy_level?: number;
-      valence_level?: number;
+      life_context?: string | null;
+      energy_level?: number | null;
+      valence_level?: number | null;
       linked_goal_id?: string | null;
       tags?: string[];
       is_favorite?: boolean;
+      accent_color?: string;
+      font_id?: string;
+      size_id?: string;
+      align_id?: string;
+      line_numbers?: boolean;
     }) => {
       const { data, error } = await supabase
         .from("journal_entries")
@@ -96,7 +101,7 @@ export function useUpdateJournalEntry() {
       updates: Partial<
         Pick<
           JournalEntry,
-          "title" | "content" | "mood" | "life_context" | "energy_level" | "valence_level" | "linked_goal_id" | "tags" | "is_favorite"
+          "title" | "content" | "mood" | "life_context" | "energy_level" | "valence_level" | "linked_goal_id" | "tags" | "is_favorite" | "accent_color" | "font_id" | "size_id" | "align_id" | "line_numbers"
         >
       >;
     }) => {

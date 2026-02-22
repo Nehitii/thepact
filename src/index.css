@@ -1952,3 +1952,74 @@ All colors MUST be HSL.
   initial-value: 0deg;
   inherits: false;
 }
+
+/* ========== JOURNAL CHRONOLOG ANIMATIONS ========== */
+@keyframes journal-scanline {
+  0%   { transform: translateY(-100vh); }
+  100% { transform: translateY(200vh); }
+}
+@keyframes journal-pulse {
+  0%,100% { opacity: 1; box-shadow: 0 0 6px currentColor, 0 0 20px currentColor; }
+  50%     { opacity: 0.7; box-shadow: 0 0 12px currentColor, 0 0 40px currentColor; }
+}
+@keyframes journal-rotate-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes journal-rotate-slow-r {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+@keyframes hud-blink {
+  0%,90%,100% { opacity: 1; }
+  95%         { opacity: 0.2; }
+}
+@keyframes journal-grid-scroll {
+  0%   { background-position: 0 0; }
+  100% { background-position: 0 60px; }
+}
+
+.journal-scanline {
+  pointer-events: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 180px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0,255,224,0.012) 50%, transparent 100%);
+  animation: journal-scanline 10s linear infinite;
+  z-index: 9000;
+}
+.journal-noise {
+  pointer-events: none;
+  position: fixed; inset: 0;
+  opacity: 0.022;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 150px;
+  z-index: 9001;
+}
+.journal-grid-bg {
+  pointer-events: none;
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(0,255,224,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,255,224,0.028) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: journal-grid-scroll 4s linear infinite;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+  z-index: 0;
+}
+.journal-orb-left {
+  pointer-events: none;
+  position: fixed;
+  left: -200px; top: 20%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(0,255,224,0.07) 0%, transparent 65%);
+  z-index: 0;
+}
+.journal-orb-right {
+  pointer-events: none;
+  position: fixed;
+  right: -200px; top: 50%;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(191,90,242,0.06) 0%, transparent 65%);
+  z-index: 0;
+}
