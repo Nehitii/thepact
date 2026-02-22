@@ -8,8 +8,14 @@ import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
 import { RotatingRing, HexBadge, SciFiDivider } from "@/components/journal/JournalDecorations";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -30,7 +36,9 @@ export default function Journal() {
   useEffect(() => {
     const tick = () => {
       const n = new Date();
-      setClock(`${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}:${String(n.getSeconds()).padStart(2, "0")}`);
+      setClock(
+        `${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}:${String(n.getSeconds()).padStart(2, "0")}`,
+      );
     };
     tick();
     const id = setInterval(tick, 1000);
@@ -51,7 +59,19 @@ export default function Journal() {
   }, [allEntries, filterMood, search]);
 
   // Stats
-  const totalWords = useMemo(() => allEntries.reduce((s, e) => s + e.content.replace(/<[^>]+>/g, "").split(/\s+/).filter(Boolean).length, 0), [allEntries]);
+  const totalWords = useMemo(
+    () =>
+      allEntries.reduce(
+        (s, e) =>
+          s +
+          e.content
+            .replace(/<[^>]+>/g, "")
+            .split(/\s+/)
+            .filter(Boolean).length,
+        0,
+      ),
+    [allEntries],
+  );
   const pinnedCount = useMemo(() => allEntries.filter((e) => e.is_favorite).length, [allEntries]);
 
   // Infinite scroll
@@ -61,21 +81,29 @@ export default function Journal() {
       if (observerRef.current) observerRef.current.disconnect();
       if (!node || !hasNextPage) return;
       observerRef.current = new IntersectionObserver(
-        (es) => { if (es[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage(); },
-        { threshold: 0.1 }
+        (es) => {
+          if (es[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
+        },
+        { threshold: 0.1 },
       );
       observerRef.current.observe(node);
     },
-    [hasNextPage, isFetchingNextPage, fetchNextPage]
+    [hasNextPage, isFetchingNextPage, fetchNextPage],
   );
 
-  const handleEdit = (entry: JournalEntry) => { setEditingEntry(entry); setIsNewEntryOpen(true); };
+  const handleEdit = (entry: JournalEntry) => {
+    setEditingEntry(entry);
+    setIsNewEntryOpen(true);
+  };
   const handleDelete = async () => {
     if (!deletingEntryId || !user) return;
     await deleteEntry.mutateAsync({ id: deletingEntryId, userId: user.id });
     setDeletingEntryId(null);
   };
-  const handleCloseModal = (open: boolean) => { setIsNewEntryOpen(open); if (!open) setEditingEntry(null); };
+  const handleCloseModal = (open: boolean) => {
+    setIsNewEntryOpen(open);
+    if (!open) setEditingEntry(null);
+  };
 
   if (!user) return null;
 
@@ -90,31 +118,81 @@ export default function Journal() {
 
       {/* Corner frames */}
       {[
-        { top: 16, left: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
-        { top: 16, right: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
-        { bottom: 16, left: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
-        { bottom: 16, right: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
+        {
+          top: 16,
+          left: 16,
+          borderTop: "1px solid rgba(0,255,224,0.35)",
+          borderLeft: "1px solid rgba(0,255,224,0.35)",
+        },
+        {
+          top: 16,
+          right: 16,
+          borderTop: "1px solid rgba(0,255,224,0.35)",
+          borderRight: "1px solid rgba(0,255,224,0.35)",
+        },
+        {
+          bottom: 16,
+          left: 16,
+          borderBottom: "1px solid rgba(0,255,224,0.35)",
+          borderLeft: "1px solid rgba(0,255,224,0.35)",
+        },
+        {
+          bottom: 16,
+          right: 16,
+          borderBottom: "1px solid rgba(0,255,224,0.35)",
+          borderRight: "1px solid rgba(0,255,224,0.35)",
+        },
       ].map((s, i) => (
-        <div key={i} className="fixed w-8 h-8 z-[9500] pointer-events-none" style={s as React.CSSProperties} />
+        <div key={i} className="absolute w-8 h-8 z-[9500] pointer-events-none" style={s as React.CSSProperties} />
       ))}
 
       {/* Side decorations */}
       <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden lg:flex flex-col items-center gap-2">
-        <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,255,224,0.3))" }} />
+        <div
+          className="w-px h-20"
+          style={{ background: "linear-gradient(to bottom, transparent, rgba(0,255,224,0.3))" }}
+        />
         {["◈", "◉", "◎", "◐", "◯", "◆"].map((s, i) => (
           <div key={i} className="w-px h-5 relative" style={{ background: "rgba(0,255,224,0.1)" }}>
-            {i === 2 && <span className="absolute left-2 -top-1 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(0,255,224,0.25)" }}>{s}</span>}
+            {i === 2 && (
+              <span
+                className="absolute left-2 -top-1 whitespace-nowrap"
+                style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(0,255,224,0.25)" }}
+              >
+                {s}
+              </span>
+            )}
           </div>
         ))}
-        <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(0,255,224,0.3))" }} />
+        <div
+          className="w-px h-20"
+          style={{ background: "linear-gradient(to top, transparent, rgba(0,255,224,0.3))" }}
+        />
       </div>
 
       <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden lg:flex flex-col items-center gap-2">
-        <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(191,90,242,0.3))" }} />
+        <div
+          className="w-px h-20"
+          style={{ background: "linear-gradient(to bottom, transparent, rgba(191,90,242,0.3))" }}
+        />
         {clock.split(":").map((t, i) => (
-          <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" }}>{t}</div>
+          <div
+            key={i}
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "8px",
+              color: "rgba(191,90,242,0.35)",
+              letterSpacing: "0.1em",
+              writingMode: "vertical-rl",
+            }}
+          >
+            {t}
+          </div>
         ))}
-        <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }} />
+        <div
+          className="w-px h-20"
+          style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }}
+        />
       </div>
 
       {/* Main content */}
@@ -143,15 +221,37 @@ export default function Journal() {
                 boxShadow: "0 0 20px rgba(0,255,224,0.2), inset 0 0 10px rgba(0,255,224,0.05)",
               }}
             >
-              <div className="w-2 h-2 rounded-full" style={{ background: "#00ffe0", boxShadow: "0 0 10px #00ffe0", animation: "journal-pulse 2.5s ease-in-out infinite" }} />
+              <div
+                className="w-2 h-2 rounded-full"
+                style={{
+                  background: "#00ffe0",
+                  boxShadow: "0 0 10px #00ffe0",
+                  animation: "journal-pulse 2.5s ease-in-out infinite",
+                }}
+              />
             </div>
           </div>
 
           {/* System label */}
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(0,255,224,0.25))" }} />
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "9px", color: "rgba(0,255,224,0.45)", letterSpacing: "0.25em" }}>NEURAL_JOURNAL // SYS.ACTIVE</span>
-            <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(0,255,224,0.25), transparent)" }} />
+            <div
+              className="flex-1 h-px"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(0,255,224,0.25))" }}
+            />
+            <span
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "9px",
+                color: "rgba(0,255,224,0.45)",
+                letterSpacing: "0.25em",
+              }}
+            >
+              NEURAL_JOURNAL // SYS.ACTIVE
+            </span>
+            <div
+              className="flex-1 h-px"
+              style={{ background: "linear-gradient(90deg, rgba(0,255,224,0.25), transparent)" }}
+            />
           </div>
 
           {/* Title */}
@@ -171,7 +271,14 @@ export default function Journal() {
             CHRONO<span style={{ WebkitTextFillColor: "#00ffe0", filter: "drop-shadow(0 0 12px #00ffe0)" }}>LOG</span>
           </h1>
 
-          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "10px", color: "rgba(255,255,255,0.2)", letterSpacing: "0.2em" }}>
+          <p
+            style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: "10px",
+              color: "rgba(255,255,255,0.2)",
+              letterSpacing: "0.2em",
+            }}
+          >
             PERSONAL JOURNAL INTERFACE — v3.0
           </p>
 
@@ -217,7 +324,12 @@ export default function Journal() {
         >
           {/* Search */}
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(0,255,224,0.35)" }}>◈</span>
+            <span
+              className="absolute left-3.5 top-1/2 -translate-y-1/2"
+              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(0,255,224,0.35)" }}
+            >
+              ◈
+            </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -275,12 +387,30 @@ export default function Journal() {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
                 />
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.12)", letterSpacing: "0.15em" }}>LOADING_LOGS...</div>
+                <div
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.12)",
+                    letterSpacing: "0.15em",
+                  }}
+                >
+                  LOADING_LOGS...
+                </div>
               </div>
             </div>
           ) : entries.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(255,255,255,0.12)", letterSpacing: "0.15em" }}>// NO_ENTRIES_FOUND</div>
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "12px",
+                  color: "rgba(255,255,255,0.12)",
+                  letterSpacing: "0.15em",
+                }}
+              >
+                // NO_ENTRIES_FOUND
+              </div>
             </motion.div>
           ) : (
             <AnimatePresence mode="popLayout">
@@ -308,17 +438,46 @@ export default function Journal() {
           {/* Infinite scroll sentinel */}
           <div ref={sentinelRef} className="h-10 flex items-center justify-center">
             {isFetchingNextPage && (
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "10px", color: "rgba(255,255,255,0.12)", letterSpacing: "0.15em" }}>LOADING_MORE...</div>
+              <div
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "10px",
+                  color: "rgba(255,255,255,0.12)",
+                  letterSpacing: "0.15em",
+                }}
+              >
+                LOADING_MORE...
+              </div>
             )}
           </div>
 
           {/* End terminator */}
           {entries.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-8 text-center">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="mt-8 text-center"
+            >
               <div className="flex items-center gap-3 justify-center">
-                <div className="h-px w-20" style={{ background: "linear-gradient(90deg, transparent, rgba(0,255,224,0.2))" }} />
-                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "9px", color: "rgba(0,255,224,0.25)", letterSpacing: "0.2em" }}>// END_OF_LOG</span>
-                <div className="h-px w-20" style={{ background: "linear-gradient(90deg, rgba(0,255,224,0.2), transparent)" }} />
+                <div
+                  className="h-px w-20"
+                  style={{ background: "linear-gradient(90deg, transparent, rgba(0,255,224,0.2))" }}
+                />
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: "9px",
+                    color: "rgba(0,255,224,0.25)",
+                    letterSpacing: "0.2em",
+                  }}
+                >
+                  // END_OF_LOG
+                </span>
+                <div
+                  className="h-px w-20"
+                  style={{ background: "linear-gradient(90deg, rgba(0,255,224,0.2), transparent)" }}
+                />
               </div>
             </motion.div>
           )}
@@ -343,13 +502,22 @@ export default function Journal() {
           }}
         >
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-mono tracking-wider" style={{ color: "rgba(255,255,255,0.9)" }}>PURGE_LOG</AlertDialogTitle>
+            <AlertDialogTitle className="font-mono tracking-wider" style={{ color: "rgba(255,255,255,0.9)" }}>
+              PURGE_LOG
+            </AlertDialogTitle>
             <AlertDialogDescription className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
               This entry will be permanently erased. This action cannot be reversed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel className="rounded-lg font-mono text-xs" style={{ background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+            <AlertDialogCancel
+              className="rounded-lg font-mono text-xs"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                borderColor: "rgba(255,255,255,0.1)",
+                color: "rgba(255,255,255,0.5)",
+              }}
+            >
               ABORT
             </AlertDialogCancel>
             <AlertDialogAction
