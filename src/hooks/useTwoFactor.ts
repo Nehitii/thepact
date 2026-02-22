@@ -94,23 +94,25 @@ export function useTwoFactor() {
         // If refresh didn't help, force re-auth instead of crashing the app.
         if (error && is401(error)) {
           await supabase.auth.signOut();
-          return { enabled: false, trusted: false };
+          return { enabled: false, emailEnabled: false, trusted: false };
         }
       }
 
       if (error) throw error;
-      return data as { enabled: boolean; trusted: boolean };
+      return data as { enabled: boolean; emailEnabled: boolean; trusted: boolean };
     },
     staleTime: 15_000,
     retry: false, // Don't retry on auth errors
   });
 
   const enabled = statusQuery.data?.enabled ?? false;
+  const emailEnabled = statusQuery.data?.emailEnabled ?? false;
   const trusted = statusQuery.data?.trusted ?? false;
-  const isRequired = !!user && enabled && !trusted && !sessionVerified;
+  const isRequired = !!user && (enabled || emailEnabled) && !trusted && !sessionVerified;
 
   return {
     enabled,
+    emailEnabled,
     trusted,
     sessionVerified,
     setSessionVerified,

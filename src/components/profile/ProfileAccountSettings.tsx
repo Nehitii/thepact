@@ -13,6 +13,7 @@ import {
   Lock,
   Eye,
   EyeOff,
+  Smartphone,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -24,10 +25,13 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 import { supabase } from "@/lib/supabase";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useTwoFactor } from "@/hooks/useTwoFactor";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
@@ -370,27 +374,164 @@ function ChangePasswordSection({ styles }: { styles: { card: string; input: stri
   );
 }
 
-function TwoFactorSection({ styles }: { styles: { card: string } }) {
+function TwoFactorSection({ styles }: { styles: { card: string; input: string } }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { session } = useAuth();
+  const { toast } = useToast();
+  const twoFactor = useTwoFactor();
+
+  const [enablingEmail, setEnablingEmail] = useState(false);
+  const [confirmingEmail, setConfirmingEmail] = useState(false);
+  const [emailConfirmCode, setEmailConfirmCode] = useState("");
+  const [showEmailConfirm, setShowEmailConfirm] = useState(false);
+  const [disablingEmail, setDisablingEmail] = useState(false);
+
+  const invokeAction = async (payload: any) => {
+    const accessToken = session?.access_token;
+    if (!accessToken) return null;
+    const { data, error } = await supabase.functions.invoke("two-factor", {
+      body: payload,
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const handleEnableEmail2FA = async () => {
+    setEnablingEmail(true);
+    try {
+      await invokeAction({ action: "enable_email_2fa" });
+      setShowEmailConfirm(true);
+      toast({ title: t("twoFactor.emailSentTitle"), description: t("twoFactor.emailSentDesc") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e?.message || "Error", variant: "destructive" });
+    } finally {
+      setEnablingEmail(false);
+    }
+  };
+
+  const handleConfirmEmail2FA = async () => {
+    setConfirmingEmail(true);
+    try {
+      await invokeAction({ action: "confirm_email_2fa", code: emailConfirmCode });
+      setShowEmailConfirm(false);
+      setEmailConfirmCode("");
+      twoFactor.refetch();
+      toast({ title: t("common.success"), description: t("twoFactor.email2fa.enabledSuccess") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e?.message || "Error", variant: "destructive" });
+    } finally {
+      setConfirmingEmail(false);
+    }
+  };
+
+  const handleDisableEmail2FA = async () => {
+    setDisablingEmail(true);
+    try {
+      await invokeAction({ action: "disable_email_2fa" });
+      twoFactor.refetch();
+      toast({ title: t("common.success"), description: t("twoFactor.email2fa.disabledSuccess") });
+    } catch (e: any) {
+      toast({ title: t("common.error"), description: e?.message || "Error", variant: "destructive" });
+    } finally {
+      setDisablingEmail(false);
+    }
+  };
 
   return (
     <Card className={styles.card}>
-      <CardContent className="p-6">
-        <h3 className="text-lg font-orbitron text-primary mb-4 flex items-center gap-2">
+      <CardContent className="p-6 space-y-6">
+        <h3 className="text-lg font-orbitron text-primary flex items-center gap-2">
           <ShieldCheck className="h-5 w-5" /> {t("profile.twoFactor.title", { defaultValue: "Two-Factor Authentication" })}
         </h3>
-        <p className="text-sm text-muted-foreground mb-4 font-rajdhani">
-          {t("profile.twoFactor.description", { defaultValue: "Add an extra layer of security to your account with authenticator app verification." })}
+        <p className="text-sm text-muted-foreground font-rajdhani">
+          {t("profile.twoFactor.description", { defaultValue: "Add an extra layer of security to your account." })}
         </p>
-        <Button
-          variant="outline"
-          onClick={() => navigate("/two-factor")}
-          className="bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
-        >
-          <ShieldCheck className="mr-2 h-4 w-4" />
-          {t("profile.twoFactor.manage", { defaultValue: "Manage 2FA" })}
-        </Button>
+
+        {/* TOTP Section */}
+        <div className="flex items-center justify-between rounded-xl border border-primary/10 bg-background/30 px-4 py-3">
+          <div className="space-y-0.5">
+            <p className="text-sm font-medium flex items-center gap-2">
+              <Smartphone className="h-4 w-4 text-primary" />
+              Authenticator App
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {twoFactor.enabled ? t("twoFactor.email2fa.active") : t("twoFactor.email2fa.inactive")}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate("/two-factor")}
+            className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+          >
+            {t("profile.twoFactor.manage", { defaultValue: "Manage" })}
+          </Button>
+        </div>
+
+        {/* Email 2FA Section */}
+        <div className="rounded-xl border border-primary/10 bg-background/30 px-4 py-3 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" />
+                {t("twoFactor.email2fa.title")}
+              </p>
+              <p className="text-xs text-muted-foreground">{t("twoFactor.email2fa.description")}</p>
+            </div>
+            {twoFactor.emailEnabled ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDisableEmail2FA}
+                disabled={disablingEmail}
+                className="bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
+              >
+                {disablingEmail ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                {disablingEmail ? t("twoFactor.email2fa.disabling") : t("twoFactor.email2fa.disable")}
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEnableEmail2FA}
+                disabled={enablingEmail || showEmailConfirm}
+                className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+              >
+                {enablingEmail ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                {enablingEmail ? t("twoFactor.email2fa.enabling") : t("twoFactor.email2fa.enable")}
+              </Button>
+            )}
+          </div>
+
+          {/* Confirmation flow */}
+          {showEmailConfirm && !twoFactor.emailEnabled && (
+            <div className="space-y-3 pt-2 border-t border-primary/10">
+              <p className="text-sm text-muted-foreground">{t("twoFactor.email2fa.confirmDesc")}</p>
+              <div className="flex justify-center">
+                <InputOTP maxLength={6} value={emailConfirmCode} onChange={setEmailConfirmCode}>
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <Button
+                onClick={handleConfirmEmail2FA}
+                disabled={confirmingEmail || emailConfirmCode.length < 6}
+                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
+              >
+                {confirmingEmail ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {confirmingEmail ? t("twoFactor.email2fa.confirming") : t("twoFactor.email2fa.confirmButton")}
+              </Button>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
