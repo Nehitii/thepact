@@ -26,6 +26,8 @@ import {
   Zap,
   Heart,
   Sparkles,
+  Trophy,
+  ShieldCheck,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -45,6 +47,7 @@ const mainNavItems = [
   { to: "/goals", icon: Target, label: "Goals" },
   { to: "/shop", icon: ShoppingBag, label: "Shop" },
   { to: "/community", icon: Users, label: "Community" },
+  { to: "/achievements", icon: Trophy, label: "Achievements" },
 ];
 
 const profileSubItems = [
@@ -55,6 +58,7 @@ const profileSubItems = [
   { to: "/profile/notifications", icon: Bell, label: "Notifications" },
   { to: "/profile/privacy", icon: Shield, label: "Privacy & Control" },
   { to: "/profile/data", icon: Database, label: "Data & Portability" },
+  { to: "/two-factor", icon: ShieldCheck, label: "Two-Factor Auth" },
 ];
 
 const moduleConfig: Record<string, { icon: any; route: string; label: string }> = {
@@ -285,7 +289,9 @@ export function AppSidebar() {
                 <div
                   className={cn(
                     "absolute left-[1rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border border-background transition-all",
-                    ({ isActive }: { isActive: boolean }) => (isActive ? "bg-primary scale-110" : "bg-slate-700"),
+                    location.pathname === item.to || (!item.exact && location.pathname.startsWith(item.to + "/"))
+                      ? "bg-primary scale-110"
+                      : "bg-slate-700",
                   )}
                 />
                 {item.label}

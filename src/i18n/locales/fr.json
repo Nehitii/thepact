@@ -122,6 +122,50 @@
     "currencies": {
       "eur": "Euros (€)",
       "usd": "Dollars ($)"
+    },
+    "personalInfo": "Informations Personnelles",
+    "regionalPreferences": "Préférences Régionales",
+    "changePassword": {
+      "title": "Changer le mot de passe",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "update": "Mettre à jour",
+      "minLength": "Le mot de passe doit contenir au moins 6 caractères",
+      "mismatch": "Les mots de passe ne correspondent pas",
+      "success": "Ton mot de passe a été mis à jour"
+    },
+    "data": {
+      "title": "Données & Portabilité",
+      "subtitle": "Tes données, ton contrôle",
+      "yourData": "Tes données",
+      "exportTitle": "Exporter tes données",
+      "exportDesc": "Télécharge une copie de tes données au format JSON. Choisis ce que tu veux exporter :",
+      "exporting": "Exportation…",
+      "download": "Télécharger {{category}}",
+      "exportComplete": "Export terminé",
+      "exportSuccess": "Tes {{category}} ont été exportées avec succès.",
+      "exportFailed": "Échec de l'export",
+      "exportError": "Une erreur est survenue lors de l'exportation.",
+      "termsTitle": "Conditions & Légal",
+      "termsDesc": "Consulte nos conditions d'utilisation, notre politique de confidentialité et nos mentions légales.",
+      "viewTerms": "Voir les conditions",
+      "categories": {
+        "all": "Toutes les données",
+        "goalsSteps": "Objectifs & Étapes",
+        "journal": "Entrées de journal",
+        "finance": "Données financières",
+        "data": "Données"
+      },
+      "allDesc": "Sauvegarde complète de toutes tes données",
+      "goalsDesc": "Tes objectifs et leurs étapes uniquement",
+      "journalDesc": "Tes entrées de journal uniquement",
+      "financeDesc": "Tes données du module finance uniquement",
+      "stats": {
+        "goalsCreated": "Objectifs créés",
+        "stepsCompleted": "Étapes complétées",
+        "journalEntries": "Entrées de journal",
+        "achievements": "Succès"
+      }
     }
   },
   "todo": {

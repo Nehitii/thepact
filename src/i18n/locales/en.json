@@ -122,6 +122,50 @@
     "currencies": {
       "eur": "Euros (€)",
       "usd": "Dollars ($)"
+    },
+    "personalInfo": "Personal Information",
+    "regionalPreferences": "Regional Preferences",
+    "changePassword": {
+      "title": "Change Password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "update": "Update Password",
+      "minLength": "Password must be at least 6 characters",
+      "mismatch": "Passwords do not match",
+      "success": "Your password has been updated successfully"
+    },
+    "data": {
+      "title": "Data & Portability",
+      "subtitle": "Your data, your control",
+      "yourData": "Your Data",
+      "exportTitle": "Export Your Data",
+      "exportDesc": "Download a copy of your data in JSON format. Choose what you want to export:",
+      "exporting": "Exporting...",
+      "download": "Download {{category}}",
+      "exportComplete": "Export Complete",
+      "exportSuccess": "Your {{category}} has been exported successfully.",
+      "exportFailed": "Export Failed",
+      "exportError": "There was an error exporting your data.",
+      "termsTitle": "Terms & Legal",
+      "termsDesc": "Review our terms of service, privacy policy, and legal information.",
+      "viewTerms": "View Terms & Legal",
+      "categories": {
+        "all": "All Data",
+        "goalsSteps": "Goals & Steps",
+        "journal": "Journal Entries",
+        "finance": "Finance Data",
+        "data": "Data"
+      },
+      "allDesc": "Complete backup of all your data",
+      "goalsDesc": "Your goals and their steps only",
+      "journalDesc": "Your journal entries only",
+      "financeDesc": "Your finance module data only",
+      "stats": {
+        "goalsCreated": "Goals Created",
+        "stepsCompleted": "Steps Completed",
+        "journalEntries": "Journal Entries",
+        "achievements": "Achievements"
+      }
     }
   },
   "todo": {
