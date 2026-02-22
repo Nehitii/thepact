@@ -1,149 +1,117 @@
 
 
-# Complete Journal Module Redesign: CHRONOLOG
+# Sidebar User Settings -- Full Audit and Improvement Plan
 
-## Overview
+## Current Structure
 
-Replace the current journal UI with the premium cyberpunk "CHRONOLOG" design from the uploaded reference file. This includes a new animated header with rotating rings, hex stat badges, search/filter toolbar, redesigned entry cards with per-entry styling (accent color, font, size, alignment), and a full-screen 3-panel editor (Write / Style / Meta).
+The sidebar has a collapsible "User_Settings" section with 7 links, plus a footer dropdown with 2 options.
 
-## Database Migration
+### Sidebar Links (User_Settings)
 
-Add 4 new columns to `journal_entries` to support per-entry styling:
-
-| Column | Type | Default | Purpose |
+| Link | Route | Page | Status |
 |---|---|---|---|
-| `accent_color` | text | `'cyan'` | Per-entry accent color (cyan, purple, red, gold, blue, green) |
-| `font_id` | text | `'mono'` | Font selection (mono, mono-i, raj) |
-| `size_id` | text | `'md'` | Text size (xs, sm, md, lg, xl) |
-| `align_id` | text | `'left'` | Text alignment (left, center, right) |
-| `line_numbers` | boolean | `false` | Show line numbers in entry body |
+| Account Information | `/profile` | Email, display name, birthday, timezone, language, currency | Works correctly |
+| Bounded Profile | `/profile/bounded` | Avatar, cosmetic frames/banners/titles, trading card preview | Works correctly |
+| Pact Settings | `/profile/pact-settings` | Identity, timeline, custom difficulty, ranks, reset | Works correctly |
+| Display and Sound | `/profile/display-sound` | Theme, reduce motion, sounds, particles | Works correctly |
+| Notifications | `/profile/notifications` | System, progress, social, marketing toggles | Works correctly |
+| Privacy and Control | `/profile/privacy` | Community visibility, goal visibility, community notifications | Works correctly |
+| Data and Portability | `/profile/data` | Stats overview, JSON export, link to Legal page | Works correctly |
 
-Also update the `mood` column: existing values (`contemplative`, `reflective`, etc.) will remain valid in the DB but the UI will present 6 new mood options: `flow`, `tension`, `static`, `signal`, `void`, `surge`. Old entries keep their mood value and display gracefully.
+### Footer Dropdown (Quick Actions)
 
-## File Changes
-
-### 1. `src/types/journal.ts` -- Update constants
-
-- Replace `MOOD_CONFIG` with new `MOOD_OPTIONS` array matching the reference (flow/tension/static/signal/void/surge with geometric symbols)
-- Add `ACCENT_COLORS`, `FONT_OPTIONS`, `SIZE_OPTIONS`, `ALIGN_OPTIONS` constants
-- Add helper functions: `getAccent()`, `getMood()`, `getFont()`, `getSize()`, `getAlign()`
-- Update `JournalEntry` interface to include new fields: `accent_color`, `font_id`, `size_id`, `align_id`, `line_numbers`
-
-### 2. `src/index.css` -- Add journal animations
-
-Add keyframes and utility classes for the CHRONOLOG design:
-- `@keyframes scanline` -- scanning line effect
-- `@keyframes pulse` -- pulsing glow
-- `@keyframes rotate-slow` / `rotate-slow-r` -- rotating ring decorations
-- `@keyframes dash-march` -- dashed stroke animation
-- `@keyframes hud-blink` -- HUD corner blinking
-- `@keyframes float-up` -- particle float effect
-- `@keyframes grid-scroll` -- background grid scrolling
-- Classes: `.journal-scanline`, `.journal-noise`, `.journal-grid-bg`, `.journal-orb-left`, `.journal-orb-right`
-
-### 3. `src/components/journal/JournalDecorations.tsx` -- New file
-
-Extract reusable sci-fi decoration components from the reference:
-- `HUDCorner` -- corner bracket decoration
-- `RotatingRing` -- SVG rotating ring
-- `SciFiDivider` -- divider with tick marks and center label
-- `HexBadge` -- hexagonal stat badge (SVG)
-- `HUDStatusLine` -- animated progress bar with label/value
-
-### 4. `src/pages/Journal.tsx` -- Complete redesign
-
-Replace the current simple layout with the CHRONOLOG design:
-- **Background layer**: Grid background, orbs, scanline, noise overlay, corner frames, side decorations with live clock
-- **Header**: Centered layout with rotating rings around a status orb, "CHRONOLOG" title with gradient text, system label, hex stat badges (entries count, pinned count, word count)
-- **Toolbar**: Full-width search input with geometric icon prefix, mood filter pills row (6 moods), "NEW ENTRY" button with HUD corner decorations
-- **Entry list**: `SciFiDivider` between entries, `AnimatePresence` for smooth transitions, infinite scroll sentinel at bottom, "END_OF_LOG" terminator
-- **Delete dialog**: Keep existing AlertDialog but match new visual style
-
-### 5. `src/components/journal/JournalEntryCard.tsx` -- Complete redesign
-
-Replace the current card with the reference's `EntryCard` design:
-- Dark glassmorphic card with subtle left accent line (colored by entry's accent)
-- Pinned entries get a glow bar at the top
-- Vertical "ENTRY::001" index watermark on the right
-- Meta row: mood dot + label badge, date in `YYYY.MM.DD // HH:MM` format, pin indicator
-- Action menu: 3-dot button opening an animated dropdown (Edit, Pin/Unpin, Delete)
-- Title in Orbitron font, respects per-entry alignment
-- Body with optional line numbers, uses per-entry font/size/alignment
-- Footer: tags as `/tag` badges, valence (V) and energy (E) HUD status bars
-- Content rendered as HTML (from Tiptap) via `dangerouslySetInnerHTML`
-
-### 6. `src/components/journal/JournalNewEntryModal.tsx` -- Replace with full-screen editor
-
-Replace the Dialog modal with a full-screen overlay editor matching the reference:
-- **Top bar**: Status dot + "NEW_ENTRY"/"EDIT_ENTRY" label, 3 panel tabs (WRITE / STYLE / META), word count, ESC button, SAVE button with glow
-- **WRITE panel**: Large title input (Orbitron font), Tiptap rich text editor (keep existing `JournalEditor` component but adapt styling)
-- **STYLE panel**: 2-column grid with accent color selector (6 colors), mood selector (6 moods with geometric symbols), font selector (3 options with preview), size selector (5 options), alignment selector (3 options), line numbers toggle
-- **META panel**: 2-column grid with valence bar selector (10 clickable bars with gradient fill), energy bar selector (10 bars), tags input with `/tag` display, live mini-preview card, goal linking, life context input
-- All panels use `StyleSection` sub-component (dot + label + line separator pattern)
-
-### 7. `src/components/journal/JournalEditor.tsx` -- Minor styling update
-
-Keep the Tiptap editor but adjust its container styling to blend with the full-screen editor:
-- Remove outer border/rounded styling (the parent provides context)
-- Adjust toolbar to match the dark full-screen aesthetic
-- Keep all formatting buttons (Bold, Italic, Underline, Strikethrough)
-
-### 8. `src/hooks/useJournal.ts` -- Update mutation payloads
-
-- Update `useCreateJournalEntry` mutation type to accept new fields: `accent_color`, `font_id`, `size_id`, `align_id`, `line_numbers`
-- Update `useUpdateJournalEntry` to include new fields in the `updates` partial type
-
-## Technical Details
-
-### Data Mapping (Reference to DB)
-
-| Reference field | DB column | Notes |
+| Option | Route | Status |
 |---|---|---|
-| `accentId` | `accent_color` | String: cyan/purple/red/gold/blue/green |
-| `fontId` | `font_id` | String: mono/mono-i/raj |
-| `sizeId` | `size_id` | String: xs/sm/md/lg/xl |
-| `alignId` | `align_id` | String: left/center/right |
-| `lineNumbers` | `line_numbers` | Boolean |
-| `pinned` | `is_favorite` | Reuse existing column |
-| `mood` | `mood` | New values: flow/tension/static/signal/void/surge |
-| `valence` | `valence_level` | Integer 1-10 (unchanged) |
-| `energy` | `energy_level` | Integer 1-10 (unchanged) |
-| `body` | `content` | HTML string from Tiptap (unchanged) |
+| Inbox | `/inbox` | Works correctly, shows unread badge |
+| Disconnect (Sign Out) | `/auth` | Works correctly |
 
-### Backward Compatibility
+---
 
-- Old mood values (contemplative, reflective, etc.) won't match any MOOD_OPTION; the `getMood()` helper defaults to `flow`, so legacy entries display gracefully
-- Old entries without accent/font/size/align values use column defaults (cyan, mono, md, left)
+## Issues Found
 
-### Component Architecture
+### A. Functional Problems
+
+| Issue | Severity | Details |
+|---|---|---|
+| Hardcoded French section titles in Account page | Medium | `ProfileAccountSettings.tsx` has "Informations Personnelles" and "Preferences Regionales" hardcoded in French instead of using i18n `t()` keys. English-speaking users see French headings. |
+| Bounded Profile props are dead | Low | `BoundedProfile.tsx` passes `avatarFrame=""`, `personalQuote=""`, `displayedBadges={[]}` and no-op handlers to `ProfileBoundedProfile`. The component ignores them anyway (it loads its own data), but the prop interface is misleading. |
+| Data and Portability page has no i18n | Low | All strings in `DataPortability.tsx` are hardcoded English ("Your Data", "Export Your Data", "Terms and Legal", etc.). |
+| Legal page has no i18n | Low | All strings in `Legal.tsx` are hardcoded English. |
+| Sidebar dot indicator has a bug | Medium | Line 286-289 in `AppSidebar.tsx`: the `className` prop receives a function `({ isActive }) => ...` but it's inside a static `cn()` call, not a render prop. The active dot never changes color -- it always renders `"bg-slate-700"`. |
+
+### B. Missing Options and Features
+
+| Missing Item | Impact | Details |
+|---|---|---|
+| Achievements link | Medium | The `/achievements` page exists and is fully implemented (trophy wall with rarity filters), but there is no link to it anywhere in the sidebar. Users can only reach it if they know the URL. It should be added either to the main navigation or as a profile sub-item. |
+| Two-Factor Authentication settings | Medium | A `/two-factor` route exists with a full 2FA setup page (`TwoFactor.tsx`), plus a `useTwoFactor` hook and a `two-factor` edge function. But there is no link to it from the sidebar or any settings page. Users cannot discover or manage 2FA. It should be added to Account Information or as its own sub-item under User_Settings. |
+| Account deletion access | Low | The Legal page (`/legal`) contains an account deletion flow (double confirmation dialog). But it's buried under "Data and Portability > View Terms and Legal". A direct "Delete Account" danger zone should exist in Account Information or Privacy. |
+| Password change | Medium | There is no way for users to change their password. No UI exists for it. Since the app uses email/password auth, a "Change Password" option should exist in Account Information. |
+
+### C. UX Issues
+
+| Issue | Details |
+|---|---|
+| Footer dropdown is too minimal | Only 2 options (Inbox, Sign Out). It could also include a quick link to Account Information or Achievements. |
+| No active state on sidebar profile sub-items | The dot indicator next to each sub-item never changes to the active color due to the bug described above. Users get no visual feedback about which settings page they are on. |
+
+---
+
+## Proposed Changes
+
+### 1. Fix the sidebar active dot indicator bug
+
+In `AppSidebar.tsx`, the dot element uses a function as className but it's not in a render-prop context. Fix by checking `location.pathname` directly:
 
 ```text
-Journal.tsx (page)
-  +-- Background decorations (inline)
-  +-- RotatingRing (header)
-  +-- HexBadge x3 (stats)
-  +-- Search input
-  +-- Mood filter pills
-  +-- SciFiDivider (between entries)
-  +-- JournalEntryCard (per entry)
-  |     +-- HUDStatusLine (valence/energy bars)
-  +-- JournalFullEditor (full-screen overlay)
-        +-- Panel tabs: WRITE / STYLE / META
-        +-- JournalEditor (Tiptap, in WRITE panel)
-        +-- StyleSection sub-components (in STYLE/META)
+// Current (broken):
+className={cn("...", ({ isActive }) => isActive ? "bg-primary" : "bg-slate-700")}
+
+// Fixed:
+className={cn("...", location.pathname === item.to ? "bg-primary scale-110" : "bg-slate-700")}
 ```
 
-## Summary
+### 2. Add Achievements to the sidebar
 
-| Item | Action |
+Add a new entry in the main navigation section (after Community) or as a standalone item:
+
+```text
+{ to: "/achievements", icon: Trophy, label: "Achievements" }
+```
+
+### 3. Add Two-Factor Authentication link
+
+Add a link inside the Account Information page (`ProfileAccountSettings.tsx`) as a new section, or add it as a new sidebar sub-item:
+
+```text
+{ to: "/profile/two-factor", icon: ShieldCheck, label: "Two-Factor Auth" }
+```
+
+Wire the existing `TwoFactor.tsx` page to this new route (or keep `/two-factor` and just add the sidebar link).
+
+### 4. Fix hardcoded French strings in Account page
+
+Replace "Informations Personnelles" and "Preferences Regionales" in `ProfileAccountSettings.tsx` with `t("profile.personalInfo")` and `t("profile.regionalPreferences")`, and add the corresponding i18n keys.
+
+### 5. Add password change to Account Information
+
+Add a "Change Password" section to `ProfileAccountSettings.tsx` that calls `supabase.auth.updateUser({ password })`. Include current password verification and confirmation field.
+
+### 6. Add i18n to Data and Portability page
+
+Replace all hardcoded strings in `DataPortability.tsx` with `t()` calls and add corresponding keys to `en.json` and `fr.json`.
+
+---
+
+## Technical Summary
+
+| File | Changes |
 |---|---|
-| Database | Add 5 columns to `journal_entries` |
-| `src/types/journal.ts` | Rewrite constants, update interface |
-| `src/index.css` | Add ~60 lines of journal animations |
-| `src/components/journal/JournalDecorations.tsx` | New file (5 decoration components) |
-| `src/pages/Journal.tsx` | Complete redesign |
-| `src/components/journal/JournalEntryCard.tsx` | Complete redesign |
-| `src/components/journal/JournalNewEntryModal.tsx` | Replace with full-screen editor |
-| `src/components/journal/JournalEditor.tsx` | Minor style adjustments |
-| `src/hooks/useJournal.ts` | Update mutation types for new fields |
+| `src/components/layout/AppSidebar.tsx` | Fix dot indicator bug (line 286-289); add Achievements to `mainNavItems`; add Two-Factor Auth to `profileSubItems` |
+| `src/components/profile/ProfileAccountSettings.tsx` | Replace French hardcoded section titles with i18n; add "Change Password" section; add "Two-Factor Authentication" link/section |
+| `src/pages/profile/DataPortability.tsx` | Replace hardcoded English strings with i18n `t()` calls |
+| `src/i18n/locales/en.json` | Add keys for `profile.personalInfo`, `profile.regionalPreferences`, `profile.changePassword.*`, `profile.twoFactor.*`, `profile.data.*` |
+| `src/i18n/locales/fr.json` | Add matching French translations |
+
+No database migrations needed.
 
