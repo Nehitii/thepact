@@ -1,104 +1,149 @@
 
-# Audit and Improvement Plan: Pact Settings Menu
 
-## Current State Audit
+# Complete Journal Module Redesign: CHRONOLOG
 
-The Pact Settings page (`/profile/pact-settings`) consists of 5 sections stacked vertically:
+## Overview
 
-1. **Pact Identity Card** -- Name, Why statement, Symbol picker (4 PactVisual options)
-2. **Project Timeline Card** -- Start/End date pickers with save
-3. **Custom Difficulty Card** -- Name, color, active toggle for a custom difficulty tier
-4. **Ranks Card** -- Full CRUD for XP-based rank progression
-5. **Reset Pact (Danger Zone)** -- Destructive reset with confirmation
+Replace the current journal UI with the premium cyberpunk "CHRONOLOG" design from the uploaded reference file. This includes a new animated header with rotating rings, hex stat badges, search/filter toolbar, redesigned entry cards with per-entry styling (accent color, font, size, alignment), and a full-screen 3-panel editor (Write / Style / Meta).
 
----
+## Database Migration
 
-## Issues Found
+Add 4 new columns to `journal_entries` to support per-entry styling:
 
-### A. Bugs and Functional Problems
+| Column | Type | Default | Purpose |
+|---|---|---|---|
+| `accent_color` | text | `'cyan'` | Per-entry accent color (cyan, purple, red, gold, blue, green) |
+| `font_id` | text | `'mono'` | Font selection (mono, mono-i, raj) |
+| `size_id` | text | `'md'` | Text size (xs, sm, md, lg, xl) |
+| `align_id` | text | `'left'` | Text alignment (left, center, right) |
+| `line_numbers` | boolean | `false` | Show line numbers in entry body |
 
-| Issue | Severity | Details |
+Also update the `mood` column: existing values (`contemplative`, `reflective`, etc.) will remain valid in the DB but the UI will present 6 new mood options: `flow`, `tension`, `static`, `signal`, `void`, `surge`. Old entries keep their mood value and display gracefully.
+
+## File Changes
+
+### 1. `src/types/journal.ts` -- Update constants
+
+- Replace `MOOD_CONFIG` with new `MOOD_OPTIONS` array matching the reference (flow/tension/static/signal/void/surge with geometric symbols)
+- Add `ACCENT_COLORS`, `FONT_OPTIONS`, `SIZE_OPTIONS`, `ALIGN_OPTIONS` constants
+- Add helper functions: `getAccent()`, `getMood()`, `getFont()`, `getSize()`, `getAlign()`
+- Update `JournalEntry` interface to include new fields: `accent_color`, `font_id`, `size_id`, `align_id`, `line_numbers`
+
+### 2. `src/index.css` -- Add journal animations
+
+Add keyframes and utility classes for the CHRONOLOG design:
+- `@keyframes scanline` -- scanning line effect
+- `@keyframes pulse` -- pulsing glow
+- `@keyframes rotate-slow` / `rotate-slow-r` -- rotating ring decorations
+- `@keyframes dash-march` -- dashed stroke animation
+- `@keyframes hud-blink` -- HUD corner blinking
+- `@keyframes float-up` -- particle float effect
+- `@keyframes grid-scroll` -- background grid scrolling
+- Classes: `.journal-scanline`, `.journal-noise`, `.journal-grid-bg`, `.journal-orb-left`, `.journal-orb-right`
+
+### 3. `src/components/journal/JournalDecorations.tsx` -- New file
+
+Extract reusable sci-fi decoration components from the reference:
+- `HUDCorner` -- corner bracket decoration
+- `RotatingRing` -- SVG rotating ring
+- `SciFiDivider` -- divider with tick marks and center label
+- `HexBadge` -- hexagonal stat badge (SVG)
+- `HUDStatusLine` -- animated progress bar with label/value
+
+### 4. `src/pages/Journal.tsx` -- Complete redesign
+
+Replace the current simple layout with the CHRONOLOG design:
+- **Background layer**: Grid background, orbs, scanline, noise overlay, corner frames, side decorations with live clock
+- **Header**: Centered layout with rotating rings around a status orb, "CHRONOLOG" title with gradient text, system label, hex stat badges (entries count, pinned count, word count)
+- **Toolbar**: Full-width search input with geometric icon prefix, mood filter pills row (6 moods), "NEW ENTRY" button with HUD corner decorations
+- **Entry list**: `SciFiDivider` between entries, `AnimatePresence` for smooth transitions, infinite scroll sentinel at bottom, "END_OF_LOG" terminator
+- **Delete dialog**: Keep existing AlertDialog but match new visual style
+
+### 5. `src/components/journal/JournalEntryCard.tsx` -- Complete redesign
+
+Replace the current card with the reference's `EntryCard` design:
+- Dark glassmorphic card with subtle left accent line (colored by entry's accent)
+- Pinned entries get a glow bar at the top
+- Vertical "ENTRY::001" index watermark on the right
+- Meta row: mood dot + label badge, date in `YYYY.MM.DD // HH:MM` format, pin indicator
+- Action menu: 3-dot button opening an animated dropdown (Edit, Pin/Unpin, Delete)
+- Title in Orbitron font, respects per-entry alignment
+- Body with optional line numbers, uses per-entry font/size/alignment
+- Footer: tags as `/tag` badges, valence (V) and energy (E) HUD status bars
+- Content rendered as HTML (from Tiptap) via `dangerouslySetInnerHTML`
+
+### 6. `src/components/journal/JournalNewEntryModal.tsx` -- Replace with full-screen editor
+
+Replace the Dialog modal with a full-screen overlay editor matching the reference:
+- **Top bar**: Status dot + "NEW_ENTRY"/"EDIT_ENTRY" label, 3 panel tabs (WRITE / STYLE / META), word count, ESC button, SAVE button with glow
+- **WRITE panel**: Large title input (Orbitron font), Tiptap rich text editor (keep existing `JournalEditor` component but adapt styling)
+- **STYLE panel**: 2-column grid with accent color selector (6 colors), mood selector (6 moods with geometric symbols), font selector (3 options with preview), size selector (5 options), alignment selector (3 options), line numbers toggle
+- **META panel**: 2-column grid with valence bar selector (10 clickable bars with gradient fill), energy bar selector (10 bars), tags input with `/tag` display, live mini-preview card, goal linking, life context input
+- All panels use `StyleSection` sub-component (dot + label + line separator pattern)
+
+### 7. `src/components/journal/JournalEditor.tsx` -- Minor styling update
+
+Keep the Tiptap editor but adjust its container styling to blend with the full-screen editor:
+- Remove outer border/rounded styling (the parent provides context)
+- Adjust toolbar to match the dark full-screen aesthetic
+- Keep all formatting buttons (Bold, Italic, Underline, Strikethrough)
+
+### 8. `src/hooks/useJournal.ts` -- Update mutation payloads
+
+- Update `useCreateJournalEntry` mutation type to accept new fields: `accent_color`, `font_id`, `size_id`, `align_id`, `line_numbers`
+- Update `useUpdateJournalEntry` to include new fields in the `updates` partial type
+
+## Technical Details
+
+### Data Mapping (Reference to DB)
+
+| Reference field | DB column | Notes |
 |---|---|---|
-| Default symbol fallback still emoji | Medium | `PactSettings.tsx` line 16: `useState("🎯")` -- if the DB has no symbol set, the state initializes with an emoji string, which PactVisual cannot render. Should default to `"flame"`. |
-| Default symbol fallback on load | Medium | `PactSettings.tsx` line 58: `pactData.symbol \|\| "🎯"` -- same emoji fallback on DB read. Should be `"flame"`. |
-| `color` field exists in DB but is unused | Low | The `pacts` table has a `color` column. The `usePact` interface exposes it. The i18n has a `pact.color` key. But the UI has no way to set it, and nothing reads it. |
-| Hardcoded English strings | Medium | `PactIdentityCard`, `ProjectTimelineCard`, `CustomDifficultyCard`, and `RanksCard` all have hardcoded English text instead of using i18n `t()` keys. Only the Reset Pact section and the page shell use translations. |
-| PactTimeline "Set dates" navigates to `/profile` | Low | `PactTimeline.tsx` line 102: the "Set dates in Pact Settings" button navigates to `/profile` instead of `/profile/pact-settings`. |
+| `accentId` | `accent_color` | String: cyan/purple/red/gold/blue/green |
+| `fontId` | `font_id` | String: mono/mono-i/raj |
+| `sizeId` | `size_id` | String: xs/sm/md/lg/xl |
+| `alignId` | `align_id` | String: left/center/right |
+| `lineNumbers` | `line_numbers` | Boolean |
+| `pinned` | `is_favorite` | Reuse existing column |
+| `mood` | `mood` | New values: flow/tension/static/signal/void/surge |
+| `valence` | `valence_level` | Integer 1-10 (unchanged) |
+| `energy` | `energy_level` | Integer 1-10 (unchanged) |
+| `body` | `content` | HTML string from Tiptap (unchanged) |
 
-### B. Visual and UX Issues
+### Backward Compatibility
 
-| Issue | Details |
+- Old mood values (contemplative, reflective, etc.) won't match any MOOD_OPTION; the `getMood()` helper defaults to `flow`, so legacy entries display gracefully
+- Old entries without accent/font/size/align values use column defaults (cyan, mono, md, left)
+
+### Component Architecture
+
+```text
+Journal.tsx (page)
+  +-- Background decorations (inline)
+  +-- RotatingRing (header)
+  +-- HexBadge x3 (stats)
+  +-- Search input
+  +-- Mood filter pills
+  +-- SciFiDivider (between entries)
+  +-- JournalEntryCard (per entry)
+  |     +-- HUDStatusLine (valence/energy bars)
+  +-- JournalFullEditor (full-screen overlay)
+        +-- Panel tabs: WRITE / STYLE / META
+        +-- JournalEditor (Tiptap, in WRITE panel)
+        +-- StyleSection sub-components (in STYLE/META)
+```
+
+## Summary
+
+| Item | Action |
 |---|---|
-| No live preview of identity | User edits name/mantra/symbol but can't preview what the Home Hero will look like. Adding a mini HeroSection preview would give instant feedback. |
-| Inconsistent save patterns | Identity Card has one Save button. Timeline Card has its own Save button. Custom Difficulty has its own. Three separate saves on one page for related data feels fragmented. |
-| No Pact color picker | The `color` DB field exists but has no UI. This could let users customize their pact's accent/glow color across the app. |
-| No Pact age/stats summary | There's no "Pact Overview" at the top showing creation date, total days active, goals created, points earned -- basic stats about the user's journey. |
-| No character count indicators | Name (50 char max) and Mantra (200 char max) have `maxLength` but no visible counter showing remaining characters. |
-| Symbol selector has no labels translated | The 4 PactVisual labels ("Flame", "Heart", "Target", "Sparkles") are hardcoded English. |
-| PactSettingsCard has unused `useState` import | Minor cleanup. |
+| Database | Add 5 columns to `journal_entries` |
+| `src/types/journal.ts` | Rewrite constants, update interface |
+| `src/index.css` | Add ~60 lines of journal animations |
+| `src/components/journal/JournalDecorations.tsx` | New file (5 decoration components) |
+| `src/pages/Journal.tsx` | Complete redesign |
+| `src/components/journal/JournalEntryCard.tsx` | Complete redesign |
+| `src/components/journal/JournalNewEntryModal.tsx` | Replace with full-screen editor |
+| `src/components/journal/JournalEditor.tsx` | Minor style adjustments |
+| `src/hooks/useJournal.ts` | Update mutation types for new fields |
 
-### C. Missing Features (Enhancement Opportunities)
-
-| Feature | Impact | Description |
-|---|---|---|
-| Pact Color Customization | High | Add a color picker that writes to the existing `pacts.color` column. This color could tint the PactVisual glow, the Hero section accent, and rank borders. |
-| Pact Stats Overview Card | Medium | A read-only card at the top showing: Pact created date, total days active, total goals, completed goals, current points, current rank, check-in streak. Gives users a sense of their journey. |
-| Live Identity Preview | Medium | A mini preview panel showing the PactVisual + name + mantra as it would appear on the Home Hero. |
-| Character counters | Low | Show "12/50" and "45/200" under name and mantra inputs. |
-| Consolidated Save | Medium | Merge Identity + Timeline into a single save action since they both write to the `pacts` table. Reduces cognitive load from 3 saves to 2. |
-
----
-
-## Proposed Changes
-
-### 1. Fix emoji fallbacks in `PactSettings.tsx`
-- Line 16: Change `useState("🎯")` to `useState("flame")`
-- Line 58: Change `pactData.symbol || "🎯"` to `pactData.symbol || "flame"`
-
-### 2. Fix PactTimeline navigation
-- `PactTimeline.tsx` line 102: Change `/profile` to `/profile/pact-settings`
-
-### 3. Add Pact Color Picker to `PactIdentityCard.tsx`
-- Add a color picker similar to CustomDifficultyCard's, writing to `pacts.color`
-- Wire it through the existing prop chain (PactSettings -> ProfilePactSettings -> PactIdentityCard)
-- Update `usePactMutation` call in `handleSavePactIdentity` to include `color`
-
-### 4. Add character counters to `PactIdentityCard.tsx`
-- Show `{pactName.length}/50` under the name input
-- Show `{pactMantra.length}/200` under the mantra textarea
-
-### 5. Add Pact Stats Overview Card
-- New component `PactOverviewCard.tsx` placed at the top of ProfilePactSettings
-- Reads from `usePact` and `useGoals` hooks to display:
-  - Pact creation date
-  - Days active
-  - Total/completed goals count
-  - Current points and rank
-  - Check-in streak
-- Read-only, no save button needed
-
-### 6. Add Live Identity Preview to `PactIdentityCard.tsx`
-- A small preview box at the top of the card showing the PactVisual with the current symbol, the pact name, and mantra as they would appear
-
-### 7. Internationalize all hardcoded strings
-- Add i18n keys under `profile.pact.*` for all Pact Settings cards
-- Replace hardcoded strings in PactIdentityCard, ProjectTimelineCard, CustomDifficultyCard, and RanksCard with `t()` calls
-
----
-
-## Technical Summary
-
-| File | Changes |
-|---|---|
-| `src/pages/profile/PactSettings.tsx` | Fix emoji defaults to `"flame"`, add `pactColor` state, pass to children |
-| `src/components/profile/PactIdentityCard.tsx` | Add color picker, character counters, live preview panel, i18n |
-| `src/components/profile/ProjectTimelineCard.tsx` | i18n for all strings |
-| `src/components/profile/CustomDifficultyCard.tsx` | i18n for all strings |
-| `src/components/profile/RanksCard.tsx` | i18n for all strings |
-| `src/components/profile/ProfilePactSettings.tsx` | Add PactOverviewCard, pass color props |
-| `src/components/profile/PactOverviewCard.tsx` | New component: read-only pact stats summary |
-| `src/components/PactTimeline.tsx` | Fix navigation path to `/profile/pact-settings` |
-| `src/i18n/locales/en.json` | Add ~30 new i18n keys under `profile.pact.*` |
-| `src/i18n/locales/fr.json` | Add matching French translations |
-
-No database migrations needed -- the `color` column already exists in the `pacts` table.
