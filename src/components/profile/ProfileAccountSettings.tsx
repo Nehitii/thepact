@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import {
   Calendar as CalendarIcon,
@@ -270,6 +271,9 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
       {/* SECTION 3: CHANGE PASSWORD */}
       <ChangePasswordSection styles={styles} />
 
+      {/* SECTION 4: TWO-FACTOR AUTH */}
+      <TwoFactorSection styles={styles} />
+
       <div className="flex justify-end pt-4">
         <Button
           onClick={handleSave}
@@ -361,6 +365,32 @@ function ChangePasswordSection({ styles }: { styles: { card: string; input: stri
             {isSaving ? t("common.saving") : t("profile.changePassword.update")}
           </Button>
         </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TwoFactorSection({ styles }: { styles: { card: string } }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+
+  return (
+    <Card className={styles.card}>
+      <CardContent className="p-6">
+        <h3 className="text-lg font-orbitron text-primary mb-4 flex items-center gap-2">
+          <ShieldCheck className="h-5 w-5" /> {t("profile.twoFactor.title", { defaultValue: "Two-Factor Authentication" })}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4 font-rajdhani">
+          {t("profile.twoFactor.description", { defaultValue: "Add an extra layer of security to your account with authenticator app verification." })}
+        </p>
+        <Button
+          variant="outline"
+          onClick={() => navigate("/two-factor")}
+          className="bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
+        >
+          <ShieldCheck className="mr-2 h-4 w-4" />
+          {t("profile.twoFactor.manage", { defaultValue: "Manage 2FA" })}
+        </Button>
       </CardContent>
     </Card>
   );
