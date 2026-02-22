@@ -2184,6 +2184,10 @@ export type Database = {
       user_2fa_settings: {
         Row: {
           created_at: string
+          email_2fa_enabled: boolean
+          email_code: string | null
+          email_code_attempts: number
+          email_code_expires_at: string | null
           totp_enabled: boolean
           totp_secret: string | null
           updated_at: string
@@ -2191,6 +2195,10 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email_2fa_enabled?: boolean
+          email_code?: string | null
+          email_code_attempts?: number
+          email_code_expires_at?: string | null
           totp_enabled?: boolean
           totp_secret?: string | null
           updated_at?: string
@@ -2198,6 +2206,10 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email_2fa_enabled?: boolean
+          email_code?: string | null
+          email_code_attempts?: number
+          email_code_expires_at?: string | null
           totp_enabled?: boolean
           totp_secret?: string | null
           updated_at?: string
@@ -2534,6 +2546,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           created_at: string
+          email_2fa_enabled: boolean
           totp_enabled: boolean
           updated_at: string
         }[]

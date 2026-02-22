@@ -15,7 +15,11 @@ type Action =
   | "regenerate_recovery"
   | "list_trusted"
   | "revoke_trusted"
-  | "revoke_all_trusted";
+  | "revoke_all_trusted"
+  | "enable_email_2fa"
+  | "confirm_email_2fa"
+  | "send_email_code"
+  | "disable_email_2fa";
 
 type Json = Record<string, unknown>;
 
@@ -87,7 +91,6 @@ function toBigEndianCounter(counter: number): Uint8Array {
 }
 
 async function hotp(secretB32: string, counter: number, digits = 6): Promise<string> {
-  // Ensure we always pass a real ArrayBuffer (not ArrayBufferLike) to WebCrypto.
   const keyBytes = base32Decode(secretB32);
   const keyBuf = new ArrayBuffer(keyBytes.length);
   new Uint8Array(keyBuf).set(keyBytes);
@@ -147,6 +150,62 @@ function generateDeviceToken(): string {
     .join("");
 }
 
+function generate6DigitCode(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
+  const num = ((bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3]) >>> 0;
+  return (num % 1000000).toString().padStart(6, "0");
+}
+
+async function sendEmailViaResend(to: string, code: string): Promise<boolean> {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    console.error("RESEND_API_KEY not configured");
+    return false;
+  }
+
+  const html = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+      <div style="text-align: center; margin-bottom: 32px;">
+        <h1 style="color: #1a1a2e; font-size: 24px; margin: 0;">Pacte</h1>
+        <p style="color: #666; font-size: 14px; margin-top: 8px;">Two-Factor Authentication</p>
+      </div>
+      <div style="background: #f8f9fa; border-radius: 12px; padding: 32px; text-align: center;">
+        <p style="color: #333; font-size: 16px; margin: 0 0 24px;">Your verification code is:</p>
+        <div style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #1a1a2e; font-family: monospace; background: white; border-radius: 8px; padding: 16px; border: 2px solid #e2e8f0;">
+          ${code}
+        </div>
+        <p style="color: #888; font-size: 13px; margin-top: 24px;">This code expires in 5 minutes.<br/>If you didn't request this, you can safely ignore it.</p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "Pacte <onboarding@resend.dev>",
+        to: [to],
+        subject: `${code} — Your Pacte verification code`,
+        html,
+      }),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("Resend API error:", res.status, errBody);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Resend send error:", err);
+    return false;
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -167,18 +226,14 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    // Validate token — prefer server-side getUser (tolerates clock skew)
-    // then fall back to local getClaims.
     let userId = "";
     let userEmail: string | null = null;
 
-    // Try server-side validation first (most reliable)
     const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
     if (!userError && userData?.user) {
       userId = userData.user.id;
       userEmail = userData.user.email ?? null;
     } else {
-      // Fallback: local claims validation
       try {
         const res = await supabaseClient.auth.getClaims(token);
         const claims: any = (res.data as any)?.claims;
@@ -197,6 +252,7 @@ Deno.serve(async (req) => {
     const body = (await req.json().catch(() => ({}))) as {
       action?: Action;
       code?: string;
+      emailCode?: string;
       recoveryCode?: string;
       trustDevice?: boolean;
       deviceToken?: string;
@@ -214,21 +270,28 @@ Deno.serve(async (req) => {
     const getSettings = async () => {
       const { data } = await supabaseAdmin
         .from("user_2fa_settings")
-        .select("totp_enabled, totp_secret")
+        .select("totp_enabled, totp_secret, email_2fa_enabled, email_code, email_code_expires_at, email_code_attempts")
         .eq("user_id", user.id)
         .maybeSingle();
       return {
         enabled: !!data?.totp_enabled,
         secret: (data?.totp_secret as string | null) ?? null,
+        emailEnabled: !!data?.email_2fa_enabled,
+        emailCode: (data?.email_code as string | null) ?? null,
+        emailCodeExpiresAt: (data?.email_code_expires_at as string | null) ?? null,
+        emailCodeAttempts: (data?.email_code_attempts as number) ?? 0,
       };
     };
 
+    // ── STATUS ──
     if (action === "status") {
-      const { enabled } = await getSettings();
+      const settings = await getSettings();
       const deviceToken = typeof body.deviceToken === "string" ? body.deviceToken : "";
       let trusted = false;
 
-      if (enabled && deviceToken) {
+      const anyEnabled = settings.enabled || settings.emailEnabled;
+
+      if (anyEnabled && deviceToken) {
         const tokenHash = await sha256Hex(deviceToken);
         const { data } = await supabaseClient
           .from("user_trusted_devices")
@@ -247,9 +310,10 @@ Deno.serve(async (req) => {
         }
       }
 
-      return jsonResponse({ enabled, trusted });
+      return jsonResponse({ enabled: settings.enabled, emailEnabled: settings.emailEnabled, trusted });
     }
 
+    // ── BEGIN ENROLL (TOTP) ──
     if (action === "begin_enroll") {
       const bytes = crypto.getRandomValues(new Uint8Array(20));
       const secret = base32Encode(bytes);
@@ -266,6 +330,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ secret, uri });
     }
 
+    // ── CONFIRM ENROLL (TOTP) ──
     if (action === "confirm_enroll") {
       const { secret } = await getSettings();
       if (!secret) return jsonResponse({ error: "Enrollment not started" }, 400);
@@ -290,11 +355,13 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true, recoveryCodes: codes });
     }
 
+    // ── VERIFY (TOTP + Email + Recovery) ──
     if (action === "verify") {
-      const { enabled, secret } = await getSettings();
-      if (!enabled || !secret) return jsonResponse({ error: "2FA not enabled" }, 400);
+      const settings = await getSettings();
+      if (!settings.enabled && !settings.emailEnabled) return jsonResponse({ error: "2FA not enabled" }, 400);
 
       const totpCode = typeof body.code === "string" ? body.code : "";
+      const emailCode = typeof body.emailCode === "string" ? body.emailCode : "";
       const recoveryCode = typeof body.recoveryCode === "string" ? body.recoveryCode : "";
       const trustDevice = !!body.trustDevice;
       const deviceLabel = typeof body.deviceLabel === "string" ? body.deviceLabel.slice(0, 200) : null;
@@ -302,8 +369,37 @@ Deno.serve(async (req) => {
       let ok = false;
       let usedRecovery = false;
 
-      if (totpCode) ok = await totpVerify(secret, totpCode, { window: 1 });
+      // Try TOTP
+      if (totpCode && settings.enabled && settings.secret) {
+        ok = await totpVerify(settings.secret, totpCode, { window: 1 });
+      }
 
+      // Try Email code
+      if (!ok && emailCode && settings.emailEnabled) {
+        if (settings.emailCodeAttempts >= 5) {
+          return jsonResponse({ error: "Too many attempts. Request a new code." }, 429);
+        }
+
+        const codeHash = await sha256Hex(emailCode.trim());
+        const expiresAt = settings.emailCodeExpiresAt ? new Date(settings.emailCodeExpiresAt).getTime() : 0;
+
+        if (settings.emailCode && codeHash === settings.emailCode && expiresAt > Date.now()) {
+          ok = true;
+          // Clear the used code
+          await supabaseAdmin
+            .from("user_2fa_settings")
+            .update({ email_code: null, email_code_expires_at: null, email_code_attempts: 0 })
+            .eq("user_id", user.id);
+        } else {
+          // Increment attempts
+          await supabaseAdmin
+            .from("user_2fa_settings")
+            .update({ email_code_attempts: settings.emailCodeAttempts + 1 })
+            .eq("user_id", user.id);
+        }
+      }
+
+      // Try recovery code
       if (!ok && recoveryCode) {
         const hash = await sha256Hex(recoveryCode.trim());
         const { data } = await supabaseClient
@@ -350,6 +446,7 @@ Deno.serve(async (req) => {
       return jsonResponse(res);
     }
 
+    // ── DISABLE TOTP ──
     if (action === "disable") {
       await supabaseClient
         .from("user_2fa_settings")
@@ -360,9 +457,122 @@ Deno.serve(async (req) => {
       return jsonResponse({ success: true });
     }
 
+    // ── ENABLE EMAIL 2FA (sends verification code) ──
+    if (action === "enable_email_2fa") {
+      if (!user.email) return jsonResponse({ error: "No email on account" }, 400);
+
+      const code = generate6DigitCode();
+      const codeHash = await sha256Hex(code);
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+      // Store hashed code
+      await supabaseAdmin
+        .from("user_2fa_settings")
+        .upsert(
+          { user_id: user.id, email_code: codeHash, email_code_expires_at: expiresAt, email_code_attempts: 0 },
+          { onConflict: "user_id" },
+        );
+
+      const sent = await sendEmailViaResend(user.email, code);
+      if (!sent) return jsonResponse({ error: "Failed to send email" }, 500);
+
+      await logEvent("email_2fa_enroll_started");
+      return jsonResponse({ success: true, message: "Verification code sent" });
+    }
+
+    // ── CONFIRM EMAIL 2FA ──
+    if (action === "confirm_email_2fa") {
+      const settings = await getSettings();
+      const emailCode = typeof body.code === "string" ? body.code.trim() : "";
+
+      if (!emailCode) return jsonResponse({ error: "Missing code" }, 400);
+      if (settings.emailCodeAttempts >= 5) return jsonResponse({ error: "Too many attempts" }, 429);
+
+      const codeHash = await sha256Hex(emailCode);
+      const expiresAt = settings.emailCodeExpiresAt ? new Date(settings.emailCodeExpiresAt).getTime() : 0;
+
+      if (!settings.emailCode || codeHash !== settings.emailCode || expiresAt <= Date.now()) {
+        await supabaseAdmin
+          .from("user_2fa_settings")
+          .update({ email_code_attempts: settings.emailCodeAttempts + 1 })
+          .eq("user_id", user.id);
+        return jsonResponse({ error: "Invalid or expired code" }, 400);
+      }
+
+      // Enable email 2FA
+      await supabaseAdmin
+        .from("user_2fa_settings")
+        .update({ email_2fa_enabled: true, email_code: null, email_code_expires_at: null, email_code_attempts: 0 })
+        .eq("user_id", user.id);
+
+      // Generate recovery codes if none exist and TOTP isn't enabled
+      if (!settings.enabled) {
+        const codes = generateRecoveryCodes(10);
+        const rows = await Promise.all(codes.map(async (c) => ({ user_id: user.id, code_hash: await sha256Hex(c) })));
+        await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
+        await supabaseClient.from("user_recovery_codes").insert(rows);
+        await logEvent("email_2fa_enabled");
+        await logEvent("recovery_codes_regenerated", { count: codes.length });
+        return jsonResponse({ success: true, recoveryCodes: codes });
+      }
+
+      await logEvent("email_2fa_enabled");
+      return jsonResponse({ success: true });
+    }
+
+    // ── SEND EMAIL CODE (for verification gate) ──
+    if (action === "send_email_code") {
+      if (!user.email) return jsonResponse({ error: "No email on account" }, 400);
+
+      const settings = await getSettings();
+      if (!settings.emailEnabled) return jsonResponse({ error: "Email 2FA not enabled" }, 400);
+
+      // Rate limit: check if last code was sent < 60s ago
+      if (settings.emailCodeExpiresAt) {
+        const lastSentAt = new Date(settings.emailCodeExpiresAt).getTime() - 5 * 60 * 1000; // sent = expires - 5min
+        if (Date.now() - lastSentAt < 60 * 1000) {
+          return jsonResponse({ error: "Please wait before requesting another code" }, 429);
+        }
+      }
+
+      const code = generate6DigitCode();
+      const codeHash = await sha256Hex(code);
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+      await supabaseAdmin
+        .from("user_2fa_settings")
+        .update({ email_code: codeHash, email_code_expires_at: expiresAt, email_code_attempts: 0 })
+        .eq("user_id", user.id);
+
+      const sent = await sendEmailViaResend(user.email, code);
+      if (!sent) return jsonResponse({ error: "Failed to send email" }, 500);
+
+      await logEvent("email_2fa_code_sent");
+      return jsonResponse({ success: true });
+    }
+
+    // ── DISABLE EMAIL 2FA ──
+    if (action === "disable_email_2fa") {
+      await supabaseAdmin
+        .from("user_2fa_settings")
+        .update({ email_2fa_enabled: false, email_code: null, email_code_expires_at: null, email_code_attempts: 0 })
+        .eq("user_id", user.id);
+
+      // If TOTP is also disabled, clean up trusted devices and recovery codes
+      const settings = await getSettings();
+      if (!settings.enabled) {
+        await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
+        await supabaseClient.from("user_trusted_devices").delete().eq("user_id", user.id);
+      }
+
+      await logEvent("email_2fa_disabled");
+      return jsonResponse({ success: true });
+    }
+
+    // ── REGENERATE RECOVERY ──
     if (action === "regenerate_recovery") {
-      const { enabled } = await getSettings();
-      if (!enabled) return jsonResponse({ error: "2FA not enabled" }, 400);
+      const settings = await getSettings();
+      if (!settings.enabled && !settings.emailEnabled) return jsonResponse({ error: "2FA not enabled" }, 400);
       const codes = generateRecoveryCodes(10);
       const rows = await Promise.all(codes.map(async (c) => ({ user_id: user.id, code_hash: await sha256Hex(c) })));
       await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
