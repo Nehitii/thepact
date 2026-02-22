@@ -1,117 +1,92 @@
 
 
-# Sidebar User Settings -- Full Audit and Improvement Plan
+# Add Email-Based 2FA via Resend.com
 
-## Current Structure
+## Overview
 
-The sidebar has a collapsible "User_Settings" section with 7 links, plus a footer dropdown with 2 options.
+Add a second 2FA method: email code verification using Resend.com. When users choose email 2FA, they receive a 6-digit code at their registered email address. This works alongside the existing TOTP (authenticator app) method -- users can choose which method to use during verification.
 
-### Sidebar Links (User_Settings)
+## Prerequisites: Resend API Key
 
-| Link | Route | Page | Status |
+Resend.com requires an API key to send emails. You'll need to:
+1. Create an account at [resend.com](https://resend.com)
+2. Get your API key from the dashboard
+3. I'll securely store it as a backend secret
+
+## Database Migration
+
+Add columns to `user_2fa_settings` to support email 2FA:
+
+| Column | Type | Default | Purpose |
 |---|---|---|---|
-| Account Information | `/profile` | Email, display name, birthday, timezone, language, currency | Works correctly |
-| Bounded Profile | `/profile/bounded` | Avatar, cosmetic frames/banners/titles, trading card preview | Works correctly |
-| Pact Settings | `/profile/pact-settings` | Identity, timeline, custom difficulty, ranks, reset | Works correctly |
-| Display and Sound | `/profile/display-sound` | Theme, reduce motion, sounds, particles | Works correctly |
-| Notifications | `/profile/notifications` | System, progress, social, marketing toggles | Works correctly |
-| Privacy and Control | `/profile/privacy` | Community visibility, goal visibility, community notifications | Works correctly |
-| Data and Portability | `/profile/data` | Stats overview, JSON export, link to Legal page | Works correctly |
+| `email_2fa_enabled` | boolean | `false` | Whether email 2FA is active |
+| `email_code` | text | NULL | Current pending email code (hashed) |
+| `email_code_expires_at` | timestamptz | NULL | When the code expires (5 min) |
+| `email_code_attempts` | integer | 0 | Failed attempts counter (rate limit) |
 
-### Footer Dropdown (Quick Actions)
+Also update `get_user_2fa_status` function to return `email_2fa_enabled`.
 
-| Option | Route | Status |
-|---|---|---|
-| Inbox | `/inbox` | Works correctly, shows unread badge |
-| Disconnect (Sign Out) | `/auth` | Works correctly |
+## Edge Function Changes (`supabase/functions/two-factor/index.ts`)
 
----
+Add 4 new actions:
 
-## Issues Found
-
-### A. Functional Problems
-
-| Issue | Severity | Details |
-|---|---|---|
-| Hardcoded French section titles in Account page | Medium | `ProfileAccountSettings.tsx` has "Informations Personnelles" and "Preferences Regionales" hardcoded in French instead of using i18n `t()` keys. English-speaking users see French headings. |
-| Bounded Profile props are dead | Low | `BoundedProfile.tsx` passes `avatarFrame=""`, `personalQuote=""`, `displayedBadges={[]}` and no-op handlers to `ProfileBoundedProfile`. The component ignores them anyway (it loads its own data), but the prop interface is misleading. |
-| Data and Portability page has no i18n | Low | All strings in `DataPortability.tsx` are hardcoded English ("Your Data", "Export Your Data", "Terms and Legal", etc.). |
-| Legal page has no i18n | Low | All strings in `Legal.tsx` are hardcoded English. |
-| Sidebar dot indicator has a bug | Medium | Line 286-289 in `AppSidebar.tsx`: the `className` prop receives a function `({ isActive }) => ...` but it's inside a static `cn()` call, not a render prop. The active dot never changes color -- it always renders `"bg-slate-700"`. |
-
-### B. Missing Options and Features
-
-| Missing Item | Impact | Details |
-|---|---|---|
-| Achievements link | Medium | The `/achievements` page exists and is fully implemented (trophy wall with rarity filters), but there is no link to it anywhere in the sidebar. Users can only reach it if they know the URL. It should be added either to the main navigation or as a profile sub-item. |
-| Two-Factor Authentication settings | Medium | A `/two-factor` route exists with a full 2FA setup page (`TwoFactor.tsx`), plus a `useTwoFactor` hook and a `two-factor` edge function. But there is no link to it from the sidebar or any settings page. Users cannot discover or manage 2FA. It should be added to Account Information or as its own sub-item under User_Settings. |
-| Account deletion access | Low | The Legal page (`/legal`) contains an account deletion flow (double confirmation dialog). But it's buried under "Data and Portability > View Terms and Legal". A direct "Delete Account" danger zone should exist in Account Information or Privacy. |
-| Password change | Medium | There is no way for users to change their password. No UI exists for it. Since the app uses email/password auth, a "Change Password" option should exist in Account Information. |
-
-### C. UX Issues
-
-| Issue | Details |
+| Action | Description |
 |---|---|
-| Footer dropdown is too minimal | Only 2 options (Inbox, Sign Out). It could also include a quick link to Account Information or Achievements. |
-| No active state on sidebar profile sub-items | The dot indicator next to each sub-item never changes to the active color due to the bug described above. Users get no visual feedback about which settings page they are on. |
+| `enable_email_2fa` | Enable email 2FA for the user (sends a verification code first) |
+| `confirm_email_2fa` | Confirm enabling email 2FA by verifying the code |
+| `send_email_code` | Send a new 6-digit code to the user's email via Resend |
+| `disable_email_2fa` | Disable email 2FA |
 
----
+Update existing actions:
+- **`status`**: Return `emailEnabled` alongside `enabled` (TOTP)
+- **`verify`**: Accept `emailCode` in the body; verify against stored hash. Check expiry (5 min) and rate limit (max 5 attempts)
 
-## Proposed Changes
+Email sending flow:
+1. Generate a random 6-digit code
+2. Hash it with SHA-256 and store in `email_code` column with expiry
+3. Send the code via Resend API (`POST https://api.resend.com/emails`)
+4. On verify, compare hashed input against stored hash
 
-### 1. Fix the sidebar active dot indicator bug
+The email template will use a clean, branded HTML layout with the 6-digit code prominently displayed.
 
-In `AppSidebar.tsx`, the dot element uses a function as className but it's not in a render-prop context. Fix by checking `location.pathname` directly:
+## UI Changes
 
-```text
-// Current (broken):
-className={cn("...", ({ isActive }) => isActive ? "bg-primary" : "bg-slate-700")}
+### `src/pages/TwoFactor.tsx` (Verification gate)
 
-// Fixed:
-className={cn("...", location.pathname === item.to ? "bg-primary scale-110" : "bg-slate-700")}
-```
+Add a third mode option alongside TOTP and recovery:
+- **TOTP** (authenticator app) -- existing
+- **Email** (receive code by email) -- new
+- **Recovery code** -- existing
 
-### 2. Add Achievements to the sidebar
+When email mode is selected:
+- Show a "Send Code" button that calls the `send_email_code` action
+- Then show the same 6-digit OTP input to enter the received code
+- Display a "Resend code" link with a 60-second cooldown timer
 
-Add a new entry in the main navigation section (after Community) or as a standalone item:
+### 2FA Settings Page
 
-```text
-{ to: "/achievements", icon: Trophy, label: "Achievements" }
-```
+In the existing 2FA management page (accessed from Account Information), add:
+- A toggle to enable/disable email 2FA
+- Enable flow: sends a verification email, then asks the user to enter the code to confirm
+- Status indicator showing which methods are active (TOTP, Email, both)
 
-### 3. Add Two-Factor Authentication link
-
-Add a link inside the Account Information page (`ProfileAccountSettings.tsx`) as a new section, or add it as a new sidebar sub-item:
-
-```text
-{ to: "/profile/two-factor", icon: ShieldCheck, label: "Two-Factor Auth" }
-```
-
-Wire the existing `TwoFactor.tsx` page to this new route (or keep `/two-factor` and just add the sidebar link).
-
-### 4. Fix hardcoded French strings in Account page
-
-Replace "Informations Personnelles" and "Preferences Regionales" in `ProfileAccountSettings.tsx` with `t("profile.personalInfo")` and `t("profile.regionalPreferences")`, and add the corresponding i18n keys.
-
-### 5. Add password change to Account Information
-
-Add a "Change Password" section to `ProfileAccountSettings.tsx` that calls `supabase.auth.updateUser({ password })`. Include current password verification and confirmation field.
-
-### 6. Add i18n to Data and Portability page
-
-Replace all hardcoded strings in `DataPortability.tsx` with `t()` calls and add corresponding keys to `en.json` and `fr.json`.
-
----
-
-## Technical Summary
+## File Changes Summary
 
 | File | Changes |
 |---|---|
-| `src/components/layout/AppSidebar.tsx` | Fix dot indicator bug (line 286-289); add Achievements to `mainNavItems`; add Two-Factor Auth to `profileSubItems` |
-| `src/components/profile/ProfileAccountSettings.tsx` | Replace French hardcoded section titles with i18n; add "Change Password" section; add "Two-Factor Authentication" link/section |
-| `src/pages/profile/DataPortability.tsx` | Replace hardcoded English strings with i18n `t()` calls |
-| `src/i18n/locales/en.json` | Add keys for `profile.personalInfo`, `profile.regionalPreferences`, `profile.changePassword.*`, `profile.twoFactor.*`, `profile.data.*` |
-| `src/i18n/locales/fr.json` | Add matching French translations |
+| Database migration | Add `email_2fa_enabled`, `email_code`, `email_code_expires_at`, `email_code_attempts` to `user_2fa_settings`; update `get_user_2fa_status` |
+| `supabase/functions/two-factor/index.ts` | Add `enable_email_2fa`, `confirm_email_2fa`, `send_email_code`, `disable_email_2fa` actions; update `status` and `verify`; add Resend API call helper |
+| `src/pages/TwoFactor.tsx` | Add email code mode (send code button, resend timer, 6-digit input) |
+| `src/hooks/useTwoFactor.ts` | Expose `emailEnabled` from status response |
+| `src/components/profile/ProfileAccountSettings.tsx` | Update TwoFactorSection to show email 2FA toggle |
+| `src/i18n/locales/en.json` | Add i18n keys for email 2FA strings |
+| `src/i18n/locales/fr.json` | Add French translations |
 
-No database migrations needed.
+## Security Considerations
+
+- Email codes are SHA-256 hashed before storage (never stored in plain text)
+- Codes expire after 5 minutes
+- Max 5 verification attempts per code (prevents brute force)
+- 60-second cooldown between sending codes (prevents spam)
+- Resend API key stored as a backend secret, never exposed to the client
 
