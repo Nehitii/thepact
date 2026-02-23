@@ -1,127 +1,105 @@
 
+# Pact Settings -- Expert Audit & Improvement Plan
 
-# Complete Site Audit -- Pacte Application
+## Current Architecture
 
-## 1. BUGS (Must Fix)
+The Pact Settings page (`/profile/pact-settings`) is a single, long vertical scroll of 5 cards plus a Danger Zone, all rendered at once inside `ProfilePactSettings`:
 
-### 1.1 Missing i18n Keys (Console Warnings)
-The console is flooding with warnings for `profile.twoFactor.title`, `profile.twoFactor.description`, and `profile.twoFactor.manage`. The code in `ProfileAccountSettings.tsx` uses `t("profile.twoFactor.title", { defaultValue: ... })` but the keys don't exist in `en.json` or `fr.json` -- the `twoFactor` object is at root level, not nested under `profile`.
-
-**Fix:** Add a `twoFactor` sub-object inside the `profile` key in both `en.json` and `fr.json`:
-```json
-"profile": {
-  "twoFactor": {
-    "title": "Two-Factor Authentication",
-    "description": "Add an extra layer of security to your account.",
-    "manage": "Manage"
-  }
-}
-```
-
-### 1.2 Resend Email 2FA Fails for Non-Sandbox Users
-The Resend API key is in sandbox mode, meaning emails can only be sent to the account owner's email address. Any other user activating email 2FA will get a 500 error.
-
-**Fix:** Verify a custom domain on [resend.com/domains](https://resend.com/domains), then set the `RESEND_FROM_EMAIL` secret to use that domain (e.g., `Pacte <noreply@yourdomain.com>`). Until then, email 2FA is effectively broken for all users except the Resend account owner.
-
-### 1.3 TwoFactor Page Wrapped in AppLayout (Incorrect)
-The `/two-factor` route uses `ProtectedWithLayout`, which wraps it in the full sidebar layout. But the 2FA verification gate should be a full-screen, standalone page (like `/auth`) -- users shouldn't see the sidebar when they haven't completed verification yet. This also creates a visual bug where the sidebar is visible but all links redirect back to `/two-factor`.
-
-**Fix:** Change the `/two-factor` route back to use just `ProtectedRoute` without `AppLayout`.
-
-### 1.4 TOTP "Manage" Button Navigates to Verification Gate
-The TOTP section's "Manage" button in `ProfileAccountSettings` navigates to `/two-factor`, which is the verification gate -- not a management page. If the user has already verified, they'll just be redirected back since `isRequired` is false.
-
-**Fix:** The "Manage" button should navigate to a dedicated 2FA settings/management page, or open an inline panel for enabling/disabling TOTP and managing recovery codes.
+1. **Pact Overview** (read-only stats)
+2. **Pact Identity** (name, mantra, symbol, color + save button)
+3. **Project Timeline** (start/end dates + its own save button)
+4. **Custom Difficulty** (name, color, toggle + its own save button)
+5. **Ranks** (full CRUD list + editor modal)
+6. **Reset Pact** (danger zone with confirmation dialog)
 
 ---
 
-## 2. CORRECTIONS (Should Fix)
+## Bugs Found
 
-### 2.1 Hardcoded French Strings
-Several UI strings are hardcoded in French instead of using i18n:
-- Home page: "Initialisation...", "MODE EDITION ACTIVE", "Reorganisez votre tableau de bord", "Modules Disponibles"
-- Onboarding page: "Welcome to Pacte" is in English but other text is hardcoded
-- The Call page: French comments and variable names throughout
+### BUG 1: Inconsistent Supabase client imports
+- `PactSettings.tsx` imports from `@/lib/supabase`
+- `ProjectTimelineCard.tsx` imports from `@/lib/supabase`
+- `CustomDifficultyCard.tsx` imports from `@/lib/supabase`
+- `RanksCard.tsx` imports from `@/lib/supabase`
+- `usePactMutation.ts` imports from `@/lib/supabase`
+- `useResetPact.ts` imports from `@/integrations/supabase/client`
 
-**Fix:** Move all user-facing strings to the i18n files.
+This inconsistency could cause two separate client instances with different auth sessions in edge cases. All should use `@/integrations/supabase/client`.
 
-### 2.2 `dangerouslySetInnerHTML` for CSS Injection
-`AppSidebar.tsx` and `Achievements.tsx` inject CSS via `dangerouslySetInnerHTML`. While the content is static strings (safe), this is an anti-pattern.
+### BUG 2: State lifted to page but not synced after save
+`PactSettings.tsx` loads pact data into local `useState` on mount. After saving Timeline or Custom Difficulty, the database is updated but the React Query cache for `["pact"]` is **not** invalidated. If the user navigates away and back, they see fresh data -- but other components reading from the cache (Home dashboard, sidebar) still show stale data until the `staleTime` expires.
 
-**Fix:** Move the CSS to `index.css` or use a Tailwind plugin.
+- `ProjectTimelineCard` does a raw `supabase.update()` without invalidating any query cache.
+- `CustomDifficultyCard` does a raw `supabase.update()` on `profiles` without invalidating any query cache.
+- Only `PactIdentityCard` (via `usePactMutation`) properly invalidates the `["pact"]` cache.
 
-### 2.3 Journal Entry XSS Risk
-`JournalEntryCard.tsx` renders `entry.content` via `dangerouslySetInnerHTML`. If the content comes from a rich text editor (TipTap), it should be sanitized before rendering.
+### BUG 3: `confirm()` used for rank deletion
+`RanksCard.tsx` line 59 uses `window.confirm()` for rank deletion -- a native browser dialog that breaks the app's visual language and can't be styled or translated. Every other destructive action uses `AlertDialog`.
 
-**Fix:** Add a sanitizer like DOMPurify to sanitize HTML before rendering journal entries.
+### BUG 4: Timeline saves without checking pactId first
+If `pactId` is null (user hasn't completed onboarding), `ProjectTimelineCard` shows a toast error, but `CustomDifficultyCard` doesn't check for a missing userId and could silently fail.
 
-### 2.4 Inconsistent Error Handling
-- `StepDetail.tsx` has hardcoded English error strings ("Failed to load step details")
-- `Legal.tsx` uses `toast` from `sonner` directly while the rest of the app uses `useToast` from the custom hook
-- Some `catch` blocks show `error.message` directly to users, which can leak implementation details
-
-**Fix:** Standardize on one toast system and use i18n for all error messages.
-
-### 2.5 Admin Routes Not Protected
-Admin routes (`/admin`, `/admin/cosmetics`, etc.) use `ProtectedWithLayout` which only checks authentication, not the admin role. Any authenticated user could access admin pages.
-
-**Fix:** Create an `AdminRoute` wrapper that checks `has_role(user_id, 'admin')` before rendering.
+### BUG 5: Ranks editor closes before confirming save success
+In `RankEditor.tsx`, `handleSave` calls `onSave(editedRank)` then immediately calls `onClose()` in the `try` block. If the save fails inside `onSave` (which shows a toast), the editor still closes, making the user think it succeeded.
 
 ---
 
-## 3. IMPROVEMENTS (Nice to Have)
+## UX Issues
 
-### 3.1 QueryClient Configuration
-The `QueryClient` is created with default settings -- no default `staleTime`, `retry`, or `gcTime`. This means every component re-fetches on mount.
+### UX 1: Three separate save buttons -- cognitive overload
+Identity, Timeline, and Custom Difficulty each have their own "Save" button. Users can edit all three sections but forget to save one. There's no "unsaved changes" indicator or warning when navigating away.
 
-**Fix:** Set sensible defaults like `staleTime: 30_000` and `retry: 1`.
+### UX 2: No visual hierarchy or navigation
+All 6 sections are stacked vertically with equal visual weight. On a complex page like this, users scroll up and down searching for what they want. There's no table of contents, no section anchors, and no collapsible sections.
 
-### 3.2 Two Supabase Client Instances
-The codebase has two Supabase client files: `src/lib/supabase.ts` and `src/integrations/supabase/client.ts`. This is confusing and could lead to inconsistencies.
+### UX 3: Ranks section is extremely dense
+The Ranks card contains a scrollable list, a current-rank display with progress bar, a max-XP reference, an "Add" button, and opens a full modal editor with 3 tabs. This is an entire sub-page crammed into a card.
 
-**Fix:** Remove `src/lib/supabase.ts` and use only the auto-generated client from `src/integrations/supabase/client.ts` everywhere.
-
-### 3.3 Heavy Home Page
-The Home page loads 15+ hooks and many components on every render. The `useMemo` block computing dashboard data is ~90 lines of synchronous computation.
-
-**Fix:** Consider splitting the dashboard data computation into smaller, memoized hooks. Lazy-load modules that are below the fold.
-
-### 3.4 Missing Loading/Error States
-The `TwoFactorSection` in profile settings doesn't show a loading state while the 2FA status is being fetched, which can cause flickering.
-
-### 3.5 Sidebar Doesn't Use Standard SidebarProvider
-The `AppSidebar` renders a custom `<aside>` instead of using Shadcn's `<Sidebar>` component. While it works, it means features like sidebar collapse, keyboard shortcuts, and responsive behavior must be manually implemented.
-
-### 3.6 Missing `<meta>` Tags
-The `index.html` likely lacks proper meta tags for SEO, OG images, and mobile viewport configuration beyond the basic defaults.
+### UX 4: No loading state on initial page load
+`PactSettings.tsx` loads data via `useEffect` + raw Supabase calls but shows no loading spinner while `pactId` is null. The cards render with empty defaults, then flash to real data.
 
 ---
 
-## 4. SECURITY NOTES
+## Proposed Improvements
 
-### 4.1 Database Linter: Clean
-No RLS issues found. All tables have proper policies.
+### 1. Unify Supabase imports
+Replace all `@/lib/supabase` imports in Pact Settings files with `@/integrations/supabase/client`.
 
-### 4.2 Edge Function Auth: Solid
-The `two-factor` edge function properly validates tokens, uses `supabaseAdmin` for sensitive operations, and has rate limiting. The 401 retry/signout pattern is well implemented.
+**Files:** `PactSettings.tsx`, `ProjectTimelineCard.tsx`, `CustomDifficultyCard.tsx`, `RanksCard.tsx`, `usePactMutation.ts`
 
-### 4.3 Recovery Code Generation: Good
-Uses cryptographically random bytes, SHA-256 hashing, and single-use enforcement.
+### 2. Add cache invalidation to Timeline and Custom Difficulty saves
+After a successful `supabase.update()`, call `queryClient.invalidateQueries()` for the relevant query keys (`["pact"]` for timeline, `["profile"]` for custom difficulty) so the rest of the app stays in sync.
+
+### 3. Replace `window.confirm()` with `AlertDialog` in RanksCard
+Use the same `AlertDialog` pattern from the Reset Pact section for rank deletion.
+
+### 4. Fix RankEditor close-on-error
+Move `onClose()` to only execute after a confirmed successful save (inside the `onSave` callback's resolution, not in a `try` block).
+
+### 5. Add a loading state to PactSettings page
+Show a `Loader2` spinner while the initial data is being fetched, matching the pattern used in `Profile.tsx`.
+
+### 6. Add an "unsaved changes" dot indicator
+Add a small visual indicator (colored dot) next to each section's save button when the user has made changes that haven't been saved yet. This is lightweight and doesn't require restructuring.
+
+### 7. Consolidate save buttons (optional, lower priority)
+Consider merging Identity + Timeline into a single "Pact Identity & Timeline" card with one save button, since they both write to the `pacts` table. This reduces the number of independent save actions from 3 to 2.
 
 ---
 
-## Priority Summary
+## Technical Details
 
-| Priority | Item | Effort |
-|----------|------|--------|
-| Critical | 1.2 Resend sandbox (domain verification) | User action required |
-| Critical | 1.3 Two-factor page should not have sidebar | 2 min |
-| High | 1.1 Missing i18n keys (console warnings) | 5 min |
-| High | 1.4 TOTP "Manage" button goes to wrong page | 15 min |
-| High | 2.5 Admin routes not role-protected | 20 min |
-| Medium | 2.3 Journal entry XSS sanitization | 15 min |
-| Medium | 2.1 Hardcoded French strings | 30 min |
-| Medium | 2.4 Inconsistent toast/error handling | 20 min |
-| Low | 2.2 Remove dangerouslySetInnerHTML for CSS | 10 min |
-| Low | 3.1-3.6 Various improvements | Variable |
+### Files to modify:
+| File | Changes |
+|------|---------|
+| `src/pages/profile/PactSettings.tsx` | Add loading state, fix Supabase import |
+| `src/components/profile/ProjectTimelineCard.tsx` | Add cache invalidation, fix import |
+| `src/components/profile/CustomDifficultyCard.tsx` | Add cache invalidation, fix import |
+| `src/components/profile/RanksCard.tsx` | Replace `confirm()` with AlertDialog, fix import |
+| `src/components/ranks/RankEditor.tsx` | Fix close-on-error behavior |
+| `src/hooks/usePactMutation.ts` | Fix Supabase import |
 
+### Estimated effort: ~45 minutes total
+- Bug fixes (1-5): ~25 minutes
+- UX improvements (5-6): ~15 minutes
+- Optional consolidation (7): ~5 minutes
