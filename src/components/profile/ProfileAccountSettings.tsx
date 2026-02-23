@@ -14,8 +14,13 @@ import {
   Eye,
   EyeOff,
   Smartphone,
+  Check,
+  AlertCircle,
+  Fingerprint,
+  KeyRound,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +28,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
@@ -35,7 +39,6 @@ import { useTwoFactor } from "@/hooks/useTwoFactor";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
-// --- Types & Constants ---
 const TIMEZONES = [
   "UTC",
   "Europe/Paris",
@@ -46,6 +49,7 @@ const TIMEZONES = [
   "Asia/Shanghai",
   "Australia/Sydney",
 ] as const;
+
 const COUNTRIES = ["us", "uk", "fr", "de", "jp", "cn", "au", "ca", "es", "it", "br", "in", "other"] as const;
 
 interface ProfileAccountSettingsProps {
@@ -61,34 +65,75 @@ interface ProfileAccountSettingsProps {
   };
 }
 
-// --- Sous-composant pour les lignes du formulaire ---
-const SettingRow = ({
-  icon: Icon,
-  label,
-  children,
-  description,
-}: {
-  icon: any;
-  label: string;
-  children: React.ReactNode;
-  description?: string;
-}) => (
-  <div className="flex flex-col md:flex-row gap-4 py-6 first:pt-0 last:pb-0">
-    <div className="md:w-1/3 space-y-1">
-      <div className="flex items-center gap-2">
-        <div className="p-2 rounded-xl bg-primary/10 text-primary">
-          <Icon size={16} />
-        </div>
-        <Label className="text-sm font-semibold uppercase tracking-wider font-rajdhani">{label}</Label>
-      </div>
-      {description && (
-        <p className="text-xs text-muted-foreground pl-10 leading-relaxed font-rajdhani">{description}</p>
-      )}
-    </div>
-    <div className="md:w-2/3">{children}</div>
-  </div>
-);
+// ─── Shared styles ─────────────────────────────────────────────────────────────
+const S = {
+  input:
+    "bg-white/[0.03] border-white/10 focus:border-primary/50 focus:bg-white/[0.05] transition-all duration-200 font-rajdhani rounded-xl text-sm placeholder:text-white/20 h-11",
+  selectTrigger:
+    "bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.05] transition-all duration-200 font-rajdhani rounded-xl text-sm h-11",
+  selectContent:
+    "bg-[#0c1220]/98 backdrop-blur-2xl border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.8)] rounded-2xl overflow-hidden",
+  card: "bg-white/[0.02] backdrop-blur-md border-white/[0.06] shadow-[0_1px_0_rgba(255,255,255,0.05)_inset,0_-1px_0_rgba(0,0,0,0.3)_inset] rounded-2xl overflow-hidden",
+  label: "text-[10px] uppercase tracking-[0.12em] text-white/40 font-rajdhani font-semibold",
+};
 
+// ─── Section header ────────────────────────────────────────────────────────────
+function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle?: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-8">
+      <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shadow-[0_0_12px_rgba(var(--primary-rgb),0.15)]">
+        <Icon className="h-4 w-4 text-primary" />
+      </div>
+      <div>
+        <h3 className="text-sm font-orbitron text-white/90 tracking-wider">{title}</h3>
+        {subtitle && <p className="text-[11px] text-white/30 font-rajdhani mt-0.5">{subtitle}</p>}
+      </div>
+    </div>
+  );
+}
+
+// ─── Field wrapper ─────────────────────────────────────────────────────────────
+function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
+  return (
+    <div className="space-y-2">
+      <Label className={S.label}>{label}</Label>
+      {children}
+      {hint && <p className="text-[10px] text-white/25 font-rajdhani pl-0.5">{hint}</p>}
+    </div>
+  );
+}
+
+// ─── Divider ───────────────────────────────────────────────────────────────────
+function Divider() {
+  return <div className="border-t border-white/[0.05] my-6" />;
+}
+
+// ─── Status pill ───────────────────────────────────────────────────────────────
+function StatusPill({
+  active,
+  activeLabel,
+  inactiveLabel,
+}: {
+  active: boolean;
+  activeLabel: string;
+  inactiveLabel: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase font-rajdhani px-2.5 py-1 rounded-full",
+        active
+          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+          : "bg-white/5 text-white/30 border border-white/10",
+      )}
+    >
+      <span className={cn("w-1.5 h-1.5 rounded-full", active ? "bg-emerald-400" : "bg-white/20")} />
+      {active ? activeLabel : inactiveLabel}
+    </span>
+  );
+}
+
+// ─── Main Component ────────────────────────────────────────────────────────────
 export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSettingsProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = useDateFnsLocale();
@@ -97,19 +142,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
   const [formData, setFormData] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);
-
-  // Styles Glassmorphism arrondis
-  const styles = useMemo(
-    () => ({
-      input:
-        "bg-background/40 backdrop-blur-sm border-primary/20 focus:border-primary/50 transition-all font-rajdhani rounded-xl",
-      selectTrigger:
-        "bg-background/40 backdrop-blur-sm border-primary/20 hover:border-primary/40 transition-all font-rajdhani rounded-xl",
-      selectContent: "bg-popover/95 backdrop-blur-xl border-primary/20 shadow-2xl rounded-2xl overflow-hidden",
-      card: "bg-card/30 backdrop-blur-md border-primary/10 shadow-lg rounded-3xl overflow-hidden",
-    }),
-    [],
-  );
+  const [saved, setSaved] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -127,14 +160,12 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
         .eq("id", userId);
 
       if (error) throw error;
-
-      if (formData.language !== i18n.language) {
-        await i18n.changeLanguage(formData.language);
-      }
-
+      if (formData.language !== i18n.language) await i18n.changeLanguage(formData.language);
       updateGlobalCurrency(formData.currency);
       await refreshCurrency();
 
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
       toast({ title: t("profile.updatedTitle"), description: t("profile.updatedDesc") });
     } catch (error: any) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
@@ -144,49 +175,55 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* SECTION 1: INFORMATIONS PERSONNELLES */}
-      <Card className={styles.card}>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="max-w-2xl mx-auto space-y-4"
+    >
+      {/* ── Personal Info ─────────────────────────────────────────────── */}
+      <Card className={S.card}>
         <CardContent className="p-6">
-          <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
-            {/* CHANGEMENT ICI : Titre plus clair */}
-            <User className="h-5 w-5" /> {t("profile.personalInfo")}
-          </h3>
+          <SectionHeader icon={User} title={t("profile.personalInfo")} subtitle="Your public identity" />
 
-          <div className="divide-y divide-primary/5">
-            <SettingRow icon={Mail} label={t("common.email")} description={t("profile.emailCantChange")}>
-              <Input value={formData.email} disabled className="opacity-50 cursor-not-allowed bg-muted/20 rounded-xl" />
-            </SettingRow>
+          <div className="space-y-5">
+            <Field label={t("common.email")} hint={t("profile.emailCantChange")}>
+              <div className="relative">
+                <Input value={formData.email} disabled className={cn(S.input, "opacity-40 cursor-not-allowed pr-10")} />
+                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/20" />
+              </div>
+            </Field>
 
-            <SettingRow icon={ShieldCheck} label={t("profile.displayName")}>
+            <Field label={t("profile.displayName")}>
               <Input
                 placeholder={t("profile.displayNamePlaceholder")}
                 value={formData.displayName}
                 onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
-                className={styles.input}
+                className={S.input}
               />
-            </SettingRow>
+            </Field>
 
-            <SettingRow icon={CalendarIcon} label={t("profile.birthday")}>
+            <Field label={t("profile.birthday")}>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-between text-left",
-                      styles.selectTrigger,
-                      !formData.birthday && "text-muted-foreground",
+                      "w-full justify-between text-left font-rajdhani",
+                      S.selectTrigger,
+                      !formData.birthday && "text-white/20",
                     )}
                   >
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 text-sm">
+                      <CalendarIcon className="h-4 w-4 text-white/30" />
                       {formData.birthday
                         ? format(formData.birthday, "PPP", { locale: dateLocale })
                         : t("profile.birthdayPlaceholder")}
                     </span>
-                    <ChevronRight className="h-4 w-4 opacity-50" />
+                    <ChevronRight className="h-4 w-4 text-white/20" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className={cn("w-auto p-0", styles.selectContent)} align="start">
+                <PopoverContent className={cn("w-auto p-0", S.selectContent)} align="start">
                   <Calendar
                     mode="single"
                     selected={formData.birthday}
@@ -197,27 +234,23 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
                   />
                 </PopoverContent>
               </Popover>
-            </SettingRow>
+            </Field>
           </div>
         </CardContent>
       </Card>
 
-      {/* SECTION 2: PRÉFÉRENCES RÉGIONALES */}
-      <Card className={styles.card}>
+      {/* ── Regional Preferences ──────────────────────────────────────── */}
+      <Card className={S.card}>
         <CardContent className="p-6">
-          <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
-            {/* CHANGEMENT ICI : Titre plus clair */}
-            <Globe className="h-5 w-5" /> {t("profile.regionalPreferences")}
-          </h3>
+          <SectionHeader icon={Globe} title={t("profile.regionalPreferences")} subtitle="Localization & display" />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.country")}</Label>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label={t("profile.country")}>
               <Select value={formData.country} onValueChange={(val) => setFormData((p) => ({ ...p, country: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
+                <SelectTrigger className={S.selectTrigger}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
+                <SelectContent className={S.selectContent}>
                   {COUNTRIES.map((c) => (
                     <SelectItem key={c} value={c}>
                       {t(`profile.countries.${c}`)}
@@ -225,15 +258,14 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.timezone")}</Label>
+            <Field label={t("profile.timezone")}>
               <Select value={formData.timezone} onValueChange={(val) => setFormData((p) => ({ ...p, timezone: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
+                <SelectTrigger className={S.selectTrigger}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
+                <SelectContent className={S.selectContent}>
                   {TIMEZONES.map((tz) => (
                     <SelectItem key={tz} value={tz}>
                       {tz}
@@ -241,65 +273,113 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.language")}</Label>
+            <Field label={t("profile.language")}>
               <Select value={formData.language} onValueChange={(val) => setFormData((p) => ({ ...p, language: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
+                <SelectTrigger className={S.selectTrigger}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
+                <SelectContent className={S.selectContent}>
                   <SelectItem value="en">English</SelectItem>
                   <SelectItem value="fr">Français</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
 
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-primary/70">{t("profile.currency")}</Label>
+            <Field label={t("profile.currency")}>
               <Select value={formData.currency} onValueChange={(val) => setFormData((p) => ({ ...p, currency: val }))}>
-                <SelectTrigger className={styles.selectTrigger}>
+                <SelectTrigger className={S.selectTrigger}>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className={styles.selectContent}>
+                <SelectContent className={S.selectContent}>
                   <SelectItem value="eur">EUR (€)</SelectItem>
                   <SelectItem value="usd">USD ($)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
           </div>
         </CardContent>
       </Card>
 
-      {/* SECTION 3: CHANGE PASSWORD */}
-      <ChangePasswordSection styles={styles} />
+      {/* ── Password ──────────────────────────────────────────────────── */}
+      <ChangePasswordSection />
 
-      {/* SECTION 4: TWO-FACTOR AUTH */}
-      <TwoFactorSection styles={styles} />
+      {/* ── 2FA ───────────────────────────────────────────────────────── */}
+      <TwoFactorSection />
 
-      <div className="flex justify-end pt-4">
-        <Button
-          onClick={handleSave}
-          disabled={isSaving}
-          size="lg"
-          className="rounded-xl min-w-[200px] bg-primary hover:bg-primary/80 text-primary-foreground font-orbitron shadow-[0_0_20px_rgba(var(--primary),0.3)] transition-all hover:scale-105 active:scale-95"
-        >
-          {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-          {isSaving ? t("common.saving") : t("common.saveChanges")}
-        </Button>
+      {/* ── Save ──────────────────────────────────────────────────────── */}
+      <div className="flex justify-end pt-2 pb-6">
+        <motion.div whileTap={{ scale: 0.97 }}>
+          <Button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={cn(
+              "relative h-11 min-w-[180px] rounded-xl font-orbitron text-xs tracking-widest uppercase overflow-hidden transition-all duration-300",
+              saved
+                ? "bg-emerald-500/20 border-2 border-emerald-500/40 text-emerald-400"
+                : "bg-primary/15 border-2 border-primary/30 hover:border-primary/60 hover:bg-primary/25 text-primary shadow-[0_0_24px_rgba(var(--primary-rgb),0.15)] hover:shadow-[0_0_32px_rgba(var(--primary-rgb),0.25)]",
+            )}
+          >
+            <AnimatePresence mode="wait">
+              {isSaving ? (
+                <motion.span
+                  key="saving"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2"
+                >
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("common.saving")}
+                </motion.span>
+              ) : saved ? (
+                <motion.span
+                  key="saved"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center gap-2"
+                >
+                  <Check className="h-4 w-4" />
+                  Saved
+                </motion.span>
+              ) : (
+                <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  {t("common.saveChanges")}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </Button>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
-function ChangePasswordSection({ styles }: { styles: { card: string; input: string } }) {
+// ─── Change Password ──────────────────────────────────────────────────────────
+function ChangePasswordSection() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const passwordStrength = useMemo(() => {
+    if (!newPassword) return 0;
+    let score = 0;
+    if (newPassword.length >= 8) score++;
+    if (/[A-Z]/.test(newPassword)) score++;
+    if (/[0-9]/.test(newPassword)) score++;
+    if (/[^A-Za-z0-9]/.test(newPassword)) score++;
+    return score;
+  }, [newPassword]);
+
+  const strengthLabel = ["", "Weak", "Fair", "Good", "Strong"][passwordStrength];
+  const strengthColor = ["", "bg-red-500", "bg-amber-500", "bg-blue-400", "bg-emerald-400"][passwordStrength];
+
+  const mismatch = confirmPassword && newPassword !== confirmPassword;
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
@@ -325,47 +405,95 @@ function ChangePasswordSection({ styles }: { styles: { card: string; input: stri
   };
 
   return (
-    <Card className={styles.card}>
+    <Card className={S.card}>
       <CardContent className="p-6">
-        <h3 className="text-lg font-orbitron text-primary mb-6 flex items-center gap-2">
-          <Lock className="h-5 w-5" /> {t("profile.changePassword.title")}
-        </h3>
-        <div className="space-y-4 max-w-md">
-          <div className="space-y-2">
-            <Label className="text-xs uppercase text-primary/70">{t("profile.changePassword.newPassword")}</Label>
+        <SectionHeader
+          icon={KeyRound}
+          title={t("profile.changePassword.title")}
+          subtitle="Update your login credentials"
+        />
+
+        <div className="space-y-4">
+          <Field label={t("profile.changePassword.newPassword")}>
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                className={styles.input}
+                className={cn(S.input, "pr-10")}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
               >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs uppercase text-primary/70">{t("profile.changePassword.confirmPassword")}</Label>
-            <Input
-              type={showPassword ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className={styles.input}
-            />
-          </div>
+            {/* Strength bar */}
+            {newPassword && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="pt-2 space-y-1.5"
+              >
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-0.5 flex-1 rounded-full transition-all duration-300",
+                        i <= passwordStrength ? strengthColor : "bg-white/10",
+                      )}
+                    />
+                  ))}
+                </div>
+                <p className="text-[10px] text-white/30 font-rajdhani">{strengthLabel}</p>
+              </motion.div>
+            )}
+          </Field>
+
+          <Field label={t("profile.changePassword.confirmPassword")}>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className={cn(S.input, "pr-10", mismatch && "border-red-500/40 focus:border-red-500/60")}
+              />
+              <AnimatePresence>
+                {mismatch && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <AlertCircle size={15} className="text-red-400" />
+                  </motion.div>
+                )}
+                {confirmPassword && !mismatch && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <Check size={15} className="text-emerald-400" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </Field>
+
           <Button
             onClick={handleChangePassword}
-            disabled={isSaving || !newPassword || !confirmPassword}
-            className="bg-primary/20 border-2 border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider"
+            disabled={isSaving || !newPassword || !confirmPassword || !!mismatch}
+            className="h-10 px-5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 hover:bg-white/[0.07] text-white/60 hover:text-white/90 font-orbitron text-[10px] tracking-widest uppercase transition-all duration-200"
           >
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lock className="mr-2 h-4 w-4" />}
+            {isSaving ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Lock className="mr-2 h-3.5 w-3.5" />}
             {isSaving ? t("common.saving") : t("profile.changePassword.update")}
           </Button>
         </div>
@@ -374,7 +502,8 @@ function ChangePasswordSection({ styles }: { styles: { card: string; input: stri
   );
 }
 
-function TwoFactorSection({ styles }: { styles: { card: string; input: string } }) {
+// ─── Two-Factor Auth ──────────────────────────────────────────────────────────
+function TwoFactorSection() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { session } = useAuth();
@@ -440,97 +569,120 @@ function TwoFactorSection({ styles }: { styles: { card: string; input: string } 
   };
 
   return (
-    <Card className={styles.card}>
-      <CardContent className="p-6 space-y-6">
-        <h3 className="text-lg font-orbitron text-primary flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5" /> {t("profile.twoFactor.title")}
-        </h3>
-        <p className="text-sm text-muted-foreground font-rajdhani">
-          {t("profile.twoFactor.description")}
-        </p>
+    <Card className={S.card}>
+      <CardContent className="p-6">
+        <SectionHeader
+          icon={Fingerprint}
+          title={t("profile.twoFactor.title")}
+          subtitle="Add extra layers of security"
+        />
 
-        {/* TOTP Section */}
-        <div className="flex items-center justify-between rounded-xl border border-primary/10 bg-background/30 px-4 py-3">
-          <div className="space-y-0.5">
-            <p className="text-sm font-medium flex items-center gap-2">
-              <Smartphone className="h-4 w-4 text-primary" />
-              Authenticator App
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {twoFactor.enabled ? t("twoFactor.email2fa.active") : t("twoFactor.email2fa.inactive")}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate("/profile")}
-            className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
-          >
-            {t("profile.twoFactor.manage")}
-          </Button>
-        </div>
-
-        {/* Email 2FA Section */}
-        <div className="rounded-xl border border-primary/10 bg-background/30 px-4 py-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <p className="text-sm font-medium flex items-center gap-2">
-                <Mail className="h-4 w-4 text-primary" />
-                {t("twoFactor.email2fa.title")}
-              </p>
-              <p className="text-xs text-muted-foreground">{t("twoFactor.email2fa.description")}</p>
-            </div>
-            {twoFactor.emailEnabled ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDisableEmail2FA}
-                disabled={disablingEmail}
-                className="bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
-              >
-                {disablingEmail ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
-                {disablingEmail ? t("twoFactor.email2fa.disabling") : t("twoFactor.email2fa.disable")}
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleEnableEmail2FA}
-                disabled={enablingEmail || showEmailConfirm}
-                className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
-              >
-                {enablingEmail ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
-                {enablingEmail ? t("twoFactor.email2fa.enabling") : t("twoFactor.email2fa.enable")}
-              </Button>
-            )}
-          </div>
-
-          {/* Confirmation flow */}
-          {showEmailConfirm && !twoFactor.emailEnabled && (
-            <div className="space-y-3 pt-2 border-t border-primary/10">
-              <p className="text-sm text-muted-foreground">{t("twoFactor.email2fa.confirmDesc")}</p>
-              <div className="flex justify-center">
-                <InputOTP maxLength={6} value={emailConfirmCode} onChange={setEmailConfirmCode}>
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} />
-                    <InputOTPSlot index={1} />
-                    <InputOTPSlot index={2} />
-                    <InputOTPSlot index={3} />
-                    <InputOTPSlot index={4} />
-                    <InputOTPSlot index={5} />
-                  </InputOTPGroup>
-                </InputOTP>
+        <div className="space-y-3">
+          {/* TOTP Row */}
+          <div className="group flex items-center justify-between gap-4 rounded-xl bg-white/[0.02] border border-white/[0.06] px-4 py-3.5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-200">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/15">
+                <Smartphone className="h-3.5 w-3.5 text-primary" />
               </div>
-              <Button
-                onClick={handleConfirmEmail2FA}
-                disabled={confirmingEmail || emailConfirmCode.length < 6}
-                className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
-              >
-                {confirmingEmail ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                {confirmingEmail ? t("twoFactor.email2fa.confirming") : t("twoFactor.email2fa.confirmButton")}
-              </Button>
+              <div>
+                <p className="text-sm font-medium text-white/80 font-rajdhani">Authenticator App</p>
+                <StatusPill
+                  active={twoFactor.enabled}
+                  activeLabel={t("twoFactor.email2fa.active")}
+                  inactiveLabel={t("twoFactor.email2fa.inactive")}
+                />
+              </div>
             </div>
-          )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/profile")}
+              className="h-8 px-3 rounded-lg text-[10px] font-orbitron tracking-widest uppercase bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07] text-white/50 hover:text-white/80 transition-all"
+            >
+              {t("profile.twoFactor.manage")}
+            </Button>
+          </div>
+
+          {/* Email 2FA Row */}
+          <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] overflow-hidden hover:border-white/10 transition-all duration-200">
+            <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/15">
+                  <Mail className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white/80 font-rajdhani">{t("twoFactor.email2fa.title")}</p>
+                  <StatusPill
+                    active={twoFactor.emailEnabled}
+                    activeLabel={t("twoFactor.email2fa.active")}
+                    inactiveLabel={t("twoFactor.email2fa.inactive")}
+                  />
+                </div>
+              </div>
+
+              {twoFactor.emailEnabled ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDisableEmail2FA}
+                  disabled={disablingEmail}
+                  className="h-8 px-3 rounded-lg text-[10px] font-orbitron tracking-widest uppercase bg-red-500/8 border border-red-500/15 hover:border-red-500/30 hover:bg-red-500/15 text-red-400/70 hover:text-red-400 transition-all"
+                >
+                  {disablingEmail && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                  {disablingEmail ? t("twoFactor.email2fa.disabling") : t("twoFactor.email2fa.disable")}
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleEnableEmail2FA}
+                  disabled={enablingEmail || showEmailConfirm}
+                  className="h-8 px-3 rounded-lg text-[10px] font-orbitron tracking-widest uppercase bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07] text-white/50 hover:text-white/80 transition-all"
+                >
+                  {enablingEmail && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                  {enablingEmail ? t("twoFactor.email2fa.enabling") : t("twoFactor.email2fa.enable")}
+                </Button>
+              )}
+            </div>
+
+            {/* Confirmation flow */}
+            <AnimatePresence>
+              {showEmailConfirm && !twoFactor.emailEnabled && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="px-4 pb-4 pt-3 border-t border-white/[0.05] space-y-4">
+                    <p className="text-xs text-white/35 font-rajdhani">{t("twoFactor.email2fa.confirmDesc")}</p>
+                    <div className="flex justify-center">
+                      <InputOTP maxLength={6} value={emailConfirmCode} onChange={setEmailConfirmCode}>
+                        <InputOTPGroup className="gap-2">
+                          {[0, 1, 2, 3, 4, 5].map((i) => (
+                            <InputOTPSlot
+                              key={i}
+                              index={i}
+                              className="w-9 h-11 rounded-lg bg-white/[0.04] border-white/10 focus:border-primary/50 text-sm font-orbitron"
+                            />
+                          ))}
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </div>
+                    <Button
+                      onClick={handleConfirmEmail2FA}
+                      disabled={confirmingEmail || emailConfirmCode.length < 6}
+                      className="w-full h-10 rounded-xl bg-primary/15 border border-primary/25 hover:border-primary/45 hover:bg-primary/25 text-primary font-orbitron text-[10px] tracking-widest uppercase transition-all duration-200"
+                    >
+                      {confirmingEmail && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
+                      {confirmingEmail ? t("twoFactor.email2fa.confirming") : t("twoFactor.email2fa.confirmButton")}
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </CardContent>
     </Card>
