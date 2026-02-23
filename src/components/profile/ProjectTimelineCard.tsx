@@ -55,6 +55,7 @@ export function ProjectTimelineCard({
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["pact"] });
       toast({ title: "Timeline Updated", description: "Your project timeline has been saved." });
     }
     setSaving(false);

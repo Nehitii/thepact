@@ -50,6 +50,7 @@ export function CustomDifficultyCard({
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast({ title: "Custom Difficulty Updated", description: "Your custom difficulty settings have been saved." });
     }
     setSaving(false);
