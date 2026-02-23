@@ -29,7 +29,7 @@ export function PactOverviewCard({ userId }: PactOverviewCardProps) {
   ];
 
   return (
-    <PactSettingsCard icon={<BarChart3 className="h-5 w-5 text-primary" />} title="Pact Overview" description="Your journey at a glance">
+    <PactSettingsCard icon={<BarChart3 className="h-5 w-5 text-primary" />} title="Pact Overview" description="Your journey at a glance" sectionId="overview">
       <div className="grid grid-cols-2 gap-3">
         {stats.map(({ icon: Icon, label, value }) => (
           <div key={label} className="p-3 rounded-lg bg-card/50 border border-primary/15 hover:border-primary/25 transition-colors">

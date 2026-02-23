@@ -61,6 +61,7 @@ export function CustomDifficultyCard({
       icon={<Zap className="h-5 w-5 text-primary" />}
       title="Custom Difficulty"
       description="Create your own difficulty level for goals"
+      sectionId="difficulty"
     >
       <div className="space-y-4">
         <div className="space-y-1.5">

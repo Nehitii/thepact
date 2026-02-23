@@ -70,7 +70,7 @@ export function RanksCard({ userId }: RanksCardProps) {
   };
 
   return (
-    <PactSettingsCard icon={<Trophy className="h-5 w-5 text-primary" />} title="Ranks" description="Configure your progression ranks with custom visuals">
+    <PactSettingsCard icon={<Trophy className="h-5 w-5 text-primary" />} title="Ranks" description="Configure your progression ranks with custom visuals" sectionId="ranks">
       {rankData?.currentRank && (
         <div className="mb-4 p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
           <div className="flex items-center gap-2 mb-3">
