@@ -58,10 +58,15 @@ export function RanksCard({ userId }: RanksCardProps) {
   };
 
   const handleDeleteRank = async (rank: Rank) => {
-    if (!confirm(`Are you sure you want to delete "${rank.name}"?`)) return;
-    const { error } = await supabase.from("ranks").delete().eq("id", rank.id);
+    setRankToDelete(rank);
+  };
+
+  const confirmDeleteRank = async () => {
+    if (!rankToDelete) return;
+    const { error } = await supabase.from("ranks").delete().eq("id", rankToDelete.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
-    else { toast({ title: "Rank Deleted", description: `${rank.name} has been removed` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
+    else { toast({ title: "Rank Deleted", description: `${rankToDelete.name} has been removed` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
+    setRankToDelete(null);
   };
 
   return (
