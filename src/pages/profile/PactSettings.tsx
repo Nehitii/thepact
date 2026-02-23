@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { ScrollText } from "lucide-react";
