@@ -154,6 +154,23 @@ export function RanksCard({ userId }: RanksCardProps) {
       {selectedRank && (
         <RankEditor rank={selectedRank} open={showEditor} onClose={() => { setShowEditor(false); setSelectedRank(null); }} onSave={handleSaveRank} isNew={isNewRank} globalMaxXP={rankData?.totalMaxXP || 0} />
       )}
+
+      <AlertDialog open={!!rankToDelete} onOpenChange={(open) => !open && setRankToDelete(null)}>
+        <AlertDialogContent className="bg-card border-primary/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Delete Rank</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{rankToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-primary/30">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteRank} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PactSettingsCard>
   );
 }
