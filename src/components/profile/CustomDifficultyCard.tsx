@@ -29,6 +29,7 @@ export function CustomDifficultyCard({
   onCustomDifficultyColorChange,
 }: CustomDifficultyCardProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
