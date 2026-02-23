@@ -8,7 +8,6 @@ import {
   Globe,
   Mail,
   ShieldCheck,
-  CreditCard,
   ChevronRight,
   Lock,
   Eye,
@@ -18,6 +17,7 @@ import {
   AlertCircle,
   Fingerprint,
   KeyRound,
+  Activity,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,7 +28,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Card, CardContent } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 import { supabase } from "@/lib/supabase";
@@ -39,6 +38,7 @@ import { useTwoFactor } from "@/hooks/useTwoFactor";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
 const TIMEZONES = [
   "UTC",
   "Europe/Paris",
@@ -49,7 +49,6 @@ const TIMEZONES = [
   "Asia/Shanghai",
   "Australia/Sydney",
 ] as const;
-
 const COUNTRIES = ["us", "uk", "fr", "de", "jp", "cn", "au", "ca", "es", "it", "br", "in", "other"] as const;
 
 interface ProfileAccountSettingsProps {
@@ -65,51 +64,197 @@ interface ProfileAccountSettingsProps {
   };
 }
 
-// ─── Shared styles ─────────────────────────────────────────────────────────────
-const S = {
-  input:
-    "bg-white/[0.03] border-white/10 focus:border-primary/50 focus:bg-white/[0.05] transition-all duration-200 font-rajdhani rounded-xl text-sm placeholder:text-white/20 h-11",
-  selectTrigger:
-    "bg-white/[0.03] border-white/10 hover:border-white/20 hover:bg-white/[0.05] transition-all duration-200 font-rajdhani rounded-xl text-sm h-11",
-  selectContent:
-    "bg-[#0c1220]/98 backdrop-blur-2xl border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.8)] rounded-2xl overflow-hidden",
-  card: "bg-white/[0.02] backdrop-blur-md border-white/[0.06] shadow-[0_1px_0_rgba(255,255,255,0.05)_inset,0_-1px_0_rgba(0,0,0,0.3)_inset] rounded-2xl overflow-hidden",
-  label: "text-[10px] uppercase tracking-[0.12em] text-white/40 font-rajdhani font-semibold",
+// ─── Clip-corner style helpers ────────────────────────────────────────────────
+const clipSm = {
+  clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)",
+};
+const clipMd = {
+  clipPath: "polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px)",
+};
+const clipLg = {
+  clipPath: "polygon(14px 0%, 100% 0%, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0% 100%, 0% 14px)",
 };
 
-// ─── Section header ────────────────────────────────────────────────────────────
-function SectionHeader({ icon: Icon, title, subtitle }: { icon: any; title: string; subtitle?: string }) {
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const CY = {
+  input: [
+    "bg-[#010608] border border-primary/25 rounded-none",
+    "focus:border-primary/70 focus:bg-[#010b10]",
+    "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2),inset_0_0_16px_hsl(var(--primary)/0.03)]",
+    "text-primary/80 placeholder:text-primary/15 font-mono text-sm tracking-wide h-11",
+    "transition-all duration-200",
+  ].join(" "),
+
+  selectTrigger: [
+    "bg-[#010608] border border-primary/25 rounded-none h-11",
+    "hover:border-primary/50 hover:bg-[#010b10]",
+    "text-primary/80 font-mono text-sm tracking-wide",
+    "transition-all duration-200",
+  ].join(" "),
+
+  selectContent: [
+    "bg-[#020c12]/99 backdrop-blur-2xl rounded-none",
+    "border border-primary/20",
+    "shadow-[0_20px_60px_rgba(0,0,0,0.95),0_0_0_1px_hsl(var(--primary)/0.08)]",
+  ].join(" "),
+
+  label: "text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold",
+
+  btnPrimary: [
+    "relative rounded-none bg-primary/10 border border-primary/35",
+    "hover:bg-primary/18 hover:border-primary/65",
+    "text-primary font-mono text-[10px] tracking-[0.22em] uppercase",
+    "shadow-[0_0_14px_hsl(var(--primary)/0.12)] hover:shadow-[0_0_24px_hsl(var(--primary)/0.28)]",
+    "disabled:opacity-30 disabled:cursor-not-allowed",
+    "transition-all duration-200 h-10",
+  ].join(" "),
+
+  btnGhost: [
+    "relative rounded-none bg-transparent border border-primary/12",
+    "hover:border-primary/30 hover:bg-primary/5",
+    "text-primary/35 hover:text-primary/65 font-mono text-[10px] tracking-[0.22em] uppercase",
+    "transition-all duration-200 h-8",
+  ].join(" "),
+
+  btnDestructive: [
+    "relative rounded-none bg-red-950/20 border border-red-500/25",
+    "hover:bg-red-900/25 hover:border-red-400/45",
+    "text-red-400/70 hover:text-red-400 font-mono text-[10px] tracking-[0.22em] uppercase",
+    "disabled:opacity-30 disabled:cursor-not-allowed",
+    "transition-all duration-200 h-8",
+  ].join(" "),
+};
+
+// ─── Scan lines overlay ───────────────────────────────────────────────────────
+function ScanLines() {
   return (
-    <div className="flex items-center gap-3 mb-8">
-      <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shadow-[0_0_12px_rgba(var(--primary-rgb),0.15)]">
-        <Icon className="h-4 w-4 text-primary" />
+    <div
+      className="pointer-events-none absolute inset-0 z-[1] opacity-[0.018]"
+      style={{
+        backgroundImage:
+          "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,160,0.4) 2px, rgba(0,255,160,0.4) 3px)",
+        backgroundSize: "100% 3px",
+      }}
+    />
+  );
+}
+
+// ─── Corner brackets ──────────────────────────────────────────────────────────
+function CornerBrackets({ dim = false, red = false }: { dim?: boolean; red?: boolean }) {
+  const c = red ? "border-red-500/35" : dim ? "border-primary/15" : "border-primary/30";
+  return (
+    <>
+      <span className={cn("absolute top-0 left-0 w-2.5 h-2.5 border-t border-l pointer-events-none", c)} />
+      <span className={cn("absolute top-0 right-0 w-2.5 h-2.5 border-t border-r pointer-events-none", c)} />
+      <span className={cn("absolute bottom-0 left-0 w-2.5 h-2.5 border-b border-l pointer-events-none", c)} />
+      <span className={cn("absolute bottom-0 right-0 w-2.5 h-2.5 border-b border-r pointer-events-none", c)} />
+    </>
+  );
+}
+
+// ─── HUD Panel ────────────────────────────────────────────────────────────────
+function HUDPanel({
+  children,
+  panelId,
+  className,
+}: {
+  children: React.ReactNode;
+  panelId?: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative bg-[#010608] border border-primary/15",
+        "shadow-[0_0_0_1px_rgba(0,0,0,0.9),inset_0_1px_0_hsl(var(--primary)/0.06)]",
+        className,
+      )}
+      style={clipLg}
+    >
+      {/* Top glow line */}
+      <div className="absolute top-0 left-16 right-16 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent pointer-events-none" />
+      {/* Scan lines */}
+      <ScanLines />
+      {/* Corner accents */}
+      <CornerBrackets />
+      {/* Panel ID badge */}
+      {panelId && (
+        <div className="absolute top-0 left-0 pointer-events-none">
+          <div
+            className="flex items-center gap-1.5 bg-primary/8 border-b border-r border-primary/15 px-2.5 py-1"
+            style={{ clipPath: "polygon(0 0, 100% 0, calc(100% - 5px) 100%, 0 100%)" }}
+          >
+            <span className="w-1 h-1 bg-primary/60 rotate-45 inline-block" />
+            <span className="text-[8px] font-mono text-primary/40 tracking-[0.25em] uppercase">{panelId}</span>
+          </div>
+        </div>
+      )}
+      <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
+
+// ─── Section Header ───────────────────────────────────────────────────────────
+function SectionHeader({
+  icon: Icon,
+  title,
+  subtitle,
+  index,
+}: {
+  icon: any;
+  title: string;
+  subtitle?: string;
+  index?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3.5 mb-7">
+      <div className="relative shrink-0">
+        <div className="flex items-center justify-center w-9 h-9 bg-primary/10 border border-primary/25" style={clipMd}>
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
+        {/* pulse ring */}
+        <motion.div
+          animate={{ opacity: [0.4, 0, 0.4] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -inset-px border border-primary/25 pointer-events-none"
+          style={clipMd}
+        />
       </div>
-      <div>
-        <h3 className="text-sm font-orbitron text-white/90 tracking-wider">{title}</h3>
-        {subtitle && <p className="text-[11px] text-white/30 font-rajdhani mt-0.5">{subtitle}</p>}
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2.5">
+          {index && <span className="text-[8px] font-mono text-primary/25 tracking-[0.3em]">{index}</span>}
+          <h3 className="text-[11px] font-orbitron text-primary/85 tracking-[0.15em] uppercase">{title}</h3>
+        </div>
+        {subtitle && <p className="text-[9px] text-primary/25 font-mono mt-0.5 tracking-[0.15em]">{subtitle}</p>}
+      </div>
+
+      <div className="flex items-center gap-1 shrink-0">
+        <div className="w-8 h-px bg-gradient-to-l from-primary/25 to-transparent" />
+        <div className="w-1 h-1 border border-primary/30 rotate-45" />
       </div>
     </div>
   );
 }
 
-// ─── Field wrapper ─────────────────────────────────────────────────────────────
+// ─── Field ────────────────────────────────────────────────────────────────────
 function Field({ label, children, hint }: { label: string; children: React.ReactNode; hint?: string }) {
   return (
-    <div className="space-y-2">
-      <Label className={S.label}>{label}</Label>
+    <div className="space-y-1.5">
+      <div className="flex items-center gap-1.5">
+        <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+        <Label className={CY.label}>{label}</Label>
+      </div>
       {children}
-      {hint && <p className="text-[10px] text-white/25 font-rajdhani pl-0.5">{hint}</p>}
+      {hint && (
+        <p className="text-[9px] text-primary/20 font-mono tracking-wider pl-2.5 border-l border-primary/10">{hint}</p>
+      )}
     </div>
   );
 }
 
-// ─── Divider ───────────────────────────────────────────────────────────────────
-function Divider() {
-  return <div className="border-t border-white/[0.05] my-6" />;
-}
-
-// ─── Status pill ───────────────────────────────────────────────────────────────
-function StatusPill({
+// ─── Status chip ──────────────────────────────────────────────────────────────
+function StatusChip({
   active,
   activeLabel,
   inactiveLabel,
@@ -121,19 +266,62 @@ function StatusPill({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase font-rajdhani px-2.5 py-1 rounded-full",
+        "inline-flex items-center gap-1.5 px-2 py-0.5 font-mono text-[8px] tracking-[0.18em] uppercase border",
         active
-          ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-          : "bg-white/5 text-white/30 border border-white/10",
+          ? "bg-emerald-950/60 border-emerald-500/25 text-emerald-400/80"
+          : "bg-primary/4 border-primary/12 text-primary/25",
       )}
+      style={{ clipPath: "polygon(4px 0%, 100% 0%, calc(100% - 4px) 100%, 0% 100%)" }}
     >
-      <span className={cn("w-1.5 h-1.5 rounded-full", active ? "bg-emerald-400" : "bg-white/20")} />
+      <motion.span
+        animate={active ? { opacity: [1, 0.2, 1] } : {}}
+        transition={{ duration: 2.5, repeat: Infinity }}
+        className={cn("w-1 h-1 rounded-full shrink-0", active ? "bg-emerald-400" : "bg-primary/20")}
+      />
       {active ? activeLabel : inactiveLabel}
     </span>
   );
 }
 
-// ─── Main Component ────────────────────────────────────────────────────────────
+// ─── CyInput ──────────────────────────────────────────────────────────────────
+function CyInput({ className, disabled, ...props }: React.ComponentProps<typeof Input>) {
+  return (
+    <div className="relative">
+      <Input
+        {...props}
+        disabled={disabled}
+        className={cn(CY.input, "rounded-none", disabled && "opacity-30 cursor-not-allowed", className)}
+        style={clipSm}
+      />
+      <CornerBrackets dim={disabled} />
+    </div>
+  );
+}
+
+// ─── CySelect ─────────────────────────────────────────────────────────────────
+function CySelect({
+  value,
+  onValueChange,
+  children,
+}: {
+  value: string;
+  onValueChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="relative">
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className={cn(CY.selectTrigger)} style={clipSm}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className={CY.selectContent}>{children}</SelectContent>
+      </Select>
+      <CornerBrackets dim />
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSettingsProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = useDateFnsLocale();
@@ -158,14 +346,12 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
           country: formData.country || null,
         })
         .eq("id", userId);
-
       if (error) throw error;
       if (formData.language !== i18n.language) await i18n.changeLanguage(formData.language);
       updateGlobalCurrency(formData.currency);
       await refreshCurrency();
-
       setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      setTimeout(() => setSaved(false), 3000);
       toast({ title: t("profile.updatedTitle"), description: t("profile.updatedDesc") });
     } catch (error: any) {
       toast({ title: t("common.error"), description: error.message, variant: "destructive" });
@@ -176,183 +362,214 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="max-w-2xl mx-auto space-y-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-2xl mx-auto space-y-3 pb-8"
     >
-      {/* ── Personal Info ─────────────────────────────────────────────── */}
-      <Card className={S.card}>
-        <CardContent className="p-6">
-          <SectionHeader icon={User} title={t("profile.personalInfo")} subtitle="Your public identity" />
+      {/* Ambient glow */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-primary/[0.04] rounded-full blur-[120px]" />
+      </div>
 
-          <div className="space-y-5">
-            <Field label={t("common.email")} hint={t("profile.emailCantChange")}>
-              <div className="relative">
-                <Input value={formData.email} disabled className={cn(S.input, "opacity-40 cursor-not-allowed pr-10")} />
-                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/20" />
-              </div>
-            </Field>
+      {/* ─── SECTION 01 : Identity ──────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <HUDPanel panelId="SYS.01 // IDENTITY_MATRIX">
+          <div className="p-6 pt-8">
+            <SectionHeader icon={User} title={t("profile.personalInfo")} subtitle="personal_data_module" index="01 /" />
+            <div className="space-y-5">
+              <Field label={t("common.email")} hint={t("profile.emailCantChange")}>
+                <div className="relative">
+                  <CyInput value={formData.email} disabled />
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-primary/15 pointer-events-none z-10" />
+                </div>
+              </Field>
 
-            <Field label={t("profile.displayName")}>
-              <Input
-                placeholder={t("profile.displayNamePlaceholder")}
-                value={formData.displayName}
-                onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
-                className={S.input}
-              />
-            </Field>
+              <Field label={t("profile.displayName")}>
+                <CyInput
+                  placeholder={t("profile.displayNamePlaceholder")}
+                  value={formData.displayName}
+                  onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
+                />
+              </Field>
 
-            <Field label={t("profile.birthday")}>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-between text-left font-rajdhani",
-                      S.selectTrigger,
-                      !formData.birthday && "text-white/20",
-                    )}
-                  >
-                    <span className="flex items-center gap-2 text-sm">
-                      <CalendarIcon className="h-4 w-4 text-white/30" />
-                      {formData.birthday
-                        ? format(formData.birthday, "PPP", { locale: dateLocale })
-                        : t("profile.birthdayPlaceholder")}
-                    </span>
-                    <ChevronRight className="h-4 w-4 text-white/20" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className={cn("w-auto p-0", S.selectContent)} align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.birthday}
-                    onSelect={(date) => setFormData((p) => ({ ...p, birthday: date }))}
-                    fromYear={1920}
-                    toYear={new Date().getFullYear()}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </Field>
+              <Field label={t("profile.birthday")}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className={cn(
+                        "relative w-full flex items-center justify-between px-3 h-11",
+                        "bg-[#010608] border border-primary/25",
+                        "hover:border-primary/50 hover:bg-[#010b10]",
+                        "text-primary/80 font-mono text-sm tracking-wide",
+                        "transition-all duration-200",
+                        !formData.birthday && "text-primary/20",
+                      )}
+                      style={clipSm}
+                    >
+                      <span className="flex items-center gap-2">
+                        <CalendarIcon className="h-3.5 w-3.5 text-primary/35 shrink-0" />
+                        {formData.birthday
+                          ? format(formData.birthday, "PPP", { locale: dateLocale })
+                          : t("profile.birthdayPlaceholder")}
+                      </span>
+                      <ChevronRight className="h-3.5 w-3.5 text-primary/25 shrink-0" />
+                      <CornerBrackets dim />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className={cn("w-auto p-0", CY.selectContent)} align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.birthday}
+                      onSelect={(date) => setFormData((p) => ({ ...p, birthday: date }))}
+                      fromYear={1920}
+                      toYear={new Date().getFullYear()}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </Field>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </HUDPanel>
+      </motion.div>
 
-      {/* ── Regional Preferences ──────────────────────────────────────── */}
-      <Card className={S.card}>
-        <CardContent className="p-6">
-          <SectionHeader icon={Globe} title={t("profile.regionalPreferences")} subtitle="Localization & display" />
-
-          <div className="grid grid-cols-2 gap-4">
-            <Field label={t("profile.country")}>
-              <Select value={formData.country} onValueChange={(val) => setFormData((p) => ({ ...p, country: val }))}>
-                <SelectTrigger className={S.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={S.selectContent}>
+      {/* ─── SECTION 02 : Regional ──────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <HUDPanel panelId="SYS.02 // LOCALE_CONFIG">
+          <div className="p-6 pt-8">
+            <SectionHeader
+              icon={Globe}
+              title={t("profile.regionalPreferences")}
+              subtitle="localization_params"
+              index="02 /"
+            />
+            <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+              <Field label={t("profile.country")}>
+                <CySelect value={formData.country} onValueChange={(v) => setFormData((p) => ({ ...p, country: v }))}>
                   {COUNTRIES.map((c) => (
-                    <SelectItem key={c} value={c}>
+                    <SelectItem key={c} value={c} className="font-mono text-xs tracking-wider">
                       {t(`profile.countries.${c}`)}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field label={t("profile.timezone")}>
-              <Select value={formData.timezone} onValueChange={(val) => setFormData((p) => ({ ...p, timezone: val }))}>
-                <SelectTrigger className={S.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={S.selectContent}>
+                </CySelect>
+              </Field>
+              <Field label={t("profile.timezone")}>
+                <CySelect value={formData.timezone} onValueChange={(v) => setFormData((p) => ({ ...p, timezone: v }))}>
                   {TIMEZONES.map((tz) => (
-                    <SelectItem key={tz} value={tz}>
+                    <SelectItem key={tz} value={tz} className="font-mono text-xs">
                       {tz}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field label={t("profile.language")}>
-              <Select value={formData.language} onValueChange={(val) => setFormData((p) => ({ ...p, language: val }))}>
-                <SelectTrigger className={S.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={S.selectContent}>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="fr">Français</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-
-            <Field label={t("profile.currency")}>
-              <Select value={formData.currency} onValueChange={(val) => setFormData((p) => ({ ...p, currency: val }))}>
-                <SelectTrigger className={S.selectTrigger}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className={S.selectContent}>
-                  <SelectItem value="eur">EUR (€)</SelectItem>
-                  <SelectItem value="usd">USD ($)</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
+                </CySelect>
+              </Field>
+              <Field label={t("profile.language")}>
+                <CySelect value={formData.language} onValueChange={(v) => setFormData((p) => ({ ...p, language: v }))}>
+                  <SelectItem value="en" className="font-mono text-xs">
+                    English
+                  </SelectItem>
+                  <SelectItem value="fr" className="font-mono text-xs">
+                    Français
+                  </SelectItem>
+                </CySelect>
+              </Field>
+              <Field label={t("profile.currency")}>
+                <CySelect value={formData.currency} onValueChange={(v) => setFormData((p) => ({ ...p, currency: v }))}>
+                  <SelectItem value="eur" className="font-mono text-xs">
+                    EUR (€)
+                  </SelectItem>
+                  <SelectItem value="usd" className="font-mono text-xs">
+                    USD ($)
+                  </SelectItem>
+                </CySelect>
+              </Field>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </HUDPanel>
+      </motion.div>
 
-      {/* ── Password ──────────────────────────────────────────────────── */}
-      <ChangePasswordSection />
+      {/* ─── SECTION 03 : Password ──────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.19, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <ChangePasswordSection />
+      </motion.div>
 
-      {/* ── 2FA ───────────────────────────────────────────────────────── */}
-      <TwoFactorSection />
+      {/* ─── SECTION 04 : 2FA ───────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.26, duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+      >
+        <TwoFactorSection />
+      </motion.div>
 
-      {/* ── Save ──────────────────────────────────────────────────────── */}
-      <div className="flex justify-end pt-2 pb-6">
-        <motion.div whileTap={{ scale: 0.97 }}>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className={cn(
-              "relative h-11 min-w-[180px] rounded-xl font-orbitron text-xs tracking-widest uppercase overflow-hidden transition-all duration-300",
-              saved
-                ? "bg-emerald-500/20 border-2 border-emerald-500/40 text-emerald-400"
-                : "bg-primary/15 border-2 border-primary/30 hover:border-primary/60 hover:bg-primary/25 text-primary shadow-[0_0_24px_rgba(var(--primary-rgb),0.15)] hover:shadow-[0_0_32px_rgba(var(--primary-rgb),0.25)]",
+      {/* ─── Save ───────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.35 }}
+        className="flex justify-end pt-3"
+      >
+        <motion.button
+          onClick={handleSave}
+          disabled={isSaving}
+          whileTap={{ scale: 0.97 }}
+          className={cn(
+            "relative h-12 min-w-[220px] font-mono text-[10px] tracking-[0.28em] uppercase",
+            "border overflow-hidden transition-all duration-300",
+            saved
+              ? "bg-emerald-950/40 border-emerald-500/45 text-emerald-400 shadow-[0_0_24px_rgba(52,211,153,0.2),inset_0_0_24px_rgba(52,211,153,0.04)]"
+              : "bg-primary/8 border-primary/35 text-primary hover:bg-primary/14 hover:border-primary/65 shadow-[0_0_18px_hsl(var(--primary)/0.14)] hover:shadow-[0_0_32px_hsl(var(--primary)/0.3)]",
+            "disabled:opacity-40",
+          )}
+          style={clipMd}
+        >
+          {/* shimmer sweep */}
+          <div className="absolute inset-0 translate-x-[-150%] hover:translate-x-[150%] transition-transform duration-700 bg-gradient-to-r from-transparent via-primary/12 to-transparent pointer-events-none" />
+          <CornerBrackets />
+
+          <AnimatePresence mode="wait">
+            {isSaving ? (
+              <motion.span
+                key="saving"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center gap-2 relative z-10"
+              >
+                <Activity className="h-3.5 w-3.5 animate-pulse" />
+                PROCESSING...
+              </motion.span>
+            ) : saved ? (
+              <motion.span
+                key="saved"
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center gap-2 relative z-10"
+              >
+                <Check className="h-3.5 w-3.5" />
+                DATA COMMITTED
+              </motion.span>
+            ) : (
+              <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10">
+                [ COMMIT CHANGES ]
+              </motion.span>
             )}
-          >
-            <AnimatePresence mode="wait">
-              {isSaving ? (
-                <motion.span
-                  key="saving"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-2"
-                >
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  {t("common.saving")}
-                </motion.span>
-              ) : saved ? (
-                <motion.span
-                  key="saved"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="flex items-center gap-2"
-                >
-                  <Check className="h-4 w-4" />
-                  Saved
-                </motion.span>
-              ) : (
-                <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  {t("common.saveChanges")}
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </Button>
-        </motion.div>
-      </div>
+          </AnimatePresence>
+        </motion.button>
+      </motion.div>
     </motion.div>
   );
 }
@@ -368,25 +585,30 @@ function ChangePasswordSection() {
 
   const passwordStrength = useMemo(() => {
     if (!newPassword) return 0;
-    let score = 0;
-    if (newPassword.length >= 8) score++;
-    if (/[A-Z]/.test(newPassword)) score++;
-    if (/[0-9]/.test(newPassword)) score++;
-    if (/[^A-Za-z0-9]/.test(newPassword)) score++;
-    return score;
+    let s = 0;
+    if (newPassword.length >= 8) s++;
+    if (/[A-Z]/.test(newPassword)) s++;
+    if (/[0-9]/.test(newPassword)) s++;
+    if (/[^A-Za-z0-9]/.test(newPassword)) s++;
+    return s;
   }, [newPassword]);
 
-  const strengthLabel = ["", "Weak", "Fair", "Good", "Strong"][passwordStrength];
-  const strengthColor = ["", "bg-red-500", "bg-amber-500", "bg-blue-400", "bg-emerald-400"][passwordStrength];
+  const strengthMeta = [
+    null,
+    { label: "WEAK", color: "bg-red-500", glow: "shadow-[0_0_5px_rgba(239,68,68,0.6)]" },
+    { label: "FAIR", color: "bg-amber-400", glow: "shadow-[0_0_5px_rgba(251,191,36,0.6)]" },
+    { label: "GOOD", color: "bg-cyan-400", glow: "shadow-[0_0_5px_rgba(34,211,238,0.6)]" },
+    { label: "STRONG", color: "bg-emerald-400", glow: "shadow-[0_0_5px_rgba(52,211,153,0.6)]" },
+  ][passwordStrength];
 
-  const mismatch = confirmPassword && newPassword !== confirmPassword;
+  const mismatch = !!confirmPassword && newPassword !== confirmPassword;
 
   const handleChangePassword = async () => {
     if (newPassword.length < 6) {
       toast({ title: t("common.error"), description: t("profile.changePassword.minLength"), variant: "destructive" });
       return;
     }
-    if (newPassword !== confirmPassword) {
+    if (mismatch) {
       toast({ title: t("common.error"), description: t("profile.changePassword.mismatch"), variant: "destructive" });
       return;
     }
@@ -405,15 +627,15 @@ function ChangePasswordSection() {
   };
 
   return (
-    <Card className={S.card}>
-      <CardContent className="p-6">
+    <HUDPanel panelId="SYS.03 // CREDENTIAL_UPDATE">
+      <div className="p-6 pt-8">
         <SectionHeader
           icon={KeyRound}
           title={t("profile.changePassword.title")}
-          subtitle="Update your login credentials"
+          subtitle="auth_module :: password_hash"
+          index="03 /"
         />
-
-        <div className="space-y-4">
+        <div className="space-y-5">
           <Field label={t("profile.changePassword.newPassword")}>
             <div className="relative">
               <Input
@@ -421,37 +643,46 @@ function ChangePasswordSection() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                className={cn(S.input, "pr-10")}
+                className={cn(CY.input, "rounded-none pr-10")}
+                style={clipSm}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/20 hover:text-primary/55 transition-colors z-10"
               >
-                {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
+              <CornerBrackets dim />
             </div>
-            {/* Strength bar */}
-            {newPassword && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="pt-2 space-y-1.5"
-              >
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        "h-0.5 flex-1 rounded-full transition-all duration-300",
-                        i <= passwordStrength ? strengthColor : "bg-white/10",
-                      )}
-                    />
-                  ))}
-                </div>
-                <p className="text-[10px] text-white/30 font-rajdhani">{strengthLabel}</p>
-              </motion.div>
-            )}
+
+            <AnimatePresence>
+              {newPassword && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden pt-2 space-y-1"
+                >
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "h-0.5 flex-1 transition-all duration-300",
+                          i <= passwordStrength ? cn(strengthMeta?.color, strengthMeta?.glow) : "bg-primary/8",
+                        )}
+                      />
+                    ))}
+                    {strengthMeta && (
+                      <span className="font-mono text-[8px] tracking-[0.22em] text-primary/35 w-12 text-right shrink-0">
+                        {strengthMeta.label}
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Field>
 
           <Field label={t("profile.changePassword.confirmPassword")}>
@@ -461,44 +692,61 @@ function ChangePasswordSection() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className={cn(S.input, "pr-10", mismatch && "border-red-500/40 focus:border-red-500/60")}
+                className={cn(
+                  CY.input,
+                  "rounded-none pr-10",
+                  mismatch && "border-red-500/40 shadow-[inset_0_0_12px_rgba(239,68,68,0.04)]",
+                )}
+                style={clipSm}
               />
               <AnimatePresence>
                 {mismatch && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    key="err"
+                    initial={{ opacity: 0, scale: 0.7 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    exit={{ opacity: 0, scale: 0.7 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10"
                   >
-                    <AlertCircle size={15} className="text-red-400" />
+                    <AlertCircle size={14} className="text-red-400" />
                   </motion.div>
                 )}
                 {confirmPassword && !mismatch && (
                   <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
+                    key="ok"
+                    initial={{ opacity: 0, scale: 0.7 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                    exit={{ opacity: 0, scale: 0.7 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 z-10"
                   >
-                    <Check size={15} className="text-emerald-400" />
+                    <Check size={14} className="text-emerald-400" />
                   </motion.div>
                 )}
               </AnimatePresence>
+              <CornerBrackets dim={!mismatch} red={mismatch} />
             </div>
           </Field>
 
-          <Button
+          <button
             onClick={handleChangePassword}
-            disabled={isSaving || !newPassword || !confirmPassword || !!mismatch}
-            className="h-10 px-5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 hover:bg-white/[0.07] text-white/60 hover:text-white/90 font-orbitron text-[10px] tracking-widest uppercase transition-all duration-200"
+            disabled={isSaving || !newPassword || !confirmPassword || mismatch}
+            className={cn(CY.btnPrimary, "px-6 flex items-center gap-2")}
+            style={clipSm}
           >
-            {isSaving ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Lock className="mr-2 h-3.5 w-3.5" />}
-            {isSaving ? t("common.saving") : t("profile.changePassword.update")}
-          </Button>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> PROCESSING
+              </>
+            ) : (
+              <>
+                <Lock className="h-3.5 w-3.5" />
+                {t("profile.changePassword.update")}
+              </>
+            )}
+          </button>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </HUDPanel>
   );
 }
 
@@ -517,11 +765,11 @@ function TwoFactorSection() {
   const [disablingEmail, setDisablingEmail] = useState(false);
 
   const invokeAction = async (payload: any) => {
-    const accessToken = session?.access_token;
-    if (!accessToken) return null;
+    const token = session?.access_token;
+    if (!token) return null;
     const { data, error } = await supabase.functions.invoke("two-factor", {
       body: payload,
-      headers: { Authorization: `Bearer ${accessToken}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
     if (error) throw error;
     return data;
@@ -534,7 +782,7 @@ function TwoFactorSection() {
       setShowEmailConfirm(true);
       toast({ title: t("twoFactor.emailSentTitle"), description: t("twoFactor.emailSentDesc") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e?.message || "Error", variant: "destructive" });
+      toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
     } finally {
       setEnablingEmail(false);
     }
@@ -549,7 +797,7 @@ function TwoFactorSection() {
       twoFactor.refetch();
       toast({ title: t("common.success"), description: t("twoFactor.email2fa.enabledSuccess") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e?.message || "Error", variant: "destructive" });
+      toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
     } finally {
       setConfirmingEmail(false);
     }
@@ -562,57 +810,108 @@ function TwoFactorSection() {
       twoFactor.refetch();
       toast({ title: t("common.success"), description: t("twoFactor.email2fa.disabledSuccess") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e?.message || "Error", variant: "destructive" });
+      toast({ title: t("common.error"), description: e?.message, variant: "destructive" });
     } finally {
       setDisablingEmail(false);
     }
   };
 
+  // Shared 2FA method row
+  const TFARow = ({
+    icon: Icon,
+    label,
+    active,
+    onEnable,
+    onDisable,
+    enabling,
+    disabling,
+    blockEnable = false,
+    enableLabel,
+    disableLabel,
+    enablingLabel,
+    disablingLabel,
+  }: any) => (
+    <div className="relative border border-primary/12 bg-primary/[0.015]" style={clipSm}>
+      <CornerBrackets dim />
+      <div className="flex items-center justify-between gap-4 px-4 py-3.5">
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center justify-center w-8 h-8 bg-primary/8 border border-primary/20 shrink-0"
+            style={{ clipPath: "polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%)" }}
+          >
+            <Icon className="h-3.5 w-3.5 text-primary/70" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-[11px] font-mono text-primary/65 tracking-wider">{label}</p>
+            <StatusChip
+              active={active}
+              activeLabel={t("twoFactor.email2fa.active")}
+              inactiveLabel={t("twoFactor.email2fa.inactive")}
+            />
+          </div>
+        </div>
+        {active ? (
+          <button onClick={onDisable} disabled={disabling} className={cn(CY.btnDestructive, "px-3")} style={clipSm}>
+            {disabling && <Loader2 className="inline mr-1.5 h-3 w-3 animate-spin" />}
+            {disabling ? disablingLabel : disableLabel}
+          </button>
+        ) : (
+          <button
+            onClick={onEnable}
+            disabled={enabling || blockEnable}
+            className={cn(CY.btnGhost, "px-3")}
+            style={clipSm}
+          >
+            {enabling && <Loader2 className="inline mr-1.5 h-3 w-3 animate-spin" />}
+            {enabling ? enablingLabel : enableLabel}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <Card className={S.card}>
-      <CardContent className="p-6">
+    <HUDPanel panelId="SYS.04 // SECURITY_LAYER">
+      <div className="p-6 pt-8">
         <SectionHeader
           icon={Fingerprint}
           title={t("profile.twoFactor.title")}
-          subtitle="Add extra layers of security"
+          subtitle="multi_factor_auth_module"
+          index="04 /"
         />
 
-        <div className="space-y-3">
-          {/* TOTP Row */}
-          <div className="group flex items-center justify-between gap-4 rounded-xl bg-white/[0.02] border border-white/[0.06] px-4 py-3.5 hover:border-white/10 hover:bg-white/[0.03] transition-all duration-200">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/15">
-                <Smartphone className="h-3.5 w-3.5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-white/80 font-rajdhani">Authenticator App</p>
-                <StatusPill
-                  active={twoFactor.enabled}
-                  activeLabel={t("twoFactor.email2fa.active")}
-                  inactiveLabel={t("twoFactor.email2fa.inactive")}
-                />
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/profile")}
-              className="h-8 px-3 rounded-lg text-[10px] font-orbitron tracking-widest uppercase bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07] text-white/50 hover:text-white/80 transition-all"
-            >
-              {t("profile.twoFactor.manage")}
-            </Button>
-          </div>
+        <div className="space-y-2">
+          {/* TOTP */}
+          <TFARow
+            icon={Smartphone}
+            label="Authenticator App"
+            active={twoFactor.enabled}
+            onEnable={() => navigate("/profile")}
+            onDisable={() => navigate("/profile")}
+            enabling={false}
+            disabling={false}
+            enableLabel={t("profile.twoFactor.manage")}
+            disableLabel={t("profile.twoFactor.manage")}
+            enablingLabel="..."
+            disablingLabel="..."
+          />
 
-          {/* Email 2FA Row */}
-          <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] overflow-hidden hover:border-white/10 transition-all duration-200">
+          {/* Email 2FA */}
+          <div className="relative border border-primary/12 bg-primary/[0.015] overflow-hidden" style={clipSm}>
+            <CornerBrackets dim />
             <div className="flex items-center justify-between gap-4 px-4 py-3.5">
               <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 border border-primary/15">
-                  <Mail className="h-3.5 w-3.5 text-primary" />
+                <div
+                  className="flex items-center justify-center w-8 h-8 bg-primary/8 border border-primary/20 shrink-0"
+                  style={{ clipPath: "polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%)" }}
+                >
+                  <Mail className="h-3.5 w-3.5 text-primary/70" />
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-white/80 font-rajdhani">{t("twoFactor.email2fa.title")}</p>
-                  <StatusPill
+                <div className="space-y-1">
+                  <p className="text-[11px] font-mono text-primary/65 tracking-wider">
+                    {t("twoFactor.email2fa.title")}
+                  </p>
+                  <StatusChip
                     active={twoFactor.emailEnabled}
                     activeLabel={t("twoFactor.email2fa.active")}
                     inactiveLabel={t("twoFactor.email2fa.inactive")}
@@ -621,70 +920,96 @@ function TwoFactorSection() {
               </div>
 
               {twoFactor.emailEnabled ? (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={handleDisableEmail2FA}
                   disabled={disablingEmail}
-                  className="h-8 px-3 rounded-lg text-[10px] font-orbitron tracking-widest uppercase bg-red-500/8 border border-red-500/15 hover:border-red-500/30 hover:bg-red-500/15 text-red-400/70 hover:text-red-400 transition-all"
+                  className={cn(CY.btnDestructive, "px-3")}
+                  style={clipSm}
                 >
-                  {disablingEmail && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                  {disablingEmail && <Loader2 className="inline mr-1.5 h-3 w-3 animate-spin" />}
                   {disablingEmail ? t("twoFactor.email2fa.disabling") : t("twoFactor.email2fa.disable")}
-                </Button>
+                </button>
               ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
+                <button
                   onClick={handleEnableEmail2FA}
                   disabled={enablingEmail || showEmailConfirm}
-                  className="h-8 px-3 rounded-lg text-[10px] font-orbitron tracking-widest uppercase bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:bg-white/[0.07] text-white/50 hover:text-white/80 transition-all"
+                  className={cn(CY.btnGhost, "px-3")}
+                  style={clipSm}
                 >
-                  {enablingEmail && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                  {enablingEmail && <Loader2 className="inline mr-1.5 h-3 w-3 animate-spin" />}
                   {enablingEmail ? t("twoFactor.email2fa.enabling") : t("twoFactor.email2fa.enable")}
-                </Button>
+                </button>
               )}
             </div>
 
-            {/* Confirmation flow */}
+            {/* OTP confirm flow */}
             <AnimatePresence>
               {showEmailConfirm && !twoFactor.emailEnabled && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                  className="overflow-hidden"
+                  transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                  className="overflow-hidden border-t border-primary/10"
                 >
-                  <div className="px-4 pb-4 pt-3 border-t border-white/[0.05] space-y-4">
-                    <p className="text-xs text-white/35 font-rajdhani">{t("twoFactor.email2fa.confirmDesc")}</p>
+                  <div className="px-4 py-5 space-y-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
+                      <span className="text-[8px] font-mono text-primary/35 tracking-[0.25em] uppercase">
+                        Verification Code
+                      </span>
+                      <div className="h-px flex-1 bg-gradient-to-l from-primary/20 to-transparent" />
+                    </div>
+
+                    <p className="text-[9px] text-primary/25 font-mono tracking-wider text-center">
+                      {t("twoFactor.email2fa.confirmDesc")}
+                    </p>
+
                     <div className="flex justify-center">
                       <InputOTP maxLength={6} value={emailConfirmCode} onChange={setEmailConfirmCode}>
-                        <InputOTPGroup className="gap-2">
+                        <InputOTPGroup className="gap-1.5">
                           {[0, 1, 2, 3, 4, 5].map((i) => (
                             <InputOTPSlot
                               key={i}
                               index={i}
-                              className="w-9 h-11 rounded-lg bg-white/[0.04] border-white/10 focus:border-primary/50 text-sm font-orbitron"
+                              className={cn(
+                                "w-10 h-12 rounded-none font-mono text-base",
+                                "bg-[#010608] border-primary/20",
+                                "focus:border-primary/60 focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.15)]",
+                                "text-primary/80 tracking-widest",
+                              )}
+                              style={clipSm}
                             />
                           ))}
                         </InputOTPGroup>
                       </InputOTP>
                     </div>
-                    <Button
+
+                    <button
                       onClick={handleConfirmEmail2FA}
                       disabled={confirmingEmail || emailConfirmCode.length < 6}
-                      className="w-full h-10 rounded-xl bg-primary/15 border border-primary/25 hover:border-primary/45 hover:bg-primary/25 text-primary font-orbitron text-[10px] tracking-widest uppercase transition-all duration-200"
+                      className={cn(
+                        "w-full h-10 font-mono text-[10px] tracking-[0.25em] uppercase",
+                        "bg-primary/8 border border-primary/25 text-primary",
+                        "hover:bg-primary/14 hover:border-primary/50",
+                        "disabled:opacity-25 disabled:cursor-not-allowed",
+                        "transition-all duration-200 flex items-center justify-center gap-2",
+                        "shadow-[0_0_10px_hsl(var(--primary)/0.08)] hover:shadow-[0_0_18px_hsl(var(--primary)/0.22)]",
+                      )}
+                      style={clipSm}
                     >
-                      {confirmingEmail && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
-                      {confirmingEmail ? t("twoFactor.email2fa.confirming") : t("twoFactor.email2fa.confirmButton")}
-                    </Button>
+                      {confirmingEmail && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                      {confirmingEmail
+                        ? t("twoFactor.email2fa.confirming")
+                        : `[ ${t("twoFactor.email2fa.confirmButton")} ]`}
+                    </button>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </HUDPanel>
   );
 }
