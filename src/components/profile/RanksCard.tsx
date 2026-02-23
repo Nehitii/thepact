@@ -28,6 +28,7 @@ export function RanksCard({ userId }: RanksCardProps) {
   const [selectedRank, setSelectedRank] = useState<Rank | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [isNewRank, setIsNewRank] = useState(false);
+  const [rankToDelete, setRankToDelete] = useState<Rank | null>(null);
 
   useEffect(() => {
     if (rankData?.ranks) setRanks(rankData.ranks);
