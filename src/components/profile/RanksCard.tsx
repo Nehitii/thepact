@@ -44,14 +44,14 @@ export function RanksCard({ userId }: RanksCardProps) {
   const handleEditRank = (rank: Rank) => { setSelectedRank(rank); setIsNewRank(false); setShowEditor(true); };
 
   const handleSaveRank = async (rank: Rank) => {
-    if (!rank.name.trim()) { toast({ title: "Validation Error", description: "Please enter a rank name", variant: "destructive" }); return; }
+    if (!rank.name.trim()) { toast({ title: "Validation Error", description: "Please enter a rank name", variant: "destructive" }); throw new Error("Validation failed"); }
     if (isNewRank) {
       const { error } = await supabase.from("ranks").insert({ user_id: userId, min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote });
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); throw error; }
       toast({ title: "Rank Created", description: `${rank.name} has been added to your progression` });
     } else {
       const { error } = await supabase.from("ranks").update({ min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote }).eq("id", rank.id);
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); throw error; }
       toast({ title: "Rank Updated", description: `${rank.name} has been updated` });
     }
     queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
