@@ -84,6 +84,21 @@ export default function PactSettings() {
 
   if (!user) return null;
 
+  if (isLoading) {
+    return (
+      <ProfileSettingsShell
+        title="Pact Settings"
+        subtitle="Configure your pact identity, timeline, and custom difficulty"
+        icon={<ScrollText className="h-7 w-7 text-primary" />}
+        containerClassName="max-w-2xl"
+      >
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </ProfileSettingsShell>
+    );
+  }
+
   return (
     <ProfileSettingsShell
       title="Pact Settings"
