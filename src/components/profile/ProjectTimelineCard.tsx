@@ -71,6 +71,7 @@ export function ProjectTimelineCard({
       icon={<Clock className="h-5 w-5 text-primary" />}
       title="Project Timeline"
       description="Set your pact journey start and end dates"
+      sectionId="timeline"
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-2">

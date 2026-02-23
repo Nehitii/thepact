@@ -59,6 +59,7 @@ export function PactIdentityCard({
       icon={<Sparkles className="h-5 w-5 text-primary" />}
       title="Pact Identity"
       description="Define your project's name, purpose, and visual symbol"
+      sectionId="identity"
     >
       <div className="space-y-5">
         {/* Live Preview */}
