@@ -443,10 +443,10 @@ function TwoFactorSection({ styles }: { styles: { card: string; input: string } 
     <Card className={styles.card}>
       <CardContent className="p-6 space-y-6">
         <h3 className="text-lg font-orbitron text-primary flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5" /> {t("profile.twoFactor.title", { defaultValue: "Two-Factor Authentication" })}
+          <ShieldCheck className="h-5 w-5" /> {t("profile.twoFactor.title")}
         </h3>
         <p className="text-sm text-muted-foreground font-rajdhani">
-          {t("profile.twoFactor.description", { defaultValue: "Add an extra layer of security to your account." })}
+          {t("profile.twoFactor.description")}
         </p>
 
         {/* TOTP Section */}
@@ -463,10 +463,10 @@ function TwoFactorSection({ styles }: { styles: { card: string; input: string } 
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate("/two-factor")}
+            onClick={() => navigate("/profile")}
             className="bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
           >
-            {t("profile.twoFactor.manage", { defaultValue: "Manage" })}
+            {t("profile.twoFactor.manage")}
           </Button>
         </div>
 

@@ -12,6 +12,7 @@ import { SoundSettingsSync } from "@/components/sound/SoundSettingsSync";
 import { ProfilePreferencesSync } from "@/components/profile/ProfilePreferencesSync";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { AdminRoute } from "@/components/AdminRoute";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import Home from "./pages/Home";
@@ -46,7 +47,14 @@ import AdminPromoManager from "./pages/AdminPromoManager";
 import Health from "./pages/Health";
 import Wishlist from "./pages/Wishlist";
 import TwoFactor from "./pages/TwoFactor";
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+    },
+  },
+});
 
 // Wrapper component that applies AppLayout to protected routes
 function ProtectedWithLayout({ children }: { children: React.ReactNode }) {
@@ -75,9 +83,9 @@ const App = () => (
               <Route
                 path="/two-factor"
                 element={
-                  <ProtectedWithLayout>
+                  <ProtectedRoute>
                     <TwoFactor />
-                  </ProtectedWithLayout>
+                  </ProtectedRoute>
                 }
               />
               <Route
@@ -243,41 +251,41 @@ const App = () => (
               <Route
                 path="/admin"
                 element={
-                  <ProtectedWithLayout>
+                  <AdminRoute>
                     <Admin />
-                  </ProtectedWithLayout>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/cosmetics"
                 element={
-                  <ProtectedWithLayout>
+                  <AdminRoute>
                     <AdminCosmeticsManager />
-                  </ProtectedWithLayout>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/modules"
                 element={
-                  <ProtectedWithLayout>
+                  <AdminRoute>
                     <AdminModuleManager />
-                  </ProtectedWithLayout>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/money"
                 element={
-                  <ProtectedWithLayout>
+                  <AdminRoute>
                     <AdminMoneyManager />
-                  </ProtectedWithLayout>
+                  </AdminRoute>
                 }
               />
               <Route
                 path="/admin/mode"
                 element={
-                  <ProtectedWithLayout>
+                  <AdminRoute>
                     <AdminMode />
-                  </ProtectedWithLayout>
+                  </AdminRoute>
                 }
               />
               <Route
@@ -291,9 +299,9 @@ const App = () => (
               <Route
                 path="/admin/notifications"
                 element={
-                  <ProtectedWithLayout>
+                  <AdminRoute>
                     <AdminNotifications />
-                  </ProtectedWithLayout>
+                  </AdminRoute>
                 }
               />
               <Route
@@ -307,9 +315,9 @@ const App = () => (
               <Route
                 path="/admin/promo-codes"
                 element={
-                  <ProtectedWithLayout>
+                  <AdminRoute>
                     <AdminPromoManager />
-                  </ProtectedWithLayout>
+                  </AdminRoute>
                 }
               />
               <Route

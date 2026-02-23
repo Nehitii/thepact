@@ -162,6 +162,11 @@
       "mismatch": "Les mots de passe ne correspondent pas",
       "success": "Ton mot de passe a été mis à jour"
     },
+    "twoFactor": {
+      "title": "Authentification à deux facteurs",
+      "description": "Ajoute une couche de sécurité supplémentaire à ton compte.",
+      "manage": "Gérer"
+    },
     "data": {
       "title": "Données & Portabilité",
       "subtitle": "Tes données, ton contrôle",
