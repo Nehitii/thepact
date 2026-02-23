@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
-import { ScrollText } from "lucide-react";
+import { ScrollText, Loader2 } from "lucide-react";
 import { usePactMutation } from "@/hooks/usePactMutation";
 
 export default function PactSettings() {
