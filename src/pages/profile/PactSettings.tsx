@@ -66,6 +66,7 @@ export default function PactSettings() {
           setProjectEndDate(new Date(pactData.project_end_date));
         }
       }
+      setIsLoading(false);
     };
 
     loadData();
