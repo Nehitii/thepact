@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
+import DOMPurify from "dompurify";
 import type { JournalEntry } from "@/types/journal";
 import { getAccent, getMood, getFont, getSize, getAlign } from "@/types/journal";
 import { useToggleFavorite } from "@/hooks/useJournal";
@@ -264,7 +265,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
                   color: "rgba(255,255,255,0.58)",
                   letterSpacing: font.id === "raj" ? "0.02em" : "-0.01em",
                 }}
-                dangerouslySetInnerHTML={{ __html: entry.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.content) }}
               />
             </div>
           ) : (
@@ -278,7 +279,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
                 color: "rgba(255,255,255,0.58)",
                 letterSpacing: font.id === "raj" ? "0.02em" : "-0.01em",
               }}
-              dangerouslySetInnerHTML={{ __html: entry.content }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.content) }}
             />
           )}
         </div>

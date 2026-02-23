@@ -108,15 +108,7 @@ export function AppSidebar() {
   };
 
   return (
-    <aside className="sticky top-0 h-screen flex-shrink-0 z-40 w-72 flex flex-col bg-background/95 backdrop-blur-md border-r border-white/10 overflow-hidden font-rajdhani shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)]">
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `,
-        }}
-      />
+    <aside className="sticky top-0 h-screen flex-shrink-0 z-40 w-72 flex flex-col bg-background/95 backdrop-blur-md border-r border-white/10 overflow-hidden font-rajdhani shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)] hide-scrollbar">
 
       {/* --- HEADER --- */}
       <div className="relative p-6 mb-2">
