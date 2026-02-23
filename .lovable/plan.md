@@ -1,92 +1,127 @@
 
 
-# Add Email-Based 2FA via Resend.com
+# Complete Site Audit -- Pacte Application
 
-## Overview
+## 1. BUGS (Must Fix)
 
-Add a second 2FA method: email code verification using Resend.com. When users choose email 2FA, they receive a 6-digit code at their registered email address. This works alongside the existing TOTP (authenticator app) method -- users can choose which method to use during verification.
+### 1.1 Missing i18n Keys (Console Warnings)
+The console is flooding with warnings for `profile.twoFactor.title`, `profile.twoFactor.description`, and `profile.twoFactor.manage`. The code in `ProfileAccountSettings.tsx` uses `t("profile.twoFactor.title", { defaultValue: ... })` but the keys don't exist in `en.json` or `fr.json` -- the `twoFactor` object is at root level, not nested under `profile`.
 
-## Prerequisites: Resend API Key
+**Fix:** Add a `twoFactor` sub-object inside the `profile` key in both `en.json` and `fr.json`:
+```json
+"profile": {
+  "twoFactor": {
+    "title": "Two-Factor Authentication",
+    "description": "Add an extra layer of security to your account.",
+    "manage": "Manage"
+  }
+}
+```
 
-Resend.com requires an API key to send emails. You'll need to:
-1. Create an account at [resend.com](https://resend.com)
-2. Get your API key from the dashboard
-3. I'll securely store it as a backend secret
+### 1.2 Resend Email 2FA Fails for Non-Sandbox Users
+The Resend API key is in sandbox mode, meaning emails can only be sent to the account owner's email address. Any other user activating email 2FA will get a 500 error.
 
-## Database Migration
+**Fix:** Verify a custom domain on [resend.com/domains](https://resend.com/domains), then set the `RESEND_FROM_EMAIL` secret to use that domain (e.g., `Pacte <noreply@yourdomain.com>`). Until then, email 2FA is effectively broken for all users except the Resend account owner.
 
-Add columns to `user_2fa_settings` to support email 2FA:
+### 1.3 TwoFactor Page Wrapped in AppLayout (Incorrect)
+The `/two-factor` route uses `ProtectedWithLayout`, which wraps it in the full sidebar layout. But the 2FA verification gate should be a full-screen, standalone page (like `/auth`) -- users shouldn't see the sidebar when they haven't completed verification yet. This also creates a visual bug where the sidebar is visible but all links redirect back to `/two-factor`.
 
-| Column | Type | Default | Purpose |
-|---|---|---|---|
-| `email_2fa_enabled` | boolean | `false` | Whether email 2FA is active |
-| `email_code` | text | NULL | Current pending email code (hashed) |
-| `email_code_expires_at` | timestamptz | NULL | When the code expires (5 min) |
-| `email_code_attempts` | integer | 0 | Failed attempts counter (rate limit) |
+**Fix:** Change the `/two-factor` route back to use just `ProtectedRoute` without `AppLayout`.
 
-Also update `get_user_2fa_status` function to return `email_2fa_enabled`.
+### 1.4 TOTP "Manage" Button Navigates to Verification Gate
+The TOTP section's "Manage" button in `ProfileAccountSettings` navigates to `/two-factor`, which is the verification gate -- not a management page. If the user has already verified, they'll just be redirected back since `isRequired` is false.
 
-## Edge Function Changes (`supabase/functions/two-factor/index.ts`)
+**Fix:** The "Manage" button should navigate to a dedicated 2FA settings/management page, or open an inline panel for enabling/disabling TOTP and managing recovery codes.
 
-Add 4 new actions:
+---
 
-| Action | Description |
-|---|---|
-| `enable_email_2fa` | Enable email 2FA for the user (sends a verification code first) |
-| `confirm_email_2fa` | Confirm enabling email 2FA by verifying the code |
-| `send_email_code` | Send a new 6-digit code to the user's email via Resend |
-| `disable_email_2fa` | Disable email 2FA |
+## 2. CORRECTIONS (Should Fix)
 
-Update existing actions:
-- **`status`**: Return `emailEnabled` alongside `enabled` (TOTP)
-- **`verify`**: Accept `emailCode` in the body; verify against stored hash. Check expiry (5 min) and rate limit (max 5 attempts)
+### 2.1 Hardcoded French Strings
+Several UI strings are hardcoded in French instead of using i18n:
+- Home page: "Initialisation...", "MODE EDITION ACTIVE", "Reorganisez votre tableau de bord", "Modules Disponibles"
+- Onboarding page: "Welcome to Pacte" is in English but other text is hardcoded
+- The Call page: French comments and variable names throughout
 
-Email sending flow:
-1. Generate a random 6-digit code
-2. Hash it with SHA-256 and store in `email_code` column with expiry
-3. Send the code via Resend API (`POST https://api.resend.com/emails`)
-4. On verify, compare hashed input against stored hash
+**Fix:** Move all user-facing strings to the i18n files.
 
-The email template will use a clean, branded HTML layout with the 6-digit code prominently displayed.
+### 2.2 `dangerouslySetInnerHTML` for CSS Injection
+`AppSidebar.tsx` and `Achievements.tsx` inject CSS via `dangerouslySetInnerHTML`. While the content is static strings (safe), this is an anti-pattern.
 
-## UI Changes
+**Fix:** Move the CSS to `index.css` or use a Tailwind plugin.
 
-### `src/pages/TwoFactor.tsx` (Verification gate)
+### 2.3 Journal Entry XSS Risk
+`JournalEntryCard.tsx` renders `entry.content` via `dangerouslySetInnerHTML`. If the content comes from a rich text editor (TipTap), it should be sanitized before rendering.
 
-Add a third mode option alongside TOTP and recovery:
-- **TOTP** (authenticator app) -- existing
-- **Email** (receive code by email) -- new
-- **Recovery code** -- existing
+**Fix:** Add a sanitizer like DOMPurify to sanitize HTML before rendering journal entries.
 
-When email mode is selected:
-- Show a "Send Code" button that calls the `send_email_code` action
-- Then show the same 6-digit OTP input to enter the received code
-- Display a "Resend code" link with a 60-second cooldown timer
+### 2.4 Inconsistent Error Handling
+- `StepDetail.tsx` has hardcoded English error strings ("Failed to load step details")
+- `Legal.tsx` uses `toast` from `sonner` directly while the rest of the app uses `useToast` from the custom hook
+- Some `catch` blocks show `error.message` directly to users, which can leak implementation details
 
-### 2FA Settings Page
+**Fix:** Standardize on one toast system and use i18n for all error messages.
 
-In the existing 2FA management page (accessed from Account Information), add:
-- A toggle to enable/disable email 2FA
-- Enable flow: sends a verification email, then asks the user to enter the code to confirm
-- Status indicator showing which methods are active (TOTP, Email, both)
+### 2.5 Admin Routes Not Protected
+Admin routes (`/admin`, `/admin/cosmetics`, etc.) use `ProtectedWithLayout` which only checks authentication, not the admin role. Any authenticated user could access admin pages.
 
-## File Changes Summary
+**Fix:** Create an `AdminRoute` wrapper that checks `has_role(user_id, 'admin')` before rendering.
 
-| File | Changes |
-|---|---|
-| Database migration | Add `email_2fa_enabled`, `email_code`, `email_code_expires_at`, `email_code_attempts` to `user_2fa_settings`; update `get_user_2fa_status` |
-| `supabase/functions/two-factor/index.ts` | Add `enable_email_2fa`, `confirm_email_2fa`, `send_email_code`, `disable_email_2fa` actions; update `status` and `verify`; add Resend API call helper |
-| `src/pages/TwoFactor.tsx` | Add email code mode (send code button, resend timer, 6-digit input) |
-| `src/hooks/useTwoFactor.ts` | Expose `emailEnabled` from status response |
-| `src/components/profile/ProfileAccountSettings.tsx` | Update TwoFactorSection to show email 2FA toggle |
-| `src/i18n/locales/en.json` | Add i18n keys for email 2FA strings |
-| `src/i18n/locales/fr.json` | Add French translations |
+---
 
-## Security Considerations
+## 3. IMPROVEMENTS (Nice to Have)
 
-- Email codes are SHA-256 hashed before storage (never stored in plain text)
-- Codes expire after 5 minutes
-- Max 5 verification attempts per code (prevents brute force)
-- 60-second cooldown between sending codes (prevents spam)
-- Resend API key stored as a backend secret, never exposed to the client
+### 3.1 QueryClient Configuration
+The `QueryClient` is created with default settings -- no default `staleTime`, `retry`, or `gcTime`. This means every component re-fetches on mount.
+
+**Fix:** Set sensible defaults like `staleTime: 30_000` and `retry: 1`.
+
+### 3.2 Two Supabase Client Instances
+The codebase has two Supabase client files: `src/lib/supabase.ts` and `src/integrations/supabase/client.ts`. This is confusing and could lead to inconsistencies.
+
+**Fix:** Remove `src/lib/supabase.ts` and use only the auto-generated client from `src/integrations/supabase/client.ts` everywhere.
+
+### 3.3 Heavy Home Page
+The Home page loads 15+ hooks and many components on every render. The `useMemo` block computing dashboard data is ~90 lines of synchronous computation.
+
+**Fix:** Consider splitting the dashboard data computation into smaller, memoized hooks. Lazy-load modules that are below the fold.
+
+### 3.4 Missing Loading/Error States
+The `TwoFactorSection` in profile settings doesn't show a loading state while the 2FA status is being fetched, which can cause flickering.
+
+### 3.5 Sidebar Doesn't Use Standard SidebarProvider
+The `AppSidebar` renders a custom `<aside>` instead of using Shadcn's `<Sidebar>` component. While it works, it means features like sidebar collapse, keyboard shortcuts, and responsive behavior must be manually implemented.
+
+### 3.6 Missing `<meta>` Tags
+The `index.html` likely lacks proper meta tags for SEO, OG images, and mobile viewport configuration beyond the basic defaults.
+
+---
+
+## 4. SECURITY NOTES
+
+### 4.1 Database Linter: Clean
+No RLS issues found. All tables have proper policies.
+
+### 4.2 Edge Function Auth: Solid
+The `two-factor` edge function properly validates tokens, uses `supabaseAdmin` for sensitive operations, and has rate limiting. The 401 retry/signout pattern is well implemented.
+
+### 4.3 Recovery Code Generation: Good
+Uses cryptographically random bytes, SHA-256 hashing, and single-use enforcement.
+
+---
+
+## Priority Summary
+
+| Priority | Item | Effort |
+|----------|------|--------|
+| Critical | 1.2 Resend sandbox (domain verification) | User action required |
+| Critical | 1.3 Two-factor page should not have sidebar | 2 min |
+| High | 1.1 Missing i18n keys (console warnings) | 5 min |
+| High | 1.4 TOTP "Manage" button goes to wrong page | 15 min |
+| High | 2.5 Admin routes not role-protected | 20 min |
+| Medium | 2.3 Journal entry XSS sanitization | 15 min |
+| Medium | 2.1 Hardcoded French strings | 30 min |
+| Medium | 2.4 Inconsistent toast/error handling | 20 min |
+| Low | 2.2 Remove dangerouslySetInnerHTML for CSS | 10 min |
+| Low | 3.1-3.6 Various improvements | Variable |
 
