@@ -10,6 +10,7 @@ export default function PactSettings() {
   const { user } = useAuth();
   
   // Pact identity state
+  const [isLoading, setIsLoading] = useState(true);
   const [pactId, setPactId] = useState<string | null>(null);
   const [pactName, setPactName] = useState("");
   const [pactMantra, setPactMantra] = useState("");
