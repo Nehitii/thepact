@@ -26,6 +26,7 @@ export function ProjectTimelineCard({
   onProjectEndDateChange,
 }: ProjectTimelineCardProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
   const dateValidationError = projectStartDate && projectEndDate && projectEndDate <= projectStartDate
