@@ -33,6 +33,10 @@ export function CustomDifficultyCard({
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
+    if (!userId) {
+      toast({ title: "Error", description: "User not found.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
