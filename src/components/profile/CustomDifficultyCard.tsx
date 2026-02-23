@@ -3,8 +3,9 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { PactSettingsCard } from "./PactSettingsCard";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { Zap, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,9 +29,14 @@ export function CustomDifficultyCard({
   onCustomDifficultyColorChange,
 }: CustomDifficultyCardProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
+    if (!userId) {
+      toast({ title: "Error", description: "User not found.", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
@@ -44,6 +50,7 @@ export function CustomDifficultyCard({
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
       toast({ title: "Custom Difficulty Updated", description: "Your custom difficulty settings have been saved." });
     }
     setSaving(false);

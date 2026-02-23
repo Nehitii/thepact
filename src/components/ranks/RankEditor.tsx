@@ -77,7 +77,10 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
     setSaving(true);
     try {
       await onSave(editedRank);
+      // Only close after successful save
       onClose();
+    } catch {
+      // onSave handles its own error toasts; keep editor open
     } finally {
       setSaving(false);
     }

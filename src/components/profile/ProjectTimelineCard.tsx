@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PactSettingsCard } from "./PactSettingsCard";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { Calendar as CalendarIcon, Clock, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ export function ProjectTimelineCard({
   onProjectEndDateChange,
 }: ProjectTimelineCardProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
   const dateValidationError = projectStartDate && projectEndDate && projectEndDate <= projectStartDate
@@ -53,6 +55,7 @@ export function ProjectTimelineCard({
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      queryClient.invalidateQueries({ queryKey: ["pact"] });
       toast({ title: "Timeline Updated", description: "Your project timeline has been saved." });
     }
     setSaving(false);

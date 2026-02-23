@@ -1,15 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { ProfilePactSettings } from "@/components/profile/ProfilePactSettings";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
-import { ScrollText } from "lucide-react";
+import { ScrollText, Loader2 } from "lucide-react";
 import { usePactMutation } from "@/hooks/usePactMutation";
 
 export default function PactSettings() {
   const { user } = useAuth();
   
   // Pact identity state
+  const [isLoading, setIsLoading] = useState(true);
   const [pactId, setPactId] = useState<string | null>(null);
   const [pactName, setPactName] = useState("");
   const [pactMantra, setPactMantra] = useState("");
@@ -65,6 +66,7 @@ export default function PactSettings() {
           setProjectEndDate(new Date(pactData.project_end_date));
         }
       }
+      setIsLoading(false);
     };
 
     loadData();
@@ -81,6 +83,21 @@ export default function PactSettings() {
   }, [updatePact, pactName, pactMantra, pactSymbol, pactColor]);
 
   if (!user) return null;
+
+  if (isLoading) {
+    return (
+      <ProfileSettingsShell
+        title="Pact Settings"
+        subtitle="Configure your pact identity, timeline, and custom difficulty"
+        icon={<ScrollText className="h-7 w-7 text-primary" />}
+        containerClassName="max-w-2xl"
+      >
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </ProfileSettingsShell>
+    );
+  }
 
   return (
     <ProfileSettingsShell

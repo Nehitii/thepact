@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { PactSettingsCard } from "./PactSettingsCard";
 import { RankCard, type Rank } from "@/components/ranks/RankCard";
 import { RankEditor } from "@/components/ranks/RankEditor";
@@ -27,6 +28,7 @@ export function RanksCard({ userId }: RanksCardProps) {
   const [selectedRank, setSelectedRank] = useState<Rank | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [isNewRank, setIsNewRank] = useState(false);
+  const [rankToDelete, setRankToDelete] = useState<Rank | null>(null);
 
   useEffect(() => {
     if (rankData?.ranks) setRanks(rankData.ranks);
@@ -42,24 +44,29 @@ export function RanksCard({ userId }: RanksCardProps) {
   const handleEditRank = (rank: Rank) => { setSelectedRank(rank); setIsNewRank(false); setShowEditor(true); };
 
   const handleSaveRank = async (rank: Rank) => {
-    if (!rank.name.trim()) { toast({ title: "Validation Error", description: "Please enter a rank name", variant: "destructive" }); return; }
+    if (!rank.name.trim()) { toast({ title: "Validation Error", description: "Please enter a rank name", variant: "destructive" }); throw new Error("Validation failed"); }
     if (isNewRank) {
       const { error } = await supabase.from("ranks").insert({ user_id: userId, min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote });
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); throw error; }
       toast({ title: "Rank Created", description: `${rank.name} has been added to your progression` });
     } else {
       const { error } = await supabase.from("ranks").update({ min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote }).eq("id", rank.id);
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); throw error; }
       toast({ title: "Rank Updated", description: `${rank.name} has been updated` });
     }
     queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
   };
 
   const handleDeleteRank = async (rank: Rank) => {
-    if (!confirm(`Are you sure you want to delete "${rank.name}"?`)) return;
-    const { error } = await supabase.from("ranks").delete().eq("id", rank.id);
+    setRankToDelete(rank);
+  };
+
+  const confirmDeleteRank = async () => {
+    if (!rankToDelete) return;
+    const { error } = await supabase.from("ranks").delete().eq("id", rankToDelete.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
-    else { toast({ title: "Rank Deleted", description: `${rank.name} has been removed` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
+    else { toast({ title: "Rank Deleted", description: `${rankToDelete.name} has been removed` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
+    setRankToDelete(null);
   };
 
   return (
@@ -147,6 +154,23 @@ export function RanksCard({ userId }: RanksCardProps) {
       {selectedRank && (
         <RankEditor rank={selectedRank} open={showEditor} onClose={() => { setShowEditor(false); setSelectedRank(null); }} onSave={handleSaveRank} isNew={isNewRank} globalMaxXP={rankData?.totalMaxXP || 0} />
       )}
+
+      <AlertDialog open={!!rankToDelete} onOpenChange={(open) => !open && setRankToDelete(null)}>
+        <AlertDialogContent className="bg-card border-primary/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Delete Rank</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{rankToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-primary/30">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteRank} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </PactSettingsCard>
   );
 }
