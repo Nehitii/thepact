@@ -569,6 +569,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
           )}
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
