@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Sparkles, Save, Loader2, Palette } from "lucide-react";
+import { Sparkles, Save, Loader2 } from "lucide-react";
 import { DataPanel } from "./settings-ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
