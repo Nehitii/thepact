@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { PactSettingsCard } from "./PactSettingsCard";
+import { DataPanel } from "./settings-ui";
 import { RankCard, type Rank } from "@/components/ranks/RankCard";
 import { RankEditor } from "@/components/ranks/RankEditor";
 import { useRankXP } from "@/hooks/useRankXP";
@@ -70,107 +70,119 @@ export function RanksCard({ userId }: RanksCardProps) {
   };
 
   return (
-    <PactSettingsCard icon={<Trophy className="h-5 w-5 text-primary" />} title="Ranks" description="Configure your progression ranks with custom visuals" sectionId="ranks">
-      {rankData?.currentRank && (
-        <div className="mb-4 p-4 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
-          <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Current Rank</span>
-          </div>
-          <div className="flex justify-center">
-            <RankCard rank={rankData.currentRank} currentXP={rankData.currentXP} nextRankMinXP={rankData.nextRank?.min_points} totalMaxXP={rankData.totalMaxXP} isActive={true} size="sm" />
-          </div>
-          <div className="mt-4 space-y-2">
-            <div className="flex justify-between text-[10px] font-rajdhani text-muted-foreground">
-              <span className="flex items-center gap-1"><Target className="h-3 w-3" />Global Progress</span>
-              <span>{Math.round(rankData.globalProgress)}%</span>
+    <DataPanel
+      code="MODULE_05"
+      title="RANKS"
+      statusText={<span className="text-muted-foreground">{ranks.length} DEFINED</span>}
+      footerLeft={<span>CURRENT: <b className="text-primary">{rankData?.currentRank?.name || "—"}</b></span>}
+      footerRight={<span>XP: <b className="text-primary">{rankData?.currentXP?.toLocaleString() || "0"}</b></span>}
+    >
+      <div className="py-4">
+        {rankData?.currentRank && (
+          <div className="mb-4 border border-primary/25 bg-primary/[0.04] p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-[9px] font-mono text-primary/40 tracking-[0.15em]">CURRENT_RANK</span>
             </div>
-            <div className="h-1.5 bg-primary/10 rounded-full overflow-hidden">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${rankData.globalProgress}%` }} className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-full" />
+            <div className="flex justify-center">
+              <RankCard rank={rankData.currentRank} currentXP={rankData.currentXP} nextRankMinXP={rankData.nextRank?.min_points} totalMaxXP={rankData.totalMaxXP} isActive={true} size="sm" />
             </div>
-            <div className="text-[9px] text-muted-foreground/60 text-center">{rankData.currentXP.toLocaleString()} / {rankData.totalMaxXP.toLocaleString()} XP</div>
-          </div>
-          <div className="mt-3 p-2.5 rounded-lg bg-background/50 border border-primary/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3 text-amber-400" />
-                <span className="text-[10px] font-orbitron text-muted-foreground uppercase tracking-wider">Maximum XP from Goals</span>
+            <div className="mt-4 space-y-2">
+              <div className="flex justify-between text-[9px] font-mono text-primary/40">
+                <span className="flex items-center gap-1"><Target className="h-3 w-3" />GLOBAL_PROGRESS</span>
+                <span>{Math.round(rankData.globalProgress)}%</span>
               </div>
-              <span className="text-xs font-orbitron text-amber-400 font-bold">{rankData.totalMaxXP.toLocaleString()} XP</span>
+              <div className="h-1.5 bg-primary/10 overflow-hidden">
+                <motion.div initial={{ width: 0 }} animate={{ width: `${rankData.globalProgress}%` }} className="h-full bg-gradient-to-r from-primary/50 to-primary" />
+              </div>
+              <div className="text-[9px] text-primary/25 font-mono text-center">{rankData.currentXP.toLocaleString()} / {rankData.totalMaxXP.toLocaleString()} XP</div>
             </div>
-            <p className="text-[9px] text-muted-foreground/60 mt-1">Sum of all goal XP values. Use this to define your rank thresholds.</p>
-          </div>
-        </div>
-      )}
-
-      <div className="relative">
-        {ranks.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground font-rajdhani border border-dashed border-primary/20 rounded-lg bg-primary/5">
-            <Trophy className="h-8 w-8 mx-auto mb-2 text-primary/60" />
-            <p>No ranks defined yet.</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Create your first rank below.</p>
-          </div>
-        ) : (
-          <ScrollArea className="h-[240px] pr-2">
-            <div className="space-y-2">
-              <AnimatePresence>
-                {ranks.map((rank) => {
-                  const isCurrentRank = rankData?.currentRank?.id === rank.id;
-                  return (
-                    <motion.div key={rank.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                      className={cn("group relative flex items-center gap-3 p-3 rounded-lg transition-all bg-gradient-to-r from-card/80 to-card/60 border hover:border-primary/40", isCurrentRank ? "border-primary/50" : "border-primary/20")}
-                      style={isCurrentRank ? { boxShadow: `0 0 15px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` } : undefined}>
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 border"
-                        style={{ borderColor: `${rank.frame_color || '#5bb4ff'}50`, background: `linear-gradient(135deg, ${rank.frame_color || '#5bb4ff'}10, transparent)` }}>
-                        {rank.logo_url ? <img src={rank.logo_url} alt="" className="w-6 h-6 object-contain" /> : <Trophy className="h-5 w-5" style={{ color: rank.frame_color || '#5bb4ff' }} />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-orbitron font-semibold text-sm uppercase tracking-wide truncate" style={{ color: rank.frame_color || '#5bb4ff', textShadow: `0 0 8px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` }}>{rank.name}</div>
-                        <div className="text-xs text-muted-foreground font-rajdhani">
-                          {rank.min_points.toLocaleString()}+ XP
-                          {isCurrentRank && <span className="ml-2 text-primary/70">(Current)</span>}
-                        </div>
-                      </div>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button size="icon" variant="ghost" onClick={() => handleEditRank(rank)} className="h-8 w-8 text-primary/70 hover:text-primary hover:bg-primary/20"><Edit2 className="h-3.5 w-3.5" /></Button>
-                        <Button size="icon" variant="ghost" onClick={() => handleDeleteRank(rank)} className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/20"><Trash2 className="h-3.5 w-3.5" /></Button>
-                      </div>
-                      {isCurrentRank && <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />}
-                    </motion.div>
-                  );
-                })}
-              </AnimatePresence>
+            <div className="mt-3 border border-primary/15 bg-primary/[0.02] p-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="h-3 w-3 text-[hsl(40,100%,50%)]" />
+                  <span className="text-[9px] font-mono text-primary/40 tracking-[0.15em]">MAX_XP_FROM_GOALS</span>
+                </div>
+                <span className="text-xs font-mono text-[hsl(40,100%,50%)] font-bold">{rankData.totalMaxXP.toLocaleString()} XP</span>
+              </div>
             </div>
-          </ScrollArea>
+          </div>
         )}
-        {ranks.length > 3 && <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-card to-transparent pointer-events-none rounded-b-lg" />}
+
+        <div className="relative">
+          {ranks.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground font-mono text-[10px] tracking-wider border border-dashed border-primary/20 bg-primary/[0.02]">
+              <Trophy className="h-8 w-8 mx-auto mb-2 text-primary/30" />
+              <p>NO RANKS DEFINED</p>
+              <p className="text-primary/20 mt-1">Create your first rank below.</p>
+            </div>
+          ) : (
+            <ScrollArea className="h-[240px] pr-2">
+              <div className="space-y-2">
+                <AnimatePresence>
+                  {ranks.map((rank) => {
+                    const isCurrentRank = rankData?.currentRank?.id === rank.id;
+                    return (
+                      <motion.div key={rank.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+                        className={cn("group relative flex items-center gap-3 p-3 transition-all border", isCurrentRank ? "border-primary/40 bg-primary/[0.06]" : "border-primary/15 bg-primary/[0.02] hover:border-primary/30")}
+                        style={isCurrentRank ? { boxShadow: `0 0 15px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` } : undefined}>
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 border"
+                          style={{ borderColor: `${rank.frame_color || '#5bb4ff'}50`, background: `linear-gradient(135deg, ${rank.frame_color || '#5bb4ff'}10, transparent)` }}>
+                          {rank.logo_url ? <img src={rank.logo_url} alt="" className="w-6 h-6 object-contain" /> : <Trophy className="h-5 w-5" style={{ color: rank.frame_color || '#5bb4ff' }} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-orbitron font-semibold text-sm uppercase tracking-wide truncate" style={{ color: rank.frame_color || '#5bb4ff', textShadow: `0 0 8px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` }}>{rank.name}</div>
+                          <div className="text-[9px] text-muted-foreground font-mono tracking-wider">
+                            {rank.min_points.toLocaleString()}+ XP
+                            {isCurrentRank && <span className="ml-2 text-primary/70">(CURRENT)</span>}
+                          </div>
+                        </div>
+                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button size="icon" variant="ghost" onClick={() => handleEditRank(rank)} className="h-8 w-8 text-primary/70 hover:text-primary hover:bg-primary/20"><Edit2 className="h-3.5 w-3.5" /></Button>
+                          <Button size="icon" variant="ghost" onClick={() => handleDeleteRank(rank)} className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/20"><Trash2 className="h-3.5 w-3.5" /></Button>
+                        </div>
+                        {isCurrentRank && <ChevronRight className="h-4 w-4 text-primary flex-shrink-0" />}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+            </ScrollArea>
+          )}
+          {ranks.length > 3 && <div className="absolute bottom-0 left-0 right-2 h-8 bg-gradient-to-t from-background to-transparent pointer-events-none" />}
+        </div>
+
+        <button onClick={handleAddRank}
+          className={cn(
+            "w-full h-10 mt-4 font-mono text-[10px] tracking-[0.22em] uppercase",
+            "border border-dashed border-primary/30 bg-transparent",
+            "text-primary/50 hover:text-primary hover:border-primary/60 hover:bg-primary/[0.05]",
+            "transition-all duration-200 flex items-center justify-center gap-2",
+          )}>
+          <Plus className="h-4 w-4" />ADD NEW RANK
+        </button>
+
+        {selectedRank && (
+          <RankEditor rank={selectedRank} open={showEditor} onClose={() => { setShowEditor(false); setSelectedRank(null); }} onSave={handleSaveRank} isNew={isNewRank} globalMaxXP={rankData?.totalMaxXP || 0} />
+        )}
+
+        <AlertDialog open={!!rankToDelete} onOpenChange={(open) => !open && setRankToDelete(null)}>
+          <AlertDialogContent className="bg-card border-primary/30">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-foreground">Delete Rank</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete "{rankToDelete?.name}"? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel className="border-primary/30">Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteRank} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
-
-      <Button onClick={handleAddRank} variant="outline"
-        className={cn("w-full h-10 font-orbitron uppercase tracking-wider text-xs mt-4 border border-dashed border-primary/40 rounded-lg text-primary/70 hover:text-primary hover:border-primary/60 hover:bg-primary/10")}>
-        <Plus className="h-4 w-4 mr-2" />Add New Rank
-      </Button>
-
-      {selectedRank && (
-        <RankEditor rank={selectedRank} open={showEditor} onClose={() => { setShowEditor(false); setSelectedRank(null); }} onSave={handleSaveRank} isNew={isNewRank} globalMaxXP={rankData?.totalMaxXP || 0} />
-      )}
-
-      <AlertDialog open={!!rankToDelete} onOpenChange={(open) => !open && setRankToDelete(null)}>
-        <AlertDialogContent className="bg-card border-primary/30">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-foreground">Delete Rank</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{rankToDelete?.name}"? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="border-primary/30">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDeleteRank} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </PactSettingsCard>
+    </DataPanel>
   );
 }

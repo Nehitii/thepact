@@ -1,12 +1,12 @@
 import { useCallback } from "react";
 import { Sparkles, Save, Loader2, Palette } from "lucide-react";
-import { PactSettingsCard } from "./PactSettingsCard";
+import { DataPanel } from "./settings-ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { PactVisual } from "@/components/PactVisual";
+import { cn } from "@/lib/utils";
 
 const SYMBOL_OPTIONS = [
   { key: "flame", label: "Flame" },
@@ -28,6 +28,13 @@ interface PactIdentityCardProps {
   onSave: () => Promise<void>;
   isSaving?: boolean;
 }
+
+const CY_INPUT = [
+  "bg-[#010608] border border-primary/25 rounded-none",
+  "focus:border-primary/70 focus:bg-[#010b10]",
+  "text-primary/80 placeholder:text-primary/15 font-mono text-sm tracking-wide h-11",
+  "transition-all duration-200",
+].join(" ");
 
 export function PactIdentityCard({
   pactId,
@@ -55,16 +62,17 @@ export function PactIdentityCard({
   }, [pactId, pactName, onSave]);
 
   return (
-    <PactSettingsCard
-      icon={<Sparkles className="h-5 w-5 text-primary" />}
-      title="Pact Identity"
-      description="Define your project's name, purpose, and visual symbol"
-      sectionId="identity"
+    <DataPanel
+      code="MODULE_02"
+      title="PACT IDENTITY"
+      statusText={pactId ? <span className="text-primary/50">LINKED</span> : <span className="text-destructive">NO PACT</span>}
+      footerLeft={<span>NAME: <b className="text-primary">{pactName || "—"}</b></span>}
+      footerRight={<span className="text-primary/40">SYMBOL: {pactSymbol.toUpperCase()}</span>}
     >
-      <div className="space-y-5">
+      <div className="py-4 space-y-5">
         {/* Live Preview */}
-        <div className="p-4 rounded-xl border border-dashed border-primary/30 bg-primary/5">
-          <p className="text-[10px] text-muted-foreground font-orbitron uppercase tracking-widest mb-3">Preview</p>
+        <div className="border border-dashed border-primary/25 bg-primary/[0.03] p-4">
+          <p className="text-[9px] text-primary/40 font-mono tracking-[0.15em] mb-3">PREVIEW //</p>
           <div className="flex items-center gap-4">
             <PactVisual symbol={pactSymbol} size="sm" />
             <div className="min-w-0 flex-1">
@@ -79,35 +87,48 @@ export function PactIdentityCard({
         </div>
 
         {/* Project Name */}
-        <div className="space-y-2">
-          <Label htmlFor="pact-name" className="text-sm font-medium text-foreground">Project Name</Label>
-          <Input id="pact-name" value={pactName} onChange={(e) => onPactNameChange(e.target.value)} placeholder="e.g., Project Phoenix" maxLength={50} className="bg-background/50 border-primary/20 focus:border-primary/50" />
-          <div className="flex justify-between items-center">
-            <p className="text-xs text-muted-foreground">The name that represents your personal project or mission.</p>
-            <span className="text-xs text-muted-foreground/60 font-mono">{pactName.length}/50</span>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Project Name</Label>
+          </div>
+          <Input value={pactName} onChange={(e) => onPactNameChange(e.target.value)} placeholder="e.g., Project Phoenix" maxLength={50} className={CY_INPUT} />
+          <div className="flex justify-between">
+            <p className="text-[9px] text-primary/20 font-mono tracking-wider">The name that represents your mission.</p>
+            <span className="text-[9px] text-primary/20 font-mono">{pactName.length}/50</span>
           </div>
         </div>
 
-        {/* The "Why" Statement / Mantra */}
-        <div className="space-y-2">
-          <Label htmlFor="pact-mantra" className="text-sm font-medium text-foreground">The "Why" Statement</Label>
-          <Textarea id="pact-mantra" value={pactMantra} onChange={(e) => onPactMantraChange(e.target.value)} placeholder="e.g., To become the best version of myself and inspire others…" maxLength={200} rows={3} className="bg-background/50 border-primary/20 focus:border-primary/50 resize-none" />
-          <div className="flex justify-between items-center">
-            <p className="text-xs text-muted-foreground">Your guiding mantra or mission statement. Why does this project matter to you?</p>
-            <span className="text-xs text-muted-foreground/60 font-mono">{pactMantra.length}/200</span>
+        {/* Mantra */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">The "Why" Statement</Label>
+          </div>
+          <Textarea value={pactMantra} onChange={(e) => onPactMantraChange(e.target.value)} placeholder="e.g., To become the best version of myself…" maxLength={200} rows={3} className={cn(CY_INPUT, "h-auto resize-none")} />
+          <div className="flex justify-between">
+            <p className="text-[9px] text-primary/20 font-mono tracking-wider">Your guiding mantra.</p>
+            <span className="text-[9px] text-primary/20 font-mono">{pactMantra.length}/200</span>
           </div>
         </div>
 
         {/* Pact Symbol */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium text-foreground">Pact Symbol</Label>
-          <p className="text-xs text-muted-foreground">Choose an animated symbol for your pact logo.</p>
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Pact Symbol</Label>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {SYMBOL_OPTIONS.map(({ key, label }) => (
               <button key={key} type="button" onClick={() => onPactSymbolChange(key)}
-                className={`flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200 ${pactSymbol === key ? "border-primary bg-primary/10 ring-2 ring-primary/40" : "border-primary/20 bg-background/50 hover:border-primary/50 hover:bg-primary/5"}`}>
+                className={cn(
+                  "flex flex-col items-center gap-1 p-3 border transition-all duration-200",
+                  pactSymbol === key
+                    ? "border-primary bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
+                    : "border-primary/15 bg-primary/[0.02] hover:border-primary/40"
+                )}>
                 <PactVisual symbol={key} size="sm" />
-                <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                <span className="text-[9px] font-mono text-primary/50 tracking-wider uppercase">{label}</span>
               </button>
             ))}
           </div>
@@ -115,27 +136,37 @@ export function PactIdentityCard({
 
         {/* Pact Color */}
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-foreground flex items-center gap-1.5">
-            <Palette className="h-3.5 w-3.5 text-primary/80" />Pact Color
-          </Label>
-          <p className="text-xs text-muted-foreground">Choose an accent color for your pact's visual identity.</p>
+          <div className="flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold flex items-center gap-1.5">
+              <Palette className="h-3 w-3 text-primary/60" />Pact Color
+            </Label>
+          </div>
           <div className="flex items-center gap-3">
-            <label className="relative w-12 h-12 rounded-lg border border-primary/20 overflow-hidden flex-shrink-0 cursor-pointer group transition-all duration-200 hover:border-primary/40 active:scale-95" style={{ backgroundColor: pactColor }}>
+            <label className="relative w-12 h-12 border border-primary/20 overflow-hidden flex-shrink-0 cursor-pointer group transition-all duration-200 hover:border-primary/40 active:scale-95" style={{ backgroundColor: pactColor }}>
               <input type="color" value={pactColor} onChange={(e) => onPactColorChange(e.target.value)} className="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 cursor-pointer opacity-0" />
-              <div className="absolute inset-0 rounded-lg pointer-events-none transition-all duration-200 group-hover:opacity-80" style={{ boxShadow: `inset 0 0 20px ${pactColor}40` }} />
-              <div className="absolute inset-0 rounded-lg bg-white/0 group-hover:bg-white/10 transition-colors pointer-events-none" />
             </label>
-            <Input type="text" value={pactColor} onChange={(e) => onPactColorChange(e.target.value)} placeholder="#f59e0b" maxLength={7} className="h-11 flex-1 bg-background/50 border border-primary/20 focus:border-primary/40 font-mono text-sm" />
+            <Input type="text" value={pactColor} onChange={(e) => onPactColorChange(e.target.value)} placeholder="#f59e0b" maxLength={7} className={cn(CY_INPUT, "flex-1")} />
           </div>
         </div>
 
-        {/* Save Button */}
-        <div className="pt-2">
-          <Button onClick={handleSave} disabled={isSaving || !pactId} className="w-full sm:w-auto">
-            {isSaving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving…</>) : (<><Save className="h-4 w-4 mr-2" />Save Identity</>)}
-          </Button>
-        </div>
+        {/* Save */}
+        <button
+          onClick={handleSave}
+          disabled={isSaving || !pactId}
+          className={cn(
+            "w-full sm:w-auto relative h-10 px-6 font-mono text-[10px] tracking-[0.22em] uppercase",
+            "bg-primary/10 border border-primary/35",
+            "hover:bg-primary/18 hover:border-primary/65",
+            "text-primary shadow-[0_0_14px_hsl(var(--primary)/0.12)]",
+            "hover:shadow-[0_0_24px_hsl(var(--primary)/0.28)]",
+            "disabled:opacity-30 disabled:cursor-not-allowed",
+            "transition-all duration-200 flex items-center gap-2",
+          )}
+        >
+          {isSaving ? (<><Loader2 className="h-3.5 w-3.5 animate-spin" />SAVING…</>) : (<><Save className="h-3.5 w-3.5" />[ SAVE IDENTITY ]</>)}
+        </button>
       </div>
-    </PactSettingsCard>
+    </DataPanel>
   );
 }

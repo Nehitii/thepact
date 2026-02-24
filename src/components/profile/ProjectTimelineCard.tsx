@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { PactSettingsCard } from "./PactSettingsCard";
+import { DataPanel } from "./settings-ui";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Calendar as CalendarIcon, Clock, ArrowRight } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,15 @@ interface ProjectTimelineCardProps {
   onProjectStartDateChange: (date: Date | undefined) => void;
   onProjectEndDateChange: (date: Date | undefined) => void;
 }
+
+const CY_BTN = [
+  "relative rounded-none bg-primary/10 border border-primary/35",
+  "hover:bg-primary/18 hover:border-primary/65",
+  "text-primary font-mono text-[10px] tracking-[0.22em] uppercase",
+  "shadow-[0_0_14px_hsl(var(--primary)/0.12)] hover:shadow-[0_0_24px_hsl(var(--primary)/0.28)]",
+  "disabled:opacity-30 disabled:cursor-not-allowed",
+  "transition-all duration-200 h-10",
+].join(" ");
 
 export function ProjectTimelineCard({
   pactId,
@@ -67,67 +76,88 @@ export function ProjectTimelineCard({
   };
 
   return (
-    <PactSettingsCard
-      icon={<Clock className="h-5 w-5 text-primary" />}
-      title="Project Timeline"
-      description="Set your pact journey start and end dates"
-      sectionId="timeline"
+    <DataPanel
+      code="MODULE_03"
+      title="PROJECT TIMELINE"
+      footerLeft={<span>START: <b className="text-primary">{projectStartDate ? formatDisplayDate(projectStartDate) : "—"}</b></span>}
+      footerRight={<span>END: <b className="text-primary">{projectEndDate ? formatDisplayDate(projectEndDate) : "—"}</b></span>}
     >
-      <div className="space-y-4">
+      <div className="py-4 space-y-4">
         <div className="flex items-center gap-2 px-2">
-          <div className="flex-1 h-1 bg-gradient-to-r from-primary/60 via-primary/40 to-primary/20 rounded-full" />
+          <div className="flex-1 h-px bg-gradient-to-r from-primary/60 via-primary/40 to-primary/20" />
           <ArrowRight className="h-4 w-4 text-primary/60 flex-shrink-0" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest flex items-center gap-1.5 drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
-              <div className="w-2 h-2 rounded-full bg-primary/80 shadow-[0_0_6px_rgba(91,180,255,0.6)]" />
-              Start Date
-            </label>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+              <label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Start Date</label>
+            </div>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-full h-11 justify-start text-left font-normal px-3", "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]", "border border-primary/40 rounded-lg", "text-[#e0f0ff] font-rajdhani text-sm", "hover:border-primary/60 hover:bg-[#0d1a2d]", "focus:ring-1 focus:ring-primary/50", !projectStartDate && "text-[#6b9ec4]")}>
-                  <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF] flex-shrink-0" />
-                  <span className="truncate">{projectStartDate ? formatDisplayDate(projectStartDate) : "Select start"}</span>
-                </Button>
+                <button
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 h-11",
+                    "bg-[#010608] border border-primary/25",
+                    "hover:border-primary/50 hover:bg-[#010b10]",
+                    "text-primary/80 font-mono text-sm tracking-wide",
+                    "transition-all duration-200",
+                    !projectStartDate && "text-primary/20",
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <CalendarIcon className="h-3.5 w-3.5 text-primary/35 shrink-0" />
+                    {projectStartDate ? formatDisplayDate(projectStartDate) : "Select start"}
+                  </span>
+                </button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-[100] bg-[#0a1525] border-primary/40 shadow-[0_0_30px_rgba(91,180,255,0.2)]" align="start">
-                <Calendar mode="single" selected={projectStartDate} onSelect={onProjectStartDateChange} initialFocus className="pointer-events-auto bg-[#0a1525]" />
+              <PopoverContent className="w-auto p-0 bg-[#020c12]/99 backdrop-blur-2xl rounded-none border border-primary/20" align="start">
+                <Calendar mode="single" selected={projectStartDate} onSelect={onProjectStartDateChange} initialFocus />
               </PopoverContent>
             </Popover>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-semibold text-[#8ACBFF] font-orbitron uppercase tracking-widest flex items-center gap-1.5 drop-shadow-[0_0_4px_rgba(138,203,255,0.4)]">
-              <div className="w-2 h-2 rounded-full bg-primary/60 shadow-[0_0_6px_rgba(91,180,255,0.4)]" />
-              End Date
-            </label>
+            <div className="flex items-center gap-1.5">
+              <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+              <label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">End Date</label>
+            </div>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-full h-11 justify-start text-left font-normal px-3", "bg-[#0d1a2d]/90 shadow-[inset_0_0_10px_rgba(91,180,255,0.1)]", "border border-primary/40 rounded-lg", "text-[#e0f0ff] font-rajdhani text-sm", "hover:border-primary/60 hover:bg-[#0d1a2d]", "focus:ring-1 focus:ring-primary/50", !projectEndDate && "text-[#6b9ec4]")}>
-                  <CalendarIcon className="mr-2 h-4 w-4 text-[#8ACBFF] flex-shrink-0" />
-                  <span className="truncate">{projectEndDate ? formatDisplayDate(projectEndDate) : "Select end"}</span>
-                </Button>
+                <button
+                  className={cn(
+                    "w-full flex items-center justify-between px-3 h-11",
+                    "bg-[#010608] border border-primary/25",
+                    "hover:border-primary/50 hover:bg-[#010b10]",
+                    "text-primary/80 font-mono text-sm tracking-wide",
+                    "transition-all duration-200",
+                    !projectEndDate && "text-primary/20",
+                  )}
+                >
+                  <span className="flex items-center gap-2">
+                    <CalendarIcon className="h-3.5 w-3.5 text-primary/35 shrink-0" />
+                    {projectEndDate ? formatDisplayDate(projectEndDate) : "Select end"}
+                  </span>
+                </button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 z-[100] bg-[#0a1525] border-primary/40 shadow-[0_0_30px_rgba(91,180,255,0.2)]" align="start">
-                <Calendar mode="single" selected={projectEndDate} onSelect={onProjectEndDateChange} initialFocus className="pointer-events-auto bg-[#0a1525]" />
+              <PopoverContent className="w-auto p-0 bg-[#020c12]/99 backdrop-blur-2xl rounded-none border border-primary/20" align="start">
+                <Calendar mode="single" selected={projectEndDate} onSelect={onProjectEndDateChange} initialFocus />
               </PopoverContent>
             </Popover>
           </div>
         </div>
 
         {dateValidationError && (
-          <p className="text-xs text-destructive font-rajdhani px-1 flex items-center gap-1.5">
+          <p className="text-[9px] text-destructive font-mono tracking-wider flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-destructive" />{dateValidationError}
           </p>
         )}
 
-        <Button onClick={handleSave} disabled={saving || !!dateValidationError}
-          className={cn("w-full h-10 font-orbitron uppercase tracking-wider text-xs", "bg-primary/20 border border-primary/40 rounded-lg", "text-primary hover:bg-primary/30 hover:border-primary/60", "disabled:opacity-50 disabled:cursor-not-allowed", "transition-all duration-200")}>
-          {saving ? "SAVING…" : "SAVE TIMELINE"}
-        </Button>
+        <button onClick={handleSave} disabled={saving || !!dateValidationError} className={cn(CY_BTN, "w-full flex items-center justify-center gap-2")}>
+          {saving ? (<><Loader2 className="h-3.5 w-3.5 animate-spin" />SAVING…</>) : "[ SAVE TIMELINE ]"}
+        </button>
       </div>
-    </PactSettingsCard>
+    </DataPanel>
   );
 }

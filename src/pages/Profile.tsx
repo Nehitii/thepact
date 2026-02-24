@@ -60,7 +60,7 @@ export default function Profile() {
       subtitle={t("profile.subtitle")}
       icon={<User className="h-7 w-7 text-primary" />}
       floating={user ? <ProfileDevilNote isVisible={isAtBottom} /> : null}
-      containerClassName="max-w-4xl" // Augmenté pour correspondre au nouveau design
+      containerClassName="max-w-3xl"
     >
       {loading ? (
         <div className="flex items-center justify-center py-20">
