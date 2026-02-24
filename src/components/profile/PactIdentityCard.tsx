@@ -37,11 +37,9 @@ export function PactIdentityCard({
   pactName,
   pactMantra,
   pactSymbol,
-  pactColor,
   onPactNameChange,
   onPactMantraChange,
   onPactSymbolChange,
-  onPactColorChange,
   onSave,
   isSaving = false,
 }: PactIdentityCardProps) {
