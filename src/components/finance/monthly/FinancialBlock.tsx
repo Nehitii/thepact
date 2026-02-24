@@ -197,14 +197,31 @@ function CategoryGroup({
                         >
                           <Edit2 className="h-3.5 w-3.5" />
                         </motion.button>
-                        <motion.button
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.9 }}
-                          onClick={() => onDelete(item.id)}
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </motion.button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </motion.button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-gradient-to-br from-[#0d1220] to-[#080c14] border-white/[0.08]">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-white">{t('finance.deleteConfirm.title')}</AlertDialogTitle>
+                              <AlertDialogDescription className="text-slate-400">
+                                {t('finance.deleteConfirm.description', { name: item.name })}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="border-white/[0.1] text-slate-300 hover:bg-white/[0.04]">{t('common.cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => onDelete(item.id)} className="bg-rose-600 hover:bg-rose-500 text-white">
+                                {t('finance.deleteConfirm.confirm')}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </>
                   )}
