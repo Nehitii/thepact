@@ -103,23 +103,27 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
 
   const handleAddExpense = async (name: string, amount: number, category?: string) => {
     if (expenses.length >= 30) {
-      toast.error('Maximum 30 recurring expenses allowed');
+      toast.error(t('finance.recurring.maxReached'));
       return;
     }
     try {
       await addExpense.mutateAsync({ name, amount, category });
-      toast.success('Expense added');
+      toast.success(t('finance.recurring.expenseAdded'));
     } catch (e) {
-      toast.error('Failed to add expense');
+      toast.error(t('finance.recurring.addFailed'));
     }
   };
 
   const handleAddIncome = async (name: string, amount: number, category?: string) => {
+    if (income.length >= 30) {
+      toast.error(t('finance.recurring.maxReached'));
+      return;
+    }
     try {
       await addIncome.mutateAsync({ name, amount, category });
-      toast.success('Income added');
+      toast.success(t('finance.recurring.incomeAdded'));
     } catch (e) {
-      toast.error('Failed to add income');
+      toast.error(t('finance.recurring.addFailed'));
     }
   };
 
