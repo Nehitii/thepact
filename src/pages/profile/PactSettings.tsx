@@ -14,7 +14,6 @@ export default function PactSettings() {
   const [pactName, setPactName] = useState("");
   const [pactMantra, setPactMantra] = useState("");
   const [pactSymbol, setPactSymbol] = useState("flame");
-  const [pactColor, setPactColor] = useState("#f59e0b");
   const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
   const [projectEndDate, setProjectEndDate] = useState<Date | undefined>(undefined);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
