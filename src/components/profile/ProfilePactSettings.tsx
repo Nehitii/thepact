@@ -1,14 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
 import { RanksCard } from "./RanksCard";
 import { PactIdentityCard } from "./PactIdentityCard";
 import { PactOverviewCard } from "./PactOverviewCard";
-import { PactSettingsCard } from "./PactSettingsCard";
+import { DataPanel, SettingsBreadcrumb, CyberSeparator, TerminalLog } from "./settings-ui";
 import { useResetPact } from "@/hooks/useResetPact";
-import { AlertTriangle, BarChart3, Sparkles, Clock, Zap, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
@@ -22,16 +21,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-
-// ---------- TOC config ----------
-const TOC_ITEMS = [
-  { id: "overview", label: "Overview", icon: BarChart3 },
-  { id: "identity", label: "Identity", icon: Sparkles },
-  { id: "timeline", label: "Timeline", icon: Clock },
-  { id: "difficulty", label: "Difficulty", icon: Zap },
-  { id: "ranks", label: "Ranks", icon: Trophy },
-  { id: "danger", label: "Reset", icon: AlertTriangle },
-] as const;
 
 interface ProfilePactSettingsProps {
   userId: string;
@@ -86,69 +75,24 @@ export function ProfilePactSettings({
   const resetPact = useResetPact();
   const [confirmName, setConfirmName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState<string>("overview");
 
-  // ---------- Intersection observer for active section ----------
-  useEffect(() => {
-    const ids = TOC_ITEMS.map((item) => item.id);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        }
-      },
-      { rootMargin: "-20% 0px -70% 0px", threshold: 0 }
-    );
-
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollTo = useCallback((id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  }, []);
+  const [logLines, setLogLines] = useState<{ text: string; type: "ok" | "warn" | "info" }[]>([
+    { text: "PACT SETTINGS LOADED", type: "info" },
+    { text: "ALL MODULES ACTIVE", type: "ok" },
+  ]);
 
   const handleReset = async () => {
     if (!pactId) return;
     await resetPact.mutateAsync(pactId);
     setConfirmName("");
     setDialogOpen(false);
+    setLogLines(prev => [...prev.slice(-3), { text: "⚠ PACT RESET EXECUTED", type: "warn" as const }]);
   };
 
   return (
-    <div className="space-y-6">
-      {/* Sticky Table of Contents */}
-      <nav className="sticky top-0 z-30 -mx-1 px-1 py-2 bg-background/80 backdrop-blur-md border-b border-primary/10 rounded-lg">
-        <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar">
-          {TOC_ITEMS.map(({ id, label, icon: Icon }) => {
-            if (id === "danger" && !pactId) return null;
-            return (
-              <button
-                key={id}
-                onClick={() => scrollTo(id)}
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-rajdhani font-medium whitespace-nowrap transition-all",
-                  activeSection === id
-                    ? "bg-primary/15 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                )}
-              >
-                <Icon className="h-3.5 w-3.5 flex-shrink-0" />
-                {label}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+    <div className="space-y-4">
+      <SettingsBreadcrumb code="PCT.02" />
+      <CyberSeparator />
 
       <PactOverviewCard userId={userId} />
 
@@ -188,57 +132,75 @@ export function ProfilePactSettings({
 
       {/* Danger Zone — Reset Pact */}
       {pactId && (
-        <PactSettingsCard
-          sectionId="danger"
-          icon={<AlertTriangle className="h-5 w-5 text-destructive" />}
-          title="Reset Pact"
-          description="Delete all goals, steps and progress. Your pact identity is kept."
-          defaultCollapsed
+        <DataPanel
+          code="MODULE_06"
+          title="⚠ DANGER ZONE"
+          statusText={<span className="text-destructive">DESTRUCTIVE</span>}
         >
-          <p className="text-sm text-muted-foreground">
-            This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
-          </p>
+          <div className="py-4 space-y-4">
+            <p className="text-[10px] text-destructive/60 font-mono tracking-wider">
+              This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
+            </p>
 
-          <AlertDialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setConfirmName(""); }}>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="w-full">
-                Reset Pact
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset Pact</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-
-              <div className="space-y-2 py-2">
-                <p className="text-sm text-muted-foreground">
-                  Type your pact name to confirm: <strong className="text-foreground">{pactName}</strong>
-                </p>
-                <Input
-                  value={confirmName}
-                  onChange={(e) => setConfirmName(e.target.value)}
-                  placeholder={pactName}
-                  autoComplete="off"
-                />
-              </div>
-
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button
-                  variant="destructive"
-                  disabled={confirmName !== pactName || resetPact.isPending}
-                  onClick={handleReset}
+            <AlertDialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setConfirmName(""); }}>
+              <AlertDialogTrigger asChild>
+                <button
+                  className={cn(
+                    "w-full h-10 font-mono text-[10px] tracking-[0.22em] uppercase",
+                    "bg-red-950/20 border border-red-500/25",
+                    "hover:bg-red-900/25 hover:border-red-400/45",
+                    "text-red-400/70 hover:text-red-400",
+                    "transition-all duration-200 flex items-center justify-center gap-2",
+                  )}
                 >
-                  {resetPact.isPending ? "Resetting…" : "Reset everything"}
-                </Button>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </PactSettingsCard>
+                  <AlertTriangle className="h-3.5 w-3.5" />
+                  [ RESET PACT ]
+                </button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset Pact</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <div className="space-y-2 py-2">
+                  <p className="text-sm text-muted-foreground">
+                    Type your pact name to confirm: <strong className="text-foreground">{pactName}</strong>
+                  </p>
+                  <Input
+                    value={confirmName}
+                    onChange={(e) => setConfirmName(e.target.value)}
+                    placeholder={pactName}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <button
+                    disabled={confirmName !== pactName || resetPact.isPending}
+                    onClick={handleReset}
+                    className={cn(
+                      "h-10 px-4 font-mono text-[10px] tracking-[0.22em] uppercase",
+                      "bg-red-950/40 border border-red-500/40",
+                      "text-red-400 hover:bg-red-900/40",
+                      "disabled:opacity-30 disabled:cursor-not-allowed",
+                      "transition-all duration-200",
+                    )}
+                  >
+                    {resetPact.isPending ? "RESETTING…" : "RESET EVERYTHING"}
+                  </button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </DataPanel>
       )}
+
+      <TerminalLog lines={logLines} />
+      <div className="h-8" />
     </div>
   );
 }
