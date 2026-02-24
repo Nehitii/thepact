@@ -165,7 +165,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
           transition={{ duration: 0.4, delay: 0.1 }}
         >
           <FinancialBlock
-            title="Recurring Expenses"
+            title={t('finance.recurring.expenses')}
             type="expense"
             items={expenses}
             categories={EXPENSE_CATEGORIES}
