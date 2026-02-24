@@ -28,11 +28,9 @@ interface ProfilePactSettingsProps {
   pactName: string;
   pactMantra: string;
   pactSymbol: string;
-  pactColor: string;
   onPactNameChange: (value: string) => void;
   onPactMantraChange: (value: string) => void;
   onPactSymbolChange: (value: string) => void;
-  onPactColorChange: (value: string) => void;
   onSavePactIdentity: () => Promise<void>;
   isSavingIdentity?: boolean;
   projectStartDate: Date | undefined;
@@ -53,11 +51,9 @@ export function ProfilePactSettings({
   pactName,
   pactMantra,
   pactSymbol,
-  pactColor,
   onPactNameChange,
   onPactMantraChange,
   onPactSymbolChange,
-  onPactColorChange,
   onSavePactIdentity,
   isSavingIdentity,
   projectStartDate,
@@ -101,11 +97,9 @@ export function ProfilePactSettings({
         pactName={pactName}
         pactMantra={pactMantra}
         pactSymbol={pactSymbol}
-        pactColor={pactColor}
         onPactNameChange={onPactNameChange}
         onPactMantraChange={onPactMantraChange}
         onPactSymbolChange={onPactSymbolChange}
-        onPactColorChange={onPactColorChange}
         onSave={onSavePactIdentity}
         isSaving={isSavingIdentity}
       />

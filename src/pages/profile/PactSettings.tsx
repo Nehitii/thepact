@@ -14,7 +14,6 @@ export default function PactSettings() {
   const [pactName, setPactName] = useState("");
   const [pactMantra, setPactMantra] = useState("");
   const [pactSymbol, setPactSymbol] = useState("flame");
-  const [pactColor, setPactColor] = useState("#f59e0b");
   const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
   const [projectEndDate, setProjectEndDate] = useState<Date | undefined>(undefined);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
@@ -50,7 +49,6 @@ export default function PactSettings() {
         setPactName(pactData.name || "");
         setPactMantra(pactData.mantra || "");
         setPactSymbol(pactData.symbol || "flame");
-        if (pactData.color) setPactColor(pactData.color);
         if (pactData.project_start_date) setProjectStartDate(new Date(pactData.project_start_date));
         if (pactData.project_end_date) setProjectEndDate(new Date(pactData.project_end_date));
       }
@@ -65,9 +63,8 @@ export default function PactSettings() {
       name: pactName.trim(),
       mantra: pactMantra.trim(),
       symbol: pactSymbol,
-      color: pactColor,
     });
-  }, [updatePact, pactName, pactMantra, pactSymbol, pactColor]);
+  }, [updatePact, pactName, pactMantra, pactSymbol]);
 
   if (!user) return null;
 
@@ -102,8 +99,6 @@ export default function PactSettings() {
         onPactNameChange={setPactName}
         onPactMantraChange={setPactMantra}
         onPactSymbolChange={setPactSymbol}
-        pactColor={pactColor}
-        onPactColorChange={setPactColor}
         onSavePactIdentity={handleSavePactIdentity}
         isSavingIdentity={isUpdating}
         projectStartDate={projectStartDate}
