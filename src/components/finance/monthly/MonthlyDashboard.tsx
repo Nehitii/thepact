@@ -31,6 +31,7 @@ interface MonthlyDashboardProps {
 }
 
 export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   
   const { data: expenses = [], isLoading: expensesLoading } = useRecurringExpenses(user?.id);
