@@ -159,7 +159,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[300] flex flex-col overflow-hidden"
+        className="fixed inset-0 z-[9999] flex flex-col overflow-hidden"
         style={{ background: "rgba(2,3,8,0.96)", backdropFilter: "blur(24px)" }}
       >
         {/* Top bar */}
