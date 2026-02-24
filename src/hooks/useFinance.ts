@@ -235,7 +235,7 @@ export function useFinanceSettings(userId?: string) {
         salary_payment_day: data.salary_payment_day ?? 1,
         project_funding_target: data.project_funding_target ?? 0,
         project_monthly_allocation: data.project_monthly_allocation ?? 0,
-        already_funded: (data as any).already_funded ?? 0,
+        already_funded: data.already_funded ?? 0,
       } as FinanceSettings;
     },
     enabled: !!userId,
