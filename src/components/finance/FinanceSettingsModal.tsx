@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Settings, Calendar, Target, Wallet, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,11 +23,8 @@ interface FinanceSettingsModalProps {
   };
 }
 
-export function FinanceSettingsModal({
-  open,
-  onOpenChange,
-  currentSettings,
-}: FinanceSettingsModalProps) {
+export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: FinanceSettingsModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
   const updateSettings = useUpdateFinanceSettings();
@@ -56,10 +54,7 @@ export function FinanceSettingsModal({
       const existingProjectAllocation = expenses.find(e => e.name === 'Project Allocation');
       
       if (addToRecurring && allocationAmount > 0 && !existingProjectAllocation) {
-        await addExpense.mutateAsync({
-          name: 'Project Allocation',
-          amount: allocationAmount,
-        });
+        await addExpense.mutateAsync({ name: 'Project Allocation', amount: allocationAmount });
       }
 
       await updateSettings.mutateAsync({
@@ -69,10 +64,10 @@ export function FinanceSettingsModal({
         already_funded: useCustomTarget ? 0 : (parseFloat(alreadyFunded) || 0),
       });
       
-      toast.success('Settings saved');
+      toast.success(t('finance.settings.saved'));
       onOpenChange(false);
     } catch (e) {
-      toast.error('Failed to save settings');
+      toast.error(t('finance.settings.saveFailed'));
     }
   };
 
@@ -84,153 +79,71 @@ export function FinanceSettingsModal({
             <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
               <Settings className="h-5 w-5 text-primary" />
             </div>
-            Finance Settings
+            {t('finance.settings.title')}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 pt-4">
-          {/* Salary Payment Day */}
           <div className="space-y-3">
             <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-slate-400" />
-              Salary Payment Day
+              <Calendar className="h-4 w-4 text-slate-400" />{t('finance.settings.paymentDay')}
             </Label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={salaryDay}
-              onChange={(e) => {
-                const val = e.target.value.replace(/[^0-9]/g, '');
-                const num = parseInt(val);
-                if (val === '' || (num >= 1 && num <= 31)) {
-                  setSalaryDay(val);
-                }
-              }}
-              className="finance-input h-12"
-              placeholder="1"
-            />
-            <p className="text-xs text-slate-500">
-              Day of the month when you receive your salary (1-31)
-            </p>
+            <Input type="text" inputMode="numeric" value={salaryDay} onChange={(e) => { const val = e.target.value.replace(/[^0-9]/g, ''); const num = parseInt(val); if (val === '' || (num >= 1 && num <= 31)) setSalaryDay(val); }} className="finance-input h-12" placeholder="1" />
+            <p className="text-xs text-slate-500">{t('finance.settings.paymentDayHint')}</p>
           </div>
 
-          {/* Project Funding Target */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
-                <Target className="h-4 w-4 text-slate-400" />
-                Project Funding Target
+                <Target className="h-4 w-4 text-slate-400" />{t('finance.settings.fundingTarget')}
               </Label>
               <div className="flex items-center gap-2">
-                <Checkbox
-                  id="customTarget"
-                  checked={useCustomTarget}
-                  onCheckedChange={(checked) => setUseCustomTarget(checked === true)}
-                  className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                />
-                <label htmlFor="customTarget" className="text-sm text-slate-400 cursor-pointer">
-                  Custom
-                </label>
+                <Checkbox id="customTarget" checked={useCustomTarget} onCheckedChange={(checked) => setUseCustomTarget(checked === true)} className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
+                <label htmlFor="customTarget" className="text-sm text-slate-400 cursor-pointer">{t('finance.overview.custom')}</label>
               </div>
             </div>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                {getCurrencySymbol(currency)}
-              </span>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={fundingTarget}
-                onChange={(e) => setFundingTarget(e.target.value.replace(/[^0-9.]/g, ''))}
-                disabled={!useCustomTarget}
-                className={`pl-7 finance-input h-12 ${!useCustomTarget ? 'opacity-50 cursor-not-allowed' : ''}`}
-                placeholder="0"
-              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol(currency)}</span>
+              <Input type="text" inputMode="decimal" value={fundingTarget} onChange={(e) => setFundingTarget(e.target.value.replace(/[^0-9.]/g, ''))} disabled={!useCustomTarget} className={`pl-7 finance-input h-12 ${!useCustomTarget ? 'opacity-50 cursor-not-allowed' : ''}`} placeholder="0" />
             </div>
-            <p className="text-xs text-slate-500">
-              {useCustomTarget 
-                ? 'Enter a custom funding target for your project'
-                : 'Uses total from goal estimated costs'
-              }
-            </p>
+            <p className="text-xs text-slate-500">{useCustomTarget ? t('finance.settings.fundingTargetHint') : t('finance.settings.fundingTargetDefault')}</p>
           </div>
 
-          {/* Monthly Allocation */}
           <div className="space-y-3">
             <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
-              <Wallet className="h-4 w-4 text-slate-400" />
-              Monthly Allocation
-              <span className="text-xs text-slate-500">(optional)</span>
+              <Wallet className="h-4 w-4 text-slate-400" />{t('finance.settings.monthlyAllocation')}
+              <span className="text-xs text-slate-500">({t('common.optional')})</span>
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                {getCurrencySymbol(currency)}
-              </span>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={monthlyAllocation}
-                onChange={(e) => setMonthlyAllocation(e.target.value.replace(/[^0-9.]/g, ''))}
-                className="pl-7 finance-input h-12"
-                placeholder="0"
-              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol(currency)}</span>
+              <Input type="text" inputMode="decimal" value={monthlyAllocation} onChange={(e) => setMonthlyAllocation(e.target.value.replace(/[^0-9.]/g, ''))} className="pl-7 finance-input h-12" placeholder="0" />
             </div>
             {parseFloat(monthlyAllocation) > 0 && (
               <div className="flex items-center gap-2">
-                <Checkbox
-                  id="addToRecurring"
-                  checked={addToRecurring}
-                  onCheckedChange={(checked) => setAddToRecurring(checked === true)}
-                  className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                />
-                <label htmlFor="addToRecurring" className="text-sm text-slate-400 cursor-pointer">
-                  Add to recurring expenses automatically
-                </label>
+                <Checkbox id="addToRecurring" checked={addToRecurring} onCheckedChange={(checked) => setAddToRecurring(checked === true)} className="border-white/30 data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
+                <label htmlFor="addToRecurring" className="text-sm text-slate-400 cursor-pointer">{t('finance.settings.addToRecurring')}</label>
               </div>
             )}
           </div>
 
-          {/* Already Funded - only show when NOT in custom mode */}
           {!useCustomTarget && (
             <div className="space-y-3">
               <Label className="text-sm text-slate-300 font-medium flex items-center gap-2">
-                <DollarSign className="h-4 w-4 text-slate-400" />
-                Already Funded
-                <span className="text-xs text-slate-500">(optional)</span>
+                <DollarSign className="h-4 w-4 text-slate-400" />{t('finance.settings.alreadyFunded')}
+                <span className="text-xs text-slate-500">({t('common.optional')})</span>
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                  {getCurrencySymbol(currency)}
-                </span>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={alreadyFunded}
-                  onChange={(e) => setAlreadyFunded(e.target.value.replace(/[^0-9.]/g, ''))}
-                  className="pl-7 finance-input h-12"
-                  placeholder="0"
-                />
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{getCurrencySymbol(currency)}</span>
+                <Input type="text" inputMode="decimal" value={alreadyFunded} onChange={(e) => setAlreadyFunded(e.target.value.replace(/[^0-9.]/g, ''))} className="pl-7 finance-input h-12" placeholder="0" />
               </div>
-              <p className="text-xs text-slate-500">
-                Amount you've already set aside for this project
-              </p>
+              <p className="text-xs text-slate-500">{t('finance.settings.alreadyFundedHint')}</p>
             </div>
           )}
 
           <div className="flex gap-4 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] hover:text-white text-base"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={updateSettings.isPending}
-              className="flex-1 h-12 text-base"
-            >
-              {updateSettings.isPending ? 'Saving...' : 'Save Settings'}
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] hover:text-white text-base">{t('common.cancel')}</Button>
+            <Button onClick={handleSave} disabled={updateSettings.isPending} className="flex-1 h-12 text-base">
+              {updateSettings.isPending ? t('common.saving') : t('finance.settings.saveSettings')}
             </Button>
           </div>
         </div>
