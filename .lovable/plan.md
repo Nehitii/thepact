@@ -1,105 +1,124 @@
 
-# Pact Settings -- Expert Audit & Improvement Plan
 
-## Current Architecture
+# Audit complet du module /finance
 
-The Pact Settings page (`/profile/pact-settings`) is a single, long vertical scroll of 5 cards plus a Danger Zone, all rendered at once inside `ProfilePactSettings`:
+## Architecture actuelle
 
-1. **Pact Overview** (read-only stats)
-2. **Pact Identity** (name, mantra, symbol, color + save button)
-3. **Project Timeline** (start/end dates + its own save button)
-4. **Custom Difficulty** (name, color, toggle + its own save button)
-5. **Ranks** (full CRUD list + editor modal)
-6. **Reset Pact** (danger zone with confirmation dialog)
+Le module Finance est organise en 3 onglets (Overview, Monthly, Projections) avec un design neumorphique premium. Il repose sur des donnees stockees dans 3 tables backend (`recurring_expenses`, `recurring_income`, `monthly_finance_validations`) plus des champs dans `profiles` pour les settings.
 
 ---
 
-## Bugs Found
+## 1. Points forts
 
-### BUG 1: Inconsistent Supabase client imports
-- `PactSettings.tsx` imports from `@/lib/supabase`
-- `ProjectTimelineCard.tsx` imports from `@/lib/supabase`
-- `CustomDifficultyCard.tsx` imports from `@/lib/supabase`
-- `RanksCard.tsx` imports from `@/lib/supabase`
-- `usePactMutation.ts` imports from `@/lib/supabase`
-- `useResetPact.ts` imports from `@/integrations/supabase/client`
-
-This inconsistency could cause two separate client instances with different auth sessions in edge cases. All should use `@/integrations/supabase/client`.
-
-### BUG 2: State lifted to page but not synced after save
-`PactSettings.tsx` loads pact data into local `useState` on mount. After saving Timeline or Custom Difficulty, the database is updated but the React Query cache for `["pact"]` is **not** invalidated. If the user navigates away and back, they see fresh data -- but other components reading from the cache (Home dashboard, sidebar) still show stale data until the `staleTime` expires.
-
-- `ProjectTimelineCard` does a raw `supabase.update()` without invalidating any query cache.
-- `CustomDifficultyCard` does a raw `supabase.update()` on `profiles` without invalidating any query cache.
-- Only `PactIdentityCard` (via `usePactMutation`) properly invalidates the `["pact"]` cache.
-
-### BUG 3: `confirm()` used for rank deletion
-`RanksCard.tsx` line 59 uses `window.confirm()` for rank deletion -- a native browser dialog that breaks the app's visual language and can't be styled or translated. Every other destructive action uses `AlertDialog`.
-
-### BUG 4: Timeline saves without checking pactId first
-If `pactId` is null (user hasn't completed onboarding), `ProjectTimelineCard` shows a toast error, but `CustomDifficultyCard` doesn't check for a missing userId and could silently fail.
-
-### BUG 5: Ranks editor closes before confirming save success
-In `RankEditor.tsx`, `handleSave` calls `onSave(editedRank)` then immediately calls `onClose()` in the `try` block. If the save fails inside `onSave` (which shows a toast), the editor still closes, making the user think it succeeded.
+- **Architecture bien structuree** : hooks dedies (`useFinance.ts`), types partages (`types/finance.ts`), categories centralisees (`financeCategories.ts`)
+- **Systeme de categories robuste** : detection automatique par mots-cles (FR + EN), groupement par categorie, support i18n
+- **Validation mensuelle guidee** : flow en 4 etapes (Expenses > Income > Extras > Confirm) avec modal dedié
+- **Composants modulaires** : `FinancialBlock`, `MonthlyBalanceHero`, `MonthlyHistory` bien decouplés
+- **Projections visuelles** : graphiques Area/Pie via Recharts avec tooltips personnalisés
+- **Limite de securite** : max 30 recurring expenses pour eviter les abus
+- **RLS correctement appliquee** sur toutes les tables
 
 ---
 
-## UX Issues
+## 2. Problemes identifies
 
-### UX 1: Three separate save buttons -- cognitive overload
-Identity, Timeline, and Custom Difficulty each have their own "Save" button. Users can edit all three sections but forget to save one. There's no "unsaved changes" indicator or warning when navigating away.
+### 2.1 Code mort / duplication
 
-### UX 2: No visual hierarchy or navigation
-All 6 sections are stacked vertically with equal visual weight. On a complex page like this, users scroll up and down searching for what they want. There's no table of contents, no section anchors, and no collapsible sections.
+- **`MonthlySection.tsx`** (~476 lignes) : composant legacy qui redefinit ses propres `EXPENSE_CATEGORIES` et `INCOME_CATEGORIES` en dur, sans utiliser le systeme centralise de `financeCategories.ts`. Il est exporte dans `index.ts` mais n'est utilise nulle part dans le flow actuel (remplace par `MonthlyDashboard`). **A supprimer.**
+- **`ProjectionsChart.tsx`** (~267 lignes) : composant legacy avec un style "Orbitron/Rajdhani" qui ne correspond plus au design neumorphique actuel. Il est exporte dans `index.ts` mais remplace par `ProjectionsPanel.tsx`. **A supprimer.**
+- **Types dupliques** : `RecurringExpense`, `RecurringIncome`, `MonthlyValidation`, `FinanceSettings` sont definis a la fois dans `useFinance.ts` ET dans `types/finance.ts`. Le hook devrait importer depuis les types partages.
 
-### UX 3: Ranks section is extremely dense
-The Ranks card contains a scrollable list, a current-rank display with progress bar, a max-XP reference, an "Add" button, and opens a full modal editor with 3 tabs. This is an entire sub-page crammed into a card.
+### 2.2 Internationalisation incomplete
 
-### UX 4: No loading state on initial page load
-`PactSettings.tsx` loads data via `useEffect` + raw Supabase calls but shows no loading spinner while `pactId` is null. The cards render with empty defaults, then flash to real data.
+- La page `Finance.tsx` a de nombreuses chaines en dur : "Finance Dashboard", "Back", "Track your project financing...", "Settings", "Overview", "Monthly", "Projections"
+- `FinanceOverviewCard.tsx` : "Project Financing", "Budget overview", "Custom Target", "Total Target", "Financed", "Remaining", "Progress" -- tous en dur
+- `SmartFinancingPanel.tsx` : "Smart Financing", "Amount to Finance", "Existing Balance Available", "Payment Duration", "Monthly Payment", "On track to meet your goal" -- en dur
+- `ProjectionsPanel.tsx` : "Savings Rate", "Monthly Net", "Yearly", "To Goal", "Balance Evolution", "Expenses", "By category" -- en dur
+- `MonthlyValidationPanel.tsx` : "Expenses Paid", "Income Received", "Validate This Month" -- en dur
+- `MonthlyHistory.tsx` : "Monthly History", "No history yet" -- en dur
+- `ValidationFlowModal.tsx` : "Monthly Validation", "Review Recurring Expenses", "All expenses paid correctly" -- en dur
+- Les cles i18n existent dans `en.json` mais ne sont **jamais utilisees** par les composants actuels
 
----
+### 2.3 Design & UX
 
-## Proposed Improvements
+- **Aucune traduction FR** : les labels du module Finance ne sont pas traduits dans `fr.json`
+- **Le bouton "Edit this month"** dans `MonthlyHistory` est un `<button>` qui ne fait rien (pas de `onClick` handler)
+- **Pas de confirmation de suppression** pour les recurring items (expenses/income) -- un tap accidentel supprime sans undo
+- **Pas d'etat vide** sur l'onglet Overview quand aucun objectif n'a de cout estime et aucun custom target n'est defini
+- **`already_funded`** est cast avec `(data as any)` dans `useFinanceSettings` -- indicateur que le type genere ne reconnait pas ce champ
 
-### 1. Unify Supabase imports
-Replace all `@/lib/supabase` imports in Pact Settings files with `@/integrations/supabase/client`.
+### 2.4 Logique metier
 
-**Files:** `PactSettings.tsx`, `ProjectTimelineCard.tsx`, `CustomDifficultyCard.tsx`, `RanksCard.tsx`, `usePactMutation.ts`
-
-### 2. Add cache invalidation to Timeline and Custom Difficulty saves
-After a successful `supabase.update()`, call `queryClient.invalidateQueries()` for the relevant query keys (`["pact"]` for timeline, `["profile"]` for custom difficulty) so the rest of the app stays in sync.
-
-### 3. Replace `window.confirm()` with `AlertDialog` in RanksCard
-Use the same `AlertDialog` pattern from the Reset Pact section for rank deletion.
-
-### 4. Fix RankEditor close-on-error
-Move `onClose()` to only execute after a confirmed successful save (inside the `onSave` callback's resolution, not in a `try` block).
-
-### 5. Add a loading state to PactSettings page
-Show a `Loader2` spinner while the initial data is being fetched, matching the pattern used in `Profile.tsx`.
-
-### 6. Add an "unsaved changes" dot indicator
-Add a small visual indicator (colored dot) next to each section's save button when the user has made changes that haven't been saved yet. This is lightweight and doesn't require restructuring.
-
-### 7. Consolidate save buttons (optional, lower priority)
-Consider merging Identity + Timeline into a single "Pact Identity & Timeline" card with one save button, since they both write to the `pacts` table. This reduces the number of independent save actions from 3 to 2.
+- **Projection cumulative incorrecte** : dans `ProjectionsPanel`, la projection est `monthlyNetBalance * (i+1)` ce qui est un calcul purement lineaire sans tenir compte des variations historiques validees
+- **Sparkline avec valeurs 0** pour les mois passes non valides : affiche des donnees trompeuses au lieu de `null`
+- **`existingBalance`** dans `SmartFinancingPanel` est un etat local non persiste -- si l'utilisateur quitte et revient, la valeur est perdue
+- **Pas de limite sur recurring income** (contrairement aux 30 pour expenses)
 
 ---
 
-## Technical Details
+## 3. Axes d'amelioration proposes
 
-### Files to modify:
-| File | Changes |
-|------|---------|
-| `src/pages/profile/PactSettings.tsx` | Add loading state, fix Supabase import |
-| `src/components/profile/ProjectTimelineCard.tsx` | Add cache invalidation, fix import |
-| `src/components/profile/CustomDifficultyCard.tsx` | Add cache invalidation, fix import |
-| `src/components/profile/RanksCard.tsx` | Replace `confirm()` with AlertDialog, fix import |
-| `src/components/ranks/RankEditor.tsx` | Fix close-on-error behavior |
-| `src/hooks/usePactMutation.ts` | Fix Supabase import |
+### Priorite haute -- Nettoyage technique
 
-### Estimated effort: ~45 minutes total
-- Bug fixes (1-5): ~25 minutes
-- UX improvements (5-6): ~15 minutes
-- Optional consolidation (7): ~5 minutes
+| Action | Impact |
+|--------|--------|
+| Supprimer `MonthlySection.tsx` et `ProjectionsChart.tsx` | -740 lignes de code mort |
+| Deduplicar les types : faire importer `useFinance.ts` depuis `types/finance.ts` | Coherence, maintenance |
+| Supprimer le re-export de ces composants dans `index.ts` | Proprete |
+| Corriger le cast `(data as any).already_funded` | Type safety |
+
+### Priorite haute -- i18n
+
+| Action | Impact |
+|--------|--------|
+| Connecter tous les composants Finance aux cles `t('finance.xxx')` existantes | App bilingue coherente |
+| Ajouter les traductions FR manquantes dans `fr.json` | Experience francophone |
+
+### Priorite moyenne -- UX
+
+| Action | Impact |
+|--------|--------|
+| Ajouter un dialog de confirmation avant suppression d'un recurring item | Eviter les pertes accidentelles |
+| Ajouter un etat vide (empty state) sur l'onglet Overview | Orientation utilisateur |
+| Rendre le bouton "Edit this month" dans MonthlyHistory fonctionnel | Feature broken |
+| Persister `existingBalance` du SmartFinancingPanel dans les settings profil | Persistance |
+
+### Priorite basse -- Ameliorations fonctionnelles
+
+| Action | Impact |
+|--------|--------|
+| Ajouter une limite de 30 sur recurring income (parite avec expenses) | Consistance |
+| Ameliorer les projections en integrant les donnees validees passees dans le calcul | Precision |
+| Remplacer les `balance: 0` par `null` pour les mois non valides dans le sparkline | Honnetete des donnees |
+| Ajouter un export CSV/PDF des donnees financieres | Portabilite |
+| Ajouter des alertes/notifications quand le budget depasse un seuil | Proactivite |
+
+---
+
+## 4. Detail technique pour implementation
+
+### Suppression du code mort
+
+Fichiers a supprimer :
+- `src/components/finance/MonthlySection.tsx`
+- `src/components/finance/ProjectionsChart.tsx`
+- `src/components/finance/MonthlyValidationForm.tsx` (si existant et non utilise)
+
+Mise a jour de `src/components/finance/index.ts` pour retirer les exports correspondants.
+
+### Deduplication des types
+
+Dans `src/hooks/useFinance.ts`, remplacer les 4 interfaces locales par :
+
+```text
+import type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings } from '@/types/finance';
+```
+
+### i18n
+
+Ajouter `useTranslation()` dans chaque composant Finance et remplacer les chaines en dur par les cles deja definies dans `en.json` (section `finance.*`). Ajouter les equivalents dans `fr.json`.
+
+### Dialog de confirmation de suppression
+
+Utiliser le composant `AlertDialog` de Radix deja installe pour wrapper les boutons de suppression dans `FinancialBlock.tsx`.
+
