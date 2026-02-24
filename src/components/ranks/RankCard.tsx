@@ -1,38 +1,21 @@
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Shield, Trophy } from "lucide-react";
+import type { Rank } from "@/types/ranks";
 
-// Définition de l'interface Rank si elle n'est pas importée depuis un fichier de types global
-export interface Rank {
-  id: string;
-  name: string;
-  min_points: number;
-  max_points?: number | null;
-  image_url?: string | null;
-  logo_url?: string | null;
-  background_url?: string | null;
-  background_opacity?: number | null;
-  frame_color?: string | null;
-  glow_color?: string | null;
-  quote?: string | null;
-}
+// Re-export for convenience
+export type { Rank };
 
 // --- RANK BADGE ---
-// C'est ici qu'on corrige l'erreur en ajoutant la prop 'size'
 export interface RankBadgeProps {
-  rank: {
-    name: string;
-    image_url?: string | null;
-    min_points?: number;
-  };
+  rank: Rank;
   currentXP?: number;
   nextRankMinXP?: number;
-  size?: "sm" | "md" | "lg"; // Ajout de la taille
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
-export function RankBadge({ rank, currentXP, nextRankMinXP, size = "md", className }: RankBadgeProps) {
-  // Configuration des tailles
+export function RankBadge({ rank, size = "md", className }: RankBadgeProps) {
   const sizeClasses = {
     sm: "h-8 w-8 text-[10px]",
     md: "h-12 w-12 text-xs",
@@ -45,25 +28,28 @@ export function RankBadge({ rank, currentXP, nextRankMinXP, size = "md", classNa
     lg: "h-8 w-8",
   };
 
+  const frameColor = rank.frame_color || "#5bb4ff";
+  const glowColor = rank.glow_color || "rgba(91,180,255,0.5)";
+
   return (
     <div className={cn("flex flex-col items-center gap-1", className)}>
       <div
         className={cn(
-          "relative flex items-center justify-center rounded-full bg-black/40 border border-white/10 backdrop-blur-sm shadow-[0_0_15px_rgba(0,0,0,0.3)]",
+          "relative flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm",
           sizeClasses[size],
         )}
+        style={{
+          border: `1.5px solid ${frameColor}`,
+          boxShadow: `0 0 15px ${glowColor}`,
+        }}
       >
-        {rank.image_url ? (
-          <img src={rank.image_url} alt={rank.name} className={cn("object-contain", iconSize[size])} />
+        {rank.logo_url ? (
+          <img src={rank.logo_url} alt={rank.name} className={cn("object-contain", iconSize[size])} />
         ) : (
-          <Shield className={cn("text-primary", iconSize[size])} />
+          <Shield className={cn(iconSize[size])} style={{ color: frameColor }} />
         )}
-
-        {/* Petit indicateur de progression circulaire optionnel si on voulait aller plus loin */}
-        <div className="absolute inset-0 rounded-full border border-primary/20" />
       </div>
 
-      {/* N'afficher le nom que si ce n'est pas la taille "sm" pour éviter la surcharge */}
       {size !== "sm" && (
         <span className="text-xs font-rajdhani text-muted-foreground uppercase tracking-wider font-semibold">
           {rank.name}
@@ -73,7 +59,7 @@ export function RankBadge({ rank, currentXP, nextRankMinXP, size = "md", classNa
   );
 }
 
-// --- RANK CARD (Composant Principal) ---
+// --- RANK CARD ---
 export interface RankCardProps {
   rank?: Rank;
   currentRank?: Rank;
@@ -88,26 +74,18 @@ export interface RankCardProps {
 
 export function RankCard({ rank, currentRank: currentRankProp, nextRank, currentXP, nextRankMinXP, totalMaxXP, isActive, size = "md", className }: RankCardProps) {
   const currentRank = rank || currentRankProp!;
-  // Calcul de la progression
   const currentRankMin = currentRank.min_points;
   const nextRankMin = nextRankMinXP || nextRank?.min_points || currentRankMin * 1.5;
 
-  // XP gagnée DANS ce rang (ex: j'ai 1500xp, rang commence à 1000, j'ai fait 500 dans ce rang)
   const xpInRank = Math.max(0, currentXP - currentRankMin);
-
-  // XP totale nécessaire pour passer ce rang
   const xpNeededForNext = Math.max(1, nextRankMin - currentRankMin);
-
-  // Pourcentage (0 à 100)
   const progressPercent = Math.min(100, Math.max(0, (xpInRank / xpNeededForNext) * 100));
 
   return (
     <div className={cn("relative overflow-hidden rounded-xl bg-card border border-border/50 p-4", className)}>
       <div className="flex items-center gap-4">
-        {/* Badge Actuel */}
         <RankBadge rank={currentRank} size="md" />
 
-        {/* Barre de progression centrale */}
         <div className="flex-1 space-y-2">
           <div className="flex justify-between items-end">
             <div className="flex flex-col">
@@ -134,7 +112,6 @@ export function RankCard({ rank, currentRank: currentRankProp, nextRank, current
           </div>
         </div>
 
-        {/* Badge Suivant (Grisé ou en trophée) */}
         <div className="hidden sm:flex flex-col items-center justify-center opacity-50">
           {nextRank ? (
             <RankBadge rank={nextRank} size="sm" />

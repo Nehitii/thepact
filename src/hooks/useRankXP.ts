@@ -1,19 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useGoals } from "./useGoals";
+import type { Rank } from "@/types/ranks";
 
-export interface Rank {
-  id: string;
-  min_points: number;
-  max_points?: number;
-  name: string;
-  logo_url?: string | null;
-  background_url?: string | null;
-  background_opacity?: number;
-  frame_color?: string;
-  glow_color?: string;
-  quote?: string | null;
-}
+export type { Rank };
 
 export interface RankXPData {
   ranks: Rank[];
@@ -45,10 +35,8 @@ export function useRankXP(userId: string | undefined, pactId: string | undefined
       if (error) throw error;
       const ranks: Rank[] = ranksData || [];
 
-      // Global Max XP = simple sum of all goal potential_score values (no transformations)
       const totalMaxXP = goals?.reduce((sum, g) => sum + (g.potential_score || 0), 0) || 0;
 
-      // Current XP from completed goals
       let currentXP = 0;
       if (goals) {
         for (const goal of goals) {
@@ -73,9 +61,7 @@ export function useRankXP(userId: string | undefined, pactId: string | undefined
         } else break;
       }
 
-      if (!currentRank && ranks.length === 0) {
-        currentRank = { id: "default", min_points: 0, name: "Initiate", frame_color: "#5bb4ff", glow_color: "rgba(91,180,255,0.5)" };
-      }
+      // No fallback — if no ranks defined, currentRank stays null
 
       const currentRankMin = currentRank?.min_points || 0;
       const nextRankMin = nextRank?.min_points || totalMaxXP || currentRankMin + 1000;
