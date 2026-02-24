@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { JournalEditor } from "./JournalEditor";
 import { HUDCorner } from "./JournalDecorations";
