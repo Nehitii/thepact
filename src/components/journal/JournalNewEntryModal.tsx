@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { JournalEditor } from "./JournalEditor";
 import { HUDCorner } from "./JournalDecorations";
@@ -153,7 +154,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
@@ -568,6 +569,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
           )}
         </div>
       </motion.div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
