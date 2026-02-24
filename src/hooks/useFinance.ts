@@ -1,50 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings } from '@/types/finance';
 
-export interface RecurringExpense {
-  id: string;
-  user_id: string;
-  name: string;
-  amount: number;
-  is_active: boolean;
-  category?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface RecurringIncome {
-  id: string;
-  user_id: string;
-  name: string;
-  amount: number;
-  is_active: boolean;
-  category?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface MonthlyValidation {
-  id: string;
-  user_id: string;
-  month: string;
-  confirmed_expenses: boolean;
-  confirmed_income: boolean;
-  unplanned_expenses: number;
-  unplanned_income: number;
-  actual_total_income: number;
-  actual_total_expenses: number;
-  validated_at: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface FinanceSettings {
-  salary_payment_day: number;
-  project_funding_target: number;
-  project_monthly_allocation: number;
-  already_funded: number;
-}
+export type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings };
 
 // Recurring Expenses hooks
 export function useRecurringExpenses(userId?: string) {
@@ -276,7 +235,7 @@ export function useFinanceSettings(userId?: string) {
         salary_payment_day: data.salary_payment_day ?? 1,
         project_funding_target: data.project_funding_target ?? 0,
         project_monthly_allocation: data.project_monthly_allocation ?? 0,
-        already_funded: (data as any).already_funded ?? 0,
+        already_funded: data.already_funded ?? 0,
       } as FinanceSettings;
     },
     enabled: !!userId,

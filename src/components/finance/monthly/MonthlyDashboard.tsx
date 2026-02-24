@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -30,6 +31,7 @@ interface MonthlyDashboardProps {
 }
 
 export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   
   const { data: expenses = [], isLoading: expensesLoading } = useRecurringExpenses(user?.id);
@@ -102,41 +104,45 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
 
   const handleAddExpense = async (name: string, amount: number, category?: string) => {
     if (expenses.length >= 30) {
-      toast.error('Maximum 30 recurring expenses allowed');
+      toast.error(t('finance.recurring.maxReached'));
       return;
     }
     try {
       await addExpense.mutateAsync({ name, amount, category });
-      toast.success('Expense added');
+      toast.success(t('finance.recurring.expenseAdded'));
     } catch (e) {
-      toast.error('Failed to add expense');
+      toast.error(t('finance.recurring.addFailed'));
     }
   };
 
   const handleAddIncome = async (name: string, amount: number, category?: string) => {
+    if (income.length >= 30) {
+      toast.error(t('finance.recurring.maxReached'));
+      return;
+    }
     try {
       await addIncome.mutateAsync({ name, amount, category });
-      toast.success('Income added');
+      toast.success(t('finance.recurring.incomeAdded'));
     } catch (e) {
-      toast.error('Failed to add income');
+      toast.error(t('finance.recurring.addFailed'));
     }
   };
 
   const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string) => {
     try {
       await updateExpense.mutateAsync({ id, name, amount, category });
-      toast.success('Expense updated');
+      toast.success(t('finance.recurring.expenseUpdated'));
     } catch (e) {
-      toast.error('Failed to update expense');
+      toast.error(t('finance.recurring.updateFailed'));
     }
   };
 
   const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string) => {
     try {
       await updateIncome.mutateAsync({ id, name, amount, category });
-      toast.success('Income updated');
+      toast.success(t('finance.recurring.incomeUpdated'));
     } catch (e) {
-      toast.error('Failed to update income');
+      toast.error(t('finance.recurring.updateFailed'));
     }
   };
 
@@ -159,7 +165,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
           transition={{ duration: 0.4, delay: 0.1 }}
         >
           <FinancialBlock
-            title="Recurring Expenses"
+            title={t('finance.recurring.expenses')}
             type="expense"
             items={expenses}
             categories={EXPENSE_CATEGORIES}
@@ -178,7 +184,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
           transition={{ duration: 0.4, delay: 0.15 }}
         >
           <FinancialBlock
-            title="Recurring Income"
+            title={t('finance.recurring.income')}
             type="income"
             items={income}
             categories={INCOME_CATEGORIES}
