@@ -99,8 +99,6 @@ export default function PactSettings() {
         onPactNameChange={setPactName}
         onPactMantraChange={setPactMantra}
         onPactSymbolChange={setPactSymbol}
-        pactColor={pactColor}
-        onPactColorChange={setPactColor}
         onSavePactIdentity={handleSavePactIdentity}
         isSavingIdentity={isUpdating}
         projectStartDate={projectStartDate}

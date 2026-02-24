@@ -95,11 +95,9 @@ export function ProfilePactSettings({
         pactName={pactName}
         pactMantra={pactMantra}
         pactSymbol={pactSymbol}
-        pactColor={pactColor}
         onPactNameChange={onPactNameChange}
         onPactMantraChange={onPactMantraChange}
         onPactSymbolChange={onPactSymbolChange}
-        onPactColorChange={onPactColorChange}
         onSave={onSavePactIdentity}
         isSaving={isSavingIdentity}
       />

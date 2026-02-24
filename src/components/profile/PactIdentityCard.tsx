@@ -128,22 +128,6 @@ export function PactIdentityCard({
           </div>
         </div>
 
-        {/* Pact Color */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5">
-            <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold flex items-center gap-1.5">
-              <Palette className="h-3 w-3 text-primary/60" />Pact Color
-            </Label>
-          </div>
-          <div className="flex items-center gap-3">
-            <label className="relative w-12 h-12 border border-primary/20 overflow-hidden flex-shrink-0 cursor-pointer group transition-all duration-200 hover:border-primary/40 active:scale-95" style={{ backgroundColor: pactColor }}>
-              <input type="color" value={pactColor} onChange={(e) => onPactColorChange(e.target.value)} className="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 cursor-pointer opacity-0" />
-            </label>
-            <Input type="text" value={pactColor} onChange={(e) => onPactColorChange(e.target.value)} placeholder="#f59e0b" maxLength={7} className={cn(CY_INPUT, "flex-1")} />
-          </div>
-        </div>
-
         {/* Save */}
         <button
           onClick={handleSave}
