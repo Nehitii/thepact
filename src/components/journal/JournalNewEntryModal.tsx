@@ -154,7 +154,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       <motion.div
         initial={{ opacity: 0 }}
