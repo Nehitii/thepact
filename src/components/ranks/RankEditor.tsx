@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { RankCard, type Rank } from "./RankCard";
+import { RankCard } from "./RankCard";
+import type { Rank } from "@/types/ranks";
 import { 
   Palette, 
   Image as ImageIcon, 
@@ -45,13 +46,11 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
   const [activeTab, setActiveTab] = useState<"basics" | "visuals" | "style">("basics");
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Reset state when rank prop changes
   useEffect(() => {
     setEditedRank(rank);
     setValidationError(null);
   }, [rank]);
 
-  // Validate thresholds against global max XP
   const validateThresholds = (rankToValidate: Rank): string | null => {
     if (globalMaxXP > 0) {
       if (rankToValidate.min_points > globalMaxXP) {
@@ -77,7 +76,6 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
     setSaving(true);
     try {
       await onSave(editedRank);
-      // Only close after successful save
       onClose();
     } catch {
       // onSave handles its own error toasts; keep editor open
@@ -89,7 +87,6 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
   const updateRank = (updates: Partial<Rank>) => {
     const newRank = { ...editedRank, ...updates };
     setEditedRank(newRank);
-    // Clear validation error when user makes changes
     setValidationError(null);
   };
 
@@ -129,7 +126,6 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
 
             {/* Right: Editor */}
             <div className="space-y-4">
-              {/* Tab navigation */}
               <div className="flex gap-1 p-1 bg-primary/5 rounded-lg">
                 {tabs.map(tab => (
                   <button
@@ -148,54 +144,25 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                 ))}
               </div>
 
-              {/* Tab content */}
               <div className="space-y-4">
                 {activeTab === "basics" && (
                   <>
                     <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                        Rank Name
-                      </Label>
-                      <Input
-                        value={editedRank.name}
-                        onChange={(e) => updateRank({ name: e.target.value })}
-                        placeholder="e.g. Celestial Architect"
-                        maxLength={40}
-                        className="bg-card/50 border-primary/30 text-primary font-orbitron"
-                      />
+                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Rank Name</Label>
+                      <Input value={editedRank.name} onChange={(e) => updateRank({ name: e.target.value })} placeholder="e.g. Celestial Architect" maxLength={40} className="bg-card/50 border-primary/30 text-primary font-orbitron" />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                          Min XP Threshold
-                        </Label>
-                        <Input
-                          type="number"
-                          value={editedRank.min_points}
-                          onChange={(e) => updateRank({ min_points: parseInt(e.target.value) || 0 })}
-                          min={0}
-                          max={globalMaxXP > 0 ? globalMaxXP : undefined}
-                          className="bg-card/50 border-primary/30 text-primary"
-                        />
+                        <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Min XP Threshold</Label>
+                        <Input type="number" value={editedRank.min_points} onChange={(e) => updateRank({ min_points: parseInt(e.target.value) || 0 })} min={0} max={globalMaxXP > 0 ? globalMaxXP : undefined} className="bg-card/50 border-primary/30 text-primary" />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                          Max XP (Optional)
-                        </Label>
-                        <Input
-                          type="number"
-                          value={editedRank.max_points || ""}
-                          onChange={(e) => updateRank({ max_points: parseInt(e.target.value) || 0 })}
-                          min={0}
-                          max={globalMaxXP > 0 ? globalMaxXP : undefined}
-                          placeholder="Auto"
-                          className="bg-card/50 border-primary/30 text-primary"
-                        />
+                        <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Max XP (Optional)</Label>
+                        <Input type="number" value={editedRank.max_points || ""} onChange={(e) => updateRank({ max_points: parseInt(e.target.value) || 0 })} min={0} max={globalMaxXP > 0 ? globalMaxXP : undefined} placeholder="Auto" className="bg-card/50 border-primary/30 text-primary" />
                       </div>
                     </div>
 
-                    {/* Global Max XP Reference */}
                     {globalMaxXP > 0 && (
                       <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
                         <div className="flex items-center gap-1.5">
@@ -207,7 +174,6 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                       </div>
                     )}
 
-                    {/* Validation Error */}
                     {validationError && (
                       <div className="p-2 rounded-lg bg-destructive/10 border border-destructive/30 flex items-start gap-2">
                         <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
@@ -220,13 +186,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                         <Quote className="h-3 w-3" />
                         Quote / Mantra
                       </Label>
-                      <Textarea
-                        value={editedRank.quote || ""}
-                        onChange={(e) => updateRank({ quote: e.target.value })}
-                        placeholder="A philosophical phrase or motivational mantra..."
-                        maxLength={120}
-                        className="bg-card/50 border-primary/30 text-primary resize-none h-20"
-                      />
+                      <Textarea value={editedRank.quote || ""} onChange={(e) => updateRank({ quote: e.target.value })} placeholder="A philosophical phrase or motivational mantra..." maxLength={120} className="bg-card/50 border-primary/30 text-primary resize-none h-20" />
                     </div>
                   </>
                 )}
@@ -234,30 +194,14 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                 {activeTab === "visuals" && (
                   <>
                     <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                        Logo / Icon URL
-                      </Label>
-                      <Input
-                        value={editedRank.logo_url || ""}
-                        onChange={(e) => updateRank({ logo_url: e.target.value || null })}
-                        placeholder="https://example.com/icon.png"
-                        className="bg-card/50 border-primary/30 text-primary text-sm"
-                      />
-                      <p className="text-[10px] text-muted-foreground">
-                        Leave empty to use a default icon
-                      </p>
+                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Logo / Icon URL</Label>
+                      <Input value={editedRank.logo_url || ""} onChange={(e) => updateRank({ logo_url: e.target.value || null })} placeholder="https://example.com/icon.png" className="bg-card/50 border-primary/30 text-primary text-sm" />
+                      <p className="text-[10px] text-muted-foreground">Leave empty to use a default icon</p>
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                        Background Image URL
-                      </Label>
-                      <Input
-                        value={editedRank.background_url || ""}
-                        onChange={(e) => updateRank({ background_url: e.target.value || null })}
-                        placeholder="https://example.com/background.png"
-                        className="bg-card/50 border-primary/30 text-primary text-sm"
-                      />
+                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Background Image URL</Label>
+                      <Input value={editedRank.background_url || ""} onChange={(e) => updateRank({ background_url: e.target.value || null })} placeholder="https://example.com/background.png" className="bg-card/50 border-primary/30 text-primary text-sm" />
                     </div>
 
                     {editedRank.background_url && (
@@ -265,14 +209,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                         <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
                           Background Opacity: {Math.round((editedRank.background_opacity || 0.3) * 100)}%
                         </Label>
-                        <Slider
-                          value={[(editedRank.background_opacity || 0.3) * 100]}
-                          onValueChange={([v]) => updateRank({ background_opacity: v / 100 })}
-                          min={5}
-                          max={60}
-                          step={5}
-                          className="py-2"
-                        />
+                        <Slider value={[(editedRank.background_opacity || 0.3) * 100]} onValueChange={([v]) => updateRank({ background_opacity: v / 100 })} min={5} max={60} step={5} className="py-2" />
                       </div>
                     )}
                   </>
@@ -281,31 +218,18 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                 {activeTab === "style" && (
                   <>
                     <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                        Color Presets
-                      </Label>
+                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Color Presets</Label>
                       <div className="grid grid-cols-4 gap-2">
                         {colorPresets.map((preset) => (
                           <button
                             key={preset.name}
-                            onClick={() => updateRank({ 
-                              frame_color: preset.frame, 
-                              glow_color: preset.glow 
-                            })}
+                            onClick={() => updateRank({ frame_color: preset.frame, glow_color: preset.glow })}
                             className={cn(
                               "p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1",
-                              editedRank.frame_color === preset.frame
-                                ? "border-primary bg-primary/10"
-                                : "border-primary/20 hover:border-primary/40"
+                              editedRank.frame_color === preset.frame ? "border-primary bg-primary/10" : "border-primary/20 hover:border-primary/40"
                             )}
                           >
-                            <div 
-                              className="w-6 h-6 rounded-full"
-                              style={{ 
-                                backgroundColor: preset.frame,
-                                boxShadow: `0 0 10px ${preset.glow}`,
-                              }}
-                            />
+                            <div className="w-6 h-6 rounded-full" style={{ backgroundColor: preset.frame, boxShadow: `0 0 10px ${preset.glow}` }} />
                             <span className="text-[10px] text-muted-foreground">{preset.name}</span>
                           </button>
                         ))}
@@ -313,9 +237,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">
-                        Custom Frame Color
-                      </Label>
+                      <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Custom Frame Color</Label>
                       <div className="flex gap-2">
                         <input
                           type="color"
@@ -326,18 +248,11 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                             const r = (rgb >> 16) & 255;
                             const g = (rgb >> 8) & 255;
                             const b = rgb & 255;
-                            updateRank({ 
-                              frame_color: color,
-                              glow_color: `rgba(${r},${g},${b},0.5)`,
-                            });
+                            updateRank({ frame_color: color, glow_color: `rgba(${r},${g},${b},0.5)` });
                           }}
                           className="w-12 h-10 rounded cursor-pointer border border-primary/30"
                         />
-                        <Input
-                          value={editedRank.frame_color || "#5bb4ff"}
-                          onChange={(e) => updateRank({ frame_color: e.target.value })}
-                          className="flex-1 bg-card/50 border-primary/30 text-primary font-mono text-sm"
-                        />
+                        <Input value={editedRank.frame_color || "#5bb4ff"} onChange={(e) => updateRank({ frame_color: e.target.value })} className="flex-1 bg-card/50 border-primary/30 text-primary font-mono text-sm" />
                       </div>
                     </div>
                   </>
@@ -347,23 +262,12 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
           </div>
         </div>
 
-        {/* Actions */}
         <div className="flex gap-2 pt-4 border-t border-primary/20">
-          <Button
-            variant="outline"
-            onClick={onClose}
-            className="flex-1 border-primary/30 text-muted-foreground hover:bg-primary/10"
-          >
-            <X className="h-4 w-4 mr-2" />
-            Cancel
+          <Button variant="outline" onClick={onClose} className="flex-1 border-primary/30 text-muted-foreground hover:bg-primary/10">
+            <X className="h-4 w-4 mr-2" />Cancel
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={saving || !editedRank.name.trim()}
-            className="flex-1 bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary font-orbitron"
-          >
-            <Check className="h-4 w-4 mr-2" />
-            {saving ? "Saving..." : isNew ? "Create Rank" : "Save Changes"}
+          <Button onClick={handleSave} disabled={saving || !editedRank.name.trim()} className="flex-1 bg-primary/20 border border-primary/30 hover:bg-primary/30 text-primary font-orbitron">
+            <Check className="h-4 w-4 mr-2" />{saving ? "Saving..." : isNew ? "Create Rank" : "Save Changes"}
           </Button>
         </div>
       </DialogContent>
