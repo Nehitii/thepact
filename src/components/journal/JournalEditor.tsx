@@ -75,7 +75,7 @@ export function JournalEditor({ content, onChange, placeholder }: JournalEditorP
   if (!editor) return null;
 
   return (
-    <div className="rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm overflow-hidden transition-all duration-300 focus-within:border-primary/30 focus-within:shadow-[0_0_20px_hsl(var(--primary)/0.1)]">
+    <div className="relative rounded-xl border border-border/30 bg-card/30 backdrop-blur-sm overflow-hidden transition-all duration-300 focus-within:border-primary/30 focus-within:shadow-[0_0_20px_hsl(var(--primary)/0.1)]">
       {/* Toolbar */}
       <div className="flex items-center gap-1 px-3 py-2 border-b border-border/20 bg-card/50">
         <ToolbarButton
@@ -111,18 +111,18 @@ export function JournalEditor({ content, onChange, placeholder }: JournalEditorP
         </div>
       </div>
 
-      {/* Editor content */}
-      <EditorContent editor={editor} />
-
-      {/* Placeholder overlay */}
-      {editor.isEmpty && placeholder && (
-        <div
-          className="absolute pointer-events-none px-4 py-3 text-muted-foreground/30 text-[15px] font-light"
-          style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", top: "calc(2.5rem + 1px)" }}
-        >
-          {placeholder}
-        </div>
-      )}
+      {/* Editor content with placeholder */}
+      <div className="relative">
+        <EditorContent editor={editor} />
+        {editor.isEmpty && placeholder && (
+          <div
+            className="absolute top-0 left-0 pointer-events-none px-4 py-3 text-muted-foreground/30 text-[15px] font-light"
+            style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+          >
+            {placeholder}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
