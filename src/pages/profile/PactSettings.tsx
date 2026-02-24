@@ -49,7 +49,6 @@ export default function PactSettings() {
         setPactName(pactData.name || "");
         setPactMantra(pactData.mantra || "");
         setPactSymbol(pactData.symbol || "flame");
-        if (pactData.color) setPactColor(pactData.color);
         if (pactData.project_start_date) setProjectStartDate(new Date(pactData.project_start_date));
         if (pactData.project_end_date) setProjectEndDate(new Date(pactData.project_end_date));
       }
