@@ -130,18 +130,18 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string) => {
     try {
       await updateExpense.mutateAsync({ id, name, amount, category });
-      toast.success('Expense updated');
+      toast.success(t('finance.recurring.expenseUpdated'));
     } catch (e) {
-      toast.error('Failed to update expense');
+      toast.error(t('finance.recurring.updateFailed'));
     }
   };
 
   const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string) => {
     try {
       await updateIncome.mutateAsync({ id, name, amount, category });
-      toast.success('Income updated');
+      toast.success(t('finance.recurring.incomeUpdated'));
     } catch (e) {
-      toast.error('Failed to update income');
+      toast.error(t('finance.recurring.updateFailed'));
     }
   };
 
