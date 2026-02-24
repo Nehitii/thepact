@@ -21,6 +21,8 @@ interface PactIdentityCardProps {
   pactMantra: string;
   pactSymbol: string;
   onPactNameChange: (value: string) => void;
+  onPactMantraChange: (value: string) => void;
+  onPactSymbolChange: (value: string) => void;
   onSave: () => Promise<void>;
   isSaving?: boolean;
 }
