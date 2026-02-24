@@ -63,9 +63,8 @@ export default function PactSettings() {
       name: pactName.trim(),
       mantra: pactMantra.trim(),
       symbol: pactSymbol,
-      color: pactColor,
     });
-  }, [updatePact, pactName, pactMantra, pactSymbol, pactColor]);
+  }, [updatePact, pactName, pactMantra, pactSymbol]);
 
   if (!user) return null;
 
