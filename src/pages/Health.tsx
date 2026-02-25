@@ -33,6 +33,7 @@ import { HealthInsightsPanel } from "@/components/health/HealthInsightsPanel";
 import { HealthBreathingExercise } from "@/components/health/HealthBreathingExercise";
 import { HealthEnergyCurve } from "@/components/health/HealthEnergyCurve";
 import { HealthDataExport } from "@/components/health/HealthDataExport";
+import { HUDFrame } from "@/components/health/HUDFrame";
 import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
 
@@ -49,15 +50,14 @@ export default function Health() {
   const bmi = calculateBMI(settings?.height_cm ?? null, settings?.weight_kg ?? null);
   const bmiCategory = getBMICategory(bmi);
 
-  // Activate health reminders
   useHealthReminders();
 
   if (settingsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">{t("health.loading")}</p>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-hud-phosphor border-t-transparent mx-auto mb-4" />
+          <p className="text-muted-foreground font-mono uppercase tracking-wider text-xs">{t("health.loading")}</p>
         </div>
       </div>
     );
@@ -65,18 +65,22 @@ export default function Health() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Ambient background */}
+      {/* HUD ambient background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-teal-500/3 dark:bg-teal-500/5 rounded-full blur-[100px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-[120px]"
+          style={{ background: "radial-gradient(circle, hsl(var(--hud-phosphor) / 0.06) 0%, transparent 70%)" }}
+        />
+        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full blur-[100px]"
+          style={{ background: "radial-gradient(circle, hsl(var(--hud-amber) / 0.04) 0%, transparent 70%)" }}
+        />
       </div>
       
-      {/* Soft grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-5 dark:opacity-10">
+      {/* HUD grid overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.08]">
         <div className="absolute inset-0" style={{
           backgroundImage: `
-            linear-gradient(hsl(var(--primary) / 0.15) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--primary) / 0.15) 1px, transparent 1px)
+            linear-gradient(hsl(var(--hud-phosphor) / 0.3) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--hud-phosphor) / 0.3) 1px, transparent 1px)
           `,
           backgroundSize: '50px 50px'
         }} />
@@ -90,17 +94,14 @@ export default function Health() {
           className="flex items-center justify-between flex-wrap gap-4"
         >
           <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-emerald-500/30 rounded-2xl blur-xl" />
-              <div className="relative p-4 bg-gradient-to-br from-emerald-500/20 to-teal-500/10 rounded-2xl border border-emerald-500/30">
-                <Heart className="w-8 h-8 text-emerald-400" />
-              </div>
-            </div>
+            <HUDFrame className="p-4" scanLine>
+              <Heart className="w-8 h-8 text-hud-phosphor" />
+            </HUDFrame>
             <div>
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400 font-orbitron">
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-hud-phosphor to-cyan-300 font-orbitron">
                 {t("health.title")}
               </h1>
-              <p className="text-muted-foreground/70 text-sm">
+              <p className="text-muted-foreground/70 text-sm font-mono uppercase tracking-wider">
                 {t("health.subtitle")}
               </p>
             </div>
@@ -113,7 +114,7 @@ export default function Health() {
               variant="outline"
               size="sm"
               onClick={() => setShowBreathing(true)}
-              className="border-teal-500/30 text-teal-600 dark:text-teal-400 hover:bg-teal-500/10"
+              className="border-hud-phosphor/30 text-hud-phosphor hover:bg-hud-phosphor/10"
             >
               <Wind className="w-4 h-4 mr-2" />
               {t("health.breathing.title")}
@@ -122,7 +123,7 @@ export default function Health() {
               variant="outline"
               size="sm"
               onClick={() => setShowCheckin(true)}
-              className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+              className="border-hud-phosphor/30 text-hud-phosphor hover:bg-hud-phosphor/10"
             >
               <Calendar className="w-4 h-4 mr-2" />
               {t("health.dailyCheckin")}
@@ -131,7 +132,7 @@ export default function Health() {
               variant="ghost"
               size="icon"
               onClick={() => setShowSettings(true)}
-              className="text-muted-foreground hover:text-emerald-400"
+              className="text-muted-foreground hover:text-hud-phosphor"
             >
               <Settings className="w-5 h-5" />
             </Button>
@@ -156,10 +157,10 @@ export default function Health() {
             <HealthMetricCard icon={Moon} title={t("health.metrics.sleep")} description={t("health.metrics.sleepDesc")} color="blue" metricKey="sleep" />
           )}
           {settings?.show_activity !== false && (
-            <HealthMetricCard icon={Activity} title={t("health.metrics.activity")} description={t("health.metrics.activityDesc")} color="green" metricKey="activity" />
+            <HealthMetricCard icon={Activity} title={t("health.metrics.activity")} description={t("health.metrics.activityDesc")} color="cyan" metricKey="activity" />
           )}
           {settings?.show_stress !== false && (
-            <HealthMetricCard icon={Brain} title={t("health.metrics.stress")} description={t("health.metrics.stressDesc")} color="purple" metricKey="stress" />
+            <HealthMetricCard icon={Brain} title={t("health.metrics.stress")} description={t("health.metrics.stressDesc")} color="amber" metricKey="stress" />
           )}
           {settings?.show_hydration !== false && (
             <HealthMetricCard icon={Droplets} title={t("health.metrics.hydration")} description={t("health.metrics.hydrationDesc")} color="cyan" metricKey="hydration" />
@@ -189,7 +190,7 @@ export default function Health() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center text-xs text-muted-foreground/50 py-4"
+          className="text-center text-xs text-muted-foreground/50 py-4 font-mono uppercase tracking-wider"
         >
           <Sparkles className="w-3 h-3 inline mr-1" />
           {t("health.disclaimer")}

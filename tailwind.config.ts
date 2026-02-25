@@ -52,6 +52,9 @@ export default {
           DEFAULT: "hsl(var(--health))",
           foreground: "hsl(var(--health-foreground))",
         },
+        "hud-phosphor": "hsl(var(--hud-phosphor))",
+        "hud-amber": "hsl(var(--hud-amber))",
+        "hud-surface": "hsl(var(--hud-health-surface))",
         finance: {
           DEFAULT: "hsl(var(--finance))",
           foreground: "hsl(var(--finance-foreground))",
@@ -173,14 +176,25 @@ export default {
             transform: "translateY(100%)",
           },
         },
-        // --- MISE À JOUR ICI POUR LE COMPOSANT ---
         shimmer: {
-          "0%": {
-            transform: "translateX(-100%)", // Démarre hors champ à gauche
-          },
-          "100%": {
-            transform: "translateX(100%)", // Finit hors champ à droite
-          },
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        "hud-scan": {
+          "0%": { top: "-2px" },
+          "100%": { top: "100%" },
+        },
+        "hud-flicker": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.92" },
+        },
+        "hud-assemble": {
+          "0%": { clipPath: "inset(0 100% 0 0)" },
+          "100%": { clipPath: "inset(0 0 0 0)" },
+        },
+        "pulse-dot": {
+          "0%, 100%": { transform: "scale(1)", opacity: "0.8" },
+          "50%": { transform: "scale(1.8)", opacity: "1" },
         },
       },
       animation: {
@@ -195,7 +209,11 @@ export default {
         "neon-pulse": "neon-pulse 2s ease-in-out infinite",
         hologram: "hologram 0.15s infinite",
         "cyber-scan": "cyber-scan 4s linear infinite",
-        shimmer: "shimmer 2s infinite linear", // Durée ajustée pour un effet fluide
+        shimmer: "shimmer 2s infinite linear",
+        "hud-scan": "hud-scan 6s linear infinite",
+        "hud-flicker": "hud-flicker 0.15s ease-in-out",
+        "hud-assemble": "hud-assemble 0.6s ease-out forwards",
+        "pulse-dot": "pulse-dot 1.5s ease-in-out infinite",
       },
     },
   },
