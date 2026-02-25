@@ -2,8 +2,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTodayHealth, useHealthHistory } from "@/hooks/useHealth";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, ReferenceLine } from "recharts";
 import { useTranslation } from "react-i18next";
+import { HUDFrame } from "./HUDFrame";
 
 export function HealthEnergyCurve() {
   const { t } = useTranslation();
@@ -18,7 +19,6 @@ export function HealthEnergyCurve() {
     { time: t("health.energy.evening"), energy: (ext?.energy_evening as number) ?? null },
   ].filter((p) => p.energy !== null);
 
-  // Avg energy curve across last 7 days
   const avgCurve = (() => {
     if (!history || history.length < 2) return [];
     let mornSum = 0, aftSum = 0, eveSum = 0, mornN = 0, aftN = 0, eveN = 0;
@@ -41,67 +41,67 @@ export function HealthEnergyCurve() {
 
   if (dataToShow.length < 2) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-border bg-card p-6"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2 rounded-lg bg-amber-500/20">
-            <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+        <HUDFrame className="p-6" glowColor="hsl(var(--hud-phosphor))">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-hud-phosphor/20"
+              style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}>
+              <Zap className="w-5 h-5 text-hud-phosphor" />
+            </div>
+            <h3 className="font-semibold text-foreground">{t("health.energy.title")}</h3>
           </div>
-          <h3 className="font-semibold text-foreground">{t("health.energy.title")}</h3>
-        </div>
-        <p className="text-sm text-muted-foreground">{t("health.energy.noData")}</p>
+          <p className="text-sm text-muted-foreground font-mono">{t("health.energy.noData")}</p>
+        </HUDFrame>
       </motion.div>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-border bg-card p-6"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-amber-500/20">
-            <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <HUDFrame className="p-6" scanLine glowColor="hsl(var(--hud-phosphor))">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-hud-phosphor/20"
+              style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}>
+              <Zap className="w-5 h-5 text-hud-phosphor" />
+            </div>
+            <h3 className="font-semibold text-foreground">{t("health.energy.title")}</h3>
           </div>
-          <h3 className="font-semibold text-foreground">{t("health.energy.title")}</h3>
+          {isAvg && (
+            <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider bg-muted/50 px-2 py-1">
+              {t("health.energy.weekAvg")}
+            </span>
+          )}
         </div>
-        {isAvg && (
-          <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
-            {t("health.energy.weekAvg")}
-          </span>
-        )}
-      </div>
 
-      <div className="h-48">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={dataToShow} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" className="opacity-20" />
-            <XAxis dataKey="time" tick={{ fontSize: 12 }} className="text-muted-foreground" />
-            <YAxis domain={[0, 5]} tick={{ fontSize: 12 }} className="text-muted-foreground" />
-            <Tooltip
-              contentStyle={{
-                background: "hsl(var(--popover))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 8,
-                color: "hsl(var(--foreground))",
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="energy"
-              stroke="hsl(45, 93%, 47%)"
-              strokeWidth={3}
-              dot={{ r: 6, fill: "hsl(45, 93%, 47%)" }}
-              activeDot={{ r: 8 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+        <div className="h-48">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={dataToShow} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+              <CartesianGrid stroke="hsl(var(--hud-phosphor) / 0.08)" strokeDasharray="3 3" />
+              <XAxis dataKey="time" tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }} />
+              <YAxis domain={[0, 5]} tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }} />
+              <Tooltip
+                contentStyle={{
+                  background: "hsl(var(--popover))",
+                  border: "1px solid hsl(var(--hud-phosphor) / 0.3)",
+                  borderRadius: 0,
+                  color: "hsl(var(--foreground))",
+                  fontFamily: "monospace",
+                }}
+              />
+              <ReferenceLine y={3} stroke="hsl(var(--hud-phosphor) / 0.2)" strokeDasharray="6 3" label={{ value: "BASELINE", position: "right", fill: "hsl(var(--muted-foreground))", fontSize: 9, fontFamily: "monospace" }} />
+              <Line
+                type="monotone"
+                dataKey="energy"
+                stroke="hsl(var(--hud-phosphor))"
+                strokeWidth={3}
+                dot={{ r: 6, fill: "hsl(var(--hud-phosphor))", stroke: "hsl(var(--hud-phosphor))", strokeWidth: 2 }}
+                activeDot={{ r: 8, className: "animate-pulse-dot" }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </HUDFrame>
     </motion.div>
   );
 }

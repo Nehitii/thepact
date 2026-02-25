@@ -48,8 +48,14 @@ All colors MUST be HSL.
     --destructive-foreground: 0 0% 100%;
 
     /* Health green */
-    --health: 142 70% 45%;
+    --health: 187 100% 50%;
     --health-foreground: 0 0% 100%;
+
+    /* Health Biometric HUD */
+    --hud-phosphor: 187 100% 50%;
+    --hud-amber: 43 100% 50%;
+    --hud-health-surface: 210 40% 95%;
+    --hud-health-border: 187 80% 60%;
 
     /* Finance blue */
     --finance: 212 90% 50%;
@@ -130,8 +136,14 @@ All colors MUST be HSL.
     --destructive-foreground: 0 0% 100%;
 
     /* Health */
-    --health: 142 70% 50%;
+    --health: 187 100% 50%;
     --health-foreground: 0 0% 100%;
+
+    /* Health Biometric HUD */
+    --hud-phosphor: 187 100% 50%;
+    --hud-amber: 43 100% 50%;
+    --hud-health-surface: 210 60% 6%;
+    --hud-health-border: 187 80% 30%;
 
     /* Finance */
     --finance: 212 90% 60%;

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { TrendingUp, TrendingDown, Minus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { HUDFrame } from "./HUDFrame";
 
 interface HealthScoreCardProps {
   score: number;
@@ -14,8 +15,8 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
 
   const getTrendIcon = () => {
     switch (trend) {
-      case "up": return <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />;
-      case "down": return <TrendingDown className="w-5 h-5 text-orange-600 dark:text-orange-400" />;
+      case "up": return <TrendingUp className="w-5 h-5 text-hud-phosphor" />;
+      case "down": return <TrendingDown className="w-5 h-5 text-hud-amber" />;
       default: return <Minus className="w-5 h-5 text-muted-foreground" />;
     }
   };
@@ -28,86 +29,94 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
     }
   };
 
-  const getScoreColor = () => {
-    if (score >= 80) return "text-emerald-600 dark:text-emerald-400";
-    if (score >= 60) return "text-teal-600 dark:text-teal-400";
-    if (score >= 40) return "text-yellow-600 dark:text-yellow-400";
-    return "text-orange-600 dark:text-orange-400";
-  };
-
-  const getScoreGlow = () => {
-    if (score >= 80) return "shadow-emerald-500/30";
-    if (score >= 60) return "shadow-teal-500/30";
-    if (score >= 40) return "shadow-yellow-500/30";
-    return "shadow-orange-500/30";
-  };
+  // Multi-ring orbital data
+  const circumference60 = 2 * Math.PI * 60;
+  const circumference72 = 2 * Math.PI * 72;
+  const circumference84 = 2 * Math.PI * 84;
 
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
-      className="relative overflow-hidden"
     >
-      {/* Background glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 dark:from-emerald-500/10 via-transparent to-teal-500/5 dark:to-teal-500/10 rounded-3xl" />
-      
-      <div className="relative bg-card/30 dark:bg-card/30 backdrop-blur-xl border border-emerald-500/20 rounded-3xl p-8">
-        {/* Inner glow effect */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-24 bg-emerald-500/5 dark:bg-emerald-500/10 blur-3xl" />
-        
+      <HUDFrame className="p-8" scanLine>
         <div className="relative flex flex-col lg:flex-row items-center gap-8">
-          {/* Score Circle */}
-          <div className="relative flex-shrink-0">
-            <div className={cn(
-              "w-40 h-40 rounded-full flex items-center justify-center",
-              "bg-gradient-to-br from-card/50 to-card/20",
-              "border-4 border-emerald-500/30",
-              "shadow-2xl",
-              getScoreGlow()
-            )}>
-              {/* Progress ring */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
+          {/* Segmented Radar Disk */}
+          <div className="relative flex-shrink-0 w-48 h-48">
+            <svg className="w-full h-full" viewBox="0 0 200 200">
+              {/* Background rings */}
+              <circle cx="100" cy="100" r="60" fill="none" stroke="hsl(var(--hud-phosphor) / 0.1)" strokeWidth="4" />
+              <circle cx="100" cy="100" r="72" fill="none" stroke="hsl(var(--hud-phosphor) / 0.08)" strokeWidth="3" />
+              <circle cx="100" cy="100" r="84" fill="none" stroke="hsl(var(--hud-phosphor) / 0.06)" strokeWidth="3" />
+
+              {/* Inner ring: overall score */}
+              <motion.circle
+                cx="100" cy="100" r="60"
+                fill="none"
+                stroke="hsl(var(--hud-phosphor))"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray={circumference60}
+                initial={{ strokeDashoffset: circumference60 }}
+                animate={{ strokeDashoffset: circumference60 - (circumference60 * score) / 100 }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                transform="rotate(-90 100 100)"
+              />
+
+              {/* Middle ring: sleep factor (blue) */}
+              <motion.circle
+                cx="100" cy="100" r="72"
+                fill="none"
+                stroke="#3b82f6"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray={`${circumference72 * 0.3} ${circumference72 * 0.05}`}
+                initial={{ strokeDashoffset: circumference72 }}
+                animate={{ strokeDashoffset: circumference72 * 0.3 }}
+                transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+                transform="rotate(-90 100 100)"
+              />
+
+              {/* Outer ring: activity (cyan) + stress (amber) - rotating */}
+              <motion.g
+                animate={{ rotate: 360 }}
+                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+                style={{ transformOrigin: "100px 100px" }}
+              >
                 <circle
-                  cx="80"
-                  cy="80"
-                  r="72"
+                  cx="100" cy="100" r="84"
                   fill="none"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  className="text-emerald-500/20"
-                />
-                <motion.circle
-                  cx="80"
-                  cy="80"
-                  r="72"
-                  fill="none"
-                  stroke="url(#scoreGradient)"
-                  strokeWidth="4"
+                  stroke="hsl(var(--hud-phosphor))"
+                  strokeWidth="3"
                   strokeLinecap="round"
-                  strokeDasharray={452}
-                  initial={{ strokeDashoffset: 452 }}
-                  animate={{ strokeDashoffset: 452 - (452 * score) / 100 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  strokeDasharray={`${circumference84 * 0.2} ${circumference84 * 0.05} ${circumference84 * 0.15} ${circumference84 * 0.6}`}
+                  transform="rotate(-90 100 100)"
                 />
-                <defs>
-                  <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#10b981" />
-                    <stop offset="100%" stopColor="#14b8a6" />
-                  </linearGradient>
-                </defs>
-              </svg>
-              
+                <circle
+                  cx="100" cy="100" r="84"
+                  fill="none"
+                  stroke="hsl(var(--hud-amber))"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeDasharray={`${circumference84 * 0.15} ${circumference84 * 0.85}`}
+                  transform="rotate(90 100 100)"
+                />
+              </motion.g>
+            </svg>
+
+            {/* Center score */}
+            <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <motion.span 
-                  className={cn("text-5xl font-bold font-orbitron", getScoreColor())}
+                <motion.span
+                  className="text-5xl font-bold font-orbitron text-hud-phosphor"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
                 >
                   {score}
                 </motion.span>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">
+                <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono mt-1">
                   {t("health.scores.healthScore")}
                 </p>
               </div>
@@ -123,9 +132,9 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
               <div className="flex items-center justify-center lg:justify-start gap-2">
                 {getTrendIcon()}
                 <span className={cn(
-                  "text-sm font-medium",
-                  trend === "up" && "text-emerald-600 dark:text-emerald-400",
-                  trend === "down" && "text-orange-600 dark:text-orange-400",
+                  "text-sm font-medium font-mono uppercase tracking-wider",
+                  trend === "up" && "text-hud-phosphor",
+                  trend === "down" && "text-hud-amber",
                   trend === "stable" && "text-muted-foreground"
                 )}>
                   {getTrendLabel()}
@@ -133,7 +142,6 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
               </div>
             </div>
             
-            {/* Factors */}
             {factors.length > 0 && (
               <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
                 {factors.map((factor, i) => (
@@ -142,10 +150,8 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 + i * 0.1 }}
-                    className={cn(
-                      "px-3 py-1 rounded-full text-xs font-medium",
-                      "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20"
-                    )}
+                    className="px-3 py-1 text-xs font-medium font-mono uppercase tracking-wider bg-hud-phosphor/10 text-hud-phosphor border border-hud-phosphor/20"
+                    style={{ clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)" }}
                   >
                     <Sparkles className="w-3 h-3 inline mr-1" />
                     {factor}
@@ -155,17 +161,17 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
             )}
             
             {factors.length === 0 && (
-              <p className="text-muted-foreground/70 text-sm">
+              <p className="text-muted-foreground/70 text-sm font-mono">
                 {t("health.dailyCheckin")}
               </p>
             )}
             
-            <p className="text-xs text-muted-foreground/50">
+            <p className="text-xs text-muted-foreground/50 font-mono">
               {t("health.disclaimer")}
             </p>
           </div>
         </div>
-      </div>
+      </HUDFrame>
     </motion.div>
   );
 }

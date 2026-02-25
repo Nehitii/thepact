@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -44,7 +44,6 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const upsertHealth = useUpsertHealthData(user?.id);
   const updateStreak = useUpdateHealthStreak(user?.id);
   
-  // Form state
   const [sleepHours, setSleepHours] = useState<number>(7);
   const [sleepQuality, setSleepQuality] = useState<number>(3);
   const [wakeEnergy, setWakeEnergy] = useState<number>(3);
@@ -61,7 +60,6 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [energyEvening, setEnergyEvening] = useState<number>(3);
   const [notes, setNotes] = useState<string>("");
 
-  // Sync form state when todayData loads
   useEffect(() => {
     if (todayData) {
       setSleepHours(todayData.sleep_hours ?? 7);
@@ -73,7 +71,6 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       setMentalLoad(todayData.mental_load ?? 3);
       setHydrationGlasses(todayData.hydration_glasses ?? 4);
       setMealBalance(todayData.meal_balance ?? 3);
-      // Handle extended fields
       const extData = todayData as unknown as { mood_level?: number; mood_journal?: string; energy_morning?: number; energy_afternoon?: number; energy_evening?: number };
       setMoodLevel(extData.mood_level ?? 3);
       setMoodJournal(extData.mood_journal ?? "");
@@ -85,13 +82,13 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   }, [todayData]);
 
   const steps = [
-    { key: "sleep", icon: Moon, title: t("health.metrics.sleep"), color: "blue" },
-    { key: "activity", icon: Activity, title: t("health.metrics.activity"), color: "green" },
-    { key: "stress", icon: Brain, title: t("health.metrics.stress"), color: "purple" },
-    { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), color: "cyan" },
-    { key: "mood", icon: Smile, title: t("health.mood.title"), color: "amber" },
-    { key: "energy", icon: Zap, title: t("health.energy.title"), color: "yellow" },
-    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), color: "pink" },
+    { key: "sleep", icon: Moon, title: t("health.metrics.sleep"), label: "SLEEP TELEMETRY" },
+    { key: "activity", icon: Activity, title: t("health.metrics.activity"), label: "ACTIVITY SCAN" },
+    { key: "stress", icon: Brain, title: t("health.metrics.stress"), label: "STRESS ANALYSIS" },
+    { key: "hydration", icon: Droplets, title: t("health.metrics.hydration"), label: "HYDRATION LEVEL" },
+    { key: "mood", icon: Smile, title: t("health.mood.title"), label: "MOOD TELEMETRY" },
+    { key: "energy", icon: Zap, title: t("health.energy.title"), label: "ENERGY CURVE" },
+    { key: "notes", icon: Sparkles, title: t("health.checkin.todaysNotes"), label: "SYSTEM NOTES" },
   ];
 
   const qualityLabels = [
@@ -110,17 +107,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
     t("health.checkin.stress.overwhelming", "Overwhelming"),
   ];
 
-  const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    }
-  };
-
-  const handleBack = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+  const handleNext = () => { if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1); };
+  const handleBack = () => { if (currentStep > 0) setCurrentStep(currentStep - 1); };
 
   const handleSubmit = async () => {
     await upsertHealth.mutateAsync({
@@ -140,10 +128,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
       energy_evening: energyEvening,
       notes: notes || null,
     } as Record<string, unknown>);
-    
-    // Update streak after successful check-in
     await updateStreak.mutateAsync();
-    
     onOpenChange(false);
     setCurrentStep(0);
   };
@@ -151,234 +136,131 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const currentStepData = steps[currentStep];
   const Icon = currentStepData.icon;
 
+  const hudButtonClass = (selected: boolean, color: string) =>
+    cn(
+      "flex-1 py-3 border transition-all text-sm font-mono",
+      selected
+        ? `bg-${color}/20 border-hud-phosphor text-hud-phosphor`
+        : "border-border text-muted-foreground hover:border-hud-phosphor/50"
+    );
+
   const renderStepContent = () => {
     switch (currentStep) {
-      case 0: // Sleep
+      case 0:
         return (
           <div className="space-y-6">
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.checkin.howDidYouSleep")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.howDidYouSleep")}</Label>
               <div className="flex items-center gap-4">
-                <Slider
-                  value={[sleepHours]}
-                  onValueChange={(v) => setSleepHours(v[0])}
-                  min={0}
-                  max={12}
-                  step={0.5}
-                  className="flex-1"
-                />
-                <span className="text-2xl font-bold text-blue-400 w-16 text-right">
-                  {sleepHours}h
-                </span>
+                <Slider value={[sleepHours]} onValueChange={(v) => setSleepHours(v[0])} min={0} max={12} step={0.5} className="flex-1" />
+                <span className="text-2xl font-bold text-blue-400 w-16 text-right font-orbitron">{sleepHours}h</span>
               </div>
             </div>
-            
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.metrics.sleepQuality")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.sleepQuality")}</Label>
               <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    onClick={() => setSleepQuality(value)}
-                    className={cn(
-                      "flex-1 py-3 rounded-lg border transition-all text-sm",
-                      sleepQuality === value
-                        ? "bg-blue-500/20 border-blue-500 text-blue-600 dark:text-blue-400"
-                        : "border-border text-muted-foreground hover:border-blue-500/50"
-                    )}
-                  >
-                    {qualityLabels[value - 1]}
-                  </button>
+                {[1,2,3,4,5].map(v => (
+                  <button key={v} onClick={() => setSleepQuality(v)}
+                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
+                      sleepQuality === v ? "bg-blue-500/20 border-blue-500 text-blue-400" : "border-border text-muted-foreground hover:border-blue-500/50"
+                    )}>{qualityLabels[v-1]}</button>
                 ))}
               </div>
             </div>
-            
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.metrics.wakeEnergy")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.wakeEnergy")}</Label>
               <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    onClick={() => setWakeEnergy(value)}
-                    className={cn(
-                      "flex-1 py-3 rounded-lg border transition-all text-sm",
-                      wakeEnergy === value
-                        ? "bg-blue-500/20 border-blue-500 text-blue-600 dark:text-blue-400"
-                        : "border-border text-muted-foreground hover:border-blue-500/50"
-                    )}
-                  >
-                    {qualityLabels[value - 1]}
-                  </button>
+                {[1,2,3,4,5].map(v => (
+                  <button key={v} onClick={() => setWakeEnergy(v)}
+                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
+                      wakeEnergy === v ? "bg-blue-500/20 border-blue-500 text-blue-400" : "border-border text-muted-foreground hover:border-blue-500/50"
+                    )}>{qualityLabels[v-1]}</button>
                 ))}
               </div>
             </div>
           </div>
         );
-        
-      case 1: // Activity
+      case 1:
         return (
           <div className="space-y-6">
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.metrics.activityLevel")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.activityLevel")}</Label>
               <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    onClick={() => setActivityLevel(value)}
-                    className={cn(
-                      "flex-1 py-3 rounded-lg border transition-all text-sm",
-                      activityLevel === value
-                        ? "bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-400"
-                        : "border-border text-muted-foreground hover:border-emerald-500/50"
-                    )}
-                  >
-                    {qualityLabels[value - 1]}
-                  </button>
+                {[1,2,3,4,5].map(v => (
+                  <button key={v} onClick={() => setActivityLevel(v)}
+                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
+                      activityLevel === v ? "bg-hud-phosphor/20 border-hud-phosphor text-hud-phosphor" : "border-border text-muted-foreground hover:border-hud-phosphor/50"
+                    )}>{qualityLabels[v-1]}</button>
                 ))}
               </div>
             </div>
-            
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.metrics.movementMinutes")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.movementMinutes")}</Label>
               <div className="flex items-center gap-4">
-                <Slider
-                  value={[movementMinutes]}
-                  onValueChange={(v) => setMovementMinutes(v[0])}
-                  min={0}
-                  max={180}
-                  step={5}
-                  className="flex-1"
-                />
-                <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 w-20 text-right">
-                  {movementMinutes}m
-                </span>
+                <Slider value={[movementMinutes]} onValueChange={(v) => setMovementMinutes(v[0])} min={0} max={180} step={5} className="flex-1" />
+                <span className="text-2xl font-bold text-hud-phosphor w-20 text-right font-orbitron">{movementMinutes}m</span>
               </div>
             </div>
           </div>
         );
-        
-      case 2: // Stress
+      case 2:
         return (
           <div className="space-y-6">
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.checkin.stressLevel")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.stressLevel")}</Label>
               <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    onClick={() => setStressLevel(value)}
-                    className={cn(
-                      "flex-1 py-3 rounded-lg border transition-all text-sm",
-                      stressLevel === value
-                        ? "bg-purple-500/20 border-purple-500 text-purple-600 dark:text-purple-400"
-                        : "border-border text-muted-foreground hover:border-purple-500/50"
-                    )}
-                  >
-                    {stressLabels[value - 1]}
-                  </button>
+                {[1,2,3,4,5].map(v => (
+                  <button key={v} onClick={() => setStressLevel(v)}
+                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
+                      stressLevel === v ? "bg-hud-amber/20 border-hud-amber text-hud-amber" : "border-border text-muted-foreground hover:border-hud-amber/50"
+                    )}>{stressLabels[v-1]}</button>
                 ))}
               </div>
             </div>
-            
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.metrics.mentalLoad")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.mentalLoad")}</Label>
               <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((value) => (
-                  <button
-                    key={value}
-                    onClick={() => setMentalLoad(value)}
-                    className={cn(
-                      "flex-1 py-3 rounded-lg border transition-all text-sm",
-                      mentalLoad === value
-                        ? "bg-purple-500/20 border-purple-500 text-purple-600 dark:text-purple-400"
-                        : "border-border text-muted-foreground hover:border-purple-500/50"
-                    )}
-                  >
-                    {stressLabels[value - 1]}
-                  </button>
+                {[1,2,3,4,5].map(v => (
+                  <button key={v} onClick={() => setMentalLoad(v)}
+                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
+                      mentalLoad === v ? "bg-hud-amber/20 border-hud-amber text-hud-amber" : "border-border text-muted-foreground hover:border-hud-amber/50"
+                    )}>{stressLabels[v-1]}</button>
                 ))}
               </div>
             </div>
           </div>
         );
-        
-      case 3: // Hydration
+      case 3:
         return (
           <div className="space-y-6">
             <div>
-              <Label className="text-sm text-muted-foreground mb-3 block">
-                {t("health.checkin.hydrationLevel")}
-              </Label>
+              <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.hydrationLevel")}</Label>
               <div className="flex items-center gap-4">
-                <Slider
-                  value={[hydrationGlasses]}
-                  onValueChange={(v) => setHydrationGlasses(v[0])}
-                  min={0}
-                  max={16}
-                  step={1}
-                  className="flex-1"
-                />
-                <span className="text-2xl font-bold text-cyan-600 dark:text-cyan-400 w-20 text-right">
-                  {hydrationGlasses} 🥛
-                </span>
+                <Slider value={[hydrationGlasses]} onValueChange={(v) => setHydrationGlasses(v[0])} min={0} max={16} step={1} className="flex-1" />
+                <span className="text-2xl font-bold text-cyan-400 w-20 text-right font-orbitron">{hydrationGlasses} 🥛</span>
               </div>
-              <p className="text-xs text-muted-foreground/50 mt-2">
+              <p className="text-xs text-muted-foreground/50 mt-2 font-mono">
                 {t("health.settings.hydrationGoal")}: {settings?.hydration_goal_glasses || 8} {t("health.settings.glasses")}
               </p>
             </div>
-            
             {settings?.show_nutrition && (
               <div>
-                <Label className="text-sm text-muted-foreground mb-3 block">
-                  {t("health.metrics.mealBalance")}
-                </Label>
+                <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.mealBalance")}</Label>
                 <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((value) => (
-                    <button
-                      key={value}
-                      onClick={() => setMealBalance(value)}
-                      className={cn(
-                        "flex-1 py-3 rounded-lg border transition-all text-sm",
-                        mealBalance === value
-                          ? "bg-orange-500/20 border-orange-500 text-orange-600 dark:text-orange-400"
-                          : "border-border text-muted-foreground hover:border-orange-500/50"
-                      )}
-                    >
-                      {qualityLabels[value - 1]}
-                    </button>
+                  {[1,2,3,4,5].map(v => (
+                    <button key={v} onClick={() => setMealBalance(v)}
+                      className={cn("flex-1 py-3 border transition-all text-sm font-mono",
+                        mealBalance === v ? "bg-orange-500/20 border-orange-500 text-orange-400" : "border-border text-muted-foreground hover:border-orange-500/50"
+                      )}>{qualityLabels[v-1]}</button>
                   ))}
                 </div>
               </div>
             )}
           </div>
         );
-        
-      case 4: // Mood
-        return (
-          <HealthMoodSelector
-            value={moodLevel}
-            onChange={setMoodLevel}
-            journal={moodJournal}
-            onJournalChange={setMoodJournal}
-            showJournal={true}
-          />
-        );
-        
-      case 5: // Energy
+      case 4:
+        return <HealthMoodSelector value={moodLevel} onChange={setMoodLevel} journal={moodJournal} onJournalChange={setMoodJournal} showJournal={true} />;
+      case 5:
         return (
           <div className="space-y-6">
             {[
@@ -387,130 +269,77 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               { label: t("health.energy.evening"), value: energyEvening, setter: setEnergyEvening },
             ].map(({ label, value, setter }) => (
               <div key={label}>
-                <Label className="text-sm text-muted-foreground mb-3 block">{label}</Label>
+                <Label className="text-sm text-muted-foreground mb-3 block font-mono">{label}</Label>
                 <div className="flex gap-2">
-                  {[1, 2, 3, 4, 5].map((v) => (
-                    <button
-                      key={v}
-                      onClick={() => setter(v)}
-                      className={cn(
-                        "flex-1 py-3 rounded-lg border transition-all text-sm",
-                        value === v
-                          ? "bg-amber-500/20 border-amber-500 text-amber-600 dark:text-amber-400"
-                          : "border-border text-muted-foreground hover:border-amber-500/50"
-                      )}
-                    >
-                      {qualityLabels[v - 1]}
-                    </button>
+                  {[1,2,3,4,5].map(v => (
+                    <button key={v} onClick={() => setter(v)}
+                      className={cn("flex-1 py-3 border transition-all text-sm font-mono",
+                        value === v ? "bg-hud-amber/20 border-hud-amber text-hud-amber" : "border-border text-muted-foreground hover:border-hud-amber/50"
+                      )}>{qualityLabels[v-1]}</button>
                   ))}
                 </div>
               </div>
             ))}
           </div>
         );
-
-      case 6: // Notes
+      case 6:
         return (
           <div className="space-y-4">
-            <Label className="text-sm text-muted-foreground block">
-              {t("health.checkin.todaysNotes")}
-            </Label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("health.checkin.notesPlaceholder")}
-              className="min-h-[120px] bg-muted/30"
-            />
-            <p className="text-xs text-muted-foreground/50">
-              {t("common.optional")}
-            </p>
+            <Label className="text-sm text-muted-foreground block font-mono">{t("health.checkin.todaysNotes")}</Label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("health.checkin.notesPlaceholder")} className="min-h-[120px] bg-muted/30 font-mono" />
+            <p className="text-xs text-muted-foreground/50 font-mono">{t("common.optional")}</p>
           </div>
         );
-        
-      default:
-        return null;
+      default: return null;
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg bg-popover border-emerald-500/20">
+      <DialogContent className="sm:max-w-lg bg-popover border-hud-phosphor/20">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            <div className={cn(
-              "p-2 rounded-lg",
-              currentStep === 0 && "bg-blue-500/20",
-              currentStep === 1 && "bg-emerald-500/20",
-              currentStep === 2 && "bg-purple-500/20",
-              currentStep === 3 && "bg-cyan-500/20",
-              currentStep === 4 && "bg-amber-500/20",
-              currentStep === 5 && "bg-yellow-500/20",
-              currentStep === 6 && "bg-pink-500/20"
-            )}>
-              <Icon className={cn(
-                "w-5 h-5",
-                currentStep === 0 && "text-blue-600 dark:text-blue-400",
-                currentStep === 1 && "text-emerald-600 dark:text-emerald-400",
-                currentStep === 2 && "text-purple-600 dark:text-purple-400",
-                currentStep === 3 && "text-cyan-600 dark:text-cyan-400",
-                currentStep === 4 && "text-amber-600 dark:text-amber-400",
-                currentStep === 5 && "text-yellow-600 dark:text-yellow-400",
-                currentStep === 6 && "text-pink-600 dark:text-pink-400"
-              )} />
+            <div className="p-2 bg-hud-phosphor/20"
+              style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}>
+              <Icon className="w-5 h-5 text-hud-phosphor" />
             </div>
             {currentStepData.title}
           </DialogTitle>
         </DialogHeader>
         
-        {/* Step indicators */}
-        <div className="flex gap-2 mb-4">
-          {steps.map((step, i) => (
-            <div
-              key={step.key}
-              className={cn(
-                "flex-1 h-1 rounded-full transition-all",
-                i <= currentStep ? "bg-emerald-500" : "bg-muted"
-              )}
-            />
+        {/* System boot bar */}
+        <div className="flex items-center gap-3 mb-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          <span className="text-hud-phosphor">STEP {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
+          <span className="text-muted-foreground/40">::</span>
+          <span>{currentStepData.label}</span>
+        </div>
+
+        {/* Step progress bar */}
+        <div className="flex gap-1 mb-4">
+          {steps.map((_, i) => (
+            <div key={i} className={cn("flex-1 h-[2px] transition-all", i <= currentStep ? "bg-hud-phosphor" : "bg-muted")} />
           ))}
         </div>
         
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2 }}
-            className="py-4"
-          >
+          <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="py-4">
             {renderStepContent()}
           </motion.div>
         </AnimatePresence>
         
-        {/* Navigation */}
         <div className="flex justify-between pt-4 border-t border-border">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            disabled={currentStep === 0}
-            className="text-muted-foreground"
-          >
+          <Button variant="ghost" onClick={handleBack} disabled={currentStep === 0} className="text-muted-foreground font-mono">
             <ChevronLeft className="w-4 h-4 mr-1" />
             {t("common.back")}
           </Button>
-          
           {currentStep < steps.length - 1 ? (
-            <Button onClick={handleNext} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button onClick={handleNext} className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 font-mono">
               {t("common.next")}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           ) : (
-            <Button 
-              onClick={handleSubmit} 
-              disabled={upsertHealth.isPending}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
+            <Button onClick={handleSubmit} disabled={upsertHealth.isPending}
+              className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 animate-neon-pulse font-mono">
               {upsertHealth.isPending ? t("common.saving") : t("common.save")}
               <Check className="w-4 h-4 ml-1" />
             </Button>
