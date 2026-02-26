@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Scale, AlertCircle } from "lucide-react";
+import { Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { HUDFrame } from "./HUDFrame";
