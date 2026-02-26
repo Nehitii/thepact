@@ -165,10 +165,6 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                 {t("health.dailyCheckin")}
               </p>
             )}
-            
-            <p className="text-xs text-muted-foreground/50 font-mono">
-              {t("health.disclaimer")}
-            </p>
           </div>
         </div>
       </HUDFrame>

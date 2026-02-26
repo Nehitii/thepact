@@ -16,36 +16,47 @@ export function HUDFrame({ children, className, scanLine = false, glowColor }: H
   return (
     <div
       className={cn(
-        "relative bg-hud-surface/80 backdrop-blur-md",
+        "relative bg-hud-surface/80 backdrop-blur-md transition-shadow duration-300 group/hud",
         className
       )}
-      style={{ clipPath: CLIP_PATH }}
+      style={{
+        clipPath: CLIP_PATH,
+        boxShadow: `0 0 30px ${borderColor}15`,
+      }}
     >
       {/* Border overlay matching clip-path */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none transition-all duration-300"
         style={{
           clipPath: CLIP_PATH,
-          boxShadow: `inset 0 0 0 1px ${borderColor}40, 0 0 20px ${borderColor}10`,
+          boxShadow: `inset 0 0 0 1px ${borderColor}80, 0 0 25px ${borderColor}12`,
         }}
       />
 
-      {/* Corner brackets */}
-      <div className="absolute top-0 left-[16px] w-5 h-5 pointer-events-none">
-        <div className="absolute top-0 left-0 w-full h-[2px]" style={{ background: borderColor }} />
-        <div className="absolute top-0 left-0 w-[2px] h-full" style={{ background: borderColor }} />
+      {/* Top edge highlight gradient */}
+      <div
+        className="absolute top-0 left-[16px] right-0 h-[1px] pointer-events-none"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${borderColor}60, transparent)`,
+        }}
+      />
+
+      {/* Corner brackets - thicker (3px) and brighter */}
+      <div className="absolute top-0 left-[16px] w-6 h-6 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-[3px]" style={{ background: borderColor, opacity: 0.9 }} />
+        <div className="absolute top-0 left-0 w-[3px] h-full" style={{ background: borderColor, opacity: 0.9 }} />
       </div>
-      <div className="absolute top-0 right-0 w-5 h-5 pointer-events-none">
-        <div className="absolute top-0 right-0 w-full h-[2px]" style={{ background: borderColor }} />
-        <div className="absolute top-0 right-0 w-[2px] h-full" style={{ background: borderColor }} />
+      <div className="absolute top-0 right-0 w-6 h-6 pointer-events-none">
+        <div className="absolute top-0 right-0 w-full h-[3px]" style={{ background: borderColor, opacity: 0.9 }} />
+        <div className="absolute top-0 right-0 w-[3px] h-full" style={{ background: borderColor, opacity: 0.9 }} />
       </div>
-      <div className="absolute bottom-0 left-0 w-5 h-5 pointer-events-none">
-        <div className="absolute bottom-0 left-0 w-full h-[2px]" style={{ background: borderColor }} />
-        <div className="absolute bottom-0 left-0 w-[2px] h-full" style={{ background: borderColor }} />
+      <div className="absolute bottom-0 left-0 w-6 h-6 pointer-events-none">
+        <div className="absolute bottom-0 left-0 w-full h-[3px]" style={{ background: borderColor, opacity: 0.9 }} />
+        <div className="absolute bottom-0 left-0 w-[3px] h-full" style={{ background: borderColor, opacity: 0.9 }} />
       </div>
-      <div className="absolute bottom-0 right-[16px] w-5 h-5 pointer-events-none">
-        <div className="absolute bottom-0 right-0 w-full h-[2px]" style={{ background: borderColor }} />
-        <div className="absolute bottom-0 right-0 w-[2px] h-full" style={{ background: borderColor }} />
+      <div className="absolute bottom-0 right-[16px] w-6 h-6 pointer-events-none">
+        <div className="absolute bottom-0 right-0 w-full h-[3px]" style={{ background: borderColor, opacity: 0.9 }} />
+        <div className="absolute bottom-0 right-0 w-[3px] h-full" style={{ background: borderColor, opacity: 0.9 }} />
       </div>
 
       {/* Scan line */}

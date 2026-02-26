@@ -78,10 +78,6 @@ export function HealthBMIIndicator({ bmi, category }: HealthBMIIndicatorProps) {
           <span>{t("health.bmi.obese")}</span>
         </div>
 
-        <div className="flex items-start gap-2 mt-4 p-3 bg-muted/10 border border-border/50">
-          <AlertCircle className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-muted-foreground/70 font-mono">{t("health.disclaimer")}</p>
-        </div>
       </HUDFrame>
     </motion.div>
   );
