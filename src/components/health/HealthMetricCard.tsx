@@ -1,5 +1,4 @@
 import { LucideIcon } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTodayHealth, useWeeklyHealth } from "@/hooks/useHealth";
@@ -9,7 +8,6 @@ import { HUDFrame } from "./HUDFrame";
 interface HealthMetricCardProps {
   icon: LucideIcon;
   title: string;
-  description: string;
   color: "blue" | "cyan" | "amber" | "orange";
   metricKey: "sleep" | "activity" | "stress" | "hydration" | "nutrition";
 }
@@ -37,7 +35,7 @@ const colorVariants = {
   },
 };
 
-export function HealthMetricCard({ icon: Icon, title, description, color, metricKey }: HealthMetricCardProps) {
+export function HealthMetricCard({ icon: Icon, title, color, metricKey }: HealthMetricCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { data: todayData } = useTodayHealth(user?.id);
@@ -96,68 +94,54 @@ export function HealthMetricCard({ icon: Icon, title, description, color, metric
   const todayValue = getTodayValue();
   const weeklyAvg = getWeeklyAverage();
   const hasData = todayValue !== null || (weeklyData && weeklyData.length > 0);
+  const noSignal = !hasData || getDisplayValue() === "—";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3 }}
-      className="relative group"
-    >
-      <HUDFrame className="p-6" glowColor={colors.glow} scanLine>
-        {/* Icon */}
-        <div className="flex items-start justify-between mb-4">
-          <div className={cn("p-3 border border-current/20", colors.icon)}
-            style={{ clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)" }}
-          >
-            <Icon className={cn("w-6 h-6", colors.icon)} />
+    <div className="relative group">
+      <HUDFrame className="p-5 transition-all duration-300 group-hover:shadow-[0_0_40px_hsl(var(--hud-phosphor)/0.15)]" glowColor={colors.glow} scanLine>
+        {/* Header row: Icon + Value */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className={cn("p-2 border border-current/20", colors.icon)}
+              style={{ clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)" }}
+            >
+              <Icon className={cn("w-5 h-5", colors.icon)} />
+            </div>
+            <h3 className="font-semibold text-foreground text-sm">{title}</h3>
           </div>
           
-          {hasData && (
-            <div className="text-right">
-              <span className={cn("text-2xl font-bold font-orbitron", colors.icon)}>
-                {getDisplayValue()}
-              </span>
-              {todayValue !== null && (
-                <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-                  RAW: {todayValue}
-                </p>
-              )}
-            </div>
-          )}
+          <span className={cn(
+            "text-2xl font-bold font-orbitron",
+            colors.icon,
+            noSignal && "animate-hud-flicker opacity-50"
+          )}>
+            {getDisplayValue()}
+          </span>
         </div>
         
-        {/* Title & Description */}
-        <h3 className="font-semibold text-foreground mb-1">{title}</h3>
-        <p className="text-xs text-muted-foreground/70 mb-4 font-mono">{description}</p>
-        
         {/* Weekly Progress Bar */}
-        <div className="space-y-2">
-          <div className="flex justify-between text-xs font-mono uppercase tracking-wider">
+        <div className="space-y-1.5">
+          <div className="flex justify-between text-[10px] font-mono uppercase tracking-wider">
             <span className="text-muted-foreground">{t("health.scores.weeklyAverage")}</span>
             <span className={colors.icon}>{weeklyAvg.toFixed(1)}/5</span>
           </div>
-          <div className="relative h-2 bg-muted/30 dark:bg-card/50 overflow-hidden">
-            {/* Tick marks */}
+          <div className="relative h-1.5 bg-muted/30 dark:bg-card/50 overflow-hidden">
             {[20, 40, 60, 80].map(pct => (
               <div key={pct} className="absolute top-0 bottom-0 w-[1px] bg-muted-foreground/20" style={{ left: `${pct}%` }} />
             ))}
-            <motion.div
-              className={cn("h-full", colors.progress)}
-              initial={{ width: 0 }}
-              animate={{ width: `${getProgressPercentage()}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
+            <div
+              className={cn("h-full transition-all duration-1000 ease-out", colors.progress)}
+              style={{ width: `${getProgressPercentage()}%` }}
             />
           </div>
         </div>
         
         {!hasData && (
-          <p className="text-xs text-muted-foreground/50 mt-4 text-center font-mono uppercase tracking-wider">
+          <p className="text-[10px] text-muted-foreground/50 mt-3 text-center font-mono uppercase tracking-wider animate-hud-flicker">
             {t("health.dailyCheckin")}
           </p>
         )}
       </HUDFrame>
-    </motion.div>
+    </div>
   );
 }

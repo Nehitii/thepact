@@ -12,8 +12,14 @@ import {
   Calendar,
   Sparkles,
   Wind,
+  Download,
+  BarChart3,
+  Crosshair,
+  Cpu,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   useHealthSettings, 
   useHealthScore,
@@ -36,6 +42,29 @@ import { HealthDataExport } from "@/components/health/HealthDataExport";
 import { HUDFrame } from "@/components/health/HUDFrame";
 import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
+
+const staggerContainer = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const staggerItem = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
+/* Small crosshair SVG for corner decorations */
+function CrosshairMark({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <line x1="10" y1="0" x2="10" y2="20" stroke="hsl(var(--hud-phosphor))" strokeWidth="1" opacity="0.3" />
+      <line x1="0" y1="10" x2="20" y2="10" stroke="hsl(var(--hud-phosphor))" strokeWidth="1" opacity="0.3" />
+      <circle cx="10" cy="10" r="3" stroke="hsl(var(--hud-phosphor))" strokeWidth="1" fill="none" opacity="0.2" />
+    </svg>
+  );
+}
 
 export default function Health() {
   const { t } = useTranslation();
@@ -75,115 +104,185 @@ export default function Health() {
         />
       </div>
       
-      {/* HUD grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.08]">
+      {/* HUD hexagonal grid overlay */}
+      <div className="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.06]">
         <div className="absolute inset-0" style={{
           backgroundImage: `
-            linear-gradient(hsl(var(--hud-phosphor) / 0.3) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--hud-phosphor) / 0.3) 1px, transparent 1px)
+            linear-gradient(30deg, hsl(var(--hud-phosphor) / 0.4) 1px, transparent 1px),
+            linear-gradient(150deg, hsl(var(--hud-phosphor) / 0.4) 1px, transparent 1px),
+            linear-gradient(270deg, hsl(var(--hud-phosphor) / 0.2) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px'
+          backgroundSize: '40px 69px, 40px 69px, 40px 69px',
+          backgroundPosition: '0 0, 20px 34.5px, 0 0'
         }} />
       </div>
 
-      <div className="max-w-6xl mx-auto p-6 space-y-8 relative z-10">
-        {/* Header */}
+      <div className="max-w-6xl mx-auto p-6 space-y-6 relative z-10">
+        {/* Crosshair corner decorations */}
+        <div className="pointer-events-none absolute top-2 left-2"><CrosshairMark /></div>
+        <div className="pointer-events-none absolute top-2 right-2"><CrosshairMark /></div>
+        <div className="pointer-events-none absolute bottom-2 left-2"><CrosshairMark /></div>
+        <div className="pointer-events-none absolute bottom-2 right-2"><CrosshairMark /></div>
+
+        {/* Centered Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between flex-wrap gap-4"
+          className="flex flex-col items-center text-center gap-4"
         >
-          <div className="flex items-center gap-4">
-            <HUDFrame className="p-4" scanLine>
-              <Heart className="w-8 h-8 text-hud-phosphor" />
-            </HUDFrame>
-            <div>
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-hud-phosphor to-cyan-300 font-orbitron">
-                {t("health.title")}
-              </h1>
-              <p className="text-muted-foreground/70 text-sm font-mono uppercase tracking-wider">
-                {t("health.subtitle")}
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-3 flex-wrap">
-            <HealthStreakBadge size="md" />
-            <HealthDataExport />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowBreathing(true)}
-              className="border-hud-phosphor/30 text-hud-phosphor hover:bg-hud-phosphor/10"
-            >
-              <Wind className="w-4 h-4 mr-2" />
-              {t("health.breathing.title")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCheckin(true)}
-              className="border-hud-phosphor/30 text-hud-phosphor hover:bg-hud-phosphor/10"
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              {t("health.dailyCheckin")}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setShowSettings(true)}
-              className="text-muted-foreground hover:text-hud-phosphor"
-            >
-              <Settings className="w-5 h-5" />
-            </Button>
+          <HUDFrame className="p-4" scanLine>
+            <Heart className="w-8 h-8 text-hud-phosphor" />
+          </HUDFrame>
+          <div>
+            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-hud-phosphor to-cyan-300 font-orbitron">
+              {t("health.title")}
+            </h1>
+            <p className="text-muted-foreground/70 text-sm font-mono uppercase tracking-wider mt-1">
+              {t("health.subtitle")}
+            </p>
           </div>
         </motion.div>
 
-        {/* Health Score Hero */}
-        <HealthScoreCard 
-          score={healthScore.score} 
-          trend={healthScore.trend}
-          factors={healthScore.factors}
-        />
+        {/* Command Bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <HUDFrame className="px-4 py-2">
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <HealthStreakBadge size="md" />
+              <div className="w-[1px] h-6 bg-hud-phosphor/20 hidden sm:block" />
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span><HealthDataExport /></span>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom"><span className="font-mono text-xs">CSV EXPORT</span></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowBreathing(true)}
+                      className="text-hud-phosphor hover:bg-hud-phosphor/10"
+                    >
+                      <Wind className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom"><span className="font-mono text-xs">{t("health.breathing.title").toUpperCase()}</span></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowCheckin(true)}
+                      className="text-hud-phosphor hover:bg-hud-phosphor/10"
+                    >
+                      <Calendar className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom"><span className="font-mono text-xs">{t("health.dailyCheckin").toUpperCase()}</span></TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowSettings(true)}
+                      className="text-muted-foreground hover:text-hud-phosphor"
+                    >
+                      <Settings className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom"><span className="font-mono text-xs">{t("health.settings.title").toUpperCase()}</span></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </HUDFrame>
+        </motion.div>
 
-        {/* BMI Indicator (if enabled) */}
-        {settings?.show_bmi && (
-          <HealthBMIIndicator bmi={bmi} category={bmiCategory} />
-        )}
+        {/* Tabbed Content */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="w-full bg-hud-surface/60 border border-hud-phosphor/20 p-1 font-mono">
+            <TabsTrigger value="overview" className="flex-1 data-[state=active]:bg-hud-phosphor/15 data-[state=active]:text-hud-phosphor uppercase tracking-wider text-xs font-mono">
+              <Crosshair className="w-3.5 h-3.5 mr-1.5" />
+              OVERVIEW
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex-1 data-[state=active]:bg-hud-phosphor/15 data-[state=active]:text-hud-phosphor uppercase tracking-wider text-xs font-mono">
+              <BarChart3 className="w-3.5 h-3.5 mr-1.5" />
+              ANALYTICS
+            </TabsTrigger>
+            <TabsTrigger value="intel" className="flex-1 data-[state=active]:bg-hud-phosphor/15 data-[state=active]:text-hud-phosphor uppercase tracking-wider text-xs font-mono">
+              <Cpu className="w-3.5 h-3.5 mr-1.5" />
+              INTEL
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {settings?.show_sleep !== false && (
-            <HealthMetricCard icon={Moon} title={t("health.metrics.sleep")} description={t("health.metrics.sleepDesc")} color="blue" metricKey="sleep" />
-          )}
-          {settings?.show_activity !== false && (
-            <HealthMetricCard icon={Activity} title={t("health.metrics.activity")} description={t("health.metrics.activityDesc")} color="cyan" metricKey="activity" />
-          )}
-          {settings?.show_stress !== false && (
-            <HealthMetricCard icon={Brain} title={t("health.metrics.stress")} description={t("health.metrics.stressDesc")} color="amber" metricKey="stress" />
-          )}
-          {settings?.show_hydration !== false && (
-            <HealthMetricCard icon={Droplets} title={t("health.metrics.hydration")} description={t("health.metrics.hydrationDesc")} color="cyan" metricKey="hydration" />
-          )}
-          {settings?.show_nutrition && (
-            <HealthMetricCard icon={Apple} title={t("health.metrics.nutrition")} description={t("health.metrics.nutritionDesc")} color="orange" metricKey="nutrition" />
-          )}
-        </div>
+          {/* OVERVIEW TAB */}
+          <TabsContent value="overview" className="mt-6 space-y-6 animate-hud-assemble">
+            {/* Health Score Hero */}
+            <HealthScoreCard 
+              score={healthScore.score} 
+              trend={healthScore.trend}
+              factors={healthScore.factors}
+            />
 
-        {/* Weekly Overview Chart */}
-        <HealthWeeklyChart />
+            {/* BMI Indicator (if enabled) */}
+            {settings?.show_bmi && (
+              <HealthBMIIndicator bmi={bmi} category={bmiCategory} />
+            )}
 
-        {/* Energy Curve */}
-        <HealthEnergyCurve />
+            {/* Metric Cards Grid - staggered entrance */}
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="show"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
+              {settings?.show_sleep !== false && (
+                <motion.div variants={staggerItem}>
+                  <HealthMetricCard icon={Moon} title={t("health.metrics.sleep")} color="blue" metricKey="sleep" />
+                </motion.div>
+              )}
+              {settings?.show_activity !== false && (
+                <motion.div variants={staggerItem}>
+                  <HealthMetricCard icon={Activity} title={t("health.metrics.activity")} color="cyan" metricKey="activity" />
+                </motion.div>
+              )}
+              {settings?.show_stress !== false && (
+                <motion.div variants={staggerItem}>
+                  <HealthMetricCard icon={Brain} title={t("health.metrics.stress")} color="amber" metricKey="stress" />
+                </motion.div>
+              )}
+              {settings?.show_hydration !== false && (
+                <motion.div variants={staggerItem}>
+                  <HealthMetricCard icon={Droplets} title={t("health.metrics.hydration")} color="cyan" metricKey="hydration" />
+                </motion.div>
+              )}
+              {settings?.show_nutrition && (
+                <motion.div variants={staggerItem}>
+                  <HealthMetricCard icon={Apple} title={t("health.metrics.nutrition")} color="orange" metricKey="nutrition" />
+                </motion.div>
+              )}
+            </motion.div>
+          </TabsContent>
 
-        {/* AI Insights */}
-        <HealthInsightsPanel />
+          {/* ANALYTICS TAB */}
+          <TabsContent value="analytics" className="mt-6 space-y-6 animate-hud-assemble">
+            <HealthWeeklyChart />
+            <HealthEnergyCurve />
+            <HealthHistoryChart />
+          </TabsContent>
 
-        {/* Extended History and Challenges */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <HealthHistoryChart />
-          <HealthChallengesPanel />
-        </div>
+          {/* INTEL TAB */}
+          <TabsContent value="intel" className="mt-6 space-y-6 animate-hud-assemble">
+            <HealthInsightsPanel />
+            <HealthChallengesPanel />
+          </TabsContent>
+        </Tabs>
 
         {/* Disclaimer */}
         <motion.div
