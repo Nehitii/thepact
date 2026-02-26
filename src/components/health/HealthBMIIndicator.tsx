@@ -43,7 +43,7 @@ export function HealthBMIIndicator({ bmi, category }: HealthBMIIndicatorProps) {
             </div>
             <div>
               <h3 className="font-medium text-foreground">{t("health.bmi.title")}</h3>
-              <p className="text-[10px] text-muted-foreground/70 font-mono uppercase tracking-wider">{t("health.disclaimer")}</p>
+              <p className="text-[10px] text-muted-foreground/70 font-mono uppercase tracking-wider">{t("health.bmi.title")}</p>
             </div>
           </div>
           <div className="text-right">
