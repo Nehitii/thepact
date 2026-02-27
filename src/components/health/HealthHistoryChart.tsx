@@ -8,7 +8,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, Calendar } from "lucide-react";
+import { TrendingUp, TrendingDown, Calendar, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HUDFrame } from "./HUDFrame";
 
@@ -53,6 +53,25 @@ export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
     const values = chartData.map((d) => d[dataKey as keyof typeof d]).filter((v): v is number => v !== null && v !== undefined);
     if (values.length === 0) return null;
     return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
+  };
+
+  // Calculate trend direction for each metric
+  const calculateTrend = (dataKey: string): "up" | "down" | "stable" => {
+    const values = chartData.map((d) => d[dataKey as keyof typeof d]).filter((v): v is number => v !== null && v !== undefined);
+    if (values.length < 3) return "stable";
+    const half = Math.floor(values.length / 2);
+    const firstHalf = values.slice(0, half).reduce((a, b) => a + b, 0) / half;
+    const secondHalf = values.slice(half).reduce((a, b) => a + b, 0) / (values.length - half);
+    const diff = secondHalf - firstHalf;
+    if (diff > 0.3) return "up";
+    if (diff < -0.3) return "down";
+    return "stable";
+  };
+
+  const TrendIcon = ({ trend }: { trend: "up" | "down" | "stable" }) => {
+    if (trend === "up") return <TrendingUp className="w-3 h-3 text-emerald-400" />;
+    if (trend === "down") return <TrendingDown className="w-3 h-3 text-destructive" />;
+    return <Minus className="w-3 h-3 text-muted-foreground" />;
   };
 
   return (
@@ -121,16 +140,21 @@ export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
                   ))}
                 </LineChart>
               </ResponsiveContainer>
+              {/* Averages with trend arrows */}
               <div className="flex gap-4 mt-4 pt-4 border-t border-border/50 justify-center flex-wrap">
                 {METRICS.filter((m) => activeMetrics.includes(m.key)).map((metric) => {
                   const avg = calculateAverage(metric.dataKey);
                   if (!avg) return null;
+                  const trend = calculateTrend(metric.dataKey);
                   return (
-                    <div key={metric.key} className="text-center">
-                      <p className="text-lg font-bold font-orbitron" style={{ color: metric.color }}>{avg}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
-                        {t("health.history.avgPrefix")} {t(metric.label)}
-                      </p>
+                    <div key={metric.key} className="text-center flex items-center gap-1.5">
+                      <div>
+                        <p className="text-lg font-bold font-orbitron" style={{ color: metric.color }}>{avg}</p>
+                        <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+                          {t("health.history.avgPrefix")} {t(metric.label)}
+                        </p>
+                      </div>
+                      <TrendIcon trend={trend} />
                     </div>
                   );
                 })}

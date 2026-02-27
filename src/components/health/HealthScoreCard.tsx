@@ -10,8 +10,22 @@ interface HealthScoreCardProps {
   factors: string[];
 }
 
+function getStatusLabel(score: number): { text: string; color: string } {
+  if (score >= 80) return { text: "OPTIMAL", color: "text-hud-phosphor" };
+  if (score >= 50) return { text: "ATTENTION", color: "text-hud-amber" };
+  return { text: "CRITICAL", color: "text-destructive" };
+}
+
+function getScoreGlowColor(score: number): string {
+  if (score >= 80) return "hsl(var(--hud-phosphor))";
+  if (score >= 50) return "hsl(212, 90%, 60%)";
+  return "hsl(var(--hud-amber))";
+}
+
 export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps) {
   const { t } = useTranslation();
+  const status = getStatusLabel(score);
+  const scoreGlow = getScoreGlowColor(score);
 
   const getTrendIcon = () => {
     switch (trend) {
@@ -29,10 +43,16 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
     }
   };
 
-  // Multi-ring orbital data
   const circumference60 = 2 * Math.PI * 60;
   const circumference72 = 2 * Math.PI * 72;
   const circumference84 = 2 * Math.PI * 84;
+
+  // Color-coded inner ring based on score
+  const innerRingColor = score >= 80
+    ? "hsl(var(--hud-phosphor))"
+    : score >= 50
+      ? "hsl(212, 90%, 60%)"
+      : "hsl(var(--hud-amber))";
 
   return (
     <motion.div
@@ -40,8 +60,24 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <HUDFrame className="p-8" scanLine>
+      <HUDFrame className="p-8" scanLine active={score >= 80} glowColor={scoreGlow}>
         <div className="relative flex flex-col lg:flex-row items-center gap-8">
+          {/* Heartbeat pulse ring behind disk */}
+          <div className="absolute left-1/2 lg:left-24 top-1/2 -translate-x-1/2 -translate-y-1/2 w-52 h-52 pointer-events-none">
+            <motion.div
+              className="absolute inset-0 rounded-full border border-hud-phosphor/20"
+              animate={{
+                scale: [1, 1.15, 1],
+                opacity: [0.3, 0.1, 0.3],
+              }}
+              transition={{
+                duration: score >= 80 ? 1.5 : score >= 50 ? 2.5 : 4,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          </div>
+
           {/* Segmented Radar Disk */}
           <div className="relative flex-shrink-0 w-48 h-48">
             <svg className="w-full h-full" viewBox="0 0 200 200">
@@ -50,11 +86,11 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
               <circle cx="100" cy="100" r="72" fill="none" stroke="hsl(var(--hud-phosphor) / 0.08)" strokeWidth="3" />
               <circle cx="100" cy="100" r="84" fill="none" stroke="hsl(var(--hud-phosphor) / 0.06)" strokeWidth="3" />
 
-              {/* Inner ring: overall score */}
+              {/* Inner ring: overall score - color-coded */}
               <motion.circle
                 cx="100" cy="100" r="60"
                 fill="none"
-                stroke="hsl(var(--hud-phosphor))"
+                stroke={innerRingColor}
                 strokeWidth="4"
                 strokeLinecap="round"
                 strokeDasharray={circumference60}
@@ -62,15 +98,13 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                 animate={{ strokeDashoffset: circumference60 - (circumference60 * score) / 100 }}
                 transition={{ duration: 1.5, ease: "easeOut" }}
                 transform="rotate(-90 100 100)"
+                style={{ filter: `drop-shadow(0 0 6px ${innerRingColor})` }}
               />
 
               {/* Middle ring: sleep factor (blue) */}
               <motion.circle
                 cx="100" cy="100" r="72"
-                fill="none"
-                stroke="#3b82f6"
-                strokeWidth="3"
-                strokeLinecap="round"
+                fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round"
                 strokeDasharray={`${circumference72 * 0.3} ${circumference72 * 0.05}`}
                 initial={{ strokeDashoffset: circumference72 }}
                 animate={{ strokeDashoffset: circumference72 * 0.3 }}
@@ -78,34 +112,22 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                 transform="rotate(-90 100 100)"
               />
 
-              {/* Outer ring: activity (cyan) + stress (amber) - rotating */}
+              {/* Outer ring: rotating */}
               <motion.g
                 animate={{ rotate: 360 }}
                 transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
                 style={{ transformOrigin: "100px 100px" }}
               >
-                <circle
-                  cx="100" cy="100" r="84"
-                  fill="none"
-                  stroke="hsl(var(--hud-phosphor))"
-                  strokeWidth="3"
-                  strokeLinecap="round"
+                <circle cx="100" cy="100" r="84" fill="none" stroke="hsl(var(--hud-phosphor))" strokeWidth="3" strokeLinecap="round"
                   strokeDasharray={`${circumference84 * 0.2} ${circumference84 * 0.05} ${circumference84 * 0.15} ${circumference84 * 0.6}`}
-                  transform="rotate(-90 100 100)"
-                />
-                <circle
-                  cx="100" cy="100" r="84"
-                  fill="none"
-                  stroke="hsl(var(--hud-amber))"
-                  strokeWidth="3"
-                  strokeLinecap="round"
+                  transform="rotate(-90 100 100)" />
+                <circle cx="100" cy="100" r="84" fill="none" stroke="hsl(var(--hud-amber))" strokeWidth="3" strokeLinecap="round"
                   strokeDasharray={`${circumference84 * 0.15} ${circumference84 * 0.85}`}
-                  transform="rotate(90 100 100)"
-                />
+                  transform="rotate(90 100 100)" />
               </motion.g>
             </svg>
 
-            {/* Center score */}
+            {/* Center score + status label */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
                 <motion.span
@@ -113,12 +135,21 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.5 }}
+                  style={{ filter: `drop-shadow(0 0 8px ${scoreGlow})` }}
                 >
                   {score}
                 </motion.span>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono mt-1">
                   {t("health.scores.healthScore")}
                 </p>
+                <motion.p
+                  className={cn("text-[10px] font-mono font-bold tracking-widest mt-0.5", status.color)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  STATUS: {status.text}
+                </motion.p>
               </div>
             </div>
           </div>
@@ -165,6 +196,11 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                 {t("health.dailyCheckin")}
               </p>
             )}
+
+            {/* Data ticker */}
+            <div className="font-mono text-[10px] text-muted-foreground/50 uppercase tracking-wider border-t border-border/30 pt-2">
+              TREND: {trend.toUpperCase()} · FACTORS: {factors.length || "—"} · SYNC: LIVE
+            </div>
           </div>
         </div>
       </HUDFrame>

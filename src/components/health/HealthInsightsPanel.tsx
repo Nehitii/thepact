@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useHealthHistory } from "@/hooks/useHealth";
 import { useHealthStreak } from "@/hooks/useHealthStreak";
@@ -16,6 +16,37 @@ interface Insight {
   text: string;
   category: string;
   sentiment: "positive" | "neutral" | "warning";
+}
+
+/* Typewriter text component */
+function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
+  const [displayed, setDisplayed] = useState("");
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    setDisplayed("");
+    setDone(false);
+    const timeout = setTimeout(() => {
+      let i = 0;
+      const interval = setInterval(() => {
+        setDisplayed(text.slice(0, i + 1));
+        i++;
+        if (i >= text.length) {
+          clearInterval(interval);
+          setDone(true);
+        }
+      }, 12);
+      return () => clearInterval(interval);
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [text, delay]);
+
+  return (
+    <span>
+      {displayed}
+      {!done && <span className="animate-pulse text-hud-phosphor">▌</span>}
+    </span>
+  );
 }
 
 export function HealthInsightsPanel() {
@@ -78,10 +109,7 @@ export function HealthInsightsPanel() {
             <h3 className="font-semibold text-foreground">{t("health.insights.title")}</h3>
           </div>
           <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchInsights}
-            disabled={loading}
+            variant="outline" size="sm" onClick={fetchInsights} disabled={loading}
             className="border-hud-phosphor/30 text-hud-phosphor hover:bg-hud-phosphor/10 font-mono"
           >
             {loading ? <RefreshCw className="w-4 h-4 mr-1 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1" />}
@@ -96,7 +124,7 @@ export function HealthInsightsPanel() {
         <AnimatePresence mode="wait">
           {loading && (
             <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center py-8">
-              <span className="font-mono text-hud-phosphor animate-pulse text-lg">_</span>
+              <span className="font-mono text-hud-phosphor animate-pulse text-lg">ANALYZING BIOMETRIC DATA_</span>
             </motion.div>
           )}
 
@@ -112,9 +140,15 @@ export function HealthInsightsPanel() {
                 >
                   <span className="text-hud-phosphor">&gt;</span>
                   <span className="text-xl">{insight.emoji}</span>
-                  <p className="text-foreground/90">{insight.text}</p>
+                  <p className="text-foreground/90">
+                    <TypewriterText text={insight.text} delay={i * 400} />
+                  </p>
                 </motion.div>
               ))}
+              {/* Blinking cursor at end */}
+              <div className="font-mono text-hud-phosphor/60 text-sm pl-8">
+                <span className="animate-pulse">▌</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

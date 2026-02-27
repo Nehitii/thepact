@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTodayHealth, useHealthHistory } from "@/hooks/useHealth";
 import { motion } from "framer-motion";
 import { Zap } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, ReferenceLine } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid, ReferenceLine, Area, AreaChart } from "recharts";
 import { useTranslation } from "react-i18next";
 import { HUDFrame } from "./HUDFrame";
 
@@ -76,7 +76,13 @@ export function HealthEnergyCurve() {
 
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dataToShow} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+            <AreaChart data={dataToShow} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+              <defs>
+                <linearGradient id="energyGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--hud-phosphor))" stopOpacity={0.4} />
+                  <stop offset="100%" stopColor="hsl(var(--hud-phosphor))" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
               <CartesianGrid stroke="hsl(var(--hud-phosphor) / 0.08)" strokeDasharray="3 3" />
               <XAxis dataKey="time" tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }} />
               <YAxis domain={[0, 5]} tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }} />
@@ -90,15 +96,16 @@ export function HealthEnergyCurve() {
                 }}
               />
               <ReferenceLine y={3} stroke="hsl(var(--hud-phosphor) / 0.2)" strokeDasharray="6 3" label={{ value: "BASELINE", position: "right", fill: "hsl(var(--muted-foreground))", fontSize: 9, fontFamily: "monospace" }} />
-              <Line
+              <Area
                 type="monotone"
                 dataKey="energy"
                 stroke="hsl(var(--hud-phosphor))"
                 strokeWidth={3}
+                fill="url(#energyGradient)"
                 dot={{ r: 6, fill: "hsl(var(--hud-phosphor))", stroke: "hsl(var(--hud-phosphor))", strokeWidth: 2 }}
                 activeDot={{ r: 8, className: "animate-pulse-dot" }}
               />
-            </LineChart>
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </HUDFrame>
