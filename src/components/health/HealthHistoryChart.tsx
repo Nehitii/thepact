@@ -4,9 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useHealthHistory } from "@/hooks/useHealth";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Calendar, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -14,10 +12,6 @@ import { HUDFrame } from "./HUDFrame";
 
 type TimeRange = 7 | 30 | 90;
 type MetricType = "sleep" | "activity" | "stress" | "hydration" | "mood";
-
-interface HealthHistoryChartProps {
-  className?: string;
-}
 
 const METRICS: { key: MetricType; label: string; color: string; dataKey: string }[] = [
   { key: "sleep", label: "health.metrics.sleep", color: "#3b82f6", dataKey: "sleep_quality" },
@@ -27,7 +21,7 @@ const METRICS: { key: MetricType; label: string; color: string; dataKey: string 
   { key: "mood", label: "health.mood.title", color: "#f59e0b", dataKey: "mood_level" },
 ];
 
-export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
+export function HealthHistoryChart({ className }: { className?: string }) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [timeRange, setTimeRange] = useState<TimeRange>(30);
@@ -55,7 +49,6 @@ export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
     return (values.reduce((a, b) => a + b, 0) / values.length).toFixed(1);
   };
 
-  // Calculate trend direction for each metric
   const calculateTrend = (dataKey: string): "up" | "down" | "stable" => {
     const values = chartData.map((d) => d[dataKey as keyof typeof d]).filter((v): v is number => v !== null && v !== undefined);
     if (values.length < 3) return "stable";
@@ -76,17 +69,17 @@ export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
 
   return (
     <div className={className}>
-      <HUDFrame className="p-0" scanLine>
+      <HUDFrame className="p-0" variant="chart" scanLine>
         <div className="p-6 pb-2">
           <div className="flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-lg font-semibold">
               <TrendingUp className="w-5 h-5 text-hud-phosphor" />
               {t("health.history.title")}
             </h3>
-            <div className="flex gap-1 bg-muted/30 p-1">
+            <div className="flex gap-1 bg-muted/30 p-1 rounded-lg">
               {([7, 30, 90] as TimeRange[]).map((range) => (
                 <Button key={range} variant="ghost" size="sm" onClick={() => setTimeRange(range)}
-                  className={cn("h-7 px-3 text-xs font-mono", timeRange === range ? "bg-hud-phosphor/20 text-hud-phosphor" : "text-muted-foreground hover:text-foreground")}>
+                  className={cn("h-7 px-3 text-xs font-mono rounded-md", timeRange === range ? "bg-hud-phosphor/20 text-hud-phosphor" : "text-muted-foreground hover:text-foreground")}>
                   {range}d
                 </Button>
               ))}
@@ -95,7 +88,7 @@ export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
           <div className="flex flex-wrap gap-2 mt-3">
             {METRICS.map((metric) => (
               <button key={metric.key} onClick={() => toggleMetric(metric.key)}
-                className={cn("px-3 py-1 text-xs font-mono uppercase tracking-wider transition-all border",
+                className={cn("px-3 py-1 text-xs font-mono uppercase tracking-wider transition-all border rounded-lg",
                   activeMetrics.includes(metric.key) ? "border-current" : "border-muted opacity-50 hover:opacity-80"
                 )}
                 style={{
@@ -130,7 +123,7 @@ export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
                   <Tooltip contentStyle={{
                     backgroundColor: "hsl(var(--popover))",
                     border: "1px solid hsl(var(--hud-phosphor) / 0.3)",
-                    borderRadius: "0px",
+                    borderRadius: "12px",
                     fontSize: "12px",
                     fontFamily: "monospace",
                   }} labelStyle={{ color: "hsl(var(--foreground))" }} />
@@ -140,7 +133,6 @@ export function HealthHistoryChart({ className }: HealthHistoryChartProps) {
                   ))}
                 </LineChart>
               </ResponsiveContainer>
-              {/* Averages with trend arrows */}
               <div className="flex gap-4 mt-4 pt-4 border-t border-border/50 justify-center flex-wrap">
                 {METRICS.filter((m) => activeMetrics.includes(m.key)).map((metric) => {
                   const avg = calculateAverage(metric.dataKey);

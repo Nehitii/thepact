@@ -18,7 +18,6 @@ interface Insight {
   sentiment: "positive" | "neutral" | "warning";
 }
 
-/* Typewriter text component */
 function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
   const [displayed, setDisplayed] = useState("");
   const [done, setDone] = useState(false);
@@ -31,10 +30,7 @@ function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
       const interval = setInterval(() => {
         setDisplayed(text.slice(0, i + 1));
         i++;
-        if (i >= text.length) {
-          clearInterval(interval);
-          setDone(true);
-        }
+        if (i >= text.length) { clearInterval(interval); setDone(true); }
       }, 12);
       return () => clearInterval(interval);
     }, delay);
@@ -59,20 +55,14 @@ export function HealthInsightsPanel() {
   const [hasLoaded, setHasLoaded] = useState(false);
 
   const fetchInsights = async () => {
-    if (!history || history.length < 3) {
-      toast.info(t("health.insights.needMoreData"));
-      return;
-    }
+    if (!history || history.length < 3) { toast.info(t("health.insights.needMoreData")); return; }
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("health-insights", {
         body: {
           healthData: history.slice(0, 14).map((d) => ({
-            date: d.entry_date,
-            sleep_hours: d.sleep_hours,
-            sleep_quality: d.sleep_quality,
-            activity_level: d.activity_level,
-            stress_level: d.stress_level,
+            date: d.entry_date, sleep_hours: d.sleep_hours, sleep_quality: d.sleep_quality,
+            activity_level: d.activity_level, stress_level: d.stress_level,
             hydration_glasses: d.hydration_glasses,
             mood_level: (d as unknown as Record<string, unknown>).mood_level ?? null,
           })),
@@ -98,61 +88,45 @@ export function HealthInsightsPanel() {
   };
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <HUDFrame className="p-6" scanLine>
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-hud-phosphor/20"
-              style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}>
-              <Lightbulb className="w-5 h-5 text-hud-phosphor" />
-            </div>
-            <h3 className="font-semibold text-foreground">{t("health.insights.title")}</h3>
+    <HUDFrame className="p-6" variant="chart" scanLine>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-hud-phosphor/10 border border-hud-phosphor/20">
+            <Lightbulb className="w-5 h-5 text-hud-phosphor" />
           </div>
-          <Button
-            variant="outline" size="sm" onClick={fetchInsights} disabled={loading}
-            className="border-hud-phosphor/30 text-hud-phosphor hover:bg-hud-phosphor/10 font-mono"
-          >
-            {loading ? <RefreshCw className="w-4 h-4 mr-1 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1" />}
-            {hasLoaded ? t("health.insights.refresh") : t("health.insights.generate")}
-          </Button>
+          <h3 className="font-semibold text-foreground">{t("health.insights.title")}</h3>
         </div>
+        <Button variant="outline" size="sm" onClick={fetchInsights} disabled={loading}
+          className="border-hud-phosphor/30 text-hud-phosphor hover:bg-hud-phosphor/10 font-mono rounded-lg">
+          {loading ? <RefreshCw className="w-4 h-4 mr-1 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1" />}
+          {hasLoaded ? t("health.insights.refresh") : t("health.insights.generate")}
+        </Button>
+      </div>
 
-        {!hasLoaded && !loading && (
-          <p className="text-sm text-muted-foreground font-mono">{t("health.insights.description")}</p>
+      {!hasLoaded && !loading && (
+        <p className="text-sm text-muted-foreground font-mono">{t("health.insights.description")}</p>
+      )}
+
+      <AnimatePresence mode="wait">
+        {loading && (
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center py-8">
+            <span className="font-mono text-hud-phosphor animate-pulse text-lg">ANALYZING BIOMETRIC DATA_</span>
+          </motion.div>
         )}
-
-        <AnimatePresence mode="wait">
-          {loading && (
-            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center py-8">
-              <span className="font-mono text-hud-phosphor animate-pulse text-lg">ANALYZING BIOMETRIC DATA_</span>
-            </motion.div>
-          )}
-
-          {!loading && insights.length > 0 && (
-            <motion.div key="insights" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
-              {insights.map((insight, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className={cn("border p-3 flex items-start gap-3 font-mono text-sm", sentimentBorder(insight.sentiment))}
-                >
-                  <span className="text-hud-phosphor">&gt;</span>
-                  <span className="text-xl">{insight.emoji}</span>
-                  <p className="text-foreground/90">
-                    <TypewriterText text={insight.text} delay={i * 400} />
-                  </p>
-                </motion.div>
-              ))}
-              {/* Blinking cursor at end */}
-              <div className="font-mono text-hud-phosphor/60 text-sm pl-8">
-                <span className="animate-pulse">▌</span>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </HUDFrame>
-    </motion.div>
+        {!loading && insights.length > 0 && (
+          <motion.div key="insights" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+            {insights.map((insight, i) => (
+              <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                className={cn("border p-3 rounded-xl flex items-start gap-3 font-mono text-sm", sentimentBorder(insight.sentiment))}>
+                <span className="text-hud-phosphor">&gt;</span>
+                <span className="text-xl">{insight.emoji}</span>
+                <p className="text-foreground/90"><TypewriterText text={insight.text} delay={i * 400} /></p>
+              </motion.div>
+            ))}
+            <div className="font-mono text-hud-phosphor/60 text-sm pl-8"><span className="animate-pulse">▌</span></div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </HUDFrame>
   );
 }

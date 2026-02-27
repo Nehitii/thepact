@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ReactNode, useRef, useEffect, useState } from "react";
+import { ReactNode } from "react";
 import { motion } from "framer-motion";
 
 interface HUDFrameProps {
@@ -8,105 +8,104 @@ interface HUDFrameProps {
   scanLine?: boolean;
   glowColor?: string;
   active?: boolean;
+  /** Visual variant for distinct component types */
+  variant?: "default" | "hero" | "metric" | "toolbar" | "chart";
+  /** Accent color for left-border stripe (metric variant) */
+  accentColor?: string;
 }
-
-const CLIP_PATH = "polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px)";
 
 /* Inline SVG noise as data-URI (tiny, cached) */
 const NOISE_BG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`;
 
-const bracketVariants = {
-  hidden: { opacity: 0, scale: 0.5 },
-  visible: { opacity: 0.9, scale: 1, transition: { duration: 0.35, ease: "easeOut" as const } },
-};
-
-export function HUDFrame({ children, className, scanLine = false, glowColor, active = false }: HUDFrameProps) {
+export function HUDFrame({
+  children,
+  className,
+  scanLine = false,
+  glowColor,
+  active = false,
+  variant = "default",
+  accentColor,
+}: HUDFrameProps) {
   const borderColor = glowColor || "hsl(var(--hud-phosphor))";
-  const glowIntensity = active ? "25" : "15";
-  const borderOpacity = active ? "cc" : "80";
+
+  /* Variant-specific styles */
+  const variantStyles = {
+    default: {
+      border: `1px solid ${borderColor}33`,
+      boxShadow: active
+        ? `0 0 30px ${borderColor}18, inset 0 1px 0 ${borderColor}15`
+        : `0 0 20px ${borderColor}08`,
+    },
+    hero: {
+      border: `1px solid ${borderColor}50`,
+      boxShadow: `0 0 40px ${borderColor}20, 0 4px 30px hsl(210 100% 2% / 0.4), inset 0 1px 0 ${borderColor}20`,
+    },
+    metric: {
+      border: `1px solid ${borderColor}25`,
+      borderLeft: `3px solid ${accentColor || borderColor}`,
+      boxShadow: `0 0 15px ${borderColor}08`,
+    },
+    toolbar: {
+      border: `1px solid ${borderColor}20`,
+      boxShadow: "none",
+    },
+    chart: {
+      border: `1px solid ${borderColor}25`,
+      boxShadow: `0 0 20px ${borderColor}08`,
+    },
+  };
+
+  const style = variantStyles[variant];
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
       className={cn(
-        "relative bg-hud-surface/80 backdrop-blur-md transition-all duration-300 group/hud",
-        active && "ring-1 ring-hud-phosphor/30",
+        "relative rounded-2xl bg-hud-surface/80 backdrop-blur-md transition-all duration-300 overflow-hidden group/hud",
+        active && "ring-1 ring-hud-phosphor/20",
+        variant === "hero" && "rounded-3xl",
+        variant === "toolbar" && "rounded-xl bg-hud-surface/50",
         className
       )}
-      style={{
-        clipPath: CLIP_PATH,
-        boxShadow: `0 0 30px ${borderColor}${glowIntensity}`,
-      }}
+      style={style}
     >
-      {/* Inner gradient for depth */}
+      {/* Inner gradient for depth — hero gets a stronger version */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none rounded-[inherit]"
         style={{
-          clipPath: CLIP_PATH,
-          background: `linear-gradient(180deg, ${borderColor}08 0%, transparent 40%)`,
+          background:
+            variant === "hero"
+              ? `linear-gradient(180deg, ${borderColor}10 0%, transparent 50%)`
+              : `linear-gradient(180deg, ${borderColor}06 0%, transparent 30%)`,
         }}
       />
 
       {/* Noise texture overlay */}
       <div
-        className="absolute inset-0 pointer-events-none mix-blend-soft-light"
-        style={{
-          clipPath: CLIP_PATH,
-          backgroundImage: NOISE_BG,
-          opacity: 0.025,
-        }}
+        className="absolute inset-0 pointer-events-none rounded-[inherit] mix-blend-soft-light"
+        style={{ backgroundImage: NOISE_BG, opacity: 0.02 }}
       />
 
-      {/* Border overlay matching clip-path */}
-      <div
-        className="absolute inset-0 pointer-events-none transition-all duration-300 group-hover/hud:shadow-[inset_0_0_0_1px_currentColor]"
-        style={{
-          clipPath: CLIP_PATH,
-          boxShadow: `inset 0 0 0 1px ${borderColor}${borderOpacity}, 0 0 25px ${borderColor}12`,
-        }}
-      />
-
-      {/* Top edge highlight gradient */}
-      <div
-        className="absolute top-0 left-[16px] right-0 h-[1px] pointer-events-none"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${borderColor}60, transparent)`,
-        }}
-      />
-
-      {/* Animated corner brackets */}
-      {[
-        { pos: "top-0 left-[16px]", bT: "top", bL: "left" },
-        { pos: "top-0 right-0", bT: "top", bL: "right" },
-        { pos: "bottom-0 left-0", bT: "bottom", bL: "left" },
-        { pos: "bottom-0 right-[16px]", bT: "bottom", bL: "right" },
-      ].map(({ pos, bT, bL }, i) => (
-        <motion.div
-          key={i}
-          className={cn("absolute w-6 h-6 pointer-events-none", pos)}
-          variants={bracketVariants}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: i * 0.06 }}
-        >
-          <div
-            className={cn("absolute w-full h-[3px]", bT === "top" ? "top-0" : "bottom-0", bL === "left" ? "left-0" : "right-0")}
-            style={{ background: borderColor, opacity: 0.9 }}
-          />
-          <div
-            className={cn("absolute w-[3px] h-full", bT === "top" ? "top-0" : "bottom-0", bL === "left" ? "left-0" : "right-0")}
-            style={{ background: borderColor, opacity: 0.9 }}
-          />
-        </motion.div>
-      ))}
+      {/* Top edge highlight — hero and chart get a prominent one */}
+      {(variant === "hero" || variant === "chart" || variant === "default") && (
+        <div
+          className="absolute top-0 left-4 right-4 h-[1px] pointer-events-none"
+          style={{
+            background: `linear-gradient(90deg, transparent, ${borderColor}${variant === "hero" ? "80" : "40"}, transparent)`,
+          }}
+        />
+      )}
 
       {/* Scan line */}
       {scanLine && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none rounded-[inherit]">
           <div
             className="absolute left-0 right-0 h-[2px] animate-hud-scan"
             style={{
-              background: `linear-gradient(90deg, transparent, ${borderColor}80, transparent)`,
-              boxShadow: `0 0 10px ${borderColor}60`,
+              background: `linear-gradient(90deg, transparent, ${borderColor}60, transparent)`,
+              boxShadow: `0 0 8px ${borderColor}40`,
             }}
           />
         </div>
@@ -114,6 +113,6 @@ export function HUDFrame({ children, className, scanLine = false, glowColor, act
 
       {/* Content */}
       <div className="relative z-10">{children}</div>
-    </div>
+    </motion.div>
   );
 }
