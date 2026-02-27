@@ -17,6 +17,22 @@ interface HealthChallengesPanelProps {
   className?: string;
 }
 
+/* Mini progress ring */
+function ProgressRing({ progress, size = 32 }: { progress: number; size?: number }) {
+  const r = (size - 4) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (circ * Math.min(progress, 1));
+  return (
+    <svg width={size} height={size} className="-rotate-90">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--muted) / 0.3)" strokeWidth="3" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="hsl(var(--hud-amber))" strokeWidth="3"
+        strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={offset}
+        className="transition-all duration-700" style={{ filter: "drop-shadow(0 0 3px hsl(var(--hud-amber)))" }}
+      />
+    </svg>
+  );
+}
+
 export function HealthChallengesPanel({ className }: HealthChallengesPanelProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -100,7 +116,16 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
               {activeChallenges.length > 0 && (
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{t("health.challenges.active")}</h4>
-                  <AnimatePresence>{activeChallenges.map((c) => <HealthChallengeCard key={c.id} challenge={c} onDelete={handleDelete} />)}</AnimatePresence>
+                  <AnimatePresence>
+                    {activeChallenges.map((c) => (
+                      <div key={c.id} className="flex items-center gap-3">
+                        <ProgressRing progress={c.current_value / c.target_value} />
+                        <div className="flex-1">
+                          <HealthChallengeCard challenge={c} onDelete={handleDelete} />
+                        </div>
+                      </div>
+                    ))}
+                  </AnimatePresence>
                 </div>
               )}
               {completedChallenges.length > 0 && (
@@ -111,6 +136,10 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
               )}
             </div>
           )}
+          {/* Blinking cursor */}
+          <div className="font-mono text-hud-amber/40 text-sm mt-3">
+            <span className="animate-pulse">▌</span>
+          </div>
         </div>
       </HUDFrame>
     </div>

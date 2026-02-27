@@ -1,27 +1,15 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { 
-  Moon, 
-  Activity, 
-  Brain, 
-  Droplets,
-  Smile,
-  Zap,
-  ChevronRight,
-  ChevronLeft,
-  Check,
-  Sparkles,
+  Moon, Activity, Brain, Droplets, Smile, Zap, ChevronRight, ChevronLeft, Check, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTodayHealth, useUpsertHealthData, useHealthSettings } from "@/hooks/useHealth";
@@ -34,10 +22,14 @@ interface HealthDailyCheckinProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const CHAMFER = "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)";
+
 export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
+  const [booting, setBooting] = useState(true);
+  const [bootProgress, setBootProgress] = useState(0);
   
   const { data: todayData } = useTodayHealth(user?.id);
   const { data: settings } = useHealthSettings(user?.id);
@@ -59,6 +51,25 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [energyAfternoon, setEnergyAfternoon] = useState<number>(3);
   const [energyEvening, setEnergyEvening] = useState<number>(3);
   const [notes, setNotes] = useState<string>("");
+
+  // Boot sequence on open
+  useEffect(() => {
+    if (open) {
+      setBooting(true);
+      setBootProgress(0);
+      setCurrentStep(0);
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 8;
+        setBootProgress(Math.min(progress, 100));
+        if (progress >= 100) {
+          clearInterval(interval);
+          setTimeout(() => setBooting(false), 200);
+        }
+      }, 50);
+      return () => clearInterval(interval);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (todayData) {
@@ -136,13 +147,21 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const currentStepData = steps[currentStep];
   const Icon = currentStepData.icon;
 
-  const hudButtonClass = (selected: boolean, color: string) =>
-    cn(
-      "flex-1 py-3 border transition-all text-sm font-mono",
-      selected
-        ? `bg-${color}/20 border-hud-phosphor text-hud-phosphor`
-        : "border-border text-muted-foreground hover:border-hud-phosphor/50"
-    );
+  // Chamfered selection button
+  const ChamferedBtn = ({ selected, onClick, children, accentColor = "hud-phosphor" }: { selected: boolean; onClick: () => void; children: React.ReactNode; accentColor?: string }) => (
+    <button
+      onClick={onClick}
+      className={cn(
+        "flex-1 py-3 transition-all text-sm font-mono",
+        selected
+          ? `bg-${accentColor}/20 text-${accentColor} border-2 border-${accentColor}`
+          : "border border-border text-muted-foreground hover:border-hud-phosphor/50"
+      )}
+      style={{ clipPath: CHAMFER }}
+    >
+      {children}
+    </button>
+  );
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -160,10 +179,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.sleepQuality")}</Label>
               <div className="flex gap-2">
                 {[1,2,3,4,5].map(v => (
-                  <button key={v} onClick={() => setSleepQuality(v)}
-                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
-                      sleepQuality === v ? "bg-blue-500/20 border-blue-500 text-blue-400" : "border-border text-muted-foreground hover:border-blue-500/50"
-                    )}>{qualityLabels[v-1]}</button>
+                  <ChamferedBtn key={v} selected={sleepQuality === v} onClick={() => setSleepQuality(v)} accentColor="blue-400">
+                    {qualityLabels[v-1]}
+                  </ChamferedBtn>
                 ))}
               </div>
             </div>
@@ -171,10 +189,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.wakeEnergy")}</Label>
               <div className="flex gap-2">
                 {[1,2,3,4,5].map(v => (
-                  <button key={v} onClick={() => setWakeEnergy(v)}
-                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
-                      wakeEnergy === v ? "bg-blue-500/20 border-blue-500 text-blue-400" : "border-border text-muted-foreground hover:border-blue-500/50"
-                    )}>{qualityLabels[v-1]}</button>
+                  <ChamferedBtn key={v} selected={wakeEnergy === v} onClick={() => setWakeEnergy(v)} accentColor="blue-400">
+                    {qualityLabels[v-1]}
+                  </ChamferedBtn>
                 ))}
               </div>
             </div>
@@ -187,10 +204,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.activityLevel")}</Label>
               <div className="flex gap-2">
                 {[1,2,3,4,5].map(v => (
-                  <button key={v} onClick={() => setActivityLevel(v)}
-                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
-                      activityLevel === v ? "bg-hud-phosphor/20 border-hud-phosphor text-hud-phosphor" : "border-border text-muted-foreground hover:border-hud-phosphor/50"
-                    )}>{qualityLabels[v-1]}</button>
+                  <ChamferedBtn key={v} selected={activityLevel === v} onClick={() => setActivityLevel(v)}>
+                    {qualityLabels[v-1]}
+                  </ChamferedBtn>
                 ))}
               </div>
             </div>
@@ -210,10 +226,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.checkin.stressLevel")}</Label>
               <div className="flex gap-2">
                 {[1,2,3,4,5].map(v => (
-                  <button key={v} onClick={() => setStressLevel(v)}
-                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
-                      stressLevel === v ? "bg-hud-amber/20 border-hud-amber text-hud-amber" : "border-border text-muted-foreground hover:border-hud-amber/50"
-                    )}>{stressLabels[v-1]}</button>
+                  <ChamferedBtn key={v} selected={stressLevel === v} onClick={() => setStressLevel(v)} accentColor="hud-amber">
+                    {stressLabels[v-1]}
+                  </ChamferedBtn>
                 ))}
               </div>
             </div>
@@ -221,10 +236,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.mentalLoad")}</Label>
               <div className="flex gap-2">
                 {[1,2,3,4,5].map(v => (
-                  <button key={v} onClick={() => setMentalLoad(v)}
-                    className={cn("flex-1 py-3 border transition-all text-sm font-mono",
-                      mentalLoad === v ? "bg-hud-amber/20 border-hud-amber text-hud-amber" : "border-border text-muted-foreground hover:border-hud-amber/50"
-                    )}>{stressLabels[v-1]}</button>
+                  <ChamferedBtn key={v} selected={mentalLoad === v} onClick={() => setMentalLoad(v)} accentColor="hud-amber">
+                    {stressLabels[v-1]}
+                  </ChamferedBtn>
                 ))}
               </div>
             </div>
@@ -248,10 +262,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                 <Label className="text-sm text-muted-foreground mb-3 block font-mono">{t("health.metrics.mealBalance")}</Label>
                 <div className="flex gap-2">
                   {[1,2,3,4,5].map(v => (
-                    <button key={v} onClick={() => setMealBalance(v)}
-                      className={cn("flex-1 py-3 border transition-all text-sm font-mono",
-                        mealBalance === v ? "bg-orange-500/20 border-orange-500 text-orange-400" : "border-border text-muted-foreground hover:border-orange-500/50"
-                      )}>{qualityLabels[v-1]}</button>
+                    <ChamferedBtn key={v} selected={mealBalance === v} onClick={() => setMealBalance(v)} accentColor="orange-400">
+                      {qualityLabels[v-1]}
+                    </ChamferedBtn>
                   ))}
                 </div>
               </div>
@@ -272,10 +285,9 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                 <Label className="text-sm text-muted-foreground mb-3 block font-mono">{label}</Label>
                 <div className="flex gap-2">
                   {[1,2,3,4,5].map(v => (
-                    <button key={v} onClick={() => setter(v)}
-                      className={cn("flex-1 py-3 border transition-all text-sm font-mono",
-                        value === v ? "bg-hud-amber/20 border-hud-amber text-hud-amber" : "border-border text-muted-foreground hover:border-hud-amber/50"
-                      )}>{qualityLabels[v-1]}</button>
+                    <ChamferedBtn key={v} selected={value === v} onClick={() => setter(v)} accentColor="hud-amber">
+                      {qualityLabels[v-1]}
+                    </ChamferedBtn>
                   ))}
                 </div>
               </div>
@@ -297,54 +309,85 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg bg-popover border-hud-phosphor/20">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <div className="p-2 bg-hud-phosphor/20"
-              style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}>
-              <Icon className="w-5 h-5 text-hud-phosphor" />
-            </div>
-            {currentStepData.title}
-          </DialogTitle>
-        </DialogHeader>
-        
-        {/* System boot bar */}
-        <div className="flex items-center gap-3 mb-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-          <span className="text-hud-phosphor">STEP {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
-          <span className="text-muted-foreground/40">::</span>
-          <span>{currentStepData.label}</span>
-        </div>
-
-        {/* Step progress bar */}
-        <div className="flex gap-1 mb-4">
-          {steps.map((_, i) => (
-            <div key={i} className={cn("flex-1 h-[2px] transition-all", i <= currentStep ? "bg-hud-phosphor" : "bg-muted")} />
-          ))}
-        </div>
-        
         <AnimatePresence mode="wait">
-          <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="py-4">
-            {renderStepContent()}
-          </motion.div>
-        </AnimatePresence>
-        
-        <div className="flex justify-between pt-4 border-t border-border">
-          <Button variant="ghost" onClick={handleBack} disabled={currentStep === 0} className="text-muted-foreground font-mono">
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            {t("common.back")}
-          </Button>
-          {currentStep < steps.length - 1 ? (
-            <Button onClick={handleNext} className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 font-mono">
-              {t("common.next")}
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
+          {booting ? (
+            <motion.div
+              key="boot"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="py-12 text-center"
+            >
+              <p className="font-mono text-hud-phosphor text-sm uppercase tracking-widest mb-4 animate-pulse">
+                Initializing Biometric Scan...
+              </p>
+              <div className="w-full h-1 bg-muted/30 overflow-hidden">
+                <motion.div
+                  className="h-full bg-hud-phosphor"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${bootProgress}%` }}
+                  transition={{ duration: 0.05 }}
+                  style={{ boxShadow: "0 0 8px hsl(var(--hud-phosphor))" }}
+                />
+              </div>
+              <p className="font-mono text-[10px] text-muted-foreground/50 mt-3 uppercase tracking-wider">
+                LOADING SUBSYSTEMS · CALIBRATING SENSORS
+              </p>
+            </motion.div>
           ) : (
-            <Button onClick={handleSubmit} disabled={upsertHealth.isPending}
-              className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 animate-neon-pulse font-mono">
-              {upsertHealth.isPending ? t("common.saving") : t("common.save")}
-              <Check className="w-4 h-4 ml-1" />
-            </Button>
+            <motion.div key="content" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="p-2 bg-hud-phosphor/20" style={{ clipPath: CHAMFER }}>
+                    <Icon className="w-5 h-5 text-hud-phosphor" />
+                  </div>
+                  {currentStepData.title}
+                </DialogTitle>
+              </DialogHeader>
+              
+              {/* System boot bar */}
+              <div className="flex items-center gap-3 mb-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <span className="text-hud-phosphor">STEP {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
+                <span className="text-muted-foreground/40">::</span>
+                <span>{currentStepData.label}</span>
+              </div>
+
+              {/* Step progress bar */}
+              <div className="flex gap-1 mb-4">
+                {steps.map((_, i) => (
+                  <div key={i} className={cn("flex-1 h-[2px] transition-all", i <= currentStep ? "bg-hud-phosphor" : "bg-muted")} />
+                ))}
+              </div>
+              
+              <AnimatePresence mode="wait">
+                <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="py-4">
+                  {renderStepContent()}
+                </motion.div>
+              </AnimatePresence>
+              
+              <div className="flex justify-between pt-4 border-t border-border">
+                <Button variant="ghost" onClick={handleBack} disabled={currentStep === 0} className="text-muted-foreground font-mono">
+                  <ChevronLeft className="w-4 h-4 mr-1" />
+                  {t("common.back")}
+                </Button>
+                {currentStep < steps.length - 1 ? (
+                  <Button onClick={handleNext} className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 font-mono"
+                    style={{ clipPath: CHAMFER }}>
+                    {t("common.next")}
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                ) : (
+                  <Button onClick={handleSubmit} disabled={upsertHealth.isPending}
+                    className="bg-hud-phosphor/20 border border-hud-phosphor/40 text-hud-phosphor hover:bg-hud-phosphor/30 animate-neon-pulse font-mono"
+                    style={{ clipPath: CHAMFER }}>
+                    {upsertHealth.isPending ? t("common.saving") : t("common.save")}
+                    <Check className="w-4 h-4 ml-1" />
+                  </Button>
+                )}
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </DialogContent>
     </Dialog>
   );
