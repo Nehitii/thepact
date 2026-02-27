@@ -17,7 +17,7 @@ const NOISE_BG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='ht
 
 const bracketVariants = {
   hidden: { opacity: 0, scale: 0.5 },
-  visible: { opacity: 0.9, scale: 1, transition: { duration: 0.35, ease: "easeOut" } },
+  visible: { opacity: 0.9, scale: 1, transition: { duration: 0.35, ease: "easeOut" as const } },
 };
 
 export function HUDFrame({ children, className, scanLine = false, glowColor, active = false }: HUDFrameProps) {
