@@ -17,7 +17,6 @@ interface HealthChallengesPanelProps {
   className?: string;
 }
 
-/* Mini progress ring */
 function ProgressRing({ progress, size = 32 }: { progress: number; size?: number }) {
   const r = (size - 4) / 2;
   const circ = 2 * Math.PI * r;
@@ -51,7 +50,7 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
 
   return (
     <div className={className}>
-      <HUDFrame className="p-0" scanLine glowColor="hsl(var(--hud-amber))">
+      <HUDFrame className="p-0" variant="chart" glowColor="hsl(var(--hud-amber))">
         <div className="p-6 pb-3">
           <div className="flex items-center justify-between">
             <h3 className="flex items-center gap-2 text-lg font-semibold">
@@ -60,12 +59,12 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
             </h3>
             <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="border-hud-amber/30 text-hud-amber hover:bg-hud-amber/10 font-mono">
+                <Button size="sm" variant="outline" className="border-hud-amber/30 text-hud-amber hover:bg-hud-amber/10 font-mono rounded-lg">
                   <Plus className="w-4 h-4 mr-1" />
                   {t("health.challenges.new")}
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md border-hud-amber/20">
+              <DialogContent className="sm:max-w-md border-hud-amber/20 rounded-2xl">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-hud-amber" />
@@ -74,7 +73,7 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <Button onClick={handleCreateRandom} disabled={createChallenge.isPending}
-                    className="w-full justify-start gap-3 h-auto py-4 bg-hud-amber/10 border border-hud-amber/30 hover:border-hud-amber/50 font-mono" variant="outline">
+                    className="w-full justify-start gap-3 h-auto py-4 bg-hud-amber/10 border border-hud-amber/30 hover:border-hud-amber/50 font-mono rounded-xl" variant="outline">
                     <Dices className="w-6 h-6 text-hud-amber" />
                     <div className="text-left">
                       <p className="font-semibold">{t("health.challenges.randomChallenge")}</p>
@@ -85,7 +84,7 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
                   <div className="grid gap-2">
                     {CHALLENGE_TEMPLATES.map((template, index) => (
                       <Button key={template.challenge_type} onClick={() => handleCreateTemplate(index)}
-                        disabled={createChallenge.isPending} variant="outline" className="w-full justify-between h-auto py-3 font-mono">
+                        disabled={createChallenge.isPending} variant="outline" className="w-full justify-between h-auto py-3 font-mono rounded-xl">
                         <div className="text-left">
                           <p className="font-medium">{template.title}</p>
                           <p className="text-xs text-muted-foreground">{template.description}</p>
@@ -120,9 +119,7 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
                     {activeChallenges.map((c) => (
                       <div key={c.id} className="flex items-center gap-3">
                         <ProgressRing progress={c.current_value / c.target_value} />
-                        <div className="flex-1">
-                          <HealthChallengeCard challenge={c} onDelete={handleDelete} />
-                        </div>
+                        <div className="flex-1"><HealthChallengeCard challenge={c} onDelete={handleDelete} /></div>
                       </div>
                     ))}
                   </AnimatePresence>
@@ -136,10 +133,7 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
               )}
             </div>
           )}
-          {/* Blinking cursor */}
-          <div className="font-mono text-hud-amber/40 text-sm mt-3">
-            <span className="animate-pulse">▌</span>
-          </div>
+          <div className="font-mono text-hud-amber/40 text-sm mt-3"><span className="animate-pulse">▌</span></div>
         </div>
       </HUDFrame>
     </div>

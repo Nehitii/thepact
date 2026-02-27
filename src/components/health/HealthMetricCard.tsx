@@ -16,26 +16,30 @@ const colorVariants = {
   blue: {
     icon: "text-blue-400",
     glow: "hsl(217, 91%, 60%)",
+    accent: "#3b82f6",
     progress: "bg-blue-500",
-    led: "bg-blue-400",
+    bg: "bg-blue-500/5",
   },
   cyan: {
     icon: "text-hud-phosphor",
     glow: "hsl(var(--hud-phosphor))",
+    accent: "hsl(187, 100%, 50%)",
     progress: "bg-hud-phosphor",
-    led: "bg-hud-phosphor",
+    bg: "bg-hud-phosphor/5",
   },
   amber: {
     icon: "text-hud-amber",
     glow: "hsl(var(--hud-amber))",
+    accent: "hsl(43, 100%, 50%)",
     progress: "bg-hud-amber",
-    led: "bg-hud-amber",
+    bg: "bg-hud-amber/5",
   },
   orange: {
     icon: "text-orange-400",
     glow: "hsl(25, 95%, 53%)",
+    accent: "#f97316",
     progress: "bg-orange-500",
-    led: "bg-orange-400",
+    bg: "bg-orange-500/5",
   },
 };
 
@@ -128,18 +132,21 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
   return (
     <div className="relative group">
       <HUDFrame
-        className="p-4 transition-all duration-300 group-hover:shadow-[0_0_40px_hsl(var(--hud-phosphor)/0.15)]"
+        className="p-4 transition-all duration-300 hover:shadow-lg"
+        variant="metric"
         glowColor={colors.glow}
+        accentColor={colors.accent}
         active={statusLed === "green"}
       >
-        {/* Status LED */}
-        <div className={cn("absolute top-3 right-3 w-2 h-2 rounded-full transition-all", ledColors[statusLed])} />
+        {/* Subtle background tint */}
+        <div className={cn("absolute inset-0 rounded-[inherit] pointer-events-none", colors.bg)} />
 
-        {/* Header row: Icon + Title + Value + Gauge */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className={cn("p-1.5 border border-current/20", colors.icon)}
-            style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
-          >
+        {/* Status LED */}
+        <div className={cn("absolute top-3 right-3 w-2 h-2 rounded-full transition-all z-10", ledColors[statusLed])} />
+
+        {/* Header row */}
+        <div className="relative flex items-center gap-3 mb-3">
+          <div className={cn("p-1.5 rounded-lg border border-current/20", colors.icon)}>
             <Icon className={cn("w-4 h-4", colors.icon)} />
           </div>
           <h3 className="font-semibold text-foreground text-sm flex-1">{title}</h3>
@@ -165,17 +172,14 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
         </div>
         
         {/* Weekly Progress Bar */}
-        <div className="space-y-1">
+        <div className="relative space-y-1">
           <div className="flex justify-between text-[10px] font-mono uppercase tracking-wider">
             <span className="text-muted-foreground">{t("health.scores.weeklyAverage")}</span>
             <span className={colors.icon}>{weeklyAvg.toFixed(1)}/5</span>
           </div>
-          <div className="relative h-1 bg-muted/30 dark:bg-card/50 overflow-hidden">
-            {[20, 40, 60, 80].map(pct => (
-              <div key={pct} className="absolute top-0 bottom-0 w-[1px] bg-muted-foreground/20" style={{ left: `${pct}%` }} />
-            ))}
+          <div className="relative h-1.5 bg-muted/30 dark:bg-card/50 rounded-full overflow-hidden">
             <div
-              className={cn("h-full transition-all duration-1000 ease-out", colors.progress)}
+              className={cn("h-full transition-all duration-1000 ease-out rounded-full", colors.progress)}
               style={{ width: `${getProgressPercentage()}%` }}
             />
           </div>
@@ -183,13 +187,13 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
 
         {/* Hydration unit label */}
         {metricKey === "hydration" && todayValue !== null && (
-          <p className="text-[10px] text-muted-foreground/60 font-mono mt-1 text-right">
+          <p className="relative text-[10px] text-muted-foreground/60 font-mono mt-1 text-right">
             {t("health.settings.glasses")}
           </p>
         )}
         
         {!hasData && (
-          <p className="text-[10px] text-muted-foreground/50 mt-2 text-center font-mono uppercase tracking-wider animate-hud-flicker">
+          <p className="relative text-[10px] text-muted-foreground/50 mt-2 text-center font-mono uppercase tracking-wider animate-hud-flicker">
             {t("health.dailyCheckin")}
           </p>
         )}
