@@ -4,18 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 
 // Components
-import { PactTimeline } from "@/components/PactTimeline";
-import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
-import { ProgressByDifficultyModule } from "@/components/home/ProgressByDifficultyModule";
-import { CostTrackingModule } from "@/components/home/CostTrackingModule";
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
-import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { NeuralBar } from "@/components/home/NeuralBar";
-import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
-import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
-import { Flame } from "lucide-react";
+import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
+import { MonitoringGlobalPanel } from "@/components/home/MonitoringGlobalPanel";
+import { DifficultyScalePanel } from "@/components/home/DifficultyScalePanel";
 
 // Hooks
 import { useTodoReminders } from "@/hooks/useTodoReminders";
