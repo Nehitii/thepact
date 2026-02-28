@@ -1,8 +1,7 @@
 import { TrendingUp, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DashboardWidgetShell, WidgetDisplayMode } from './DashboardWidgetShell';
+import { NeuralPanel, WidgetDisplayMode } from './NeuralPanel';
 import { Goal } from '@/hooks/useGoals';
-import { cn } from '@/lib/utils';
 
 interface FocusGoalsModuleProps {
   goals: Goal[];
@@ -20,151 +19,104 @@ export function FocusGoalsModule({
   const isCompact = displayMode === 'compact';
   const visibleGoals = isCompact ? goals.slice(0, 2) : goals;
 
-  const allGoalsList = (
-    <div className="space-y-3">
-      {goals.slice(2).map((goal, index) => {
-        // Use unified field access with fallback support for both raw DB fields and enriched hook data
+  const allGoalsList = goals.length > 2 ? (
+    <div className="space-y-2">
+      {goals.slice(2).map((goal) => {
         const totalSteps = goal.totalStepsCount ?? goal.total_steps ?? 0;
         const completedSteps = goal.completedStepsCount ?? goal.validated_steps ?? 0;
-        const remainingSteps = totalSteps - completedSteps;
-        const progressPercent = totalSteps > 0
-          ? Math.round((completedSteps / totalSteps) * 100)
-          : 0;
-        
+        const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
         return (
           <button
             key={goal.id}
             onClick={() => navigate(`/goals/${goal.id}`)}
-            className="w-full text-left p-3 rounded-lg bg-primary/5 border border-primary/20 hover:border-primary/40 transition-all"
+            className="w-full text-left p-2.5 rounded-sm bg-[rgba(0,180,255,0.03)] border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.2)] transition-all"
           >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-orbitron text-primary truncate flex-1 mr-2">
-                {goal.name}
-              </span>
-              <span className="text-xs font-orbitron text-primary/70">{progressPercent}%</span>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-rajdhani text-[rgba(160,210,255,0.7)] truncate flex-1 mr-2">{goal.name}</span>
+              <span className="text-[10px] font-mono text-primary tabular-nums">{progressPercent}%</span>
             </div>
-            <div className="h-1.5 w-full bg-card/40 rounded-full overflow-hidden mt-2">
-              <div 
-                className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 rounded-full"
-                style={{ width: `${progressPercent}%` }}
-              />
+            <div className="h-1 w-full bg-[rgba(0,180,255,0.06)] rounded-full overflow-hidden">
+              <div className="h-full bg-primary/60 transition-all duration-500 rounded-full" style={{ width: `${progressPercent}%` }} />
             </div>
           </button>
         );
       })}
     </div>
-  );
+  ) : undefined;
 
   return (
-    <DashboardWidgetShell
+    <NeuralPanel
       title="Focus Goals"
       icon={TrendingUp}
-      subtitle="Your starred priorities"
+      subtitle="Starred priorities"
       displayMode={displayMode}
       onToggleDisplayMode={onToggleDisplayMode}
-      expandableContent={!isCompact && goals.length > 2 ? allGoalsList : undefined}
+      expandableContent={!isCompact ? allGoalsList : undefined}
       headerAction={
         <Button 
           size="sm" 
           onClick={() => navigate("/goals")}
-          className="h-7 px-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 font-orbitron text-[10px] uppercase tracking-wider"
+          className="h-6 px-2 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[rgba(160,210,255,0.4)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron text-[9px] uppercase tracking-wider rounded-sm"
         >
           View All
         </Button>
       }
-      accentColor="primary"
     >
       {goals.length === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-          <div className="relative inline-block mb-3">
-            <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
-            <TrendingUp className="w-10 h-10 text-primary/40 relative z-10" />
-          </div>
-          <p className="text-sm text-primary/60 font-rajdhani">No focus goals yet</p>
-          <p className="text-xs text-primary/40 mt-1 font-rajdhani">Star goals to see them here</p>
+          <TrendingUp className="w-8 h-8 text-[rgba(160,210,255,0.15)] mb-2" />
+          <p className="text-xs text-[rgba(160,210,255,0.35)] font-rajdhani">No focus goals yet</p>
+          <p className="text-[10px] text-[rgba(160,210,255,0.2)] mt-0.5 font-rajdhani">Star goals to see them here</p>
         </div>
       ) : (
-        <div className="space-y-3 flex-1">
-          {visibleGoals.map((goal, index) => {
-            // Use unified field access with fallback support for both raw DB fields and enriched hook data
+        <div className="space-y-2 flex-1">
+          {visibleGoals.map((goal) => {
             const totalSteps = goal.totalStepsCount ?? goal.total_steps ?? 0;
             const completedSteps = goal.completedStepsCount ?? goal.validated_steps ?? 0;
             const remainingSteps = totalSteps - completedSteps;
-            const progressPercent = totalSteps > 0
-              ? Math.round((completedSteps / totalSteps) * 100)
-              : 0;
+            const progressPercent = totalSteps > 0 ? Math.round((completedSteps / totalSteps) * 100) : 0;
             
             return (
               <button
                 key={goal.id}
                 onClick={() => navigate(`/goals/${goal.id}`)}
-                className="w-full text-left rounded-lg bg-primary/5 backdrop-blur border border-primary/30 hover:border-primary/50 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.2)] group/goal overflow-hidden relative"
+                className="w-full text-left rounded-sm bg-[rgba(0,180,255,0.03)] border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.2)] transition-all overflow-hidden"
               >
-                {/* Priority badge for top 3 */}
-                {index < 3 && (
-                  <div className="absolute top-2 left-2 z-20 w-5 h-5 rounded-full bg-primary/80 border border-primary flex items-center justify-center shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
-                    <span className="text-[10px] font-bold text-primary-foreground font-orbitron">{index + 1}</span>
-                  </div>
-                )}
-                
                 <div className="flex">
-                  {/* Goal Image Section */}
-                  <div className="relative w-16 h-16 flex-shrink-0 bg-card/30">
+                  <div className="relative w-14 h-14 flex-shrink-0 bg-[rgba(0,180,255,0.02)]">
                     {goal.image_url ? (
-                      <img 
-                        src={goal.image_url} 
-                        alt={goal.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent/20">
-                        <Target className="w-6 h-6 text-primary/50" />
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Target className="w-5 h-5 text-[rgba(160,210,255,0.15)]" />
                       </div>
                     )}
-                    {/* Overlay gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent to-card/80" />
                   </div>
-                  
-                  {/* Goal Info Section */}
-                  <div className="flex-1 p-3 flex flex-col justify-center min-w-0">
-                    <h3 className="font-semibold text-xs text-primary font-orbitron drop-shadow-[0_0_5px_hsl(var(--primary)/0.3)] truncate mb-1.5">
+                  <div className="flex-1 p-2.5 flex flex-col justify-center min-w-0">
+                    <h3 className="font-rajdhani text-xs text-[rgba(160,210,255,0.75)] truncate mb-1">
                       {goal.name}
                     </h3>
-                    
-                    {/* Progress Bar */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="text-primary/70 font-rajdhani truncate">
-                          {remainingSteps > 0 
-                            ? `${remainingSteps} step${remainingSteps > 1 ? 's' : ''} left`
-                            : 'Complete!'
-                          }
-                        </span>
-                        <span className="text-primary font-orbitron font-bold ml-2">
-                          {progressPercent}%
-                        </span>
-                      </div>
-                      
-                      <div className="h-1 w-full bg-card/40 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-primary to-accent transition-all duration-500 rounded-full"
-                          style={{ width: `${progressPercent}%` }}
-                        />
-                      </div>
+                    <div className="flex items-center justify-between text-[10px] mb-1">
+                      <span className="text-[rgba(160,210,255,0.35)] font-rajdhani">
+                        {remainingSteps > 0 ? `${remainingSteps} step${remainingSteps > 1 ? 's' : ''} left` : 'Complete!'}
+                      </span>
+                      <span className="text-primary font-mono tabular-nums">{progressPercent}%</span>
+                    </div>
+                    <div className="h-1 w-full bg-[rgba(0,180,255,0.06)] rounded-full overflow-hidden">
+                      <div className="h-full bg-primary/60 transition-all duration-500 rounded-full" style={{ width: `${progressPercent}%` }} />
                     </div>
                   </div>
                 </div>
               </button>
             );
           })}
-          
           {isCompact && goals.length > 2 && (
-            <div className="text-center text-[10px] text-primary/50 font-rajdhani pt-1">
-              +{goals.length - 2} more focus goals
+            <div className="text-center text-[10px] text-[rgba(160,210,255,0.25)] font-mono pt-1">
+              +{goals.length - 2} more
             </div>
           )}
         </div>
       )}
-    </DashboardWidgetShell>
+    </NeuralPanel>
   );
 }

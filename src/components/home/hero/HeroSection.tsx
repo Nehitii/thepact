@@ -2,21 +2,16 @@
 
 import { useMemo } from "react";
 import { motion, Variants } from "framer-motion";
-import { Trophy, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PactVisual } from "@/components/PactVisual";
 import { SmartProjectHeader } from "./SmartProjectHeader";
 import { QuickActionsBar } from "@/components/home/QuickActionsBar";
-import { CurrentRankBadge } from "./CurrentRankBadge";
-import { XPProgressBar } from "./XPProgressBar";
 import { MissionRandomizer } from "./MissionRandomizer";
 import { cn } from "@/lib/utils";
 import { Pact } from "@/hooks/usePact";
 import { Goal } from "@/hooks/useGoals";
 import { RankXPData } from "@/hooks/useRankXP";
-
-// ─── types ───────────────────────────────────────────────────────────────────
 
 interface HeroSectionProps {
   pact: Pact;
@@ -31,32 +26,30 @@ interface HeroSectionProps {
   className?: string;
 }
 
-// ─── motion variants ─────────────────────────────────────────────────────────
-
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    transition: { staggerChildren: 0.08, delayChildren: 0.05 },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 15, scale: 0.98 },
+  hidden: { opacity: 0, y: 10 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 60, damping: 12 },
+    transition: { type: "spring", stiffness: 80, damping: 16 },
   },
 };
 
-// ─── component ───────────────────────────────────────────────────────────────
+function fmt(n: number) {
+  return n >= 1_000 ? `${(n / 1_000).toFixed(1)}k` : n.toLocaleString();
+}
 
 export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules, className }: HeroSectionProps) {
   const { t } = useTranslation();
   const progressPercentage = Number(pact.global_progress) || 0;
-
   const { currentRank, nextRank, currentXP, progressInCurrentRank } = rankData;
 
   const level = useMemo(() => {
@@ -68,224 +61,90 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
   const isMaxRank = !nextRank && rankData.ranks.length > 0;
   const currentRankMin = currentRank?.min_points || 0;
   const nextRankMin = nextRank?.min_points || currentRankMin + 1000;
-  const nextRankName = nextRank?.name || t("home.hero.nextRank", "Next Rank");
-  const frameColor = currentRank?.frame_color ?? "#00ffa3";
+  const rankName = currentRank?.name ?? "Novice";
+  const frameColor = currentRank?.frame_color ?? "#00d4ff";
 
-  // Colour derivations from frameColor
-  const fc = {
-    full: frameColor,
-    glow: `${frameColor}99`,
-    mid: `${frameColor}44`,
-    dim: `${frameColor}18`,
-    text: `${frameColor}88`,
-  };
+  // XP progress within current rank
+  const xpSpan = nextRankMin - currentRankMin;
+  const xpProgress = isMaxRank ? 100 : xpSpan > 0 ? Math.min(((currentXP - currentRankMin) / xpSpan) * 100, 100) : 0;
 
   return (
     <motion.section
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className={cn("relative w-full max-w-4xl mx-auto px-4 sm:px-6 z-10 py-4", className)}
+      className={cn("relative w-full max-w-5xl mx-auto z-10", className)}
     >
-      {/* Background spine */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gradient-to-b from-transparent via-cyan-500/10 to-transparent -translate-x-1/2" />
-      </div>
-
-      <div className="flex flex-col items-center space-y-4">
-        {/* ── 1. Identity block (Visual + name + SmartProjectHeader) ── */}
+      <div className="flex flex-col gap-3">
+        {/* ═══ ZONE 1: IDENTITY BAR ═══ */}
         <motion.div
           variants={itemVariants}
-          className="relative z-20 text-center w-full flex flex-col items-center pt-12"
+          className="relative rounded-sm overflow-hidden bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.08)] shadow-[0_8px_48px_rgba(0,0,0,0.9)]"
         >
-          <div className="group relative flex justify-center mb-4">
-            <div className="absolute inset-0 bg-cyan-500/20 rounded-full blur-[60px] opacity-20 group-hover:opacity-30 transition-opacity duration-1000" />
-            <div className="relative transform transition-transform duration-500 hover:scale-105">
-              <PactVisual symbol={pact.symbol} progress={progressPercentage} size="md" />
+          <div className="flex items-center gap-4 px-5 py-4">
+            {/* Pact Visual */}
+            <div className="shrink-0">
+              <PactVisual symbol={pact.symbol} progress={progressPercentage} size="sm" />
             </div>
-          </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black font-orbitron tracking-tight text-white drop-shadow-[0_0_25px_rgba(255,255,255,0.2)] mb-2">
-            {pact.name}
-          </h1>
-
-          {pact.mantra && (
-            <div className="flex items-center gap-4 mb-3 opacity-80">
-              <div className="h-px w-8 md:w-16 bg-gradient-to-r from-transparent to-primary/50" />
-              <p className="text-xs sm:text-sm font-rajdhani font-medium uppercase tracking-[0.25em] text-primary/80 whitespace-nowrap">
-                {pact.mantra}
-              </p>
-              <div className="h-px w-8 md:w-16 bg-gradient-to-l from-transparent to-primary/50" />
+            {/* Pact Identity */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg sm:text-xl font-orbitron font-black tracking-tight text-[#ddeeff] truncate">
+                {pact.name}
+              </h1>
+              {pact.mantra && (
+                <p className="text-[11px] font-rajdhani text-[rgba(160,210,255,0.4)] uppercase tracking-[0.2em] truncate mt-0.5">
+                  {pact.mantra}
+                </p>
+              )}
             </div>
-          )}
 
-          <div className="flex justify-center w-full">
-            <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} pact={pact} />
-          </div>
-        </motion.div>
-
-        {/* ══════════════════════════════════════════════════════
-            3. RANK PANEL — full cyberpunk treatment
-        ══════════════════════════════════════════════════════ */}
-        <motion.div variants={itemVariants} className="w-full max-w-2xl">
-          {/* Outer glow halo */}
-          <div
-            className="absolute -inset-px rounded-sm pointer-events-none"
-            style={{ boxShadow: `0 0 32px ${fc.dim}` }}
-          />
-
-          {/* Panel shell */}
-          <div
-            className="relative overflow-hidden p-5 sm:p-6"
-            style={{
-              background: "linear-gradient(135deg, #0d2030 0%, #080f14 50%, #060c11 100%)",
-              border: `1px solid ${fc.mid}`,
-              clipPath: "polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px))",
-            }}
-          >
-            {/* ── Scanlines ── */}
-            <div
-              className="absolute inset-0 pointer-events-none z-0"
-              style={{
-                background:
-                  "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.1) 3px, rgba(0,0,0,0.1) 4px)",
-              }}
-            />
-
-            {/* ── Grid ── */}
-            <div
-              className="absolute inset-0 pointer-events-none z-0"
-              style={{
-                backgroundImage: `linear-gradient(${fc.dim} 1px, transparent 1px), linear-gradient(90deg, ${fc.dim} 1px, transparent 1px)`,
-                backgroundSize: "40px 40px",
-              }}
-            />
-
-            {/* ── Ambient left glow ── */}
-            <div
-              className="absolute -left-16 top-1/2 -translate-y-1/2 w-48 h-full pointer-events-none z-0"
-              style={{
-                background: `radial-gradient(ellipse at center, ${fc.dim} 0%, transparent 70%)`,
-              }}
-            />
-
-            {/* ── Corner accent top-right ── */}
-            <div
-              className="absolute top-0 right-0 pointer-events-none z-0"
-              style={{
-                width: 0,
-                height: 0,
-                borderTop: `20px solid ${fc.mid}`,
-                borderLeft: "20px solid transparent",
-                filter: `drop-shadow(0 0 4px ${fc.glow})`,
-              }}
-            />
-
-            {/* ── Corner accent bottom-left ── */}
-            <div
-              className="absolute bottom-0 left-0 pointer-events-none z-0"
-              style={{
-                width: 0,
-                height: 0,
-                borderBottom: `20px solid ${fc.mid}`,
-                borderRight: "20px solid transparent",
-                filter: `drop-shadow(0 0 4px ${fc.glow})`,
-              }}
-            />
-
-            {/* ── Bottom glow line ── */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-px pointer-events-none z-0"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${fc.mid} 25%, ${fc.full} 50%, ${fc.mid} 75%, transparent)`,
-              }}
-            />
-
-            {/* ── Top glow line ── */}
-            <div
-              className="absolute top-0 left-0 right-0 h-px pointer-events-none z-0"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${fc.dim} 40%, ${fc.mid} 60%, transparent)`,
-              }}
-            />
-
-            {/* ══ CONTENT (above all overlays) ══ */}
-            <div className="relative z-10 space-y-4">
-              {/* ── Row 1: meta labels ── */}
-              <div className="flex items-center justify-between">
-                {/* Left: "CURRENT RANK" label */}
-                <div className="flex items-center gap-2" style={{ color: fc.text }}>
-                  <Trophy size={10} />
-                  <span className="font-orbitron text-[9px] tracking-[0.3em] uppercase">
-                    {t("home.hero.currentRank", "Current Rank")}
-                  </span>
-                </div>
-
-                {/* Right: "NEXT TIER" label + name */}
-                <div className="flex flex-col items-end gap-0.5">
-                  <span className="font-orbitron text-[9px] tracking-[0.3em] uppercase" style={{ color: fc.text }}>
-                    {t("home.hero.nextTier", "Next Tier")}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="font-orbitron font-black text-sm tracking-[0.12em] uppercase"
-                      style={{
-                        color: "#ffb400",
-                        filter: "drop-shadow(0 0 8px #ffb40088)",
-                      }}
-                    >
-                      {nextRankName}
-                    </span>
-                    {/* Diamond icon */}
-                    <div
-                      style={{
-                        width: 16,
-                        height: 16,
-                        background: "#ffb40020",
-                        border: "1px solid #ffb40055",
-                        clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Zap size={7} style={{ color: "#ffb400", fill: "#ffb400" }} />
-                    </div>
-                  </div>
-                </div>
+            {/* Rank + XP readout */}
+            <div className="hidden sm:flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-[rgba(0,180,255,0.04)] border border-[rgba(0,180,255,0.1)]">
+                <span
+                  className="text-[10px] font-orbitron font-bold uppercase tracking-[0.15em]"
+                  style={{ color: frameColor }}
+                >
+                  {rankName}
+                </span>
+                <span className="text-[rgba(160,210,255,0.2)]">·</span>
+                <span className="text-[10px] font-mono text-[rgba(160,210,255,0.5)] tabular-nums">
+                  LVL {level}
+                </span>
+                <span className="text-[rgba(160,210,255,0.2)]">·</span>
+                <span className="text-[10px] font-mono text-[rgba(160,210,255,0.5)] tabular-nums">
+                  {fmt(currentXP)} XP
+                </span>
               </div>
-
-              {/* ── Row 2: Rank name + Level (CurrentRankBadge) ── */}
-              <CurrentRankBadge
-                rank={currentRank}
-                level={level}
-                currentXP={currentXP}
-                progressToNext={progressInCurrentRank}
-                hideProgress={true}
-              />
-
-              {/* ── Row 3: XP Progress bar (showLabels=true for ticks) ── */}
-              <XPProgressBar
-                currentXP={currentXP}
-                currentRankXP={currentRankMin}
-                nextRankXP={nextRankMin}
-                nextRankName={nextRankName}
-                isMaxRank={isMaxRank}
-                frameColor={frameColor}
-                showLabels={true}
-              />
             </div>
+          </div>
+
+          {/* XP progress bar — full-width bottom edge */}
+          <div className="h-[2px] w-full bg-[rgba(0,180,255,0.06)]">
+            <div
+              className="h-full transition-all duration-1000 ease-out"
+              style={{
+                width: `${xpProgress}%`,
+                backgroundColor: frameColor,
+                boxShadow: `0 0 8px ${frameColor}66`,
+              }}
+            />
           </div>
         </motion.div>
 
-        {/* ── 4. Quick actions ── */}
-        <motion.div variants={itemVariants} className="w-full">
+        {/* ═══ ZONE 1.5: SYSTEM STATUS (collapsible Pact Nexus) ═══ */}
+        <motion.div variants={itemVariants}>
+          <SmartProjectHeader focusGoals={focusGoals} allGoals={allGoals} pact={pact} />
+        </motion.div>
+
+        {/* ═══ ZONE 2: COMMAND STRIP ═══ */}
+        <motion.div variants={itemVariants}>
           <QuickActionsBar ownedModules={ownedModules} />
         </motion.div>
 
-        {/* ── 5. Mission randomizer ── */}
-        <motion.div variants={itemVariants} className="w-full">
+        {/* ═══ ZONE 2.5: MISSION RANDOMIZER ═══ */}
+        <motion.div variants={itemVariants}>
           <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
         </motion.div>
       </div>

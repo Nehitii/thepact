@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Target, Crosshair, Footprints } from "lucide-react";
 import { getDifficultyColor } from "@/lib/utils";
-import { DashboardWidgetShell, WidgetDisplayMode } from './DashboardWidgetShell';
+import { NeuralPanel, WidgetDisplayMode } from './NeuralPanel';
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -23,7 +23,6 @@ interface ProgressByDifficultyModuleProps {
   customDifficultyColor?: string;
   displayMode?: WidgetDisplayMode;
   onToggleDisplayMode?: () => void;
-  hideBackgroundLines?: boolean;
 }
 
 export function ProgressByDifficultyModule({
@@ -36,15 +35,11 @@ export function ProgressByDifficultyModule({
   const [viewMode, setViewMode] = useState<ViewMode>("goals");
   
   const getDifficultyLabel = (difficulty: string) => {
-    if (difficulty === 'custom' && customDifficultyName) {
-      return customDifficultyName;
-    }
+    if (difficulty === 'custom' && customDifficultyName) return customDifficultyName;
     return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
   };
 
-  const getColor = (difficulty: string) => {
-    return getDifficultyColor(difficulty, customDifficultyColor);
-  };
+  const getColor = (difficulty: string) => getDifficultyColor(difficulty, customDifficultyColor);
 
   const visibleProgress = difficultyProgress.filter(item => {
     if (viewMode === "steps") return item.totalSteps > 0;
@@ -52,41 +47,34 @@ export function ProgressByDifficultyModule({
   });
 
   const modeToggle = (
-    <div className="flex items-center rounded-md bg-white/[0.04] border border-white/[0.08] p-0.5">
+    <div className="flex items-center rounded-sm bg-[rgba(0,180,255,0.03)] border border-[rgba(0,180,255,0.08)] p-0.5">
       <button
         onClick={() => setViewMode("goals")}
         className={cn(
-          "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-orbitron uppercase tracking-wider transition-all duration-300",
-          viewMode === "goals"
-            ? "bg-primary/20 text-primary border border-primary/30"
-            : "text-white/40 hover:text-white/60"
+          "flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[8px] font-orbitron uppercase tracking-wider transition-all duration-300",
+          viewMode === "goals" ? "bg-[rgba(0,180,255,0.1)] text-primary border border-[rgba(0,180,255,0.2)]" : "text-[rgba(160,210,255,0.3)]"
         )}
       >
-        <Crosshair className="w-2.5 h-2.5" />
-        Goals
+        <Crosshair className="w-2.5 h-2.5" /> Goals
       </button>
       <button
         onClick={() => setViewMode("steps")}
         className={cn(
-          "flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-orbitron uppercase tracking-wider transition-all duration-300",
-          viewMode === "steps"
-            ? "bg-primary/20 text-primary border border-primary/30"
-            : "text-white/40 hover:text-white/60"
+          "flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[8px] font-orbitron uppercase tracking-wider transition-all duration-300",
+          viewMode === "steps" ? "bg-[rgba(0,180,255,0.1)] text-primary border border-[rgba(0,180,255,0.2)]" : "text-[rgba(160,210,255,0.3)]"
         )}
       >
-        <Footprints className="w-2.5 h-2.5" />
-        Steps
+        <Footprints className="w-2.5 h-2.5" /> Steps
       </button>
     </div>
   );
 
   return (
-    <DashboardWidgetShell
+    <NeuralPanel
       title="By Difficulty"
       icon={Target}
       displayMode={displayMode}
       onToggleDisplayMode={onToggleDisplayMode}
-      accentColor="primary"
       headerAction={modeToggle}
     >
       <AnimatePresence mode="wait">
@@ -107,50 +95,34 @@ export function ProgressByDifficultyModule({
 
             return (
               <div key={item.difficulty} className="flex items-center gap-2">
-                {/* Difficulty badge - fixed width */}
                 <div
-                  className="shrink-0 w-[62px] text-center px-1 py-0.5 text-[8px] rounded border font-bold uppercase tracking-wider font-orbitron"
-                  style={{ 
-                    borderColor: `${color}50`,
-                    color: color,
-                    backgroundColor: `${color}0d`,
-                  }}
+                  className="shrink-0 w-[62px] text-center px-1 py-0.5 text-[8px] rounded-sm border font-bold uppercase tracking-wider font-orbitron"
+                  style={{ borderColor: `${color}30`, color: color, backgroundColor: `${color}08` }}
                 >
                   {getDifficultyLabel(item.difficulty)}
                 </div>
-
-                {/* Progress bar */}
-                <div className="flex-1 h-1.5 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.06]">
+                <div className="flex-1 h-1.5 bg-[rgba(0,180,255,0.04)] rounded-full overflow-hidden">
                   <motion.div
                     className="h-full rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${pct}%` }}
                     transition={{ duration: 0.6, ease: "easeOut", delay: i * 0.06 }}
-                    style={{
-                      backgroundColor: color,
-                      boxShadow: `0 0 8px ${color}60`
-                    }}
+                    style={{ backgroundColor: color, opacity: 0.7 }}
                   />
                 </div>
-
-                {/* Count */}
-                <span
-                  className="shrink-0 text-[9px] font-orbitron font-bold tabular-nums w-[28px] text-right"
-                  style={{ color }}
-                >
+                <span className="shrink-0 text-[9px] font-mono font-bold tabular-nums w-[28px] text-right" style={{ color }}>
                   {completed}/{total}
                 </span>
               </div>
             );
           })}
-          
           {visibleProgress.length === 0 && (
-            <div className="flex items-center justify-center text-white/30 font-rajdhani text-sm py-6">
+            <div className="flex items-center justify-center text-[rgba(160,210,255,0.25)] font-rajdhani text-sm py-6">
               No {viewMode} yet
             </div>
           )}
         </motion.div>
       </AnimatePresence>
-    </DashboardWidgetShell>
+    </NeuralPanel>
   );
 }

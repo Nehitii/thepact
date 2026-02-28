@@ -67,17 +67,13 @@ export function ModuleCard({
 
   const isOver = externalIsOver ?? sortableIsOver;
 
-  // Calculate width based on size
-  const getWidthClass = () => {
+  // CSS Grid column spans
+  const getGridSpan = () => {
     switch (size) {
-      case 'full':
-        return 'w-full';
-      case 'half':
-        return 'w-full md:w-[calc(50%-0.75rem)]';
-      case 'quarter':
-        return 'w-full sm:w-[calc(50%-0.75rem)] md:w-[calc(25%-1.125rem)]';
-      default:
-        return 'w-full';
+      case 'full': return 'col-span-12';
+      case 'half': return 'col-span-12 md:col-span-6';
+      case 'quarter': return 'col-span-12 sm:col-span-6 md:col-span-4';
+      default: return 'col-span-12';
     }
   };
 
@@ -87,14 +83,10 @@ export function ModuleCard({
       scaleX: 1,
       scaleY: 1,
     } : null),
-    transition: isDragging 
-      ? 'none' 
-      : transition,
+    transition: isDragging ? 'none' : transition,
     zIndex: isDragging ? 100 : 1,
   };
 
-  // FIX #1: In edit mode, always show the module (even if disabled)
-  // Only hide in non-edit mode if disabled
   if (!isEditMode && !isEnabled) {
     return null;
   }
@@ -108,135 +100,71 @@ export function ModuleCard({
       {...(isEditMode ? { ...attributes, ...listeners } : {})}
       className={cn(
         'relative transition-all duration-200',
-        getWidthClass(),
+        getGridSpan(),
         isEditMode && 'cursor-grab active:cursor-grabbing',
         isDragging && 'opacity-50',
-        // Remove the generic opacity reduction - we'll use a more visual approach
-        isOver && !isDragging && 'ring-2 ring-primary/50 ring-offset-2 ring-offset-background rounded-lg',
+        isOver && !isDragging && 'ring-1 ring-primary/30 rounded-sm',
         className
       )}
     >
-      {/* Drop indicator glow */}
-      {isOver && !isDragging && (
-        <div className="absolute -inset-1 bg-primary/20 rounded-lg blur-lg pointer-events-none animate-pulse" />
-      )}
-      
       {/* Edit mode overlay */}
       {isEditMode && (
         <div className="absolute inset-0 z-20 pointer-events-none">
-          {/* Controls overlay - top right */}
           <div className="absolute top-2 right-2 flex items-center gap-1.5 pointer-events-auto">
-            {/* Size toggle button */}
             {allowedSizes.length > 1 && (
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  onCycleSize?.();
-                }}
+                onClick={(e) => { e.stopPropagation(); e.preventDefault(); onCycleSize?.(); }}
                 onPointerDown={(e) => e.stopPropagation()}
-                className={cn(
-                  "flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-xl border transition-all",
-                  "bg-card/90 border-accent/40 hover:border-accent/60 text-accent shadow-[0_0_12px_rgba(122,191,255,0.3)]"
-                )}
+                className="flex items-center gap-1.5 px-2 py-1 rounded-sm backdrop-blur-xl border bg-[rgba(6,11,22,0.9)] border-primary/30 hover:border-primary/50 text-primary"
               >
                 <SizeIcon className="w-3 h-3" />
-                <span className="text-[10px] font-orbitron uppercase tracking-wider">
-                  {sizeLabels[size]}
-                </span>
+                <span className="text-[10px] font-orbitron uppercase tracking-wider">{sizeLabels[size]}</span>
               </button>
             )}
             
-            {/* Toggle visibility button */}
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                onToggle?.();
-              }}
+              onClick={(e) => { e.stopPropagation(); e.preventDefault(); onToggle?.(); }}
               onPointerDown={(e) => e.stopPropagation()}
               className={cn(
-                "flex items-center gap-1.5 px-2 py-1 rounded-md backdrop-blur-xl border transition-all",
+                "flex items-center gap-1.5 px-2 py-1 rounded-sm backdrop-blur-xl border",
                 isEnabled 
-                  ? "bg-health/20 border-health/40 hover:border-health/60 text-health shadow-[0_0_12px_rgba(74,222,128,0.3)]"
-                  : "bg-destructive/20 border-destructive/40 hover:border-destructive/60 text-destructive shadow-[0_0_12px_rgba(239,68,68,0.3)]"
+                  ? "bg-[rgba(6,11,22,0.9)] border-emerald-500/30 text-emerald-400"
+                  : "bg-[rgba(6,11,22,0.9)] border-red-500/30 text-red-400"
               )}
             >
-              {isEnabled ? (
-                <Eye className="w-3 h-3" />
-              ) : (
-                <EyeOff className="w-3 h-3" />
-              )}
+              {isEnabled ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
             </button>
           </div>
           
-          {/* Module name label - top left */}
           <div className="absolute top-2 left-2 pointer-events-none">
-            <div className={cn(
-              "px-2 py-1 rounded-md backdrop-blur-xl border shadow-[0_0_12px_rgba(91,180,255,0.2)]",
-              isEnabled 
-                ? "bg-card/90 border-primary/40" 
-                : "bg-destructive/10 border-destructive/30"
-            )}>
-              <span className={cn(
-                "text-[10px] font-orbitron uppercase tracking-wider",
-                isEnabled ? "text-primary" : "text-destructive"
-              )}>
+            <div className="px-2 py-1 rounded-sm backdrop-blur-xl bg-[rgba(6,11,22,0.9)] border border-[rgba(0,180,255,0.15)]">
+              <span className="text-[10px] font-orbitron uppercase tracking-wider text-[rgba(160,210,255,0.6)]">
                 {name || 'Module'}
               </span>
             </div>
           </div>
           
-          {/* Edit mode border */}
           <div className={cn(
-            "absolute inset-0 rounded-lg border-2 border-dashed transition-all duration-200",
-            isDragging 
-              ? "border-primary shadow-[0_0_20px_rgba(91,180,255,0.4)]" 
-              : isEnabled 
-                ? "border-primary/30"
-                : "border-destructive/40",
-            isOver && !isDragging && "border-primary/60 bg-primary/5"
+            "absolute inset-0 rounded-sm border border-dashed",
+            isDragging ? "border-primary/50" : isEnabled ? "border-[rgba(0,180,255,0.15)]" : "border-red-500/20",
           )} />
         </div>
       )}
       
-      {/* FIX #1: Hidden state overlay - show when disabled in edit mode */}
+      {/* Hidden state overlay */}
       {isEditMode && !isEnabled && (
-        <div className="absolute inset-0 z-10 rounded-lg overflow-hidden pointer-events-none">
-          {/* Dimming overlay */}
+        <div className="absolute inset-0 z-10 rounded-sm overflow-hidden pointer-events-none">
           <div className="absolute inset-0 bg-background/70 backdrop-blur-[2px]" />
-          
-          {/* Diagonal hatch pattern */}
-          <div 
-            className="absolute inset-0 opacity-30"
-            style={{
-              backgroundImage: `repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                hsl(var(--destructive) / 0.2) 10px,
-                hsl(var(--destructive) / 0.2) 12px
-              )`
-            }}
-          />
-          
-          {/* Hidden label */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-destructive/20 border border-destructive/40 backdrop-blur-sm">
-              <HiddenIcon className="w-4 h-4 text-destructive" />
-              <span className="text-sm font-orbitron text-destructive uppercase tracking-wider">
-                Hidden
-              </span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-sm bg-red-500/10 border border-red-500/20">
+              <HiddenIcon className="w-3.5 h-3.5 text-red-400/60" />
+              <span className="text-[10px] font-orbitron text-red-400/60 uppercase tracking-wider">Hidden</span>
             </div>
           </div>
         </div>
       )}
       
-      {/* Module content */}
-      <div className={cn(
-        isEditMode && 'pt-10',
-        isDragging && 'opacity-80'
-      )}>
+      <div className={cn(isEditMode && 'pt-10', isDragging && 'opacity-80')}>
         {children}
       </div>
     </div>
