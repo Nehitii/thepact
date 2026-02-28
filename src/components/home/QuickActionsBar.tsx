@@ -23,19 +23,30 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
   ];
 
   return (
-    <div className={cn("w-full", className)}>
-      <div className="flex items-center gap-2">
+    <div
+      className={cn(
+        "w-full bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.12)] shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)]",
+        className,
+      )}
+      style={{ borderRadius: "4px" }}
+    >
+      {/* Permanent top highlight */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+
+      <div className="flex items-center gap-1 p-1.5 relative">
         {actions.map((action) =>
           action.owned ? (
             <button
               key={action.id}
               onClick={action.isNew ? (onNewGoalClick || (() => navigate(action.href))) : () => navigate(action.href)}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-sm transition-all duration-200",
-                "border border-transparent hover:border-[rgba(0,210,255,0.2)]",
+                "flex items-center gap-2 px-3 py-2 transition-all duration-200",
+                "border border-transparent hover:border-[rgba(0,210,255,0.4)]",
                 "hover:bg-[rgba(0,180,255,0.04)]",
                 "group",
+                action.isNew && "border-[rgba(0,210,255,0.25)] shadow-[0_0_12px_rgba(0,210,255,0.08)]",
               )}
+              style={{ borderRadius: "4px" }}
             >
               <action.icon
                 className={cn(
@@ -51,7 +62,8 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
           ) : (
             <div
               key={action.id}
-              className="flex items-center gap-2 px-3 py-2 rounded-sm opacity-30 cursor-not-allowed"
+              className="flex items-center gap-2 px-3 py-2 opacity-30 cursor-not-allowed"
+              style={{ borderRadius: "4px" }}
             >
               <Lock className="w-3.5 h-3.5 text-[rgba(160,210,255,0.3)]" strokeWidth={1.5} />
               <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.3)]">

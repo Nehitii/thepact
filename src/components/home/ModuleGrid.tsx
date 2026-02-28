@@ -92,7 +92,7 @@ export function ModuleGrid({
         <div 
           ref={containerRef}
           className={cn(
-            "grid grid-cols-12 gap-4 transition-all duration-200",
+            "grid grid-cols-12 gap-3 transition-all duration-200",
             isEditMode && "pb-32"
           )}
         >

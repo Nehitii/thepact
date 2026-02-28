@@ -26,10 +26,6 @@ interface ActiveMissionCardProps {
   className?: string;
 }
 
-/**
- * Displays the active mission with countdown timer
- * Only way to clear is via "Abandon" with confirmation
- */
 export function ActiveMissionCard({ mission, onAbandon, onComplete, className }: ActiveMissionCardProps) {
   const navigate = useNavigate();
   const [timeRemaining, setTimeRemaining] = useState<string>('');
@@ -103,17 +99,19 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className={cn(
-        "relative overflow-hidden rounded-2xl border backdrop-blur-xl",
+        "relative overflow-hidden border backdrop-blur-xl",
         urgencyLevel === 'critical' && "border-destructive/50 bg-destructive/10",
         urgencyLevel === 'warning' && "border-amber-500/40 bg-amber-500/10",
-        urgencyLevel === 'normal' && "border-primary/40 bg-black/60",
+        urgencyLevel === 'normal' && "border-[rgba(0,180,255,0.2)] bg-[rgba(6,11,22,0.92)]",
         className
       )}
+      style={{ borderRadius: "4px" }}
     >
       {/* Pulsing border for critical */}
       {urgencyLevel === 'critical' && (
         <motion.div
-          className="absolute inset-0 border-2 border-destructive/60 rounded-2xl"
+          className="absolute inset-0 border-2 border-destructive/60"
+          style={{ borderRadius: "4px" }}
           animate={{ opacity: [0.3, 0.8, 0.3] }}
           transition={{ duration: 1, repeat: Infinity }}
         />
@@ -124,7 +122,7 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
         "relative z-10 px-4 py-3 border-b",
         urgencyLevel === 'critical' && "border-destructive/30 bg-destructive/10",
         urgencyLevel === 'warning' && "border-amber-500/20 bg-amber-500/5",
-        urgencyLevel === 'normal' && "border-primary/20 bg-primary/5"
+        urgencyLevel === 'normal' && "border-[rgba(0,180,255,0.1)] bg-[rgba(0,180,255,0.02)]"
       )}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -134,35 +132,33 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
               urgencyLevel === 'warning' && "text-amber-400",
               urgencyLevel === 'normal' && "text-primary"
             )} />
-            <span className="text-[10px] font-orbitron uppercase tracking-widest text-white/70">
+            <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-white/70">
               Active Mission
             </span>
           </div>
           
-          {/* Countdown Timer */}
           <div className={cn(
-            "flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-mono font-bold",
+            "flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono font-bold",
             isExpired && "bg-destructive/20 text-destructive",
             urgencyLevel === 'critical' && !isExpired && "bg-destructive/20 text-destructive animate-pulse",
             urgencyLevel === 'warning' && !isExpired && "bg-amber-500/20 text-amber-400",
-            urgencyLevel === 'normal' && !isExpired && "bg-primary/20 text-primary"
-          )}>
+            urgencyLevel === 'normal' && !isExpired && "bg-[rgba(0,180,255,0.1)] text-primary"
+          )} style={{ borderRadius: "4px" }}>
             <Clock className="w-3 h-3" />
-            {timeRemaining}
+            <span className="tabular-nums tracking-tight">{timeRemaining}</span>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="relative z-10 p-4 space-y-4">
-        {/* Goal info */}
         <div className="flex items-start gap-3">
           <div className={cn(
-            "p-2 rounded-lg flex-shrink-0",
+            "p-2 flex-shrink-0",
             urgencyLevel === 'critical' && "bg-destructive/20 border border-destructive/30",
             urgencyLevel === 'warning' && "bg-amber-500/20 border border-amber-500/30",
-            urgencyLevel === 'normal' && "bg-primary/20 border border-primary/30"
-          )}>
+            urgencyLevel === 'normal' && "bg-[rgba(0,180,255,0.08)] border border-[rgba(0,180,255,0.15)]"
+          )} style={{ borderRadius: "4px" }}>
             <Target className={cn(
               "w-5 h-5",
               urgencyLevel === 'critical' && "text-destructive",
@@ -171,28 +167,18 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
             )} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider">
-              Goal
-            </p>
-            <h4 className="text-sm font-orbitron font-bold text-white truncate">
-              {mission.goal_name}
-            </h4>
+            <p className="text-xs text-muted-foreground font-rajdhani uppercase tracking-wider">Goal</p>
+            <h4 className="text-sm font-orbitron font-bold text-white truncate">{mission.goal_name}</h4>
           </div>
         </div>
 
-        {/* Current step */}
-        <div className="p-3 rounded-xl bg-white/5 border border-white/10">
-          <p className="text-[10px] text-white/50 font-rajdhani uppercase tracking-wider mb-1">
-            Focused Step
-          </p>
-          <p className="text-sm font-rajdhani text-white leading-snug">
-            {mission.step_title}
-          </p>
+        <div className="p-3 bg-[rgba(6,11,22,0.6)] border border-[rgba(0,180,255,0.08)]" style={{ borderRadius: "4px" }}>
+          <p className="text-[10px] text-white/50 font-rajdhani uppercase tracking-wider mb-1">Focused Step</p>
+          <p className="text-sm font-rajdhani text-white leading-snug">{mission.step_title}</p>
         </div>
 
-        {/* Expired warning */}
         {isExpired && (
-          <div className="flex items-center gap-2 p-2 rounded-lg bg-destructive/20 border border-destructive/30">
+          <div className="flex items-center gap-2 p-2 bg-destructive/20 border border-destructive/30" style={{ borderRadius: "4px" }}>
             <AlertTriangle className="w-4 h-4 text-destructive" />
             <span className="text-xs text-destructive font-rajdhani">
               Deadline passed! Complete or abandon to continue.
@@ -200,16 +186,12 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
           </div>
         )}
 
-        {/* Actions */}
         <div className="grid grid-cols-2 gap-2">
           <Button
             onClick={handleComplete}
             disabled={isCompleting || isAbandoning}
-            className={cn(
-              "font-rajdhani text-xs",
-              "bg-gradient-to-r from-health/80 to-health hover:from-health hover:to-health/80",
-              "border border-health/30"
-            )}
+            className="font-rajdhani text-xs bg-gradient-to-r from-health/80 to-health hover:from-health hover:to-health/80 border border-health/30"
+            style={{ borderRadius: "4px" }}
           >
             <Check className="w-4 h-4 mr-1" />
             {isCompleting ? 'Saving...' : 'Complete'}
@@ -221,6 +203,7 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
                 variant="outline"
                 disabled={isCompleting || isAbandoning}
                 className="font-rajdhani text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                style={{ borderRadius: "4px" }}
               >
                 <AlertTriangle className="w-4 h-4 mr-1" />
                 Abandon
@@ -228,9 +211,7 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
             </AlertDialogTrigger>
             <AlertDialogContent className="bg-card/95 backdrop-blur-xl border-destructive/30">
               <AlertDialogHeader>
-                <AlertDialogTitle className="font-orbitron text-destructive">
-                  Abandon Mission?
-                </AlertDialogTitle>
+                <AlertDialogTitle className="font-orbitron text-destructive">Abandon Mission?</AlertDialogTitle>
                 <AlertDialogDescription className="font-rajdhani">
                   Are you sure you want to abandon this mission? This action cannot be undone.
                   You will be able to pick a new mission after abandoning.
@@ -238,10 +219,7 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel className="font-rajdhani">Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleAbandon}
-                  className="bg-destructive hover:bg-destructive/80 font-rajdhani"
-                >
+                <AlertDialogAction onClick={handleAbandon} className="bg-destructive hover:bg-destructive/80 font-rajdhani">
                   {isAbandoning ? 'Abandoning...' : 'Yes, Abandon'}
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -249,7 +227,6 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
           </AlertDialog>
         </div>
 
-        {/* Go to goal link */}
         <button
           onClick={goToGoal}
           className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors font-rajdhani uppercase tracking-wider py-1"
