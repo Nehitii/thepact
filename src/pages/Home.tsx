@@ -23,17 +23,6 @@ import { useRankXP } from "@/hooks/useRankXP";
 
 type UserState = "onboarding" | "active" | "advanced";
 
-function SectionLabel({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3 mb-3">
-      <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.3)]">
-        {label}
-      </span>
-      <div className="flex-1 h-px bg-[rgba(0,180,255,0.06)]" />
-    </div>
-  );
-}
-
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
