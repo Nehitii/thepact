@@ -39,11 +39,12 @@ export function NeuralPanel({
   if (isLoading) {
     return (
       <div className={cn(
-        "relative h-full w-full rounded-sm overflow-hidden",
+        "relative h-full w-full overflow-hidden",
         "bg-[rgba(6,11,22,0.92)] backdrop-blur-xl",
         "border border-[rgba(0,180,255,0.08)]",
         className,
-      )}>
+      )} style={{ borderRadius: "4px" }}>
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
         <div className="flex flex-col h-full p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-6 h-6 rounded bg-white/5 animate-pulse" />
@@ -61,26 +62,27 @@ export function NeuralPanel({
     <Wrapper
       onClick={onClick}
       className={cn(
-        "group relative h-full w-full flex flex-col rounded-sm overflow-hidden transition-all duration-300",
+        "group relative h-full w-full flex flex-col overflow-hidden transition-all duration-300",
         "bg-[rgba(6,11,22,0.92)] backdrop-blur-xl",
         "border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)]",
-        "shadow-[0_8px_48px_rgba(0,0,0,0.9)]",
+        "shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)]",
         onClick && "cursor-pointer text-left",
         className,
       )}
+      style={{ borderRadius: "4px" }}
     >
-      {/* Top edge highlight on hover */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.15)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      {/* Permanent top edge gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
 
       {/* Header */}
       <div className="relative z-10 flex-shrink-0 px-5 pt-4 pb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <Icon className="w-4 h-4 text-primary/60 shrink-0" />
-          <h3 className="text-[10px] font-orbitron uppercase tracking-[0.2em] text-[rgba(160,210,255,0.65)] truncate">
+          <h3 className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.65)] truncate">
             {title}
           </h3>
           {subtitle && (
-            <span className="text-[9px] font-mono text-[rgba(160,210,255,0.3)] truncate hidden sm:inline">
+            <span className="text-[9px] font-mono text-[rgba(160,210,255,0.3)] truncate hidden sm:inline tracking-tight">
               {subtitle}
             </span>
           )}

@@ -15,6 +15,7 @@ import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { NeuralPanel } from "@/components/home/NeuralPanel";
+import { NeuralBar } from "@/components/home/NeuralBar";
 import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
 import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
@@ -275,29 +276,32 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden selection:bg-primary/20">
-      {/* Minimal background ambience */}
+      {/* Two-gradient background system */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60vw] h-[40vh] bg-[rgba(0,80,180,0.04)] rounded-full blur-[120px]" />
         <div
-          className="absolute inset-0 opacity-[0.02]"
+          className="absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(to right, rgba(0,180,255,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,180,255,0.3) 1px, transparent 1px)`,
-            backgroundSize: "60px 60px",
-            maskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)",
+            background: `
+              radial-gradient(ellipse 100% 60% at 50% -5%, rgba(0,80,180,0.07), transparent 65%),
+              radial-gradient(ellipse 50% 40% at 85% 70%, rgba(139,0,255,0.03), transparent 50%)
+            `,
           }}
         />
       </div>
 
       {/* Global scanline */}
       <div
-        className="fixed inset-0 pointer-events-none z-[1]"
+        className="fixed inset-0 pointer-events-none z-[9999]"
         style={{
-          background: "repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px)",
+          background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.022) 2px, rgba(0,0,0,0.022) 4px)",
         }}
       />
 
+      {/* Neural Bar - sticky top status */}
+      <NeuralBar pact={pact} rankData={safeRankData} />
+
       <motion.div
-        className="max-w-5xl mx-auto p-4 md:p-6 space-y-6 relative z-10"
+        className="max-w-5xl mx-auto p-4 md:p-5 space-y-4 relative z-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -331,8 +335,8 @@ export default function Home() {
         {/* GRID */}
         <motion.div variants={itemVariants}>
           {isEditMode && (
-            <div className="mb-4 flex items-center justify-between bg-[rgba(0,180,255,0.05)] border border-[rgba(0,180,255,0.15)] p-3 rounded-sm">
-              <span className="text-primary font-orbitron text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
+            <div className="mb-4 flex items-center justify-between bg-[rgba(0,180,255,0.05)] border border-[rgba(0,180,255,0.15)] p-3 rounded-[4px]">
+              <span className="text-primary font-orbitron text-[10px] uppercase tracking-[0.15em] flex items-center gap-2">
                 <Activity className="w-4 h-4" /> Edit Mode Active
               </span>
             </div>
@@ -362,7 +366,7 @@ export default function Home() {
         {/* LOCKED */}
         {lockedModules.length > 0 && !isEditMode && (
           <motion.div variants={itemVariants} className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
-            <h3 className="text-[10px] font-orbitron uppercase tracking-[0.2em] text-[rgba(160,210,255,0.35)] mb-4">
+            <h3 className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.35)] mb-4">
               Available Modules
             </h3>
             <LockedModulesTeaser lockedModules={lockedModules} />
@@ -396,16 +400,15 @@ function ActionModule({
   return (
     <button
       onClick={onClick}
-      className="group relative h-full w-full flex items-center justify-center rounded-sm overflow-hidden transition-all duration-300 bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)] shadow-[0_8px_48px_rgba(0,0,0,0.9)] min-h-[120px] cursor-pointer"
+      className="group relative h-full w-full flex items-center justify-center rounded-[4px] overflow-hidden transition-all duration-300 bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)] shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)] min-h-[120px] cursor-pointer"
     >
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.15)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
       <div className="flex flex-col items-center gap-2.5">
         <Icon className={`w-6 h-6 ${iconColor || 'text-primary/60'}`} />
-        <span className="text-[10px] font-orbitron uppercase tracking-[0.2em] text-[rgba(160,210,255,0.6)] group-hover:text-[rgba(160,210,255,0.85)] transition-colors">
+        <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.6)] group-hover:text-[rgba(160,210,255,0.85)] transition-colors">
           {title}
         </span>
       </div>
-      {/* Right arrow */}
       <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[rgba(160,210,255,0.1)] group-hover:text-[rgba(160,210,255,0.3)] transition-all">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
           <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, Activity, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,16 +13,12 @@ import {
 } from "@/hooks/usePactAnalysis";
 import { InsightCard } from "./InsightCard";
 
-// ─── types ──────────────────────────────────────────────────────────────────
-
 interface SmartProjectHeaderProps {
   focusGoals: Goal[];
   allGoals: Goal[];
   pact?: Pact | null;
   pendingValidations?: number;
 }
-
-// ─── status dot colours ─────────────────────────────────────────────────────
 
 const STATUS_DOT: Record<string, string> = {
   optimal: "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]",
@@ -35,8 +31,6 @@ const STATUS_LABEL: Record<string, string> = {
   attention: "Attention Required",
   critical: "Critical Alert",
 };
-
-// ─── scan boot animation ────────────────────────────────────────────────────
 
 function useScanBoot() {
   const [phase, setPhase] = useState(0);
@@ -54,8 +48,6 @@ function useScanBoot() {
 
   return { phase, done, currentText: SCAN_PHASES[Math.min(phase, SCAN_PHASES.length - 1)] };
 }
-
-// ─── typewriter text ────────────────────────────────────────────────────────
 
 function TypewriterText({ text }: { text: string }) {
   const [displayed, setDisplayed] = useState("");
@@ -79,8 +71,6 @@ function TypewriterText({ text }: { text: string }) {
   );
 }
 
-// ─── main component ─────────────────────────────────────────────────────────
-
 export function SmartProjectHeader({
   focusGoals,
   allGoals,
@@ -96,7 +86,6 @@ export function SmartProjectHeader({
   const scan = useScanBoot();
   const [expanded, setExpanded] = useState(false);
 
-  // Auto-expand after scan completes
   useEffect(() => {
     if (scan.done) {
       const t = setTimeout(() => setExpanded(true), 300);
@@ -106,57 +95,37 @@ export function SmartProjectHeader({
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {/* ── Main shell ── */}
       <motion.div
         initial={{ opacity: 0, y: -12, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 80, damping: 14 }}
-        className={cn(
-          "relative overflow-hidden rounded-xl",
-          "border border-primary/20",
-          "bg-black/40 backdrop-blur-xl",
-          "shadow-[0_0_30px_rgba(0,212,255,0.08)]",
-        )}
+        className="relative overflow-hidden bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.12)] shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)]"
+        style={{ borderRadius: "4px" }}
       >
-        {/* Scanline overlay */}
-        <div
-          className="absolute inset-0 pointer-events-none z-0 opacity-[0.03]"
-          style={{
-            background:
-              "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,212,255,0.06) 3px, rgba(0,212,255,0.06) 4px)",
-          }}
-        />
+        {/* Permanent top highlight */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
 
-        {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
-        {/* ── Header bar ── */}
+        {/* Header bar */}
         <button
           onClick={() => scan.done && setExpanded((e) => !e)}
           className="relative z-10 w-full flex items-center gap-3 px-4 py-3 text-left group"
         >
-          {/* Brain icon with glow */}
-          <div className="relative flex-shrink-0">
-            <div className="absolute inset-0 rounded-full blur-md bg-primary/30" />
-            <div className="relative p-2 rounded-full border border-primary/30 bg-black/50">
-              <Brain
-                className={cn(
-                  "w-4 h-4 text-primary",
-                  !scan.done && "animate-pulse",
-                )}
-              />
-            </div>
-          </div>
+          {/* Brain icon - simplified inline */}
+          <Brain
+            className={cn(
+              "w-4 h-4 text-primary shrink-0",
+              !scan.done && "animate-pulse",
+            )}
+          />
 
           {/* Title + status */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-orbitron font-bold uppercase tracking-[0.2em] text-primary">
+              <span className="text-[11px] font-orbitron font-bold uppercase tracking-[0.15em] text-primary">
                 Pact Nexus
               </span>
               <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
 
-              {/* Status indicator */}
               <div className="flex items-center gap-1.5">
                 <div
                   className={cn(
@@ -170,7 +139,6 @@ export function SmartProjectHeader({
               </div>
             </div>
 
-            {/* Scan phase text or summary */}
             <div className="mt-0.5 h-4 overflow-hidden">
               <AnimatePresence mode="wait">
                 {!scan.done ? (
@@ -201,7 +169,6 @@ export function SmartProjectHeader({
             </div>
           </div>
 
-          {/* Expand chevron */}
           {scan.done && insights.length > 0 && (
             <motion.div
               animate={{ rotate: expanded ? 180 : 0 }}
@@ -213,7 +180,7 @@ export function SmartProjectHeader({
           )}
         </button>
 
-        {/* ── Insight cards panel ── */}
+        {/* Insight cards panel */}
         <AnimatePresence>
           {expanded && insights.length > 0 && (
             <motion.div
@@ -225,17 +192,15 @@ export function SmartProjectHeader({
               className="overflow-hidden"
             >
               <div className="px-3 pb-3 space-y-2">
-                {/* Separator */}
                 <div className="h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
 
                 {insights.map((insight, i) => (
                   <InsightCard key={insight.id} insight={insight} index={i} />
                 ))}
 
-                {/* Footer */}
                 <div className="flex items-center justify-center gap-2 pt-1">
                   <Shield className="w-3 h-3 text-muted-foreground/30" />
-                  <span className="text-[9px] font-orbitron uppercase tracking-[0.2em] text-muted-foreground/30">
+                  <span className="text-[9px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/30">
                     Nexus Engine v1.0
                   </span>
                 </div>
@@ -243,9 +208,6 @@ export function SmartProjectHeader({
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Bottom accent line */}
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       </motion.div>
     </div>
   );
