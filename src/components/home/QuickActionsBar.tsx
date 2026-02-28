@@ -62,7 +62,6 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
               className="flex items-center gap-2 px-3 py-2 opacity-30 cursor-not-allowed"
               style={{ borderRadius: "4px" }}
             >
-              <Lock className="w-3.5 h-3.5 text-[rgba(160,210,255,0.3)]" strokeWidth={1.5} />
               <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.3)]">
                 {action.label}
               </span>
