@@ -1,240 +1,187 @@
 
 
-# Health Module: Biometric HUD Redesign
+# Apply NEXUS OS v3-2 Reference Design to /Home
 
-## Audit Summary
+## What Changes
 
-### Current State
-The Health module comprises **12 components** + 1 page orchestrator (`Health.tsx`). It uses a soft "emerald/teal" palette with standard `rounded-2xl` containers, basic `framer-motion` fades (`y: 20`), and Recharts for data visualization. The design system already has a Sci-Fi HUD foundation (Orbitron fonts, `--glow-cyan` variables, `cyber-scan` keyframes) but the Health module does **not** leverage any of it -- it uses its own emerald gradient aesthetic that feels disconnected from the rest of the app.
-
-### Components to Redesign
-| Component | Current State | Redesign Priority |
-|-----------|--------------|-------------------|
-| `Health.tsx` (page layout) | Standard flex/grid, emerald ambient blobs | Full HUD layout overhaul |
-| `HealthScoreCard.tsx` | Simple SVG circle progress ring | Segmented Radar Disk |
-| `HealthMetricCard.tsx` | Rounded cards with basic hover scale | Chamfered HUD panels with scan lines |
-| `HealthDailyCheckin.tsx` | Standard dialog with sliders | System Init Sequence |
-| `HealthEnergyCurve.tsx` | Basic Recharts LineChart | Vital Sign Monitor with pulse dot |
-| `HealthWeeklyChart.tsx` | Bar chart with emerald colors | HUD bar chart with cyan/amber palette |
-| `HealthBMIIndicator.tsx` | Gradient bar with dot marker | Tactical gauge |
-| `HealthStreakBadge.tsx` | Fire icon with tier colors | Retains structure, palette shift |
-| `HealthInsightsPanel.tsx` | Simple card list | Terminal-style output |
-| `HealthHistoryChart.tsx` | Recharts multi-line chart | Palette shift + HUD frame |
-| `HealthChallengesPanel.tsx` | Card list | HUD frame + palette shift |
-| `HealthBreathingExercise.tsx` | Breathing circles in dialog | Minor palette shift |
-| `HealthMoodSelector.tsx` | Emoji buttons | Palette shift on borders |
+The current `/home` already has the "NEXUS OS" color system and NeuralPanel components from the previous redesign. However, it still diverges from the reference file in several key ways. This plan aligns it precisely with the v3-2 reference.
 
 ---
 
-## Phase 1: Global Design System Extensions
+## Phase 1: Neural Bar (Sticky Top Status Bar)
 
-### 1.1 New CSS Variables (in `src/index.css`)
+**New component: `src/components/home/NeuralBar.tsx`**
 
-Add Health HUD-specific variables to both `:root` and `.dark`:
+The reference has a sticky 48px top bar that acts as a persistent status strip across the page. Currently, the Identity Bar (pact name + rank) sits inside the hero stack and scrolls away.
 
-```text
-/* Health Biometric HUD */
---hud-health-bg: 210 100% 2%;
---hud-phosphor: 187 100% 50%;      /* #00F2FF */
---hud-amber: 43 100% 50%;           /* #FFB800 */
---hud-health-surface: 210 60% 6%;
---hud-health-border: 187 80% 30%;
-```
+- Create a sticky bar (`position: sticky; top: 0; z-index: 100`) with height 48px
+- Background: `rgba(2,4,10,0.97)` with `backdrop-blur(20px)`, bottom border `var(--border-bright)`
+- Left side: Pact name in `font-orbitron` (small, 11px, uppercase, tracking-widest)
+- Right side: Rank badge + XP readout in `font-mono` (e.g., `INITIATE // LVL 3 // 450 XP`)
+- Animated scanline at the bottom: a 1px cyan gradient that sweeps left-to-right on a 4s loop (matching the reference's `@keyframes scanline`)
+- This replaces the Identity Bar currently inside HeroSection
 
-### 1.2 New Tailwind Keyframes & Animations (in `tailwind.config.ts`)
+**File: `src/components/home/hero/HeroSection.tsx`**
+- Remove Zone 1 (Identity Bar) entirely -- it moves to NeuralBar
+- HeroSection now only contains: SmartProjectHeader, QuickActionsBar, MissionRandomizer
 
-```text
-keyframes:
-  "hud-scan": sweeps a thin horizontal line top-to-bottom over 6s
-  "hud-flicker": brief opacity jitter (1 -> 0.92 -> 1) over 0.15s
-  "hud-assemble": clip-path reveal from left (0% width -> 100%) over 0.6s
-  "pulse-dot": scale 1 -> 1.8 -> 1 with opacity over 1.5s
-
-animations:
-  "hud-scan": "hud-scan 6s linear infinite"
-  "hud-flicker": "hud-flicker 0.15s ease-in-out"
-  "hud-assemble": "hud-assemble 0.6s ease-out forwards"
-  "pulse-dot": "pulse-dot 1.5s ease-in-out infinite"
-```
-
-### 1.3 The `HUDFrame` Reusable Component
-
-Create `src/components/health/HUDFrame.tsx` -- a wrapper that provides:
-- A `backdrop-blur-md` semi-transparent background (`bg-[hsl(210,60%,6%)]/80`)
-- Four absolute-positioned corner brackets (L-shaped SVG or border tricks) in phosphor cyan
-- An optional scan line overlay (`::after` pseudo-element with `animate-hud-scan`)
-- A 45-degree chamfer on top-left and bottom-right corners via CSS `clip-path: polygon(...)`
-- Props: `children`, `className`, `scanLine?: boolean`, `glowColor?: string`
-
-### 1.4 Palette Shift Utility
-
-All emerald/teal references across the Health module will be replaced:
-- `emerald-500` -> phosphor cyan `[#00F2FF]` or `cyan-400`
-- `teal-500` -> `cyan-500`
-- Warning/stress colors -> `[#FFB800]` amber accent
-- Background blobs -> dark void gradients with cyan radial glows
+**File: `src/pages/Home.tsx`**
+- Render `<NeuralBar>` above the main content area, outside the `max-w-5xl` container so it spans full width
 
 ---
 
-## Phase 2: Page Layout (`Health.tsx`)
+## Phase 2: Panel System Upgrade -- Match Reference Exactly
 
-### 2.1 Ambient Background Overhaul
-Replace the emerald blobs and soft grid with:
-- A very dark base (`bg-[#020617]`)
-- A subtle animated grid overlay using phosphor cyan lines at 10% opacity
-- A radial gradient glow at page center in cyan at 5% opacity
-- An optional slow `animate-hud-scan` line across the entire page
+**File: `src/components/home/NeuralPanel.tsx`**
 
-### 2.2 Header Redesign
-- Replace the emerald gradient icon container with a `HUDFrame` mini-panel
-- Title: keep `font-orbitron`, change gradient to `from-[#00F2FF] to-cyan-300`
-- Action buttons: replace `border-emerald-500/30` with `border-[#00F2FF]/30` and matching hover states
+The current NeuralPanel is close but needs refinement to match the reference's panel style:
 
-### 2.3 Layout Structure
-Keep the existing grid structure but wrap major sections in `HUDFrame` where appropriate.
+- Add `inset 0 1px 0 rgba(0,212,255,0.06)` to the box-shadow (inner top highlight, from the reference's `--panel-shadow`)
+- Change border-radius from `rounded-sm` (4px) to exactly `4px` via inline style for consistency with `--radius: 4px` in the reference
+- Add a very faint top-edge gradient line (`h-px bg-gradient-to-r from-transparent via-cyan/15 to-transparent`) as a **permanent** element, not just on hover (the reference panels all have this)
+- Header label size stays at 10px Orbitron but ensure tracking is `0.15em` (reference uses tighter tracking than current `0.2em`)
 
 ---
 
-## Phase 3: Component-Specific Redesigns
+## Phase 3: SmartProjectHeader -- Tighten to Reference Style
 
-### 3.1 `HealthScoreCard` -- Segmented Radar Disk
+**File: `src/components/home/hero/SmartProjectHeader.tsx`**
 
-**Current**: Single SVG circle with stroke-dashoffset animation.
+The Pact Nexus component uses `rounded-xl` and `border-primary/20` which doesn't match the strict 4px radius and thin border of the reference. Align it:
 
-**New design**:
-- Replace the single progress ring with a **multi-ring orbital display**
-- **Center**: Large score number in `font-orbitron` with phosphor cyan color
-- **Inner ring** (r=60): Overall health score arc
-- **Middle ring** (r=72): Sleep factor arc in blue
-- **Outer ring** (r=84): Activity factor arc in cyan, Stress factor arc (inverted) in amber
-- Each ring uses `stroke-dasharray` segments with gaps between them
-- Add a slow `rotate` animation on the outer ring (360deg over 30s)
-- Wrap the entire card in `HUDFrame`
-- Replace emerald color references with phosphor cyan
-
-### 3.2 `HealthMetricCard` -- Chamfered HUD Panels
-
-**Current**: `rounded-2xl` cards with basic `whileHover: scale(1.02)`.
-
-**New design**:
-- Wrap each card in `HUDFrame` (which provides the chamfered clip-path and corner brackets)
-- Replace `colorVariants` to use the new palette:
-  - blue stays blue
-  - green -> `[#00F2FF]` (phosphor cyan)
-  - purple -> `[#FFB800]` (amber) for stress
-  - cyan -> cyan (unchanged)
-  - orange -> orange (unchanged)
-- Add a scan line overlay that triggers once on mount (via `HUDFrame scanLine`)
-- Replace `whileHover: scale(1.02)` with a subtle border glow intensification
-- Display the raw telemetry value (`todayValue`) as a small `font-mono` readout below the title (e.g., "RAW: 4") alongside the processed `/5` display to increase the technical feel
-- Progress bar: replace `rounded-full` with flat-ended bar (`rounded-none`) and add tick marks at 20/40/60/80/100%
-
-### 3.3 `HealthDailyCheckin` -- System Initialization Sequence
-
-**Current**: Standard `Dialog` with step-by-step sliders.
-
-**New design**:
-- Dialog border: `border-[#00F2FF]/30` instead of `border-emerald-500/20`
-- Step indicator: replace the dot progress with a horizontal **system boot sequence** bar showing `STEP 01/07 :: SLEEP TELEMETRY` in `font-mono` uppercase
-- Labels: add a typewriter entrance animation (characters appear one by one over 0.3s) using a simple framer-motion `staggerChildren` on individual `<span>` letters for the step title only
-- Slider: add cyan track color and a glowing thumb
-- Quality buttons: replace `rounded-lg` with chamfered shape, use `border-[#00F2FF]/40` for selected state
-- Final submit button: glowing cyan with `animate-neon-pulse`
-
-### 3.4 `HealthEnergyCurve` -- Vital Sign Monitor
-
-**Current**: Basic Recharts `LineChart` with amber stroke.
-
-**New design**:
-- Wrap in `HUDFrame`
-- Change line stroke to phosphor cyan `#00F2FF`
-- Add a custom animated dot component (`activeDot`) that uses `animate-pulse-dot` to simulate a traveling pulse
-- Add a faint horizontal reference line at y=3 (labeled "BASELINE" in `font-mono`)
-- Grid lines: use `stroke="#00F2FF"` at 5% opacity
-- Background: add a very faint ECG-style grid pattern
-
-### 3.5 `HealthWeeklyChart` -- HUD Bar Chart
-
-- Wrap in `HUDFrame`
-- Replace emerald accent with cyan
-- Bar colors: blue, cyan, amber (for stress)
-- Legend: use `font-mono` labels
-- Today indicator: replace the small dot with a downward-pointing cyan triangle
-
-### 3.6 `HealthBMIIndicator` -- Tactical Gauge
-
-- Wrap in `HUDFrame`
-- Replace the rounded gradient bar with a flat segmented gauge
-- Position indicator: replace the thin line with a diamond marker
-- Labels in `font-mono`
-
-### 3.7 `HealthInsightsPanel` -- Terminal Output
-
-- Wrap in `HUDFrame`
-- Prefix each insight with `> ` in `font-mono` to simulate terminal output
-- Generate button: glowing cyan outline
-- Loading state: replace spinner with blinking cursor `_` animation
-
-### 3.8 Other Components (Palette Shift Only)
-
-- `HealthHistoryChart`: wrap in `HUDFrame`, replace emerald with cyan
-- `HealthChallengesPanel`: wrap in `HUDFrame`, replace amber glow
-- `HealthBreathingExercise`: replace teal gradients with cyan
-- `HealthStreakBadge`: keep tier system, replace emerald tier color with cyan
-- `HealthMoodSelector`: replace emerald border on "good" mood with cyan
-- `HealthDataExport`: minor button color shift
+- Change `rounded-xl` to `rounded-[4px]`
+- Change `border-primary/20` to `border-[rgba(0,180,255,0.12)]`
+- Change `bg-black/40` to `bg-[rgba(6,11,22,0.92)]`
+- Remove the internal scanline overlay (the page already has a global one)
+- The brain icon container: simplify from `rounded-full border border-primary/30 bg-black/50` to a simpler inline icon without the glowing circle wrapper
 
 ---
 
-## Phase 4: Typography Enforcement
+## Phase 4: QuickActionsBar -- Reference "Command Buttons" Style
 
-The global CSS already enforces `font-orbitron` on headings and labels. For the Health module specifically:
-- All **numerical values** (scores, counts, hours): `font-orbitron`
-- All **secondary labels** (descriptions, units, "RAW:", "BASELINE"): `font-mono` with `uppercase tracking-wider text-[10px]`
-- This is done per-component in the JSX `className` -- no global override needed
+**File: `src/components/home/QuickActionsBar.tsx`**
 
----
+Currently minimal, but the reference uses distinct bordered button groups. Update:
 
-## Implementation Order
-
-1. **Tailwind config + CSS variables** -- foundation (no visual breakage)
-2. **`HUDFrame` component** -- reusable wrapper
-3. **`Health.tsx` page layout** -- background + header palette shift
-4. **`HealthScoreCard`** -- most visually impactful, centerpiece
-5. **`HealthMetricCard`** -- 5 instances, high visibility
-6. **`HealthDailyCheckin`** -- system init sequence UX
-7. **`HealthEnergyCurve`** -- vital sign monitor
-8. **`HealthWeeklyChart`** -- bar chart palette shift
-9. **Remaining components** -- `HealthBMIIndicator`, `HealthInsightsPanel`, `HealthHistoryChart`, `HealthChallengesPanel`, `HealthBreathingExercise`, `HealthStreakBadge`, `HealthMoodSelector`, `HealthDataExport`
+- Each button gets a consistent style: `bg-[rgba(6,11,22,0.92)]` panel background, `1px solid rgba(0,180,255,0.12)` border, `4px` radius
+- On hover: border brightens to `rgba(0,210,255,0.4)`, subtle cyan glow appears
+- The "New Goal" button gets a special treatment: `border-color: var(--cyan)` with a faint cyan box-shadow to make it the primary action
+- Wrap all buttons in a single panel-like container (thin border strip) rather than individual floating buttons
 
 ---
 
-## Files Created
-- `src/components/health/HUDFrame.tsx`
+## Phase 5: MissionRandomizer -- Clean Up to Match Reference
 
-## Files Modified
-- `tailwind.config.ts` (new keyframes + animations)
-- `src/index.css` (new CSS variables)
-- `src/pages/Health.tsx`
-- `src/components/health/HealthScoreCard.tsx`
-- `src/components/health/HealthMetricCard.tsx`
-- `src/components/health/HealthDailyCheckin.tsx`
-- `src/components/health/HealthEnergyCurve.tsx`
-- `src/components/health/HealthWeeklyChart.tsx`
-- `src/components/health/HealthBMIIndicator.tsx`
-- `src/components/health/HealthInsightsPanel.tsx`
-- `src/components/health/HealthHistoryChart.tsx`
-- `src/components/health/HealthChallengesPanel.tsx`
-- `src/components/health/HealthBreathingExercise.tsx`
-- `src/components/health/HealthStreakBadge.tsx`
-- `src/components/health/HealthMoodSelector.tsx`
-- `src/components/health/HealthDataExport.tsx`
-- `src/components/health/index.ts` (add HUDFrame export)
+**File: `src/components/home/hero/MissionRandomizer.tsx`**
 
-## What Does NOT Change
-- Hook logic (`useHealth.ts`, `useHealthStreak.ts`, `useHealthChallenges.ts`, `useHealthReminders.ts`)
-- Database schema and RLS policies
-- i18n keys and translations
-- Data flow and API calls
-- `HealthSettingsModal` (settings form -- functional, not visual showcase)
+The MissionRandomizer's idle state uses `rounded-xl`, heavy gradients, and large padding that clash with the strict 4px-radius panel system.
+
+- **Idle state**: Change `rounded-xl` to `rounded-[4px]`, use `bg-[rgba(6,11,22,0.92)]` instead of `bg-black/60`, use `border-[rgba(0,180,255,0.12)]` instead of `border-white/10`
+- Remove the large pulsing glow behind the dice icon -- replace with a simple inline icon
+- Change layout from centered column to a horizontal row: `[Dice icon] [Mission Roulette label] [SPIN button]`
+- **Spinning state**: Change `rounded-xl` to `rounded-[4px]`, remove the CRT RGB scanline overlay
+- **Confirm state**: Change `rounded-xl` to `rounded-[4px]`, remove the 4 HUD corners, remove the rotating spotlight, remove the radar scan line. Keep the amber color scheme but simplify to just the amber border + content
+- **ActiveMissionCard**: Change `rounded-2xl` to `rounded-[4px]`, use the standard panel background
+
+---
+
+## Phase 6: Module Content Widgets -- Typography & Spacing Refinement
+
+**Files: All widget modules**
+
+Apply the reference's strict typography rules across all widgets:
+
+- All `font-orbitron` labels: ensure `tracking-[0.15em]` (not 0.2em)
+- All numeric values: ensure `font-mono tabular-nums` with `letter-spacing: -0.02em` (tighter for numbers)
+- Section subtitle text: use `Exo 2` (the reference's body font) which maps to `font-sans` in the project
+- Progress bars: standardize height to `3px` (the reference uses thinner bars than the current `h-1.5` / `h-2`)
+- Inner sub-cards (like status breakdowns in ProgressOverview): use `bg-[rgba(6,11,22,0.6)]` instead of `bg-[rgba(0,180,255,0.03)]` for deeper nesting contrast (matching the reference's nested panel style)
+
+---
+
+## Phase 7: Background & Ambient -- Match Reference Exactly
+
+**File: `src/pages/Home.tsx`**
+
+The reference uses a very specific background setup:
+
+- Body background: `#020407` (currently `bg-background` which should map to this already)
+- Two subtle radial gradients:
+  1. `radial-gradient(ellipse 100% 60% at 50% -5%, rgba(0,80,180,0.07), transparent 65%)` -- top center blue glow
+  2. `radial-gradient(ellipse 50% 40% at 85% 70%, rgba(139,0,255,0.03), transparent 50%)` -- bottom right purple whisper
+- Global scanline: `repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.022) 2px, rgba(0,0,0,0.022) 4px)` at z-index 9999, fixed position
+- Remove the current grid overlay (the reference doesn't have one)
+- Remove the single radial gradient blob -- replace with the two-gradient system above
+
+---
+
+## Phase 8: GettingStartedCard & LockedModulesTeaser -- Align
+
+**File: `src/components/home/GettingStartedCard.tsx`**
+
+- Change `rounded-lg` to `rounded-[4px]` throughout
+- Change `border-2 border-accent/30` to `1px solid rgba(0,180,255,0.12)`
+- Remove the nested inner border (`absolute inset-[2px]`)
+- Use `bg-[rgba(6,11,22,0.92)]` instead of `bg-card/20`
+- Step items: change `rounded-lg` to `rounded-[4px]`
+
+**File: `src/components/home/LockedModulesTeaser.tsx`**
+
+- Same border/radius/background alignment
+- Change circular icon holders from `rounded-full` to `rounded-[4px]` (square with slight radius, matching the reference's sharp aesthetic)
+
+---
+
+## Phase 9: ModuleManager Edit Mode Bar -- Align
+
+**File: `src/components/home/ModuleManager.tsx`**
+
+- The floating edit toolbar uses `rounded-2xl` -- change to `rounded-[4px]`
+- Change `border-2 border-primary/40` to `1px solid rgba(0,210,255,0.4)`
+- Background: `bg-[rgba(2,4,10,0.97)]` with `backdrop-blur(20px)`
+- The "Customize" trigger button: change `rounded-lg` to `rounded-[4px]`
+
+---
+
+## Phase 10: Tighten Layout Spacing
+
+**File: `src/pages/Home.tsx`**
+
+- Change `space-y-6` to `space-y-4` (tighter vertical rhythm matching the reference's denser layout)
+- Change padding from `p-4 md:p-6` to `p-4 md:p-5` (slightly tighter)
+- Keep `max-w-5xl` (1024px) as-is -- matches reference's container width
+
+**File: `src/components/home/ModuleGrid.tsx`**
+
+- Change `gap-4` to `gap-3` (12px, matching the reference's tighter grid)
+
+---
+
+## Technical Summary
+
+### New Files
+- `src/components/home/NeuralBar.tsx` -- sticky top status bar with pact name + rank
+
+### Major Changes
+- `src/pages/Home.tsx` -- NeuralBar integration, background system, spacing
+- `src/components/home/hero/HeroSection.tsx` -- remove Identity Bar (moved to NeuralBar)
+- `src/components/home/hero/MissionRandomizer.tsx` -- simplify all 3 states
+- `src/components/home/hero/ActiveMissionCard.tsx` -- radius + panel style alignment
+
+### Moderate Changes
+- `src/components/home/NeuralPanel.tsx` -- inner shadow, permanent top highlight, tracking
+- `src/components/home/hero/SmartProjectHeader.tsx` -- radius + border alignment
+- `src/components/home/QuickActionsBar.tsx` -- panel container style
+- `src/components/home/GettingStartedCard.tsx` -- full style alignment
+- `src/components/home/LockedModulesTeaser.tsx` -- style alignment
+- `src/components/home/ModuleManager.tsx` -- radius + border alignment
+- `src/components/home/ModuleGrid.tsx` -- tighter gap
+
+### Minor Typography Pass
+- All widget modules (ProgressOverview, FocusGoals, Habits, Timeline, CostTracking, ProgressByDifficulty, AchievementsWidget) -- tracking, bar height, nested card background adjustments
+
+### Unchanged
+- All hooks, data logic, database schema
+- PactVisual component (already clean)
+- ModuleCard drag-and-drop logic
 
