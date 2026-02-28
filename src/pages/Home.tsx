@@ -4,18 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 
 // Components
-import { PactTimeline } from "@/components/PactTimeline";
-import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
-import { ProgressByDifficultyModule } from "@/components/home/ProgressByDifficultyModule";
-import { CostTrackingModule } from "@/components/home/CostTrackingModule";
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
-import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { NeuralBar } from "@/components/home/NeuralBar";
-import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
-import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
-import { Flame } from "lucide-react";
+import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
+import { MonitoringGlobalPanel } from "@/components/home/MonitoringGlobalPanel";
+import { DifficultyScalePanel } from "@/components/home/DifficultyScalePanel";
 
 // Hooks
 import { useTodoReminders } from "@/hooks/useTodoReminders";
@@ -27,17 +22,6 @@ import { useFinanceSettings } from "@/hooks/useFinance";
 import { useRankXP } from "@/hooks/useRankXP";
 
 type UserState = "onboarding" | "active" | "advanced";
-
-function SectionLabel({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3 mb-3">
-      <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.3)]">
-        {label}
-      </span>
-      <div className="flex-1 h-px bg-[rgba(0,180,255,0.06)]" />
-    </div>
-  );
-}
 
 export default function Home() {
   const { user } = useAuth();
@@ -224,6 +208,9 @@ export default function Home() {
           }}
         />
 
+        {/* MISSION RANDOMIZER */}
+        <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
+
         {/* ONBOARDING */}
         {userState === "onboarding" && (
           <GettingStartedCard
@@ -233,65 +220,19 @@ export default function Home() {
           />
         )}
 
-        {/* SYSTEM OVERVIEW */}
-        <section>
-          <SectionLabel label="System Overview" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <ProgressOverviewModule data={dashboardData} />
-            <PactTimeline
-              projectStartDate={pact.project_start_date}
-              projectEndDate={pact.project_end_date}
-            />
-          </div>
-        </section>
+        {/* MONITORING GLOBAL */}
+        <MonitoringGlobalPanel
+          data={dashboardData}
+          projectStartDate={pact.project_start_date}
+          projectEndDate={pact.project_end_date}
+        />
 
-        {/* OPERATIONS */}
-        <section>
-          <SectionLabel label="Operations" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <FocusGoalsModule goals={focusGoals} navigate={navigate} />
-            <HabitsModule habits={habitGoals} customDifficultyColor={customDifficultyColor} />
-          </div>
-        </section>
-
-        {/* ANALYTICS */}
-        <section>
-          <SectionLabel label="Analytics" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <ProgressByDifficultyModule
-              difficultyProgress={dashboardData.difficultyProgress}
-              customDifficultyName={customDifficultyName}
-              customDifficultyColor={customDifficultyColor}
-            />
-            <CostTrackingModule
-              totalCostEngaged={dashboardData.totalCostEngaged}
-              totalCostPaid={dashboardData.totalCostPaid}
-              isCustomMode={dashboardData.isCustomMode}
-            />
-          </div>
-        </section>
-
-        {/* RECORDS */}
-        <section>
-          <SectionLabel label="Records" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <AchievementsWidget />
-            {ownedModules["the-call"] && (
-              <button
-                onClick={() => navigate("/the-call")}
-                className="group relative h-full w-full flex items-center justify-center rounded-[4px] overflow-hidden transition-all duration-300 bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)] shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)] min-h-[120px] cursor-pointer"
-              >
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
-                <div className="flex flex-col items-center gap-2.5">
-                  <Flame className="w-6 h-6 text-orange-400" />
-                  <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.6)] group-hover:text-[rgba(160,210,255,0.85)] transition-colors">
-                    The Call
-                  </span>
-                </div>
-              </button>
-            )}
-          </div>
-        </section>
+        {/* DIFFICULTY SCALE */}
+        <DifficultyScalePanel
+          difficultyProgress={dashboardData.difficultyProgress}
+          customDifficultyName={customDifficultyName}
+          customDifficultyColor={customDifficultyColor}
+        />
 
         {/* LOCKED MODULES */}
         {lockedModules.length > 0 && (

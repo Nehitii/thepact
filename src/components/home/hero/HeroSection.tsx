@@ -4,7 +4,6 @@ import { motion, Variants } from "framer-motion";
 
 import { SmartProjectHeader } from "./SmartProjectHeader";
 import { QuickActionsBar } from "@/components/home/QuickActionsBar";
-import { MissionRandomizer } from "./MissionRandomizer";
 import { cn } from "@/lib/utils";
 import { Pact } from "@/hooks/usePact";
 import { Goal } from "@/hooks/useGoals";
@@ -57,11 +56,6 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
         {/* Command Strip */}
         <motion.div variants={itemVariants}>
           <QuickActionsBar ownedModules={ownedModules} />
-        </motion.div>
-
-        {/* Mission Randomizer */}
-        <motion.div variants={itemVariants}>
-          <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
         </motion.div>
       </div>
     </motion.section>
