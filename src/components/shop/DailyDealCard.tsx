@@ -24,8 +24,8 @@ const rarityColors: Record<string, { accent: string; glow: string }> = {
 function FlipDigit({ value }: { value: string }) {
   return (
     <span
-      className="inline-flex items-center justify-center w-5 h-6 rounded bg-background/80 border border-primary/20 font-mono text-xs font-bold text-amber-400 tabular-nums"
-      style={{ textShadow: "0 0 6px hsl(45 100% 60% / 0.5)" }}
+      className="inline-flex items-center justify-center w-5 h-6 rounded bg-black/80 border border-amber-500/30 font-mono text-xs font-bold text-amber-400 tabular-nums"
+      style={{ textShadow: "0 0 8px hsl(45 100% 60% / 0.7)" }}
     >
       {value}
     </span>
@@ -61,12 +61,33 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
   return (
     <motion.div
       whileHover={{ scale: 1.01 }}
-      className="relative rounded-xl border overflow-hidden bg-card/60 backdrop-blur-sm group"
+      className="relative rounded-xl overflow-hidden bg-card/60 backdrop-blur-sm group"
       style={{
-        borderColor: `hsl(45 100% 60% / 0.25)`,
+        borderTop: "1px solid hsl(45 100% 60% / 0.25)",
+        borderRight: "1px solid hsl(45 100% 60% / 0.25)",
+        borderBottom: "1px solid hsl(45 100% 60% / 0.25)",
+        borderLeft: "3px solid hsl(0 80% 50% / 0.7)",
         boxShadow: `0 0 20px hsl(45 100% 60% / 0.08)`,
       }}
     >
+      {/* Pulsing red left accent */}
+      <motion.div
+        className="absolute left-0 top-0 bottom-0 w-[3px] pointer-events-none"
+        style={{ background: "hsl(0 80% 50% / 0.7)" }}
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+      />
+
+      {/* Diagonal DEAL watermark */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <span
+          className="font-orbitron text-[60px] font-black uppercase opacity-[0.02] tracking-[0.2em]"
+          style={{ transform: "rotate(-20deg)" }}
+        >
+          DEAL
+        </span>
+      </div>
+
       {/* Scan line */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         <div
@@ -78,29 +99,32 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
         />
       </div>
 
-      {/* Discount badge with glitch */}
-      <motion.div
-        className="absolute -top-0.5 -right-0.5 z-10 px-3 py-1 rounded-bl-lg"
-        style={{
-          background: "linear-gradient(135deg, hsl(45 100% 55%), hsl(25 100% 55%))",
-        }}
-        animate={{ scale: [1, 1.04, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        <span
-          className="font-orbitron text-[11px] font-black tracking-wider"
-          style={{
-            color: "hsl(0 0% 5%)",
-            textShadow: "1px 0 hsl(0 100% 50% / 0.4), -1px 0 hsl(200 100% 50% / 0.4)",
-          }}
+      {/* Discount starburst badge */}
+      <div className="absolute -top-1 -right-1 z-10">
+        <motion.div
+          className="relative w-12 h-12 flex items-center justify-center"
+          animate={{ scale: [1, 1.06, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
         >
-          -{deal.discount_percentage}%
-        </span>
-      </motion.div>
+          <div
+            className="absolute inset-0"
+            style={{
+              clipPath: "polygon(50% 0%, 61% 11%, 78% 5%, 78% 22%, 95% 28%, 85% 42%, 100% 50%, 85% 58%, 95% 72%, 78% 78%, 78% 95%, 61% 89%, 50% 100%, 39% 89%, 22% 95%, 22% 78%, 5% 72%, 15% 58%, 0% 50%, 15% 42%, 5% 28%, 22% 22%, 22% 5%, 39% 11%)",
+              background: "linear-gradient(135deg, hsl(45 100% 55%), hsl(25 100% 55%))",
+            }}
+          />
+          <span
+            className="relative z-10 font-orbitron text-[10px] font-black"
+            style={{ color: "hsl(0 0% 5%)" }}
+          >
+            -{deal.discount_percentage}%
+          </span>
+        </motion.div>
+      </div>
 
       {/* Wishlist */}
       {!isOwned && (
-        <div className="absolute top-2 left-2 z-10">
+        <div className="absolute top-2 left-4 z-10">
           <WishlistButton itemId={deal.item_id} itemType="cosmetic" size="sm" />
         </div>
       )}

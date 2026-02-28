@@ -8,6 +8,7 @@ import { BundleCard } from "./BundleCard";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { UnlockAnimation } from "./UnlockAnimation";
 import { ShopLoadingState } from "./ShopLoadingState";
+import { SignalLostEmpty } from "./SignalLostEmpty";
 
 export function BundlesSection() {
   const { user } = useAuth();
@@ -57,15 +58,7 @@ export function BundlesSection() {
   }
   
   if (bundles.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <Package className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
-        <h3 className="font-orbitron text-lg text-foreground mb-2">No Bundles Available</h3>
-        <p className="text-sm text-muted-foreground">
-          Check back later for special bundle deals
-        </p>
-      </div>
-    );
+    return <SignalLostEmpty subtitle="No bundles available — check back later" />;
   }
   
   const purchaseItem: PurchaseItem | null = selectedBundle ? {

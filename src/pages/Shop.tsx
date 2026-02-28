@@ -15,24 +15,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
 import { useTranslation } from "react-i18next";
 
-function TypewriterText({ text, className }: { text: string; className?: string }) {
-  const [displayed, setDisplayed] = useState("");
-  useEffect(() => {
-    let i = 0;
-    const id = setInterval(() => {
-      setDisplayed(text.slice(0, ++i));
-      if (i >= text.length) clearInterval(id);
-    }, 35);
-    return () => clearInterval(id);
-  }, [text]);
-  return (
-    <span className={className}>
-      {displayed}
-      <span className="animate-pulse text-primary/60">|</span>
-    </span>
-  );
-}
-
 export default function Shop() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ShopTab>("cosmetics");
@@ -59,7 +41,14 @@ export default function Shop() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      <CyberBackground />
+      {/* Hexagonal grid ambient background */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[1]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='52' viewBox='0 0 60 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 16v20L30 52 0 36V16z' fill='none' stroke='%2300ffff' stroke-opacity='0.03' stroke-width='0.5'/%3E%3C/svg%3E")`,
+          backgroundSize: "60px 52px",
+        }}
+      />
 
       {/* Vignette overlay */}
       <div
@@ -70,7 +59,7 @@ export default function Shop() {
         }}
       />
 
-      {/* Glitch flash on tab change */}
+      {/* Enhanced glitch flash on tab change */}
       <AnimatePresence>
         {showGlitch && (
           <motion.div
@@ -81,89 +70,99 @@ export default function Shop() {
             transition={{ duration: 0.06 }}
           >
             <div className="absolute inset-0" style={{
-              background: "linear-gradient(transparent 0%, hsl(var(--primary) / 0.04) 50%, transparent 100%)",
+              background: "linear-gradient(transparent 0%, hsl(var(--primary) / 0.08) 50%, transparent 100%)",
               backgroundSize: "100% 4px",
               animation: "scanline-move 0.1s linear",
+              transform: "translateX(2px)",
             }} />
-            <div className="absolute inset-0 bg-primary/[0.03]" />
+            <div className="absolute inset-0 bg-primary/[0.05]" />
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="relative z-10 px-4 pt-6 pb-6 max-w-5xl mx-auto">
-        {/* ── Cinematic Header ── */}
+        {/* ── Black Market Terminal Header ── */}
         <motion.div
-          className="relative mb-6 rounded-xl overflow-hidden border border-primary/15"
+          className="relative mb-6 overflow-hidden"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Grid BG */}
+          {/* Full-bleed gradient hero strip with purple tint */}
           <div
-            className="absolute inset-0 opacity-[0.04]"
+            className="absolute inset-0 rounded-xl"
             style={{
-              backgroundImage:
-                "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
-              backgroundSize: "32px 32px",
+              background: "linear-gradient(135deg, hsl(var(--background)), hsl(270 30% 8%), hsl(var(--background)))",
             }}
           />
+
           {/* Radial glow */}
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 rounded-xl"
             style={{
               background:
-                "radial-gradient(ellipse at 30% 50%, hsl(var(--primary) / 0.08) 0%, transparent 60%)",
+                "radial-gradient(ellipse at 30% 50%, hsl(var(--primary) / 0.1) 0%, transparent 60%)",
             }}
           />
 
-          {/* Floating orbs */}
-          <motion.div
-            className="absolute w-20 h-20 rounded-full blur-3xl pointer-events-none"
-            style={{ background: "hsl(var(--primary) / 0.15)", top: "10%", right: "15%" }}
-            animate={{ y: [0, -12, 0], x: [0, 6, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute w-12 h-12 rounded-full blur-2xl pointer-events-none"
-            style={{ background: "hsl(var(--accent) / 0.12)", bottom: "15%", left: "10%" }}
-            animate={{ y: [0, 8, 0], x: [0, -4, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          />
-
-          <div className="relative flex items-center justify-between p-5 sm:p-6">
-            <div className="space-y-1.5">
-              {/* Shimmer title */}
-              <h1 className="font-orbitron text-xl sm:text-2xl font-bold tracking-widest">
-                <span
-                  className="bg-clip-text text-transparent"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7), hsl(var(--primary)))",
-                    backgroundSize: "200% 100%",
-                    animation: "cyber-shimmer 4s linear infinite",
-                    filter: "drop-shadow(0 0 16px hsl(var(--primary) / 0.4))",
-                  }}
-                >
-                  {t("shop.title")}
-                </span>
-              </h1>
-              {/* Typewriter subtitle */}
-              <TypewriterText
-                text={t("shop.subtitle")}
-                className="text-xs sm:text-sm text-muted-foreground font-rajdhani tracking-wide"
-              />
+          <div className="relative flex items-center justify-between p-5 sm:p-7">
+            <div className="space-y-2">
+              {/* Title with signal bars */}
+              <div className="flex items-center gap-3">
+                <h1 className="font-orbitron text-xl sm:text-2xl font-bold tracking-widest">
+                  <span
+                    className="bg-clip-text text-transparent"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7), hsl(var(--primary)))",
+                      backgroundSize: "200% 100%",
+                      animation: "cyber-shimmer 4s linear infinite",
+                      filter: "drop-shadow(0 0 16px hsl(var(--primary) / 0.4))",
+                    }}
+                  >
+                    {t("shop.title")}
+                  </span>
+                </h1>
+                {/* Signal bars */}
+                <div className="flex items-end gap-[2px] h-5">
+                  {[0, 1, 2].map((i) => (
+                    <motion.div
+                      key={i}
+                      className="w-[3px] rounded-full bg-primary"
+                      style={{ height: `${8 + i * 5}px` }}
+                      animate={{ opacity: [0.3, 1, 0.3] }}
+                      transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                    />
+                  ))}
+                </div>
+              </div>
+              {/* Static styled subtitle */}
+              <p className="text-xs sm:text-sm text-muted-foreground font-mono uppercase tracking-[0.3em]">
+                {t("shop.subtitle")}
+              </p>
             </div>
             <ShopBondDisplay onBuyBonds={() => setActiveTab("bonds")} />
           </div>
 
-          {/* Bottom edge line */}
-          <div
-            className="h-[1px]"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent)",
-            }}
-          />
+          {/* Data stream line with traveling dot */}
+          <div className="relative h-[1px] overflow-hidden">
+            <div
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent, hsl(var(--primary) / 0.4), transparent)",
+              }}
+              className="absolute inset-0"
+            />
+            <motion.div
+              className="absolute top-0 w-8 h-[2px] rounded-full"
+              style={{
+                background: "hsl(var(--primary))",
+                boxShadow: "0 0 8px hsl(var(--primary) / 0.8), 0 0 16px hsl(var(--primary) / 0.4)",
+              }}
+              animate={{ left: ["-5%", "105%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+          </div>
         </motion.div>
 
         {/* ── Tabs ── */}
