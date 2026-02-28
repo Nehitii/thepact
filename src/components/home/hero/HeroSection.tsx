@@ -57,11 +57,6 @@ export function HeroSection({ pact, focusGoals, allGoals, rankData, ownedModules
         <motion.div variants={itemVariants}>
           <QuickActionsBar ownedModules={ownedModules} />
         </motion.div>
-
-        {/* Mission Randomizer */}
-        <motion.div variants={itemVariants}>
-          <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
-        </motion.div>
       </div>
     </motion.section>
   );
