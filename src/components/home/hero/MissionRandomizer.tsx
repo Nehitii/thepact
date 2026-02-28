@@ -182,7 +182,8 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
   return (
     <div className={cn(panelBase, className)} style={panelStyle}>
       <CornerBrackets />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,140,0,0.4), transparent)" }} />
+      <style>{`@keyframes rotateSlow { to { transform: rotate(360deg); } }`}</style>
 
       {/* Header */}
       <div
