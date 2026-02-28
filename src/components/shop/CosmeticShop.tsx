@@ -29,6 +29,12 @@ const categories = [
   { id: "titles" as const, label: "Titles", icon: Crown },
 ];
 
+const rarityDotColors: Record<string, string> = {
+  rare: "hsl(212 90% 55%)",
+  epic: "hsl(270 80% 60%)",
+  legendary: "hsl(45 100% 60%)",
+};
+
 export function CosmeticShop() {
   const { user } = useAuth();
   const [activeCategory, setActiveCategory] = useState<CosmeticCategory>("frames");
@@ -41,7 +47,6 @@ export function CosmeticShop() {
     hideOwned: false,
   });
 
-  // Fitting Room state
   const [fittingItem, setFittingItem] = useState<
     | { type: "frame"; data: CosmeticFrame }
     | { type: "banner"; data: CosmeticBanner }
@@ -104,6 +109,23 @@ export function CosmeticShop() {
     return ownedCosmetics.titles.includes(id);
   };
 
+  // Count items by rarity for each category
+  const getRarityCounts = (items: Array<{ rarity: string }>) => {
+    const counts: Record<string, number> = {};
+    items.forEach(item => {
+      if (rarityDotColors[item.rarity]) {
+        counts[item.rarity] = (counts[item.rarity] || 0) + 1;
+      }
+    });
+    return counts;
+  };
+
+  const categoryRarityCounts = useMemo(() => ({
+    frames: getRarityCounts(frames),
+    banners: getRarityCounts(banners),
+    titles: getRarityCounts(titles),
+  }), [frames, banners, titles]);
+
   const filteredFrames = useMemo(() =>
     applyShopFilters(frames, filters, (f) => isOwned(f.id, "frame")),
     [frames, filters, ownedCosmetics]
@@ -138,12 +160,14 @@ export function CosmeticShop() {
           const Icon = cat.icon;
           const count = cat.id === "frames" ? frames.length :
             cat.id === "banners" ? banners.length : titles.length;
+          const rarityCounts = categoryRarityCounts[cat.id];
+
           return (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${isActive
-                ? "bg-primary/10 border border-primary/30 text-primary"
+                ? "bg-primary/10 border-l-2 border-primary text-primary border-r border-t border-b border-r-primary/20 border-t-primary/20 border-b-primary/20"
                 : "hover:bg-card/50 text-muted-foreground hover:text-foreground border border-transparent"
                 }`}
             >
@@ -151,7 +175,18 @@ export function CosmeticShop() {
                 <Icon className="w-5 h-5" />
                 <span className="font-rajdhani font-medium">{cat.label}</span>
               </div>
-              <span className="text-xs opacity-60">{count}</span>
+              <div className="flex items-center gap-1.5">
+                {/* Rarity dots */}
+                {Object.entries(rarityCounts).map(([r, c]) => (
+                  <span
+                    key={r}
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ background: rarityDotColors[r] }}
+                    title={`${c} ${r}`}
+                  />
+                ))}
+                <span className="text-xs opacity-60 ml-1">{count}</span>
+              </div>
             </button>
           );
         })}

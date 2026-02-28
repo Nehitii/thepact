@@ -6,6 +6,7 @@ import { useBondBalance, useShopFrames, useShopBanners, useShopTitles, useShopMo
 import { useShopBundles } from "@/hooks/useBundles";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { Button } from "@/components/ui/button";
+import { SignalLostEmpty } from "./SignalLostEmpty";
 
 interface WishlistPanelProps {
   onPurchaseItem: (item: any, itemType: string) => void;
@@ -72,26 +73,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
   }
 
   if (enrichedWishlist.length === 0) {
-    return (
-      <div className="text-center py-16">
-        {/* Hologram empty state */}
-        <motion.div
-          className="w-20 h-20 mx-auto mb-4 rounded-full border-2 flex items-center justify-center"
-          style={{
-            borderColor: "hsl(var(--primary) / 0.2)",
-            background: "radial-gradient(circle, hsl(var(--primary) / 0.05), transparent)",
-          }}
-          animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 3, repeat: Infinity }}
-        >
-          <Heart className="w-8 h-8 text-muted-foreground/40" />
-        </motion.div>
-        <h3 className="font-orbitron text-sm text-foreground mb-1 tracking-wider">Mission Loadout Empty</h3>
-        <p className="text-xs text-muted-foreground font-rajdhani">
-          Save items to your loadout for later acquisition
-        </p>
-      </div>
-    );
+    return <SignalLostEmpty subtitle="Save items to your loadout for later acquisition" />;
   }
 
   const getIcon = (itemType: string) => {

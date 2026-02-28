@@ -57,7 +57,6 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
   const { data: balance } = useBondBalance(user?.id);
   const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
 
-  // Pick the rarest + most expensive unowned item
   const featured = useMemo(() => {
     const allItems = [
       ...frames.map((f) => ({ ...f, _type: "frame" as const })),
@@ -116,7 +115,7 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
       const banner = featured as any;
       return (
         <div
-          className="w-full max-w-[200px] h-14 rounded-lg"
+          className="w-full max-w-[240px] h-16 rounded-lg"
           style={{
             background: banner.banner_url
               ? `url(${banner.banner_url}) center/cover`
@@ -187,31 +186,50 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
             }}
           />
 
-          {/* Grid overlay */}
+          {/* SPOTLIGHT watermark */}
           <div
-            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden"
+          >
+            <span
+              className="font-orbitron text-[80px] sm:text-[120px] font-black uppercase tracking-[0.15em] opacity-[0.03]"
+              style={{ transform: "rotate(-12deg)" }}
+            >
+              SPOTLIGHT
+            </span>
+          </div>
+
+          {/* Holographic prismatic sweep */}
+          <div
+            className="absolute inset-0 pointer-events-none z-[3] opacity-0 group-hover:opacity-100 transition-opacity duration-500"
             style={{
-              backgroundImage:
-                "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
-              backgroundSize: "24px 24px",
+              background: "linear-gradient(120deg, transparent 30%, hsl(0 0% 100% / 0.06) 45%, hsl(0 0% 100% / 0.1) 50%, hsl(0 0% 100% / 0.06) 55%, transparent 70%)",
+              backgroundSize: "200% 100%",
+              animation: "holographic-sweep 4s ease-in-out infinite",
             }}
           />
 
-          <div className="relative flex items-center gap-6 p-6 sm:p-8">
-            {/* Preview with parallax */}
+          <div className="relative flex items-center gap-6 sm:gap-8 p-6 sm:p-8">
+            {/* Preview with enhanced parallax */}
             <motion.div
-              className="shrink-0 flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32"
+              className="shrink-0 flex items-center justify-center w-32 h-32 sm:w-40 sm:h-40"
               animate={{
-                x: (mousePos.x - 0.5) * 8,
-                y: (mousePos.y - 0.5) * 8,
+                x: (mousePos.x - 0.5) * 16,
+                y: (mousePos.y - 0.5) * 16,
               }}
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
             >
               {renderPreview()}
             </motion.div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0 space-y-3">
+            {/* Info with counter-parallax */}
+            <motion.div
+              className="flex-1 min-w-0 space-y-3"
+              animate={{
+                x: (mousePos.x - 0.5) * -6,
+                y: (mousePos.y - 0.5) * -6,
+              }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            >
               {/* Rarity + FEATURED badge */}
               <div className="flex items-center gap-2 flex-wrap">
                 <span
@@ -224,15 +242,17 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
                 >
                   {featured.rarity}
                 </span>
-                <span
-                  className="text-[9px] uppercase tracking-[0.2em] font-orbitron px-2 py-0.5 rounded"
+                <motion.span
+                  className="text-[9px] uppercase tracking-[0.2em] font-orbitron px-2 py-0.5 rounded flex items-center gap-1"
                   style={{
                     background: `linear-gradient(90deg, ${colors.glow}, transparent)`,
                     color: colors.badge,
                   }}
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
                 >
-                  ★ Featured
-                </span>
+                  <Star className="w-2.5 h-2.5" /> Featured
+                </motion.span>
               </div>
 
               <h3 className="font-orbitron text-base sm:text-lg font-bold tracking-wide text-foreground truncate">
@@ -276,7 +296,7 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

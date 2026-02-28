@@ -65,6 +65,18 @@ const rarityConfig: Record<string, {
   },
 };
 
+// Rarity-specific background patterns
+const rarityBgStyle: Record<string, React.CSSProperties> = {
+  common: {
+    backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 10px, hsl(210 15% 60% / 0.03) 10px, hsl(210 15% 60% / 0.03) 11px)",
+  },
+  rare: {
+    background: "radial-gradient(ellipse at 50% 0%, hsl(212 90% 55% / 0.08), transparent 70%)",
+  },
+  epic: {},
+  legendary: {},
+};
+
 export function CyberItemCard({
   id,
   name,
@@ -132,10 +144,23 @@ export function CyberItemCard({
             : undefined,
         }}
       >
-        {/* Animated conic border for epic/legendary */}
-        {config.animated && (
+        {/* Epic: breathing purple border glow (always visible) */}
+        {rarity === "epic" && !owned && (
+          <motion.div
+            className="absolute -inset-[1px] rounded-xl pointer-events-none z-0"
+            style={{
+              border: `1px solid ${config.glowColor}`,
+              boxShadow: `0 0 12px ${config.glowColor}40`,
+            }}
+            animate={{ opacity: [0.3, 0.7, 0.3] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
+
+        {/* Animated conic border for legendary on hover */}
+        {rarity === "legendary" && (
           <div
-            className="absolute -inset-[1px] rounded-xl pointer-events-none z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+            className="absolute -inset-[1px] rounded-xl pointer-events-none z-0 opacity-40 group-hover:opacity-100 transition-opacity duration-500"
             style={{
               background: `conic-gradient(from 0deg, ${config.glowColor}, transparent 30%, ${config.glowColor} 50%, transparent 80%, ${config.glowColor})`,
               animation: "spin 3s linear infinite",
@@ -145,26 +170,11 @@ export function CyberItemCard({
 
         {/* Inner background (sits above conic border) */}
         <div className="relative z-[1] bg-card/95 rounded-xl">
-          {/* Scanline overlay on hover */}
-          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-[2]">
-            <div
-              className="absolute inset-0 rounded-xl"
-              style={{
-                background: "repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--primary) / 0.02) 2px, hsl(var(--primary) / 0.02) 4px)",
-              }}
-            />
-          </div>
-
-          {/* Blueprint grid for modules */}
-          {itemType === "module" && (
-            <div
-              className="absolute inset-0 opacity-[0.03] pointer-events-none rounded-xl"
-              style={{
-                backgroundImage: "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-              }}
-            />
-          )}
+          {/* Rarity-specific background pattern */}
+          <div
+            className="absolute inset-0 rounded-xl pointer-events-none"
+            style={rarityBgStyle[rarity] || {}}
+          />
 
           {/* Inner glow on hover */}
           <div
@@ -173,6 +183,35 @@ export function CyberItemCard({
               background: `radial-gradient(ellipse at 50% 30%, ${config.glowColor}10, transparent 60%)`,
             }}
           />
+
+          {/* Legendary: floating golden particles */}
+          {rarity === "legendary" && !owned && (
+            <div className="absolute inset-0 rounded-xl overflow-hidden pointer-events-none z-[2]">
+              {[0, 1, 2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-1 h-1 rounded-full"
+                  style={{
+                    background: config.glowColor,
+                    boxShadow: `0 0 4px ${config.glowColor}`,
+                    left: `${20 + i * 20}%`,
+                    bottom: "0%",
+                  }}
+                  animate={{
+                    y: [0, -80 - i * 15, 0],
+                    opacity: [0, 0.8, 0],
+                    x: [0, (i % 2 === 0 ? 8 : -8), 0],
+                  }}
+                  transition={{
+                    duration: 3 + i * 0.5,
+                    repeat: Infinity,
+                    delay: i * 0.8,
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Wishlist */}
           {!owned && !isComingSoon && (
@@ -190,29 +229,41 @@ export function CyberItemCard({
               {preview}
             </div>
 
-            {/* ACQUIRED holographic stamp */}
+            {/* ACQUIRED holographic badge stamp */}
             {owned && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[5]">
-                <div
-                  className="absolute inset-0 bg-background/30 backdrop-blur-[2px] rounded-t-xl"
-                />
-                <div
-                  className="relative px-4 py-1.5 rounded border-2 rotate-[-8deg]"
-                  style={{
-                    borderColor: "hsl(142 70% 50% / 0.5)",
-                    background: "hsl(142 70% 50% / 0.08)",
-                    boxShadow: "0 0 15px hsl(142 70% 50% / 0.15)",
-                  }}
-                >
-                  <span
-                    className="font-orbitron text-[11px] font-bold tracking-[0.3em] uppercase"
+                <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px] rounded-t-xl" />
+                <div className="relative">
+                  {/* Hexagonal badge */}
+                  <div
+                    className="relative w-16 h-16 flex items-center justify-center"
                     style={{
-                      color: "hsl(142 70% 50%)",
-                      textShadow: "0 0 8px hsl(142 70% 50% / 0.5)",
+                      clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+                      background: "hsl(142 70% 50% / 0.12)",
+                      backdropFilter: "blur(4px)",
                     }}
                   >
-                    Acquired
-                  </span>
+                    <div
+                      className="w-14 h-14 flex items-center justify-center"
+                      style={{
+                        clipPath: "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)",
+                        border: "1px solid hsl(142 70% 50% / 0.4)",
+                        background: "hsl(142 70% 50% / 0.06)",
+                      }}
+                    >
+                      <Check className="w-6 h-6" style={{ color: "hsl(142 70% 50%)" }} />
+                    </div>
+                  </div>
+                  {/* Shimmer sweep */}
+                  <motion.div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: "linear-gradient(120deg, transparent 40%, hsl(142 70% 50% / 0.15) 50%, transparent 60%)",
+                      backgroundSize: "200% 100%",
+                    }}
+                    animate={{ backgroundPosition: ["200% 0", "-100% 0"] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+                  />
                 </div>
               </div>
             )}
