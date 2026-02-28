@@ -1,31 +1,24 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 
 // Components
 import { PactTimeline } from "@/components/PactTimeline";
 import { AchievementsWidget } from "@/components/achievements/AchievementsWidget";
-import { ModuleCard } from "@/components/home/ModuleCard";
-import { ModuleGrid } from "@/components/home/ModuleGrid";
-import { ModuleManager } from "@/components/home/ModuleManager";
 import { ProgressByDifficultyModule } from "@/components/home/ProgressByDifficultyModule";
 import { CostTrackingModule } from "@/components/home/CostTrackingModule";
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
-import { NeuralPanel } from "@/components/home/NeuralPanel";
 import { NeuralBar } from "@/components/home/NeuralBar";
 import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
 import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
-
-// Icons
-import { Flame, Activity } from "lucide-react";
+import { Flame } from "lucide-react";
 
 // Hooks
 import { useTodoReminders } from "@/hooks/useTodoReminders";
-import { useModuleLayout, ModuleSize } from "@/hooks/useModuleLayout";
 import { usePact } from "@/hooks/usePact";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals } from "@/hooks/useGoals";
@@ -35,22 +28,16 @@ import { useRankXP } from "@/hooks/useRankXP";
 
 type UserState = "onboarding" | "active" | "advanced";
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.15 },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { y: 12, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { type: "spring", stiffness: 100, damping: 20 },
-  },
-};
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-3">
+      <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.3)]">
+        {label}
+      </span>
+      <div className="flex-1 h-px bg-[rgba(0,180,255,0.06)]" />
+    </div>
+  );
+}
 
 export default function Home() {
   const { user } = useAuth();
@@ -67,21 +54,6 @@ export default function Home() {
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
-
-  const {
-    modules,
-    isEditMode,
-    enterEditMode,
-    exitEditMode,
-    toggleModule,
-    cycleModuleSize,
-    toggleDisplayMode,
-    getDisplayMode,
-    reorderModules,
-    validateLayout,
-    resetToDefault,
-    getAllModules,
-  } = useModuleLayout();
 
   const { focusGoals, habitGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
     const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
@@ -196,67 +168,6 @@ export default function Home() {
 
   if (!pact) return null;
 
-  const sortedModules = getAllModules();
-  const visibleModules = sortedModules.filter((m) => {
-    if (m.category === "display") return m.enabled;
-    const actionModuleKeys = ["the-call", "finance", "todo-list", "journal", "track-health", "wishlist"];
-    if (actionModuleKeys.includes(m.id)) return m.enabled && ownedModules[m.id as keyof typeof ownedModules];
-    return m.enabled;
-  });
-
-  const renderModule = (moduleId: string, size: ModuleSize) => {
-    const displayMode = getDisplayMode(moduleId);
-    const handleToggle = () => toggleDisplayMode(moduleId);
-
-    switch (moduleId) {
-      case "timeline":
-        return (
-          <PactTimeline
-            projectStartDate={pact.project_start_date}
-            projectEndDate={pact.project_end_date}
-            displayMode={displayMode}
-            onToggleDisplayMode={handleToggle}
-          />
-        );
-      case "progress-overview":
-        return <ProgressOverviewModule data={dashboardData} displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
-      case "progress-difficulty":
-        return (
-          <ProgressByDifficultyModule
-            difficultyProgress={dashboardData.difficultyProgress}
-            customDifficultyName={customDifficultyName}
-            customDifficultyColor={customDifficultyColor}
-            displayMode={displayMode}
-            onToggleDisplayMode={handleToggle}
-          />
-        );
-      case "cost-tracking":
-        return (
-          <CostTrackingModule
-            totalCostEngaged={dashboardData.totalCostEngaged}
-            totalCostPaid={dashboardData.totalCostPaid}
-            displayMode={displayMode}
-            onToggleDisplayMode={handleToggle}
-            isCustomMode={dashboardData.isCustomMode}
-          />
-        );
-      case "focus-goals":
-        return <FocusGoalsModule goals={focusGoals} navigate={navigate} displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
-      case "habits":
-        return <HabitsModule habits={habitGoals} customDifficultyColor={customDifficultyColor} displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
-      case "the-call":
-        return <ActionModule title="The Call" icon={Flame} iconColor="text-orange-400" onClick={() => navigate("/the-call")} />;
-      case "finance":
-      case "todo-list":
-      case "journal":
-      case "track-health":
-      case "wishlist":
-        return null;
-      default:
-        return null;
-    }
-  };
-
   const safeRankData = rankData || {
     ranks: [],
     currentRank: null,
@@ -291,123 +202,107 @@ export default function Home() {
         }}
       />
 
-      {/* Neural Bar - sticky top status */}
+      {/* Neural Bar */}
       <NeuralBar pact={pact} rankData={safeRankData} />
 
       <motion.div
-        className="max-w-5xl mx-auto p-4 md:p-5 space-y-4 relative z-10"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+        className="max-w-5xl mx-auto p-4 md:p-5 space-y-6 relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.4 }}
       >
         {/* HERO */}
-        <motion.div variants={itemVariants}>
-          <HeroSection
-            pact={pact}
-            focusGoals={focusGoals}
-            allGoals={allGoals}
-            rankData={safeRankData}
-            ownedModules={{
-              todo: ownedModules["todo-list"],
-              journal: ownedModules["journal"],
-              health: ownedModules["track-health"],
-            }}
-          />
-        </motion.div>
+        <HeroSection
+          pact={pact}
+          focusGoals={focusGoals}
+          allGoals={allGoals}
+          rankData={safeRankData}
+          ownedModules={{
+            todo: ownedModules["todo-list"],
+            journal: ownedModules["journal"],
+            health: ownedModules["track-health"],
+          }}
+        />
 
         {/* ONBOARDING */}
         {userState === "onboarding" && (
-          <motion.div variants={itemVariants}>
-            <GettingStartedCard
-              hasGoals={dashboardData.totalGoals > 0}
-              hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
-              hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
-            />
-          </motion.div>
+          <GettingStartedCard
+            hasGoals={dashboardData.totalGoals > 0}
+            hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
+            hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
+          />
         )}
 
-        {/* GRID */}
-        <motion.div variants={itemVariants}>
-          {isEditMode && (
-            <div className="mb-4 flex items-center justify-between bg-[rgba(0,180,255,0.05)] border border-[rgba(0,180,255,0.15)] p-3 rounded-[4px]">
-              <span className="text-primary font-orbitron text-[10px] uppercase tracking-[0.15em] flex items-center gap-2">
-                <Activity className="w-4 h-4" /> Edit Mode Active
-              </span>
-            </div>
-          )}
+        {/* SYSTEM OVERVIEW */}
+        <section>
+          <SectionLabel label="System Overview" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <ProgressOverviewModule data={dashboardData} />
+            <PactTimeline
+              projectStartDate={pact.project_start_date}
+              projectEndDate={pact.project_end_date}
+            />
+          </div>
+        </section>
 
-          <ModuleGrid modules={visibleModules} isEditMode={isEditMode} onReorder={reorderModules}>
-            {visibleModules.map((module) => (
-              <ModuleCard
-                key={module.id}
-                id={module.id}
-                name={module.name}
-                isEditMode={isEditMode}
-                isEnabled={module.enabled}
-                onToggle={() => toggleModule(module.id)}
-                onCycleSize={() => cycleModuleSize(module.id)}
-                size={module.size}
-                category={module.category}
-                allowedSizes={module.allowedSizes}
-                isPlaceholder={module.isPlaceholder}
+        {/* OPERATIONS */}
+        <section>
+          <SectionLabel label="Operations" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <FocusGoalsModule goals={focusGoals} navigate={navigate} />
+            <HabitsModule habits={habitGoals} customDifficultyColor={customDifficultyColor} />
+          </div>
+        </section>
+
+        {/* ANALYTICS */}
+        <section>
+          <SectionLabel label="Analytics" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <ProgressByDifficultyModule
+              difficultyProgress={dashboardData.difficultyProgress}
+              customDifficultyName={customDifficultyName}
+              customDifficultyColor={customDifficultyColor}
+            />
+            <CostTrackingModule
+              totalCostEngaged={dashboardData.totalCostEngaged}
+              totalCostPaid={dashboardData.totalCostPaid}
+              isCustomMode={dashboardData.isCustomMode}
+            />
+          </div>
+        </section>
+
+        {/* RECORDS */}
+        <section>
+          <SectionLabel label="Records" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <AchievementsWidget />
+            {ownedModules["the-call"] && (
+              <button
+                onClick={() => navigate("/the-call")}
+                className="group relative h-full w-full flex items-center justify-center rounded-[4px] overflow-hidden transition-all duration-300 bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)] shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)] min-h-[120px] cursor-pointer"
               >
-                <div className="h-full w-full">{renderModule(module.id, module.size)}</div>
-              </ModuleCard>
-            ))}
-          </ModuleGrid>
-        </motion.div>
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+                <div className="flex flex-col items-center gap-2.5">
+                  <Flame className="w-6 h-6 text-orange-400" />
+                  <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.6)] group-hover:text-[rgba(160,210,255,0.85)] transition-colors">
+                    The Call
+                  </span>
+                </div>
+              </button>
+            )}
+          </div>
+        </section>
 
-        {/* LOCKED */}
-        {lockedModules.length > 0 && !isEditMode && (
-          <motion.div variants={itemVariants} className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
+        {/* LOCKED MODULES */}
+        {lockedModules.length > 0 && (
+          <section className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
             <h3 className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.35)] mb-4">
               Available Modules
             </h3>
             <LockedModulesTeaser lockedModules={lockedModules} />
-          </motion.div>
+          </section>
         )}
       </motion.div>
-
-      <ModuleManager
-        isEditMode={isEditMode}
-        onEnterEdit={enterEditMode}
-        onValidate={validateLayout}
-        onCancel={exitEditMode}
-        onReset={resetToDefault}
-      />
     </div>
-  );
-}
-
-// Simplified Action Module using NeuralPanel
-function ActionModule({
-  title,
-  icon: Icon,
-  iconColor,
-  onClick,
-}: {
-  title: string;
-  icon: React.ComponentType<{ className?: string }>;
-  iconColor: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="group relative h-full w-full flex items-center justify-center rounded-[4px] overflow-hidden transition-all duration-300 bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)] shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)] min-h-[120px] cursor-pointer"
-    >
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
-      <div className="flex flex-col items-center gap-2.5">
-        <Icon className={`w-6 h-6 ${iconColor || 'text-primary/60'}`} />
-        <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.6)] group-hover:text-[rgba(160,210,255,0.85)] transition-colors">
-          {title}
-        </span>
-      </div>
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[rgba(160,210,255,0.1)] group-hover:text-[rgba(160,210,255,0.3)] transition-all">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
-    </button>
   );
 }

@@ -109,7 +109,7 @@ export function NeuralPanel({
 
       {/* Body */}
       <div className="relative z-10 flex-1 flex flex-col min-h-0">
-        <div className="flex-1 px-5 py-4 overflow-auto">{children}</div>
+        <div className="flex-1 px-5 py-3 overflow-auto">{children}</div>
 
         <AnimatePresence>
           {showExpandedContent && expandableContent && (
