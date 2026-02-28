@@ -4,7 +4,6 @@ import { motion, Variants } from "framer-motion";
 
 import { SmartProjectHeader } from "./SmartProjectHeader";
 import { QuickActionsBar } from "@/components/home/QuickActionsBar";
-import { MissionRandomizer } from "./MissionRandomizer";
 import { cn } from "@/lib/utils";
 import { Pact } from "@/hooks/usePact";
 import { Goal } from "@/hooks/useGoals";
