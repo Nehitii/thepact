@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion, Variants } from "framer-motion"; // Correction : Import ajouté
+import { motion, Variants } from "framer-motion";
 
 // Components
 import { PactTimeline } from "@/components/PactTimeline";
@@ -14,7 +14,7 @@ import { CostTrackingModule } from "@/components/home/CostTrackingModule";
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { ProgressOverviewModule } from "@/components/home/ProgressOverviewModule";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
-import { ActionModuleCard } from "@/components/home/ActionModuleCard";
+import { NeuralPanel } from "@/components/home/NeuralPanel";
 import { FocusGoalsModule } from "@/components/home/FocusGoalsModule";
 import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
@@ -32,27 +32,21 @@ import { useUserShop } from "@/hooks/useShop";
 import { useFinanceSettings } from "@/hooks/useFinance";
 import { useRankXP } from "@/hooks/useRankXP";
 
-// User state types for adaptive dashboard
 type UserState = "onboarding" | "active" | "advanced";
 
-// Animation Variants
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
+    transition: { staggerChildren: 0.08, delayChildren: 0.15 },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { y: 20, opacity: 0, scale: 0.98 },
+  hidden: { y: 12, opacity: 0 },
   visible: {
     y: 0,
     opacity: 1,
-    scale: 1,
     transition: { type: "spring", stiffness: 100, damping: 20 },
   },
 };
@@ -61,7 +55,6 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Use React Query hooks
   const { data: pact, isLoading: pactLoading } = usePact(user?.id);
   const { data: profile } = useProfile(user?.id);
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
@@ -69,7 +62,6 @@ export default function Home() {
   const { data: financeSettings } = useFinanceSettings(user?.id);
   const { data: rankData } = useRankXP(user?.id, pact?.id);
 
-  // Initialize todo reminders
   useTodoReminders();
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
@@ -90,7 +82,6 @@ export default function Home() {
     getAllModules,
   } = useModuleLayout();
 
-  // Compute derived data
   const { focusGoals, habitGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
     const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
     const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
@@ -191,14 +182,11 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background/95 backdrop-blur-sm">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <div className="relative">
-            <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-            <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-primary/20 mx-auto" />
-          </div>
-          <p className="text-muted-foreground animate-pulse tracking-wide text-sm font-medium uppercase">
-            Initialisation...
+          <div className="h-12 w-12 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />
+          <p className="text-[rgba(160,210,255,0.4)] text-[10px] font-orbitron uppercase tracking-[0.3em]">
+            Initializing...
           </p>
         </div>
       </div>
@@ -230,9 +218,7 @@ export default function Home() {
           />
         );
       case "progress-overview":
-        return (
-          <ProgressOverviewModule data={dashboardData} displayMode={displayMode} onToggleDisplayMode={handleToggle} />
-        );
+        return <ProgressOverviewModule data={dashboardData} displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
       case "progress-difficulty":
         return (
           <ProgressByDifficultyModule
@@ -254,37 +240,23 @@ export default function Home() {
           />
         );
       case "focus-goals":
-        return (
-          <FocusGoalsModule
-            goals={focusGoals}
-            navigate={navigate}
-            displayMode={displayMode}
-            onToggleDisplayMode={handleToggle}
-          />
-        );
+        return <FocusGoalsModule goals={focusGoals} navigate={navigate} displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
       case "habits":
-        return (
-          <HabitsModule
-            habits={habitGoals}
-            customDifficultyColor={customDifficultyColor}
-            displayMode={displayMode}
-            onToggleDisplayMode={handleToggle}
-          />
-        );
+        return <HabitsModule habits={habitGoals} customDifficultyColor={customDifficultyColor} displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
       case "the-call":
-        return <TheCallModule navigate={navigate} size={size} />;
+        return <ActionModule title="The Call" icon={Flame} iconColor="text-orange-400" onClick={() => navigate("/the-call")} />;
       case "finance":
-        return <FinanceModule navigate={navigate} size={size} />;
+        return <ActionModule title="Finance" icon={() => <span className="text-lg">💰</span>} iconColor="" onClick={() => navigate("/finance")} />;
       case "achievements":
         return <AchievementsWidget displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
       case "todo-list":
-        return <TodoListModuleCard navigate={navigate} size={size} />;
+        return <ActionModule title="Tasks" icon={ListTodo} iconColor="text-primary" onClick={() => navigate("/todo")} />;
       case "journal":
-        return <JournalModule navigate={navigate} size={size} />;
+        return <ActionModule title="Journal" icon={BookOpen} iconColor="text-indigo-400" onClick={() => navigate("/journal")} />;
       case "track-health":
-        return <HealthModule navigate={navigate} size={size} />;
+        return <ActionModule title="Vitality" icon={Heart} iconColor="text-teal-400" onClick={() => navigate("/health")} />;
       case "wishlist":
-        return <WishlistModule navigate={navigate} size={size} />;
+        return <ActionModule title="Wishlist" icon={ShoppingCart} iconColor="text-primary" onClick={() => navigate("/wishlist")} />;
       default:
         return null;
     }
@@ -303,45 +275,46 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden selection:bg-primary/20">
-      {/* Background Ambience */}
+      {/* Minimal background ambience */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-900/10 rounded-full blur-[120px] animate-pulse-slow" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-indigo-900/10 rounded-full blur-[120px] animate-pulse-slow delay-1000" />
-        <div className="absolute top-[20%] right-[20%] w-[30vw] h-[30vw] bg-primary/5 rounded-full blur-[100px] animate-float" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[60vw] h-[40vh] bg-[rgba(0,80,180,0.04)] rounded-full blur-[120px]" />
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
-            backgroundImage: `linear-gradient(to right, #888 1px, transparent 1px), linear-gradient(to bottom, #888 1px, transparent 1px)`,
-            backgroundSize: "4rem 4rem",
-            maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
+            backgroundImage: `linear-gradient(to right, rgba(0,180,255,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(0,180,255,0.3) 1px, transparent 1px)`,
+            backgroundSize: "60px 60px",
+            maskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)",
           }}
         />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.015] mix-blend-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background/80" />
       </div>
 
+      {/* Global scanline */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[1]"
+        style={{
+          background: "repeating-linear-gradient(0deg, transparent 0, transparent 2px, rgba(0,0,0,0.015) 2px, rgba(0,0,0,0.015) 4px)",
+        }}
+      />
+
       <motion.div
-        className="max-w-6xl mx-auto p-4 md:p-8 space-y-10 relative z-10"
+        className="max-w-5xl mx-auto p-4 md:p-6 space-y-6 relative z-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* HERO */}
-        <motion.div variants={itemVariants} className="relative">
-          <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-purple-500/20 to-indigo-500/20 rounded-3xl blur-xl opacity-30 animate-pulse" />
-          <div className="relative">
-            <HeroSection
-              pact={pact}
-              focusGoals={focusGoals}
-              allGoals={allGoals}
-              rankData={safeRankData}
-              ownedModules={{
-                todo: ownedModules["todo-list"],
-                journal: ownedModules["journal"],
-                health: ownedModules["track-health"],
-              }}
-            />
-          </div>
+        <motion.div variants={itemVariants}>
+          <HeroSection
+            pact={pact}
+            focusGoals={focusGoals}
+            allGoals={allGoals}
+            rankData={safeRankData}
+            ownedModules={{
+              todo: ownedModules["todo-list"],
+              journal: ownedModules["journal"],
+              health: ownedModules["track-health"],
+            }}
+          />
         </motion.div>
 
         {/* ONBOARDING */}
@@ -356,14 +329,11 @@ export default function Home() {
         )}
 
         {/* GRID */}
-        <motion.div variants={itemVariants} className="relative">
+        <motion.div variants={itemVariants}>
           {isEditMode && (
-            <div className="mb-6 flex items-center justify-between bg-primary/10 border border-primary/20 p-4 rounded-xl backdrop-blur-md">
-              <span className="text-primary font-bold tracking-wide flex items-center gap-2">
-                <Activity className="w-5 h-5" /> MODE ÉDITION ACTIVÉ
-              </span>
-              <span className="text-xs text-primary/80 uppercase tracking-widest">
-                Réorganisez votre tableau de bord
+            <div className="mb-4 flex items-center justify-between bg-[rgba(0,180,255,0.05)] border border-[rgba(0,180,255,0.15)] p-3 rounded-sm">
+              <span className="text-primary font-orbitron text-[10px] uppercase tracking-[0.2em] flex items-center gap-2">
+                <Activity className="w-4 h-4" /> Edit Mode Active
               </span>
             </div>
           )}
@@ -382,9 +352,8 @@ export default function Home() {
                 category={module.category}
                 allowedSizes={module.allowedSizes}
                 isPlaceholder={module.isPlaceholder}
-                className="h-full border border-white/5 bg-card/40 backdrop-blur-xl shadow-lg hover:shadow-primary/5 hover:border-white/10 transition-all duration-300 rounded-2xl overflow-hidden group flex flex-col"
               >
-                <div className="flex-1 h-full w-full">{renderModule(module.id, module.size)}</div>
+                <div className="h-full w-full">{renderModule(module.id, module.size)}</div>
               </ModuleCard>
             ))}
           </ModuleGrid>
@@ -392,9 +361,9 @@ export default function Home() {
 
         {/* LOCKED */}
         {lockedModules.length > 0 && !isEditMode && (
-          <motion.div variants={itemVariants} className="pt-8 border-t border-white/5">
-            <h3 className="text-lg font-semibold text-muted-foreground mb-6 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-muted-foreground/50" /> Modules Disponibles
+          <motion.div variants={itemVariants} className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
+            <h3 className="text-[10px] font-orbitron uppercase tracking-[0.2em] text-[rgba(160,210,255,0.35)] mb-4">
+              Available Modules
             </h3>
             <LockedModulesTeaser lockedModules={lockedModules} />
           </motion.div>
@@ -412,82 +381,36 @@ export default function Home() {
   );
 }
 
-// Helper Components
-function TheCallModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
+// Simplified Action Module using NeuralPanel
+function ActionModule({
+  title,
+  icon: Icon,
+  iconColor,
+  onClick,
+}: {
+  title: string;
+  icon: React.ComponentType<{ className?: string }>;
+  iconColor: string;
+  onClick: () => void;
+}) {
   return (
-    <ActionModuleCard
-      title="The Call"
-      subtitle="Alignment & Focus"
-      icon={Flame}
-      onClick={() => navigate("/the-call")}
-      size={size}
-      accentColor="orange"
-      className="h-full bg-gradient-to-br from-orange-500/5 to-transparent hover:from-orange-500/10"
-    />
-  );
-}
-function FinanceModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
-  return (
-    <ActionModuleCard
-      title="Finance"
-      subtitle="Budget & Projections"
-      icon="💰"
-      onClick={() => navigate("/finance")}
-      size={size}
-      accentColor="amber"
-      className="h-full bg-gradient-to-br from-amber-500/5 to-transparent hover:from-amber-500/10"
-    />
-  );
-}
-function JournalModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
-  return (
-    <ActionModuleCard
-      title="Journal"
-      subtitle="Memory Timeline"
-      icon={BookOpen}
-      onClick={() => navigate("/journal")}
-      size={size}
-      accentColor="indigo"
-      className="h-full bg-gradient-to-br from-indigo-500/5 to-transparent hover:from-indigo-500/10"
-    />
-  );
-}
-function TodoListModuleCard({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
-  return (
-    <ActionModuleCard
-      title="Tasks"
-      subtitle="Productivity System"
-      icon={ListTodo}
-      onClick={() => navigate("/todo")}
-      size={size}
-      accentColor="cyan"
-      className="h-full bg-gradient-to-br from-cyan-500/5 to-transparent hover:from-cyan-500/10"
-    />
-  );
-}
-function HealthModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
-  return (
-    <ActionModuleCard
-      title="Vitality"
-      subtitle="Body & Mind"
-      icon={Heart}
-      onClick={() => navigate("/health")}
-      size={size}
-      accentColor="teal"
-      className="h-full bg-gradient-to-br from-teal-500/5 to-transparent hover:from-teal-500/10"
-    />
-  );
-}
-function WishlistModule({ navigate, size = "half" }: { navigate: (path: string) => void; size?: ModuleSize }) {
-  return (
-    <ActionModuleCard
-      title="Wishlist"
-      subtitle="Material Goals"
-      icon={ShoppingCart}
-      onClick={() => navigate("/wishlist")}
-      size={size}
-      accentColor="primary"
-      className="h-full bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10"
-    />
+    <button
+      onClick={onClick}
+      className="group relative h-full w-full flex items-center justify-center rounded-sm overflow-hidden transition-all duration-300 bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)] shadow-[0_8px_48px_rgba(0,0,0,0.9)] min-h-[120px] cursor-pointer"
+    >
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.15)] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="flex flex-col items-center gap-2.5">
+        <Icon className={`w-6 h-6 ${iconColor || 'text-primary/60'}`} />
+        <span className="text-[10px] font-orbitron uppercase tracking-[0.2em] text-[rgba(160,210,255,0.6)] group-hover:text-[rgba(160,210,255,0.85)] transition-colors">
+          {title}
+        </span>
+      </div>
+      {/* Right arrow */}
+      <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[rgba(160,210,255,0.1)] group-hover:text-[rgba(160,210,255,0.3)] transition-all">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+    </button>
   );
 }

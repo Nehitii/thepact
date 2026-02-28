@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Trophy, ChevronRight } from "lucide-react";
 import { AchievementCard } from "./AchievementCard";
 import { useNavigate } from "react-router-dom";
-import { DashboardWidgetShell, WidgetDisplayMode } from "@/components/home/DashboardWidgetShell";
+import { NeuralPanel, WidgetDisplayMode } from "@/components/home/NeuralPanel";
 
 interface AchievementsWidgetProps {
   displayMode?: WidgetDisplayMode;
@@ -23,9 +23,7 @@ export function AchievementsWidget({
   const isCompact = displayMode === 'compact';
 
   useEffect(() => {
-    if (user) {
-      loadStats();
-    }
+    if (user) loadStats();
   }, [user]);
 
   const loadStats = async () => {
@@ -42,7 +40,7 @@ export function AchievementsWidget({
 
   const recentAchievements = (
     <div className="space-y-2">
-      <h4 className="text-[10px] font-orbitron text-primary/50 uppercase tracking-wider">Recent Unlocks</h4>
+      <h4 className="text-[10px] font-orbitron text-[rgba(160,210,255,0.35)] uppercase tracking-wider">Recent Unlocks</h4>
       {stats?.recent?.slice(0, 3).map((achievement: any) => (
         <AchievementCard key={achievement.key} achievement={achievement} compact />
       ))}
@@ -50,10 +48,10 @@ export function AchievementsWidget({
   );
 
   return (
-    <DashboardWidgetShell
-      title="The Pact Achievements"
+    <NeuralPanel
+      title="Achievements"
       icon={Trophy}
-      subtitle={stats ? `${stats.unlocked} / ${stats.total} unlocked` : undefined}
+      subtitle={stats ? `${stats.unlocked}/${stats.total}` : undefined}
       displayMode={displayMode}
       onToggleDisplayMode={onToggleDisplayMode}
       isLoading={loading || !stats}
@@ -63,59 +61,43 @@ export function AchievementsWidget({
           variant="ghost" 
           size="sm" 
           onClick={() => navigate("/achievements")} 
-          className="h-7 px-2 gap-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 hover:border-primary/50 font-orbitron text-[10px] uppercase tracking-wider"
+          className="h-6 px-2 gap-1 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[rgba(160,210,255,0.4)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron text-[9px] uppercase tracking-wider rounded-sm"
         >
-          View
-          <ChevronRight className="w-3 h-3" />
+          View <ChevronRight className="w-3 h-3" />
         </Button>
       }
-      accentColor="primary"
     >
       {!stats ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-primary/40 text-sm font-rajdhani">Loading achievements...</div>
+          <div className="text-[rgba(160,210,255,0.25)] text-sm font-rajdhani">Loading...</div>
         </div>
       ) : stats.unlocked === 0 ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-          <div className="relative inline-block mb-3">
-            <div className="absolute inset-0 bg-primary/20 blur-md rounded-full" />
-            <Trophy className="w-10 h-10 text-primary/40 relative z-10" />
-          </div>
-          <p className="text-sm text-primary/60 font-rajdhani">
-            Complete actions to unlock your first achievement
-          </p>
+          <Trophy className="w-8 h-8 text-[rgba(160,210,255,0.15)] mb-2" />
+          <p className="text-xs text-[rgba(160,210,255,0.35)] font-rajdhani">Complete actions to unlock achievements</p>
         </div>
       ) : (
         <div className="flex-1 flex flex-col">
-          {/* Progress bar */}
-          <div className="mb-4">
-            <div className="flex justify-between text-[10px] mb-1.5">
-              <span className="text-primary/50 uppercase tracking-wider font-rajdhani">Progress</span>
-              <span className="font-bold text-primary font-orbitron drop-shadow-[0_0_5px_rgba(91,180,255,0.5)]">
-                {stats.percentage}%
-              </span>
+          <div className="mb-3">
+            <div className="flex justify-between text-[10px] mb-1">
+              <span className="text-[rgba(160,210,255,0.3)] font-rajdhani uppercase">Progress</span>
+              <span className="font-mono text-primary tabular-nums">{stats.percentage}%</span>
             </div>
-            <div className="relative h-2.5 w-full bg-card/30 backdrop-blur rounded-full overflow-hidden border border-primary/20">
+            <div className="relative h-1.5 w-full bg-[rgba(0,180,255,0.06)] rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-primary via-accent to-primary transition-all duration-1000 shadow-[0_0_15px_rgba(91,180,255,0.5)]"
+                className="h-full bg-primary/50 transition-all duration-1000 rounded-full"
                 style={{ width: `${stats.percentage}%` }}
-              >
-                <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent" />
-              </div>
+              />
             </div>
           </div>
-
-          {/* Recent achievement */}
           {stats.recent?.length > 0 && (
             <div className="flex-1">
-              <h3 className="text-[10px] font-semibold text-primary/50 uppercase tracking-wider font-rajdhani mb-2">
-                Latest Achievement
-              </h3>
+              <h3 className="text-[10px] font-rajdhani text-[rgba(160,210,255,0.3)] uppercase tracking-wider mb-2">Latest</h3>
               <AchievementCard achievement={stats.recent[0]} compact />
             </div>
           )}
         </div>
       )}
-    </DashboardWidgetShell>
+    </NeuralPanel>
   );
 }
