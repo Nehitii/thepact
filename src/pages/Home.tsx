@@ -7,7 +7,10 @@ import { motion } from "framer-motion";
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { NeuralBar } from "@/components/home/NeuralBar";
-import { HeroSection } from "@/components/home/hero";
+import { NexusHeroBanner } from "@/components/home/NexusHeroBanner";
+import { RankPanel } from "@/components/home/RankPanel";
+import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
+import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
 import { MonitoringGlobalPanel } from "@/components/home/MonitoringGlobalPanel";
 import { DifficultyScalePanel } from "@/components/home/DifficultyScalePanel";
@@ -39,7 +42,7 @@ export default function Home() {
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
 
-  const { focusGoals, habitGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
+  const { focusGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
     const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
     const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
     const focusGoals = normalGoals.filter((g) => g.is_focus && g.status !== "fully_completed");
@@ -110,7 +113,6 @@ export default function Home() {
 
     return {
       focusGoals,
-      habitGoals,
       dashboardData: {
         difficultyProgress,
         totalStepsCompleted,
@@ -163,9 +165,23 @@ export default function Home() {
     globalProgress: 0,
   };
 
+  const level = (() => {
+    if (!safeRankData.currentRank || !safeRankData.ranks.length) return 1;
+    const idx = safeRankData.ranks.findIndex((r) => r.id === safeRankData.currentRank!.id);
+    return idx >= 0 ? idx + 1 : 1;
+  })();
+
+  const activeDays = pact.created_at
+    ? Math.max(1, Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24)))
+    : 1;
+
+  const progression = dashboardData.totalGoals > 0
+    ? (dashboardData.goalsCompleted / dashboardData.totalGoals) * 100
+    : 0;
+
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden selection:bg-primary/20">
-      {/* Two-gradient background system */}
+      {/* Background gradients */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div
           className="absolute inset-0"
@@ -190,22 +206,38 @@ export default function Home() {
       <NeuralBar pact={pact} rankData={safeRankData} />
 
       <motion.div
-        className="max-w-5xl mx-auto p-4 md:p-5 space-y-6 relative z-10"
+        className="max-w-5xl mx-auto p-4 md:p-5 space-y-4 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
-        {/* HERO */}
-        <HeroSection
-          pact={pact}
-          focusGoals={focusGoals}
-          allGoals={allGoals}
-          rankData={safeRankData}
-          ownedModules={{
-            todo: ownedModules["todo-list"],
-            journal: ownedModules["journal"],
-            health: ownedModules["track-health"],
-          }}
+        {/* HERO BANNER */}
+        <NexusHeroBanner
+          progression={progression}
+          level={level}
+          totalMissions={allGoals.length}
+          activeDays={activeDays}
+        />
+
+        {/* RANK + QUICK ACCESS */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <RankPanel rankData={safeRankData} className="md:col-span-7" />
+          <QuickAccessPanel
+            ownedModules={{
+              "todo-list": ownedModules["todo-list"],
+              journal: ownedModules["journal"],
+              "track-health": ownedModules["track-health"],
+            }}
+            className="md:col-span-5"
+          />
+        </div>
+
+        {/* COUNTDOWN */}
+        <CountdownPanel
+          projectStartDate={pact.project_start_date}
+          projectEndDate={pact.project_end_date}
+          goalsCompleted={dashboardData.goalsCompleted}
+          totalGoals={dashboardData.totalGoals}
         />
 
         {/* MISSION RANDOMIZER */}
