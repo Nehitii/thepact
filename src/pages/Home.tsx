@@ -21,7 +21,7 @@ import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
 
 // Icons
-import { Flame, ListTodo, BookOpen, ShoppingCart, Heart, Activity } from "lucide-react";
+import { Flame, Activity } from "lucide-react";
 
 // Hooks
 import { useTodoReminders } from "@/hooks/useTodoReminders";
@@ -247,17 +247,11 @@ export default function Home() {
       case "the-call":
         return <ActionModule title="The Call" icon={Flame} iconColor="text-orange-400" onClick={() => navigate("/the-call")} />;
       case "finance":
-        return <ActionModule title="Finance" icon={() => <span className="text-lg">💰</span>} iconColor="" onClick={() => navigate("/finance")} />;
-      case "achievements":
-        return <AchievementsWidget displayMode={displayMode} onToggleDisplayMode={handleToggle} />;
       case "todo-list":
-        return <ActionModule title="Tasks" icon={ListTodo} iconColor="text-primary" onClick={() => navigate("/todo")} />;
       case "journal":
-        return <ActionModule title="Journal" icon={BookOpen} iconColor="text-indigo-400" onClick={() => navigate("/journal")} />;
       case "track-health":
-        return <ActionModule title="Vitality" icon={Heart} iconColor="text-teal-400" onClick={() => navigate("/health")} />;
       case "wishlist":
-        return <ActionModule title="Wishlist" icon={ShoppingCart} iconColor="text-primary" onClick={() => navigate("/wishlist")} />;
+        return null;
       default:
         return null;
     }

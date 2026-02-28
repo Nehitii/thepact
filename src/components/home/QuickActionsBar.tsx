@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { CheckSquare, Book, Heart, Plus, Lock } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface QuickActionsBarProps {
@@ -17,9 +17,6 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
 
   const actions = [
     { id: "new-goal", label: "New Goal", icon: Plus, owned: true, href: "/goals/new", isNew: true },
-    { id: "tasks", label: "Tasks", icon: CheckSquare, owned: ownedModules.todo, href: "/todo" },
-    { id: "journal", label: "Journal", icon: Book, owned: ownedModules.journal, href: "/journal" },
-    { id: "health", label: "Health", icon: Heart, owned: ownedModules.health, href: "/health" },
   ];
 
   return (
@@ -65,7 +62,6 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
               className="flex items-center gap-2 px-3 py-2 opacity-30 cursor-not-allowed"
               style={{ borderRadius: "4px" }}
             >
-              <Lock className="w-3.5 h-3.5 text-[rgba(160,210,255,0.3)]" strokeWidth={1.5} />
               <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.3)]">
                 {action.label}
               </span>
