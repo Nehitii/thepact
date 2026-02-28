@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { CornerBrackets } from "./CornerBrackets";
-import { differenceInDays, format } from "date-fns";
+import { differenceInDays } from "date-fns";
 
 interface MonitoringData {
   goalsCompleted: number;
@@ -22,46 +22,87 @@ function CircularGauge({
   sublabel,
   completed,
   total,
-  color,
-  trackColor,
+  gradientId,
+  gradientStops,
+  textColor,
+  textGlow,
 }: {
   label: string;
   sublabel: string;
   completed: number;
   total: number;
-  color: string;
-  trackColor: string;
+  gradientId: string;
+  gradientStops: [string, string];
+  textColor: string;
+  textGlow: string;
 }) {
   const pct = total > 0 ? (completed / total) * 100 : 0;
-  const r = 52;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (pct / 100) * circ;
+  // Gauge arc: circumference of r=40 = 251.3, but ref uses stroke-dasharray=190
+  const dashArray = 190;
+  const offset = dashArray - (pct / 100) * dashArray;
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative w-[130px] h-[130px]">
-        <svg viewBox="0 0 120 120" className="w-full h-full -rotate-90">
-          <circle cx="60" cy="60" r={r} fill="none" stroke={trackColor} strokeWidth="6" />
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative" style={{ width: 100, height: 100 }}>
+        <svg viewBox="0 0 100 100" width="100" height="100">
+          <defs>
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={gradientStops[0]} />
+              <stop offset="100%" stopColor={gradientStops[1]} />
+            </linearGradient>
+          </defs>
+          <circle cx="50" cy="50" r="40" fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="8" />
           <circle
-            cx="60" cy="60" r={r} fill="none"
-            stroke={color} strokeWidth="6" strokeLinecap="round"
-            strokeDasharray={circ} strokeDashoffset={offset}
-            className="transition-all duration-1000"
+            cx="50" cy="50" r="40" fill="none"
+            stroke={`url(#${gradientId})`} strokeWidth="8" strokeLinecap="round"
+            strokeDasharray={dashArray}
+            strokeDashoffset={offset}
+            style={{
+              transform: "rotate(135deg)",
+              transformOrigin: "center",
+              animation: "gaugeDraw 1.8s ease-out forwards",
+            }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-mono font-bold tabular-nums" style={{ color }}>
+          <span
+            style={{
+              fontFamily: "'Orbitron', sans-serif",
+              fontSize: 16, fontWeight: 700,
+              color: textColor,
+              textShadow: textGlow,
+            }}
+          >
             {Math.round(pct)}%
           </span>
-          <span className="text-[8px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.4)]">
+          <span
+            style={{
+              fontSize: 7, letterSpacing: 1,
+              color: "rgba(160,210,255,0.5)",
+              marginTop: 2,
+            }}
+          >
             {label}
           </span>
         </div>
       </div>
-      <span className="text-[10px] font-orbitron uppercase tracking-[0.12em] text-[rgba(160,210,255,0.5)]">
+      <span
+        style={{
+          fontFamily: "'Share Tech Mono', monospace",
+          fontSize: 10, letterSpacing: 3,
+          color: "rgba(160,210,255,0.5)",
+          textTransform: "uppercase" as const,
+        }}
+      >
         {sublabel}
       </span>
-      <span className="text-[9px] font-mono text-[rgba(160,210,255,0.3)] tabular-nums">
+      <span
+        style={{
+          fontSize: 10,
+          color: "rgba(160,210,255,0.5)",
+          fontFamily: "'Share Tech Mono', monospace",
+        }}
+      >
         {completed}/{total} complétés
       </span>
     </div>
@@ -83,72 +124,139 @@ export function MonitoringGlobalPanel({ data, projectStartDate, projectEndDate }
 
   return (
     <div
-      className="relative overflow-hidden border border-[rgba(0,180,255,0.08)] backdrop-blur-xl"
+      className="relative overflow-hidden"
       style={{
         borderRadius: 4,
         background: "rgba(6,11,22,0.92)",
+        border: "1px solid rgba(0,180,255,0.12)",
         boxShadow: "0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06)",
+        backdropFilter: "blur(16px)",
+        padding: 28,
       }}
     >
       <CornerBrackets />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(0,210,255,0.4), transparent)" }} />
 
-      {/* Header */}
-      <div className="px-5 pt-4 pb-3 border-b border-[rgba(0,180,255,0.06)]">
-        <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.4)]">
-          // MONITORING GLOBAL — CYCLE ACTUEL
-        </span>
+      {/* Panel label */}
+      <div
+        className="flex items-center gap-2 mb-4"
+        style={{
+          fontFamily: "'Share Tech Mono', monospace",
+          fontSize: 9, letterSpacing: 3,
+          color: "rgba(160,210,255,0.5)",
+          textTransform: "uppercase" as const,
+        }}
+      >
+        <span style={{ color: "rgba(0,212,255,0.6)" }}>//</span>
+        Monitoring Global — Cycle Actuel
+        <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(0,180,255,0.12), transparent)" }} />
       </div>
 
       {/* Gauges */}
-      <div className="px-5 py-6 flex items-start justify-around flex-wrap gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-7">
         <CircularGauge
-          label="GOALS" sublabel="OBJECTIFS"
+          label="GOALS" sublabel="Objectifs"
           completed={data.goalsCompleted} total={data.totalGoals}
-          color="#00d4ff" trackColor="rgba(0,180,255,0.08)"
+          gradientId="g1" gradientStops={["#0080ff", "#00d4ff"]}
+          textColor="#00d4ff"
+          textGlow="0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)"
         />
         <CircularGauge
-          label="STEPS" sublabel="ÉTAPES"
+          label="STEPS" sublabel="Étapes"
           completed={data.totalStepsCompleted} total={data.totalSteps}
-          color="#f0b429" trackColor="rgba(240,180,41,0.08)"
+          gradientId="g2" gradientStops={["#ff8c00", "#ffcc00"]}
+          textColor="#ff8c00"
+          textGlow="0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)"
         />
         <CircularGauge
-          label="HABITS" sublabel="HABITUDES"
+          label="HABITS" sublabel="Habitudes"
           completed={data.completedHabitChecks} total={data.totalHabitChecks}
-          color="#00ff88" trackColor="rgba(0,255,136,0.08)"
+          gradientId="g3" gradientStops={["#00aa55", "#00ff88"]}
+          textColor="#00ff88"
+          textGlow="0 0 8px rgba(0,255,136,0.6), 0 0 24px rgba(0,255,136,0.2)"
         />
       </div>
 
       {/* Timeline */}
       {timeline && (
-        <div className="px-5 pb-5">
-          <div className="border-t border-[rgba(0,180,255,0.06)] pt-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[9px] font-orbitron uppercase tracking-[0.12em] text-[rgba(160,210,255,0.35)]">
-                TIMELINE DU CYCLE
-              </span>
-              <span className="text-[9px] font-mono text-primary tabular-nums">
-                JOUR {timeline.elapsed}/{timeline.totalDays} — {timeline.phase}
-              </span>
-            </div>
-            <div className="h-2 rounded-full bg-[rgba(0,180,255,0.06)] overflow-hidden mb-2">
+        <div>
+          <div className="flex justify-between items-center mb-[10px]">
+            <span
+              style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 9, letterSpacing: 3,
+                color: "rgba(160,210,255,0.5)",
+                textTransform: "uppercase" as const,
+              }}
+            >
+              Timeline du Cycle
+            </span>
+            <span
+              style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 10,
+                color: "#00d4ff",
+              }}
+            >
+              JOUR {timeline.elapsed}/{timeline.totalDays} — {timeline.phase}
+            </span>
+          </div>
+
+          {/* Timeline track - 22px */}
+          <div
+            className="relative overflow-hidden"
+            style={{
+              height: 22,
+              background: "rgba(0,212,255,0.03)",
+              border: "1px solid rgba(0,180,255,0.12)",
+              borderRadius: 2,
+            }}
+          >
+            <div
+              className="absolute top-0 left-0 h-full"
+              style={{
+                width: `${timeline.pct}%`,
+                background: "linear-gradient(90deg, rgba(0,80,200,0.22), rgba(0,212,255,0.42))",
+                borderRight: "2px solid #00d4ff",
+              }}
+            >
               <div
-                className="h-full rounded-full transition-all duration-1000"
+                className="absolute top-0 right-[-1px] h-full"
                 style={{
-                  width: `${timeline.pct}%`,
-                  background: "linear-gradient(90deg, #00d4ff, #0088cc)",
-                  boxShadow: "0 0 10px rgba(0,212,255,0.3)",
+                  width: 2,
+                  background: "#00d4ff",
+                  boxShadow: "0 0 6px #00d4ff, 0 0 18px rgba(0,212,255,0.3)",
+                  animation: "timelineGlow 2s ease-in-out infinite",
                 }}
               />
             </div>
-            <div className="flex justify-between text-[8px] font-mono text-[rgba(160,210,255,0.2)]">
-              {["J.01", "25%", "50%", "75%", "FIN"].map((m) => (
-                <span key={m}>{m}</span>
-              ))}
-            </div>
+          </div>
+
+          {/* Markers */}
+          <div className="flex justify-between mt-1.5">
+            {["J.01", "J.10", "J.15", `▶ J.${timeline.elapsed}`, "J.25", "J.30"].map((m, i) => (
+              <span
+                key={m}
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: 8, letterSpacing: 1,
+                  color: i === 3 ? "#00d4ff" : "rgba(255,255,255,0.17)",
+                }}
+              >
+                {m}
+              </span>
+            ))}
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes gaugeDraw { from{stroke-dashoffset:190} }
+        @keyframes timelineGlow {
+          0%,100%{box-shadow:0 0 6px #00d4ff,0 0 18px rgba(0,212,255,0.3)}
+          50%{box-shadow:0 0 14px #00d4ff,0 0 36px rgba(0,212,255,0.6)}
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,19 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Settings } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Pact } from "@/hooks/usePact";
 import { RankXPData } from "@/hooks/useRankXP";
-import { BondIcon } from "@/components/ui/bond-icon";
 
 interface NeuralBarProps {
   pact: Pact;
   rankData: RankXPData;
-  bondBalance?: number;
 }
 
-export function NeuralBar({ pact, rankData, bondBalance = 0 }: NeuralBarProps) {
+export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   const navigate = useNavigate();
   const [now, setNow] = useState(new Date());
 
@@ -28,96 +25,169 @@ export function NeuralBar({ pact, rankData, bondBalance = 0 }: NeuralBarProps) {
   const isMaxRank = !nextRank && rankData.ranks.length > 0;
   const xpSpan = nextRankMin - currentRankMin;
   const xpProgress = isMaxRank ? 100 : xpSpan > 0 ? Math.min(((currentXP - currentRankMin) / xpSpan) * 100, 100) : 0;
-  const frameColor = currentRank?.frame_color ?? "#00d4ff";
 
   const timeStr = format(now, "HH:mm:ss");
   const dateStr = format(now, "EEE dd MMM yyyy", { locale: fr }).toUpperCase();
 
-  const pactCode = useMemo(() => {
-    if (!pact.id) return "0000";
-    return pact.id.slice(0, 4).toUpperCase();
-  }, [pact.id]);
-
   return (
     <div className="sticky top-0 z-[100] w-full">
-      <div
-        className="h-12 flex items-center justify-between px-4 backdrop-blur-[20px]"
+      {/* Main bar */}
+      <header
+        className="h-12 flex items-center justify-between px-6 overflow-hidden relative"
         style={{
-          backgroundColor: "rgba(2,4,10,0.97)",
-          borderBottom: "1px solid rgba(0,180,255,0.10)",
+          background: "rgba(2,4,10,0.97)",
+          borderBottom: "1px solid rgba(0,210,255,0.4)",
+          backdropFilter: "blur(20px)",
         }}
       >
-        {/* Left: SYS + XP bar + Pact name */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <span className="text-[9px] font-orbitron font-bold uppercase tracking-[0.2em] text-[#00d4ff]">
+        {/* Scanline sweep */}
+        <div
+          className="absolute bottom-0 h-px pointer-events-none"
+          style={{
+            width: "60%",
+            background: "linear-gradient(90deg, transparent, #00d4ff, transparent)",
+            animation: "scanline 4s linear infinite",
+            left: "-100%",
+          }}
+        />
+
+        {/* Left: SYS + progress + coords */}
+        <div className="flex items-center gap-3 flex-1">
+          <span
+            className="uppercase"
+            style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 9,
+              color: "rgba(160,210,255,0.5)",
+              letterSpacing: 2,
+            }}
+          >
             SYS
           </span>
-          {/* Inline XP bar */}
-          <div className="w-16 h-[3px] rounded-full bg-[rgba(0,180,255,0.1)] overflow-hidden shrink-0">
+
+          {/* Global progress track */}
+          <div
+            className="overflow-hidden shrink-0"
+            style={{
+              width: 120,
+              height: 4,
+              background: "rgba(0,212,255,0.07)",
+              borderRadius: 2,
+            }}
+          >
             <div
-              className="h-full rounded-full transition-all duration-1000"
-              style={{ width: `${xpProgress}%`, backgroundColor: frameColor }}
+              style={{
+                height: "100%",
+                width: `${xpProgress}%`,
+                background: "linear-gradient(90deg, #0070ff, #00d4ff)",
+                boxShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)",
+                animation: "pulseBar 3s ease-in-out infinite",
+              }}
             />
           </div>
-          <span className="text-[10px] font-orbitron font-bold uppercase tracking-[0.12em] text-[#ddeeff] truncate">
-            {pact.name}
-          </span>
-          <span className="text-[9px] font-mono text-[rgba(160,210,255,0.25)] tracking-tight hidden sm:inline">
-            #{pactCode}
+
+          {/* Coords */}
+          <span
+            className="hidden sm:inline"
+            style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 9,
+              color: "rgba(0,212,255,0.22)",
+              letterSpacing: 1,
+            }}
+          >
+            LAT 48.8566°N // LON 2.3522°E
           </span>
         </div>
 
         {/* Center: Clock */}
-        <div className="flex flex-col items-center shrink-0 px-4">
-          <span className="text-[14px] font-mono font-bold text-[#00d4ff] tabular-nums tracking-wide leading-none">
+        <div className="flex-1 text-center">
+          <div
+            style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 15,
+              color: "#00d4ff",
+              textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)",
+              letterSpacing: 3,
+            }}
+          >
             {timeStr}
-          </span>
-          <span className="text-[8px] font-mono text-[rgba(160,210,255,0.3)] tracking-[0.15em] leading-none mt-0.5">
+          </div>
+          <div
+            style={{
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 8,
+              color: "rgba(160,210,255,0.5)",
+              letterSpacing: 3,
+              textTransform: "uppercase" as const,
+              marginTop: 1,
+            }}
+          >
             {dateStr}
-          </span>
+          </div>
         </div>
 
-        {/* Right: Bonds + Customize */}
-        <div className="flex items-center gap-3 shrink-0 flex-1 justify-end">
-          <div className="flex items-center gap-1.5">
-            <BondIcon size={14} />
-            <span className="text-[11px] font-mono font-bold text-[#f0c050] tabular-nums">
-              {bondBalance.toLocaleString()}
+        {/* Right: Freq bars + Customize */}
+        <div className="flex-1 flex justify-end items-center gap-4">
+          {/* Freq indicator */}
+          <div className="hidden sm:flex items-center gap-1.5">
+            <div className="flex gap-[2px] items-end h-[14px]">
+              {[4, 8, 12, 6, 10].map((h, i) => (
+                <div
+                  key={i}
+                  className="rounded-[1px]"
+                  style={{
+                    width: 3,
+                    height: h,
+                    background: "#00d4ff",
+                    animation: `freqAnim 0.8s ease-in-out infinite alternate`,
+                    animationDelay: `${i * 0.15}s`,
+                  }}
+                />
+              ))}
+            </div>
+            <span
+              style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 9,
+                color: "rgba(0,212,255,0.28)",
+              }}
+            >
+              2.4GHz
             </span>
           </div>
+
+          {/* Customize button */}
           <button
             onClick={() => navigate("/profile")}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[rgba(0,180,255,0.15)] bg-[rgba(0,180,255,0.04)] hover:bg-[rgba(0,180,255,0.08)] transition-colors"
+            className="flex items-center gap-2 cursor-pointer uppercase transition-all hover:shadow-[0_0_8px_rgba(0,212,255,0.7),0_0_30px_rgba(0,212,255,0.25)]"
+            style={{
+              padding: "6px 14px",
+              background: "rgba(0,212,255,0.05)",
+              border: "1px solid rgba(0,210,255,0.4)",
+              borderRadius: 4,
+              color: "#00d4ff",
+              fontFamily: "'Share Tech Mono', monospace",
+              fontSize: 10,
+              letterSpacing: 2,
+              clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)",
+            }}
           >
-            <Settings size={12} className="text-[rgba(160,210,255,0.5)]" />
-            <span className="text-[9px] font-orbitron uppercase tracking-[0.12em] text-[rgba(160,210,255,0.5)] hidden sm:inline">
-              Customize
-            </span>
+            <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+            </svg>
+            CUSTOMIZE
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* XP progress bar */}
-      <div className="h-[2px] w-full" style={{ backgroundColor: "rgba(2,4,10,0.97)" }}>
-        <div
-          className="h-full transition-all duration-1000 ease-out"
-          style={{
-            width: `${xpProgress}%`,
-            backgroundColor: frameColor,
-            boxShadow: `0 0 8px ${frameColor}66`,
-          }}
-        />
-      </div>
-
-      {/* Scanline sweep */}
-      <div className="absolute bottom-0 left-0 h-px w-full overflow-hidden pointer-events-none">
-        <div
-          className="h-full w-1/3 animate-[scanline_4s_linear_infinite]"
-          style={{
-            background: `linear-gradient(90deg, transparent, ${frameColor}40, transparent)`,
-          }}
-        />
-      </div>
+      {/* CSS keyframes */}
+      <style>{`
+        @keyframes scanline { to { left: 140%; } }
+        @keyframes pulseBar { 0%,100%{opacity:1} 50%{opacity:0.6} }
+        @keyframes freqAnim { from{opacity:0.28;transform:scaleY(0.6)} to{opacity:0.9;transform:scaleY(1)} }
+      `}</style>
     </div>
   );
 }

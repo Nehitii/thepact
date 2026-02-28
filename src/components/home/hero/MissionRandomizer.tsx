@@ -171,29 +171,62 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
     return <ActiveMissionCard mission={activeMission} onAbandon={abandonMission} onComplete={completeMissionStep} className={className} />;
   }
 
-  const panelBase = "relative overflow-hidden border border-[rgba(0,180,255,0.08)] backdrop-blur-xl";
+  const panelBase = "relative overflow-hidden backdrop-blur-xl";
   const panelStyle: React.CSSProperties = {
     borderRadius: 4,
-    background: "rgba(6,11,22,0.95)",
+    border: "1px solid rgba(255,140,0,0.22)",
+    background: "linear-gradient(145deg, rgba(10,8,0,0.98) 0%, rgba(5,6,14,0.98) 100%)",
     boxShadow: "0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06)",
   };
 
   return (
     <div className={cn(panelBase, className)} style={panelStyle}>
       <CornerBrackets />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,140,0,0.4), transparent)" }} />
+      <style>{`@keyframes rotateSlow { to { transform: rotate(360deg); } }`}</style>
 
       {/* Header */}
-      <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-[rgba(0,180,255,0.06)]">
-        <div className="flex items-center gap-2">
-          <Dices className="w-4 h-4 text-amber-500" />
-          <span className="text-[11px] font-orbitron font-bold uppercase tracking-[0.12em] text-amber-500">
-            MISSION RANDOMIZER
+      <div
+        className="flex items-center justify-between"
+        style={{
+          padding: "14px 24px",
+          background: "linear-gradient(90deg, rgba(255,140,0,0.07), rgba(255,140,0,0.02), transparent)",
+          borderBottom: "1px solid rgba(255,140,0,0.12)",
+        }}
+      >
+        <div className="flex items-center gap-[10px]">
+          <svg
+            width={16} height={16} viewBox="0 0 16 16" fill="none" stroke="#ff8c00" strokeWidth="1.5"
+            style={{ animation: "rotateSlow 6s linear infinite" }}
+          >
+            <polygon points="8,1 15,4.5 15,11.5 8,15 1,11.5 1,4.5" />
+            <circle cx="8" cy="8" r="2.5" />
+          </svg>
+          <span
+            style={{
+              fontFamily: "'Orbitron', sans-serif",
+              fontSize: 11, fontWeight: 700,
+              letterSpacing: 4, color: "#ff8c00",
+              textShadow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)",
+              textTransform: "uppercase" as const,
+            }}
+          >
+            Mission Randomizer
           </span>
         </div>
-        <span className="text-[9px] font-orbitron uppercase tracking-[0.15em] px-2 py-0.5 rounded-sm border border-[rgba(160,210,255,0.15)] text-[rgba(160,210,255,0.35)]">
+        <div
+          style={{
+            fontFamily: "'Share Tech Mono', monospace",
+            fontSize: 9, letterSpacing: 2,
+            padding: "3px 10px",
+            border: "1px solid rgba(255,140,0,0.3)",
+            color: "#ff8c00",
+            background: "rgba(255,140,0,0.06)",
+            clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)",
+          }}
+        >
           STANDBY
-        </span>
+        </div>
       </div>
 
       <AnimatePresence mode="wait">
