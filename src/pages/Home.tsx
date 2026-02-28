@@ -238,6 +238,7 @@ export default function Home() {
           projectEndDate={pact.project_end_date}
           goalsCompleted={dashboardData.goalsCompleted}
           totalGoals={dashboardData.totalGoals}
+          pactName={pact.name}
         />
 
         {/* MISSION RANDOMIZER */}
