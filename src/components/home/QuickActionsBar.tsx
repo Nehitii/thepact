@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { CheckSquare, Book, Heart, Plus, Lock } from "lucide-react";
+import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface QuickActionsBarProps {

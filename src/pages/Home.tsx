@@ -21,7 +21,7 @@ import { HabitsModule } from "@/components/home/HabitsModule";
 import { HeroSection } from "@/components/home/hero";
 
 // Icons
-import { Flame, ListTodo, BookOpen, ShoppingCart, Heart, Activity } from "lucide-react";
+import { Flame, Activity } from "lucide-react";
 
 // Hooks
 import { useTodoReminders } from "@/hooks/useTodoReminders";
