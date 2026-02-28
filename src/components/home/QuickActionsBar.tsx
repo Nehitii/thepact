@@ -17,9 +17,6 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
 
   const actions = [
     { id: "new-goal", label: "New Goal", icon: Plus, owned: true, href: "/goals/new", isNew: true },
-    { id: "tasks", label: "Tasks", icon: CheckSquare, owned: ownedModules.todo, href: "/todo" },
-    { id: "journal", label: "Journal", icon: Book, owned: ownedModules.journal, href: "/journal" },
-    { id: "health", label: "Health", icon: Heart, owned: ownedModules.health, href: "/health" },
   ];
 
   return (
