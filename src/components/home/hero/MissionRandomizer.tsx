@@ -171,10 +171,11 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
     return <ActiveMissionCard mission={activeMission} onAbandon={abandonMission} onComplete={completeMissionStep} className={className} />;
   }
 
-  const panelBase = "relative overflow-hidden border border-[rgba(0,180,255,0.08)] backdrop-blur-xl";
+  const panelBase = "relative overflow-hidden backdrop-blur-xl";
   const panelStyle: React.CSSProperties = {
     borderRadius: 4,
-    background: "rgba(6,11,22,0.95)",
+    border: "1px solid rgba(255,140,0,0.22)",
+    background: "linear-gradient(145deg, rgba(10,8,0,0.98) 0%, rgba(5,6,14,0.98) 100%)",
     boxShadow: "0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06)",
   };
 
