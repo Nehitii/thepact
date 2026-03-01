@@ -177,6 +177,22 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             </span>
           </div>
 
+          {/* Bond display */}
+          <div className="hidden sm:flex items-center gap-1.5">
+            <BondIcon size={14} />
+            <span
+              style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 11,
+                color: "#ffcc00",
+                textShadow: "0 0 6px rgba(255,204,0,0.4)",
+                letterSpacing: 1,
+              }}
+            >
+              {(bondBalance ?? 0).toLocaleString("fr-FR")}
+            </span>
+          </div>
+
           {/* Customize button */}
           <button
             onClick={() => navigate("/profile")}
