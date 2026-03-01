@@ -107,7 +107,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
             }}
           >
             <span style={{ width: 16, height: 1, background: "rgba(0,212,255,0.35)", display: "inline-block" }} />
-            TIER {Math.ceil(level / 10)} · CLASSE S
+            TIER {Math.ceil(level / 10)} · CLASSE {level}
           </div>
 
           <div
