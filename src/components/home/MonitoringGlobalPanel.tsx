@@ -234,13 +234,19 @@ export function MonitoringGlobalPanel({ data, projectStartDate, projectEndDate }
 
           {/* Markers */}
           <div className="flex justify-between mt-1.5">
-            {["J.01", "J.10", "J.15", `▶ J.${timeline.elapsed}`, "J.25", "J.30"].map((m, i) => (
+          {[
+            `J.1`,
+            `J.${Math.round(timeline.totalDays * 0.25)}`,
+            `▶ J.${timeline.elapsed}`,
+            `J.${Math.round(timeline.totalDays * 0.75)}`,
+            `J.${timeline.totalDays}`,
+          ].map((m, i) => (
               <span
                 key={m}
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 8, letterSpacing: 1,
-                  color: i === 3 ? "#00d4ff" : "rgba(255,255,255,0.17)",
+                  color: i === 2 ? "#00d4ff" : "rgba(255,255,255,0.17)",
                 }}
               >
                 {m}

@@ -4,6 +4,10 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Pact } from "@/hooks/usePact";
 import { RankXPData } from "@/hooks/useRankXP";
+import { BondIcon } from "@/components/ui/bond-icon";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 interface NeuralBarProps {
   pact: Pact;
@@ -12,7 +16,23 @@ interface NeuralBarProps {
 
 export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [now, setNow] = useState(new Date());
+
+  const { data: bondBalance } = useQuery({
+    queryKey: ["bond-balance", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("bond_balance")
+        .select("balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data?.balance ?? 0;
+    },
+    enabled: !!user?.id,
+    staleTime: 30_000,
+  });
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -86,17 +106,17 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             />
           </div>
 
-          {/* Coords */}
+          {/* Pact name + ID */}
           <span
-            className="hidden sm:inline"
+            className="hidden sm:inline truncate max-w-[200px]"
             style={{
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: 9,
-              color: "rgba(0,212,255,0.22)",
+              color: "rgba(0,212,255,0.35)",
               letterSpacing: 1,
             }}
           >
-            LAT 48.8566°N // LON 2.3522°E
+            {pact.name} // ID:{pact.id.slice(0, 8)}
           </span>
         </div>
 
@@ -154,6 +174,22 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
               }}
             >
               2.4GHz
+            </span>
+          </div>
+
+          {/* Bond display */}
+          <div className="hidden sm:flex items-center gap-1.5">
+            <BondIcon size={14} />
+            <span
+              style={{
+                fontFamily: "'Share Tech Mono', monospace",
+                fontSize: 11,
+                color: "#ffcc00",
+                textShadow: "0 0 6px rgba(255,204,0,0.4)",
+                letterSpacing: 1,
+              }}
+            >
+              {(bondBalance ?? 0).toLocaleString("fr-FR")}
             </span>
           </div>
 
