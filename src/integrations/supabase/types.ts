@@ -1318,6 +1318,8 @@ export type Database = {
           project_start_date: string | null
           symbol: string | null
           tier: number | null
+          title_effect: string | null
+          title_font: string | null
           updated_at: string | null
           user_id: string
         }
@@ -1336,6 +1338,8 @@ export type Database = {
           project_start_date?: string | null
           symbol?: string | null
           tier?: number | null
+          title_effect?: string | null
+          title_font?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -1354,6 +1358,8 @@ export type Database = {
           project_start_date?: string | null
           symbol?: string | null
           tier?: number | null
+          title_effect?: string | null
+          title_font?: string | null
           updated_at?: string | null
           user_id?: string
         }

@@ -28,9 +28,13 @@ interface ProfilePactSettingsProps {
   pactName: string;
   pactMantra: string;
   pactSymbol: string;
+  titleFont: string;
+  titleEffect: string;
   onPactNameChange: (value: string) => void;
   onPactMantraChange: (value: string) => void;
   onPactSymbolChange: (value: string) => void;
+  onTitleFontChange: (value: string) => void;
+  onTitleEffectChange: (value: string) => void;
   onSavePactIdentity: () => Promise<void>;
   isSavingIdentity?: boolean;
   projectStartDate: Date | undefined;
@@ -51,9 +55,13 @@ export function ProfilePactSettings({
   pactName,
   pactMantra,
   pactSymbol,
+  titleFont,
+  titleEffect,
   onPactNameChange,
   onPactMantraChange,
   onPactSymbolChange,
+  onTitleFontChange,
+  onTitleEffectChange,
   onSavePactIdentity,
   isSavingIdentity,
   projectStartDate,
@@ -97,9 +105,13 @@ export function ProfilePactSettings({
         pactName={pactName}
         pactMantra={pactMantra}
         pactSymbol={pactSymbol}
+        titleFont={titleFont}
+        titleEffect={titleEffect}
         onPactNameChange={onPactNameChange}
         onPactMantraChange={onPactMantraChange}
         onPactSymbolChange={onPactSymbolChange}
+        onTitleFontChange={onTitleFontChange}
+        onTitleEffectChange={onTitleEffectChange}
         onSave={onSavePactIdentity}
         isSaving={isSavingIdentity}
       />

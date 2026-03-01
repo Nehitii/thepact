@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Sparkles, Save, Loader2 } from "lucide-react";
+import { Sparkles, Save, Loader2, Type, Wand2 } from "lucide-react";
 import { DataPanel } from "./settings-ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,14 +15,35 @@ const SYMBOL_OPTIONS = [
   { key: "sparkles", label: "Sparkles" },
 ];
 
+const FONT_OPTIONS = [
+  { key: "orbitron", label: "Orbitron", family: "'Orbitron', sans-serif" },
+  { key: "rajdhani", label: "Rajdhani", family: "'Rajdhani', sans-serif" },
+  { key: "share-tech-mono", label: "Share Tech", family: "'Share Tech Mono', monospace" },
+  { key: "space-grotesk", label: "Space Grotesk", family: "'Space Grotesk', sans-serif" },
+  { key: "inter", label: "Inter", family: "'Inter', sans-serif" },
+];
+
+const EFFECT_OPTIONS = [
+  { key: "none", label: "Aucun", style: {} },
+  { key: "cyan-glow", label: "Cyan Glow", style: { textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" } },
+  { key: "fire-glow", label: "Fire Glow", style: { textShadow: "0 0 8px rgba(255,106,0,0.7), 0 0 30px rgba(255,60,0,0.25)" } },
+  { key: "purple-glow", label: "Purple Glow", style: { textShadow: "0 0 8px rgba(168,85,247,0.7), 0 0 30px rgba(168,85,247,0.25)" } },
+  { key: "gold-glow", label: "Gold Glow", style: { textShadow: "0 0 8px rgba(255,200,0,0.7), 0 0 30px rgba(255,200,0,0.25)" } },
+  { key: "glitch", label: "Glitch", style: {} },
+];
+
 interface PactIdentityCardProps {
   pactId: string | null;
   pactName: string;
   pactMantra: string;
   pactSymbol: string;
+  titleFont: string;
+  titleEffect: string;
   onPactNameChange: (value: string) => void;
   onPactMantraChange: (value: string) => void;
   onPactSymbolChange: (value: string) => void;
+  onTitleFontChange: (value: string) => void;
+  onTitleEffectChange: (value: string) => void;
   onSave: () => Promise<void>;
   isSaving?: boolean;
 }
@@ -39,9 +60,13 @@ export function PactIdentityCard({
   pactName,
   pactMantra,
   pactSymbol,
+  titleFont,
+  titleEffect,
   onPactNameChange,
   onPactMantraChange,
   onPactSymbolChange,
+  onTitleFontChange,
+  onTitleEffectChange,
   onSave,
   isSaving = false,
 }: PactIdentityCardProps) {
@@ -56,6 +81,9 @@ export function PactIdentityCard({
     }
     await onSave();
   }, [pactId, pactName, onSave]);
+
+  const selectedFontFamily = FONT_OPTIONS.find(f => f.key === titleFont)?.family || "'Orbitron', sans-serif";
+  const selectedEffectStyle = EFFECT_OPTIONS.find(e => e.key === titleEffect)?.style || {};
 
   return (
     <DataPanel
@@ -72,7 +100,10 @@ export function PactIdentityCard({
           <div className="flex items-center gap-4">
             <PactVisual symbol={pactSymbol} size="sm" />
             <div className="min-w-0 flex-1">
-              <h4 className="font-orbitron text-sm text-primary uppercase tracking-wider truncate">
+              <h4
+                className="text-sm text-primary uppercase tracking-wider truncate"
+                style={{ fontFamily: selectedFontFamily, ...selectedEffectStyle }}
+              >
                 {pactName || "Your Project"}
               </h4>
               <p className="text-xs text-muted-foreground font-rajdhani mt-0.5 line-clamp-2">
@@ -125,6 +156,70 @@ export function PactIdentityCard({
                 )}>
                 <PactVisual symbol={key} size="sm" />
                 <span className="text-[9px] font-mono text-primary/50 tracking-wider uppercase">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Title Font */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+            <Type className="h-3 w-3 text-primary/40" />
+            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Title Font</Label>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {FONT_OPTIONS.map(({ key, label, family }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onTitleFontChange(key)}
+                className={cn(
+                  "flex items-center gap-3 p-3 border transition-all duration-200 text-left",
+                  titleFont === key
+                    ? "border-primary bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
+                    : "border-primary/15 bg-primary/[0.02] hover:border-primary/40"
+                )}
+              >
+                <span
+                  className="text-base text-primary/80 truncate"
+                  style={{ fontFamily: family }}
+                >
+                  {pactName || "Project"}
+                </span>
+                <span className="text-[8px] font-mono text-primary/30 tracking-wider uppercase ml-auto shrink-0">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Title Effect */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
+            <Wand2 className="h-3 w-3 text-primary/40" />
+            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Title Effect</Label>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {EFFECT_OPTIONS.map(({ key, label, style }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onTitleEffectChange(key)}
+                className={cn(
+                  "flex flex-col items-center gap-1.5 p-3 border transition-all duration-200",
+                  titleEffect === key
+                    ? "border-primary bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
+                    : "border-primary/15 bg-primary/[0.02] hover:border-primary/40"
+                )}
+              >
+                <span
+                  className="text-sm text-primary/80 font-bold uppercase"
+                  style={{ fontFamily: selectedFontFamily, ...style }}
+                >
+                  Aa
+                </span>
+                <span className="text-[8px] font-mono text-primary/30 tracking-wider uppercase">{label}</span>
               </button>
             ))}
           </div>
