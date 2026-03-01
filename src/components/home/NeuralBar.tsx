@@ -16,7 +16,23 @@ interface NeuralBarProps {
 
 export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [now, setNow] = useState(new Date());
+
+  const { data: bondBalance } = useQuery({
+    queryKey: ["bond-balance", user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from("bond_balance")
+        .select("balance")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return data?.balance ?? 0;
+    },
+    enabled: !!user?.id,
+    staleTime: 30_000,
+  });
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
