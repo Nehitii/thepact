@@ -246,7 +246,7 @@ export function MonitoringGlobalPanel({ data, projectStartDate, projectEndDate }
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 8, letterSpacing: 1,
-                  color: i === 3 ? "#00d4ff" : "rgba(255,255,255,0.17)",
+                  color: i === 2 ? "#00d4ff" : "rgba(255,255,255,0.17)",
                 }}
               >
                 {m}

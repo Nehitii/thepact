@@ -4,6 +4,10 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Pact } from "@/hooks/usePact";
 import { RankXPData } from "@/hooks/useRankXP";
+import { BondIcon } from "@/components/ui/bond-icon";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
 
 interface NeuralBarProps {
   pact: Pact;

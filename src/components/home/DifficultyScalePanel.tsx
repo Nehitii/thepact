@@ -92,9 +92,9 @@ export function DifficultyScalePanel({
         {DIFFICULTY_ORDER.map((diff) => {
           const item = difficultyProgress.find((p) => p.difficulty === diff);
           const color = getColor(diff);
-          const count = item?.completed ?? 0;
-          const total = item?.total ?? 0;
-          const fillPct = total > 0 ? Math.round((count / total) * 100) : 0;
+          const count = item?.total ?? 0;
+          const completed = item?.completed ?? 0;
+          const fillPct = count > 0 ? Math.round((completed / count) * 100) : 0;
 
           return (
             <div

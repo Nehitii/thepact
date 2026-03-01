@@ -128,7 +128,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
 
           <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, color: "rgba(160,210,255,0.5)", letterSpacing: 2, lineHeight: 1.8 }}>
             RANG ACTUEL<br />
-            <span style={{ color: "#ddeeff", fontSize: 11 }}>{rankName} · Classe Neurale S</span>
+            <span style={{ color: "#ddeeff", fontSize: 11 }}>{rankName} · Classe Neurale {level}</span>
           </div>
         </div>
       </div>
