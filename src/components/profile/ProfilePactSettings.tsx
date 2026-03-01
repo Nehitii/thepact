@@ -55,9 +55,13 @@ export function ProfilePactSettings({
   pactName,
   pactMantra,
   pactSymbol,
+  titleFont,
+  titleEffect,
   onPactNameChange,
   onPactMantraChange,
   onPactSymbolChange,
+  onTitleFontChange,
+  onTitleEffectChange,
   onSavePactIdentity,
   isSavingIdentity,
   projectStartDate,
@@ -101,9 +105,13 @@ export function ProfilePactSettings({
         pactName={pactName}
         pactMantra={pactMantra}
         pactSymbol={pactSymbol}
+        titleFont={titleFont}
+        titleEffect={titleEffect}
         onPactNameChange={onPactNameChange}
         onPactMantraChange={onPactMantraChange}
         onPactSymbolChange={onPactSymbolChange}
+        onTitleFontChange={onTitleFontChange}
+        onTitleEffectChange={onTitleEffectChange}
         onSave={onSavePactIdentity}
         isSaving={isSavingIdentity}
       />
