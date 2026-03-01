@@ -14,6 +14,8 @@ export default function PactSettings() {
   const [pactName, setPactName] = useState("");
   const [pactMantra, setPactMantra] = useState("");
   const [pactSymbol, setPactSymbol] = useState("flame");
+  const [titleFont, setTitleFont] = useState("orbitron");
+  const [titleEffect, setTitleEffect] = useState("none");
   const [projectStartDate, setProjectStartDate] = useState<Date | undefined>(undefined);
   const [projectEndDate, setProjectEndDate] = useState<Date | undefined>(undefined);
   const [customDifficultyName, setCustomDifficultyName] = useState("");
@@ -40,7 +42,7 @@ export default function PactSettings() {
 
       const { data: pactData } = await supabase
         .from("pacts")
-        .select("id, name, mantra, symbol, color, project_start_date, project_end_date")
+        .select("id, name, mantra, symbol, color, project_start_date, project_end_date, title_font, title_effect")
         .eq("user_id", user.id)
         .maybeSingle();
 
@@ -49,6 +51,8 @@ export default function PactSettings() {
         setPactName(pactData.name || "");
         setPactMantra(pactData.mantra || "");
         setPactSymbol(pactData.symbol || "flame");
+        setTitleFont(pactData.title_font || "orbitron");
+        setTitleEffect(pactData.title_effect || "none");
         if (pactData.project_start_date) setProjectStartDate(new Date(pactData.project_start_date));
         if (pactData.project_end_date) setProjectEndDate(new Date(pactData.project_end_date));
       }
@@ -63,8 +67,10 @@ export default function PactSettings() {
       name: pactName.trim(),
       mantra: pactMantra.trim(),
       symbol: pactSymbol,
+      title_font: titleFont,
+      title_effect: titleEffect,
     });
-  }, [updatePact, pactName, pactMantra, pactSymbol]);
+  }, [updatePact, pactName, pactMantra, pactSymbol, titleFont, titleEffect]);
 
   if (!user) return null;
 
@@ -96,9 +102,13 @@ export default function PactSettings() {
         pactName={pactName}
         pactMantra={pactMantra}
         pactSymbol={pactSymbol}
+        titleFont={titleFont}
+        titleEffect={titleEffect}
         onPactNameChange={setPactName}
         onPactMantraChange={setPactMantra}
         onPactSymbolChange={setPactSymbol}
+        onTitleFontChange={setTitleFont}
+        onTitleEffectChange={setTitleEffect}
         onSavePactIdentity={handleSavePactIdentity}
         isSavingIdentity={isUpdating}
         projectStartDate={projectStartDate}
