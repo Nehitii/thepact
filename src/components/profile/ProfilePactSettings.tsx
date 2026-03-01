@@ -28,9 +28,13 @@ interface ProfilePactSettingsProps {
   pactName: string;
   pactMantra: string;
   pactSymbol: string;
+  titleFont: string;
+  titleEffect: string;
   onPactNameChange: (value: string) => void;
   onPactMantraChange: (value: string) => void;
   onPactSymbolChange: (value: string) => void;
+  onTitleFontChange: (value: string) => void;
+  onTitleEffectChange: (value: string) => void;
   onSavePactIdentity: () => Promise<void>;
   isSavingIdentity?: boolean;
   projectStartDate: Date | undefined;
