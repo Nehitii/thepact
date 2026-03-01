@@ -217,6 +217,11 @@ export default function Home() {
           level={level}
           totalMissions={allGoals.length}
           activeDays={activeDays}
+          pactName={pact.name}
+          pactMantra={pact.mantra}
+          pactSymbol={pact.symbol}
+          titleFont={pact.title_font}
+          titleEffect={pact.title_effect}
         />
 
         {/* RANK + QUICK ACCESS */}

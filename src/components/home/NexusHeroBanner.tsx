@@ -1,20 +1,56 @@
 import { useMemo } from "react";
 import { CornerBrackets } from "./CornerBrackets";
+import { PactVisual } from "@/components/PactVisual";
+
+const FONT_MAP: Record<string, string> = {
+  orbitron: "'Orbitron', sans-serif",
+  rajdhani: "'Rajdhani', sans-serif",
+  "share-tech-mono": "'Share Tech Mono', monospace",
+  "space-grotesk": "'Space Grotesk', sans-serif",
+  inter: "'Inter', sans-serif",
+};
+
+const EFFECT_STYLES: Record<string, React.CSSProperties> = {
+  none: {},
+  "cyan-glow": { textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
+  "fire-glow": { textShadow: "0 0 8px rgba(255,106,0,0.7), 0 0 30px rgba(255,60,0,0.25)" },
+  "purple-glow": { textShadow: "0 0 8px rgba(168,85,247,0.7), 0 0 30px rgba(168,85,247,0.25)" },
+  "gold-glow": { textShadow: "0 0 8px rgba(255,200,0,0.7), 0 0 30px rgba(255,200,0,0.25)" },
+  glitch: { animation: "glitchReveal 1.6s ease-out forwards" },
+};
 
 interface NexusHeroBannerProps {
   progression: number;
   level: number;
   totalMissions: number;
   activeDays: number;
+  pactName?: string;
+  pactMantra?: string;
+  pactSymbol?: string;
+  titleFont?: string | null;
+  titleEffect?: string | null;
 }
 
-export function NexusHeroBanner({ progression, level, totalMissions, activeDays }: NexusHeroBannerProps) {
+export function NexusHeroBanner({
+  progression,
+  level,
+  totalMissions,
+  activeDays,
+  pactName,
+  pactMantra,
+  pactSymbol = "flame",
+  titleFont = "orbitron",
+  titleEffect = "none",
+}: NexusHeroBannerProps) {
   const stats = useMemo(() => [
     { value: `${Math.round(progression)}%`, label: "PROGRESSION", color: "#00d4ff", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
     { value: `LVL ${level}`, label: "RANG", color: "#00d4ff", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
     { value: String(totalMissions), label: "MISSIONS", color: "#00d4ff", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
     { value: String(activeDays), label: "JOURS ACTIFS", color: "#ff8c00", glow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" },
   ], [progression, level, totalMissions, activeDays]);
+
+  const fontFamily = FONT_MAP[titleFont || "orbitron"] || FONT_MAP.orbitron;
+  const effectStyle = EFFECT_STYLES[titleEffect || "none"] || {};
 
   return (
     <div
@@ -56,51 +92,40 @@ export function NexusHeroBanner({ progression, level, totalMissions, activeDays 
       />
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Hexagon logo */}
-        <div
-          className="flex items-center justify-center mb-5"
-          style={{
-            width: 60, height: 60,
-            background: "linear-gradient(135deg, #0070ff, #00d4ff)",
-            clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-            fontFamily: "'Orbitron', sans-serif",
-            fontSize: 20,
-            color: "#020407",
-            fontWeight: 700,
-            boxShadow: "0 0 14px rgba(0,212,255,0.8), 0 0 50px rgba(0,212,255,0.2)",
-            animation: "logoPulse 4s ease-in-out infinite",
-          }}
-        >
-          N
+        {/* Pact Logo */}
+        <div className="mb-4">
+          <PactVisual symbol={pactSymbol} size="md" progress={progression} />
         </div>
 
-        {/* Title */}
+        {/* Pact Title */}
         <h1
           style={{
-            fontFamily: "'Orbitron', sans-serif",
-            fontSize: "clamp(32px, 6vw, 68px)",
+            fontFamily,
+            fontSize: "clamp(28px, 5vw, 58px)",
             fontWeight: 900,
-            letterSpacing: 10,
+            letterSpacing: 6,
             textTransform: "uppercase" as const,
             color: "#ddeeff",
-            animation: "glitchReveal 1.6s ease-out forwards",
-            lineHeight: 1,
+            lineHeight: 1.1,
+            ...effectStyle,
           }}
         >
-          NEXUS<span style={{ color: "#00d4ff", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" }}>OS</span>
+          {pactName || "NEXUS OS"}
         </h1>
 
+        {/* Pact Mantra */}
         <p
           style={{
-            fontWeight: 200,
-            fontSize: 12,
-            letterSpacing: 6,
-            color: "rgba(160,210,255,0.5)",
+            fontWeight: 300,
+            fontSize: 13,
+            letterSpacing: 4,
+            color: "rgba(160,210,255,0.55)",
             textTransform: "uppercase" as const,
             marginTop: 10,
+            maxWidth: 500,
           }}
         >
-          Neural Execution & Unified Experience System
+          {pactMantra || "Neural Execution & Unified Experience System"}
         </p>
 
         {/* Stats row */}

@@ -18,6 +18,8 @@ export interface Pact {
   project_start_date?: string | null;
   project_end_date?: string | null;
   created_at?: string | null;
+  title_font?: string | null;
+  title_effect?: string | null;
 }
 
 export function usePact(userId: string | undefined) {

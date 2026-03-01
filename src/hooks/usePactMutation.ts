@@ -13,6 +13,8 @@ interface PactUpdateData {
   color?: string;
   project_start_date?: string | null;
   project_end_date?: string | null;
+  title_font?: string;
+  title_effect?: string;
 }
 
 interface UsePactMutationOptions {
