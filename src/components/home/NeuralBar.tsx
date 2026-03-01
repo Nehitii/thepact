@@ -86,17 +86,17 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
             />
           </div>
 
-          {/* Coords */}
+          {/* Pact name + ID */}
           <span
-            className="hidden sm:inline"
+            className="hidden sm:inline truncate max-w-[200px]"
             style={{
               fontFamily: "'Share Tech Mono', monospace",
               fontSize: 9,
-              color: "rgba(0,212,255,0.22)",
+              color: "rgba(0,212,255,0.35)",
               letterSpacing: 1,
             }}
           >
-            LAT 48.8566°N // LON 2.3522°E
+            {pact.name} // ID:{pact.id.slice(0, 8)}
           </span>
         </div>
 
