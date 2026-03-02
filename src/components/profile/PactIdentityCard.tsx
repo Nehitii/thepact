@@ -13,6 +13,11 @@ const SYMBOL_OPTIONS = [
   { key: "heart", label: "Heart" },
   { key: "target", label: "Target" },
   { key: "sparkles", label: "Sparkles" },
+  { key: "phoenix", label: "Phoenix" },
+  { key: "compass", label: "Compass" },
+  { key: "citadel", label: "Citadel" },
+  { key: "vortex", label: "Vortex" },
+  { key: "shield", label: "Shield" },
 ];
 
 const FONT_OPTIONS = [
@@ -145,7 +150,7 @@ export function PactIdentityCard({
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
             <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Pact Symbol</Label>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {SYMBOL_OPTIONS.map(({ key, label }) => (
               <button key={key} type="button" onClick={() => onPactSymbolChange(key)}
                 className={cn(
