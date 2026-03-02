@@ -5,14 +5,15 @@ import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 
-/* ─────────────────────────────────────────────
-   Cyberpunk / Sci-Fi Auth Page — Track v2
-   Palette: #00F2FF (cyan HUD) · #F5C518 (corpo yellow) · #0a0e1a (void dark)
-   Fonts: Orbitron (display) · JetBrains Mono (mono) · Rajdhani (body)
-───────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   VOWPACT — Auth Page
+   Aesthetic: deep space · minimal HUD · vast silence
+   Palette: #00F2FF (ice cyan) · #F5C518 (gold) · void black
+   Philosophy: less noise, more cosmos
+───────────────────────────────────────────────────────── */
 
-/* ── Canvas particle grid ── */
-function CyberGrid() {
+/* ── Deep space canvas — stars, nebula, silence ── */
+function SpaceBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -20,6 +21,7 @@ function CyberGrid() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     let animId: number;
+    let t = 0;
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -28,75 +30,67 @@ function CyberGrid() {
     resize();
     window.addEventListener("resize", resize);
 
-    // Grid nodes
-    const cols = Math.floor(canvas.width / 60);
-    const rows = Math.floor(canvas.height / 60);
-    const nodes: { x: number; y: number; pulse: number; speed: number; active: boolean }[] = [];
-
-    for (let c = 0; c <= cols; c++) {
-      for (let r = 0; r <= rows; r++) {
-        nodes.push({
-          x: c * 60,
-          y: r * 60,
-          pulse: Math.random() * Math.PI * 2,
-          speed: 0.02 + Math.random() * 0.03,
-          active: Math.random() < 0.12,
-        });
-      }
-    }
-
-    // Scan line
-    let scanY = 0;
+    const stars = Array.from({ length: 280 }, () => ({
+      x: Math.random(),
+      y: Math.random(),
+      r: Math.random() * 1.2,
+      alpha: 0.1 + Math.random() * 0.7,
+      twinkleSpeed: 0.003 + Math.random() * 0.008,
+      twinkleOffset: Math.random() * Math.PI * 2,
+      layer: Math.floor(Math.random() * 3),
+    }));
 
     const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      t += 0.003;
+      const W = canvas.width;
+      const H = canvas.height;
 
-      // Background void
-      ctx.fillStyle = "#050810";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, W, H);
 
-      // Grid lines
-      ctx.strokeStyle = "rgba(0,242,255,0.04)";
-      ctx.lineWidth = 1;
-      for (let c = 0; c <= cols; c++) {
-        ctx.beginPath();
-        ctx.moveTo(c * 60, 0);
-        ctx.lineTo(c * 60, canvas.height);
-        ctx.stroke();
-      }
-      for (let r = 0; r <= rows; r++) {
-        ctx.beginPath();
-        ctx.moveTo(0, r * 60);
-        ctx.lineTo(canvas.width, r * 60);
-        ctx.stroke();
-      }
+      // Absolute void
+      ctx.fillStyle = "#03050f";
+      ctx.fillRect(0, 0, W, H);
 
-      // Node dots
-      nodes.forEach((n) => {
-        n.pulse += n.speed;
-        const alpha = n.active ? 0.4 + 0.5 * Math.sin(n.pulse) : 0.04 + 0.04 * Math.sin(n.pulse);
-        const size = n.active ? 2.5 : 1;
+      // Deep nebula — extremely subtle
+      const nx = W * 0.62;
+      const ny = H * 0.38;
+      const nebulaR = Math.min(W, H) * 0.55;
+      const nebula = ctx.createRadialGradient(nx, ny, 0, nx, ny, nebulaR);
+      nebula.addColorStop(0, "rgba(0,80,140,0.045)");
+      nebula.addColorStop(0.4, "rgba(0,50,100,0.025)");
+      nebula.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = nebula;
+      ctx.fillRect(0, 0, W, H);
+
+      const nx2 = W * 0.25;
+      const ny2 = H * 0.72;
+      const nebula2 = ctx.createRadialGradient(nx2, ny2, 0, nx2, ny2, nebulaR * 0.6);
+      nebula2.addColorStop(0, "rgba(80,50,0,0.025)");
+      nebula2.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = nebula2;
+      ctx.fillRect(0, 0, W, H);
+
+      // Stars
+      stars.forEach((s) => {
+        const twinkle = Math.sin(t * s.twinkleSpeed * 200 + s.twinkleOffset);
+        const alpha = s.alpha * (0.7 + 0.3 * twinkle);
+        const x = s.x * W;
+        const y = s.y * H;
+        const layerScale = [0.6, 0.85, 1][s.layer];
+        const r = s.r * layerScale;
+
         ctx.beginPath();
-        ctx.arc(n.x, n.y, size, 0, Math.PI * 2);
-        ctx.fillStyle = n.active ? `rgba(0,242,255,${alpha})` : `rgba(0,242,255,${alpha})`;
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fillStyle = s.layer === 2 && s.r > 0.9 ? `rgba(200,240,255,${alpha})` : `rgba(200,220,240,${alpha * 0.8})`;
         ctx.fill();
-
-        if (n.active && Math.sin(n.pulse) > 0.8) {
-          ctx.beginPath();
-          ctx.arc(n.x, n.y, 6, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0,242,255,0.08)`;
-          ctx.fill();
-        }
       });
 
-      // Moving scan line
-      scanY = (scanY + 0.8) % canvas.height;
-      const gradient = ctx.createLinearGradient(0, scanY - 40, 0, scanY + 40);
-      gradient.addColorStop(0, "rgba(0,242,255,0)");
-      gradient.addColorStop(0.5, "rgba(0,242,255,0.06)");
-      gradient.addColorStop(1, "rgba(0,242,255,0)");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, scanY - 40, canvas.width, 80);
+      // Horizon depth glow
+      const horizon = ctx.createLinearGradient(0, H * 0.8, 0, H);
+      horizon.addColorStop(0, "rgba(0,0,0,0)");
+      horizon.addColorStop(1, "rgba(0,30,50,0.15)");
+      ctx.fillStyle = horizon;
+      ctx.fillRect(0, H * 0.8, W, H * 0.2);
 
       animId = requestAnimationFrame(draw);
     };
@@ -108,52 +102,11 @@ function CyberGrid() {
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 0,
-        pointerEvents: "none",
-      }}
-    />
-  );
+  return <canvas ref={canvasRef} style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none" }} />;
 }
 
-/* ── Glitch text ── */
-function GlitchText({ text, className = "" }: { text: string; className?: string }) {
-  const [glitching, setGlitching] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(
-      () => {
-        setGlitching(true);
-        setTimeout(() => setGlitching(false), 150);
-      },
-      4000 + Math.random() * 3000,
-    );
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <span
-      className={className}
-      style={{
-        position: "relative",
-        display: "inline-block",
-        filter: glitching ? "drop-shadow(2px 0 #F5C518) drop-shadow(-2px 0 #ff2060)" : "none",
-        transform: glitching ? "skewX(-2deg)" : "none",
-        transition: "filter 0.05s, transform 0.05s",
-      }}
-    >
-      {text}
-    </span>
-  );
-}
-
-/* ── HUD input field ── */
-function CyberInput({
+/* ── Minimal field ── */
+function Field({
   id,
   type,
   placeholder,
@@ -161,7 +114,6 @@ function CyberInput({
   onChange,
   disabled,
   label,
-  icon,
 }: {
   id: string;
   type: string;
@@ -170,43 +122,27 @@ function CyberInput({
   onChange: (v: string) => void;
   disabled?: boolean;
   label: string;
-  icon: React.ReactNode;
 }) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <div style={{ position: "relative", marginBottom: 24 }}>
-      {/* Label */}
+    <div style={{ marginBottom: 20 }}>
       <label
         htmlFor={id}
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
+          display: "block",
           fontFamily: "'Orbitron', monospace",
-          fontSize: 10,
-          letterSpacing: "0.2em",
+          fontSize: 9,
+          letterSpacing: "0.22em",
           textTransform: "uppercase",
-          color: focused ? "#00F2FF" : "rgba(0,242,255,0.5)",
+          color: focused ? "rgba(0,242,255,0.7)" : "rgba(255,255,255,0.2)",
           marginBottom: 8,
-          transition: "color 0.2s",
+          transition: "color 0.3s",
         }}
       >
-        {icon}
         {label}
       </label>
-
-      {/* Input wrapper */}
-      <div
-        style={{
-          position: "relative",
-          background: focused ? "rgba(0,242,255,0.04)" : "rgba(0,242,255,0.015)",
-          border: `1px solid ${focused ? "rgba(0,242,255,0.7)" : "rgba(0,242,255,0.2)"}`,
-          clipPath: "polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)",
-          transition: "all 0.2s",
-          boxShadow: focused ? "0 0 20px rgba(0,242,255,0.15), inset 0 0 20px rgba(0,242,255,0.03)" : "none",
-        }}
-      >
+      <div style={{ position: "relative" }}>
         <input
           id={id}
           type={type}
@@ -220,75 +156,43 @@ function CyberInput({
             width: "100%",
             background: "transparent",
             border: "none",
+            borderBottom: `1px solid ${focused ? "rgba(0,242,255,0.5)" : "rgba(255,255,255,0.1)"}`,
             outline: "none",
-            padding: "14px 16px",
-            fontFamily: "'JetBrains Mono', 'Share Tech Mono', monospace",
+            padding: "12px 0",
+            fontFamily: "'JetBrains Mono', monospace",
             fontSize: 14,
-            color: "#e2f5ff",
-            letterSpacing: "0.05em",
-            boxSizing: "border-box",
+            color: "rgba(220,240,255,0.9)",
+            letterSpacing: "0.04em",
+            boxSizing: "border-box" as const,
+            transition: "border-color 0.3s",
           }}
         />
-        {/* Corner accent */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            right: 0,
-            width: 8,
-            height: 8,
-            background: focused ? "#00F2FF" : "rgba(0,242,255,0.3)",
-            transition: "background 0.2s",
-          }}
-        />
+        {focused && (
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              height: 1,
+              width: "100%",
+              background: "linear-gradient(90deg, #00F2FF, rgba(0,242,255,0.05))",
+            }}
+          />
+        )}
       </div>
-
-      {/* Active bottom bar */}
-      <div
-        style={{
-          height: 2,
-          background: focused ? "linear-gradient(90deg,transparent,#00F2FF,transparent)" : "transparent",
-          marginTop: 2,
-          transition: "background 0.3s",
-        }}
-      />
     </div>
   );
 }
 
-/* ── Main component ── */
+/* ── Main ── */
 export default function Auth() {
   const { t } = useTranslation();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [bootSequence, setBootSequence] = useState(true);
-  const [bootStep, setBootStep] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const bootLines = [
-    "INITIALIZING NEURAL INTERFACE...",
-    "CONNECTING TO TRACK NETWORK...",
-    "LOADING BIOMETRIC PROTOCOLS...",
-    "IDENTITY VERIFICATION READY",
-  ];
-
-  useEffect(() => {
-    if (!bootSequence) return;
-    const timer = setInterval(() => {
-      setBootStep((s) => {
-        if (s >= bootLines.length - 1) {
-          clearInterval(timer);
-          setTimeout(() => setBootSequence(false), 400);
-          return s;
-        }
-        return s + 1;
-      });
-    }, 350);
-    return () => clearInterval(timer);
-  }, [bootSequence]);
 
   const authSchema = z.object({
     email: z.string().email(t("auth.invalidEmail")),
@@ -298,7 +202,6 @@ export default function Auth() {
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
     const validation = authSchema.safeParse({ email, password });
     if (!validation.success) {
       toast({
@@ -309,7 +212,6 @@ export default function Auth() {
       setLoading(false);
       return;
     }
-
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -350,77 +252,10 @@ export default function Auth() {
     }
   };
 
-  /* ── Boot overlay ── */
-  if (bootSequence) {
-    return (
-      <>
-        <style>{GLOBAL_STYLES}</style>
-        <CyberGrid />
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 10,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 16,
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: 12,
-            letterSpacing: "0.15em",
-          }}
-        >
-          {/* Logo */}
-          <div style={{ marginBottom: 40, textAlign: "center" }}>
-            <div className="track-logo-boot" />
-            <div
-              style={{
-                fontFamily: "'Orbitron', monospace",
-                fontSize: 28,
-                fontWeight: 900,
-                letterSpacing: "0.4em",
-                color: "#00F2FF",
-                textShadow: "0 0 20px #00F2FF, 0 0 60px rgba(0,242,255,0.4)",
-                textTransform: "uppercase",
-              }}
-            >
-              TRACK
-            </div>
-          </div>
-
-          {bootLines.slice(0, bootStep + 1).map((line, i) => (
-            <div
-              key={i}
-              style={{
-                color: i === bootStep ? "#00F2FF" : "rgba(0,242,255,0.4)",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                animation: "fadeInBoot 0.3s ease",
-              }}
-            >
-              <span style={{ color: "#F5C518" }}>{i < bootStep ? "✓" : "›"}</span>
-              {line}
-              {i === bootStep && <span className="cursor-blink">_</span>}
-            </div>
-          ))}
-        </div>
-      </>
-    );
-  }
-
-  /* ── Main auth UI ── */
   return (
     <>
-      <style>{GLOBAL_STYLES}</style>
-      <CyberGrid />
-
-      {/* Google Fonts */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=Rajdhani:wght@400;600;700&display=swap"
-        rel="stylesheet"
-      />
+      <style>{STYLES}</style>
+      <SpaceBackground />
 
       <div
         style={{
@@ -428,429 +263,238 @@ export default function Auth() {
           zIndex: 1,
           minHeight: "100vh",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          padding: 20,
-          fontFamily: "'Rajdhani', sans-serif",
+          padding: "40px 20px",
         }}
       >
-        {/* Ambient glow center */}
-        <div
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%,-50%)",
-            width: 600,
-            height: 600,
-            borderRadius: "50%",
-            background: "radial-gradient(circle,rgba(0,242,255,0.04) 0%,transparent 70%)",
-            pointerEvents: "none",
-          }}
-        />
-
-        <div
-          style={{
-            width: "100%",
-            maxWidth: 460,
-            animation: "slideInPanel 0.6s cubic-bezier(0.16,1,0.3,1)",
-          }}
-        >
-          {/* ── Header ── */}
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            {/* Hex logo */}
-            <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-              <div className="hex-logo">
-                <svg width="64" height="72" viewBox="0 0 64 72" fill="none">
-                  <polygon
-                    points="32,2 60,18 60,54 32,70 4,54 4,18"
-                    stroke="#00F2FF"
-                    strokeWidth="1.5"
-                    fill="rgba(0,242,255,0.06)"
-                  />
-                  <polygon
-                    points="32,10 54,22 54,50 32,62 10,50 10,22"
-                    stroke="rgba(0,242,255,0.3)"
-                    strokeWidth="0.8"
-                    fill="none"
-                  />
-                  {/* T icon */}
-                  <line x1="22" y1="28" x2="42" y2="28" stroke="#F5C518" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="32" y1="28" x2="32" y2="48" stroke="#F5C518" strokeWidth="2.5" strokeLinecap="round" />
-                </svg>
-              </div>
-            </div>
-
-            <div
-              style={{
-                fontFamily: "'Orbitron', monospace",
-                fontSize: 32,
-                fontWeight: 900,
-                letterSpacing: "0.5em",
-                color: "#00F2FF",
-                textShadow: "0 0 20px rgba(0,242,255,0.6), 0 0 60px rgba(0,242,255,0.2)",
-                textTransform: "uppercase",
-                marginBottom: 4,
-              }}
-            >
-              <GlitchText text="TRACK" />
-            </div>
-
-            <div
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 10,
-                letterSpacing: "0.3em",
-                color: "rgba(0,242,255,0.5)",
-                textTransform: "uppercase",
-              }}
-            >
-              {isLogin ? "// IDENTITY VERIFICATION" : "// NEW OPERATIVE REGISTRATION"}
-            </div>
-          </div>
-
-          {/* ── Panel ── */}
+        {/* ── VOWPACT wordmark ── */}
+        <div className="wordmark-enter" style={{ textAlign: "center", marginBottom: 72 }}>
           <div
             style={{
-              background: "rgba(5,10,25,0.85)",
-              border: "1px solid rgba(0,242,255,0.2)",
-              backdropFilter: "blur(20px)",
-              clipPath: "polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px)",
-              boxShadow: "0 0 40px rgba(0,242,255,0.08), inset 0 0 40px rgba(0,242,255,0.02)",
-              position: "relative",
-              overflow: "hidden",
+              fontFamily: "'Orbitron', monospace",
+              fontWeight: 900,
+              fontSize: "clamp(34px, 6vw, 58px)",
+              letterSpacing: "0.5em",
+              color: "#ffffff",
+              textShadow: "0 0 60px rgba(0,242,255,0.15), 0 0 140px rgba(0,242,255,0.07)",
+              textTransform: "uppercase",
+              lineHeight: 1,
+              marginBottom: 12,
             }}
           >
-            {/* Corner brackets */}
-            <div className="cb-tl" />
-            <div className="cb-tr" />
-            <div className="cb-bl" />
-            <div className="cb-br" />
-
-            {/* Scan line on panel */}
-            <div className="panel-scan" />
-
-            {/* Tab switch */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                borderBottom: "1px solid rgba(0,242,255,0.1)",
-              }}
-            >
-              {["SIGN IN", "REGISTER"].map((label, i) => {
-                const active = (i === 0) === isLogin;
-                return (
-                  <button
-                    key={label}
-                    type="button"
-                    onClick={() => setIsLogin(i === 0)}
-                    disabled={loading}
-                    style={{
-                      padding: "14px 0",
-                      fontFamily: "'Orbitron', monospace",
-                      fontSize: 10,
-                      letterSpacing: "0.2em",
-                      textTransform: "uppercase",
-                      color: active ? "#00F2FF" : "rgba(0,242,255,0.35)",
-                      background: active ? "rgba(0,242,255,0.05)" : "transparent",
-                      border: "none",
-                      borderBottom: active ? "2px solid #00F2FF" : "2px solid transparent",
-                      cursor: "pointer",
-                      transition: "all 0.2s",
-                      textShadow: active ? "0 0 10px rgba(0,242,255,0.5)" : "none",
-                    }}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Form body */}
-            <div style={{ padding: "32px 32px 24px" }}>
-              {/* Status bar */}
-              <div
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 9,
-                  letterSpacing: "0.15em",
-                  color: "rgba(0,242,255,0.4)",
-                  marginBottom: 28,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                }}
-              >
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#00F2FF",
-                    boxShadow: "0 0 8px #00F2FF",
-                    display: "inline-block",
-                    animation: "pulseDot 2s ease-in-out infinite",
-                  }}
-                />
-                SECURE CHANNEL ESTABLISHED · AES-256 · TLS 1.3
-              </div>
-
-              <form onSubmit={handleAuth}>
-                <CyberInput
-                  id="email"
-                  type="email"
-                  placeholder="operative@domain.net"
-                  value={email}
-                  onChange={setEmail}
-                  disabled={loading}
-                  label={t("common.email") || "Email"}
-                  icon={
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <rect x="0.5" y="2" width="9" height="6.5" rx="1" stroke="currentColor" strokeWidth="1" />
-                      <path d="M1 2.5 L5 5.5 L9 2.5" stroke="currentColor" strokeWidth="1" strokeLinejoin="round" />
-                    </svg>
-                  }
-                />
-
-                <CyberInput
-                  id="password"
-                  type="password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={setPassword}
-                  disabled={loading}
-                  label={t("common.password") || "Password"}
-                  icon={
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                      <rect x="2" y="4.5" width="6" height="5" rx="0.5" stroke="currentColor" strokeWidth="1" />
-                      <path d="M3 4.5V3.5a2 2 0 014 0V4.5" stroke="currentColor" strokeWidth="1" />
-                      <circle cx="5" cy="7" r="0.8" fill="currentColor" />
-                    </svg>
-                  }
-                />
-
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    width: "100%",
-                    padding: "16px 0",
-                    marginTop: 8,
-                    background: loading
-                      ? "rgba(0,242,255,0.05)"
-                      : "linear-gradient(135deg,rgba(0,242,255,0.15),rgba(0,242,255,0.08))",
-                    border: "1px solid rgba(0,242,255,0.6)",
-                    clipPath: "polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)",
-                    color: loading ? "rgba(0,242,255,0.4)" : "#00F2FF",
-                    fontFamily: "'Orbitron', monospace",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    letterSpacing: "0.25em",
-                    textTransform: "uppercase",
-                    cursor: loading ? "not-allowed" : "pointer",
-                    textShadow: loading ? "none" : "0 0 10px rgba(0,242,255,0.6)",
-                    boxShadow: loading ? "none" : "0 0 20px rgba(0,242,255,0.15), inset 0 0 20px rgba(0,242,255,0.03)",
-                    transition: "all 0.2s",
-                    position: "relative",
-                    overflow: "hidden",
-                  }}
-                  className={loading ? "" : "btn-cyber-hover"}
-                >
-                  {loading ? (
-                    <span style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                      <span className="spinner" />
-                      PROCESSING
-                    </span>
-                  ) : isLogin ? (
-                    "ACCESS GRANTED →"
-                  ) : (
-                    "INITIALIZE ACCOUNT →"
-                  )}
-                </button>
-              </form>
-
-              {/* Divider */}
-              <div
-                style={{
-                  margin: "24px 0 16px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                }}
-              >
-                <div style={{ flex: 1, height: 1, background: "rgba(0,242,255,0.1)" }} />
-                <span
-                  style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 9,
-                    color: "rgba(0,242,255,0.3)",
-                    letterSpacing: "0.15em",
-                  }}
-                >
-                  ◆
-                </span>
-                <div style={{ flex: 1, height: 1, background: "rgba(0,242,255,0.1)" }} />
-              </div>
-
-              {/* Toggle link */}
-              <div style={{ textAlign: "center" }}>
-                <button
-                  type="button"
-                  onClick={() => setIsLogin(!isLogin)}
-                  disabled={loading}
-                  style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 11,
-                    color: "rgba(0,242,255,0.5)",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    letterSpacing: "0.08em",
-                    transition: "color 0.2s",
-                  }}
-                  onMouseEnter={(e) => ((e.target as HTMLButtonElement).style.color = "#00F2FF")}
-                  onMouseLeave={(e) => ((e.target as HTMLButtonElement).style.color = "rgba(0,242,255,0.5)")}
-                >
-                  {isLogin ? "No operative ID? → Register" : "Already registered? → Sign in"}
-                </button>
-              </div>
-            </div>
-
-            {/* Footer status */}
-            <div
-              style={{
-                borderTop: "1px solid rgba(0,242,255,0.08)",
-                padding: "10px 32px",
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <span
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 9,
-                  color: "rgba(0,242,255,0.25)",
-                  letterSpacing: "0.1em",
-                }}
-              >
-                TRACK OS v2.0
-              </span>
-              <span
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: 9,
-                  color: "rgba(245,197,24,0.5)",
-                  letterSpacing: "0.1em",
-                }}
-              >
-                ENCRYPTED ◆ SECURE
-              </span>
-            </div>
+            VOWPACT
           </div>
-
-          {/* Tagline under panel */}
           <div
             style={{
-              textAlign: "center",
-              marginTop: 20,
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 9,
-              color: "rgba(0,242,255,0.2)",
-              letterSpacing: "0.2em",
+              fontSize: 10,
+              letterSpacing: "0.35em",
+              color: "rgba(0,242,255,0.3)",
               textTransform: "uppercase",
             }}
           >
-            Track your life. Master your future.
+            {isLogin ? "Access your covenant" : "Forge your covenant"}
           </div>
+        </div>
+
+        {/* ── Panel ── */}
+        <div
+          className="panel-enter"
+          style={{
+            width: "100%",
+            maxWidth: 380,
+            background: "rgba(8,14,30,0.65)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            backdropFilter: "blur(28px)",
+            padding: "40px 36px 32px",
+            position: "relative",
+          }}
+        >
+          {/* Corner accents — only two, diagonal */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: 24,
+              height: 24,
+              borderTop: "1px solid rgba(0,242,255,0.45)",
+              borderLeft: "1px solid rgba(0,242,255,0.45)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              width: 24,
+              height: 24,
+              borderBottom: "1px solid rgba(0,242,255,0.45)",
+              borderRight: "1px solid rgba(0,242,255,0.45)",
+            }}
+          />
+
+          {/* Tab toggle */}
+          <div style={{ display: "flex", gap: 28, marginBottom: 36 }}>
+            {(["Sign in", "Register"] as const).map((label, i) => {
+              const active = (i === 0) === isLogin;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => setIsLogin(i === 0)}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: "0 0 4px",
+                    fontFamily: "'Orbitron', monospace",
+                    fontSize: 10,
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    color: active ? "rgba(0,242,255,0.9)" : "rgba(255,255,255,0.2)",
+                    borderBottom: active ? "1px solid rgba(0,242,255,0.55)" : "1px solid transparent",
+                    cursor: "pointer",
+                    transition: "color 0.2s",
+                  }}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+
+          <form onSubmit={handleAuth}>
+            <Field
+              id="email"
+              type="email"
+              placeholder="you@domain.com"
+              value={email}
+              onChange={setEmail}
+              disabled={loading}
+              label={t("common.email") || "Email"}
+            />
+            <Field
+              id="password"
+              type="password"
+              placeholder="············"
+              value={password}
+              onChange={setPassword}
+              disabled={loading}
+              label={t("common.password") || "Password"}
+            />
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="submit-btn"
+              style={{
+                width: "100%",
+                marginTop: 32,
+                padding: "14px 0",
+                background: "transparent",
+                border: "1px solid rgba(0,242,255,0.3)",
+                color: loading ? "rgba(0,242,255,0.3)" : "rgba(0,242,255,0.85)",
+                fontFamily: "'Orbitron', monospace",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.3em",
+                textTransform: "uppercase",
+                cursor: loading ? "not-allowed" : "pointer",
+                transition: "all 0.3s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+              }}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner" /> Processing
+                </>
+              ) : isLogin ? (
+                "Enter"
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </form>
+
+          <div style={{ marginTop: 22, textAlign: "center" }}>
+            <button
+              type="button"
+              onClick={() => setIsLogin(!isLogin)}
+              disabled={loading}
+              className="toggle-link"
+              style={{
+                background: "none",
+                border: "none",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 11,
+                color: "rgba(255,255,255,0.16)",
+                cursor: "pointer",
+                letterSpacing: "0.04em",
+                transition: "color 0.2s",
+              }}
+            >
+              {isLogin ? "No account yet" : "Already have an account"}
+            </button>
+          </div>
+        </div>
+
+        {/* Distant tagline */}
+        <div
+          style={{
+            marginTop: 52,
+            fontFamily: "'JetBrains Mono', monospace",
+            fontSize: 9,
+            color: "rgba(255,255,255,0.08)",
+            letterSpacing: "0.25em",
+            textTransform: "uppercase",
+          }}
+        >
+          Make your pact.
         </div>
       </div>
     </>
   );
 }
 
-/* ── All styles in one place ── */
-const GLOBAL_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=Rajdhani:wght@400;600;700&display=swap');
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
 
-  body { background: #050810; }
+  * { box-sizing: border-box; }
+  body { background: #03050f; margin: 0; }
 
-  @keyframes fadeInBoot {
-    from { opacity: 0; transform: translateX(-10px); }
-    to   { opacity: 1; transform: translateX(0); }
-  }
-
-  @keyframes slideInPanel {
-    from { opacity: 0; transform: translateY(24px); }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-
-  @keyframes pulseDot {
-    0%,100% { opacity:1; box-shadow: 0 0 8px #00F2FF; }
-    50%      { opacity:0.5; box-shadow: 0 0 3px #00F2FF; }
-  }
-
-  @keyframes cursorBlink {
-    0%,100% { opacity:1; }
-    50%      { opacity:0; }
-  }
-
-  @keyframes hexPulse {
-    0%,100% { filter: drop-shadow(0 0 6px rgba(0,242,255,0.6)) drop-shadow(0 0 20px rgba(0,242,255,0.2)); }
-    50%      { filter: drop-shadow(0 0 12px rgba(0,242,255,0.9)) drop-shadow(0 0 40px rgba(0,242,255,0.4)); }
-  }
-
-  @keyframes scanPanel {
-    0%   { top: -2px; }
-    100% { top: 100%; }
-  }
-
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
 
-  .cursor-blink { animation: cursorBlink 1s step-end infinite; }
+  .wordmark-enter { animation: fadeUp 1.1s cubic-bezier(0.16,1,0.3,1) both; }
+  .panel-enter    { animation: fadeUp 1.1s cubic-bezier(0.16,1,0.3,1) 0.18s both; }
 
-  .hex-logo { animation: hexPulse 3s ease-in-out infinite; }
-  .hex-logo svg { display:block; }
-
-  .panel-scan {
-    position:absolute;
-    left:0; right:0;
-    height:2px;
-    background:linear-gradient(90deg,transparent,rgba(0,242,255,0.4),transparent);
-    animation: scanPanel 4s linear infinite;
-    pointer-events:none;
-    z-index:2;
+  .submit-btn:hover:not(:disabled) {
+    background: rgba(0,242,255,0.05) !important;
+    border-color: rgba(0,242,255,0.65) !important;
+    box-shadow: 0 0 28px rgba(0,242,255,0.08) !important;
   }
 
-  /* Corner brackets */
-  .cb-tl,.cb-tr,.cb-bl,.cb-br {
-    position:absolute; width:14px; height:14px; z-index:3; pointer-events:none;
-    border-color:rgba(0,242,255,0.7);
-  }
-  .cb-tl { top:8px;left:8px; border-top:1.5px solid; border-left:1.5px solid; }
-  .cb-tr { top:8px;right:8px; border-top:1.5px solid; border-right:1.5px solid; }
-  .cb-bl { bottom:8px;left:8px; border-bottom:1.5px solid; border-left:1.5px solid; }
-  .cb-br { bottom:8px;right:8px; border-bottom:1.5px solid; border-right:1.5px solid; }
-
-  .btn-cyber-hover:hover {
-    background: linear-gradient(135deg,rgba(0,242,255,0.2),rgba(0,242,255,0.12)) !important;
-    box-shadow: 0 0 30px rgba(0,242,255,0.25), inset 0 0 30px rgba(0,242,255,0.06) !important;
-  }
+  .toggle-link:hover { color: rgba(255,255,255,0.45) !important; }
 
   .spinner {
-    display:inline-block;
-    width:12px; height:12px;
-    border:1.5px solid rgba(0,242,255,0.2);
-    border-top-color:#00F2FF;
-    border-radius:50%;
-    animation: spin 0.7s linear infinite;
+    display: inline-block;
+    width: 10px; height: 10px;
+    border: 1px solid rgba(0,242,255,0.2);
+    border-top-color: rgba(0,242,255,0.8);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
   }
 
-  .track-logo-boot {
-    width:64px; height:64px; margin:0 auto 12px;
-  }
+  input::placeholder { color: rgba(255,255,255,0.1); }
+  input:disabled { opacity: 0.4; cursor: not-allowed; }
 `;
