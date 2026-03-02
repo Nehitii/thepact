@@ -13,6 +13,11 @@ const SYMBOL_OPTIONS = [
   { key: "heart", label: "Heart" },
   { key: "target", label: "Target" },
   { key: "sparkles", label: "Sparkles" },
+  { key: "phoenix", label: "Phoenix" },
+  { key: "compass", label: "Compass" },
+  { key: "citadel", label: "Citadel" },
+  { key: "vortex", label: "Vortex" },
+  { key: "shield", label: "Shield" },
 ];
 
 const FONT_OPTIONS = [
