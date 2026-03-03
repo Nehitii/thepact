@@ -1,352 +1,128 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { I18nProvider } from "@/contexts/I18nProvider";
-import { SoundProvider } from "@/contexts/SoundContext";
-import { SoundSettingsSync } from "@/components/sound/SoundSettingsSync";
-import { ProfilePreferencesSync } from "@/components/profile/ProfilePreferencesSync";
+import { lazy, Suspense } from "react";
+import { Routes, Route } from "react-router-dom";
+import { AppProviders } from "@/components/AppProviders";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AdminRoute } from "@/components/AdminRoute";
-import Auth from "./pages/Auth";
-import Onboarding from "./pages/Onboarding";
-import Home from "./pages/Home";
-import TheCall from "./pages/TheCall";
-import Goals from "./pages/Goals";
-import NewGoal from "./pages/NewGoal";
-import GoalDetail from "./pages/GoalDetail";
-import StepDetail from "./pages/StepDetail";
-import Finance from "./pages/Finance";
-import Journal from "./pages/Journal";
-import Profile from "./pages/Profile";
-import BoundedProfile from "./pages/profile/BoundedProfile";
-import PactSettings from "./pages/profile/PactSettings";
-import DisplaySound from "./pages/profile/DisplaySound";
-import PrivacyControl from "./pages/profile/PrivacyControl";
-import NotificationSettings from "./pages/profile/NotificationSettings";
-import DataPortability from "./pages/profile/DataPortability";
-import Achievements from "./pages/Achievements";
-import Shop from "./pages/Shop";
-import Community from "./pages/Community";
-import Legal from "./pages/Legal";
-import Admin from "./pages/Admin";
-import AdminCosmeticsManager from "./pages/AdminCosmeticsManager";
-import AdminModuleManager from "./pages/AdminModuleManager";
-import AdminMoneyManager from "./pages/AdminMoneyManager";
-import AdminMode from "./pages/AdminMode";
-import NotFound from "./pages/NotFound";
-import TodoList from "./pages/TodoList";
-import AdminNotifications from "./pages/AdminNotifications";
-import Inbox from "./pages/Inbox";
-import AdminPromoManager from "./pages/AdminPromoManager";
-import Health from "./pages/Health";
-import Wishlist from "./pages/Wishlist";
-import TwoFactor from "./pages/TwoFactor";
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 30_000,
-      retry: 1,
-    },
-  },
-});
 
-// Wrapper component that applies AppLayout to protected routes
-function ProtectedWithLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ProtectedRoute>
-      <AppLayout>{children}</AppLayout>
-    </ProtectedRoute>
-  );
+// Lazy-loaded pages
+const Auth = lazy(() => import("./pages/Auth"));
+const TwoFactor = lazy(() => import("./pages/TwoFactor"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Home = lazy(() => import("./pages/Home"));
+const TheCall = lazy(() => import("./pages/TheCall"));
+const Goals = lazy(() => import("./pages/Goals"));
+const NewGoal = lazy(() => import("./pages/NewGoal"));
+const GoalDetail = lazy(() => import("./pages/GoalDetail"));
+const StepDetail = lazy(() => import("./pages/StepDetail"));
+const Finance = lazy(() => import("./pages/Finance"));
+const Journal = lazy(() => import("./pages/Journal"));
+const Profile = lazy(() => import("./pages/Profile"));
+const BoundedProfile = lazy(() => import("./pages/profile/BoundedProfile"));
+const PactSettings = lazy(() => import("./pages/profile/PactSettings"));
+const DisplaySound = lazy(() => import("./pages/profile/DisplaySound"));
+const PrivacyControl = lazy(() => import("./pages/profile/PrivacyControl"));
+const NotificationSettings = lazy(() => import("./pages/profile/NotificationSettings"));
+const DataPortability = lazy(() => import("./pages/profile/DataPortability"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const Shop = lazy(() => import("./pages/Shop"));
+const Community = lazy(() => import("./pages/Community"));
+const Legal = lazy(() => import("./pages/Legal"));
+const TodoList = lazy(() => import("./pages/TodoList"));
+const Inbox = lazy(() => import("./pages/Inbox"));
+const Health = lazy(() => import("./pages/Health"));
+const Wishlist = lazy(() => import("./pages/Wishlist"));
+const Admin = lazy(() => import("./pages/Admin"));
+const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
+const AdminModuleManager = lazy(() => import("./pages/AdminModuleManager"));
+const AdminMoneyManager = lazy(() => import("./pages/AdminMoneyManager"));
+const AdminMode = lazy(() => import("./pages/AdminMode"));
+const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
+const AdminPromoManager = lazy(() => import("./pages/AdminPromoManager"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Route configuration
+type RouteConfig =
+  | { path: string; type: "public"; Component: React.LazyExoticComponent<React.ComponentType> }
+  | { path: string; type: "protected"; Component: React.LazyExoticComponent<React.ComponentType> }
+  | { path: string; type: "protectedNoLayout"; Component: React.LazyExoticComponent<React.ComponentType> }
+  | { path: string; type: "admin"; Component: React.LazyExoticComponent<React.ComponentType> };
+
+const routes: RouteConfig[] = [
+  // Public
+  { path: "/auth", type: "public", Component: Auth },
+
+  // Protected without layout (special pages)
+  { path: "/two-factor", type: "protectedNoLayout", Component: TwoFactor },
+  { path: "/onboarding", type: "protectedNoLayout", Component: Onboarding },
+
+  // Protected with layout
+  { path: "/", type: "protected", Component: Home },
+  { path: "/the-call", type: "protected", Component: TheCall },
+  { path: "/goals", type: "protected", Component: Goals },
+  { path: "/goals/new", type: "protected", Component: NewGoal },
+  { path: "/goals/:id", type: "protected", Component: GoalDetail },
+  { path: "/step/:stepId", type: "protected", Component: StepDetail },
+  { path: "/finance", type: "protected", Component: Finance },
+  { path: "/journal", type: "protected", Component: Journal },
+  { path: "/profile", type: "protected", Component: Profile },
+  { path: "/profile/bounded", type: "protected", Component: BoundedProfile },
+  { path: "/profile/pact-settings", type: "protected", Component: PactSettings },
+  { path: "/profile/display-sound", type: "protected", Component: DisplaySound },
+  { path: "/profile/privacy", type: "protected", Component: PrivacyControl },
+  { path: "/profile/notifications", type: "protected", Component: NotificationSettings },
+  { path: "/profile/data", type: "protected", Component: DataPortability },
+  { path: "/achievements", type: "protected", Component: Achievements },
+  { path: "/shop", type: "protected", Component: Shop },
+  { path: "/community", type: "protected", Component: Community },
+  { path: "/legal", type: "protected", Component: Legal },
+  { path: "/todo", type: "protected", Component: TodoList },
+  { path: "/inbox", type: "protected", Component: Inbox },
+  { path: "/health", type: "protected", Component: Health },
+  { path: "/wishlist", type: "protected", Component: Wishlist },
+
+  // Admin
+  { path: "/admin", type: "admin", Component: Admin },
+  { path: "/admin/cosmetics", type: "admin", Component: AdminCosmeticsManager },
+  { path: "/admin/modules", type: "admin", Component: AdminModuleManager },
+  { path: "/admin/money", type: "admin", Component: AdminMoneyManager },
+  { path: "/admin/mode", type: "admin", Component: AdminMode },
+  { path: "/admin/notifications", type: "admin", Component: AdminNotifications },
+  { path: "/admin/promo-codes", type: "admin", Component: AdminPromoManager },
+];
+
+function renderRoute({ path, type, Component }: RouteConfig) {
+  switch (type) {
+    case "public":
+      return <Route key={path} path={path} element={<Suspense><Component /></Suspense>} />;
+    case "protectedNoLayout":
+      return (
+        <Route key={path} path={path} element={
+          <ProtectedRoute><Suspense><Component /></Suspense></ProtectedRoute>
+        } />
+      );
+    case "protected":
+      return (
+        <Route key={path} path={path} element={
+          <ProtectedRoute><AppLayout><Suspense><Component /></Suspense></AppLayout></ProtectedRoute>
+        } />
+      );
+    case "admin":
+      return (
+        <Route key={path} path={path} element={
+          <AdminRoute><Suspense><Component /></Suspense></AdminRoute>
+        } />
+      );
+  }
 }
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <ProfilePreferencesSync />
-            <I18nProvider>
-              <SoundProvider>
-                <SoundSettingsSync />
-                <CurrencyProvider>
-                  <Routes>
-              <Route path="/auth" element={<Auth />} />
-              <Route
-                path="/two-factor"
-                element={
-                  <ProtectedRoute>
-                    <TwoFactor />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/"
-                element={
-                  <ProtectedWithLayout>
-                    <Home />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/the-call"
-                element={
-                  <ProtectedWithLayout>
-                    <TheCall />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/onboarding"
-                element={
-                  <ProtectedRoute>
-                    <Onboarding />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/goals"
-                element={
-                  <ProtectedWithLayout>
-                    <Goals />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/goals/new"
-                element={
-                  <ProtectedWithLayout>
-                    <NewGoal />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/goals/:id"
-                element={
-                  <ProtectedWithLayout>
-                    <GoalDetail />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/step/:stepId"
-                element={
-                  <ProtectedWithLayout>
-                    <StepDetail />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/finance"
-                element={
-                  <ProtectedWithLayout>
-                    <Finance />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/journal"
-                element={
-                  <ProtectedWithLayout>
-                    <Journal />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedWithLayout>
-                    <Profile />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/profile/bounded"
-                element={
-                  <ProtectedWithLayout>
-                    <BoundedProfile />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/profile/pact-settings"
-                element={
-                  <ProtectedWithLayout>
-                    <PactSettings />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/profile/display-sound"
-                element={
-                  <ProtectedWithLayout>
-                    <DisplaySound />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/profile/privacy"
-                element={
-                  <ProtectedWithLayout>
-                    <PrivacyControl />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/profile/notifications"
-                element={
-                  <ProtectedWithLayout>
-                    <NotificationSettings />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/profile/data"
-                element={
-                  <ProtectedWithLayout>
-                    <DataPortability />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/achievements"
-                element={
-                  <ProtectedWithLayout>
-                    <Achievements />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/shop"
-                element={
-                  <ProtectedWithLayout>
-                    <Shop />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/community"
-                element={
-                  <ProtectedWithLayout>
-                    <Community />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/legal"
-                element={
-                  <ProtectedWithLayout>
-                    <Legal />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/admin"
-                element={
-                  <AdminRoute>
-                    <Admin />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/cosmetics"
-                element={
-                  <AdminRoute>
-                    <AdminCosmeticsManager />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/modules"
-                element={
-                  <AdminRoute>
-                    <AdminModuleManager />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/money"
-                element={
-                  <AdminRoute>
-                    <AdminMoneyManager />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/admin/mode"
-                element={
-                  <AdminRoute>
-                    <AdminMode />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/todo"
-                element={
-                  <ProtectedWithLayout>
-                    <TodoList />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/admin/notifications"
-                element={
-                  <AdminRoute>
-                    <AdminNotifications />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/inbox"
-                element={
-                  <ProtectedWithLayout>
-                    <Inbox />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/admin/promo-codes"
-                element={
-                  <AdminRoute>
-                    <AdminPromoManager />
-                  </AdminRoute>
-                }
-              />
-              <Route
-                path="/health"
-                element={
-                  <ProtectedWithLayout>
-                    <Health />
-                  </ProtectedWithLayout>
-                }
-              />
-              <Route
-                path="/wishlist"
-                element={
-                  <ProtectedWithLayout>
-                    <Wishlist />
-                  </ProtectedWithLayout>
-                }
-              />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </CurrencyProvider>
-              </SoundProvider>
-            </I18nProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+  <AppProviders>
+    <Routes>
+      {routes.map(renderRoute)}
+      <Route path="*" element={<Suspense><NotFound /></Suspense>} />
+    </Routes>
+  </AppProviders>
 );
 
 export default App;
