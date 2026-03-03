@@ -78,6 +78,17 @@ export interface CosmeticBanner {
   price: number;
 }
 
+export interface CosmeticTitle {
+  id: string;
+  title_text: string;
+  rarity: string;
+  glow_color: string | null;
+  text_color: string | null;
+  is_active: boolean;
+  is_default: boolean;
+  price: number;
+}
+
 // Fetch user's bond balance
 export function useBondBalance(userId: string | undefined) {
   return useQuery({
@@ -93,7 +104,6 @@ export function useBondBalance(userId: string | undefined) {
       
       if (error) throw error;
       
-      // Create initial balance if not exists
       if (!data) {
         const { data: newBalance, error: insertError } = await supabase
           .from("bond_balance")
@@ -219,17 +229,6 @@ export function useShopBanners() {
 }
 
 // Fetch active cosmetic titles
-export interface CosmeticTitle {
-  id: string;
-  title_text: string;
-  rarity: string;
-  glow_color: string | null;
-  text_color: string | null;
-  is_active: boolean;
-  is_default: boolean;
-  price: number;
-}
-
 export function useShopTitles() {
   return useQuery({
     queryKey: ["shop-titles"],
@@ -270,7 +269,10 @@ export function useUserCosmetics(userId: string | undefined) {
   });
 }
 
-// Purchase cosmetic
+/**
+ * Purchase cosmetic via secure atomic DB function.
+ * Prevents race conditions and client-side price tampering.
+ */
 export function usePurchaseCosmetic() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -287,51 +289,20 @@ export function usePurchaseCosmetic() {
       cosmeticType: "frame" | "banner" | "title"; 
       price: number;
     }) => {
-      // Get current balance
-      const { data: balance, error: balanceError } = await supabase
-        .from("bond_balance")
-        .select("balance")
-        .eq("user_id", userId)
-        .single();
-      
-      if (balanceError) throw balanceError;
-      if (balance.balance < price) throw new Error("Insufficient bonds");
-      
-      // Deduct bonds
-      const { error: updateError } = await supabase
-        .from("bond_balance")
-        .update({ 
-          balance: balance.balance - price,
-          total_spent: balance.balance + price
-        })
-        .eq("user_id", userId);
-      
-      if (updateError) throw updateError;
-      
-      // Add cosmetic ownership
-      const { error: cosmeticError } = await supabase
-        .from("user_cosmetics")
-        .insert({
-          user_id: userId,
-          cosmetic_id: cosmeticId,
-          cosmetic_type: cosmeticType,
-        });
-      
-      if (cosmeticError) throw cosmeticError;
-      
-      // Log transaction
-      await supabase.from("bond_transactions").insert({
-        user_id: userId,
-        amount: -price,
-        transaction_type: "spend",
-        description: `Purchased ${cosmeticType}`,
-        reference_id: cosmeticId,
-        reference_type: "cosmetic",
+      const { data, error } = await supabase.rpc("purchase_shop_item", {
+        p_item_id: cosmeticId,
+        p_item_type: cosmeticType,
+        p_price: price,
       });
+
+      if (error) throw error;
       
-      return true;
+      const result = data as { success: boolean; error?: string; new_balance?: number };
+      if (!result.success) throw new Error(result.error || "Purchase failed");
+      
+      return { userId };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
       toast({ title: "Purchase successful!" });
@@ -346,7 +317,10 @@ export function usePurchaseCosmetic() {
   });
 }
 
-// Purchase module
+/**
+ * Purchase module via secure atomic DB function.
+ * Prevents race conditions and client-side price tampering.
+ */
 export function usePurchaseModule() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -361,54 +335,22 @@ export function usePurchaseModule() {
       moduleId: string; 
       price: number;
     }) => {
-      // Get current balance
-      const { data: balance, error: balanceError } = await supabase
-        .from("bond_balance")
-        .select("balance, total_spent")
-        .eq("user_id", userId)
-        .single();
-      
-      if (balanceError) throw balanceError;
-      if (balance.balance < price) throw new Error("Insufficient bonds");
-      
-      // Deduct bonds
-      const { error: updateError } = await supabase
-        .from("bond_balance")
-        .update({ 
-          balance: balance.balance - price,
-          total_spent: balance.total_spent + price
-        })
-        .eq("user_id", userId);
-      
-      if (updateError) throw updateError;
-      
-      // Add module purchase
-      const { error: moduleError } = await supabase
-        .from("user_module_purchases")
-        .insert({
-          user_id: userId,
-          module_id: moduleId,
-        });
-      
-      if (moduleError) throw moduleError;
-      
-      // Log transaction
-      await supabase.from("bond_transactions").insert({
-        user_id: userId,
-        amount: -price,
-        transaction_type: "spend",
-        description: "Purchased module",
-        reference_id: moduleId,
-        reference_type: "module",
+      const { data, error } = await supabase.rpc("purchase_shop_item", {
+        p_item_id: moduleId,
+        p_item_type: "module",
+        p_price: price,
       });
+
+      if (error) throw error;
+      
+      const result = data as { success: boolean; error?: string; new_balance?: number };
+      if (!result.success) throw new Error(result.error || "Purchase failed");
       
       return { userId, moduleId };
     },
     onSuccess: (data) => {
-      // Immediately invalidate and refetch to ensure instant UI update
       queryClient.invalidateQueries({ queryKey: ["bond-balance", data.userId] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases", data.userId] });
-      // Also invalidate non-user-specific queries
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
       toast({ title: "Module unlocked!", description: "Your new module is now available" });
@@ -428,12 +370,10 @@ export function useShop() {
   const { data: modules = [], isLoading: modulesLoading } = useShopModules();
   const { data: purchasedModuleIds = [], isLoading: purchasesLoading } = useUserModulePurchases(undefined);
   
-  // Get purchased modules with their full details
   const userModules = modules
     .filter(m => purchasedModuleIds.includes(m.id))
     .map(m => ({ module: m }));
   
-  // Check if a specific module is purchased by key
   const isModulePurchased = (moduleKey: string) => {
     return userModules.some(um => um.module?.key === moduleKey);
   };
@@ -450,7 +390,6 @@ export function useUserShop(userId: string | undefined) {
   const { data: modules = [], isLoading: modulesLoading } = useShopModules();
   const { data: purchasedModuleIds = [], isLoading: purchasesLoading } = useUserModulePurchases(userId);
   
-  // Build a map of module key to purchased status for quick lookup
   const purchasedModuleKeysSet = new Set(
     modules
       .filter(m => purchasedModuleIds.includes(m.id))
@@ -461,7 +400,6 @@ export function useUserShop(userId: string | undefined) {
     .filter(m => purchasedModuleIds.includes(m.id))
     .map(m => ({ module: m }));
   
-  // Check if a specific module is purchased by key - using memoized set for efficiency
   const isModulePurchased = (moduleKey: string): boolean => {
     return purchasedModuleKeysSet.has(moduleKey);
   };
@@ -469,7 +407,7 @@ export function useUserShop(userId: string | undefined) {
   return {
     userModules,
     isModulePurchased,
-    purchasedModuleIds, // Expose for debugging
+    purchasedModuleIds,
     isLoading: modulesLoading || purchasesLoading,
   };
 }
