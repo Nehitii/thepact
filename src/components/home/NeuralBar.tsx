@@ -176,7 +176,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
                 letterSpacing: 1,
               }}
             >
-              {(bondBalance ?? 0).toLocaleString("fr-FR")}
+              {bondBalance.toLocaleString("fr-FR")}
             </span>
           </div>
 
