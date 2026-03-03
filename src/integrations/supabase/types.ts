@@ -2569,6 +2569,10 @@ export type Database = {
         Args: { p_field: string; p_increment?: number; p_user_id: string }
         Returns: undefined
       }
+      purchase_shop_item: {
+        Args: { p_item_id: string; p_item_type: string; p_price: number }
+        Returns: Json
+      }
       redeem_promo_code: { Args: { p_code: string }; Returns: Json }
       reset_pact_data: { Args: { p_pact_id: string }; Returns: boolean }
     }

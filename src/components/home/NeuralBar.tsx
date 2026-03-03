@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -6,8 +6,7 @@ import { Pact } from "@/hooks/usePact";
 import { RankXPData } from "@/hooks/useRankXP";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { useAuth } from "@/contexts/AuthContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { useBondBalance } from "@/hooks/useShop";
 
 interface NeuralBarProps {
   pact: Pact;
@@ -19,20 +18,8 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   const { user } = useAuth();
   const [now, setNow] = useState(new Date());
 
-  const { data: bondBalance } = useQuery({
-    queryKey: ["bond-balance", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from("bond_balance")
-        .select("balance")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      return data?.balance ?? 0;
-    },
-    enabled: !!user?.id,
-    staleTime: 30_000,
-  });
+  const { data: bondBalanceData } = useBondBalance(user?.id);
+  const bondBalance = bondBalanceData?.balance ?? 0;
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -189,7 +176,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
                 letterSpacing: 1,
               }}
             >
-              {(bondBalance ?? 0).toLocaleString("fr-FR")}
+              {bondBalance.toLocaleString("fr-FR")}
             </span>
           </div>
 
