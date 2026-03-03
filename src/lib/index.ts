@@ -2,7 +2,7 @@
  * Library utilities barrel export.
  * Import utilities from this index for cleaner imports.
  */
-export { supabase, getUserPact, createPact, updatePactProgress } from "./supabase";
+export { supabase, createPact } from "./supabase";
 export { formatCurrency, getCurrencySymbol, getCurrencyPosition } from "./currency";
 export {
   EXPENSE_CATEGORIES,
