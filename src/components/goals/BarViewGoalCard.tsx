@@ -17,6 +17,7 @@ interface Goal {
   completedStepsCount?: number;
   potential_score?: number | null;
   tags?: string[];
+  deadline?: string | null;
 }
 
 interface BarViewGoalCardProps {
