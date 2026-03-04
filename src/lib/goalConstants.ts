@@ -65,6 +65,11 @@ export const STATUS_CONFIG = {
     color: "bg-orange-500/10 text-orange-400", 
     badgeClass: "bg-orange-500/15 text-orange-400 border-orange-500/30" 
   },
+  archived: { 
+    labelKey: "goals.statuses.archived", 
+    color: "bg-zinc-500/10 text-zinc-400", 
+    badgeClass: "bg-zinc-500/15 text-zinc-400 border-zinc-500/30" 
+  },
   active: { 
     labelKey: "goals.statuses.active", 
     color: "bg-blue-500/10 text-blue-400", 
@@ -98,6 +103,7 @@ export function getStatusLabel(status: string, t?: TFunction): string {
     validated: "Validated",
     fully_completed: "Completed",
     paused: "Paused",
+    archived: "Archived",
     active: "Active",
     completed: "Completed",
     cancelled: "Cancelled",
