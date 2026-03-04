@@ -38,6 +38,11 @@ import {
   X,
   MessageSquare,
   Crown,
+  Pause,
+  Play,
+  Archive,
+  Copy,
+  Clock,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
@@ -125,6 +130,7 @@ export default function GoalDetail() {
   const [editCostItems, setEditCostItems] = useState<CostItemData[]>([]);
   const [editStepItems, setEditStepItems] = useState<EditStepItem[]>([]);
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
+  const [editDeadline, setEditDeadline] = useState("");
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
   // Track initial edit state for unsaved changes guard
@@ -160,6 +166,7 @@ export default function GoalDetail() {
       setEditImage(g.image_url || "");
       setEditDifficulty(g.difficulty || "medium");
       setEditNotes(g.notes || "");
+      setEditDeadline((g as any).deadline || "");
       setSteps(goalDetailData.steps);
       setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: (s as any).exclude_from_spin ?? false })));
       setLoading(false);
@@ -405,6 +412,11 @@ export default function GoalDetail() {
 
   const handleFullyComplete = async () => {
     if (!goal || !user) return;
+    // Bug 6 fix: Guard against completing already-completed goals
+    if (goal.status === "fully_completed") {
+      toast({ title: "Already Completed", description: "This goal is already fully completed." });
+      return;
+    }
     const { handleFullyComplete: completeGoal } = await import("./GoalDetail_handlers");
     completeGoal(
       goal.id,
@@ -431,6 +443,113 @@ export default function GoalDetail() {
     );
   };
 
+  // Feature 1: Pause/Resume/Archive lifecycle
+  const handlePauseGoal = async () => {
+    if (!goal) return;
+    const { error } = await supabase.from("goals").update({ status: "paused" }).eq("id", goal.id);
+    if (!error) {
+      setGoal({ ...goal, status: "paused" });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+      toast({ title: "Goal Paused", description: "This goal has been paused." });
+    }
+  };
+
+  const handleResumeGoal = async () => {
+    if (!goal) return;
+    const newStatus = (goal.validated_steps ?? 0) > 0 ? "in_progress" : "not_started";
+    const { error } = await supabase.from("goals").update({ status: newStatus }).eq("id", goal.id);
+    if (!error) {
+      setGoal({ ...goal, status: newStatus });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+      toast({ title: "Goal Resumed", description: "This goal is now active again." });
+    }
+  };
+
+  const handleArchiveGoal = async () => {
+    if (!goal) return;
+    const { error } = await supabase.from("goals").update({ status: "archived" }).eq("id", goal.id);
+    if (!error) {
+      setGoal({ ...goal, status: "archived" });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+      toast({ title: "Goal Archived", description: "This goal has been archived." });
+    }
+  };
+
+  // Feature 3: Goal Duplication
+  const handleDuplicateGoal = async () => {
+    if (!goal || !user) return;
+    try {
+      // Get pact
+      const { data: pactResult } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
+      if (!pactResult) return;
+
+      // Insert duplicated goal
+      const { data: newGoal, error: goalError } = await supabase
+        .from("goals")
+        .insert({
+          pact_id: pactResult.id,
+          name: `${goal.name} (Copy)`,
+          type: goal.type as any,
+          difficulty: goal.difficulty as any,
+          estimated_cost: goal.estimated_cost,
+          notes: goal.notes,
+          total_steps: goal.total_steps,
+          potential_score: goal.potential_score,
+          start_date: new Date().toISOString(),
+          status: "not_started" as any,
+          goal_type: goal.goal_type || "normal",
+          habit_duration_days: goal.habit_duration_days,
+          habit_checks: goal.goal_type === "habit" ? Array(goal.habit_duration_days || 7).fill(false) : null,
+          image_url: goal.image_url,
+          deadline: null,
+        } as any)
+        .select()
+        .single();
+
+      if (goalError) throw goalError;
+
+      // Duplicate tags
+      if (goalTagsData.length > 0) {
+        const { insertGoalTags } = await import("@/hooks/useGoalTags");
+        await insertGoalTags(newGoal.id, goalTagsData.map((t) => t.tag));
+      }
+
+      // Duplicate steps (for normal goals)
+      if (goal.goal_type !== "habit" && goal.goal_type !== "super" && steps.length > 0) {
+        const stepsToInsert = steps.map((s, i) => ({
+          goal_id: newGoal.id,
+          title: s.title,
+          order: i + 1,
+          status: "pending" as const,
+          description: "",
+          notes: s.notes || "",
+        }));
+        await supabase.from("steps").insert(stepsToInsert);
+      }
+
+      // Duplicate cost items
+      if (costItems.length > 0) {
+        const costToInsert = costItems.map((ci) => ({
+          goal_id: newGoal.id,
+          name: ci.name,
+          price: ci.price,
+          category: ci.category,
+          step_id: null, // Can't map step IDs to new steps easily
+        }));
+        await supabase.from("goal_cost_items").insert(costToInsert);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      toast({ title: "Goal Duplicated", description: "A copy of this goal has been created." });
+      navigate(`/goals/${newGoal.id}`);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to duplicate goal", variant: "destructive" });
+    }
+  };
+
   const handleEditGoal = async () => {
     if (!goal || saving) return;
     setSaving(true);
@@ -450,6 +569,9 @@ export default function GoalDetail() {
       if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0])
         updates.completion_date = new Date(editCompletionDate).toISOString();
       if (editImage !== goal.image_url) updates.image_url = editImage;
+      // Deadline
+      const currentDeadline = (goal as any).deadline || "";
+      if (editDeadline !== currentDeadline) updates.deadline = editDeadline || null;
 
       // Save cost items
       if (id) {
@@ -785,6 +907,24 @@ export default function GoalDetail() {
                   </span>
                 </div>
               )}
+
+              {/* Deadline Countdown */}
+              {(goal as any).deadline && (() => {
+                const deadlineDate = new Date((goal as any).deadline);
+                const now = new Date();
+                const diffMs = deadlineDate.getTime() - now.getTime();
+                const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                const urgencyColor = daysLeft > 7 ? "text-green-400" : daysLeft > 0 ? "text-amber-400" : "text-red-400";
+                const urgencyBg = daysLeft > 7 ? "bg-green-500/10 border-green-500/30" : daysLeft > 0 ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30";
+                return (
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${urgencyBg} font-rajdhani font-bold text-sm`}>
+                    <Clock className={`h-4 w-4 ${urgencyColor}`} />
+                    <span className={urgencyColor}>
+                      {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : daysLeft === 0 ? "Due today" : `${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? 's' : ''} overdue`}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Actions */}
@@ -794,19 +934,49 @@ export default function GoalDetail() {
                 Edit
               </Button>
 
-              <Button
-                variant="hud"
-                size="sm"
-                onClick={handleFullyComplete}
-                className="rounded-lg"
-                style={{
-                  borderColor: `${difficultyColor}50`,
-                  color: difficultyColor,
-                  boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`,
-                }}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Complete
+              {/* Complete button - hidden if already completed */}
+              {!isCompleted && goal.status !== "archived" && (
+                <Button
+                  variant="hud"
+                  size="sm"
+                  onClick={handleFullyComplete}
+                  className="rounded-lg"
+                  style={{
+                    borderColor: `${difficultyColor}50`,
+                    color: difficultyColor,
+                    boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`,
+                  }}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Complete
+                </Button>
+              )}
+
+              {/* Pause / Resume */}
+              {goal.status === "paused" ? (
+                <Button variant="hud" size="sm" className="rounded-lg border-green-500/40 text-green-400" onClick={handleResumeGoal}>
+                  <Play className="h-4 w-4 mr-2" />
+                  Resume
+                </Button>
+              ) : goal.status !== "fully_completed" && goal.status !== "archived" ? (
+                <Button variant="hud" size="sm" className="rounded-lg border-orange-500/40 text-orange-400" onClick={handlePauseGoal}>
+                  <Pause className="h-4 w-4 mr-2" />
+                  Pause
+                </Button>
+              ) : null}
+
+              {/* Archive (only non-completed, non-archived) */}
+              {goal.status !== "fully_completed" && goal.status !== "archived" && (
+                <Button variant="hud" size="sm" className="rounded-lg border-zinc-500/40 text-zinc-400" onClick={handleArchiveGoal}>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive
+                </Button>
+              )}
+
+              {/* Duplicate */}
+              <Button variant="hud" size="sm" className="rounded-lg" onClick={handleDuplicateGoal}>
+                <Copy className="h-4 w-4 mr-2" />
+                Duplicate
               </Button>
 
               <AlertDialog>
@@ -1381,6 +1551,20 @@ export default function GoalDetail() {
                             style={{ colorScheme: "dark" }}
                           />
                         </div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          Deadline (optional)
+                        </Label>
+                        <Input
+                          type="date"
+                          value={editDeadline}
+                          onChange={(e) => setEditDeadline(e.target.value)}
+                          className={`h-12 text-base rounded-xl ${inputStyle}`}
+                          style={{ colorScheme: "dark" }}
+                        />
+                        <p className="text-xs text-muted-foreground">Set a deadline to enable countdown timer on goal cards</p>
                       </div>
                     </div>
 

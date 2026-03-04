@@ -18,6 +18,7 @@ interface Goal {
   completedStepsCount?: number;
   status?: string | null;
   tags?: string[];
+  deadline?: string | null;
 }
 
 interface GridViewGoalCardProps {

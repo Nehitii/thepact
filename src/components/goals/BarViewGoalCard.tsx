@@ -17,6 +17,7 @@ interface Goal {
   completedStepsCount?: number;
   potential_score?: number | null;
   tags?: string[];
+  deadline?: string | null;
 }
 
 interface BarViewGoalCardProps {
@@ -63,11 +64,17 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: BarViewGoalCardProps) {
-  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity } =
+  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity, deadlineInfo } =
     useMemo(() => {
       const diff = goal.difficulty || "easy";
       const total = goal.totalStepsCount || 0;
       const completed = goal.completedStepsCount || 0;
+      let deadlineInfo: { daysLeft: number; color: string } | null = null;
+      if (goal.deadline) {
+        const dl = new Date(goal.deadline);
+        const daysLeft = Math.ceil((dl.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        deadlineInfo = { daysLeft, color: daysLeft > 7 ? "#22c55e" : daysLeft > 0 ? "#f59e0b" : "#ef4444" };
+      }
       return {
         theme: getDifficultyTheme(diff, customDifficultyColor),
         difficultyLabel: getDifficultyDisplayLabel(diff, customDifficultyName),
@@ -76,6 +83,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
         totalSteps: total,
         completedSteps: completed,
         intensity: getDifficultyIntensity(diff),
+        deadlineInfo,
       };
     }, [goal, isCompleted, customDifficultyName, customDifficultyColor]);
 
@@ -136,6 +144,11 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                 <h3 className="bar-card-name">{goal.name}</h3>
                 <div className="bar-card-meta">
                   <div className="bar-card-status">{statusLabel}</div>
+                  {deadlineInfo && !isCompleted && (
+                    <div className="bar-card-steps" style={{ color: deadlineInfo.color }}>
+                      {deadlineInfo.daysLeft > 0 ? `${deadlineInfo.daysLeft}d` : deadlineInfo.daysLeft === 0 ? "Today" : `${Math.abs(deadlineInfo.daysLeft)}d late`}
+                    </div>
+                  )}
                   {totalSteps > 0 && (
                     <div className="bar-card-steps">
                       {completedSteps} <span className="bar-card-sep">/</span> {totalSteps}

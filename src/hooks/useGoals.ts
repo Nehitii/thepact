@@ -36,6 +36,8 @@ export interface Goal {
   totalStepsCount?: number;
   // Tags from relational select
   tags?: string[];
+  // Deadline
+  deadline?: string | null;
 }
 
 interface UseGoalsOptions {
