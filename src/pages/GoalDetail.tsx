@@ -38,6 +38,11 @@ import {
   X,
   MessageSquare,
   Crown,
+  Pause,
+  Play,
+  Archive,
+  Copy,
+  Clock,
 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
