@@ -701,6 +701,26 @@ export default function NewGoal() {
                         style={{ colorScheme: "dark" }} // Force dark calendar icon
                       />
                     </div>
+
+                    {/* Deadline */}
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="deadline"
+                        className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"
+                      >
+                        <Calendar className="h-4 w-4" />
+                        Deadline (optional)
+                      </Label>
+                      <Input
+                        id="deadline"
+                        type="date"
+                        value={deadline}
+                        onChange={(e) => setDeadline(e.target.value)}
+                        className={inputStyle}
+                        style={{ colorScheme: "dark" }}
+                      />
+                      <p className="text-xs text-muted-foreground">Set a deadline to enable countdown timer</p>
+                    </div>
                   </div>
                 </>
               )}
