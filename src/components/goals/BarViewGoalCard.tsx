@@ -64,11 +64,17 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: BarViewGoalCardProps) {
-  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity } =
+  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity, deadlineInfo } =
     useMemo(() => {
       const diff = goal.difficulty || "easy";
       const total = goal.totalStepsCount || 0;
       const completed = goal.completedStepsCount || 0;
+      let deadlineInfo: { daysLeft: number; color: string } | null = null;
+      if (goal.deadline) {
+        const dl = new Date(goal.deadline);
+        const daysLeft = Math.ceil((dl.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        deadlineInfo = { daysLeft, color: daysLeft > 7 ? "#22c55e" : daysLeft > 0 ? "#f59e0b" : "#ef4444" };
+      }
       return {
         theme: getDifficultyTheme(diff, customDifficultyColor),
         difficultyLabel: getDifficultyDisplayLabel(diff, customDifficultyName),
@@ -77,6 +83,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
         totalSteps: total,
         completedSteps: completed,
         intensity: getDifficultyIntensity(diff),
+        deadlineInfo,
       };
     }, [goal, isCompleted, customDifficultyName, customDifficultyColor]);
 
