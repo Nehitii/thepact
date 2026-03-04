@@ -749,6 +749,7 @@ export type Database = {
           child_goal_ids: string[] | null
           completion_date: string | null
           created_at: string | null
+          deadline: string | null
           difficulty: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost: number | null
           goal_type: string
@@ -774,6 +775,7 @@ export type Database = {
           child_goal_ids?: string[] | null
           completion_date?: string | null
           created_at?: string | null
+          deadline?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost?: number | null
           goal_type?: string
@@ -799,6 +801,7 @@ export type Database = {
           child_goal_ids?: string[] | null
           completion_date?: string | null
           created_at?: string | null
+          deadline?: string | null
           difficulty?: Database["public"]["Enums"]["goal_difficulty"] | null
           estimated_cost?: number | null
           goal_type?: string
@@ -2594,6 +2597,7 @@ export type Database = {
         | "in_progress"
         | "validated"
         | "fully_completed"
+        | "archived"
       goal_type:
         | "personal"
         | "professional"
@@ -2759,6 +2763,7 @@ export const Constants = {
         "in_progress",
         "validated",
         "fully_completed",
+        "archived",
       ],
       goal_type: [
         "personal",
