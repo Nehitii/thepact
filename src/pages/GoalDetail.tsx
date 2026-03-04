@@ -410,6 +410,11 @@ export default function GoalDetail() {
 
   const handleFullyComplete = async () => {
     if (!goal || !user) return;
+    // Bug 6 fix: Guard against completing already-completed goals
+    if (goal.status === "fully_completed") {
+      toast({ title: "Already Completed", description: "This goal is already fully completed." });
+      return;
+    }
     const { handleFullyComplete: completeGoal } = await import("./GoalDetail_handlers");
     completeGoal(
       goal.id,
@@ -434,6 +439,113 @@ export default function GoalDetail() {
         toast({ title: "Error", description: message, variant: "destructive" });
       },
     );
+  };
+
+  // Feature 1: Pause/Resume/Archive lifecycle
+  const handlePauseGoal = async () => {
+    if (!goal) return;
+    const { error } = await supabase.from("goals").update({ status: "paused" }).eq("id", goal.id);
+    if (!error) {
+      setGoal({ ...goal, status: "paused" });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+      toast({ title: "Goal Paused", description: "This goal has been paused." });
+    }
+  };
+
+  const handleResumeGoal = async () => {
+    if (!goal) return;
+    const newStatus = (goal.validated_steps ?? 0) > 0 ? "in_progress" : "not_started";
+    const { error } = await supabase.from("goals").update({ status: newStatus }).eq("id", goal.id);
+    if (!error) {
+      setGoal({ ...goal, status: newStatus });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+      toast({ title: "Goal Resumed", description: "This goal is now active again." });
+    }
+  };
+
+  const handleArchiveGoal = async () => {
+    if (!goal) return;
+    const { error } = await supabase.from("goals").update({ status: "archived" }).eq("id", goal.id);
+    if (!error) {
+      setGoal({ ...goal, status: "archived" });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+      toast({ title: "Goal Archived", description: "This goal has been archived." });
+    }
+  };
+
+  // Feature 3: Goal Duplication
+  const handleDuplicateGoal = async () => {
+    if (!goal || !user) return;
+    try {
+      // Get pact
+      const { data: pactResult } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
+      if (!pactResult) return;
+
+      // Insert duplicated goal
+      const { data: newGoal, error: goalError } = await supabase
+        .from("goals")
+        .insert({
+          pact_id: pactResult.id,
+          name: `${goal.name} (Copy)`,
+          type: goal.type as any,
+          difficulty: goal.difficulty as any,
+          estimated_cost: goal.estimated_cost,
+          notes: goal.notes,
+          total_steps: goal.total_steps,
+          potential_score: goal.potential_score,
+          start_date: new Date().toISOString(),
+          status: "not_started" as any,
+          goal_type: goal.goal_type || "normal",
+          habit_duration_days: goal.habit_duration_days,
+          habit_checks: goal.goal_type === "habit" ? Array(goal.habit_duration_days || 7).fill(false) : null,
+          image_url: goal.image_url,
+          deadline: null,
+        } as any)
+        .select()
+        .single();
+
+      if (goalError) throw goalError;
+
+      // Duplicate tags
+      if (goalTagsData.length > 0) {
+        const { insertGoalTags } = await import("@/hooks/useGoalTags");
+        await insertGoalTags(newGoal.id, goalTagsData.map((t) => t.tag));
+      }
+
+      // Duplicate steps (for normal goals)
+      if (goal.goal_type !== "habit" && goal.goal_type !== "super" && steps.length > 0) {
+        const stepsToInsert = steps.map((s, i) => ({
+          goal_id: newGoal.id,
+          title: s.title,
+          order: i + 1,
+          status: "pending" as const,
+          description: "",
+          notes: s.notes || "",
+        }));
+        await supabase.from("steps").insert(stepsToInsert);
+      }
+
+      // Duplicate cost items
+      if (costItems.length > 0) {
+        const costToInsert = costItems.map((ci) => ({
+          goal_id: newGoal.id,
+          name: ci.name,
+          price: ci.price,
+          category: ci.category,
+          step_id: null, // Can't map step IDs to new steps easily
+        }));
+        await supabase.from("goal_cost_items").insert(costToInsert);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      toast({ title: "Goal Duplicated", description: "A copy of this goal has been created." });
+      navigate(`/goals/${newGoal.id}`);
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to duplicate goal", variant: "destructive" });
+    }
   };
 
   const handleEditGoal = async () => {
