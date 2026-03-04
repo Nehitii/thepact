@@ -569,6 +569,9 @@ export default function GoalDetail() {
       if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0])
         updates.completion_date = new Date(editCompletionDate).toISOString();
       if (editImage !== goal.image_url) updates.image_url = editImage;
+      // Deadline
+      const currentDeadline = (goal as any).deadline || "";
+      if (editDeadline !== currentDeadline) updates.deadline = editDeadline || null;
 
       // Save cost items
       if (id) {
