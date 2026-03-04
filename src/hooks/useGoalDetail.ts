@@ -29,6 +29,7 @@ export interface GoalDetailData {
   is_dynamic_super?: boolean;
   pact_id?: string;
   created_at?: string;
+  deadline?: string | null;
 }
 
 export interface StepData {
