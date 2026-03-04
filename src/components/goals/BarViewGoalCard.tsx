@@ -144,6 +144,11 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                 <h3 className="bar-card-name">{goal.name}</h3>
                 <div className="bar-card-meta">
                   <div className="bar-card-status">{statusLabel}</div>
+                  {deadlineInfo && !isCompleted && (
+                    <div className="bar-card-steps" style={{ color: deadlineInfo.color }}>
+                      {deadlineInfo.daysLeft > 0 ? `${deadlineInfo.daysLeft}d` : deadlineInfo.daysLeft === 0 ? "Today" : `${Math.abs(deadlineInfo.daysLeft)}d late`}
+                    </div>
+                  )}
                   {totalSteps > 0 && (
                     <div className="bar-card-steps">
                       {completedSteps} <span className="bar-card-sep">/</span> {totalSteps}
