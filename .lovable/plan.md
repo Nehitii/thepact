@@ -1,240 +1,93 @@
 
 
-# Health Module: Biometric HUD Redesign
-
-## Audit Summary
-
-### Current State
-The Health module comprises **12 components** + 1 page orchestrator (`Health.tsx`). It uses a soft "emerald/teal" palette with standard `rounded-2xl` containers, basic `framer-motion` fades (`y: 20`), and Recharts for data visualization. The design system already has a Sci-Fi HUD foundation (Orbitron fonts, `--glow-cyan` variables, `cyber-scan` keyframes) but the Health module does **not** leverage any of it -- it uses its own emerald gradient aesthetic that feels disconnected from the rest of the app.
-
-### Components to Redesign
-| Component | Current State | Redesign Priority |
-|-----------|--------------|-------------------|
-| `Health.tsx` (page layout) | Standard flex/grid, emerald ambient blobs | Full HUD layout overhaul |
-| `HealthScoreCard.tsx` | Simple SVG circle progress ring | Segmented Radar Disk |
-| `HealthMetricCard.tsx` | Rounded cards with basic hover scale | Chamfered HUD panels with scan lines |
-| `HealthDailyCheckin.tsx` | Standard dialog with sliders | System Init Sequence |
-| `HealthEnergyCurve.tsx` | Basic Recharts LineChart | Vital Sign Monitor with pulse dot |
-| `HealthWeeklyChart.tsx` | Bar chart with emerald colors | HUD bar chart with cyan/amber palette |
-| `HealthBMIIndicator.tsx` | Gradient bar with dot marker | Tactical gauge |
-| `HealthStreakBadge.tsx` | Fire icon with tier colors | Retains structure, palette shift |
-| `HealthInsightsPanel.tsx` | Simple card list | Terminal-style output |
-| `HealthHistoryChart.tsx` | Recharts multi-line chart | Palette shift + HUD frame |
-| `HealthChallengesPanel.tsx` | Card list | HUD frame + palette shift |
-| `HealthBreathingExercise.tsx` | Breathing circles in dialog | Minor palette shift |
-| `HealthMoodSelector.tsx` | Emoji buttons | Palette shift on borders |
+# /Goals Section -- Full Audit & Enhancement Plan
 
 ---
 
-## Phase 1: Global Design System Extensions
+## Part A: Bugs & Issues Found
 
-### 1.1 New CSS Variables (in `src/index.css`)
+### Bug 1: GoalDetail.tsx is a 1531-line monolith
+The file contains view rendering, edit overlay, step toggling, habit tracking, super goal management, cost items display, and save logic all in one component. This makes it fragile, hard to maintain, and prone to state synchronization bugs.
 
-Add Health HUD-specific variables to both `:root` and `.dark`:
+### Bug 2: Dual state management in GoalDetail
+React Query (`useGoalDetail`) fetches goal data, then it's copied into local `useState` via `useEffect`. This creates a stale-state risk: mutations update local state but the cache can overwrite it on refetch. The edit overlay also duplicates most fields into separate `edit*` states.
 
-```text
-/* Health Biometric HUD */
---hud-health-bg: 210 100% 2%;
---hud-phosphor: 187 100% 50%;      /* #00F2FF */
---hud-amber: 43 100% 50%;           /* #FFB800 */
---hud-health-surface: 210 60% 6%;
---hud-health-border: 187 80% 30%;
-```
+### Bug 3: StepDetail doesn't invalidate React Query caches
+`StepDetail.tsx` saves step changes and recalculates goal progress directly, but never calls `queryClient.invalidateQueries`. When the user navigates back to GoalDetail, the cached data is stale until the 15s staleTime expires.
 
-### 1.2 New Tailwind Keyframes & Animations (in `tailwind.config.ts`)
+### Bug 4: Missing "paused" status in goal lifecycle
+`STATUS_CONFIG` defines a "paused" status, but there's no UI anywhere to pause/resume a goal. The `update_goal_status_on_progress` trigger doesn't handle paused goals either -- if a paused goal gets steps validated, it silently becomes "in_progress".
 
-```text
-keyframes:
-  "hud-scan": sweeps a thin horizontal line top-to-bottom over 6s
-  "hud-flicker": brief opacity jitter (1 -> 0.92 -> 1) over 0.15s
-  "hud-assemble": clip-path reveal from left (0% width -> 100%) over 0.6s
-  "pulse-dot": scale 1 -> 1.8 -> 1 with opacity over 1.5s
+### Bug 5: Super Goal difficulty is editable but meaningless
+In the edit overlay, super goals show a difficulty selector, but super goals don't have their own steps -- their progress comes from children. The difficulty badge is displayed but serves no purpose.
 
-animations:
-  "hud-scan": "hud-scan 6s linear infinite"
-  "hud-flicker": "hud-flicker 0.15s ease-in-out"
-  "hud-assemble": "hud-assemble 0.6s ease-out forwards"
-  "pulse-dot": "pulse-dot 1.5s ease-in-out infinite"
-```
-
-### 1.3 The `HUDFrame` Reusable Component
-
-Create `src/components/health/HUDFrame.tsx` -- a wrapper that provides:
-- A `backdrop-blur-md` semi-transparent background (`bg-[hsl(210,60%,6%)]/80`)
-- Four absolute-positioned corner brackets (L-shaped SVG or border tricks) in phosphor cyan
-- An optional scan line overlay (`::after` pseudo-element with `animate-hud-scan`)
-- A 45-degree chamfer on top-left and bottom-right corners via CSS `clip-path: polygon(...)`
-- Props: `children`, `className`, `scanLine?: boolean`, `glowColor?: string`
-
-### 1.4 Palette Shift Utility
-
-All emerald/teal references across the Health module will be replaced:
-- `emerald-500` -> phosphor cyan `[#00F2FF]` or `cyan-400`
-- `teal-500` -> `cyan-500`
-- Warning/stress colors -> `[#FFB800]` amber accent
-- Background blobs -> dark void gradients with cyan radial glows
+### Bug 6: `handleFullyComplete` ignores current status
+The "Complete" button is always visible, even if the goal is already completed. Clicking it on a completed goal re-fires achievement tracking and rewrites the completion date.
 
 ---
 
-## Phase 2: Page Layout (`Health.tsx`)
+## Part B: Performance Optimizations
 
-### 2.1 Ambient Background Overhaul
-Replace the emerald blobs and soft grid with:
-- A very dark base (`bg-[#020617]`)
-- A subtle animated grid overlay using phosphor cyan lines at 10% opacity
-- A radial gradient glow at page center in cyan at 5% opacity
-- An optional slow `animate-hud-scan` line across the entire page
+### Optimization 1: Split GoalDetail into composable sub-components
+Extract from GoalDetail.tsx:
+- `GoalHeroCard` -- image, title, badges, progress bar, action buttons
+- `GoalStepsList` -- step items with checkboxes
+- `GoalHabitTracker` -- daily check-in grid
+- `GoalDetailsPanel` -- notes, cost items
+- `GoalEditOverlay` -- full edit form (already ~400 lines)
 
-### 2.2 Header Redesign
-- Replace the emerald gradient icon container with a `HUDFrame` mini-panel
-- Title: keep `font-orbitron`, change gradient to `from-[#00F2FF] to-cyan-300`
-- Action buttons: replace `border-emerald-500/30` with `border-[#00F2FF]/30` and matching hover states
+This reduces the render surface of each piece and enables React.memo on stable sections.
 
-### 2.3 Layout Structure
-Keep the existing grid structure but wrap major sections in `HUDFrame` where appropriate.
+### Optimization 2: Eliminate local state duplication
+Replace the `useState` + `useEffect` sync pattern with direct consumption of React Query data for read-only display. Only use local state inside the edit overlay when it's open.
 
----
-
-## Phase 3: Component-Specific Redesigns
-
-### 3.1 `HealthScoreCard` -- Segmented Radar Disk
-
-**Current**: Single SVG circle with stroke-dashoffset animation.
-
-**New design**:
-- Replace the single progress ring with a **multi-ring orbital display**
-- **Center**: Large score number in `font-orbitron` with phosphor cyan color
-- **Inner ring** (r=60): Overall health score arc
-- **Middle ring** (r=72): Sleep factor arc in blue
-- **Outer ring** (r=84): Activity factor arc in cyan, Stress factor arc (inverted) in amber
-- Each ring uses `stroke-dasharray` segments with gaps between them
-- Add a slow `rotate` animation on the outer ring (360deg over 30s)
-- Wrap the entire card in `HUDFrame`
-- Replace emerald color references with phosphor cyan
-
-### 3.2 `HealthMetricCard` -- Chamfered HUD Panels
-
-**Current**: `rounded-2xl` cards with basic `whileHover: scale(1.02)`.
-
-**New design**:
-- Wrap each card in `HUDFrame` (which provides the chamfered clip-path and corner brackets)
-- Replace `colorVariants` to use the new palette:
-  - blue stays blue
-  - green -> `[#00F2FF]` (phosphor cyan)
-  - purple -> `[#FFB800]` (amber) for stress
-  - cyan -> cyan (unchanged)
-  - orange -> orange (unchanged)
-- Add a scan line overlay that triggers once on mount (via `HUDFrame scanLine`)
-- Replace `whileHover: scale(1.02)` with a subtle border glow intensification
-- Display the raw telemetry value (`todayValue`) as a small `font-mono` readout below the title (e.g., "RAW: 4") alongside the processed `/5` display to increase the technical feel
-- Progress bar: replace `rounded-full` with flat-ended bar (`rounded-none`) and add tick marks at 20/40/60/80/100%
-
-### 3.3 `HealthDailyCheckin` -- System Initialization Sequence
-
-**Current**: Standard `Dialog` with step-by-step sliders.
-
-**New design**:
-- Dialog border: `border-[#00F2FF]/30` instead of `border-emerald-500/20`
-- Step indicator: replace the dot progress with a horizontal **system boot sequence** bar showing `STEP 01/07 :: SLEEP TELEMETRY` in `font-mono` uppercase
-- Labels: add a typewriter entrance animation (characters appear one by one over 0.3s) using a simple framer-motion `staggerChildren` on individual `<span>` letters for the step title only
-- Slider: add cyan track color and a glowing thumb
-- Quality buttons: replace `rounded-lg` with chamfered shape, use `border-[#00F2FF]/40` for selected state
-- Final submit button: glowing cyan with `animate-neon-pulse`
-
-### 3.4 `HealthEnergyCurve` -- Vital Sign Monitor
-
-**Current**: Basic Recharts `LineChart` with amber stroke.
-
-**New design**:
-- Wrap in `HUDFrame`
-- Change line stroke to phosphor cyan `#00F2FF`
-- Add a custom animated dot component (`activeDot`) that uses `animate-pulse-dot` to simulate a traveling pulse
-- Add a faint horizontal reference line at y=3 (labeled "BASELINE" in `font-mono`)
-- Grid lines: use `stroke="#00F2FF"` at 5% opacity
-- Background: add a very faint ECG-style grid pattern
-
-### 3.5 `HealthWeeklyChart` -- HUD Bar Chart
-
-- Wrap in `HUDFrame`
-- Replace emerald accent with cyan
-- Bar colors: blue, cyan, amber (for stress)
-- Legend: use `font-mono` labels
-- Today indicator: replace the small dot with a downward-pointing cyan triangle
-
-### 3.6 `HealthBMIIndicator` -- Tactical Gauge
-
-- Wrap in `HUDFrame`
-- Replace the rounded gradient bar with a flat segmented gauge
-- Position indicator: replace the thin line with a diamond marker
-- Labels in `font-mono`
-
-### 3.7 `HealthInsightsPanel` -- Terminal Output
-
-- Wrap in `HUDFrame`
-- Prefix each insight with `> ` in `font-mono` to simulate terminal output
-- Generate button: glowing cyan outline
-- Loading state: replace spinner with blinking cursor `_` animation
-
-### 3.8 Other Components (Palette Shift Only)
-
-- `HealthHistoryChart`: wrap in `HUDFrame`, replace emerald with cyan
-- `HealthChallengesPanel`: wrap in `HUDFrame`, replace amber glow
-- `HealthBreathingExercise`: replace teal gradients with cyan
-- `HealthStreakBadge`: keep tier system, replace emerald tier color with cyan
-- `HealthMoodSelector`: replace emerald border on "good" mood with cyan
-- `HealthDataExport`: minor button color shift
+### Optimization 3: StepDetail cache invalidation
+Add `queryClient.invalidateQueries(["goal-detail", step.goal_id])` and `queryClient.invalidateQueries(["goals"])` after saving in StepDetail.
 
 ---
 
-## Phase 4: Typography Enforcement
+## Part C: New Features
 
-The global CSS already enforces `font-orbitron` on headings and labels. For the Health module specifically:
-- All **numerical values** (scores, counts, hours): `font-orbitron`
-- All **secondary labels** (descriptions, units, "RAW:", "BASELINE"): `font-mono` with `uppercase tracking-wider text-[10px]`
-- This is done per-component in the JSX `className` -- no global override needed
+### Feature 1: Goal Status Lifecycle (Pause / Resume / Archive)
+Add a dropdown or button group on GoalDetail to transition goals between states:
+- **Pause**: Sets status to "paused", freezes the goal without losing progress
+- **Resume**: Returns to "in_progress" or "not_started" based on validated_steps
+- **Archive**: New status "archived" for goals the user abandoned without deleting
+
+Requires: Add "archived" to STATUS_CONFIG and the database trigger.
+
+### Feature 2: Goal Deadline & Countdown
+Add an optional `deadline` date field to goals. Display a countdown timer on the goal card (all 3 views) showing days remaining. Color-code: green (>7 days), amber (1-7 days), red (overdue). This creates urgency and gamification pressure.
+
+Requires: Database migration to add `deadline` column to goals table.
+
+### Feature 3: Goal Duplication
+"Duplicate Goal" button on GoalDetail that copies the goal (name, tags, difficulty, steps structure, cost items) into a new goal with status "not_started". Useful for recurring projects or templating.
+
+No database changes needed.
+
+### Feature 4: Bulk Actions on /goals listing
+Add a selection mode on the goals listing page: checkboxes on each card, with a floating action bar for:
+- Bulk delete
+- Bulk change difficulty
+- Bulk add/remove tags
+- Bulk pause/resume
+
+### Feature 5: Goal Progress Sparkline on Cards
+Add a tiny sparkline (last 7 step completions over time) to Bar and Grid view cards, giving a visual sense of momentum. Data source: `step_status_history` table (already exists).
 
 ---
 
-## Implementation Order
+## Execution Order
 
-1. **Tailwind config + CSS variables** -- foundation (no visual breakage)
-2. **`HUDFrame` component** -- reusable wrapper
-3. **`Health.tsx` page layout** -- background + header palette shift
-4. **`HealthScoreCard`** -- most visually impactful, centerpiece
-5. **`HealthMetricCard`** -- 5 instances, high visibility
-6. **`HealthDailyCheckin`** -- system init sequence UX
-7. **`HealthEnergyCurve`** -- vital sign monitor
-8. **`HealthWeeklyChart`** -- bar chart palette shift
-9. **Remaining components** -- `HealthBMIIndicator`, `HealthInsightsPanel`, `HealthHistoryChart`, `HealthChallengesPanel`, `HealthBreathingExercise`, `HealthStreakBadge`, `HealthMoodSelector`, `HealthDataExport`
-
----
-
-## Files Created
-- `src/components/health/HUDFrame.tsx`
-
-## Files Modified
-- `tailwind.config.ts` (new keyframes + animations)
-- `src/index.css` (new CSS variables)
-- `src/pages/Health.tsx`
-- `src/components/health/HealthScoreCard.tsx`
-- `src/components/health/HealthMetricCard.tsx`
-- `src/components/health/HealthDailyCheckin.tsx`
-- `src/components/health/HealthEnergyCurve.tsx`
-- `src/components/health/HealthWeeklyChart.tsx`
-- `src/components/health/HealthBMIIndicator.tsx`
-- `src/components/health/HealthInsightsPanel.tsx`
-- `src/components/health/HealthHistoryChart.tsx`
-- `src/components/health/HealthChallengesPanel.tsx`
-- `src/components/health/HealthBreathingExercise.tsx`
-- `src/components/health/HealthStreakBadge.tsx`
-- `src/components/health/HealthMoodSelector.tsx`
-- `src/components/health/HealthDataExport.tsx`
-- `src/components/health/index.ts` (add HUDFrame export)
-
-## What Does NOT Change
-- Hook logic (`useHealth.ts`, `useHealthStreak.ts`, `useHealthChallenges.ts`, `useHealthReminders.ts`)
-- Database schema and RLS policies
-- i18n keys and translations
-- Data flow and API calls
-- `HealthSettingsModal` (settings form -- functional, not visual showcase)
+| Phase | Work | Files |
+|-------|------|-------|
+| 1 | Fix Bug 3 (StepDetail cache invalidation) | `StepDetail.tsx` |
+| 2 | Fix Bug 6 (disable Complete button if already completed) | `GoalDetail.tsx` |
+| 3 | Split GoalDetail into 5 sub-components | New files in `src/components/goals/detail/` |
+| 4 | Add Goal Deadline field + countdown display | DB migration + cards + GoalDetail + NewGoal |
+| 5 | Add Pause/Resume/Archive status lifecycle | DB migration (trigger update) + GoalDetail + GoalsList |
+| 6 | Add Goal Duplication feature | GoalDetail + NewGoal |
+| 7 | Add Bulk Actions to /goals listing | Goals.tsx + GoalsList + new BulkActionBar component |
+| 8 | Add Progress Sparkline to cards | BarViewGoalCard + GridViewGoalCard + new hook |
 
