@@ -34,6 +34,7 @@ export default function StepDetail() {
   const { stepId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<Step | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
