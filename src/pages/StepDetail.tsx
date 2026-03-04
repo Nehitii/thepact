@@ -89,6 +89,11 @@ export default function StepDetail() {
       if (error) throw error;
 
       await recalculateGoalProgress(step.goal_id);
+      
+      // Fix Bug 3: Invalidate React Query caches so GoalDetail shows fresh data
+      queryClient.invalidateQueries({ queryKey: ["goal-detail", step.goal_id] });
+      queryClient.invalidateQueries({ queryKey: ["goals"] });
+      
       toast({ title: "Success", description: "Step updated successfully" });
       navigate(`/goals/${step.goal_id}`);
     } catch (error: any) {
