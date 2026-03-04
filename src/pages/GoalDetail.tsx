@@ -902,6 +902,24 @@ export default function GoalDetail() {
                   </span>
                 </div>
               )}
+
+              {/* Deadline Countdown */}
+              {(goal as any).deadline && (() => {
+                const deadlineDate = new Date((goal as any).deadline);
+                const now = new Date();
+                const diffMs = deadlineDate.getTime() - now.getTime();
+                const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+                const urgencyColor = daysLeft > 7 ? "text-green-400" : daysLeft > 0 ? "text-amber-400" : "text-red-400";
+                const urgencyBg = daysLeft > 7 ? "bg-green-500/10 border-green-500/30" : daysLeft > 0 ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30";
+                return (
+                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${urgencyBg} font-rajdhani font-bold text-sm`}>
+                    <Clock className={`h-4 w-4 ${urgencyColor}`} />
+                    <span className={urgencyColor}>
+                      {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : daysLeft === 0 ? "Due today" : `${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? 's' : ''} overdue`}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Actions */}
@@ -911,19 +929,49 @@ export default function GoalDetail() {
                 Edit
               </Button>
 
-              <Button
-                variant="hud"
-                size="sm"
-                onClick={handleFullyComplete}
-                className="rounded-lg"
-                style={{
-                  borderColor: `${difficultyColor}50`,
-                  color: difficultyColor,
-                  boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`,
-                }}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                Complete
+              {/* Complete button - hidden if already completed */}
+              {!isCompleted && goal.status !== "archived" && (
+                <Button
+                  variant="hud"
+                  size="sm"
+                  onClick={handleFullyComplete}
+                  className="rounded-lg"
+                  style={{
+                    borderColor: `${difficultyColor}50`,
+                    color: difficultyColor,
+                    boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`,
+                  }}
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Complete
+                </Button>
+              )}
+
+              {/* Pause / Resume */}
+              {goal.status === "paused" ? (
+                <Button variant="hud" size="sm" className="rounded-lg border-green-500/40 text-green-400" onClick={handleResumeGoal}>
+                  <Play className="h-4 w-4 mr-2" />
+                  Resume
+                </Button>
+              ) : goal.status !== "fully_completed" && goal.status !== "archived" ? (
+                <Button variant="hud" size="sm" className="rounded-lg border-orange-500/40 text-orange-400" onClick={handlePauseGoal}>
+                  <Pause className="h-4 w-4 mr-2" />
+                  Pause
+                </Button>
+              ) : null}
+
+              {/* Archive (only non-completed, non-archived) */}
+              {goal.status !== "fully_completed" && goal.status !== "archived" && (
+                <Button variant="hud" size="sm" className="rounded-lg border-zinc-500/40 text-zinc-400" onClick={handleArchiveGoal}>
+                  <Archive className="h-4 w-4 mr-2" />
+                  Archive
+                </Button>
+              )}
+
+              {/* Duplicate */}
+              <Button variant="hud" size="sm" className="rounded-lg" onClick={handleDuplicateGoal}>
+                <Copy className="h-4 w-4 mr-2" />
+                Duplicate
               </Button>
 
               <AlertDialog>
