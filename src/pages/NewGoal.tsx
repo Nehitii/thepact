@@ -87,6 +87,7 @@ export default function NewGoal() {
   const [imageUrl, setImageUrl] = useState("");
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
+  const [deadline, setDeadline] = useState("");
   const [stepItems, setStepItems] = useState<EditStepItem[]>(
     Array.from({ length: 5 }, (_, i) => ({ name: `Step ${i + 1}`, key: `init-${i}` })),
   );
@@ -217,6 +218,7 @@ export default function NewGoal() {
           habit_checks: habitChecks,
           image_url: imageUrl || null,
           ...superGoalData,
+          deadline: deadline || null,
         } as any)
         .select()
         .single();
