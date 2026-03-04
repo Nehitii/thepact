@@ -130,6 +130,7 @@ export default function GoalDetail() {
   const [editCostItems, setEditCostItems] = useState<CostItemData[]>([]);
   const [editStepItems, setEditStepItems] = useState<EditStepItem[]>([]);
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
+  const [editDeadline, setEditDeadline] = useState("");
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
   // Track initial edit state for unsaved changes guard
@@ -165,6 +166,7 @@ export default function GoalDetail() {
       setEditImage(g.image_url || "");
       setEditDifficulty(g.difficulty || "medium");
       setEditNotes(g.notes || "");
+      setEditDeadline((g as any).deadline || "");
       setSteps(goalDetailData.steps);
       setEditStepItems(goalDetailData.steps.map((s) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: (s as any).exclude_from_spin ?? false })));
       setLoading(false);
@@ -1546,6 +1548,20 @@ export default function GoalDetail() {
                             style={{ colorScheme: "dark" }}
                           />
                         </div>
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                          <Clock className="h-4 w-4" />
+                          Deadline (optional)
+                        </Label>
+                        <Input
+                          type="date"
+                          value={editDeadline}
+                          onChange={(e) => setEditDeadline(e.target.value)}
+                          className={`h-12 text-base rounded-xl ${inputStyle}`}
+                          style={{ colorScheme: "dark" }}
+                        />
+                        <p className="text-xs text-muted-foreground">Set a deadline to enable countdown timer on goal cards</p>
                       </div>
                     </div>
 
