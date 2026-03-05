@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Check, Edit2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,9 +26,10 @@ interface MonthlyValidationPanelProps {
 }
 
 export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPanelProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
-  
+
   const currentMonth = format(new Date(), 'yyyy-MM-01');
   const { data: currentValidation, isLoading } = useMonthlyValidation(user?.id, currentMonth);
   const { data: recurringExpenses = [] } = useRecurringExpenses(user?.id);
@@ -56,11 +58,10 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
   const isValidated = currentValidation?.validated_at !== null;
   const canEdit = isValidated && isEditing;
 
-  // Check if near deadline (within 7 days of salary day)
   const today = getDate(new Date());
   const daysInMonth = getDaysInMonth(new Date());
-  const daysUntilDeadline = salaryPaymentDay >= today 
-    ? salaryPaymentDay - today 
+  const daysUntilDeadline = salaryPaymentDay >= today
+    ? salaryPaymentDay - today
     : daysInMonth - today + salaryPaymentDay;
   const isNearDeadline = daysUntilDeadline <= 7 && !isValidated;
 
@@ -79,11 +80,11 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
         actual_total_expenses: actualExpenses,
         validated_at: new Date().toISOString(),
       });
-      toast.success('Month validated successfully');
+      toast.success(t('finance.monthly.monthValidated'));
       setIsEditing(false);
       setShowValidationFlow(false);
-    } catch (e) {
-      toast.error('Failed to validate month');
+    } catch {
+      toast.error(t('finance.monthly.monthFailed'));
     }
   };
 
@@ -102,10 +103,10 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
         actual_total_expenses: actualExpenses,
         validated_at: currentValidation?.validated_at || new Date().toISOString(),
       });
-      toast.success('Month updated successfully');
+      toast.success(t('finance.monthly.monthUpdated'));
       setIsEditing(false);
-    } catch (e) {
-      toast.error('Failed to update month');
+    } catch {
+      toast.error(t('finance.monthly.updateFailed'));
     }
   };
 
@@ -124,9 +125,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
       transition={{ duration: 0.5, delay: 0.1 }}
       className="space-y-4"
     >
-      {/* Current Month Status Card */}
       <div className={`neu-card overflow-hidden ${isValidated ? 'validation-complete' : isNearDeadline ? 'validation-pending' : ''}`}>
-        {/* Header */}
         <div className="p-6 flex items-center justify-between border-b border-white/[0.04]">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/25 flex items-center justify-center shadow-[0_0_30px_hsla(200,100%,60%,0.15)]">
@@ -137,7 +136,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
                 {format(parseISO(currentMonth), 'MMMM yyyy')}
               </h3>
               <p className="text-sm text-slate-500">
-                Salary day: {salaryPaymentDay}
+                {t('finance.monthly.salaryDay', { day: salaryPaymentDay })}
               </p>
             </div>
           </div>
@@ -150,36 +149,34 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
                 className="text-slate-400 hover:text-white hover:bg-white/[0.04]"
               >
                 <Edit2 className="h-4 w-4 mr-2" />
-                Edit
+                {t('common.edit')}
               </Button>
             )}
             {isValidated && (
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 shadow-[0_0_20px_hsla(160,80%,50%,0.15)]"
               >
                 <Check className="h-4 w-4 text-emerald-400" />
-                <span className="text-sm font-semibold text-emerald-400">Validated</span>
+                <span className="text-sm font-semibold text-emerald-400">{t('finance.monthly.validated')}</span>
               </motion.div>
             )}
           </div>
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Deadline Prompt */}
           {isNearDeadline && (
-            <DeadlinePrompt 
+            <DeadlinePrompt
               daysUntilDeadline={daysUntilDeadline}
               onValidate={() => setShowValidationFlow(true)}
             />
           )}
 
-          {/* Toggle Switches */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ConfirmationToggle
-              label="Expenses Paid"
-              subtext="recurring"
+              label={t('finance.monthly.expensesPaid')}
+              subtext={t('finance.recurring.title').toLowerCase()}
               currency={currency}
               amount={totalRecurringExpenses}
               isChecked={confirmedExpenses}
@@ -187,8 +184,8 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
               disabled={isValidated && !canEdit}
             />
             <ConfirmationToggle
-              label="Income Received"
-              subtext="recurring"
+              label={t('finance.monthly.incomeReceived')}
+              subtext={t('finance.recurring.title').toLowerCase()}
               currency={currency}
               amount={totalRecurringIncome}
               isChecked={confirmedIncome}
@@ -197,17 +194,16 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
             />
           </div>
 
-          {/* Additional Amounts */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <CurrencyInput
-              label="Additional Expenses"
+              label={t('finance.monthly.additionalExpenses')}
               value={unplannedExpenses}
               onChange={setUnplannedExpenses}
               currency={currency}
               disabled={isValidated && !canEdit}
             />
             <CurrencyInput
-              label="Additional Income"
+              label={t('finance.monthly.additionalIncome')}
               value={unplannedIncome}
               onChange={setUnplannedIncome}
               currency={currency}
@@ -215,17 +211,16 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
             />
           </div>
 
-          {/* Action Buttons */}
           {!isValidated && !isNearDeadline && (
             <Button
               onClick={handleValidate}
               disabled={!confirmedExpenses || !confirmedIncome || upsertValidation.isPending}
               className="w-full h-12 text-sm font-semibold rounded-xl"
             >
-              {upsertValidation.isPending ? 'Validating...' : 'Validate This Month'}
+              {upsertValidation.isPending ? t('finance.monthly.validating') : t('finance.monthly.validateThisMonth')}
             </Button>
           )}
-          
+
           {canEdit && (
             <div className="flex gap-3">
               <Button
@@ -233,35 +228,33 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
                 onClick={() => setIsEditing(false)}
                 className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] hover:text-white rounded-xl"
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 onClick={handleUpdate}
                 disabled={upsertValidation.isPending}
                 className="flex-1 h-12 rounded-xl"
               >
-                {upsertValidation.isPending ? 'Saving...' : 'Save Changes'}
+                {upsertValidation.isPending ? t('finance.monthly.saving') : t('common.saveChanges')}
               </Button>
             </div>
           )}
 
-          {/* Tip */}
           {!isValidated && (!confirmedExpenses || !confirmedIncome) && !isNearDeadline && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-start gap-3 p-4 rounded-xl neu-inset"
             >
               <AlertCircle className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" />
               <p className="text-sm text-slate-400">
-                Confirm both your recurring expenses and income before validating.
+                {t('finance.monthly.confirmTip')}
               </p>
             </motion.div>
           )}
         </div>
       </div>
 
-      {/* Validation Flow Modal */}
       <AnimatePresence>
         {showValidationFlow && (
           <ValidationFlowModal

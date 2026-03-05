@@ -508,7 +508,10 @@
     "tabs": {
       "overview": "Overview",
       "monthly": "Monthly",
-      "projections": "Projections"
+      "projections": "Projections",
+      "dashboard": "Dashboard",
+      "budget": "Budget",
+      "planner": "Planner"
     },
     "overview": {
       "projectFinancing": "Project Financing",
