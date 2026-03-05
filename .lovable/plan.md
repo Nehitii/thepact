@@ -1,240 +1,102 @@
 
 
-# Health Module: Biometric HUD Redesign
-
-## Audit Summary
-
-### Current State
-The Health module comprises **12 components** + 1 page orchestrator (`Health.tsx`). It uses a soft "emerald/teal" palette with standard `rounded-2xl` containers, basic `framer-motion` fades (`y: 20`), and Recharts for data visualization. The design system already has a Sci-Fi HUD foundation (Orbitron fonts, `--glow-cyan` variables, `cyber-scan` keyframes) but the Health module does **not** leverage any of it -- it uses its own emerald gradient aesthetic that feels disconnected from the rest of the app.
-
-### Components to Redesign
-| Component | Current State | Redesign Priority |
-|-----------|--------------|-------------------|
-| `Health.tsx` (page layout) | Standard flex/grid, emerald ambient blobs | Full HUD layout overhaul |
-| `HealthScoreCard.tsx` | Simple SVG circle progress ring | Segmented Radar Disk |
-| `HealthMetricCard.tsx` | Rounded cards with basic hover scale | Chamfered HUD panels with scan lines |
-| `HealthDailyCheckin.tsx` | Standard dialog with sliders | System Init Sequence |
-| `HealthEnergyCurve.tsx` | Basic Recharts LineChart | Vital Sign Monitor with pulse dot |
-| `HealthWeeklyChart.tsx` | Bar chart with emerald colors | HUD bar chart with cyan/amber palette |
-| `HealthBMIIndicator.tsx` | Gradient bar with dot marker | Tactical gauge |
-| `HealthStreakBadge.tsx` | Fire icon with tier colors | Retains structure, palette shift |
-| `HealthInsightsPanel.tsx` | Simple card list | Terminal-style output |
-| `HealthHistoryChart.tsx` | Recharts multi-line chart | Palette shift + HUD frame |
-| `HealthChallengesPanel.tsx` | Card list | HUD frame + palette shift |
-| `HealthBreathingExercise.tsx` | Breathing circles in dialog | Minor palette shift |
-| `HealthMoodSelector.tsx` | Emoji buttons | Palette shift on borders |
+# /Finance Section -- Design Audit & Complete Overhaul Plan
 
 ---
 
-## Phase 1: Global Design System Extensions
+## Current State Analysis
 
-### 1.1 New CSS Variables (in `src/index.css`)
+The Finance section has 3 tabs (Overview, Monthly, Projections) with a neumorphic dark design. After auditing all components, here are the key findings:
 
-Add Health HUD-specific variables to both `:root` and `.dark`:
+### Design Issues
 
-```text
-/* Health Biometric HUD */
---hud-health-bg: 210 100% 2%;
---hud-phosphor: 187 100% 50%;      /* #00F2FF */
---hud-amber: 43 100% 50%;           /* #FFB800 */
---hud-health-surface: 210 60% 6%;
---hud-health-border: 187 80% 30%;
-```
+1. **Overview tab is underpowered** -- Only 2 cards side-by-side (FinanceOverviewCard + SmartFinancingPanel). The overview doesn't feel like a dashboard; it's more like a settings page with a progress bar and a slider calculator. No at-a-glance summary of the user's financial health.
 
-### 1.2 New Tailwind Keyframes & Animations (in `tailwind.config.ts`)
+2. **Information architecture is fragmented** -- The "Smart Financing" calculator (how many months to pay off the project) is on the Overview tab, but the actual recurring expenses/income it depends on are hidden in the Monthly tab. The user has to mentally connect data across tabs.
 
-```text
-keyframes:
-  "hud-scan": sweeps a thin horizontal line top-to-bottom over 6s
-  "hud-flicker": brief opacity jitter (1 -> 0.92 -> 1) over 0.15s
-  "hud-assemble": clip-path reveal from left (0% width -> 100%) over 0.6s
-  "pulse-dot": scale 1 -> 1.8 -> 1 with opacity over 1.5s
+3. **MonthlyBalanceHero is oversized** -- 520 lines for a single hero component containing animated numbers, savings ring, pie charts, sparkline, and tooltips. It dominates the Monthly tab and pushes the actual interactive content (expense/income lists) far below the fold.
 
-animations:
-  "hud-scan": "hud-scan 6s linear infinite"
-  "hud-flicker": "hud-flicker 0.15s ease-in-out"
-  "hud-assemble": "hud-assemble 0.6s ease-out forwards"
-  "pulse-dot": "pulse-dot 1.5s ease-in-out infinite"
-```
+4. **Redundant charts** -- The expense distribution pie chart appears in both `MonthlyBalanceHero` (Monthly tab) AND `ProjectionsPanel` (Projections tab). Same data, same visual.
 
-### 1.3 The `HUDFrame` Reusable Component
+5. **Tab structure doesn't match user mental model** -- Users think: "How much do I earn/spend?" then "Am I on track for my project?" then "What does the future look like?". The current tabs don't map to this flow cleanly.
 
-Create `src/components/health/HUDFrame.tsx` -- a wrapper that provides:
-- A `backdrop-blur-md` semi-transparent background (`bg-[hsl(210,60%,6%)]/80`)
-- Four absolute-positioned corner brackets (L-shaped SVG or border tricks) in phosphor cyan
-- An optional scan line overlay (`::after` pseudo-element with `animate-hud-scan`)
-- A 45-degree chamfer on top-left and bottom-right corners via CSS `clip-path: polygon(...)`
-- Props: `children`, `className`, `scanLine?: boolean`, `glowColor?: string`
+6. **MonthlyValidationPanel has hardcoded English strings** -- "Expenses Paid", "Income Received", "Validate This Month", "Validated", "Edit", "No history yet", etc. are not using the i18n system.
 
-### 1.4 Palette Shift Utility
+7. **SmartFinancingPanel existingBalance is ephemeral** -- The "existing balance" input resets on every page load. The value is never persisted (the memory note says it should be stored in profile).
 
-All emerald/teal references across the Health module will be replaced:
-- `emerald-500` -> phosphor cyan `[#00F2FF]` or `cyan-400`
-- `teal-500` -> `cyan-500`
-- Warning/stress colors -> `[#FFB800]` amber accent
-- Background blobs -> dark void gradients with cyan radial glows
+8. **FinancialBlock is 506 lines** -- The category group + add form + edit inline + delete dialog are all crammed into one file with no sub-component extraction.
 
 ---
 
-## Phase 2: Page Layout (`Health.tsx`)
+## Proposed Restructuring
 
-### 2.1 Ambient Background Overhaul
-Replace the emerald blobs and soft grid with:
-- A very dark base (`bg-[#020617]`)
-- A subtle animated grid overlay using phosphor cyan lines at 10% opacity
-- A radial gradient glow at page center in cyan at 5% opacity
-- An optional slow `animate-hud-scan` line across the entire page
+### New Tab Layout (3 tabs, restructured)
 
-### 2.2 Header Redesign
-- Replace the emerald gradient icon container with a `HUDFrame` mini-panel
-- Title: keep `font-orbitron`, change gradient to `from-[#00F2FF] to-cyan-300`
-- Action buttons: replace `border-emerald-500/30` with `border-[#00F2FF]/30` and matching hover states
+| Tab | Name | Content |
+|-----|------|---------|
+| 1 | **Dashboard** | Unified financial snapshot: KPI row (Net Balance, Savings Rate, Months to Goal, Yearly Projection) + Project Funding progress card + 6-month balance trend chart + expense/income donut (single, not duplicated) |
+| 2 | **Budget** | Recurring Expenses & Income blocks (existing FinancialBlock) + Monthly Validation panel + Monthly History timeline |
+| 3 | **Planner** | Smart Financing calculator (slider) + Balance Evolution line chart (projected vs actual) + Project deadline tracking |
 
-### 2.3 Layout Structure
-Keep the existing grid structure but wrap major sections in `HUDFrame` where appropriate.
+### Phase-by-Phase Implementation
 
 ---
 
-## Phase 3: Component-Specific Redesigns
+**Phase 1: Fix i18n and persistence bugs**
+- Replace all hardcoded English strings in `MonthlyValidationPanel`, `MonthlyHistory`, `MonthlyBalanceHero`, and `FinancialBlock` with `t()` calls
+- Persist `existingBalance` from SmartFinancingPanel to the profile table (add column via migration if needed, or reuse an existing field)
 
-### 3.1 `HealthScoreCard` -- Segmented Radar Disk
+**Phase 2: Restructure tab layout**
+- Rename tabs: Overview -> Dashboard, Monthly -> Budget, Projections -> Planner
+- Move the KPI stat cards (savings rate, monthly net, yearly projection, months to goal) from Projections to the new Dashboard tab as the top hero row
+- Move the Project Funding progress card (FinanceOverviewCard) into the Dashboard tab below the KPI row
+- Move the expense/income donut chart into Dashboard (remove the duplicate from Projections)
+- Move the 6-month sparkline trend from MonthlyBalanceHero into the Dashboard tab
 
-**Current**: Single SVG circle with stroke-dashoffset animation.
+**Phase 3: Slim down MonthlyBalanceHero**
+- The hero is now only used in the Budget tab. Strip it down to just show: net balance (animated number) + savings rate ring. No more pie charts or sparkline (those moved to Dashboard).
+- Extract `AnimatedNumber`, `SavingsRateRing`, and `BalanceTrendSparkline` into their own files under `src/components/finance/widgets/` for reuse.
 
-**New design**:
-- Replace the single progress ring with a **multi-ring orbital display**
-- **Center**: Large score number in `font-orbitron` with phosphor cyan color
-- **Inner ring** (r=60): Overall health score arc
-- **Middle ring** (r=72): Sleep factor arc in blue
-- **Outer ring** (r=84): Activity factor arc in cyan, Stress factor arc (inverted) in amber
-- Each ring uses `stroke-dasharray` segments with gaps between them
-- Add a slow `rotate` animation on the outer ring (360deg over 30s)
-- Wrap the entire card in `HUDFrame`
-- Replace emerald color references with phosphor cyan
+**Phase 4: Build the new Dashboard tab**
+- Create `src/components/finance/FinanceDashboard.tsx` composing:
+  - KPI stat row (4 cards, taken from ProjectionsPanel logic)
+  - FinanceOverviewCard (project funding progress)
+  - Side-by-side: Expense donut + Income donut (extracted widget)
+  - BalanceTrendSparkline (extracted widget)
+- All in a responsive grid layout with staggered entry animations
 
-### 3.2 `HealthMetricCard` -- Chamfered HUD Panels
+**Phase 5: Rebuild the Planner tab**
+- Keep SmartFinancingPanel as the primary content
+- Keep the Balance Evolution area chart (from ProjectionsPanel)
+- Add the positive/negative balance summary banner
+- Remove the pie chart and KPI cards (now on Dashboard)
 
-**Current**: `rounded-2xl` cards with basic `whileHover: scale(1.02)`.
-
-**New design**:
-- Wrap each card in `HUDFrame` (which provides the chamfered clip-path and corner brackets)
-- Replace `colorVariants` to use the new palette:
-  - blue stays blue
-  - green -> `[#00F2FF]` (phosphor cyan)
-  - purple -> `[#FFB800]` (amber) for stress
-  - cyan -> cyan (unchanged)
-  - orange -> orange (unchanged)
-- Add a scan line overlay that triggers once on mount (via `HUDFrame scanLine`)
-- Replace `whileHover: scale(1.02)` with a subtle border glow intensification
-- Display the raw telemetry value (`todayValue`) as a small `font-mono` readout below the title (e.g., "RAW: 4") alongside the processed `/5` display to increase the technical feel
-- Progress bar: replace `rounded-full` with flat-ended bar (`rounded-none`) and add tick marks at 20/40/60/80/100%
-
-### 3.3 `HealthDailyCheckin` -- System Initialization Sequence
-
-**Current**: Standard `Dialog` with step-by-step sliders.
-
-**New design**:
-- Dialog border: `border-[#00F2FF]/30` instead of `border-emerald-500/20`
-- Step indicator: replace the dot progress with a horizontal **system boot sequence** bar showing `STEP 01/07 :: SLEEP TELEMETRY` in `font-mono` uppercase
-- Labels: add a typewriter entrance animation (characters appear one by one over 0.3s) using a simple framer-motion `staggerChildren` on individual `<span>` letters for the step title only
-- Slider: add cyan track color and a glowing thumb
-- Quality buttons: replace `rounded-lg` with chamfered shape, use `border-[#00F2FF]/40` for selected state
-- Final submit button: glowing cyan with `animate-neon-pulse`
-
-### 3.4 `HealthEnergyCurve` -- Vital Sign Monitor
-
-**Current**: Basic Recharts `LineChart` with amber stroke.
-
-**New design**:
-- Wrap in `HUDFrame`
-- Change line stroke to phosphor cyan `#00F2FF`
-- Add a custom animated dot component (`activeDot`) that uses `animate-pulse-dot` to simulate a traveling pulse
-- Add a faint horizontal reference line at y=3 (labeled "BASELINE" in `font-mono`)
-- Grid lines: use `stroke="#00F2FF"` at 5% opacity
-- Background: add a very faint ECG-style grid pattern
-
-### 3.5 `HealthWeeklyChart` -- HUD Bar Chart
-
-- Wrap in `HUDFrame`
-- Replace emerald accent with cyan
-- Bar colors: blue, cyan, amber (for stress)
-- Legend: use `font-mono` labels
-- Today indicator: replace the small dot with a downward-pointing cyan triangle
-
-### 3.6 `HealthBMIIndicator` -- Tactical Gauge
-
-- Wrap in `HUDFrame`
-- Replace the rounded gradient bar with a flat segmented gauge
-- Position indicator: replace the thin line with a diamond marker
-- Labels in `font-mono`
-
-### 3.7 `HealthInsightsPanel` -- Terminal Output
-
-- Wrap in `HUDFrame`
-- Prefix each insight with `> ` in `font-mono` to simulate terminal output
-- Generate button: glowing cyan outline
-- Loading state: replace spinner with blinking cursor `_` animation
-
-### 3.8 Other Components (Palette Shift Only)
-
-- `HealthHistoryChart`: wrap in `HUDFrame`, replace emerald with cyan
-- `HealthChallengesPanel`: wrap in `HUDFrame`, replace amber glow
-- `HealthBreathingExercise`: replace teal gradients with cyan
-- `HealthStreakBadge`: keep tier system, replace emerald tier color with cyan
-- `HealthMoodSelector`: replace emerald border on "good" mood with cyan
-- `HealthDataExport`: minor button color shift
+**Phase 6: Component extraction from FinancialBlock**
+- Extract `CategoryGroup` into its own file `src/components/finance/monthly/CategoryGroup.tsx`
+- Extract the "Add Item Form" into `src/components/finance/monthly/AddItemForm.tsx`
+- Keep `FinancialBlock` as the orchestrator (~150 lines instead of 506)
 
 ---
 
-## Phase 4: Typography Enforcement
+### File Changes Summary
 
-The global CSS already enforces `font-orbitron` on headings and labels. For the Health module specifically:
-- All **numerical values** (scores, counts, hours): `font-orbitron`
-- All **secondary labels** (descriptions, units, "RAW:", "BASELINE"): `font-mono` with `uppercase tracking-wider text-[10px]`
-- This is done per-component in the JSX `className` -- no global override needed
+| Action | File |
+|--------|------|
+| Create | `src/components/finance/widgets/AnimatedNumber.tsx` |
+| Create | `src/components/finance/widgets/SavingsRateRing.tsx` |
+| Create | `src/components/finance/widgets/BalanceTrendSparkline.tsx` |
+| Create | `src/components/finance/widgets/CategoryDonut.tsx` |
+| Create | `src/components/finance/widgets/index.ts` |
+| Create | `src/components/finance/FinanceDashboard.tsx` |
+| Create | `src/components/finance/monthly/CategoryGroup.tsx` |
+| Create | `src/components/finance/monthly/AddItemForm.tsx` |
+| Rewrite | `src/pages/Finance.tsx` (new tab structure) |
+| Rewrite | `src/components/finance/monthly/MonthlyBalanceHero.tsx` (slim version) |
+| Edit | `src/components/finance/ProjectionsPanel.tsx` (remove KPIs + pie, keep charts) |
+| Edit | `src/components/finance/monthly/FinancialBlock.tsx` (extract sub-components) |
+| Edit | `src/components/finance/monthly/MonthlyValidationPanel.tsx` (i18n fix) |
+| Edit | `src/components/finance/monthly/MonthlyHistory.tsx` (i18n fix) |
+| Possible migration | Add `existing_balance` column to profiles if not reusing an existing field |
 
----
-
-## Implementation Order
-
-1. **Tailwind config + CSS variables** -- foundation (no visual breakage)
-2. **`HUDFrame` component** -- reusable wrapper
-3. **`Health.tsx` page layout** -- background + header palette shift
-4. **`HealthScoreCard`** -- most visually impactful, centerpiece
-5. **`HealthMetricCard`** -- 5 instances, high visibility
-6. **`HealthDailyCheckin`** -- system init sequence UX
-7. **`HealthEnergyCurve`** -- vital sign monitor
-8. **`HealthWeeklyChart`** -- bar chart palette shift
-9. **Remaining components** -- `HealthBMIIndicator`, `HealthInsightsPanel`, `HealthHistoryChart`, `HealthChallengesPanel`, `HealthBreathingExercise`, `HealthStreakBadge`, `HealthMoodSelector`, `HealthDataExport`
-
----
-
-## Files Created
-- `src/components/health/HUDFrame.tsx`
-
-## Files Modified
-- `tailwind.config.ts` (new keyframes + animations)
-- `src/index.css` (new CSS variables)
-- `src/pages/Health.tsx`
-- `src/components/health/HealthScoreCard.tsx`
-- `src/components/health/HealthMetricCard.tsx`
-- `src/components/health/HealthDailyCheckin.tsx`
-- `src/components/health/HealthEnergyCurve.tsx`
-- `src/components/health/HealthWeeklyChart.tsx`
-- `src/components/health/HealthBMIIndicator.tsx`
-- `src/components/health/HealthInsightsPanel.tsx`
-- `src/components/health/HealthHistoryChart.tsx`
-- `src/components/health/HealthChallengesPanel.tsx`
-- `src/components/health/HealthBreathingExercise.tsx`
-- `src/components/health/HealthStreakBadge.tsx`
-- `src/components/health/HealthMoodSelector.tsx`
-- `src/components/health/HealthDataExport.tsx`
-- `src/components/health/index.ts` (add HUDFrame export)
-
-## What Does NOT Change
-- Hook logic (`useHealth.ts`, `useHealthStreak.ts`, `useHealthChallenges.ts`, `useHealthReminders.ts`)
-- Database schema and RLS policies
-- i18n keys and translations
-- Data flow and API calls
-- `HealthSettingsModal` (settings form -- functional, not visual showcase)
+No database schema changes are required beyond the optional `existing_balance` persistence.
 
