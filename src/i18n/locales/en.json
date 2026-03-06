@@ -609,7 +609,16 @@
       "updateFailed": "Failed to update item",
       "categoriesCount": "{{count}} categories",
       "categoryCount": "{{count}} category",
-      "itemsCount": "{{count}} items"
+      "itemsCount": "{{count}} items",
+      "categorySummary": "{{categories}} categories · {{items}} items",
+      "namePlaceholder": "Name",
+      "amountPlaceholder": "Amount",
+      "newPlaceholder": "New {{type}}...",
+      "addType": "Add {{type}}",
+      "expenseSingle": "expense",
+      "incomeSingle": "income",
+      "emptyTitle": "No recurring {{type}}s yet",
+      "emptyHint": "Click above to add your first one"
     },
     "categories": {
       "housing": "Housing",
