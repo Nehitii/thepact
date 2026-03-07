@@ -31,6 +31,7 @@ import {
   Layers,
   Filter,
   HandIcon,
+  BookTemplate,
 } from "lucide-react";
 import { EditStepsList, EditStepItem } from "@/components/goals/EditStepsList";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +39,8 @@ import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
 import { GoalSelectionList, AutoBuildRuleEditor, SuperGoalRule, filterGoalsByRule } from "@/components/goals/super";
 import { GOAL_TAGS, DIFFICULTY_OPTIONS, getTagLabel, getDifficultyLabel } from "@/lib/goalConstants";
+import { TemplateBrowser } from "@/components/goals/TemplateBrowser";
+import { GoalTemplate } from "@/hooks/useGoalTemplates";
 import { z } from "zod";
 import { motion } from "framer-motion";
 
