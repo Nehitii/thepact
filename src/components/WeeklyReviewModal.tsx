@@ -34,7 +34,7 @@ interface WeeklyReviewModalProps {
 export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { currency, formatAmount } = useCurrency();
+  const { currency } = useCurrency();
   const { data: currentReview } = useCurrentWeekReview();
   const { data: pastReviews = [] } = useWeeklyReviews();
   const generateReview = useGenerateWeeklyReview();
@@ -72,7 +72,7 @@ export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
         { icon: Target, label: "Goals progressed", value: currentReview.goals_progressed, color: "text-blue-400" },
         { icon: ListTodo, label: "Steps completed", value: currentReview.steps_completed, color: "text-emerald-400" },
         { icon: Heart, label: "Health score", value: currentReview.health_avg_score ? `${currentReview.health_avg_score}/10` : "N/A", color: "text-red-400" },
-        { icon: Wallet, label: "Finance net", value: currentReview.finance_net != null ? formatAmount(currentReview.finance_net) : "N/A", color: "text-yellow-400" },
+        { icon: Wallet, label: "Finance net", value: currentReview.finance_net != null ? formatCurrency(currentReview.finance_net, currency) : "N/A", color: "text-yellow-400" },
         { icon: BookOpen, label: "Journal entries", value: currentReview.journal_entries_count, color: "text-purple-400" },
         { icon: ListTodo, label: "Tasks done", value: currentReview.todo_completed, color: "text-cyan-400" },
       ]
