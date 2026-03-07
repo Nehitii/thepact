@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
@@ -14,6 +14,7 @@ import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
 import { MonitoringGlobalPanel } from "@/components/home/MonitoringGlobalPanel";
 import { DifficultyScalePanel } from "@/components/home/DifficultyScalePanel";
+import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 
 // Hooks
 import { useTodoReminders } from "@/hooks/useTodoReminders";
@@ -29,6 +30,7 @@ type UserState = "onboarding" | "active" | "advanced";
 export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [weeklyReviewOpen, setWeeklyReviewOpen] = useState(false);
 
   const { data: pact, isLoading: pactLoading } = usePact(user?.id);
   const { data: profile } = useProfile(user?.id);
@@ -248,6 +250,25 @@ export default function Home() {
 
         {/* MISSION RANDOMIZER */}
         <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
+
+        {/* WEEKLY REVIEW BUTTON */}
+        <motion.button
+          onClick={() => setWeeklyReviewOpen(true)}
+          className="w-full p-4 rounded-xl border border-white/10 bg-card/50 backdrop-blur-sm hover:bg-white/5 hover:border-primary/30 transition-all text-left group"
+          whileHover={{ scale: 1.005 }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+              <span className="text-lg">📊</span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold font-orbitron text-foreground tracking-wide">Weekly Review</h3>
+              <p className="text-xs text-muted-foreground">Reflect on your week with AI-powered insights</p>
+            </div>
+          </div>
+        </motion.button>
+
+        <WeeklyReviewModal open={weeklyReviewOpen} onClose={() => setWeeklyReviewOpen(false)} />
 
         {/* ONBOARDING */}
         {userState === "onboarding" && (
