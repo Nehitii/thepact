@@ -104,6 +104,27 @@ export default function NewGoal() {
   // Custom difficulty state
   const [customDifficultyColor, setCustomDifficultyColor] = useState("#a855f7");
 
+  // Template browser state
+  const [templateBrowserOpen, setTemplateBrowserOpen] = useState(false);
+
+  const handleTemplateSelect = (template: GoalTemplate) => {
+    setName(template.name);
+    setDifficulty(template.difficulty);
+    setSelectedTags(template.tags?.length ? template.tags : ["personal"]);
+    setGoalType(template.goal_type as "normal" | "habit" | "super");
+    if (template.habit_duration_days) setHabitDurationDays(template.habit_duration_days);
+    const steps = typeof template.steps === "string" ? JSON.parse(template.steps) : template.steps || [];
+    if (steps.length > 0) {
+      setStepItems(steps.map((s: any, i: number) => ({ name: s.title || `Step ${i + 1}`, key: `tpl-${i}` })));
+      setStepCount(steps.length);
+    }
+    if (template.estimated_cost) {
+      setCostItems([{ name: "Estimated total", price: template.estimated_cost }]);
+    }
+    setNotes(template.description || "");
+    setTemplateBrowserOpen(false);
+  };
+
   // Load custom difficulty settings
   useEffect(() => {
     if (!user) return;
@@ -329,8 +350,22 @@ export default function NewGoal() {
               Create New Goal
             </h1>
             <p className="text-primary/60 tracking-wide font-rajdhani text-lg">Add an evolution to your Pact journey</p>
+            <Button
+              variant="outline"
+              onClick={() => setTemplateBrowserOpen(true)}
+              className="border-primary/30 text-primary hover:bg-primary/10 mt-2"
+            >
+              <BookTemplate className="h-4 w-4 mr-2" />
+              Start from Template
+            </Button>
           </div>
         </motion.div>
+
+        <TemplateBrowser
+          open={templateBrowserOpen}
+          onClose={() => setTemplateBrowserOpen(false)}
+          onSelect={handleTemplateSelect}
+        />
 
         {/* Form Card */}
         <motion.div
