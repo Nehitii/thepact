@@ -21,6 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 
 // Composant Skeleton pour le chargement
 const InboxSkeleton = () => (
@@ -199,9 +200,7 @@ export default function Inbox() {
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: index * 0.05 }}
                               onClick={() => {
-                                // Add navigation logic here
-                                // navigate(`/inbox/thread/${conv.other_user_id}`)
-                                console.log("Navigate to thread", conv.other_user_id);
+                                navigate(`/inbox/thread/${conv.other_user_id}`);
                               }}
                               className={cn(
                                 "group relative flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all duration-300",
@@ -243,9 +242,10 @@ export default function Inbox() {
                                   >
                                     {conv.other_user_name || t("inbox.unknownUser")}
                                   </h3>
-                                  <span className="text-[10px] text-slate-500 font-mono">
-                                    {/* Placeholder date logic */}
-                                    2h ago
+                                   <span className="text-[10px] text-slate-500 font-mono">
+                                    {conv.last_message_at
+                                      ? formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })
+                                      : ""}
                                   </span>
                                 </div>
                                 <p
