@@ -30,6 +30,7 @@ const Community = lazy(() => import("./pages/Community"));
 const Legal = lazy(() => import("./pages/Legal"));
 const TodoList = lazy(() => import("./pages/TodoList"));
 const Inbox = lazy(() => import("./pages/Inbox"));
+const InboxThread = lazy(() => import("./pages/InboxThread"));
 const Health = lazy(() => import("./pages/Health"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -78,6 +79,7 @@ const routes: RouteConfig[] = [
   { path: "/legal", type: "protected", Component: Legal },
   { path: "/todo", type: "protected", Component: TodoList },
   { path: "/inbox", type: "protected", Component: Inbox },
+  { path: "/inbox/thread/:userId", type: "protected", Component: InboxThread },
   { path: "/health", type: "protected", Component: Health },
   { path: "/wishlist", type: "protected", Component: Wishlist },
 
