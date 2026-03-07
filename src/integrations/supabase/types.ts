@@ -744,6 +744,71 @@ export type Database = {
           },
         ]
       }
+      goal_templates: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          difficulty: string
+          estimated_cost: number | null
+          goal_type: string
+          habit_duration_days: number | null
+          id: string
+          is_featured: boolean | null
+          name: string
+          source_goal_id: string | null
+          steps: Json
+          tags: string[]
+          updated_at: string | null
+          use_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty?: string
+          estimated_cost?: number | null
+          goal_type?: string
+          habit_duration_days?: number | null
+          id?: string
+          is_featured?: boolean | null
+          name: string
+          source_goal_id?: string | null
+          steps?: Json
+          tags?: string[]
+          updated_at?: string | null
+          use_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty?: string
+          estimated_cost?: number | null
+          goal_type?: string
+          habit_duration_days?: number | null
+          id?: string
+          is_featured?: boolean | null
+          name?: string
+          source_goal_id?: string | null
+          steps?: Json
+          tags?: string[]
+          updated_at?: string | null
+          use_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_templates_source_goal_id_fkey"
+            columns: ["source_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goals: {
         Row: {
           child_goal_ids: string[] | null
@@ -829,6 +894,47 @@ export type Database = {
             columns: ["pact_id"]
             isOneToOne: false
             referencedRelation: "pacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habit_logs: {
+        Row: {
+          bond_reward: number | null
+          completed: boolean | null
+          created_at: string | null
+          goal_id: string
+          id: string
+          log_date: string
+          streak_count: number | null
+          user_id: string
+        }
+        Insert: {
+          bond_reward?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          goal_id: string
+          id?: string
+          log_date: string
+          streak_count?: number | null
+          user_id: string
+        }
+        Update: {
+          bond_reward?: number | null
+          completed?: boolean | null
+          created_at?: string | null
+          goal_id?: string
+          id?: string
+          log_date?: string
+          streak_count?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_logs_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
             referencedColumns: ["id"]
           },
         ]
@@ -2463,6 +2569,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      weekly_reviews: {
+        Row: {
+          ai_insights: string | null
+          created_at: string | null
+          finance_net: number | null
+          goals_progressed: number | null
+          health_avg_score: number | null
+          id: string
+          journal_entries_count: number | null
+          reflection_note: string | null
+          steps_completed: number | null
+          todo_completed: number | null
+          updated_at: string | null
+          user_id: string
+          week_end: string
+          week_rating: number | null
+          week_start: string
+        }
+        Insert: {
+          ai_insights?: string | null
+          created_at?: string | null
+          finance_net?: number | null
+          goals_progressed?: number | null
+          health_avg_score?: number | null
+          id?: string
+          journal_entries_count?: number | null
+          reflection_note?: string | null
+          steps_completed?: number | null
+          todo_completed?: number | null
+          updated_at?: string | null
+          user_id: string
+          week_end: string
+          week_rating?: number | null
+          week_start: string
+        }
+        Update: {
+          ai_insights?: string | null
+          created_at?: string | null
+          finance_net?: number | null
+          goals_progressed?: number | null
+          health_avg_score?: number | null
+          id?: string
+          journal_entries_count?: number | null
+          reflection_note?: string | null
+          steps_completed?: number | null
+          todo_completed?: number | null
+          updated_at?: string | null
+          user_id?: string
+          week_end?: string
+          week_rating?: number | null
+          week_start?: string
+        }
+        Relationships: []
       }
       wishlist_items: {
         Row: {
