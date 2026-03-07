@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { CommandPalette } from "@/components/CommandPalette";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -17,7 +18,12 @@ export function AppLayout({ children }: AppLayoutProps) {
           <span className="text-sm font-orbitron font-bold text-primary tracking-wider">THE PACT</span>
         </header>
 
-        {/* Main content - Ajout de min-w-0 ici pour empêcher Flexbox de déborder */}
+        {/* Command Palette trigger in top bar (desktop) */}
+        <div className="hidden md:flex items-center justify-end px-4 py-2">
+          <CommandPalette />
+        </div>
+
+        {/* Main content */}
         <div className="flex-1 min-w-0 overflow-x-clip">{children}</div>
       </SidebarInset>
     </SidebarProvider>
