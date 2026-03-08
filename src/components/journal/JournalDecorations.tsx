@@ -199,17 +199,12 @@ export function HUDStatusLine({
   return (
     <div className="flex items-center gap-2.5 w-full">
       <span
-        style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: "9px",
-          color: "rgba(255,255,255,0.25)",
-          letterSpacing: "0.1em",
-          flexShrink: 0,
-        }}
+        className="font-mono text-[9px] tracking-[0.1em] shrink-0"
+        style={{ color: "var(--journal-text-dim)" }}
       >
         {label}
       </span>
-      <div className="flex-1 h-[2px] rounded-sm overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
+      <div className="flex-1 h-[2px] rounded-sm overflow-hidden bg-muted/30">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${(value / 10) * 100}%` }}
