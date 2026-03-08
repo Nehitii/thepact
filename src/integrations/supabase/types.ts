@@ -2855,6 +2855,8 @@ export type Database = {
         Args: { p_field: string; p_increment?: number; p_user_id: string }
         Returns: undefined
       }
+      purchase_bundle: { Args: { p_bundle_id: string }; Returns: Json }
+      purchase_daily_deal: { Args: { p_deal_id: string }; Returns: Json }
       purchase_shop_item: {
         Args: { p_item_id: string; p_item_type: string; p_price: number }
         Returns: Json
