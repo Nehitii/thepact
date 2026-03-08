@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Moon, Activity, Brain, Droplets, Apple, Settings, Calendar,
-  Sparkles, Wind, Download, BarChart3, Crosshair, Cpu,
+  Sparkles, Wind, BarChart3, Crosshair, Cpu,
 } from "lucide-react";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { Button } from "@/components/ui/button";
