@@ -108,8 +108,8 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
             </motion.g>
           </svg>
 
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <div className="text-center max-w-[110px]">
               <motion.span
                 className="text-5xl font-bold font-orbitron text-hud-phosphor"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
