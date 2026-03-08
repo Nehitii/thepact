@@ -327,7 +327,7 @@ export default function TheCall() {
             <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
           </Button>
 
-          <div className="pointer-events-auto">
+          <div className="pointer-events-auto pb-14 md:pb-20">
             <ModuleHeader
               systemLabel="RITUAL_ENGINE // SYS.ACTIVE"
               title="THE "
@@ -340,7 +340,7 @@ export default function TheCall() {
           </div>
         </div>
 
-        <div className="relative flex flex-col items-center justify-center mt-20 md:mt-24">
+        <div className="relative flex flex-col items-center justify-center mt-28 md:mt-32">
           {/* FINALS SEQUENCES */}
           <div
             className={`fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200 ${sequenceState === FinalSequenceState.SINGULARITY ? "opacity-100" : "opacity-0"}`}
