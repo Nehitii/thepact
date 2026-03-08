@@ -45,6 +45,8 @@ export default function TheCall() {
   const screenShakeRef = useRef<HTMLDivElement>(null);
   const backgroundFxRef = useRef<HTMLDivElement>(null);
   const coreButtonRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const rafRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
@@ -55,6 +57,17 @@ export default function TheCall() {
   const timeSpeedRef = useRef<number>(1);
   // NOUVEAU: Pour savoir si on est en mode "Auto-Play" (sans clic)
   const isAutoPlayingRef = useRef(false);
+
+  // --- HEADER HEIGHT MEASUREMENT ---
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setHeaderHeight(entry.contentRect.height);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // --- DATA FETCHING ---
   useEffect(() => {
@@ -317,6 +330,7 @@ export default function TheCall() {
       >
         {/* HEADER */}
         <div
+          ref={headerRef}
           className={`absolute top-0 left-0 w-full z-20 transition-opacity duration-500 pointer-events-none ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
         >
           <Button
@@ -327,7 +341,7 @@ export default function TheCall() {
             <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
           </Button>
 
-          <div className="pointer-events-auto pb-14 md:pb-20">
+          <div className="pointer-events-auto">
             <ModuleHeader
               systemLabel="RITUAL_ENGINE // SYS.ACTIVE"
               title="THE "
@@ -340,7 +354,14 @@ export default function TheCall() {
           </div>
         </div>
 
-        <div className="relative flex flex-col items-center justify-center mt-28 md:mt-32">
+        <div
+          className="relative flex flex-col items-center justify-center"
+          style={{
+            paddingTop: (sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED) && headerHeight > 0
+              ? headerHeight + 24
+              : 0,
+          }}
+        >
           {/* FINALS SEQUENCES */}
           <div
             className={`fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200 ${sequenceState === FinalSequenceState.SINGULARITY ? "opacity-100" : "opacity-0"}`}
