@@ -94,7 +94,7 @@ export default function Inbox() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full">
             {/* --- TABS HEADER --- */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/20">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
               <TabsList className="bg-transparent p-0 gap-6 h-auto">
                 <TabItem
                   value="notifications"
