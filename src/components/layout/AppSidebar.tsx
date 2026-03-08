@@ -283,42 +283,49 @@ export const AppSidebar = memo(function AppSidebar() {
           {purchasedModules.length > 0 ? (
             <div className="space-y-0.5">
               {!mini ? (
-                <div className="flex items-center justify-between px-3 mb-2 cursor-pointer group" onClick={() => setIsModulesExpanded(!isModulesExpanded)}>
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground font-orbitron group-hover:text-foreground transition-colors">
-                    Active_Modules
-                  </span>
-                  <div className={cn("transition-transform duration-300 text-muted-foreground", isModulesExpanded && "rotate-180")}>
-                    <ChevronDown size={12} />
+                <>
+                  <div className="flex items-center justify-between px-3 mb-2 cursor-pointer group" onClick={() => setIsModulesExpanded(!isModulesExpanded)}>
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground font-orbitron group-hover:text-foreground transition-colors">
+                      Active_Modules
+                    </span>
+                    <div className={cn("transition-transform duration-300 text-muted-foreground", isModulesExpanded && "rotate-180")}>
+                      <ChevronDown size={12} />
+                    </div>
                   </div>
-                </div>
+                  <div className={cn(
+                    "space-y-0.5 overflow-hidden transition-all duration-300",
+                    isModulesExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0",
+                  )}>
+                    {purchasedModules.map((m) => (
+                      <NavLink
+                        key={m.id}
+                        to={m.config.route}
+                        onClick={closeMobile}
+                        className={({ isActive }) =>
+                          cn(
+                            "flex items-center rounded-md text-xs uppercase font-bold tracking-widest transition-all duration-200 border border-transparent gap-3 px-3 py-2 mx-1",
+                            isActive
+                              ? "text-primary bg-primary/5 border-primary/20"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:border-border",
+                          )
+                        }
+                      >
+                        <m.config.icon size={14} className={location.pathname.startsWith(m.config.route) ? "text-primary" : "opacity-70"} />
+                        {m.config.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </>
               ) : (
-                <div className="h-px mx-2 bg-gradient-to-r from-transparent via-border to-transparent my-2" />
+                /* Mini: single popover button for modules */
+                <MiniPopoverSection
+                  icon={Package}
+                  label="Modules"
+                  items={purchasedModules.map((m) => ({ to: m.config.route, icon: m.config.icon, label: m.config.label }))}
+                  location={location}
+                  closeMobile={closeMobile}
+                />
               )}
-              <div className={cn(
-                "space-y-0.5 overflow-hidden transition-all duration-300",
-                mini ? "max-h-[500px] opacity-100" : (isModulesExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"),
-              )}>
-                {purchasedModules.map((m) => (
-                  <MaybeTooltip key={m.id} collapsed={mini} label={m.config.label}>
-                    <NavLink
-                      to={m.config.route}
-                      onClick={closeMobile}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center rounded-md text-xs uppercase font-bold tracking-widest transition-all duration-200 border border-transparent",
-                          mini ? "justify-center h-10 w-10 mx-auto" : "gap-3 px-3 py-2 mx-1",
-                          isActive
-                            ? "text-primary bg-primary/5 border-primary/20"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:border-border",
-                        )
-                      }
-                    >
-                      <m.config.icon size={mini ? 18 : 14} className={location.pathname.startsWith(m.config.route) ? "text-primary" : "opacity-70"} />
-                      {!mini && m.config.label}
-                    </NavLink>
-                  </MaybeTooltip>
-                ))}
-              </div>
             </div>
           ) : !mini ? (
             <div className="space-y-1">
@@ -333,34 +340,28 @@ export const AppSidebar = memo(function AppSidebar() {
                 Explore modules
               </button>
             </div>
-          ) : null}
+          ) : (
+            /* Mini: explore modules shortcut */
+            <MaybeTooltip collapsed label="Explore modules">
+              <button
+                onClick={() => { navigate("/shop"); closeMobile(); }}
+                className="flex items-center justify-center h-10 w-10 mx-auto rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200"
+              >
+                <Sparkles size={20} />
+              </button>
+            </MaybeTooltip>
+          )}
 
           {/* ─── PROFILE / SETTINGS ─── */}
           {mini ? (
-            // Collapsed: show settings icons directly
-            <>
-              <div className="h-px mx-2 bg-gradient-to-r from-transparent via-border to-transparent my-2" />
-              {profileSubItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <MaybeTooltip key={item.to} collapsed label={item.label}>
-                    <NavLink
-                      to={item.to}
-                      end={item.exact}
-                      onClick={closeMobile}
-                      className={({ isActive }) =>
-                        cn(
-                          "flex items-center justify-center h-9 w-9 mx-auto rounded-md transition-all duration-200",
-                          isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                        )
-                      }
-                    >
-                      <Icon size={16} />
-                    </NavLink>
-                  </MaybeTooltip>
-                );
-              })}
-            </>
+            /* Mini: single popover button for settings */
+            <MiniPopoverSection
+              icon={Settings}
+              label="Settings"
+              items={profileSubItems.map((item) => ({ to: item.to, icon: item.icon, label: item.label, exact: item.exact }))}
+              location={location}
+              closeMobile={closeMobile}
+            />
           ) : (
             <div className="space-y-1">
               <div className="flex items-center justify-between px-3 mb-2 cursor-pointer group" onClick={() => setIsProfileExpanded(!isProfileExpanded)}>
