@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Zap, Check, ArrowLeft, Lock, RefreshCw, Play, FastForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 
 // --- CONFIGURATION ---
 const HOLD_DURATION = 20000; // 20 vraies secondes
