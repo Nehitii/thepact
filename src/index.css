@@ -245,6 +245,22 @@ All colors MUST be HSL.
     --nexus-rank-border: rgba(0,140,255,0.25);
     --nexus-mission-bg: linear-gradient(145deg, rgba(10,8,0,0.98) 0%, rgba(5,6,14,0.98) 100%);
     --nexus-mission-border: rgba(255,140,0,0.22);
+
+    /* Panel surfaces for non-Home pages */
+    --surface-panel: rgba(10, 21, 37, 0.8);
+    --surface-panel-hover: rgba(10, 21, 37, 0.9);
+    --surface-overlay: rgba(10, 21, 37, 0.95);
+    --surface-elevated: rgba(10, 10, 15, 0.95);
+    --surface-input: hsl(210, 80%, 3%);
+    --surface-input-focus: hsl(210, 70%, 5%);
+    --text-heading: #8ACBFF;
+    --text-body: #a8c8e8;
+    --text-muted-custom: #6b9ec4;
+    --text-dimmer: rgba(107, 158, 196, 0.6);
+    --border-subtle: rgba(0, 180, 255, 0.12);
+    --border-card: rgba(0, 180, 255, 0.2);
+    --goal-card-bg: #09090b;
+    --goal-card-border: rgba(255, 255, 255, 0.08);
   }
 }
 
