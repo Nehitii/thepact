@@ -20,6 +20,9 @@ interface Goal {
   status?: string | null;
   tags?: string[];
   deadline?: string | null;
+  isShared?: boolean;
+  isReadOnly?: boolean;
+  sharedByName?: string;
 }
 
 interface GridViewGoalCardProps {
