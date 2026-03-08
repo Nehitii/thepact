@@ -185,8 +185,8 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
               { val: calc.seconds, label: "SEC" },
             ].map((t, i) => (
               <div key={t.label} className="flex items-center">
-                <div className="flex flex-col items-center" style={{ minWidth: "clamp(40px, 6vw, 70px)" }}>
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: `0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`, lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "inline-block", textAlign: "center" as const, width: "100%" }}>
+                <div className="flex flex-col items-center" style={{ width: "clamp(44px, 6vw, 74px)" }}>
+                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: `0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`, lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "block", textAlign: "center" as const, width: "100%" }}>
                     {pad(t.val)}
                   </span>
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 7, letterSpacing: 2, color: `rgba(${c.rgb},0.35)`, textTransform: "uppercase" as const, marginTop: 4 }}>
