@@ -58,6 +58,17 @@ export default function TheCall() {
   // NOUVEAU: Pour savoir si on est en mode "Auto-Play" (sans clic)
   const isAutoPlayingRef = useRef(false);
 
+  // --- HEADER HEIGHT MEASUREMENT ---
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setHeaderHeight(entry.contentRect.height);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   // --- DATA FETCHING ---
   useEffect(() => {
     if (user) fetchPactData();
