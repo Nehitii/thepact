@@ -319,24 +319,24 @@ export default function TheCall() {
         <div
           className={`absolute top-0 left-0 w-full z-20 transition-opacity duration-500 pointer-events-none ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
         >
-          <div className="pointer-events-auto">
-          <ModuleHeader
-            systemLabel="RITUAL_ENGINE // SYS.ACTIVE"
-            title="THE "
-            titleAccent="CALL"
-            badges={pactData ? [
-              { label: "STREAK", value: pactData.checkin_streak, color: "#00ffe0" },
-              { label: "TOTAL", value: pactData.checkin_total_count, color: "#bf5af2" },
-            ] : []}
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/")}
+            className="pointer-events-auto absolute top-6 left-6 z-30 text-muted-foreground hover:text-foreground hover:bg-muted/10 font-mono text-xs tracking-[0.2em]"
           >
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/")}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/10 font-mono text-xs tracking-[0.2em]"
-            >
-              <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
-            </Button>
-          </ModuleHeader>
+            <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
+          </Button>
+
+          <div className="pointer-events-auto">
+            <ModuleHeader
+              systemLabel="RITUAL_ENGINE // SYS.ACTIVE"
+              title="THE "
+              titleAccent="CALL"
+              badges={pactData ? [
+                { label: "STREAK", value: pactData.checkin_streak, color: "#00ffe0" },
+                { label: "TOTAL", value: pactData.checkin_total_count, color: "#bf5af2" },
+              ] : []}
+            />
           </div>
         </div>
 
