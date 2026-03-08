@@ -225,6 +225,7 @@ export function GridViewGoalCard({
           <h3 className="text-base font-bold leading-tight text-white line-clamp-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
             {goal.name}
           </h3>
+          {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1" />}
 
           {/* Progress */}
           <div className="flex flex-col gap-1.5">
