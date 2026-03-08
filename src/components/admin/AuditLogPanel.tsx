@@ -8,11 +8,11 @@ export function AuditLogPanel() {
     queryKey: ["admin-audit-log"],
     queryFn: async () => {
       const { data } = await supabase
-        .from("admin_audit_log")
+        .from("admin_audit_log" as any)
         .select("*")
         .order("created_at", { ascending: false })
         .limit(50);
-      return data || [];
+      return (data as any[]) || [];
     },
   });
 
