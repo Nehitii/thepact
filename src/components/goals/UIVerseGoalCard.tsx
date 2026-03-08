@@ -20,6 +20,7 @@ interface Goal {
   isShared?: boolean;
   isReadOnly?: boolean;
   sharedByName?: string;
+  is_locked?: boolean;
 }
 
 interface UIVerseGoalCardProps {
