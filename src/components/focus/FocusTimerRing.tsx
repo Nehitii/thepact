@@ -29,7 +29,7 @@ export function FocusTimerRing({
   onStart, onPause, onResume, onSkip, onEnd,
 }: FocusTimerRingProps) {
   const [hovered, setHovered] = useState(false);
-  const circumference = 2 * Math.PI * 120;
+  const circumference = 2 * Math.PI * 140;
   const strokeDashoffset = circumference * (1 - progress);
   const isWork = phase === "work";
   const isBreak = phase === "break";
