@@ -417,12 +417,12 @@ export default function Legal() {
             {/* Final Statement */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-accent/30 rounded-xl blur-sm opacity-60" />
-              <div className="relative bg-[#0a1525]/90 border border-primary/30 rounded-xl p-6 text-center">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 text-center">
                 <Heart className="h-6 w-6 text-primary mx-auto mb-3 drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                <p className="text-[#c8e0f4] font-rajdhani text-sm leading-relaxed italic">
+                <p className="text-[var(--text-heading)] font-rajdhani text-sm leading-relaxed italic">
                   The Pact is built as a tool for clarity, discipline, and personal responsibility.
                   <br />
-                  <span className="text-[#8ACBFF]">
+                  <span className="text-primary">
                     Respect for the law, for others, and for oneself is fundamental to its use.
                   </span>
                 </p>
