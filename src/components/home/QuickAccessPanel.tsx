@@ -60,7 +60,7 @@ const buttons = [
   },
 ];
 
-export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPanelProps) {
+export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" }: QuickAccessPanelProps) {
   const navigate = useNavigate();
 
   const isLocked = (moduleKey: string | null) => {

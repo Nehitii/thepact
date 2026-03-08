@@ -23,13 +23,15 @@ function getWeekBounds() {
   const now = new Date();
   const day = now.getDay();
   const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
-  const weekStart = new Date(now.setDate(diff));
-  weekStart.setHours(0, 0, 0, 0);
+  const weekStart = new Date(now.getFullYear(), now.getMonth(), diff);
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekEnd.getDate() + 6);
+  // Use local date formatting to avoid UTC timezone shift
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const fmt = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   return {
-    weekStart: weekStart.toISOString().split("T")[0],
-    weekEnd: weekEnd.toISOString().split("T")[0],
+    weekStart: fmt(weekStart),
+    weekEnd: fmt(weekEnd),
   };
 }
 
