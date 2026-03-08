@@ -89,6 +89,7 @@ const App = () => (
         <Route path="leaderboard" element={<SuspensePage><Leaderboard /></SuspensePage>} />
         <Route path="focus" element={<SuspensePage><Focus /></SuspensePage>} />
         <Route path="analytics" element={<SuspensePage><Analytics /></SuspensePage>} />
+        <Route path="friends" element={<SuspensePage><Friends /></SuspensePage>} />
       </Route>
 
       {/* Admin */}

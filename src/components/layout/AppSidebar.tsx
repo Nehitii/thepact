@@ -3,10 +3,11 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
+import { useFriends } from "@/hooks/useFriends";
 import {
   Home, Target, ShoppingBag, ShoppingCart, Users, User, LogOut, ChevronDown,
   Shield, Database, Settings, Volume2, UserCircle, Bell, Inbox, ListTodo,
-  BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3,
+  BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3, UserCheck,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
