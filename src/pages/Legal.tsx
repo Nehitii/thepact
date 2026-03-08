@@ -406,7 +406,7 @@ export default function Legal() {
                   <p>For legal inquiries, data requests, or account-related issues:</p>
                   <a
                     href="mailto:legal@thepact.app"
-                    className="inline-block mt-2 text-primary hover:text-[#8ACBFF] transition-colors font-medium"
+                    className="inline-block mt-2 text-primary hover:text-[var(--text-heading)] transition-colors font-medium"
                   >
                     legal@thepact.app
                   </a>
