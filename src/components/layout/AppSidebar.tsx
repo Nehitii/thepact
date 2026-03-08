@@ -281,71 +281,83 @@ export const AppSidebar = memo(function AppSidebar() {
             {mainNavItems.map((item) => {
               const Icon = item.icon;
               const badge = getBadgeCount(item.badgeKey);
+              const isActive = item.to === "/" ? location.pathname === "/" : location.pathname.startsWith(item.to);
+
+              if (mini) {
+                // Mini mode: use identical structure to MiniPopoverSection buttons
+                return (
+                  <Tooltip key={item.to}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => { navigate(item.to); closeMobile(); }}
+                        className={cn(
+                          "flex items-center justify-center h-10 w-10 mx-auto rounded-md transition-all duration-200 relative",
+                          isActive
+                            ? "text-primary bg-primary/10"
+                            : "text-muted-foreground hover:text-primary hover:bg-primary/10",
+                        )}
+                      >
+                        <Icon size={20} />
+                        {badge > 0 && (
+                          <span className="absolute -top-1 -right-1 text-[7px] leading-none bg-primary text-primary-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-full ring-2 ring-background">
+                            {badge}
+                          </span>
+                        )}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className="font-rajdhani font-bold text-xs tracking-wide">
+                      {item.label}
+                      {badge > 0 && <span className="ml-1.5 text-primary">({badge})</span>}
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              }
 
               return (
-                <MaybeTooltip key={item.to} collapsed={mini} label={item.label} badge={badge}>
-                  <NavLink
-                    to={item.to}
-                    end={item.to === "/"}
-                    onClick={closeMobile}
-                    className={({ isActive }) =>
-                      cn(
-                        "group relative flex items-center rounded-md transition-all duration-200 overflow-hidden",
-                        mini ? "justify-center h-10 w-10 mx-auto" : "gap-3 px-3 py-2.5",
-                        isActive
-                          ? "text-primary bg-primary/10"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
-                      )
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {/* Active indicator bar */}
-                        {isActive && !mini && (
-                          <div className={cn(
-                            "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]",
-                            "h-6",
-                          )} />
-                        )}
-
-                        {/* Icon with optional mini badge */}
-                        <div className="relative shrink-0 flex items-center justify-center">
-                          <Icon
-                            size={mini ? 20 : 18}
-                            className={cn(
-                              "transition-all duration-200",
-                              isActive
-                                ? "text-primary drop-shadow-[0_0_6px_rgba(var(--primary),0.6)]"
-                                : "group-hover:text-foreground",
-                            )}
-                          />
-                          {mini && badge > 0 && (
-                            <span className="absolute -top-1 -right-1 text-[7px] leading-none bg-primary text-primary-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-full ring-2 ring-background">
-                              {badge}
-                            </span>
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === "/"}
+                  onClick={closeMobile}
+                  className={({ isActive }) =>
+                    cn(
+                      "group relative flex items-center rounded-md transition-all duration-200 overflow-hidden gap-3 px-3 py-2.5",
+                      isActive
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    )
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      {isActive && (
+                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+                      )}
+                      <div className="relative shrink-0 flex items-center justify-center">
+                        <Icon
+                          size={18}
+                          className={cn(
+                            "transition-all duration-200",
+                            isActive
+                              ? "text-primary drop-shadow-[0_0_6px_rgba(var(--primary),0.6)]"
+                              : "group-hover:text-foreground",
                           )}
-                        </div>
-
-                        {/* Label + badge (expanded only) */}
-                        {!mini && (
-                          <>
-                            <span className={cn(
-                              "text-sm font-bold tracking-wider font-rajdhani whitespace-nowrap",
-                              isActive ? "text-foreground" : "group-hover:translate-x-0.5 transition-transform",
-                            )}>
-                              {item.label}
-                            </span>
-                            {badge > 0 && (
-                              <span className="ml-auto text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 font-black rounded-sm min-w-[18px] text-center">
-                                {badge}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </>
-                    )}
-                  </NavLink>
-                </MaybeTooltip>
+                        />
+                      </div>
+                      <span className={cn(
+                        "text-sm font-bold tracking-wider font-rajdhani whitespace-nowrap",
+                        isActive ? "text-foreground" : "group-hover:translate-x-0.5 transition-transform",
+                      )}>
+                        {item.label}
+                      </span>
+                      {badge > 0 && (
+                        <span className="ml-auto text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 font-black rounded-sm min-w-[18px] text-center">
+                          {badge}
+                        </span>
+                      )}
+                    </>
+                  )}
+                </NavLink>
               );
             })}
           </div>
