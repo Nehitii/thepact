@@ -14,7 +14,7 @@ export function AppLayout() {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 min-w-0 overflow-x-clip">
+        <div className="flex-1 min-w-0 overflow-x-clip overflow-y-auto">
           <Outlet />
         </div>
       </div>
