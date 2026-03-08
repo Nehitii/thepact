@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";

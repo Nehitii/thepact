@@ -1,12 +1,16 @@
 /**
  * Profile data hook.
- * 
- * Fetches user profile settings including custom difficulty configuration.
- * For full profile management, see useProfileSettings.ts
+ *
+ * Fetches user profile settings including custom difficulty configuration,
+ * display name, and avatar URL. Shared across sidebar and other components
+ * to avoid duplicate queries.
  */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
+
 export interface ProfileSettings {
+  display_name: string | null;
+  avatar_url: string | null;
   custom_difficulty_name: string | null;
   custom_difficulty_color: string | null;
   custom_difficulty_active: boolean | null;
@@ -17,10 +21,10 @@ export function useProfile(userId: string | undefined) {
     queryKey: ["profile", userId],
     queryFn: async () => {
       if (!userId) return null;
-      
+
       const { data, error } = await supabase
         .from("profiles")
-        .select("custom_difficulty_name, custom_difficulty_color, custom_difficulty_active")
+        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active")
         .eq("id", userId)
         .maybeSingle();
 
@@ -28,6 +32,6 @@ export function useProfile(userId: string | undefined) {
       return data as ProfileSettings | null;
     },
     enabled: !!userId,
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 60 * 1000,
   });
 }

@@ -5,7 +5,7 @@ import { Goal } from "@/hooks/useGoals";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useActiveMission, DeadlineType } from "@/hooks/useActiveMission";
 import { DeadlineSelector } from "./DeadlineSelector";
 import { ActiveMissionCard } from "./ActiveMissionCard";

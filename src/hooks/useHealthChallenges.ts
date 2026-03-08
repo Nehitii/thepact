@@ -3,7 +3,7 @@
  * Provides gamified wellness targets with Bond rewards.
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek } from "date-fns";
 import { toast } from "sonner";
 

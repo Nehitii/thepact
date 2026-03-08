@@ -10,7 +10,7 @@ import { PostFilters } from "./PostFilters";
 import { useCommunityPosts, PostFilterType, PostSortOption } from "@/hooks/useCommunity";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export function CommunityFeed() {
   const [showCreateModal, setShowCreateModal] = useState(false);

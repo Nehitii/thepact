@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { setTrustedDeviceToken, useTwoFactor } from "@/hooks/useTwoFactor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
