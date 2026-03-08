@@ -569,6 +569,13 @@ export const AppSidebar = memo(function AppSidebar() {
 
               <DropdownMenuSeparator className="bg-border" />
 
+              <DropdownMenuItem onClick={() => { navigate("/pact-selector"); closeMobile(); }} className="p-2.5 focus:bg-primary/10 focus:text-primary cursor-pointer group my-0.5">
+                <RefreshCw className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
+                <span className="text-xs font-bold tracking-wide">Switch Pact</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="bg-border" />
+
               <DropdownMenuItem onClick={handleSignOut} className="p-2.5 text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer group my-0.5">
                 <LogOut className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
                 <span className="text-xs font-bold tracking-wide">Disconnect</span>
