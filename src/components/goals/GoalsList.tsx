@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, List, Zap, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
 import { GridViewGoalCard } from "@/components/goals/GridViewGoalCard";
 import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
+import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
 import {
   SuperGoalCard,
   computeSuperGoalProgress,
