@@ -217,6 +217,45 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
           TO-DO LIST
         </span>
       </button>
+
+      {/* WEEKLY REVIEW wide button */}
+      <button
+        onClick={() => onWeeklyReview?.()}
+        className="w-full relative flex items-center justify-center gap-[14px] cursor-pointer overflow-hidden mt-[10px]"
+        style={{
+          padding: "12px 20px",
+          background: "var(--nexus-inner-bg)",
+          border: "1px solid var(--nexus-border)",
+          borderRadius: 4,
+          transition: "all 0.22s cubic-bezier(0.2, 0, 0, 1)",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = "#6366f1";
+          e.currentTarget.style.background = "var(--nexus-hover-bg)";
+          e.currentTarget.style.transform = "translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px #6366f1";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = "var(--nexus-border)";
+          e.currentTarget.style.background = "var(--nexus-inner-bg)";
+          e.currentTarget.style.transform = "none";
+          e.currentTarget.style.boxShadow = "none";
+        }}
+      >
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #6366f1, transparent)", opacity: 0.3 }} />
+        <div className="absolute bottom-0 right-0" style={{ width: 10, height: 10, background: "#6366f1", clipPath: "polygon(100% 0, 100% 100%, 0 100%)", opacity: 0.25 }} />
+        <span className="absolute" style={{ top: 5, right: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: 7, color: "#6366f1", opacity: 0.3, letterSpacing: 1 }}>F6</span>
+        <svg width={20} height={20} viewBox="0 0 26 26" fill="none" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.75 }}>
+          <rect x="4" y="2" width="18" height="22" rx="2" strokeOpacity="0.5" />
+          <line x1="8" y1="7" x2="18" y2="7" strokeOpacity="0.7" />
+          <line x1="8" y1="11" x2="18" y2="11" strokeOpacity="0.5" />
+          <line x1="8" y1="15" x2="14" y2="15" strokeOpacity="0.4" />
+          <path d="M15 18 L17 20 L21 16" strokeOpacity="0.9" strokeWidth="1.6" />
+        </svg>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, letterSpacing: 2.5, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
+          WEEKLY REVIEW
+        </span>
+      </button>
     </div>
   );
 }
