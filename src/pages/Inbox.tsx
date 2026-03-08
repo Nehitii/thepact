@@ -88,7 +88,7 @@ export default function Inbox() {
         </div>
 
         {/* --- MAIN CONTENT AREA --- */}
-        <div className="flex-1 flex flex-col min-h-0 bg-[#0a0f18]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative">
+        <div className="flex-1 flex flex-col min-h-0 bg-card/80 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative">
           {/* Decorative Top Border */}
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
 
