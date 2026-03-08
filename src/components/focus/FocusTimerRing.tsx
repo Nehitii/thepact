@@ -18,7 +18,7 @@ function formatTime(seconds: number) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted, isPaused }: FocusTimerRingProps) {
+export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted, isPaused, goalImageUrl }: FocusTimerRingProps) {
   const circumference = 2 * Math.PI * 120;
   const strokeDashoffset = circumference * (1 - progress);
   const isWork = phase === "work";
@@ -27,6 +27,32 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
 
   return (
     <div className="relative inline-flex items-center justify-center mb-8">
+      {/* Goal image background circle */}
+      <AnimatePresence>
+        {goalImageUrl && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          >
+            <div
+              className="w-[220px] h-[220px] rounded-full overflow-hidden opacity-[0.12] dark:opacity-[0.15]"
+              style={{
+                maskImage: "radial-gradient(circle, black 40%, transparent 75%)",
+                WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 75%)",
+              }}
+            >
+              <img
+                src={goalImageUrl}
+                alt=""
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Outer decorative rotating rings */}
       <div className="absolute -inset-12 pointer-events-none hidden dark:block">
         <RotatingRing size={340} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
