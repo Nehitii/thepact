@@ -1,15 +1,15 @@
-import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Shield, Sparkles } from "lucide-react";
+import { Shield, Sparkles, Trophy } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 
 interface NeedVsWantChartProps {
   requiredTotal: number;
   optionalTotal: number;
+  acquiredTotal: number;
   currency: string;
 }
 
-export function NeedVsWantChart({ requiredTotal, optionalTotal, currency }: NeedVsWantChartProps) {
+export function NeedVsWantChart({ requiredTotal, optionalTotal, acquiredTotal, currency }: NeedVsWantChartProps) {
   const total = requiredTotal + optionalTotal;
   const requiredPct = total > 0 ? (requiredTotal / total) * 100 : 50;
   const optionalPct = total > 0 ? (optionalTotal / total) * 100 : 50;
@@ -41,7 +41,6 @@ export function NeedVsWantChart({ requiredTotal, optionalTotal, currency }: Need
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
           style={{ boxShadow: "0 0 12px hsl(var(--primary) / 0.4)" }}
         />
-        {/* Center divider */}
         {total > 0 && (
           <div
             className="absolute inset-y-0 w-px bg-background/80"
@@ -51,7 +50,7 @@ export function NeedVsWantChart({ requiredTotal, optionalTotal, currency }: Need
       </div>
 
       {/* Legend */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div className="flex items-center gap-3 p-3 rounded-xl border border-destructive/20 bg-destructive/5">
           <Shield className="h-5 w-5 text-destructive shrink-0" />
           <div className="min-w-0">
@@ -70,6 +69,15 @@ export function NeedVsWantChart({ requiredTotal, optionalTotal, currency }: Need
               {formatCurrency(optionalTotal, currency)}
             </p>
             <p className="text-xs text-primary/80">{optionalPct.toFixed(0)}%</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5">
+          <Trophy className="h-5 w-5 text-amber-400 shrink-0" />
+          <div className="min-w-0">
+            <p className="text-xs font-rajdhani uppercase tracking-wider text-muted-foreground">Acquired</p>
+            <p className="font-orbitron text-sm font-bold text-foreground truncate">
+              {formatCurrency(acquiredTotal, currency)}
+            </p>
           </div>
         </div>
       </div>
