@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Coffee, Clock, Play } from "lucide-react";
+import { Flame, Coffee, Clock, Play, Pause, SkipForward, Square } from "lucide-react";
 import { RotatingRing } from "@/components/journal/JournalDecorations";
 import type { PomodoroPhase } from "@/hooks/usePomodoro";
 
@@ -12,6 +12,10 @@ interface FocusTimerRingProps {
   isPaused: boolean;
   goalImageUrl?: string | null;
   onStart?: () => void;
+  onPause?: () => void;
+  onResume?: () => void;
+  onSkip?: () => void;
+  onEnd?: () => void;
 }
 
 function formatTime(seconds: number) {
@@ -20,13 +24,17 @@ function formatTime(seconds: number) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted, isPaused, goalImageUrl, onStart }: FocusTimerRingProps) {
+export function FocusTimerRing({
+  phase, progress, secondsLeft, sessionsCompleted, isPaused, goalImageUrl,
+  onStart, onPause, onResume, onSkip, onEnd,
+}: FocusTimerRingProps) {
   const [hovered, setHovered] = useState(false);
   const circumference = 2 * Math.PI * 120;
   const strokeDashoffset = circumference * (1 - progress);
   const isWork = phase === "work";
   const isBreak = phase === "break";
   const isIdle = phase === "idle";
+  const showControls = hovered && !isIdle;
 
   return (
     <div
@@ -51,11 +59,7 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
                 WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 75%)",
               }}
             >
-              <img
-                src={goalImageUrl}
-                alt=""
-                className="w-full h-full object-cover"
-              />
+              <img src={goalImageUrl} alt="" className="w-full h-full object-cover" />
             </div>
           </motion.div>
         )}
@@ -71,42 +75,25 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
 
       {/* SVG rings */}
       <svg width="280" height="280" viewBox="0 0 280 280" className="transform -rotate-90">
-        {/* Background ring */}
         <circle cx="140" cy="140" r="120" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
-
-        {/* Inner decorative dashed ring */}
         <circle
-          cx="140" cy="140" r="108"
-          fill="none"
+          cx="140" cy="140" r="108" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-          strokeWidth="1"
-          strokeDasharray="3 8"
-          opacity={isIdle ? 0.1 : 0.25}
-          className="transition-opacity duration-500"
+          strokeWidth="1" strokeDasharray="3 8"
+          opacity={isIdle ? 0.1 : 0.25} className="transition-opacity duration-500"
         />
-
-        {/* Progress ring */}
         <circle
-          cx="140" cy="140" r="120"
-          fill="none"
+          cx="140" cy="140" r="120" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-          strokeWidth="5"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
+          strokeWidth="5" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
           className="transition-all duration-1000"
-          style={{
-            filter: `drop-shadow(0 0 ${isIdle ? 4 : 12 + progress * 12}px ${isBreak ? "hsl(var(--accent) / 0.5)" : "hsl(var(--primary) / 0.5)"})`,
-          }}
+          style={{ filter: `drop-shadow(0 0 ${isIdle ? 4 : 12 + progress * 12}px ${isBreak ? "hsl(var(--accent) / 0.5)" : "hsl(var(--primary) / 0.5)"})` }}
         />
-
-        {/* Outer decorative ring */}
         <circle
-          cx="140" cy="140" r="130"
-          fill="none"
+          cx="140" cy="140" r="130" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-          strokeWidth="1"
-          strokeDasharray="1 6"
+          strokeWidth="1" strokeDasharray="1 6"
           opacity={isIdle ? 0.08 : 0.2}
         />
       </svg>
@@ -114,26 +101,79 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <AnimatePresence mode="wait">
-          {/* Idle + hovered → show play button */}
+          {/* IDLE + HOVER → Play button */}
           {isIdle && hovered && onStart ? (
             <motion.button
               key="start-hover"
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.7 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              transition={{ duration: 0.2 }}
               onClick={onStart}
               className="flex flex-col items-center gap-3 cursor-pointer group"
             >
-              <div
-                className="w-16 h-16 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center group-hover:bg-primary/25 group-hover:border-primary/60 transition-all group-hover:shadow-[0_0_25px_hsl(var(--primary)/0.3)]"
-              >
+              <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center group-hover:bg-primary/25 group-hover:border-primary/60 transition-all group-hover:shadow-[0_0_25px_hsl(var(--primary)/0.3)]">
                 <Play className="h-7 w-7 text-primary ml-1" />
               </div>
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-primary/70 group-hover:text-primary transition-colors">
                 Start
               </span>
             </motion.button>
+
+          /* RUNNING/PAUSED + HOVER → Control buttons */
+          ) : showControls ? (
+            <motion.div
+              key="controls-hover"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col items-center gap-4"
+            >
+              {/* Pause / Resume */}
+              <div className="flex items-center gap-3">
+                {isPaused ? (
+                  <button
+                    onClick={onResume}
+                    className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                    title="Resume"
+                  >
+                    <Play className="h-6 w-6 text-primary ml-0.5" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={onPause}
+                    className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                    title="Pause"
+                  >
+                    <Pause className="h-6 w-6 text-primary" />
+                  </button>
+                )}
+
+                <button
+                  onClick={onSkip}
+                  className="w-11 h-11 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center hover:bg-muted/50 hover:border-border transition-all"
+                  title="Skip phase"
+                >
+                  <SkipForward className="h-4 w-4 text-muted-foreground" />
+                </button>
+
+                <button
+                  onClick={onEnd}
+                  className="w-11 h-11 rounded-full bg-destructive/15 border border-destructive/40 flex items-center justify-center hover:bg-destructive/25 hover:border-destructive/60 transition-all hover:shadow-[0_0_20px_hsl(var(--destructive)/0.3)]"
+                  title="End session"
+                >
+                  <Square className="h-4 w-4 text-destructive" />
+                </button>
+              </div>
+
+              {/* Small timer below controls */}
+              <span className="text-lg font-orbitron font-bold text-foreground/70 tabular-nums">
+                {formatTime(secondsLeft)}
+              </span>
+            </motion.div>
+
+          /* DEFAULT → Timer display */
           ) : (
             <motion.div
               key="timer-content"
@@ -143,7 +183,6 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
               transition={{ duration: 0.2 }}
               className="flex flex-col items-center"
             >
-              {/* Phase icon */}
               <AnimatePresence mode="wait">
                 <motion.div
                   key={phase + String(isPaused)}
@@ -165,7 +204,6 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
                 </motion.div>
               </AnimatePresence>
 
-              {/* Timer */}
               <motion.p
                 className="text-5xl font-orbitron font-black text-foreground tabular-nums tracking-wider"
                 style={{
@@ -177,7 +215,6 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
                 {formatTime(secondsLeft)}
               </motion.p>
 
-              {/* Sessions counter */}
               <p className="text-[10px] font-mono text-muted-foreground mt-3 tracking-wider">
                 SESSIONS: <span className="text-primary font-bold">{sessionsCompleted}</span>
               </p>
