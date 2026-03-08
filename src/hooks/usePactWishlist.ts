@@ -57,6 +57,7 @@ export function usePactWishlistItems(userId: string | undefined) {
           acquired_at,
           notes,
           url,
+          image_url,
           source_type,
           source_goal_cost_id,
           created_at,
