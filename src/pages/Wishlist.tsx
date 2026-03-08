@@ -177,6 +177,11 @@ export default function Wishlist() {
     setEditOpen(false);
   };
 
+  // Finance-side project total from goals
+  const financeProjectTotal = useMemo(() => {
+    return goals.reduce((sum, g) => sum + Number(g.estimated_cost || 0), 0);
+  }, [goals]);
+
   const derived = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     const active = items.filter((i) => !i.acquired);
@@ -464,10 +469,11 @@ export default function Wishlist() {
         </ModuleHeader>
 
         {/* Stats header */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             { label: "Active Items", value: String(derived.list.length + (items.filter(i => !i.acquired).length - derived.list.length)), icon: ShoppingBag, color: "primary" },
             { label: "Total Cost", value: formatCurrency(derived.totals.required + derived.totals.optional, currency), icon: Package, color: "primary" },
+            { label: "Project Total (Finance)", value: formatCurrency(financeProjectTotal, currency), icon: Package, color: "primary" },
             { label: "Acquired", value: String(derived.acquired.length), icon: Check, color: "primary" },
             { label: "Acquired Cost", value: formatCurrency(derived.totals.acquired, currency), icon: Package, color: "primary" },
           ].map((stat, i) => (

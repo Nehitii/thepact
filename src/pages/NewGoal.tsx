@@ -279,6 +279,12 @@ export default function NewGoal() {
           step_id: item.stepId ? stepIndexToId.get(item.stepId) || null : null,
         }));
         await supabase.from("goal_cost_items").insert(costItemsData);
+
+        // Recalculate estimated_cost from actual inserted items to guarantee sync
+        const recalculatedCost = costItemsData.reduce((sum, item) => sum + item.price, 0);
+        if (recalculatedCost !== totalEstimatedCost) {
+          await supabase.from("goals").update({ estimated_cost: recalculatedCost }).eq("id", goalData.id);
+        }
       }
 
       setTimeout(() => {
