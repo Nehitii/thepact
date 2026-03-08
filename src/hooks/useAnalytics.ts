@@ -228,7 +228,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
 
       // Steps statistics
       const totalSteps = steps.length;
-      const completedSteps = steps.filter((s: any) => s.status === "validated").length;
+      const completedSteps = steps.filter((s: any) => s.status === "completed").length;
 
       // Cost calculations (use all goals for total cost)
       const completedGoalIds = new Set(
