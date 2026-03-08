@@ -66,11 +66,11 @@ export function FocusTimerRing({
       </AnimatePresence>
 
       {/* Outer decorative rotating rings */}
-      <div className="absolute -inset-12 pointer-events-none hidden dark:block">
-        <RotatingRing size={340} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
+      <div className="absolute -inset-16 pointer-events-none hidden dark:block">
+        <RotatingRing size={400} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
       </div>
-      <div className="absolute -inset-6 pointer-events-none hidden dark:block">
-        <RotatingRing size={300} color="hsl(var(--accent))" duration={22} reverse dasharray="4 10" opacity={0.1} />
+      <div className="absolute -inset-10 pointer-events-none hidden dark:block">
+        <RotatingRing size={360} color="hsl(var(--accent))" duration={22} reverse dasharray="4 10" opacity={0.1} />
       </div>
 
       {/* SVG rings */}
