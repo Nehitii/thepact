@@ -47,6 +47,7 @@ export default function Home() {
   const { focusGoals, dashboardData, userState, ownedModules, lockedModules } = useMemo(() => {
     const normalGoals = allGoals.filter((g) => g.goal_type !== "habit");
     const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
+    const allNonHabitAndHabitGoals = allGoals; // All goals for total counts
     const focusGoals = normalGoals.filter((g) => g.is_focus && g.status !== "fully_completed");
 
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
