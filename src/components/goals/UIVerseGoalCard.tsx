@@ -3,6 +3,7 @@ import { Star, CheckCircle2, Target, Zap, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
+import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
 
 interface Goal {
   id: string;
