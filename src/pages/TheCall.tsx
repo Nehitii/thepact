@@ -316,23 +316,27 @@ export default function TheCall() {
         className="relative z-10 flex-1 flex flex-col items-center justify-center will-change-transform transform-style-3d"
       >
         {/* HEADER */}
-        <header
-          className={`absolute top-0 left-0 w-full p-6 flex justify-between items-center transition-opacity duration-500 ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
+        <div
+          className={`absolute top-0 left-0 w-full transition-opacity duration-500 ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
         >
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="text-white/30 hover:text-white hover:bg-white/5 font-mono text-xs tracking-[0.2em]"
+          <ModuleHeader
+            systemLabel="RITUAL_ENGINE // SYS.ACTIVE"
+            title="THE "
+            titleAccent="CALL"
+            badges={pactData ? [
+              { label: "STREAK", value: pactData.checkin_streak, color: "#00ffe0" },
+              { label: "TOTAL", value: pactData.checkin_total_count, color: "#bf5af2" },
+            ] : []}
           >
-            <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
-          </Button>
-          {pactData && (
-            <div className="text-right font-mono">
-              <div className="text-[9px] uppercase tracking-[0.3em] text-white/30 mb-1">Streak Protocol</div>
-              <div className="text-lg text-cyan-300 font-bold">{pactData.checkin_streak}</div>
-            </div>
-          )}
-        </header>
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/")}
+              className="text-muted-foreground hover:text-foreground hover:bg-muted/10 font-mono text-xs tracking-[0.2em]"
+            >
+              <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
+            </Button>
+          </ModuleHeader>
+        </div>
 
         <div className="relative flex flex-col items-center justify-center">
           {/* FINALS SEQUENCES */}
