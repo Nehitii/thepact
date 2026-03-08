@@ -112,10 +112,7 @@ export default function Health() {
           systemLabel="HEALTH_MONITOR // SYS.ACTIVE"
           title="VITA "
           titleAccent="SCAN"
-          badges={[
-            { label: "SCORE", value: healthScore.score, color: "#00ffe0" },
-            { label: "TREND", value: Number(healthScore.trend) > 0 ? `+${healthScore.trend}` : String(healthScore.trend), color: "#bf5af2" },
-          ]}
+      badges={[]}
         />
 
         {/* Command Bar — toolbar variant */}
