@@ -209,12 +209,12 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">5. Enforcement & Sanctions</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">5. Enforcement & Sanctions</p>
                     <p className="mb-2">
                       The Pact reserves the right to take appropriate action in case of misuse, including but not
                       limited to:
                     </p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Temporary suspension of access</li>
                       <li>• Permanent account termination</li>
                       <li>• Removal of content</li>
