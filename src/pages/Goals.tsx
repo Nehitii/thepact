@@ -174,6 +174,7 @@ export default function Goals() {
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
             toggleFocus={toggleFocus}
+            unlockCode={unlockCode}
           />
         )}
       </motion.div>
