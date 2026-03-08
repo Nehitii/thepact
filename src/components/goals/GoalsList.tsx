@@ -121,7 +121,7 @@ export function GoalsList({
       isCompleted,
       customDifficultyName,
       customDifficultyColor,
-      onNavigate: (id: string) => navigate(`/goals/${id}`),
+      onNavigate: handleNavigate,
       onToggleFocus: toggleFocus,
     };
 
