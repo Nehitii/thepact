@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useHealthSettings, useUpsertHealthSettings } from "@/hooks/useHealth";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface HealthSettingsModalProps {
   open: boolean;
