@@ -75,22 +75,40 @@ export function useAnalytics() {
     queryFn: async (): Promise<AnalyticsData> => {
       if (!user?.id) throw new Error("Not authenticated");
 
-      // Parallel fetch all data
-      const [goalsRes, stepsRes, tagsRes, costItemsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, pactRes, financeSettingsRes] = await Promise.all([
-        supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost"),
-        supabase.from("steps").select("id, goal_id, status"),
-        supabase.from("goal_tags").select("goal_id, tag"),
-        supabase.from("goal_cost_items").select("goal_id, price, step_id"),
+      // First get user's pact to filter goals
+      const { data: pactData } = await supabase
+        .from("pacts")
+        .select("id, points")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      const pactId = pactData?.id;
+
+      // Parallel fetch all data - filter goals by pact_id
+      const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes] = await Promise.all([
+        pactId 
+          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost").eq("pact_id", pactId)
+          : Promise.resolve({ data: [] }),
         supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(90),
         supabase.from("finance").select("month, income, fixed_expenses, variable_expenses, savings").eq("user_id", user.id).order("month"),
         (supabase as any).from("habit_logs").select("log_date, completed").eq("user_id", user.id).order("log_date", { ascending: false }).limit(200),
         supabase.from("todo_history").select("completed_at").eq("user_id", user.id),
         (supabase as any).from("pomodoro_sessions").select("duration_minutes, completed, completed_at").eq("user_id", user.id).eq("completed", true),
-        supabase.from("pacts").select("points").eq("user_id", user.id).maybeSingle(),
         supabase.from("profiles").select("already_funded").eq("id", user.id).maybeSingle(),
       ]);
 
       const goals = goalsRes.data || [];
+      const goalIds = goals.map((g: any) => g.id);
+
+      // Fetch steps, tags, cost items only for user's goals
+      const [stepsRes, tagsRes, costItemsRes] = goalIds.length > 0
+        ? await Promise.all([
+            supabase.from("steps").select("id, goal_id, status").in("goal_id", goalIds),
+            supabase.from("goal_tags").select("goal_id, tag").in("goal_id", goalIds),
+            supabase.from("goal_cost_items").select("goal_id, price, step_id").in("goal_id", goalIds),
+          ])
+        : [{ data: [] }, { data: [] }, { data: [] }];
+
       const steps = stepsRes.data || [];
       const tags = tagsRes.data || [];
       const costItems = costItemsRes.data || [];
