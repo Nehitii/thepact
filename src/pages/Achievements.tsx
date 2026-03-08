@@ -71,7 +71,7 @@ export default function Achievements() {
   const percentage = achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0;
 
   return (
-    <div className="pantheon-wrapper min-h-screen text-slate-200 relative overflow-x-hidden">
+    <div className="pantheon-wrapper min-h-screen text-slate-200 relative overflow-hidden">
 
       {/* Éléments de décor */}
       <div className="celestial-light" />
