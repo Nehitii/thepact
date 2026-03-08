@@ -130,6 +130,7 @@ export default function Focus() {
             sessionsCompleted={timer.sessionsCompleted}
             isPaused={timer.isPaused}
             goalImageUrl={linkedImageUrl}
+            onStart={handleStart}
           />
 
           {/* Controls */}
