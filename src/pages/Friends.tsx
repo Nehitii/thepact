@@ -118,6 +118,7 @@ export default function Friends() {
               <TabsList className="bg-transparent p-0 gap-6 h-auto">
                 <TabItem value="friends" icon={UserCheck} label="Friends" count={friends.length} active={activeTab === "friends"} />
                 <TabItem value="requests" icon={Clock} label="Requests" count={pendingCount} active={activeTab === "requests"} color="violet" />
+                <TabItem value="guilds" icon={Shield} label="Guilds" count={guilds.length} active={activeTab === "guilds"} />
                 <TabItem value="search" icon={Search} label="Search" active={activeTab === "search"} />
               </TabsList>
             </div>
