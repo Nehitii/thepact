@@ -411,6 +411,15 @@ export default function GoalDetail() {
           customDifficultyColor={customDifficultyColor}
         />
       )}
+
+      {goal && (
+        <ShareGoalModal
+          open={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          goalId={goal.id}
+          goalName={goal.name}
+        />
+      )}
     </div>
   );
 }
