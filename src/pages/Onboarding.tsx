@@ -57,7 +57,7 @@ export default function Onboarding() {
       }
 
       // Create pact
-      await createPact(user.id, name, mantra, symbol, color);
+      await createPact({ user_id: user.id, name, mantra, symbol, color });
 
       toast({ title: "Welcome aboard, Agent!", description: "Your pact has been sealed." });
       navigate("/");
