@@ -29,7 +29,7 @@ export function FocusTimerRing({
   onStart, onPause, onResume, onSkip, onEnd,
 }: FocusTimerRingProps) {
   const [hovered, setHovered] = useState(false);
-  const circumference = 2 * Math.PI * 120;
+  const circumference = 2 * Math.PI * 140;
   const strokeDashoffset = circumference * (1 - progress);
   const isWork = phase === "work";
   const isBreak = phase === "break";
@@ -53,7 +53,7 @@ export function FocusTimerRing({
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
             <div
-              className="w-[220px] h-[220px] rounded-full overflow-hidden opacity-[0.25] dark:opacity-[0.3]"
+              className="w-[260px] h-[260px] rounded-full overflow-hidden opacity-[0.12] dark:opacity-[0.15]"
               style={{
                 maskImage: "radial-gradient(circle, black 40%, transparent 75%)",
                 WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 75%)",
@@ -66,24 +66,24 @@ export function FocusTimerRing({
       </AnimatePresence>
 
       {/* Outer decorative rotating rings */}
-      <div className="absolute -inset-12 pointer-events-none hidden dark:block">
-        <RotatingRing size={340} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
+      <div className="absolute -inset-16 pointer-events-none hidden dark:block">
+        <RotatingRing size={400} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
       </div>
-      <div className="absolute -inset-6 pointer-events-none hidden dark:block">
-        <RotatingRing size={300} color="hsl(var(--accent))" duration={22} reverse dasharray="4 10" opacity={0.1} />
+      <div className="absolute -inset-10 pointer-events-none hidden dark:block">
+        <RotatingRing size={360} color="hsl(var(--accent))" duration={22} reverse dasharray="4 10" opacity={0.1} />
       </div>
 
       {/* SVG rings */}
-      <svg width="280" height="280" viewBox="0 0 280 280" className="transform -rotate-90">
-        <circle cx="140" cy="140" r="120" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
+      <svg width="320" height="320" viewBox="0 0 320 320" className="transform -rotate-90">
+        <circle cx="160" cy="160" r="140" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
         <circle
-          cx="140" cy="140" r="108" fill="none"
+          cx="160" cy="160" r="126" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
           strokeWidth="1" strokeDasharray="3 8"
           opacity={isIdle ? 0.1 : 0.25} className="transition-opacity duration-500"
         />
         <circle
-          cx="140" cy="140" r="120" fill="none"
+          cx="160" cy="160" r="140" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
           strokeWidth="5" strokeLinecap="round"
           strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
@@ -91,7 +91,7 @@ export function FocusTimerRing({
           style={{ filter: `drop-shadow(0 0 ${isIdle ? 4 : 12 + progress * 12}px ${isBreak ? "hsl(var(--accent) / 0.5)" : "hsl(var(--primary) / 0.5)"})` }}
         />
         <circle
-          cx="140" cy="140" r="130" fill="none"
+          cx="160" cy="160" r="152" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
           strokeWidth="1" strokeDasharray="1 6"
           opacity={isIdle ? 0.08 : 0.2}
