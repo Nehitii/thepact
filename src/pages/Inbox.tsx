@@ -80,7 +80,7 @@ export default function Inbox() {
             variant="outline"
             size="sm"
             onClick={() => navigate("/profile/notifications")}
-            className="border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-xs uppercase tracking-wider font-bold"
+            className="border-border bg-muted/50 hover:bg-muted hover:border-primary/50 transition-all text-xs uppercase tracking-wider font-bold"
           >
             <Settings className="h-3.5 w-3.5 mr-2" />
             {t("common.settings")}
