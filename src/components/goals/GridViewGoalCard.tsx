@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
-import { Star, Target, Zap, ImageOff, CheckCircle } from "lucide-react";
+import { Star, Target, Zap, ImageOff, CheckCircle, Link2 } from "lucide-react";
 import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 import { cn } from "@/lib/utils";
+import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 
 // --- Interfaces ---
 interface Goal {
