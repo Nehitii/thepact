@@ -369,9 +369,9 @@ export default function Legal() {
                 </div>
                 <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">13. Limitation of Liability</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">13. Limitation of Liability</p>
                     <p className="mb-2">The Pact shall not be held liable for:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• User-generated content</li>
                       <li>• Decisions made based on application data or projections</li>
                       <li>• Financial or personal outcomes</li>
