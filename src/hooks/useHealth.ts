@@ -35,6 +35,7 @@ export interface HealthSettings {
   sleep_goal_hours: number | null;
   hydration_goal_glasses: number | null;
   activity_goal_minutes: number | null;
+  checkin_mode: "today" | "yesterday";
   created_at: string;
   updated_at: string;
 }
