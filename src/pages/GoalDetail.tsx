@@ -1103,6 +1103,12 @@ export default function GoalDetail() {
                 <p className="text-xs text-muted-foreground mt-4 text-center font-rajdhani">
                   Tap a day to mark it as complete
                 </p>
+                {/* Habit Heatmap */}
+                {user && goal.id && (
+                  <div className="mt-6 pt-6 border-t border-border">
+                    <HabitHeatmap goalId={goal.id} userId={user.id} />
+                  </div>
+                )}
               </div>
             </div>
           ) : (
