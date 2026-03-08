@@ -1104,11 +1104,22 @@ export default function GoalDetail() {
                   Tap a day to mark it as complete
                 </p>
                 {/* Habit Heatmap */}
-                {user && goal.id && (
-                  <div className="mt-6 pt-6 border-t border-border">
-                    <HabitHeatmap goalId={goal.id} userId={user.id} />
-                  </div>
-                )}
+                {user && goal.id && (() => {
+                  const heatmapData = new Map<string, { count: number; completed: boolean }>();
+                  goal.habit_checks?.forEach((checked, i) => {
+                    if (goal.created_at) {
+                      const d = new Date(goal.created_at);
+                      d.setDate(d.getDate() + i);
+                      const key = d.toISOString().split("T")[0];
+                      if (checked) heatmapData.set(key, { count: 1, completed: true });
+                    }
+                  });
+                  return (
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <HabitHeatmap data={heatmapData} />
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ) : (
