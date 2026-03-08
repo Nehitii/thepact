@@ -237,7 +237,7 @@ export const AppSidebar = memo(function AppSidebar() {
               </div>
             </div>
 
-            <div className={cn("flex flex-col overflow-hidden transition-all duration-300", mini ? "w-0 opacity-0" : "w-auto opacity-100")}>
+            <div className={cn("flex flex-col transition-all duration-300", mini ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100 overflow-visible")}>
               <h1 className="text-xl font-black font-orbitron text-foreground tracking-[0.2em] leading-none mb-1.5 drop-shadow-sm whitespace-nowrap">
                 THE PACT
               </h1>
