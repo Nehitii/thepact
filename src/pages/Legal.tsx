@@ -337,9 +337,9 @@ export default function Legal() {
                 </div>
                 <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">11. User-to-User Interactions</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">11. User-to-User Interactions</p>
                     <p className="mb-2">When interacting with other users:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• You remain fully responsible for your communications</li>
                       <li>• The Pact does not actively monitor conversations</li>
                       <li>• Abuse, harassment, or misuse may result in sanctions</li>
