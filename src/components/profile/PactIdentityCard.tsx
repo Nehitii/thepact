@@ -154,7 +154,7 @@ export function PactIdentityCard({
             {SYMBOL_OPTIONS.map(({ key, label }) => (
               <button key={key} type="button" onClick={() => onPactSymbolChange(key)}
                 className={cn(
-                  "flex flex-col items-center gap-1 p-3 border transition-all duration-200",
+                  "flex flex-col items-center gap-1 p-3 border transition-all duration-200 overflow-hidden",
                   pactSymbol === key
                     ? "border-primary bg-primary/10 shadow-[0_0_12px_hsl(var(--primary)/0.3)]"
                     : "border-primary/15 bg-primary/[0.02] hover:border-primary/40"
