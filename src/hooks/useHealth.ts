@@ -66,6 +66,26 @@ export interface HealthSettingsInput {
   sleep_goal_hours?: number | null;
   hydration_goal_glasses?: number | null;
   activity_goal_minutes?: number | null;
+  checkin_mode?: "today" | "yesterday";
+}
+
+// Hook: Fetch health data by specific date
+export function useHealthByDate(userId: string | undefined, date: string) {
+  return useQuery({
+    queryKey: ["health-date", userId, date],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .from("health_data")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("entry_date", date)
+        .maybeSingle();
+      if (error) throw error;
+      return data as HealthData | null;
+    },
+    enabled: !!userId && !!date,
+  });
 }
 
 // Calculate BMI from height (cm) and weight (kg)

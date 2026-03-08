@@ -333,7 +333,7 @@ function VitalsSummaryStrip({ userId }: { userId?: string }) {
 
   return (
     <HUDFrame className="px-4 py-2" variant="toolbar">
-      <div className="flex gap-4 overflow-x-auto font-mono text-[10px] uppercase tracking-wider">
+      <div className="flex gap-4 overflow-x-auto justify-center font-mono text-[10px] uppercase tracking-wider">
         {metrics.map(({ key, value, max, invert }) => (
           <span key={key} className="flex items-center gap-1.5 text-muted-foreground/80 whitespace-nowrap">
             <span className={cn("w-1.5 h-1.5 rounded-full", getLedClass(value, invert))} />

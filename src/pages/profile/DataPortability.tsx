@@ -129,6 +129,7 @@ export default function DataPortability() {
     { value: "goals-steps", label: t("profile.data.categories.goalsSteps"), icon: <Target className="h-4 w-4" />, desc: t("profile.data.goalsDesc") },
     { value: "journal", label: t("profile.data.categories.journal"), icon: <BookOpen className="h-4 w-4" />, desc: t("profile.data.journalDesc") },
     { value: "finance", label: t("profile.data.categories.finance"), icon: <Wallet className="h-4 w-4" />, desc: t("profile.data.financeDesc") },
+    { value: "health", label: "Health", icon: <Heart className="h-4 w-4" />, desc: "Wellness check-ins, sleep, activity & stress data (CSV)" },
   ];
 
   const statItems = [
