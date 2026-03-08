@@ -6,4 +6,5 @@ export { FocusHistory } from "./FocusHistory";
 export { SpotifyPlayer } from "./SpotifyPlayer";
 export { FocusToolbar } from "./FocusToolbar";
 export { FocusConfigPanel } from "./FocusConfigPanel";
+export { FocusAmbientEffects } from "./FocusAmbientEffects";
 export type { FocusPanel } from "./FocusToolbar";

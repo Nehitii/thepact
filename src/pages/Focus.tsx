@@ -14,6 +14,7 @@ import {
   SpotifyPlayer,
   FocusToolbar,
   FocusConfigPanel,
+  FocusAmbientEffects,
   type FocusPanel,
 } from "@/components/focus";
 
@@ -42,6 +43,19 @@ export default function Focus() {
     }
     prevSessionsRef.current = timer.sessionsCompleted;
   }, [timer.sessionsCompleted, play]);
+
+  // Phase transition flash
+  const [showFlash, setShowFlash] = useState(false);
+  const prevPhaseRef = useRef(timer.phase);
+  useEffect(() => {
+    if (timer.phase !== prevPhaseRef.current && timer.phase !== "idle") {
+      setShowFlash(true);
+      const timeout = setTimeout(() => setShowFlash(false), 300);
+      prevPhaseRef.current = timer.phase;
+      return () => clearTimeout(timeout);
+    }
+    prevPhaseRef.current = timer.phase;
+  }, [timer.phase]);
 
   const handleStart = () => {
     play("ui");
@@ -82,6 +96,27 @@ export default function Focus() {
 
   return (
     <div className="min-h-screen relative">
+      {/* Ambient effects during active session */}
+      {timer.isRunning && (
+        <FocusAmbientEffects progress={timer.progress} isBreak={timer.phase === "break"} />
+      )}
+
+      {/* Phase transition flash */}
+      <AnimatePresence>
+        {showFlash && (
+          <motion.div
+            className="fixed inset-0 pointer-events-none z-50"
+            initial={{ opacity: 0.6 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              background: `radial-gradient(circle at center, hsl(var(--${timer.phase === "break" ? "accent" : "primary"}) / 0.4) 0%, transparent 70%)`,
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Ambient scan lines during active session */}
       {timer.isRunning && (
         <div
