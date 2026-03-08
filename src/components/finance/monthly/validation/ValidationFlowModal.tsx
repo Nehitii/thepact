@@ -84,14 +84,14 @@ export function ValidationFlowModal({
         className="w-full max-w-lg glass-modal rounded-3xl overflow-hidden"
       >
         {/* Header */}
-        <div className="p-6 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="p-6 border-b border-border flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">Monthly Validation</h2>
-            <p className="text-sm text-slate-500 mt-1">Step {currentStepIndex + 1} of {steps.length}</p>
+            <h2 className="text-xl font-bold text-foreground">Monthly Validation</h2>
+            <p className="text-sm text-muted-foreground mt-1">Step {currentStepIndex + 1} of {steps.length}</p>
           </div>
           <button 
             onClick={onClose}
-            className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -103,7 +103,7 @@ export function ValidationFlowModal({
             {steps.map((s, i) => (
               <motion.div
                 key={s}
-                className="h-1.5 flex-1 rounded-full overflow-hidden bg-white/[0.05]"
+                className="h-1.5 flex-1 rounded-full overflow-hidden bg-muted/40 dark:bg-white/[0.05]"
               >
                 <motion.div
                   initial={{ width: 0 }}
@@ -163,12 +163,12 @@ export function ValidationFlowModal({
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-white/[0.06] flex gap-3">
+        <div className="p-6 border-t border-border flex gap-3">
           {step !== 'expenses' ? (
             <Button
               variant="outline"
               onClick={handleBack}
-              className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] rounded-xl"
+              className="flex-1 h-12 border-border text-muted-foreground hover:bg-muted/50 rounded-xl"
             >
               Back
             </Button>
@@ -176,7 +176,7 @@ export function ValidationFlowModal({
             <Button
               variant="outline"
               onClick={onClose}
-              className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] rounded-xl"
+              className="flex-1 h-12 border-border text-muted-foreground hover:bg-muted/50 rounded-xl"
             >
               Cancel
             </Button>
@@ -229,8 +229,8 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
       className="space-y-5"
     >
       <div>
-        <h3 className="text-lg font-semibold text-white">Review Recurring Expenses</h3>
-        <p className="text-sm text-slate-400 mt-1">Confirm all expenses were paid as expected.</p>
+        <h3 className="text-lg font-semibold text-foreground">Review Recurring Expenses</h3>
+        <p className="text-sm text-muted-foreground mt-1">Confirm all expenses were paid as expected.</p>
       </div>
       <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
         {recurringExpenses.filter(e => e.is_active).map((expense) => (
@@ -240,13 +240,13 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-between p-4 rounded-xl neu-inset"
           >
-            <span className="text-sm text-white">{expense.name}</span>
+            <span className="text-sm text-foreground">{expense.name}</span>
             <span className="text-sm font-semibold text-rose-400">{formatCurrency(expense.amount, currency)}</span>
           </motion.div>
         ))}
       </div>
       <div className="pt-2 flex justify-between items-center">
-        <span className="text-sm text-slate-400">Total:</span>
+        <span className="text-sm text-muted-foreground">Total:</span>
         <span className="text-xl font-bold text-rose-400">{formatCurrency(totalExpenses, currency)}</span>
       </div>
       <motion.button
@@ -254,16 +254,16 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
         whileTap={{ scale: 0.99 }}
         onClick={() => setConfirmedExpenses(!confirmedExpenses)}
         className={`w-full p-5 rounded-2xl neu-toggle border transition-all ${
-          confirmedExpenses ? 'active border-emerald-500/30' : 'border-white/[0.06]'
+          confirmedExpenses ? 'active border-emerald-500/30' : 'border-border'
         }`}
       >
         <div className="flex items-center gap-4">
           <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
-            confirmedExpenses ? 'bg-emerald-500/30 border-emerald-500' : 'border-slate-500'
+            confirmedExpenses ? 'bg-emerald-500/30 border-emerald-500' : 'border-muted-foreground/40'
           }`}>
             {confirmedExpenses && <Check className="h-4 w-4 text-emerald-400" />}
           </div>
-          <span className="text-sm font-medium text-white">All expenses paid correctly</span>
+          <span className="text-sm font-medium text-foreground">All expenses paid correctly</span>
         </div>
       </motion.button>
     </motion.div>
@@ -289,8 +289,8 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
       className="space-y-5"
     >
       <div>
-        <h3 className="text-lg font-semibold text-white">Review Recurring Income</h3>
-        <p className="text-sm text-slate-400 mt-1">Confirm all income was received as expected.</p>
+        <h3 className="text-lg font-semibold text-foreground">Review Recurring Income</h3>
+        <p className="text-sm text-muted-foreground mt-1">Confirm all income was received as expected.</p>
       </div>
       <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
         {recurringIncome.filter(i => i.is_active).map((income) => (
@@ -300,13 +300,13 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-between p-4 rounded-xl neu-inset"
           >
-            <span className="text-sm text-white">{income.name}</span>
+            <span className="text-sm text-foreground">{income.name}</span>
             <span className="text-sm font-semibold text-emerald-400">{formatCurrency(income.amount, currency)}</span>
           </motion.div>
         ))}
       </div>
       <div className="pt-2 flex justify-between items-center">
-        <span className="text-sm text-slate-400">Total:</span>
+        <span className="text-sm text-muted-foreground">Total:</span>
         <span className="text-xl font-bold text-emerald-400">{formatCurrency(totalIncome, currency)}</span>
       </div>
       <motion.button
@@ -314,16 +314,16 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
         whileTap={{ scale: 0.99 }}
         onClick={() => setConfirmedIncome(!confirmedIncome)}
         className={`w-full p-5 rounded-2xl neu-toggle border transition-all ${
-          confirmedIncome ? 'active border-emerald-500/30' : 'border-white/[0.06]'
+          confirmedIncome ? 'active border-emerald-500/30' : 'border-border'
         }`}
       >
         <div className="flex items-center gap-4">
           <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
-            confirmedIncome ? 'bg-emerald-500/30 border-emerald-500' : 'border-slate-500'
+            confirmedIncome ? 'bg-emerald-500/30 border-emerald-500' : 'border-muted-foreground/40'
           }`}>
             {confirmedIncome && <Check className="h-4 w-4 text-emerald-400" />}
           </div>
-          <span className="text-sm font-medium text-white">All income received correctly</span>
+          <span className="text-sm font-medium text-foreground">All income received correctly</span>
         </div>
       </motion.button>
     </motion.div>
@@ -349,14 +349,14 @@ function StepExtras({ unplannedExpenses, unplannedIncome, setUnplannedExpenses, 
       className="space-y-6"
     >
       <div>
-        <h3 className="text-lg font-semibold text-white">Additional Transactions</h3>
-        <p className="text-sm text-slate-400 mt-1">Add any unexpected expenses or income.</p>
+        <h3 className="text-lg font-semibold text-foreground">Additional Transactions</h3>
+        <p className="text-sm text-muted-foreground mt-1">Add any unexpected expenses or income.</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm text-slate-400 font-medium">Extra Expenses</label>
+          <label className="text-sm text-muted-foreground font-medium">Extra Expenses</label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
               {getCurrencySymbol(currency)}
             </span>
             <Input
@@ -365,14 +365,14 @@ function StepExtras({ unplannedExpenses, unplannedIncome, setUnplannedExpenses, 
               placeholder="0"
               value={unplannedExpenses}
               onChange={(e) => setUnplannedExpenses(e.target.value.replace(/[^0-9.]/g, ''))}
-              className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] text-white rounded-xl"
+              className="pl-8 h-12 finance-input rounded-xl"
             />
           </div>
         </div>
         <div className="space-y-2">
-          <label className="text-sm text-slate-400 font-medium">Extra Income</label>
+          <label className="text-sm text-muted-foreground font-medium">Extra Income</label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
               {getCurrencySymbol(currency)}
             </span>
             <Input
@@ -381,7 +381,7 @@ function StepExtras({ unplannedExpenses, unplannedIncome, setUnplannedExpenses, 
               placeholder="0"
               value={unplannedIncome}
               onChange={(e) => setUnplannedIncome(e.target.value.replace(/[^0-9.]/g, ''))}
-              className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] text-white rounded-xl"
+              className="pl-8 h-12 finance-input rounded-xl"
             />
           </div>
         </div>
@@ -417,8 +417,8 @@ function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExp
         >
           <PartyPopper className="w-10 h-10 text-primary" />
         </motion.div>
-        <h3 className="text-xl font-bold text-white mb-2">Ready to Validate</h3>
-        <p className="text-sm text-slate-400">Review your monthly summary before confirming.</p>
+        <h3 className="text-xl font-bold text-foreground mb-2">Ready to Validate</h3>
+        <p className="text-sm text-muted-foreground">Review your monthly summary before confirming.</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <motion.div 

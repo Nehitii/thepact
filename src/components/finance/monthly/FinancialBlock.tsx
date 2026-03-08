@@ -82,7 +82,7 @@ export function FinancialBlock({
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-6 hover:bg-white/[0.01] transition-colors"
+        className="w-full flex items-center justify-between p-6 hover:bg-muted/30 dark:hover:bg-white/[0.01] transition-colors"
       >
         <div className="flex items-center gap-4">
           <div
@@ -98,8 +98,8 @@ export function FinancialBlock({
             {DefaultIcon && <DefaultIcon className={`w-5 h-5 ${isExpense ? 'text-rose-400' : 'text-emerald-400'}`} />}
           </div>
           <div className="text-left">
-            <h3 className="text-lg font-bold text-white">{title}</h3>
-            <p className="text-sm text-slate-500">
+            <h3 className="text-lg font-bold text-foreground">{title}</h3>
+            <p className="text-sm text-muted-foreground">
               {t('finance.recurring.categorySummary', { categories: groupedItems.length, items: items.length })}
             </p>
           </div>
@@ -112,7 +112,7 @@ export function FinancialBlock({
             {isExpense ? '-' : '+'}{formatCurrency(totalAmount, currency)}
           </span>
           <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} className="w-8 h-8 rounded-lg neu-inset flex items-center justify-center">
-            <ChevronDown className="w-4 h-4 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
           </motion.div>
         </div>
       </button>
@@ -132,15 +132,15 @@ export function FinancialBlock({
               <div className="space-y-3 max-h-[450px] overflow-y-auto scrollbar-thin pr-1">
                 {isLoading ? (
                   <div className="py-12 flex justify-center">
-                    <div className="w-8 h-8 border-2 border-slate-600 border-t-primary rounded-full animate-spin" />
+                    <div className="w-8 h-8 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
                   </div>
                 ) : groupedItems.length === 0 ? (
                   <div className="py-12 text-center">
                     <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 ${isExpense ? 'bg-rose-500/10' : 'bg-emerald-500/10'}`}>
                       {DefaultIcon && <DefaultIcon className={`w-8 h-8 ${isExpense ? 'text-rose-400/50' : 'text-emerald-400/50'}`} />}
                     </div>
-                    <p className="text-slate-500 text-sm">{t('finance.recurring.emptyTitle', { type: t(`finance.recurring.${type}Single`) })}</p>
-                    <p className="text-slate-600 text-xs mt-1">{t('finance.recurring.emptyHint')}</p>
+                    <p className="text-muted-foreground text-sm">{t('finance.recurring.emptyTitle', { type: t(`finance.recurring.${type}Single`) })}</p>
+                    <p className="text-muted-foreground/60 text-xs mt-1">{t('finance.recurring.emptyHint')}</p>
                   </div>
                 ) : (
                   groupedItems.map(({ category, items: groupItems }, index) => (

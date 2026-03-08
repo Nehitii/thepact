@@ -55,15 +55,15 @@ export function MonthlyHistory() {
     >
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-6 hover:bg-white/[0.01] transition-colors"
+        className="w-full flex items-center justify-between p-6 hover:bg-muted/30 dark:hover:bg-white/[0.01] transition-colors"
       >
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl neu-inset flex items-center justify-center">
-            <History className="w-5 h-5 text-slate-400" />
+            <History className="w-5 h-5 text-muted-foreground" />
           </div>
           <div className="text-left">
-            <h3 className="text-base font-bold text-white">{t('finance.monthly.monthlyHistory')}</h3>
-            <p className="text-sm text-slate-500">{t('finance.monthly.validatedMonths', { count: validatedCount })}</p>
+            <h3 className="text-base font-bold text-foreground">{t('finance.monthly.monthlyHistory')}</h3>
+            <p className="text-sm text-muted-foreground">{t('finance.monthly.validatedMonths', { count: validatedCount })}</p>
           </div>
         </div>
         <motion.div
@@ -71,7 +71,7 @@ export function MonthlyHistory() {
           transition={{ duration: 0.2 }}
           className="w-10 h-10 rounded-xl neu-inset flex items-center justify-center"
         >
-          <ChevronDown className="w-5 h-5 text-slate-400" />
+          <ChevronDown className="w-5 h-5 text-muted-foreground" />
         </motion.div>
       </button>
 
@@ -91,10 +91,10 @@ export function MonthlyHistory() {
                   className="text-center py-12"
                 >
                   <div className="w-16 h-16 mx-auto rounded-2xl neu-inset flex items-center justify-center mb-4">
-                    <Calendar className="w-8 h-8 text-slate-600" />
+                    <Calendar className="w-8 h-8 text-muted-foreground/50" />
                   </div>
-                  <p className="text-sm text-slate-500 font-medium">{t('finance.monthly.noHistoryYet')}</p>
-                  <p className="text-xs text-slate-600 mt-1">{t('finance.monthly.startTracking')}</p>
+                  <p className="text-sm text-muted-foreground font-medium">{t('finance.monthly.noHistoryYet')}</p>
+                  <p className="text-xs text-muted-foreground/60 mt-1">{t('finance.monthly.startTracking')}</p>
                 </motion.div>
               ) : (
                 <div className="relative">
@@ -117,8 +117,8 @@ export function MonthlyHistory() {
                           <div
                             className="absolute left-4 top-5 w-4 h-4 rounded-full border-2 transition-all duration-300"
                             style={{
-                              backgroundColor: isValidated ? 'hsla(160, 80%, 50%, 0.2)' : 'hsla(210, 30%, 20%, 0.5)',
-                              borderColor: isValidated ? 'hsla(160, 80%, 50%, 0.8)' : 'hsla(210, 30%, 40%, 0.5)',
+                              backgroundColor: isValidated ? 'hsla(160, 80%, 50%, 0.2)' : 'hsl(var(--muted))',
+                              borderColor: isValidated ? 'hsla(160, 80%, 50%, 0.8)' : 'hsl(var(--border))',
                               boxShadow: isValidated ? '0 0 12px hsla(160, 80%, 50%, 0.5)' : 'none',
                             }}
                           >
@@ -134,18 +134,18 @@ export function MonthlyHistory() {
                             whileHover={{ scale: 1.005 }}
                             whileTap={{ scale: 0.995 }}
                             className={`w-full text-left p-4 rounded-xl transition-all duration-200 ${
-                              isSelected ? 'neu-inset bg-white/[0.02]' : 'hover:bg-white/[0.02]'
+                              isSelected ? 'neu-inset bg-muted/30 dark:bg-white/[0.02]' : 'hover:bg-muted/30 dark:hover:bg-white/[0.02]'
                             }`}
                           >
                             <div className="flex items-center justify-between">
-                              <span className="text-sm font-semibold text-white">{month.label}</span>
+                              <span className="text-sm font-semibold text-foreground">{month.label}</span>
                               <div className="flex items-center gap-3">
                                 {isValidated ? (
                                   <span className={`text-sm font-bold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
                                     {isPositive ? '+' : ''}{formatCurrency(net, currency)}
                                   </span>
                                 ) : (
-                                  <span className="text-xs text-slate-600 flex items-center gap-1.5">
+                                  <span className="text-xs text-muted-foreground/60 flex items-center gap-1.5">
                                     <Clock className="w-3 h-3" />
                                     {t('common.pending')}
                                   </span>
@@ -166,33 +166,33 @@ export function MonthlyHistory() {
                                 <div className="p-5 rounded-xl neu-inset space-y-4">
                                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                                     <div>
-                                      <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.income')}</p>
+                                      <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.income')}</p>
                                       <p className="text-lg font-bold text-emerald-400 tabular-nums">
                                         {formatCurrency(month.validation.actual_total_income || 0, currency)}
                                       </p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.expenses')}</p>
+                                      <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.expenses')}</p>
                                       <p className="text-lg font-bold text-rose-400 tabular-nums">
                                         {formatCurrency(month.validation.actual_total_expenses || 0, currency)}
                                       </p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.net')}</p>
+                                      <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.net')}</p>
                                       <p className={`text-lg font-bold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
                                         {formatCurrency(net, currency)}
                                       </p>
                                     </div>
                                     <div>
-                                      <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.extras')}</p>
+                                      <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.extras')}</p>
                                       <div className="flex items-center gap-2 text-sm">
                                         <span className="text-emerald-400 tabular-nums">+{formatCurrency(month.validation.unplanned_income || 0, currency)}</span>
-                                        <span className="text-slate-600">/</span>
+                                        <span className="text-muted-foreground/40">/</span>
                                         <span className="text-rose-400 tabular-nums">-{formatCurrency(month.validation.unplanned_expenses || 0, currency)}</span>
                                       </div>
                                     </div>
                                   </div>
-                                  <button className="flex items-center gap-2 text-xs text-slate-500 hover:text-primary transition-colors">
+                                  <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
                                     <Edit2 className="w-3.5 h-3.5" />
                                     <span>{t('finance.monthly.editThisMonth')}</span>
                                   </button>
@@ -209,7 +209,7 @@ export function MonthlyHistory() {
                                 exit={{ opacity: 0, height: 0 }}
                                 className="mt-2 p-5 rounded-xl neu-inset text-center"
                               >
-                                <p className="text-sm text-slate-500">{t('finance.monthly.noDataRecorded')}</p>
+                                <p className="text-sm text-muted-foreground">{t('finance.monthly.noDataRecorded')}</p>
                               </motion.div>
                             )}
                           </AnimatePresence>

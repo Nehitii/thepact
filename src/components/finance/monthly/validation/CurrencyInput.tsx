@@ -20,9 +20,9 @@ export function CurrencyInput({
 }: CurrencyInputProps) {
   return (
     <div className="space-y-2">
-      <label className="text-sm text-slate-400 font-medium">{label}</label>
+      <label className="text-sm text-muted-foreground font-medium">{label}</label>
       <div className="relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
           {getCurrencySymbol(currency)}
         </span>
         <Input
@@ -32,7 +32,7 @@ export function CurrencyInput({
           value={value}
           onChange={(e) => onChange(e.target.value.replace(/[^0-9.]/g, ''))}
           disabled={disabled}
-          className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 rounded-xl"
+          className="pl-8 h-12 finance-input rounded-xl"
         />
       </div>
     </div>
