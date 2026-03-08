@@ -53,7 +53,7 @@ export function FocusTimerRing({
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
             <div
-              className="w-[260px] h-[260px] rounded-full overflow-hidden opacity-[0.12] dark:opacity-[0.15]"
+              className="w-[260px] h-[260px] rounded-full overflow-hidden opacity-[0.35] dark:opacity-[0.4]"
               style={{
                 maskImage: "radial-gradient(circle, black 40%, transparent 75%)",
                 WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 75%)",
