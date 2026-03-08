@@ -1,0 +1,1 @@
+ALTER TABLE public.health_settings ADD COLUMN IF NOT EXISTS checkin_mode text NOT NULL DEFAULT 'today';
