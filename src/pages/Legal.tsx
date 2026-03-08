@@ -179,7 +179,7 @@ export default function Legal() {
                       You are solely responsible for all content you create, upload, store, or share within the
                       application, including but not limited to:
                     </p>
-                    <ul className="mt-2 ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="mt-2 ml-4 space-y-1 text-primary/90">
                       <li>• Goals and plans</li>
                       <li>• Notes and personal reflections</li>
                       <li>• Financial data</li>
