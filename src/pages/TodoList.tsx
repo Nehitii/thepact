@@ -299,11 +299,6 @@ export default function TodoList() {
             </div>
           </motion.div>
 
-          {/* Filter & Sort */}
-          <TodoFilterSort
-            selectedTaskType={selectedTaskType} sortField={sortField} sortDirection={sortDirection}
-            onTaskTypeChange={setSelectedTaskType} onSortChange={handleSortChange}
-          />
 
           {/* Insights */}
           <AnimatePresence>
