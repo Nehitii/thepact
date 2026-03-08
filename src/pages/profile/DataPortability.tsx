@@ -119,6 +119,7 @@ export default function DataPortability() {
       case "goals-steps": return t("profile.data.categories.goalsSteps");
       case "journal": return t("profile.data.categories.journal");
       case "finance": return t("profile.data.categories.finance");
+      case "health": return "Health";
       default: return t("profile.data.categories.data");
     }
   };
