@@ -1474,6 +1474,51 @@ export type Database = {
         }
         Relationships: []
       }
+      pomodoro_sessions: {
+        Row: {
+          break_minutes: number
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          linked_goal_id: string | null
+          linked_step_id: string | null
+          linked_todo_id: string | null
+          notes: string | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          break_minutes?: number
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          linked_goal_id?: string | null
+          linked_step_id?: string | null
+          linked_todo_id?: string | null
+          notes?: string | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          break_minutes?: number
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          linked_goal_id?: string | null
+          linked_step_id?: string | null
+          linked_todo_id?: string | null
+          notes?: string | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       private_messages: {
         Row: {
           content: string
@@ -2711,6 +2756,17 @@ export type Database = {
       }
     }
     Functions: {
+      get_public_leaderboard: {
+        Args: { p_limit?: number }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          goals_completed: number
+          points: number
+          rank_name: string
+          user_id: string
+        }[]
+      }
       get_user_2fa_status: {
         Args: { p_user_id: string }
         Returns: {
