@@ -280,12 +280,12 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">9. Your Rights</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">9. Your Rights</p>
                     <p className="mb-2">
                       In accordance with applicable data protection regulations (including GDPR where applicable), you
                       have the right to:
                     </p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Access your personal data</li>
                       <li>• Correct or update your data</li>
                       <li>• Request deletion of your data</li>
