@@ -38,16 +38,12 @@ export function FocusTimerRing({
 
   return (
     <div className="relative inline-flex items-center justify-center mb-8">
-      {/* Hover detection zone - smaller, centered */}
+      {/* Hover detection zone - smaller, centered, above SVG */}
       <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-      >
-        <div
-          className="w-[280px] h-[280px] rounded-full pointer-events-auto"
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-        />
-      </div>
+        className="absolute z-10 w-[280px] h-[280px] rounded-full"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      />
       {/* Goal image background circle */}
       <AnimatePresence>
         {goalImageUrl && (
@@ -128,7 +124,7 @@ export function FocusTimerRing({
       </svg>
 
       {/* Center content */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
         <AnimatePresence mode="wait">
           {/* IDLE + HOVER → Play button */}
           {isIdle && hovered && onStart ? (
