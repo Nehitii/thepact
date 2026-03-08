@@ -52,25 +52,25 @@ export function useDailyDeals() {
       if (idsByType["cosmetic_frame"]?.length) {
         fetches.push(
           supabase.from("cosmetic_frames").select("id, name, price, rarity, preview_url").in("id", idsByType["cosmetic_frame"])
-            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, d)); })
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, d)); }) as Promise<void>
         );
       }
       if (idsByType["cosmetic_banner"]?.length) {
         fetches.push(
           supabase.from("cosmetic_banners").select("id, name, price, rarity, preview_url").in("id", idsByType["cosmetic_banner"])
-            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, d)); })
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, d)); }) as Promise<void>
         );
       }
       if (idsByType["cosmetic_title"]?.length) {
         fetches.push(
           supabase.from("cosmetic_titles").select("id, title_text, price, rarity").in("id", idsByType["cosmetic_title"])
-            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, { ...d, name: d.title_text })); })
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, { ...d, name: d.title_text })); }) as Promise<void>
         );
       }
       if (idsByType["module"]?.length) {
         fetches.push(
           supabase.from("shop_modules").select("id, name, price_bonds, rarity, description").in("id", idsByType["module"])
-            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, { ...d, price: d.price_bonds })); })
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, { ...d, price: d.price_bonds })); }) as Promise<void>
         );
       }
 
