@@ -65,7 +65,7 @@ function SortableTaskCard({ task, viewMode, onComplete, onPostpone, onDelete, on
 
 export default function TodoList() {
   const { t } = useTranslation();
-  const [booted, setBooted] = useState(false);
+  
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
   const [selectedTaskType, setSelectedTaskType] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('created_at');
