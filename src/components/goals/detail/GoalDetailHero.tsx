@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft, Edit, Star, Trophy, Pause, Play, Archive, Copy, Trash2, Check,
+  ArrowLeft, Edit, Star, Trophy, Pause, Play, Archive, Copy, Trash2, Check, Lock, LockOpen,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
