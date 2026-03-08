@@ -16,6 +16,7 @@ import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
+import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
 import { Link2 } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
