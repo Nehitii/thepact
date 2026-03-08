@@ -14,8 +14,8 @@ export function AppLayout() {
           <span className="text-sm font-orbitron font-bold text-primary tracking-wider">THE PACT</span>
         </header>
 
-        {/* Command Palette trigger in top bar (desktop) */}
-        <div className="hidden md:flex items-center justify-end px-4 py-2">
+        {/* Command Palette trigger (bottom-left, fixed) */}
+        <div className="fixed bottom-4 left-4 z-50 md:left-auto md:ml-4">
           <CommandPalette />
         </div>
 
