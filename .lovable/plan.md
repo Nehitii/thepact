@@ -1,33 +1,11 @@
-# Project Roadmap
 
-## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
+## Fix: Progress bar shine overflow in Bar View
 
----
+**Problem**: `.bar-card-track` has `position: relative` but no `overflow: hidden`. The `.bar-card-shine` animation (`translateX(-100%)` → `translateX(200%)`) visually leaks beyond the filled portion of the progress bar, especially noticeable when the bar is partially filled.
 
-## Priority Features Implementation Status
+**Fix** (single file edit in `src/index.css`):
 
-| # | Feature | Status | Notes |
-|---|---------|--------|-------|
-| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
-| 2 | Notification automation | ✅ Done | Smart notifications edge function |
-| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
-| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
-| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
-| 6 | Goal Templates | ✅ Done | Template browser + creation |
-| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
-| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
-| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
-| 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
+1. Add `overflow: hidden` to `.bar-card-track` to clip the shine animation within the filled area
+2. Soften the `.bar-card-fill` gradient so it doesn't end in pure white (which amplifies the visual leak) — change `#fff` to a lighter tint of the accent color
 
----
-
-## Codebase Optimization (Completed)
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Supabase client consolidation (61 files) | ✅ Done |
-| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
-| 3 | Sidebar profile query deduplication | ✅ Done |
-| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
-| 5 | Layout route optimization (nested Outlet) | ✅ Done |
-| 6 | Component memoization (AppSidebar) | ✅ Done |
+**Lines affected**: ~2525–2537 in `src/index.css`
