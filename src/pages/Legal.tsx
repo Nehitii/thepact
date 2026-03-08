@@ -106,7 +106,7 @@ export default function Legal() {
           <div className="pt-8 space-y-4 animate-fade-in">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-[#6b9ec4] hover:text-[#8ACBFF] transition-colors font-rajdhani"
+              className="flex items-center gap-2 text-[var(--text-muted-custom)] hover:text-[var(--text-heading)] transition-colors font-rajdhani"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
