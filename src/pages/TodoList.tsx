@@ -202,13 +202,20 @@ export default function TodoList() {
         </div>
 
         <div className="relative z-10 p-6 max-w-5xl mx-auto space-y-6">
-          {/* Header + Mental Load */}
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <TodoGamifiedHeader stats={stats} activeTaskCount={activeTaskCount} maxTasks={maxTasks} />
-            </div>
-            <MentalLoadIndicator tasks={tasks} />
-          </div>
+          {/* Header */}
+          <ModuleHeader
+            systemLabel="QUEST_ENGINE // SYS.ACTIVE"
+            title="TASK "
+            titleAccent="OPS"
+            badges={[
+              { label: "ACTIVE", value: `${activeTaskCount}/${maxTasks}`, color: "#00ffe0" },
+              { label: "SCORE", value: stats?.score ?? 0, color: "#bf5af2" },
+              { label: "STREAK", value: stats?.current_streak ?? 0, color: "#ffd60a" },
+            ]}
+          />
+
+          {/* Gamified Stats */}
+          <TodoGamifiedHeader stats={stats} activeTaskCount={activeTaskCount} maxTasks={maxTasks} />
 
           {/* Neural Input (Quick Command Bar) */}
           <QuickTaskInput
