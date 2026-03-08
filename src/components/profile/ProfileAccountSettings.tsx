@@ -76,8 +76,8 @@ const CY = {
   ].join(" "),
 
   selectTrigger: [
-    "bg-[#010608] border border-primary/25 rounded-none h-11",
-    "hover:border-primary/50 hover:bg-[#010b10]",
+    "bg-[var(--surface-input)] border border-primary/25 rounded-none h-11",
+    "hover:border-primary/50 hover:bg-[var(--surface-input-focus)]",
     "text-primary/80 font-mono text-sm tracking-wide",
     "transition-all duration-200",
   ].join(" "),
