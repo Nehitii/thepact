@@ -15,7 +15,7 @@ import {
   SettingsBreadcrumb, CyberSeparator, DataPanel, SettingContentRow,
 } from "@/components/profile/settings-ui";
 
-type ExportCategory = "all" | "goals-steps" | "journal" | "finance";
+type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 
 export default function DataPortability() {
   const { user } = useAuth();
