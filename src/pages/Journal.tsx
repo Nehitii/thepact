@@ -193,9 +193,6 @@ export default function Journal() {
             CHRONO<span className="text-primary" style={{ filter: "drop-shadow(0 0 12px hsl(var(--primary)))" }}>LOG</span>
           </h1>
 
-          <p className="font-mono text-[10px] text-muted-foreground/30 tracking-[0.2em]">
-            PERSONAL JOURNAL INTERFACE — v3.0
-          </p>
 
           {/* Stats hexagons */}
           <div className="flex justify-center gap-6 mt-8 flex-wrap">
