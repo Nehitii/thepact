@@ -297,10 +297,10 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">10. Data Deletion & Account Removal</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">10. Data Deletion & Account Removal</p>
                     <p>You may request full account deletion at any time.</p>
                     <p className="mt-2 mb-1">Upon deletion:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Your account will be permanently removed</li>
                       <li>• Your personal data will be deleted within a reasonable timeframe</li>
                       <li>
