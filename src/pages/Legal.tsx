@@ -203,7 +203,7 @@ export default function Legal() {
                       <li>• Misuse financial tools for illegal, deceptive, or unethical purposes</li>
                       <li>• Harass, threaten, or abuse other users</li>
                     </ul>
-                    <p className="mt-2 text-[#ff6b6b]/90 font-medium">
+                    <p className="mt-2 text-destructive/90 font-medium">
                       Any attempt to divert the application from its intended lawful use is strictly forbidden.
                     </p>
                   </div>
