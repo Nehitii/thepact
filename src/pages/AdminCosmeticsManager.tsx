@@ -240,7 +240,7 @@ export default function AdminCosmeticsManager() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#00050B] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-primary animate-pulse font-orbitron">Verifying access...</div>
       </div>
     );
