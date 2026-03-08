@@ -65,13 +65,36 @@ export function FocusTimerRing({
         )}
       </AnimatePresence>
 
-      {/* Outer decorative rotating rings */}
-      <div className="absolute -inset-16 pointer-events-none hidden dark:block">
+      {/* Outer decorative rotating rings with breathing animation */}
+      <motion.div
+        className="absolute -inset-16 pointer-events-none hidden dark:block"
+        animate={!isIdle ? {
+          scale: [1, 1.02, 1],
+          opacity: [1, 0.85, 1],
+        } : {}}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      >
         <RotatingRing size={400} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
-      </div>
-      <div className="absolute -inset-10 pointer-events-none hidden dark:block">
+      </motion.div>
+      <motion.div
+        className="absolute -inset-10 pointer-events-none hidden dark:block"
+        animate={!isIdle ? {
+          scale: [1, 0.98, 1],
+          opacity: [1, 0.7, 1],
+        } : {}}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "easeInOut",
+          delay: 0.5,
+        }}
+      >
         <RotatingRing size={360} color="hsl(var(--accent))" duration={22} reverse dasharray="4 10" opacity={0.1} />
-      </div>
+      </motion.div>
 
       {/* SVG rings */}
       <svg width="320" height="320" viewBox="0 0 320 320" className="transform -rotate-90">

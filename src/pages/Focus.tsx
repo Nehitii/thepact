@@ -96,6 +96,27 @@ export default function Focus() {
 
   return (
     <div className="min-h-screen relative">
+      {/* Ambient effects during active session */}
+      {timer.isRunning && (
+        <FocusAmbientEffects progress={timer.progress} isBreak={timer.phase === "break"} />
+      )}
+
+      {/* Phase transition flash */}
+      <AnimatePresence>
+        {showFlash && (
+          <motion.div
+            className="fixed inset-0 pointer-events-none z-50"
+            initial={{ opacity: 0.6 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            style={{
+              background: `radial-gradient(circle at center, hsl(var(--${timer.phase === "break" ? "accent" : "primary"}) / 0.4) 0%, transparent 70%)`,
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Ambient scan lines during active session */}
       {timer.isRunning && (
         <div
