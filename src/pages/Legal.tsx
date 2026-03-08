@@ -165,7 +165,7 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">2. Purpose of the Application</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">2. Purpose of the Application</p>
                     <p>
                       The Pact is a personal development, organization, and progression application designed to help
                       users track goals, habits, finances, and personal growth.
