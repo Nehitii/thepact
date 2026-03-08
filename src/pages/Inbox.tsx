@@ -207,7 +207,7 @@ export default function Inbox() {
                                 "hover:bg-white/[0.03] hover:translate-x-1",
                                 conv.unread_count > 0
                                   ? "bg-violet-500/10 border-violet-500/30 shadow-[0_0_15px_-5px_rgba(139,92,246,0.3)]"
-                                  : "bg-[#0f141e] border-white/5 hover:border-white/10",
+                                  : "bg-card border-border hover:border-border",
                               )}
                             >
                               {/* Left Accent Bar for Unread */}

@@ -272,8 +272,8 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
                 <button
                   className={cn(
                     "relative w-full flex items-center justify-between px-3 h-11",
-                    "bg-[#010608] border border-primary/25",
-                    "hover:border-primary/50 hover:bg-[#010b10]",
+                    "bg-[var(--surface-input)] border border-primary/25",
+                    "hover:border-primary/50 hover:bg-[var(--surface-input-focus)]",
                     "text-primary/80 font-mono text-sm tracking-wide",
                     "transition-all duration-200",
                     !formData.birthday && "text-primary/20",

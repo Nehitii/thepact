@@ -655,7 +655,7 @@ function SelectionDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0a0a0f]/95 backdrop-blur-xl border-primary/20 max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+      <DialogContent className="bg-[var(--surface-overlay)] backdrop-blur-xl border-border max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="font-orbitron text-primary tracking-widest uppercase flex items-center gap-2">
             <div className="w-1 h-4 bg-primary" />
