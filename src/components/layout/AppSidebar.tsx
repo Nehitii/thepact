@@ -221,7 +221,7 @@ export const AppSidebar = memo(function AppSidebar() {
         )}
       >
         {/* ─── HEADER ─── */}
-        <div className="relative mb-2 overflow-hidden" style={{ padding: mini ? "16px 8px" : "24px" }}>
+        <div className="relative mb-2" style={{ padding: mini ? "16px 8px" : "24px" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
 
           <div className={cn("flex items-center relative z-10 transition-all duration-300", mini ? "justify-center" : "gap-4")}>
