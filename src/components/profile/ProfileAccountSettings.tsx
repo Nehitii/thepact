@@ -68,8 +68,8 @@ const clipSm = {
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const CY = {
   input: [
-    "bg-[#010608] border border-primary/25 rounded-none",
-    "focus:border-primary/70 focus:bg-[#010b10]",
+    "bg-[var(--surface-input)] border border-primary/25 rounded-none",
+    "focus:border-primary/70 focus:bg-[var(--surface-input-focus)]",
     "focus:shadow-[0_0_0_1px_hsl(var(--primary)/0.2),inset_0_0_16px_hsl(var(--primary)/0.03)]",
     "text-primary/80 placeholder:text-primary/15 font-mono text-sm tracking-wide h-11",
     "transition-all duration-200",
