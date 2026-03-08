@@ -106,7 +106,7 @@ export function GoalsList({
             isDynamic={goal.is_dynamic_super || false}
             rule={goal.super_goal_rule as SuperGoalRule | undefined}
             difficulty={goal.difficulty}
-            onClick={(id) => navigate(`/goals/${id}`)}
+            onClick={(id) => handleNavigate(id)}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
             displayMode={displayMode}
