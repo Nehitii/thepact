@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Coffee, Clock } from "lucide-react";
+import { Flame, Coffee, Clock, Play } from "lucide-react";
 import { RotatingRing } from "@/components/journal/JournalDecorations";
 import type { PomodoroPhase } from "@/hooks/usePomodoro";
 
@@ -10,6 +11,7 @@ interface FocusTimerRingProps {
   sessionsCompleted: number;
   isPaused: boolean;
   goalImageUrl?: string | null;
+  onStart?: () => void;
 }
 
 function formatTime(seconds: number) {
@@ -18,7 +20,8 @@ function formatTime(seconds: number) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
-export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted, isPaused, goalImageUrl }: FocusTimerRingProps) {
+export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted, isPaused, goalImageUrl, onStart }: FocusTimerRingProps) {
+  const [hovered, setHovered] = useState(false);
   const circumference = 2 * Math.PI * 120;
   const strokeDashoffset = circumference * (1 - progress);
   const isWork = phase === "work";
@@ -26,7 +29,11 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
   const isIdle = phase === "idle";
 
   return (
-    <div className="relative inline-flex items-center justify-center mb-8">
+    <div
+      className="relative inline-flex items-center justify-center mb-8"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
       {/* Goal image background circle */}
       <AnimatePresence>
         {goalImageUrl && (
@@ -53,6 +60,7 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
           </motion.div>
         )}
       </AnimatePresence>
+
       {/* Outer decorative rotating rings */}
       <div className="absolute -inset-12 pointer-events-none hidden dark:block">
         <RotatingRing size={340} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
@@ -105,44 +113,77 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
 
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        {/* Phase icon */}
         <AnimatePresence mode="wait">
-          <motion.div
-            key={phase + String(isPaused)}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="flex items-center gap-2 mb-2"
-          >
-            {isWork ? (
-              <Flame className="h-4 w-4 text-primary" />
-            ) : isBreak ? (
-              <Coffee className="h-4 w-4 text-accent" />
-            ) : (
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            )}
-            <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-              {isIdle ? "Ready" : isPaused ? "Paused" : isWork ? "Focus" : "Break"}
-            </span>
-          </motion.div>
+          {/* Idle + hovered → show play button */}
+          {isIdle && hovered && onStart ? (
+            <motion.button
+              key="start-hover"
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.7 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              onClick={onStart}
+              className="flex flex-col items-center gap-3 cursor-pointer group"
+            >
+              <div
+                className="w-16 h-16 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center group-hover:bg-primary/25 group-hover:border-primary/60 transition-all group-hover:shadow-[0_0_25px_hsl(var(--primary)/0.3)]"
+              >
+                <Play className="h-7 w-7 text-primary ml-1" />
+              </div>
+              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-primary/70 group-hover:text-primary transition-colors">
+                Start
+              </span>
+            </motion.button>
+          ) : (
+            <motion.div
+              key="timer-content"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col items-center"
+            >
+              {/* Phase icon */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={phase + String(isPaused)}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  className="flex items-center gap-2 mb-2"
+                >
+                  {isWork ? (
+                    <Flame className="h-4 w-4 text-primary" />
+                  ) : isBreak ? (
+                    <Coffee className="h-4 w-4 text-accent" />
+                  ) : (
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
+                    {isIdle ? "Ready" : isPaused ? "Paused" : isWork ? "Focus" : "Break"}
+                  </span>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Timer */}
+              <motion.p
+                className="text-5xl font-orbitron font-black text-foreground tabular-nums tracking-wider"
+                style={{
+                  textShadow: !isIdle ? `0 0 20px ${isBreak ? "hsl(var(--accent) / 0.3)" : "hsl(var(--primary) / 0.3)"}` : undefined,
+                }}
+                animate={isPaused ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
+                transition={isPaused ? { repeat: Infinity, duration: 1.5, ease: "easeInOut" } : {}}
+              >
+                {formatTime(secondsLeft)}
+              </motion.p>
+
+              {/* Sessions counter */}
+              <p className="text-[10px] font-mono text-muted-foreground mt-3 tracking-wider">
+                SESSIONS: <span className="text-primary font-bold">{sessionsCompleted}</span>
+              </p>
+            </motion.div>
+          )}
         </AnimatePresence>
-
-        {/* Timer */}
-        <motion.p
-          className="text-5xl font-orbitron font-black text-foreground tabular-nums tracking-wider"
-          style={{
-            textShadow: !isIdle ? `0 0 20px ${isBreak ? "hsl(var(--accent) / 0.3)" : "hsl(var(--primary) / 0.3)"}` : undefined,
-          }}
-          animate={isPaused ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
-          transition={isPaused ? { repeat: Infinity, duration: 1.5, ease: "easeInOut" } : {}}
-        >
-          {formatTime(secondsLeft)}
-        </motion.p>
-
-        {/* Sessions counter */}
-        <p className="text-[10px] font-mono text-muted-foreground mt-3 tracking-wider">
-          SESSIONS: <span className="text-primary font-bold">{sessionsCompleted}</span>
-        </p>
       </div>
     </div>
   );

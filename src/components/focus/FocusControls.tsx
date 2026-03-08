@@ -16,18 +16,7 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
   const isIdle = phase === "idle";
 
   if (isIdle) {
-    return (
-      <div className="flex justify-center">
-        <Button
-          onClick={onStart}
-          size="lg"
-          className="gap-2 font-orbitron text-sm px-10 py-6 shadow-[0_0_20px_hsl(var(--primary)/0.2)] hover:shadow-[0_0_30px_hsl(var(--primary)/0.3)] transition-shadow"
-        >
-          <Play className="h-5 w-5" />
-          START SESSION
-        </Button>
-      </div>
-    );
+    return null;
   }
 
   return (
