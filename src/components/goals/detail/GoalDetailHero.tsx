@@ -37,6 +37,7 @@ interface GoalDetailHeroProps {
   onArchive: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onToggleLock?: () => void;
 }
 
 export const GoalDetailHero = React.memo(function GoalDetailHero({
