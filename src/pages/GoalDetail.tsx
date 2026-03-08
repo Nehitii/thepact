@@ -66,6 +66,8 @@ export default function GoalDetail() {
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const [editDeadline, setEditDeadline] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
   const editInitialStateRef = useRef<string>("");
