@@ -1,33 +1,35 @@
-# Project Roadmap
 
-## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
 
----
+## Fix: Dynamic Countdown Panel Color Modes
 
-## Priority Features Implementation Status
+The panel currently hardcodes red (`#ff1744`) everywhere regardless of time remaining. The phase logic already exists (lines 42-45) but colors don't follow it.
 
-| # | Feature | Status | Notes |
-|---|---------|--------|-------|
-| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
-| 2 | Notification automation | ✅ Done | Smart notifications edge function |
-| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
-| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
-| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
-| 6 | Goal Templates | ✅ Done | Template browser + creation |
-| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
-| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
-| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
-| 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
+### Three Modes
 
----
+Based on `remainingPct` (already computed):
 
-## Codebase Optimization (Completed)
+| Mode | Condition | Primary Color | Label | Icon |
+|------|-----------|--------------|-------|------|
+| **Green (Stable)** | >75% remaining | `#00e676` (green) | STABLE | Shield/check |
+| **Amber (Attention)** | 25-75% remaining | `#ffab00` (amber) | ATTENTION | Clock |
+| **Red (Critique)** | <25% remaining | `#ff1744` (red) | CRITIQUE | Warning triangle |
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Supabase client consolidation (61 files) | ✅ Done |
-| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
-| 3 | Sidebar profile query deduplication | ✅ Done |
-| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
-| 5 | Layout route optimization (nested Outlet) | ✅ Done |
-| 6 | Component memoization (AppSidebar) | ✅ Done |
+### Changes (single file: `CountdownPanel.tsx`)
+
+1. **Create a color config object** derived from `remainingPct` inside the `useMemo`:
+   - `primary`, `primaryRgb`, `glowAlpha`, `icon` (shield vs clock vs triangle)
+   - Disable `alertPulse` and `blink` animations in green/amber modes (or slow them down)
+
+2. **Replace all hardcoded `#ff1744` / `rgba(255,23,68,...)` references** with the dynamic color values (~15 occurrences across inline styles)
+
+3. **Adjust left panel**:
+   - Green: shield icon, no pulse, label "NOMINAL"
+   - Amber: clock icon, slow pulse, label "ATTENTION"  
+   - Red: warning triangle, fast pulse + blink, label "ALERTE CRITIQUE"
+
+4. **Progress bar gradient** adapts: green→green, green→amber, orange→red
+
+5. **Corner brackets** color follows the mode
+
+No structural/layout changes — purely swapping color values and icon based on the existing phase logic.
+
