@@ -5,6 +5,7 @@ import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSe
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTodoList, TodoTask } from '@/hooks/useTodoList';
+import { ModuleHeader } from '@/components/layout/ModuleHeader';
 import { TodoGamifiedTaskCard } from '@/components/todo/TodoGamifiedTaskCard';
 import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
 import { TodoAdvancedStats } from '@/components/todo/TodoAdvancedStats';
