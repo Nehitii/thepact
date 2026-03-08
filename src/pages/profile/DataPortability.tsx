@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2 } from "lucide-react";
+import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
