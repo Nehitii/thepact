@@ -128,8 +128,8 @@ export default function Legal() {
                   <Shield className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
                   <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">Copyright</h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-3 text-sm leading-relaxed">
-                  <p className="text-[#c8e0f4] font-medium">© 2024–2025 The Pact. All rights reserved.</p>
+                <div className="text-[var(--text-body)] font-rajdhani space-y-3 text-sm leading-relaxed">
+                  <p className="text-[var(--text-heading)] font-medium">© 2024–2025 The Pact. All rights reserved.</p>
                   <p>
                     All content, visual elements, interface designs, animations, logos, texts, graphics, source code,
                     and functionality within this application are the exclusive intellectual property of The Pact and
