@@ -139,6 +139,21 @@ All colors MUST be HSL.
     --border-card: hsla(200, 50%, 75%, 0.3);
     --goal-card-bg: hsl(210, 40%, 97%);
     --goal-card-border: hsla(200, 50%, 70%, 0.2);
+
+    /* Journal Chronolog — light mode */
+    --journal-bg: hsl(210, 40%, 97%);
+    --journal-surface: hsla(210, 35%, 95%, 0.85);
+    --journal-surface-hover: hsla(210, 30%, 92%, 0.9);
+    --journal-border: hsla(200, 50%, 70%, 0.2);
+    --journal-border-hover: hsla(200, 60%, 55%, 0.35);
+    --journal-text-primary: hsl(210, 50%, 15%);
+    --journal-text-secondary: hsl(210, 20%, 40%);
+    --journal-text-dim: hsl(210, 15%, 55%);
+    --journal-text-dimmer: hsl(210, 10%, 70%);
+    --journal-input-bg: hsla(210, 30%, 93%, 0.7);
+    --journal-input-border: hsla(200, 40%, 70%, 0.25);
+    --journal-overlay-bg: hsla(210, 40%, 98%, 0.97);
+    --journal-topbar-bg: hsla(210, 35%, 96%, 0.9);
   }
 
   .dark {
