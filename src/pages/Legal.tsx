@@ -442,7 +442,7 @@ export default function Legal() {
 
       {/* First Confirmation Dialog */}
       <AlertDialog open={showFirstConfirm} onOpenChange={setShowFirstConfirm}>
-        <AlertDialogContent className="bg-[#0a1525]/95 backdrop-blur-xl border border-primary/20">
+        <AlertDialogContent className="bg-[var(--surface-overlay)] backdrop-blur-xl border border-[var(--border-card)]">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#ff6b6b] font-orbitron flex items-center gap-2">
               <Trash2 className="h-5 w-5" />
