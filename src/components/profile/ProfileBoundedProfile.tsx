@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RankBadge } from "@/components/ranks/RankCard";
 import { useRankXP } from "@/hooks/useRankXP";
 import { usePact } from "@/hooks/usePact";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield } from "lucide-react";

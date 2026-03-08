@@ -3,7 +3,7 @@
  * Tracks consecutive check-in days and total check-ins.
  */
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { toast } from "sonner";
 

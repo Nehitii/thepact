@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { UserCircle2 } from "lucide-react";

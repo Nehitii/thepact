@@ -6,7 +6,7 @@
  * Uses React Query for caching and automatic refetching.
  */
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import type { SuperGoalRule } from "@/components/goals/super/types";
 
 export interface Goal {

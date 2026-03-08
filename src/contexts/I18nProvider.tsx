@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_LANGUAGE, type SupportedLanguage } from "@/i18n/i18n";
 
 const STORAGE_KEY = "pact.language";

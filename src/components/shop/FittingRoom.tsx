@@ -7,7 +7,7 @@ import { HoldPurchaseButton } from "./HoldPurchaseButton";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 type PreviewItem =
   | { type: "frame"; data: CosmeticFrame }

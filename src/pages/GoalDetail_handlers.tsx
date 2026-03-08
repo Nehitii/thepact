@@ -1,5 +1,5 @@
 // Handler functions for GoalDetail - extracted for better code organization
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { trackGoalCompleted } from "@/lib/achievements";
 
 export async function handleFullyComplete(

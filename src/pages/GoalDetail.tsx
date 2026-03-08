@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { trackStepCompleted } from "@/lib/achievements";
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useGoalDetail } from "@/hooks/useGoalDetail";
