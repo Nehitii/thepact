@@ -337,6 +337,7 @@ export default function TheCall() {
               <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
             </Button>
           </ModuleHeader>
+          </div>
         </div>
 
         <div className="relative flex flex-col items-center justify-center">
