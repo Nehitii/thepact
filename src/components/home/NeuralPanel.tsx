@@ -40,17 +40,17 @@ export function NeuralPanel({
     return (
       <div className={cn(
         "relative h-full w-full overflow-hidden",
-        "bg-[rgba(6,11,22,0.92)] backdrop-blur-xl",
-        "border border-[rgba(0,180,255,0.08)]",
+        "bg-[var(--nexus-bg)] backdrop-blur-xl",
+        "border border-[var(--nexus-border)]",
         className,
       )} style={{ borderRadius: "4px" }}>
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top-subtle" />
         <div className="flex flex-col h-full p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-6 h-6 rounded bg-white/5 animate-pulse" />
-            <div className="h-2.5 w-24 bg-white/5 rounded animate-pulse" />
+            <div className="w-6 h-6 rounded bg-[var(--nexus-hover-bg)] animate-pulse" />
+            <div className="h-2.5 w-24 bg-[var(--nexus-hover-bg)] rounded animate-pulse" />
           </div>
-          <div className="flex-1 bg-white/[0.02] rounded animate-pulse" />
+          <div className="flex-1 bg-[var(--nexus-inner-bg)] rounded animate-pulse" />
         </div>
       </div>
     );
@@ -63,26 +63,25 @@ export function NeuralPanel({
       onClick={onClick}
       className={cn(
         "group relative h-full w-full flex flex-col overflow-hidden transition-all duration-300",
-        "bg-[rgba(6,11,22,0.92)] backdrop-blur-xl",
-        "border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,210,255,0.25)]",
-        "shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)]",
+        "bg-[var(--nexus-bg)] backdrop-blur-xl nexus-shadow",
+        "border border-[var(--nexus-border)] hover:border-[var(--nexus-hover-border)]",
         onClick && "cursor-pointer text-left",
         className,
       )}
       style={{ borderRadius: "4px" }}
     >
       {/* Permanent top edge gradient line */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top-subtle" />
 
       {/* Header */}
       <div className="relative z-10 flex-shrink-0 px-5 pt-4 pb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <Icon className="w-4 h-4 text-primary/60 shrink-0" />
-          <h3 className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.65)] truncate">
+          <h3 className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-label)] truncate">
             {title}
           </h3>
           {subtitle && (
-            <span className="text-[9px] font-mono text-[rgba(160,210,255,0.3)] truncate hidden sm:inline tracking-tight">
+            <span className="text-[9px] font-mono text-[var(--nexus-text-dimmer)] truncate hidden sm:inline tracking-tight">
               {subtitle}
             </span>
           )}
@@ -96,7 +95,7 @@ export function NeuralPanel({
                 e.stopPropagation();
                 onToggleDisplayMode?.();
               }}
-              className="h-6 w-6 flex items-center justify-center rounded hover:bg-white/5 text-[rgba(160,210,255,0.3)] hover:text-[rgba(160,210,255,0.6)] transition-colors"
+              className="h-6 w-6 flex items-center justify-center rounded hover:bg-[var(--nexus-hover-bg)] text-[var(--nexus-text-dimmer)] hover:text-[var(--nexus-text-label)] transition-colors"
             >
               {showExpandedContent ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             </button>
@@ -105,7 +104,7 @@ export function NeuralPanel({
       </div>
 
       {/* Separator */}
-      <div className="mx-5 h-px bg-[rgba(0,180,255,0.06)]" />
+      <div className="mx-5 h-px bg-[var(--nexus-separator)]" />
 
       {/* Body */}
       <div className="relative z-10 flex-1 flex flex-col min-h-0">
@@ -118,7 +117,7 @@ export function NeuralPanel({
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="border-t border-[rgba(0,180,255,0.06)]"
+              className="border-t border-[var(--nexus-separator)]"
             >
               <div className="px-5 py-4">{expandableContent}</div>
             </motion.div>
@@ -128,7 +127,7 @@ export function NeuralPanel({
 
       {/* Right arrow for clickable panels */}
       {onClick && (
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[rgba(160,210,255,0.15)] group-hover:text-[rgba(160,210,255,0.4)] transition-all duration-300 group-hover:translate-x-0.5">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--nexus-text-dimmer)] group-hover:text-[var(--nexus-text-dim)] transition-all duration-300 group-hover:translate-x-0.5">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M6 4L10 8L6 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>

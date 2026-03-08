@@ -17,37 +17,21 @@ interface DifficultyScalePanelProps {
 const DIFFICULTY_ORDER = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
 
 const REF_COLORS: Record<string, string> = {
-  easy: "#00ff88",
-  medium: "#00d4ff",
-  hard: "#ff8c00",
-  extreme: "#ff3366",
-  impossible: "#cc00ff",
-  custom: "#ff00aa",
+  easy: "#00ff88", medium: "#00d4ff", hard: "#ff8c00",
+  extreme: "#ff3366", impossible: "#cc00ff", custom: "#ff00aa",
 };
 
 const DIFFICULTY_LABELS: Record<string, string> = {
-  easy: "EASY",
-  medium: "MEDIUM",
-  hard: "HARD",
-  extreme: "EXTREME",
-  impossible: "IMPOSSIBLE",
-  custom: "ANANTA",
+  easy: "EASY", medium: "MEDIUM", hard: "HARD",
+  extreme: "EXTREME", impossible: "IMPOSSIBLE", custom: "ANANTA",
 };
 
 const DIFFICULTY_SUBS: Record<string, string> = {
-  easy: "missions",
-  medium: "missions",
-  hard: "missions",
-  extreme: "missions",
-  impossible: "missions",
-  custom: "légendaire",
+  easy: "missions", medium: "missions", hard: "missions",
+  extreme: "missions", impossible: "missions", custom: "légendaire",
 };
 
-export function DifficultyScalePanel({
-  difficultyProgress,
-  customDifficultyName,
-  customDifficultyColor,
-}: DifficultyScalePanelProps) {
+export function DifficultyScalePanel({ difficultyProgress, customDifficultyName, customDifficultyColor }: DifficultyScalePanelProps) {
   const getColor = (d: string) => {
     if (d === "custom" && customDifficultyColor) return customDifficultyColor;
     return REF_COLORS[d] || "#ffffff";
@@ -62,32 +46,22 @@ export function DifficultyScalePanel({
       className="relative overflow-hidden"
       style={{
         borderRadius: 4,
-        background: "rgba(6,11,22,0.92)",
-        border: "1px solid rgba(0,180,255,0.12)",
-        boxShadow: "0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06)",
+        background: "var(--nexus-bg)",
+        border: "1px solid var(--nexus-border)",
+        boxShadow: "var(--nexus-shadow)",
         backdropFilter: "blur(16px)",
         padding: 28,
       }}
     >
       <CornerBrackets />
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(0,210,255,0.4), transparent)" }} />
+      <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      {/* Panel label */}
-      <div
-        className="flex items-center gap-2 mb-4"
-        style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          fontSize: 9, letterSpacing: 3,
-          color: "rgba(160,210,255,0.5)",
-          textTransform: "uppercase" as const,
-        }}
-      >
-        <span style={{ color: "rgba(0,212,255,0.6)" }}>//</span>
+      <div className="flex items-center gap-2 mb-4" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
+        <span className="text-primary/60">//</span>
         L'Échelle Ananta — Progression par Difficulté
-        <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg, rgba(0,180,255,0.12), transparent)" }} />
+        <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg, var(--nexus-separator), transparent)" }} />
       </div>
 
-      {/* Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3" style={{ marginTop: 16 }}>
         {DIFFICULTY_ORDER.map((diff) => {
           const item = difficultyProgress.find((p) => p.difficulty === diff);
@@ -104,64 +78,22 @@ export function DifficultyScalePanel({
                 padding: "16px 12px",
                 border: `1px solid ${color}40`,
                 borderRadius: 4,
-                background: "rgba(0,0,0,0.2)",
+                background: "var(--nexus-inner-bg)",
                 transition: "transform 0.2s",
               }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "none"; }}
             >
-              {/* Bottom fill effect */}
-              <div
-                className="absolute bottom-0 left-0 right-0 transition-all duration-700"
-                style={{
-                  height: `${fillPct}%`,
-                  background: `${color}12`,
-                }}
-              />
+              <div className="absolute bottom-0 left-0 right-0 transition-all duration-700" style={{ height: `${fillPct}%`, background: `${color}12` }} />
+              <div className="absolute top-0 left-0 right-0" style={{ height: 2, background: color, boxShadow: `0 0 6px ${color}` }} />
 
-              {/* Top indicator bar with glow */}
-              <div
-                className="absolute top-0 left-0 right-0"
-                style={{
-                  height: 2,
-                  background: color,
-                  boxShadow: `0 0 6px ${color}`,
-                }}
-              />
-
-              <span
-                className="relative z-[1]"
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 9, letterSpacing: 2,
-                  color: color,
-                  textTransform: "uppercase" as const,
-                  textShadow: `0 0 8px ${color}`,
-                  marginBottom: 12,
-                }}
-              >
+              <span className="relative z-[1]" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, letterSpacing: 2, color: color, textTransform: "uppercase" as const, textShadow: `0 0 8px ${color}`, marginBottom: 12 }}>
                 {getLabel(diff)}
               </span>
-              <span
-                className="relative z-[1]"
-                style={{
-                  fontFamily: "'Orbitron', sans-serif",
-                  fontSize: 22, fontWeight: 700,
-                  color: color,
-                  textShadow: `0 0 10px ${color}b3`,
-                  lineHeight: 1,
-                }}
-              >
+              <span className="relative z-[1]" style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 700, color: color, textShadow: `0 0 10px ${color}b3`, lineHeight: 1 }}>
                 {count < 10 ? `0${count}` : count}
               </span>
-              <span
-                className="relative z-[1]"
-                style={{
-                  fontSize: 8, letterSpacing: 1,
-                  color: "rgba(255,255,255,0.32)",
-                  marginTop: 4,
-                }}
-              >
+              <span className="relative z-[1]" style={{ fontSize: 8, letterSpacing: 1, color: "var(--nexus-marker-dim)", marginTop: 4 }}>
                 {DIFFICULTY_SUBS[diff] || "missions"}
               </span>
             </div>

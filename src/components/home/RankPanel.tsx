@@ -24,7 +24,6 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
   const currentMin = currentRank?.min_points || 0;
   const nextMin = nextRank?.min_points || currentMin + 1000;
 
-  // Split rank name for accent on last 2 chars
   const nameBase = rankName.length > 2 ? rankName.slice(0, -2) : "";
   const nameAccent = rankName.length > 2 ? rankName.slice(-2) : rankName;
 
@@ -34,13 +33,13 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
       style={{
         padding: 0,
         borderRadius: 4,
-        border: "1px solid rgba(0,140,255,0.25)",
-        background: "linear-gradient(160deg, rgba(0,15,40,0.97) 0%, rgba(3,8,20,0.99) 100%)",
-        boxShadow: "0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06)",
+        border: "1px solid var(--nexus-rank-border)",
+        background: "var(--nexus-rank-bg)",
+        boxShadow: "var(--nexus-shadow)",
       }}
     >
       <CornerBrackets />
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(0,210,255,0.4), transparent)" }} />
+      <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
       {/* Header: Hex + Identity */}
       <div className="flex items-start gap-5" style={{ padding: "20px 24px 0" }}>
@@ -71,24 +70,10 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
             <line x1="12" y1="46" x2="68" y2="46" stroke="rgba(0,212,255,0.1)" strokeWidth="1" />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-            <span
-              style={{
-                fontFamily: "'Orbitron', sans-serif",
-                fontSize: 22, fontWeight: 900,
-                color: "#00d4ff",
-                lineHeight: 1,
-              }}
-            >
+            <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "#00d4ff", lineHeight: 1 }}>
               {level}
             </span>
-            <span
-              style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 7, letterSpacing: 2,
-                color: "rgba(0,212,255,0.5)",
-                textTransform: "uppercase" as const,
-              }}
-            >
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 7, letterSpacing: 2, color: "rgba(0,212,255,0.5)", textTransform: "uppercase" as const }}>
               LEVEL
             </span>
           </div>
@@ -98,220 +83,88 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
         <div className="flex-1" style={{ paddingTop: 6 }}>
           <div
             className="flex items-center gap-1.5"
-            style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 8, letterSpacing: 3,
-              color: "rgba(0,212,255,0.45)",
-              textTransform: "uppercase" as const,
-              marginBottom: 6,
-            }}
+            style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 8, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const, marginBottom: 6 }}
           >
-            <span style={{ width: 16, height: 1, background: "rgba(0,212,255,0.35)", display: "inline-block" }} />
+            <span style={{ width: 16, height: 1, background: "var(--nexus-text-dimmer)", display: "inline-block" }} />
             TIER {Math.ceil(level / 10)} · CLASSE {level}
           </div>
 
-          <div
-            style={{
-              fontFamily: "'Orbitron', sans-serif",
-              fontSize: 22, fontWeight: 900,
-              letterSpacing: 4,
-              color: "#ddeeff",
-              textTransform: "uppercase" as const,
-              lineHeight: 1,
-            }}
-          >
+          <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, letterSpacing: 4, color: "var(--nexus-heading)", textTransform: "uppercase" as const, lineHeight: 1 }}>
             {nameBase}<span style={{ color: "#00d4ff", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" }}>{nameAccent}</span>
           </div>
 
-          {/* Divider */}
-          <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, rgba(0,212,255,0.3), rgba(0,212,255,0.05), transparent)", margin: "14px 0" }} />
+          <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, var(--nexus-glow), transparent)", margin: "14px 0" }} />
 
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, color: "rgba(160,210,255,0.5)", letterSpacing: 2, lineHeight: 1.8 }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, color: "var(--nexus-text-dim)", letterSpacing: 2, lineHeight: 1.8 }}>
             RANG ACTUEL<br />
-            <span style={{ color: "#ddeeff", fontSize: 11 }}>{rankName} · Classe Neurale {level}</span>
+            <span style={{ color: "var(--nexus-heading)", fontSize: 11 }}>{rankName} · Classe Neurale {level}</span>
           </div>
         </div>
       </div>
 
       {/* XP Section */}
       <div style={{ padding: "0 24px 20px" }}>
-        <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, rgba(0,212,255,0.3), rgba(0,212,255,0.05), transparent)", margin: "16px 0 10px" }} />
+        <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, var(--nexus-glow), transparent)", margin: "16px 0 10px" }} />
 
-        {/* XP numbers */}
         <div className="flex justify-between items-baseline" style={{ marginBottom: 10 }}>
           <div>
-            <span
-              style={{
-                fontFamily: "'Orbitron', sans-serif",
-                fontSize: 28, fontWeight: 700,
-                color: "#00d4ff",
-                textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)",
-                lineHeight: 1,
-              }}
-            >
+            <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 28, fontWeight: 700, color: "#00d4ff", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)", lineHeight: 1 }}>
               {formatNum(currentXP)}
             </span>
-            <span
-              style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 9, color: "rgba(160,210,255,0.5)",
-                letterSpacing: 2, marginLeft: 4,
-              }}
-            >
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, color: "var(--nexus-text-dim)", letterSpacing: 2, marginLeft: 4 }}>
               XP
             </span>
           </div>
           <div className="text-right">
-            <div
-              style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 11, color: "rgba(255,140,0,0.7)",
-                letterSpacing: 1,
-              }}
-            >
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "rgba(255,140,0,0.7)", letterSpacing: 1 }}>
               − {formatNum(xpToNextRank)} XP
             </div>
-            <div
-              style={{
-                fontSize: 8, color: "rgba(160,210,255,0.5)",
-                letterSpacing: 2, textTransform: "uppercase" as const,
-                marginTop: 2,
-              }}
-            >
+            <div style={{ fontSize: 8, color: "var(--nexus-text-dim)", letterSpacing: 2, textTransform: "uppercase" as const, marginTop: 2 }}>
               RESTANT
             </div>
           </div>
         </div>
 
-        {/* XP Bar - continuous with segments overlay */}
+        {/* XP Bar */}
         <div className="relative" style={{ marginBottom: 8 }}>
           <div
             className="relative overflow-hidden"
-            style={{
-              height: 12,
-              background: "rgba(0,0,0,0.4)",
-              border: "1px solid rgba(0,212,255,0.12)",
-              borderRadius: 1,
-            }}
+            style={{ height: 12, background: "var(--nexus-track-bg)", border: "1px solid rgba(0,212,255,0.12)", borderRadius: 1 }}
           >
             <div
               className="relative"
-              style={{
-                height: "100%",
-                width: `${progressInCurrentRank}%`,
-                background: "linear-gradient(90deg, #0044cc 0%, #0088ff 50%, #00d4ff 100%)",
-                borderRadius: 1,
-                animation: "xpShimmer 3s ease-in-out infinite",
-              }}
+              style={{ height: "100%", width: `${progressInCurrentRank}%`, background: "linear-gradient(90deg, #0044cc 0%, #0088ff 50%, #00d4ff 100%)", borderRadius: 1, animation: "xpShimmer 3s ease-in-out infinite" }}
             >
-              {/* Segment overlay */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  background: "repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(0,0,0,0.25) 14px, rgba(0,0,0,0.25) 16px)",
-                }}
-              />
-              {/* Top shine */}
-              <div
-                className="absolute top-0 left-0 right-0"
-                style={{
-                  height: "40%",
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.12), transparent)",
-                  borderRadius: 1,
-                }}
-              />
-              {/* Glow edge */}
-              <div
-                className="absolute top-0 right-0"
-                style={{
-                  width: 3, height: "100%",
-                  background: "#00d4ff",
-                  boxShadow: "0 0 8px rgba(0,212,255,1), 0 0 16px rgba(0,212,255,0.6)",
-                  borderRadius: 1,
-                  animation: "edgePulse 1.5s ease-in-out infinite",
-                }}
-              />
+              <div className="absolute inset-0" style={{ background: "repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(0,0,0,0.25) 14px, rgba(0,0,0,0.25) 16px)" }} />
+              <div className="absolute top-0 left-0 right-0" style={{ height: "40%", background: "linear-gradient(180deg, rgba(255,255,255,0.12), transparent)", borderRadius: 1 }} />
+              <div className="absolute top-0 right-0" style={{ width: 3, height: "100%", background: "#00d4ff", boxShadow: "0 0 8px rgba(0,212,255,1), 0 0 16px rgba(0,212,255,0.6)", borderRadius: 1, animation: "edgePulse 1.5s ease-in-out infinite" }} />
             </div>
-            <span
-              className="absolute"
-              style={{
-                top: "50%", right: 8,
-                transform: "translateY(-50%)",
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 8, color: "rgba(255,255,255,0.6)",
-                letterSpacing: 1,
-              }}
-            >
+            <span className="absolute" style={{ top: "50%", right: 8, transform: "translateY(-50%)", fontFamily: "'Share Tech Mono', monospace", fontSize: 8, color: "var(--nexus-text-dim)", letterSpacing: 1 }}>
               {Math.round(progressInCurrentRank)}%
             </span>
           </div>
         </div>
 
-        {/* Bar labels */}
-        <div
-          className="flex justify-between"
-          style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: 8, color: "rgba(160,210,255,0.5)",
-            letterSpacing: 1,
-          }}
-        >
+        <div className="flex justify-between" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 8, color: "var(--nexus-text-dim)", letterSpacing: 1 }}>
           <span>0</span>
           <span>{formatNum(nextMin)} XP</span>
         </div>
 
-        {/* Next rank */}
         {nextRank && (
           <div
             className="relative flex items-center justify-between overflow-hidden"
-            style={{
-              marginTop: 14,
-              padding: "10px 14px",
-              background: "rgba(255,140,0,0.04)",
-              border: "1px solid rgba(255,140,0,0.12)",
-              borderRadius: 3,
-            }}
+            style={{ marginTop: 14, padding: "10px 14px", background: "rgba(255,140,0,0.04)", border: "1px solid rgba(255,140,0,0.12)", borderRadius: 3 }}
           >
-            {/* Left amber bar */}
-            <div
-              className="absolute top-0 left-0 bottom-0"
-              style={{
-                width: 3,
-                background: "linear-gradient(180deg, #ff8c00, rgba(255,140,0,0.2))",
-                boxShadow: "0 0 6px rgba(255,140,0,0.5)",
-              }}
-            />
+            <div className="absolute top-0 left-0 bottom-0" style={{ width: 3, background: "linear-gradient(180deg, #ff8c00, rgba(255,140,0,0.2))", boxShadow: "0 0 6px rgba(255,140,0,0.5)" }} />
             <div style={{ paddingLeft: 10 }}>
-              <div
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: 7, letterSpacing: 3,
-                  color: "rgba(160,210,255,0.5)",
-                  textTransform: "uppercase" as const,
-                  marginBottom: 3,
-                }}
-              >
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 7, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const, marginBottom: 3 }}>
                 PROCHAIN RANG
               </div>
-              <div
-                style={{
-                  fontFamily: "'Orbitron', sans-serif",
-                  fontSize: 12, fontWeight: 700, letterSpacing: 3,
-                  color: "#ff8c00",
-                  textShadow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)",
-                  textTransform: "uppercase" as const,
-                }}
-              >
+              <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3, color: "#ff8c00", textShadow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)", textTransform: "uppercase" as const }}>
                 {nextRank.name} · LVL {level + 1}
               </div>
             </div>
-            <div
-              style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 13, color: "rgba(255,140,0,0.6)",
-                letterSpacing: 2,
-              }}
-            >
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 13, color: "rgba(255,140,0,0.6)", letterSpacing: 2 }}>
               <span style={{ color: "#ff8c00", fontSize: 16 }}>{formatNum(nextMin)}</span> XP
             </div>
           </div>
