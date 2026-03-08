@@ -85,6 +85,9 @@ const routes: RouteConfig[] = [
   { path: "/inbox/thread/:userId", type: "protected", Component: InboxThread },
   { path: "/health", type: "protected", Component: Health },
   { path: "/wishlist", type: "protected", Component: Wishlist },
+  { path: "/leaderboard", type: "protected", Component: Leaderboard },
+  { path: "/focus", type: "protected", Component: Focus },
+  { path: "/analytics", type: "protected", Component: Analytics },
 
   // Admin
   { path: "/admin", type: "admin", Component: Admin },
