@@ -51,7 +51,7 @@ export default function Admin() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#00050B] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
           <div className="text-destructive font-orbitron mb-2">Verification Failed</div>
