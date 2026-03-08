@@ -30,6 +30,7 @@ export interface GoalDetailData {
   pact_id?: string;
   created_at?: string;
   deadline?: string | null;
+  is_locked?: boolean;
 }
 
 export interface StepData {
