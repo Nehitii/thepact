@@ -16,7 +16,7 @@ import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
 import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
 import { MentalLoadIndicator } from '@/components/todo/MentalLoadIndicator';
 import { FocusOverlay } from '@/components/todo/FocusOverlay';
-import { BootSequence } from '@/components/todo/BootSequence';
+
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import {
