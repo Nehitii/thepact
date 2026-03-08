@@ -291,7 +291,7 @@ export const AppSidebar = memo(function AppSidebar() {
                     className={({ isActive }) =>
                       cn(
                         "group relative flex items-center rounded-md transition-all duration-200 overflow-hidden",
-                        mini ? "justify-center h-10 w-10 mx-auto" : "gap-3 px-3 py-2.5",
+                        mini ? "justify-center h-10 w-full" : "gap-3 px-3 py-2.5",
                         isActive
                           ? "text-primary bg-primary/10"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
