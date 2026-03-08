@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Settings } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Settings, BarChart3, History } from "lucide-react";
 import { usePomodoroTimer, usePomodoroSessions } from "@/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
 import { useTodoList } from "@/hooks/useTodoList";
