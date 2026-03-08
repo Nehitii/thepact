@@ -146,6 +146,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                   </div>
                 </div>
                 <h3 className="bar-card-name">{goal.name}</h3>
+                {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
                 <div className="bar-card-meta">
                   <div className="bar-card-status">{statusLabel}</div>
                   {deadlineInfo && !isCompleted && (

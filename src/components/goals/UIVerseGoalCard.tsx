@@ -306,6 +306,7 @@ export function UIVerseGoalCard({
             >
               {goal.name}
             </h3>
+            {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1 justify-center" />}
           </div>
 
           {/* Steps + Progress */}
