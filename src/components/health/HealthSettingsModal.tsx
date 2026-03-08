@@ -49,6 +49,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
   const [sleepGoal, setSleepGoal] = useState(8);
   const [hydrationGoal, setHydrationGoal] = useState(8);
   const [activityGoal, setActivityGoal] = useState(30);
+  const [checkinMode, setCheckinMode] = useState<"today" | "yesterday">("today");
 
   // Load settings when modal opens
   useEffect(() => {
