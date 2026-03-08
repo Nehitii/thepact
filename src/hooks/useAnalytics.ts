@@ -132,7 +132,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       // Parallel fetch all data - filter goals by pact_id
       const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes] = await Promise.all([
         pactId 
-          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost").eq("pact_id", pactId)
+          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps").eq("pact_id", pactId)
           : Promise.resolve({ data: [] }),
         supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
         supabase.from("finance").select("month, income, fixed_expenses, variable_expenses, savings").eq("user_id", user.id).order("month"),
