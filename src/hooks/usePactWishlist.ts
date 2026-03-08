@@ -135,7 +135,7 @@ export function useUpdatePactWishlistItem() {
     mutationFn: async (input: {
       userId: string;
       id: string;
-      patch: Partial<Pick<PactWishlistItem, "name" | "category" | "estimated_cost" | "item_type" | "goal_id" | "acquired" | "notes" | "url">>;
+      patch: Partial<Pick<PactWishlistItem, "name" | "category" | "estimated_cost" | "item_type" | "goal_id" | "acquired" | "notes" | "url" | "image_url">>;
     }) => {
       const { error } = await supabase
         .from("wishlist_items")
