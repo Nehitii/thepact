@@ -76,7 +76,7 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
 
   const inputStyle = "bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
 
-  return (
+  const content = (
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -84,7 +84,7 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-50 bg-background overflow-hidden"
+          className="fixed inset-0 z-[9999] bg-background overflow-hidden"
         >
           <div className="fixed inset-0 pointer-events-none">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
@@ -188,16 +188,16 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-3">
                         <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Start Date</Label>
-                        <Input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} style={{ colorScheme: "dark" }} />
+                        <Input type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} />
                       </div>
                       <div className="space-y-3">
                         <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">Completion Date</Label>
-                        <Input type="date" value={editCompletionDate} onChange={(e) => setEditCompletionDate(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} style={{ colorScheme: "dark" }} />
+                        <Input type="date" value={editCompletionDate} onChange={(e) => setEditCompletionDate(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} />
                       </div>
                     </div>
                     <div className="space-y-3">
                       <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2"><Clock className="h-4 w-4" />Deadline (optional)</Label>
-                      <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} style={{ colorScheme: "dark" }} />
+                      <Input type="date" value={editDeadline} onChange={(e) => setEditDeadline(e.target.value)} className={`h-12 text-base rounded-xl ${inputStyle}`} />
                       <p className="text-xs text-muted-foreground">Set a deadline to enable countdown timer on goal cards</p>
                     </div>
                   </div>
@@ -247,4 +247,6 @@ export const GoalDetailEditOverlay = React.memo(function GoalDetailEditOverlay(p
       )}
     </AnimatePresence>
   );
+
+  return createPortal(content, document.body);
 });
