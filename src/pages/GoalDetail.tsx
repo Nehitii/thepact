@@ -91,7 +91,6 @@ import {
 } from "@/components/goals/super";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
-import { useHabitLogs } from "@/hooks/useHabitLogs";
 import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
 
 // Fix 4.2: Use shared types from useGoalDetail hook
