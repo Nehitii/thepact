@@ -38,6 +38,8 @@ export interface Goal {
   tags?: string[];
   // Deadline
   deadline?: string | null;
+  // Lock
+  is_locked?: boolean;
   // Shared goal flags
   isShared?: boolean;
   isReadOnly?: boolean;

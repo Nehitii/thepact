@@ -101,7 +101,8 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   } as React.CSSProperties;
 
   return (
-    <div className="bar-card-root" style={cssVars} onClick={() => onNavigate(goal.id)}>
+    <div className="bar-card-root relative" style={cssVars} onClick={() => onNavigate(goal.id)}>
+      {goal.is_locked && <GoalLockOverlay className="rounded-none" />}
       <div className="bar-card-container noselect">
         <button
           className={`bar-card-focus-btn ${goal.is_focus ? "active" : ""}`}

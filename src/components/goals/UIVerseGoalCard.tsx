@@ -154,6 +154,7 @@ export function UIVerseGoalCard({
       className="cursor-pointer"
       style={{ width: "210px", height: "280px" }}
     >
+      {goal.is_locked && <GoalLockOverlay className="rounded-[22px]" />}
       <div
         className="relative overflow-hidden flex flex-col"
         style={{

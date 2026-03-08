@@ -129,6 +129,9 @@ export function GridViewGoalCard({
       )}
       // Maintain aspect ratio via padding trick for broad compat
     >
+      {/* Lock Overlay */}
+      {goal.is_locked && <GoalLockOverlay />}
+
       {/* Card Inner */}
       <div
         className={cn(
