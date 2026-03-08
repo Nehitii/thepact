@@ -162,10 +162,7 @@ export default function TodoList() {
     return result;
   }, [tasks, selectedTaskType, sortField, sortDirection]);
 
-  // Boot sequence on first load
-  if (!booted) {
-    return <BootSequence onComplete={() => setBooted(true)} />;
-  }
+  // Boot sequence removed for instant load
 
   if (isLoading) {
     return (
