@@ -102,6 +102,7 @@ export function useCreatePactWishlistItem() {
           goal_id: input.goalId ?? null,
           notes: input.notes ?? null,
           url: input.url ?? null,
+          image_url: input.imageUrl ?? null,
         })
         .select("id")
         .single();
