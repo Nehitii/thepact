@@ -301,10 +301,10 @@ export const AppSidebar = memo(function AppSidebar() {
                     {({ isActive }) => (
                       <>
                         {/* Active indicator bar */}
-                        {isActive && (
+                        {isActive && !mini && (
                           <div className={cn(
                             "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]",
-                            mini ? "h-5" : "h-6",
+                            "h-6",
                           )} />
                         )}
 
