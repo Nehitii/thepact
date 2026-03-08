@@ -328,14 +328,14 @@ export default function Legal() {
             {/* User Interactions Section */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-              <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-5">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 space-y-5">
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                  <h2 className="text-xl font-orbitron font-semibold text-[#8ACBFF]">
+                  <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">
                     User Interactions & Third Parties
                   </h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-4 text-sm leading-relaxed">
+                <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
                     <p className="text-[#c8e0f4] font-medium mb-1">11. User-to-User Interactions</p>
                     <p className="mb-2">When interacting with other users:</p>
