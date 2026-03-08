@@ -174,7 +174,7 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">3. User Responsibility & Accountability</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">3. User Responsibility & Accountability</p>
                     <p>
                       You are solely responsible for all content you create, upload, store, or share within the
                       application, including but not limited to:
