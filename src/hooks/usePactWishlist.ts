@@ -89,6 +89,7 @@ export function useCreatePactWishlistItem() {
       goalId?: string | null;
       notes?: string | null;
       url?: string | null;
+      imageUrl?: string | null;
     }) => {
       const { data, error } = await supabase
         .from("wishlist_items")
