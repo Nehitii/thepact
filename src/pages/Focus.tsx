@@ -94,8 +94,21 @@ export default function Focus() {
   const linkedName = linkedGoal?.name ?? (linkedTodoId ? tasks.find((t) => t.id === linkedTodoId)?.name : null);
   const linkedImageUrl = linkedGoal?.image_url ?? null;
 
+  const isActive = timer.isRunning;
+  const isBreak = timer.phase === "break";
+
   return (
-    <div className="min-h-screen relative">
+    <motion.div
+      className="min-h-screen relative overflow-hidden"
+      animate={{
+        backgroundColor: isActive
+          ? isBreak
+            ? "hsl(var(--accent) / 0.06)"
+            : "hsl(var(--primary) / 0.04)"
+          : "transparent",
+      }}
+      transition={{ duration: 1.2, ease: "easeInOut" }}
+    >
       {/* Ambient effects during active session */}
       {timer.isRunning && (
         <FocusAmbientEffects progress={timer.progress} isBreak={timer.phase === "break"} />
