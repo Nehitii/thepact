@@ -22,6 +22,8 @@ export default function Focus() {
   const [breakMin, setBreakMin] = useState(5);
   const [linkedGoalId, setLinkedGoalId] = useState<string | null>(null);
   const [linkedTodoId, setLinkedTodoId] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const startTimeRef = useRef<string | null>(null);
 
   const timer = usePomodoroTimer(workMin, breakMin);
