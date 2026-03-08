@@ -93,14 +93,16 @@ export default function Analytics() {
 
   return (
     <div className="min-h-screen max-w-5xl mx-auto px-4 pb-16">
-      {/* Module Header with Period Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <ModuleHeader
-          title="ANALY"
-          titleAccent="TICS"
-          systemLabel="PERFORMANCE // INSIGHTS"
-          badges={[]}
-        />
+      {/* Module Header */}
+      <ModuleHeader
+        title="ANALY"
+        titleAccent="TICS"
+        systemLabel="PERFORMANCE // INSIGHTS"
+        badges={[]}
+      />
+
+      {/* Period Selector */}
+      <div className="flex justify-end mb-6">
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 
