@@ -270,7 +270,7 @@ export const AppSidebar = memo(function AppSidebar() {
         )}
 
         {/* ─── NAVIGATION ─── */}
-        <nav className={cn("flex-1 space-y-5 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-1.5" : "px-2")}>
+        <nav className={cn("flex-1 space-y-5 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-0" : "px-2")}>
           {/* Main nav */}
           <div className="space-y-0.5">
             {!mini && (
