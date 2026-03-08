@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.weekly-review]
 verify_jwt = false
+
+[functions.scrape-product]
+verify_jwt = false
