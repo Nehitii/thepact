@@ -235,6 +235,19 @@ export function GoalsList({
           )}
         </motion.div>
       </AnimatePresence>
+
+      {unlockCode && (
+        <UnlockGoalModal
+          open={unlockModalOpen}
+          onClose={() => { setUnlockModalOpen(false); setPendingGoalId(null); }}
+          onUnlock={() => {
+            setUnlockModalOpen(false);
+            if (pendingGoalId) navigate(`/goals/${pendingGoalId}`);
+            setPendingGoalId(null);
+          }}
+          correctCode={unlockCode}
+        />
+      )}
     </div>
   );
 }
