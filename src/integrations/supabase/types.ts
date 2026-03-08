@@ -2735,6 +2735,7 @@ export type Database = {
           estimated_cost: number
           goal_id: string | null
           id: string
+          image_url: string | null
           item_type: string
           name: string
           notes: string | null
@@ -2752,6 +2753,7 @@ export type Database = {
           estimated_cost?: number
           goal_id?: string | null
           id?: string
+          image_url?: string | null
           item_type?: string
           name: string
           notes?: string | null
@@ -2769,6 +2771,7 @@ export type Database = {
           estimated_cost?: number
           goal_id?: string | null
           id?: string
+          image_url?: string | null
           item_type?: string
           name?: string
           notes?: string | null
