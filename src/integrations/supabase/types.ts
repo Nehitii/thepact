@@ -952,6 +952,106 @@ export type Database = {
           },
         ]
       }
+      guild_invites: {
+        Row: {
+          created_at: string | null
+          guild_id: string
+          id: string
+          invitee_id: string
+          inviter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          guild_id: string
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          guild_id?: string
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_invites_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_members: {
+        Row: {
+          guild_id: string
+          id: string
+          joined_at: string | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          guild_id: string
+          id?: string
+          joined_at?: string | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          guild_id?: string
+          id?: string
+          joined_at?: string | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_members_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guilds: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       habit_logs: {
         Row: {
           bond_reward: number | null
@@ -1608,6 +1708,7 @@ export type Database = {
           achievement_celebrations_enabled: boolean
           active_banner_id: string | null
           active_frame_id: string | null
+          active_pact_id: string | null
           active_title_id: string | null
           age: number | null
           already_funded: number | null
@@ -1651,6 +1752,7 @@ export type Database = {
           achievement_celebrations_enabled?: boolean
           active_banner_id?: string | null
           active_frame_id?: string | null
+          active_pact_id?: string | null
           active_title_id?: string | null
           age?: number | null
           already_funded?: number | null
@@ -1694,6 +1796,7 @@ export type Database = {
           achievement_celebrations_enabled?: boolean
           active_banner_id?: string | null
           active_frame_id?: string | null
+          active_pact_id?: string | null
           active_title_id?: string | null
           age?: number | null
           already_funded?: number | null
@@ -1733,7 +1836,15 @@ export type Database = {
           updated_at?: string | null
           weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_active_pact_id_fkey"
+            columns: ["active_pact_id"]
+            isOneToOne: false
+            referencedRelation: "pacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       promo_code_redemptions: {
         Row: {
@@ -1943,6 +2054,73 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      shared_goals: {
+        Row: {
+          goal_id: string
+          id: string
+          owner_id: string
+          shared_at: string | null
+          shared_with_id: string
+        }
+        Insert: {
+          goal_id: string
+          id?: string
+          owner_id: string
+          shared_at?: string | null
+          shared_with_id: string
+        }
+        Update: {
+          goal_id?: string
+          id?: string
+          owner_id?: string
+          shared_at?: string | null
+          shared_with_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_goals_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_pacts: {
+        Row: {
+          id: string
+          joined_at: string | null
+          member_id: string
+          owner_id: string
+          pact_id: string
+          role: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string | null
+          member_id: string
+          owner_id: string
+          pact_id: string
+          role?: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string | null
+          member_id?: string
+          owner_id?: string
+          pact_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_pacts_pact_id_fkey"
+            columns: ["pact_id"]
+            isOneToOne: false
+            referencedRelation: "pacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       shop_bundles: {
         Row: {
@@ -2826,6 +3004,10 @@ export type Database = {
           friendship_id: string
         }[]
       }
+      get_guild_role: {
+        Args: { _guild_id: string; _user_id: string }
+        Returns: string
+      }
       get_public_leaderboard: {
         Args: { p_limit?: number }
         Returns: {
@@ -2857,6 +3039,10 @@ export type Database = {
       increment_tracking_counter: {
         Args: { p_field: string; p_increment?: number; p_user_id: string }
         Returns: undefined
+      }
+      is_guild_member: {
+        Args: { _guild_id: string; _user_id: string }
+        Returns: boolean
       }
       purchase_bundle: { Args: { p_bundle_id: string }; Returns: Json }
       purchase_daily_deal: { Args: { p_deal_id: string }; Returns: Json }
