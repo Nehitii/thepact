@@ -18,6 +18,8 @@ import { useTranslation } from "react-i18next";
 export default function Shop() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ShopTab>("cosmetics");
+  const { user } = useAuth();
+  const { data: wishlist = [] } = useWishlist(user?.id);
 
   const handleTabChange = (tab: ShopTab) => {
     if (tab === activeTab) return;
