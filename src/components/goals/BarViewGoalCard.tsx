@@ -19,6 +19,9 @@ interface Goal {
   potential_score?: number | null;
   tags?: string[];
   deadline?: string | null;
+  isShared?: boolean;
+  isReadOnly?: boolean;
+  sharedByName?: string;
 }
 
 interface BarViewGoalCardProps {
