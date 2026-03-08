@@ -45,22 +45,22 @@ export function LockedModulesTeaser({ lockedModules, className }: LockedModulesT
       className={cn("relative group", className)}
     >
       <div
-        className="relative bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.12)] overflow-hidden hover:border-[rgba(0,180,255,0.25)] transition-all shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)]"
+        className="relative bg-[var(--nexus-bg)] backdrop-blur-xl border border-[var(--nexus-border)] overflow-hidden hover:border-[var(--nexus-hover-border)] transition-all nexus-shadow"
         style={{ borderRadius: "4px" }}
       >
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top-subtle" />
 
         <div className="p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center">
-              <Lock className="w-4 h-4 text-[rgba(160,210,255,0.3)] mr-2" />
+              <Lock className="w-4 h-4 text-[var(--nexus-text-dimmer)] mr-2" />
               {visibleModules.map((module, index) => {
                 const Icon = module.icon;
                 return (
                   <div 
                     key={module.key}
                     className={cn(
-                      "w-8 h-8 bg-[rgba(6,11,22,0.6)] border border-[rgba(0,180,255,0.12)] flex items-center justify-center",
+                      "w-8 h-8 bg-[var(--nexus-inner-bg)] border border-[var(--nexus-border)] flex items-center justify-center",
                       index > 0 && "-ml-2"
                     )}
                     style={{ zIndex: visibleModules.length - index, borderRadius: "4px" }}
@@ -75,7 +75,7 @@ export function LockedModulesTeaser({ lockedModules, className }: LockedModulesT
               })}
               {remainingCount > 0 && (
                 <div
-                  className="w-8 h-8 bg-[rgba(6,11,22,0.6)] border border-[rgba(0,180,255,0.12)] flex items-center justify-center -ml-2 text-xs text-[rgba(160,210,255,0.4)] font-mono"
+                  className="w-8 h-8 bg-[var(--nexus-inner-bg)] border border-[var(--nexus-border)] flex items-center justify-center -ml-2 text-xs text-[var(--nexus-text-dimmer)] font-mono"
                   style={{ borderRadius: "4px" }}
                 >
                   +{remainingCount}
@@ -84,10 +84,10 @@ export function LockedModulesTeaser({ lockedModules, className }: LockedModulesT
             </div>
             
             <div className="flex flex-col">
-              <span className="text-xs text-[rgba(160,210,255,0.5)] font-orbitron uppercase tracking-[0.15em]">
+              <span className="text-xs text-[var(--nexus-text-dim)] font-orbitron uppercase tracking-[0.15em]">
                 Unlock More
               </span>
-              <span className="text-[10px] text-[rgba(160,210,255,0.3)] font-rajdhani">
+              <span className="text-[10px] text-[var(--nexus-text-dimmer)] font-rajdhani">
                 {lockedModules.length} module{lockedModules.length > 1 ? 's' : ''} available
               </span>
             </div>
@@ -97,7 +97,7 @@ export function LockedModulesTeaser({ lockedModules, className }: LockedModulesT
             onClick={() => navigate('/shop')}
             size="sm"
             variant="ghost"
-            className="text-primary hover:text-primary hover:bg-[rgba(0,180,255,0.05)] gap-1"
+            className="text-primary hover:text-primary hover:bg-[var(--nexus-hover-bg)] gap-1"
           >
             <span className="text-xs font-orbitron uppercase tracking-[0.15em]">Shop</span>
             <ArrowRight className="w-3 h-3" />

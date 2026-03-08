@@ -4,37 +4,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
 import {
-  Home,
-  Target,
-  ShoppingBag,
-  ShoppingCart,
-  Users,
-  User,
-  LogOut,
-  ChevronDown,
-  Shield,
-  Database,
-  Settings,
-  Volume2,
-  UserCircle,
-  Bell,
-  Inbox,
-  ListTodo,
-  BookOpen,
-  Wallet,
-  Zap,
-  Heart,
-  Sparkles,
-  Trophy,
-  Timer,
-  BarChart3,
+  Home, Target, ShoppingBag, ShoppingCart, Users, User, LogOut, ChevronDown,
+  Shield, Database, Settings, Volume2, UserCircle, Bell, Inbox, ListTodo,
+  BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3,
 } from "lucide-react";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
+  DropdownMenuSeparator, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
@@ -92,7 +68,6 @@ export const AppSidebar = memo(function AppSidebar() {
     .filter((m) => moduleConfig[m.key])
     .map((m) => ({ ...m, config: moduleConfig[m.key] }));
 
-  // Phase 3: Use shared useProfile hook instead of inline query
   const { data: profile } = useProfile(user?.id);
 
   const handleSignOut = async () => {
@@ -101,7 +76,7 @@ export const AppSidebar = memo(function AppSidebar() {
   };
 
   return (
-    <aside className="sticky top-0 h-screen flex-shrink-0 z-40 w-72 flex flex-col bg-background/95 backdrop-blur-md border-r border-white/10 overflow-hidden font-rajdhani shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)] hide-scrollbar">
+    <aside className="sticky top-0 h-screen flex-shrink-0 z-40 w-72 flex flex-col bg-background/95 backdrop-blur-md border-r border-border overflow-hidden font-rajdhani shadow-[4px_0_24px_-12px_rgba(0,0,0,0.15)] dark:shadow-[4px_0_24px_-12px_rgba(0,0,0,0.5)] hide-scrollbar">
 
       {/* --- HEADER --- */}
       <div className="relative p-6 mb-2">
@@ -111,7 +86,7 @@ export const AppSidebar = memo(function AppSidebar() {
           <div className="relative shrink-0 group cursor-pointer" onClick={() => navigate("/")}>
             <div className="absolute -inset-2 bg-primary/20 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
             <div
-              className="relative w-12 h-12 bg-black border border-primary/50 flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
+              className="relative w-12 h-12 bg-card border border-primary/50 flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
               style={{ clipPath: "polygon(20% 0%, 100% 0%, 100% 80%, 80% 100%, 0% 100%, 0% 20%)" }}
             >
               <span className="text-2xl font-black font-orbitron text-primary drop-shadow-[0_0_10px_rgba(var(--primary),0.8)]">
@@ -137,18 +112,17 @@ export const AppSidebar = memo(function AppSidebar() {
         </div>
       </div>
 
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4" />
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-border to-transparent mb-4" />
 
       {/* --- NAVIGATION --- */}
       <nav className="flex-1 px-3 space-y-6 overflow-y-auto hide-scrollbar relative z-10 pb-6">
         <div className="space-y-1">
-          <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2 font-orbitron">
+          <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-2 font-orbitron">
             Main_Interface
           </p>
           {mainNavItems.map((item) => {
             const Icon = item.icon;
-            const isActive =
-              location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to));
+            const isActive = location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to));
             return (
               <NavLink
                 key={item.to}
@@ -159,20 +133,19 @@ export const AppSidebar = memo(function AppSidebar() {
                     "group relative flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-300 overflow-hidden",
                     isActive
                       ? "text-primary bg-primary/10 shadow-[inset_0_0_12px_-4px_rgba(var(--primary),0.3)]"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-white/5",
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
                   )
                 }
               >
                 {isActive && (
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 bg-primary rounded-r-full shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
                 )}
-
                 <Icon
                   className={cn(
                     "h-5 w-5 transition-all duration-300",
                     isActive
                       ? "text-primary drop-shadow-[0_0_6px_rgba(var(--primary),0.6)]"
-                      : "group-hover:text-slate-200 group-hover:drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]",
+                      : "group-hover:text-foreground group-hover:drop-shadow-[0_0_4px_rgba(var(--primary),0.3)]",
                   )}
                 />
                 <span
@@ -191,26 +164,15 @@ export const AppSidebar = memo(function AppSidebar() {
         {/* Modules Section */}
         {purchasedModules.length > 0 && (
           <div className="space-y-1">
-            <div
-              className="flex items-center justify-between px-4 mb-2 cursor-pointer group"
-              onClick={() => setIsModulesExpanded(!isModulesExpanded)}
-            >
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 font-orbitron group-hover:text-slate-300 transition-colors">
+            <div className="flex items-center justify-between px-4 mb-2 cursor-pointer group" onClick={() => setIsModulesExpanded(!isModulesExpanded)}>
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground font-orbitron group-hover:text-foreground transition-colors">
                 Active_Modules
               </span>
-              <div
-                className={cn("transition-transform duration-300 text-slate-600", isModulesExpanded && "rotate-180")}
-              >
+              <div className={cn("transition-transform duration-300 text-muted-foreground", isModulesExpanded && "rotate-180")}>
                 <ChevronDown size={12} />
               </div>
             </div>
-
-            <div
-              className={cn(
-                "space-y-1 transition-all duration-500 ease-in-out overflow-hidden",
-                isModulesExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0",
-              )}
-            >
+            <div className={cn("space-y-1 transition-all duration-500 ease-in-out overflow-hidden", isModulesExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0")}>
               {purchasedModules.map((m) => (
                 <NavLink
                   key={m.id}
@@ -220,14 +182,11 @@ export const AppSidebar = memo(function AppSidebar() {
                       "flex items-center gap-3 px-4 py-2.5 mx-2 rounded-md text-xs uppercase font-bold tracking-widest transition-all duration-300 border border-transparent",
                       isActive
                         ? "text-primary bg-primary/5 border-primary/20 shadow-[0_0_10px_-5px_rgba(var(--primary),0.3)]"
-                        : "text-slate-500 hover:text-slate-200 hover:bg-white/5 hover:border-white/5",
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 hover:border-border",
                     )
                   }
                 >
-                  <m.config.icon
-                    size={14}
-                    className={location.pathname === m.config.route ? "text-primary" : "opacity-70"}
-                  />
+                  <m.config.icon size={14} className={location.pathname === m.config.route ? "text-primary" : "opacity-70"} />
                   {m.config.label}
                 </NavLink>
               ))}
@@ -237,26 +196,16 @@ export const AppSidebar = memo(function AppSidebar() {
 
         {/* Profile Section */}
         <div className="space-y-1">
-          <div
-            className="flex items-center justify-between px-4 mb-2 cursor-pointer group"
-            onClick={() => setIsProfileExpanded(!isProfileExpanded)}
-          >
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 font-orbitron group-hover:text-slate-300 transition-colors">
+          <div className="flex items-center justify-between px-4 mb-2 cursor-pointer group" onClick={() => setIsProfileExpanded(!isProfileExpanded)}>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground font-orbitron group-hover:text-foreground transition-colors">
               User_Settings
             </span>
-            <div className={cn("transition-transform duration-300 text-slate-600", isProfileExpanded && "rotate-180")}>
+            <div className={cn("transition-transform duration-300 text-muted-foreground", isProfileExpanded && "rotate-180")}>
               <ChevronDown size={12} />
             </div>
           </div>
-
-          <div
-            className={cn(
-              "space-y-1 transition-all duration-500 ease-in-out overflow-hidden relative",
-              isProfileExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0",
-            )}
-          >
-            <div className="absolute left-[1.15rem] top-0 bottom-2 w-px bg-gradient-to-b from-white/10 to-transparent" />
-
+          <div className={cn("space-y-1 transition-all duration-500 ease-in-out overflow-hidden relative", isProfileExpanded ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0")}>
+            <div className="absolute left-[1.15rem] top-0 bottom-2 w-px bg-gradient-to-b from-border to-transparent" />
             {profileSubItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -265,18 +214,14 @@ export const AppSidebar = memo(function AppSidebar() {
                 className={({ isActive }) =>
                   cn(
                     "flex items-center gap-3 pl-8 pr-4 py-2 text-[10px] uppercase font-bold tracking-widest transition-colors relative",
-                    isActive ? "text-primary" : "text-slate-500 hover:text-slate-300",
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
                   )
                 }
               >
-                <div
-                  className={cn(
-                    "absolute left-[1rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border border-background transition-all",
-                    location.pathname === item.to || (!item.exact && location.pathname.startsWith(item.to + "/"))
-                      ? "bg-primary scale-110"
-                      : "bg-slate-700",
-                  )}
-                />
+                <div className={cn(
+                  "absolute left-[1rem] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full border border-background transition-all",
+                  location.pathname === item.to || (!item.exact && location.pathname.startsWith(item.to + "/")) ? "bg-primary scale-110" : "bg-muted-foreground/30",
+                )} />
                 {item.label}
               </NavLink>
             ))}
@@ -285,35 +230,35 @@ export const AppSidebar = memo(function AppSidebar() {
       </nav>
 
       {/* --- FOOTER --- */}
-      <div className="mt-auto relative border-t border-white/10 bg-black/20 backdrop-blur-xl p-4">
+      <div className="mt-auto relative border-t border-border bg-muted/20 backdrop-blur-xl p-4">
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="w-full group outline-none">
-              <div className="flex items-center gap-3 p-2.5 transition-all duration-300 rounded-lg group-hover:bg-white/5 border border-transparent group-hover:border-white/10 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+              <div className="flex items-center gap-3 p-2.5 transition-all duration-300 rounded-lg group-hover:bg-muted/50 border border-transparent group-hover:border-border relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-muted/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
 
                 <div className="relative">
-                  <Avatar className="h-9 w-9 border border-primary/30 ring-1 ring-black/50 transition-all group-hover:border-primary">
+                  <Avatar className="h-9 w-9 border border-primary/30 ring-1 ring-background/50 transition-all group-hover:border-primary">
                     <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
-                    <AvatarFallback className="bg-slate-900 text-primary font-orbitron text-xs">
+                    <AvatarFallback className="bg-muted text-primary font-orbitron text-xs">
                       {profile?.display_name?.[0] || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <NotificationBadge count={totalUnread} size="sm" className="shadow-[0_0_5px_rgba(0,0,0,0.8)]" />
+                  <NotificationBadge count={totalUnread} size="sm" className="shadow-[0_0_5px_rgba(0,0,0,0.3)]" />
                 </div>
 
                 <div className="flex-1 text-left min-w-0">
-                  <p className="text-xs font-bold text-slate-200 uppercase tracking-wider font-orbitron truncate group-hover:text-primary transition-colors">
+                  <p className="text-xs font-bold text-foreground uppercase tracking-wider font-orbitron truncate group-hover:text-primary transition-colors">
                     {profile?.display_name || "Agent"}
                   </p>
-                  <p className="text-[9px] text-slate-500 font-mono tracking-tighter truncate">
+                  <p className="text-[9px] text-muted-foreground font-mono tracking-tighter truncate">
                     ID :: {user?.id?.slice(0, 8).toUpperCase() || "UNKNOWN"}
                   </p>
                 </div>
 
-                <div className="text-slate-600 group-hover:text-primary transition-colors">
+                <div className="text-muted-foreground group-hover:text-primary transition-colors">
                   <Sparkles size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </div>
@@ -323,31 +268,25 @@ export const AppSidebar = memo(function AppSidebar() {
           <DropdownMenuContent
             align="end"
             side="right"
-            className="w-56 bg-[#0a0f18] border-white/10 text-slate-200 font-rajdhani shadow-2xl backdrop-blur-xl"
+            className="w-56 bg-popover border-border text-popover-foreground font-rajdhani shadow-2xl backdrop-blur-xl"
             sideOffset={10}
           >
-            <div className="px-2 py-1.5 text-[10px] uppercase font-bold text-slate-500 tracking-widest">
+            <div className="px-2 py-1.5 text-[10px] uppercase font-bold text-muted-foreground tracking-widest">
               Quick Actions
             </div>
-            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuSeparator className="bg-border" />
 
-            <DropdownMenuItem
-              onClick={() => navigate("/inbox")}
-              className="p-2.5 focus:bg-primary/10 focus:text-primary cursor-pointer group my-1"
-            >
+            <DropdownMenuItem onClick={() => navigate("/inbox")} className="p-2.5 focus:bg-primary/10 focus:text-primary cursor-pointer group my-1">
               <Inbox className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
               <span className="text-xs font-bold tracking-wide">Inbox</span>
               {totalUnread > 0 && (
-                <span className="ml-auto text-[9px] bg-primary text-black px-1.5 py-0.5 font-black rounded-sm">
+                <span className="ml-auto text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 font-black rounded-sm">
                   {totalUnread}
                 </span>
               )}
             </DropdownMenuItem>
 
-            <DropdownMenuItem
-              onClick={handleSignOut}
-              className="p-2.5 text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer group my-1"
-            >
+            <DropdownMenuItem onClick={handleSignOut} className="p-2.5 text-red-400 focus:bg-red-500/10 focus:text-red-400 cursor-pointer group my-1">
               <LogOut className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
               <span className="text-xs font-bold tracking-wide">Disconnect</span>
             </DropdownMenuItem>

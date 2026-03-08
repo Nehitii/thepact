@@ -56,10 +56,10 @@ export function NexusHeroBanner({
     <div
       className="relative overflow-hidden"
       style={{
-        backgroundColor: "rgba(6,11,22,0.92)",
-        border: "1px solid rgba(0,180,255,0.12)",
+        background: "var(--nexus-bg)",
+        border: "1px solid var(--nexus-border)",
         borderRadius: 4,
-        boxShadow: "0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06)",
+        boxShadow: "var(--nexus-shadow)",
         padding: "48px 40px",
         textAlign: "center",
       }}
@@ -67,7 +67,7 @@ export function NexusHeroBanner({
       <CornerBrackets />
 
       {/* Top gradient line */}
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(0,210,255,0.4), transparent)" }} />
+      <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
       {/* Background grid */}
       <div
@@ -105,7 +105,7 @@ export function NexusHeroBanner({
             fontWeight: 900,
             letterSpacing: 6,
             textTransform: "uppercase" as const,
-            color: "#ddeeff",
+            color: "var(--nexus-heading)",
             lineHeight: 1.1,
             ...effectStyle,
           }}
@@ -119,7 +119,7 @@ export function NexusHeroBanner({
             fontWeight: 300,
             fontSize: 13,
             letterSpacing: 4,
-            color: "rgba(160,210,255,0.55)",
+            color: "var(--nexus-text-dim)",
             textTransform: "uppercase" as const,
             marginTop: 10,
             maxWidth: 500,
@@ -146,7 +146,7 @@ export function NexusHeroBanner({
                 style={{
                   fontSize: 9,
                   letterSpacing: 3,
-                  color: "rgba(160,210,255,0.5)",
+                  color: "var(--nexus-text-dim)",
                   textTransform: "uppercase" as const,
                   marginTop: 4,
                 }}

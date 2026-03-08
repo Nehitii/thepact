@@ -71,22 +71,22 @@ export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPa
     <div
       className={`relative ${className}`}
       style={{
-        backgroundColor: "rgba(6,11,22,0.92)",
-        border: "1px solid rgba(0,180,255,0.12)",
+        background: "var(--nexus-bg)",
+        border: "1px solid var(--nexus-border)",
         borderRadius: 4,
-        boxShadow: "0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06)",
+        boxShadow: "var(--nexus-shadow)",
         padding: 22,
       }}
     >
       <CornerBrackets color="rgba(120,130,80,0.4)" />
-      <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(0,210,255,0.4), transparent)" }} />
+      <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
       <p
         className="mb-4"
         style={{
           fontFamily: "'Share Tech Mono', monospace",
           fontSize: 9, letterSpacing: 3,
-          color: "rgba(160,210,255,0.5)",
+          color: "var(--nexus-text-dim)",
           textTransform: "uppercase" as const,
         }}
       >
@@ -104,8 +104,8 @@ export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPa
               className="relative flex flex-col items-center gap-[9px] cursor-pointer overflow-hidden group"
               style={{
                 padding: "16px 14px 13px",
-                background: "rgba(0,0,0,0.2)",
-                border: `1px solid rgba(0,180,255,0.12)`,
+                background: "var(--nexus-inner-bg)",
+                border: "1px solid var(--nexus-border)",
                 borderRadius: 4,
                 opacity: locked ? 0.4 : 1,
                 transition: "all 0.22s cubic-bezier(0.2, 0, 0, 1)",
@@ -114,14 +114,14 @@ export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPa
               onMouseEnter={(e) => {
                 if (!locked) {
                   e.currentTarget.style.borderColor = btn.color;
-                  e.currentTarget.style.background = "rgba(0,0,0,0.35)";
+                  e.currentTarget.style.background = "var(--nexus-hover-bg)";
                   e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = `0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px ${btn.color}, inset 0 0 20px rgba(0,0,0,0.2)`;
+                  e.currentTarget.style.boxShadow = `0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px ${btn.color}`;
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = "rgba(0,180,255,0.12)";
-                e.currentTarget.style.background = "rgba(0,0,0,0.2)";
+                e.currentTarget.style.borderColor = "var(--nexus-border)";
+                e.currentTarget.style.background = "var(--nexus-inner-bg)";
                 e.currentTarget.style.transform = "none";
                 e.currentTarget.style.boxShadow = "none";
               }}
@@ -158,14 +158,14 @@ export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPa
               </span>
 
               {locked && (
-                <Lock size={10} className="absolute top-1.5 left-1.5" style={{ color: "rgba(160,210,255,0.3)" }} />
+                <Lock size={10} className="absolute top-1.5 left-1.5" style={{ color: "var(--nexus-text-dimmer)" }} />
               )}
               {btn.icon(btn.color)}
               <span
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 9, letterSpacing: 2.5,
-                  color: "rgba(160,210,255,0.5)",
+                  color: "var(--nexus-text-dim)",
                   textTransform: "uppercase" as const,
                   textAlign: "center",
                   lineHeight: 1.2,
@@ -184,8 +184,8 @@ export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPa
         className="w-full relative flex items-center justify-center gap-[14px] cursor-pointer overflow-hidden"
         style={{
           padding: "12px 20px",
-          background: "rgba(0,0,0,0.2)",
-          border: "1px solid rgba(0,180,255,0.12)",
+          background: "var(--nexus-inner-bg)",
+          border: "1px solid var(--nexus-border)",
           borderRadius: 4,
           opacity: ownedModules["todo-list"] ? 1 : 0.4,
           transition: "all 0.22s cubic-bezier(0.2, 0, 0, 1)",
@@ -193,13 +193,13 @@ export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPa
         onMouseEnter={(e) => {
           if (ownedModules["todo-list"]) {
             e.currentTarget.style.borderColor = "#ffd700";
-            e.currentTarget.style.background = "rgba(0,0,0,0.35)";
+            e.currentTarget.style.background = "var(--nexus-hover-bg)";
             e.currentTarget.style.transform = "translateY(-2px)";
           }
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "rgba(0,180,255,0.12)";
-          e.currentTarget.style.background = "rgba(0,0,0,0.2)";
+          e.currentTarget.style.borderColor = "var(--nexus-border)";
+          e.currentTarget.style.background = "var(--nexus-inner-bg)";
           e.currentTarget.style.transform = "none";
         }}
       >
@@ -212,7 +212,7 @@ export function QuickAccessPanel({ ownedModules, className = "" }: QuickAccessPa
           <line x1="7" y1="14" x2="19" y2="14" strokeOpacity="0.5" />
           <line x1="7" y1="18" x2="14" y2="18" strokeOpacity="0.4" />
         </svg>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, letterSpacing: 2.5, color: "rgba(160,210,255,0.5)", textTransform: "uppercase" as const }}>
+        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, letterSpacing: 2.5, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
           TO-DO LIST
         </span>
       </button>

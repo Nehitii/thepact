@@ -99,18 +99,17 @@ export function SmartProjectHeader({
         initial={{ opacity: 0, y: -12, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 80, damping: 14 }}
-        className="relative overflow-hidden bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.12)] shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)]"
+        className="relative overflow-hidden bg-[var(--nexus-bg)] backdrop-blur-xl border border-[var(--nexus-border)] nexus-shadow"
         style={{ borderRadius: "4px" }}
       >
         {/* Permanent top highlight */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top-subtle" />
 
         {/* Header bar */}
         <button
           onClick={() => scan.done && setExpanded((e) => !e)}
           className="relative z-10 w-full flex items-center gap-3 px-4 py-3 text-left group"
         >
-          {/* Brain icon - simplified inline */}
           <Brain
             className={cn(
               "w-4 h-4 text-primary shrink-0",
@@ -118,7 +117,6 @@ export function SmartProjectHeader({
             )}
           />
 
-          {/* Title + status */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-orbitron font-bold uppercase tracking-[0.15em] text-primary">

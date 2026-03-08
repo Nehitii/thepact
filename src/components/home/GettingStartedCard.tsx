@@ -48,11 +48,11 @@ export function GettingStartedCard({
       className={cn("relative", className)}
     >
       <div
-        className="relative bg-[rgba(6,11,22,0.92)] backdrop-blur-xl border border-[rgba(0,180,255,0.12)] overflow-hidden shadow-[0_8px_48px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(0,212,255,0.06)]"
+        className="relative bg-[var(--nexus-bg)] backdrop-blur-xl border border-[var(--nexus-border)] overflow-hidden nexus-shadow"
         style={{ borderRadius: "4px" }}
       >
         {/* Permanent top highlight */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,210,255,0.12)] to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top-subtle" />
 
         <div className="relative z-10 p-6">
           {/* Header */}
@@ -61,14 +61,14 @@ export function GettingStartedCard({
               <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] font-orbitron text-primary">
                 Getting Started
               </h3>
-              <p className="text-xs text-[rgba(160,210,255,0.4)] font-rajdhani mt-1">
+              <p className="text-xs text-[var(--nexus-text-dimmer)] font-rajdhani mt-1">
                 {completedCount}/{steps.length} steps completed
               </p>
             </div>
             
             <div className="relative w-12 h-12">
               <svg className="w-12 h-12 -rotate-90">
-                <circle cx="24" cy="24" r="20" stroke="rgba(0,180,255,0.08)" strokeWidth="3" fill="none" />
+                <circle cx="24" cy="24" r="20" stroke="var(--nexus-separator)" strokeWidth="3" fill="none" />
                 <circle cx="24" cy="24" r="20" stroke="hsl(var(--primary))" strokeWidth="3" fill="none" strokeLinecap="round" strokeDasharray={`${progress * 1.26} 126`} className="transition-all duration-500" />
               </svg>
               <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-primary font-mono tabular-nums">
@@ -90,14 +90,14 @@ export function GettingStartedCard({
                   className={cn(
                     "flex items-center gap-4 p-3 transition-all",
                     step.completed 
-                      ? "bg-[rgba(0,255,136,0.03)] border border-[rgba(0,255,136,0.12)]" 
-                      : "bg-[rgba(0,180,255,0.03)] border border-[rgba(0,180,255,0.08)] hover:border-[rgba(0,180,255,0.2)]"
+                      ? "bg-emerald-500/5 border border-emerald-500/15 dark:bg-[rgba(0,255,136,0.03)] dark:border-[rgba(0,255,136,0.12)]" 
+                      : "bg-primary/5 border border-primary/10 hover:border-primary/25 dark:bg-[rgba(0,180,255,0.03)] dark:border-[rgba(0,180,255,0.08)] dark:hover:border-[rgba(0,180,255,0.2)]"
                   )}
                   style={{ borderRadius: "4px" }}
                 >
                   <div className={cn(
                     "flex-shrink-0 w-10 h-10 flex items-center justify-center",
-                    step.completed ? "bg-[rgba(0,255,136,0.08)]" : "bg-[rgba(0,180,255,0.05)]"
+                    step.completed ? "bg-emerald-500/10 dark:bg-[rgba(0,255,136,0.08)]" : "bg-primary/5 dark:bg-[rgba(0,180,255,0.05)]"
                   )} style={{ borderRadius: "4px" }}>
                     {step.completed ? (
                       <CheckCircle className="w-5 h-5 text-emerald-400" />
@@ -113,7 +113,7 @@ export function GettingStartedCard({
                     )}>
                       {step.title}
                     </h4>
-                    <p className="text-xs text-[rgba(160,210,255,0.35)] font-rajdhani truncate">
+                    <p className="text-xs text-[var(--nexus-text-dimmer)] font-rajdhani truncate">
                       {step.description}
                     </p>
                   </div>
@@ -123,7 +123,7 @@ export function GettingStartedCard({
                       onClick={step.action}
                       size="sm"
                       variant="ghost"
-                      className="flex-shrink-0 text-primary hover:text-primary hover:bg-[rgba(0,180,255,0.05)]"
+                      className="flex-shrink-0 text-primary hover:text-primary hover:bg-[var(--nexus-hover-bg)]"
                     >
                       <span className="text-xs font-orbitron uppercase tracking-[0.1em]">{step.actionLabel}</span>
                       <ArrowRight className="w-3 h-3 ml-1" />
