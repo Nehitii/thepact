@@ -1,13 +1,9 @@
-import { ReactNode } from "react";
+import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { CommandPalette } from "@/components/CommandPalette";
 
-interface AppLayoutProps {
-  children: ReactNode;
-}
-
-export function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout() {
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -24,7 +20,9 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 min-w-0 overflow-x-clip">{children}</div>
+        <div className="flex-1 min-w-0 overflow-x-clip">
+          <Outlet />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );

@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
-import { useQuery } from "@tanstack/react-query";
+import { useProfile } from "@/hooks/useProfile";
 import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
 import {
   Home,
@@ -72,7 +71,7 @@ const moduleConfig: Record<string, { icon: any; route: string; label: string }> 
   wishlist: { icon: ShoppingCart, route: "/wishlist", label: "Wishlist" },
 };
 
-export function AppSidebar() {
+export const AppSidebar = memo(function AppSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,18 +92,8 @@ export function AppSidebar() {
     .filter((m) => moduleConfig[m.key])
     .map((m) => ({ ...m, config: moduleConfig[m.key] }));
 
-  const { data: profile } = useQuery({
-    queryKey: ["sidebar-profile", user?.id],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_url")
-        .eq("id", user?.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user?.id,
-  });
+  // Phase 3: Use shared useProfile hook instead of inline query
+  const { data: profile } = useProfile(user?.id);
 
   const handleSignOut = async () => {
     await signOut();
@@ -312,7 +301,6 @@ export function AppSidebar() {
                       {profile?.display_name?.[0] || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  {/* Correction : Badge placé directement en sibling de l'Avatar, sans wrapper positionné */}
                   <NotificationBadge count={totalUnread} size="sm" className="shadow-[0_0_5px_rgba(0,0,0,0.8)]" />
                 </div>
 
@@ -368,4 +356,4 @@ export function AppSidebar() {
       </div>
     </aside>
   );
-}
+});

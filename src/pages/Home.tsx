@@ -136,8 +136,14 @@ export default function Home() {
 
   const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
 
+  // Phase 4: Wrap navigation in useEffect to avoid render-time side effects
+  useEffect(() => {
+    if (!pactLoading && !pact && user) {
+      navigate("/onboarding");
+    }
+  }, [pactLoading, pact, user, navigate]);
+
   if (!pactLoading && !pact && user) {
-    navigate("/onboarding");
     return null;
   }
 

@@ -45,90 +45,61 @@ const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const AdminPromoManager = lazy(() => import("./pages/AdminPromoManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-// Route configuration
-type RouteConfig =
-  | { path: string; type: "public"; Component: React.LazyExoticComponent<React.ComponentType> }
-  | { path: string; type: "protected"; Component: React.LazyExoticComponent<React.ComponentType> }
-  | { path: string; type: "protectedNoLayout"; Component: React.LazyExoticComponent<React.ComponentType> }
-  | { path: string; type: "admin"; Component: React.LazyExoticComponent<React.ComponentType> };
-
-const routes: RouteConfig[] = [
-  // Public
-  { path: "/auth", type: "public", Component: Auth },
-
-  // Protected without layout (special pages)
-  { path: "/two-factor", type: "protectedNoLayout", Component: TwoFactor },
-  { path: "/onboarding", type: "protectedNoLayout", Component: Onboarding },
-
-  // Protected with layout
-  { path: "/", type: "protected", Component: Home },
-  { path: "/the-call", type: "protected", Component: TheCall },
-  { path: "/goals", type: "protected", Component: Goals },
-  { path: "/goals/new", type: "protected", Component: NewGoal },
-  { path: "/goals/:id", type: "protected", Component: GoalDetail },
-  { path: "/step/:stepId", type: "protected", Component: StepDetail },
-  { path: "/finance", type: "protected", Component: Finance },
-  { path: "/journal", type: "protected", Component: Journal },
-  { path: "/profile", type: "protected", Component: Profile },
-  { path: "/profile/bounded", type: "protected", Component: BoundedProfile },
-  { path: "/profile/pact-settings", type: "protected", Component: PactSettings },
-  { path: "/profile/display-sound", type: "protected", Component: DisplaySound },
-  { path: "/profile/privacy", type: "protected", Component: PrivacyControl },
-  { path: "/profile/notifications", type: "protected", Component: NotificationSettings },
-  { path: "/profile/data", type: "protected", Component: DataPortability },
-  { path: "/achievements", type: "protected", Component: Achievements },
-  { path: "/shop", type: "protected", Component: Shop },
-  { path: "/community", type: "protected", Component: Community },
-  { path: "/legal", type: "protected", Component: Legal },
-  { path: "/todo", type: "protected", Component: TodoList },
-  { path: "/inbox", type: "protected", Component: Inbox },
-  { path: "/inbox/thread/:userId", type: "protected", Component: InboxThread },
-  { path: "/health", type: "protected", Component: Health },
-  { path: "/wishlist", type: "protected", Component: Wishlist },
-  { path: "/leaderboard", type: "protected", Component: Leaderboard },
-  { path: "/focus", type: "protected", Component: Focus },
-  { path: "/analytics", type: "protected", Component: Analytics },
-
-  // Admin
-  { path: "/admin", type: "admin", Component: Admin },
-  { path: "/admin/cosmetics", type: "admin", Component: AdminCosmeticsManager },
-  { path: "/admin/modules", type: "admin", Component: AdminModuleManager },
-  { path: "/admin/money", type: "admin", Component: AdminMoneyManager },
-  { path: "/admin/mode", type: "admin", Component: AdminMode },
-  { path: "/admin/notifications", type: "admin", Component: AdminNotifications },
-  { path: "/admin/promo-codes", type: "admin", Component: AdminPromoManager },
-];
-
-function renderRoute({ path, type, Component }: RouteConfig) {
-  switch (type) {
-    case "public":
-      return <Route key={path} path={path} element={<Suspense><Component /></Suspense>} />;
-    case "protectedNoLayout":
-      return (
-        <Route key={path} path={path} element={
-          <ProtectedRoute><Suspense><Component /></Suspense></ProtectedRoute>
-        } />
-      );
-    case "protected":
-      return (
-        <Route key={path} path={path} element={
-          <ProtectedRoute><AppLayout><Suspense><Component /></Suspense></AppLayout></ProtectedRoute>
-        } />
-      );
-    case "admin":
-      return (
-        <Route key={path} path={path} element={
-          <AdminRoute><Suspense><Component /></Suspense></AdminRoute>
-        } />
-      );
-  }
-}
+const SuspensePage = ({ children }: { children: React.ReactNode }) => (
+  <Suspense>{children}</Suspense>
+);
 
 const App = () => (
   <AppProviders>
     <Routes>
-      {routes.map(renderRoute)}
-      <Route path="*" element={<Suspense><NotFound /></Suspense>} />
+      {/* Public */}
+      <Route path="/auth" element={<SuspensePage><Auth /></SuspensePage>} />
+
+      {/* Protected without layout */}
+      <Route path="/two-factor" element={<ProtectedRoute><SuspensePage><TwoFactor /></SuspensePage></ProtectedRoute>} />
+      <Route path="/onboarding" element={<ProtectedRoute><SuspensePage><Onboarding /></SuspensePage></ProtectedRoute>} />
+
+      {/* Protected with layout — AppLayout mounts once, only page content swaps */}
+      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        <Route index element={<SuspensePage><Home /></SuspensePage>} />
+        <Route path="the-call" element={<SuspensePage><TheCall /></SuspensePage>} />
+        <Route path="goals" element={<SuspensePage><Goals /></SuspensePage>} />
+        <Route path="goals/new" element={<SuspensePage><NewGoal /></SuspensePage>} />
+        <Route path="goals/:id" element={<SuspensePage><GoalDetail /></SuspensePage>} />
+        <Route path="step/:stepId" element={<SuspensePage><StepDetail /></SuspensePage>} />
+        <Route path="finance" element={<SuspensePage><Finance /></SuspensePage>} />
+        <Route path="journal" element={<SuspensePage><Journal /></SuspensePage>} />
+        <Route path="profile" element={<SuspensePage><Profile /></SuspensePage>} />
+        <Route path="profile/bounded" element={<SuspensePage><BoundedProfile /></SuspensePage>} />
+        <Route path="profile/pact-settings" element={<SuspensePage><PactSettings /></SuspensePage>} />
+        <Route path="profile/display-sound" element={<SuspensePage><DisplaySound /></SuspensePage>} />
+        <Route path="profile/privacy" element={<SuspensePage><PrivacyControl /></SuspensePage>} />
+        <Route path="profile/notifications" element={<SuspensePage><NotificationSettings /></SuspensePage>} />
+        <Route path="profile/data" element={<SuspensePage><DataPortability /></SuspensePage>} />
+        <Route path="achievements" element={<SuspensePage><Achievements /></SuspensePage>} />
+        <Route path="shop" element={<SuspensePage><Shop /></SuspensePage>} />
+        <Route path="community" element={<SuspensePage><Community /></SuspensePage>} />
+        <Route path="legal" element={<SuspensePage><Legal /></SuspensePage>} />
+        <Route path="todo" element={<SuspensePage><TodoList /></SuspensePage>} />
+        <Route path="inbox" element={<SuspensePage><Inbox /></SuspensePage>} />
+        <Route path="inbox/thread/:userId" element={<SuspensePage><InboxThread /></SuspensePage>} />
+        <Route path="health" element={<SuspensePage><Health /></SuspensePage>} />
+        <Route path="wishlist" element={<SuspensePage><Wishlist /></SuspensePage>} />
+        <Route path="leaderboard" element={<SuspensePage><Leaderboard /></SuspensePage>} />
+        <Route path="focus" element={<SuspensePage><Focus /></SuspensePage>} />
+        <Route path="analytics" element={<SuspensePage><Analytics /></SuspensePage>} />
+      </Route>
+
+      {/* Admin */}
+      <Route path="/admin" element={<AdminRoute><SuspensePage><Admin /></SuspensePage></AdminRoute>} />
+      <Route path="/admin/cosmetics" element={<AdminRoute><SuspensePage><AdminCosmeticsManager /></SuspensePage></AdminRoute>} />
+      <Route path="/admin/modules" element={<AdminRoute><SuspensePage><AdminModuleManager /></SuspensePage></AdminRoute>} />
+      <Route path="/admin/money" element={<AdminRoute><SuspensePage><AdminMoneyManager /></SuspensePage></AdminRoute>} />
+      <Route path="/admin/mode" element={<AdminRoute><SuspensePage><AdminMode /></SuspensePage></AdminRoute>} />
+      <Route path="/admin/notifications" element={<AdminRoute><SuspensePage><AdminNotifications /></SuspensePage></AdminRoute>} />
+      <Route path="/admin/promo-codes" element={<AdminRoute><SuspensePage><AdminPromoManager /></SuspensePage></AdminRoute>} />
+
+      <Route path="*" element={<SuspensePage><NotFound /></SuspensePage>} />
     </Routes>
   </AppProviders>
 );

@@ -1,11 +1,8 @@
 /**
- * Supabase client re-export.
- * Re-exports the auto-generated client for backward compatibility.
- * New code should import directly from @/integrations/supabase/client.
+ * Supabase utility functions.
+ * The supabase client should be imported directly from @/integrations/supabase/client.
  */
 import { supabase } from "@/integrations/supabase/client";
-
-export { supabase };
 
 /**
  * Creates a new pact record for a user.
