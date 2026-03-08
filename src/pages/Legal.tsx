@@ -193,9 +193,9 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">4. Prohibited Use</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">4. Prohibited Use</p>
                     <p className="mb-2">The Pact must not be used to:</p>
-                    <ul className="ml-4 space-y-1 text-[#ff6b6b]/80">
+                    <ul className="ml-4 space-y-1 text-destructive/80">
                       <li>• Plan, organize, promote, or facilitate illegal activities</li>
                       <li>• Store or distribute unlawful, harmful, abusive, fraudulent, or misleading content</li>
                       <li>• Violate any local, national, or international law</li>
