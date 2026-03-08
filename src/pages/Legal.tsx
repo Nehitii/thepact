@@ -159,7 +159,7 @@ export default function Legal() {
                       all applicable laws and regulations, and any additional guidelines provided within the
                       application.
                     </p>
-                    <p className="mt-1 text-[#8ACBFF]/80 italic">
+                    <p className="mt-1 text-primary/80 italic">
                       If you do not agree with these terms, you must discontinue use of the application.
                     </p>
                   </div>
