@@ -2533,8 +2533,9 @@ All colors MUST be HSL.
 .bar-card-fill {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, var(--accent), hsl(var(--accent) / 0.4));
-  opacity: 0.8;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, transparent));
+  opacity: 0.85;
+  border-radius: 4px;
 }
 
 .bar-card-shine {
