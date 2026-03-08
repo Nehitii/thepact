@@ -1,53 +1,61 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { BarChart3, Target, Heart, Wallet, CheckSquare, Timer, TrendingUp, Flame, ListChecks, DollarSign, CreditCard, Receipt } from "lucide-react";
+import { BarChart3, Target, Heart, Wallet, CheckSquare, Timer, TrendingUp, Flame, ListChecks, DollarSign, CreditCard, Receipt, Activity } from "lucide-react";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCurrency } from "@/contexts/CurrencyContext";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { formatCurrency } from "@/lib/currency";
 import { getDifficultyLabel, getTagLabel } from "@/lib/goalConstants";
+import { format, parseISO } from "date-fns";
+import {
+  PeriodSelector,
+  AnalyticsPeriod,
+  AnalyticsHero,
+  TrendStatCard,
+  ChartCard,
+} from "@/components/analytics";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
-function StatCard({ icon: Icon, label, value, sub, color }: { icon: any; label: string; value: string | number; sub?: string; color: string }) {
-  return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="p-4 rounded-xl bg-card/60 backdrop-blur border border-border/50">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className={`h-4 w-4 ${color}`} />
-        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{label}</span>
-      </div>
-      <p className="text-2xl font-orbitron font-bold text-foreground">{value}</p>
-      {sub && <p className="text-[10px] font-mono text-muted-foreground mt-1">{sub}</p>}
-    </motion.div>
-  );
-}
-
-function ChartCard({ title, children, className = "" }: { title: string; children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`p-5 rounded-xl bg-card/60 backdrop-blur border border-border/50 ${className}`}>
-      <h3 className="text-xs font-mono uppercase tracking-wider text-muted-foreground mb-4">{title}</h3>
-      <div className="h-52">{children}</div>
-    </div>
-  );
-}
-
 export default function Analytics() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("pact");
-  const { data, isLoading } = useAnalytics();
+  const [period, setPeriod] = useState<AnalyticsPeriod>("all");
+  const { data, isLoading } = useAnalytics(period);
   const { currency } = useCurrency();
+  const locale = useDateFnsLocale();
+
+  // Format month for display
+  const formatMonth = (monthStr: string) => {
+    try {
+      const date = parseISO(`${monthStr}-01`);
+      return format(date, "MMM yy", { locale });
+    } catch {
+      return monthStr;
+    }
+  };
+
+  // Format date for display
+  const formatDate = (dateStr: string) => {
+    try {
+      return format(parseISO(dateStr), "d MMM", { locale });
+    } catch {
+      return dateStr;
+    }
+  };
 
   if (isLoading) {
     return (
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24" />)}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
         </div>
         <div className="grid md:grid-cols-2 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-64" />)}
@@ -58,7 +66,7 @@ export default function Analytics() {
 
   if (!data) return null;
 
-  const { summary, goalsOverTime, healthTrend, financeTrend, todoStats, goalsByDifficulty, goalsByTag } = data;
+  const { summary, goalsOverTime, healthTrend, financeTrend, todoStats, goalsByDifficulty, goalsByTag, pomodoroTrend, goalVelocity, trends } = data;
 
   // Prepare pie chart data with labels
   const difficultyPieData = goalsByDifficulty.map(d => ({
@@ -73,32 +81,45 @@ export default function Analytics() {
     color: d.color,
   })).sort((a, b) => b.value - a.value).slice(0, 8); // Top 8 tags
 
+  // Sparkline data for trend cards
+  const healthSparkline = healthTrend.slice(-14).map(h => h.score);
+  const pomodoroSparkline = pomodoroTrend.slice(-14).map(p => p.minutes);
+  const goalsSparkline = goalsOverTime.slice(-6).map(g => g.completed);
+
+  // Completion rate
+  const completionRate = summary.totalGoals > 0 
+    ? Math.round((summary.completedGoals / summary.totalGoals) * 100) 
+    : 0;
+
   return (
     <div className="min-h-screen max-w-5xl mx-auto px-4 pb-16">
-      {/* Module Header */}
-      <ModuleHeader
-        title="ANALY"
-        titleAccent="TICS"
-        systemLabel="PERFORMANCE // INSIGHTS"
-        badges={[]}
-      />
+      {/* Module Header with Period Selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <ModuleHeader
+          title="ANALY"
+          titleAccent="TICS"
+          systemLabel="PERFORMANCE // INSIGHTS"
+          badges={[]}
+        />
+        <PeriodSelector value={period} onChange={setPeriod} />
+      </div>
 
       {/* Tab Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 mb-6 bg-card/60 backdrop-blur border border-border/50 p-1 rounded-xl">
+        <TabsList className="w-full grid grid-cols-2 mb-6 bg-card/60 backdrop-blur border border-border/50 p-1.5 rounded-xl">
           <TabsTrigger
             value="pact"
-            className="flex items-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary rounded-lg transition-all"
+            className="flex items-center gap-2 data-[state=active]:bg-primary/30 data-[state=active]:text-primary data-[state=active]:border data-[state=active]:border-primary/30 data-[state=active]:shadow-lg data-[state=active]:shadow-primary/10 rounded-lg transition-all font-mono text-xs uppercase tracking-wider"
           >
             <Flame className="h-4 w-4" />
-            <span className="font-mono text-xs uppercase tracking-wider">Pact & Goals</span>
+            Pact & Goals
           </TabsTrigger>
           <TabsTrigger
             value="modules"
-            className="flex items-center gap-2 data-[state=active]:bg-accent/20 data-[state=active]:text-accent-foreground rounded-lg transition-all"
+            className="flex items-center gap-2 data-[state=active]:bg-accent/30 data-[state=active]:text-accent-foreground data-[state=active]:border data-[state=active]:border-accent/30 data-[state=active]:shadow-lg rounded-lg transition-all font-mono text-xs uppercase tracking-wider"
           >
             <BarChart3 className="h-4 w-4" />
-            <span className="font-mono text-xs uppercase tracking-wider">Modules</span>
+            Modules
           </TabsTrigger>
         </TabsList>
 
@@ -106,43 +127,54 @@ export default function Analytics() {
         {/* TAB 1: PACT & GOALS */}
         {/* ═══════════════════════════════════════════════════════════════════════ */}
         <TabsContent value="pact" className="space-y-6 mt-0">
-          {/* Goals & Steps Stats */}
+          {/* Hero KPIs */}
+          <AnalyticsHero
+            completionRate={completionRate}
+            totalXP={summary.totalXP}
+            activeGoals={summary.activeGoals}
+            burnRate={summary.monthlyBurnRate}
+            currency={currency}
+          />
+
+          {/* Progress Card - Goals & Steps Combined */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={Target} label="Total Goals" value={summary.totalGoals} color="text-primary" />
-            <StatCard icon={TrendingUp} label="Completed" value={summary.completedGoals} sub={summary.totalGoals ? `${Math.round((summary.completedGoals / summary.totalGoals) * 100)}%` : "—"} color="text-emerald-400" />
-            <StatCard icon={ListChecks} label="Total Steps" value={summary.totalSteps} color="text-violet-400" />
-            <StatCard icon={CheckSquare} label="Steps Done" value={summary.completedSteps} sub={summary.totalSteps ? `${Math.round((summary.completedSteps / summary.totalSteps) * 100)}%` : "—"} color="text-cyan-400" />
+            <TrendStatCard
+              icon={Target}
+              label="Goals Completed"
+              value={summary.completedGoals}
+              trend={period !== "all" ? trends.goalsCompleted.percentChange : undefined}
+              sparklineData={goalsSparkline}
+              color="text-emerald-400"
+            />
+            <TrendStatCard
+              icon={ListChecks}
+              label="Steps Done"
+              value={summary.completedSteps}
+              trend={period !== "all" ? trends.stepsCompleted.percentChange : undefined}
+              color="text-cyan-400"
+            />
+            <TrendStatCard
+              icon={DollarSign}
+              label="Total Cost"
+              value={formatCurrency(summary.totalCost, currency)}
+              color="text-blue-400"
+            />
+            <TrendStatCard
+              icon={Receipt}
+              label="Remaining"
+              value={formatCurrency(summary.remainingCost, currency)}
+              color="text-amber-400"
+            />
           </div>
 
-          {/* Cost Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <StatCard icon={DollarSign} label="Total Cost" value={formatCurrency(summary.totalCost, currency)} color="text-blue-400" />
-            <StatCard icon={CreditCard} label="Paid" value={formatCurrency(summary.paidCost, currency)} color="text-emerald-400" />
-            <StatCard icon={Receipt} label="Remaining" value={formatCurrency(summary.remainingCost, currency)} color="text-amber-400" />
-          </div>
-
-          {/* Goals by Difficulty */}
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-            {goalsByDifficulty.map(d => (
-              <motion.div
-                key={d.difficulty}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-3 rounded-xl bg-card/60 backdrop-blur border border-border/50 text-center"
-              >
-                <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: d.color }} />
-                <p className="text-lg font-orbitron font-bold text-foreground">{d.count}</p>
-                <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-                  {getDifficultyLabel(d.difficulty, t)}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Pie Charts */}
+          {/* Charts Row */}
           <div className="grid md:grid-cols-2 gap-4">
             {/* Difficulty Distribution */}
-            <ChartCard title="Distribution by Difficulty">
+            <ChartCard 
+              title="Distribution by Difficulty" 
+              isEmpty={difficultyPieData.length === 0}
+              emptyMessage="No goals yet"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -174,7 +206,11 @@ export default function Analytics() {
             </ChartCard>
 
             {/* Tag Distribution */}
-            <ChartCard title="Distribution by Tag">
+            <ChartCard 
+              title="Distribution by Tag" 
+              isEmpty={tagPieData.length === 0}
+              emptyMessage="No tags yet"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -207,75 +243,250 @@ export default function Analytics() {
           </div>
 
           {/* Goals Over Time Chart */}
-          <ChartCard title="Goals Created vs Completed">
+          <ChartCard 
+            title="Goals Created vs Completed" 
+            height="lg"
+            isEmpty={goalsOverTime.length === 0}
+            emptyMessage="No goal history"
+          >
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={goalsOverTime}>
+                <defs>
+                  <linearGradient id="createdGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                  </linearGradient>
+                  <linearGradient id="completedGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
-                <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <XAxis 
+                  dataKey="month" 
+                  tick={{ fontSize: 10 }} 
+                  stroke="hsl(var(--muted-foreground))"
+                  tickFormatter={formatMonth}
+                />
                 <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="created" fill="hsl(var(--primary) / 0.4)" radius={[4, 4, 0, 0]} name="Created" />
-                <Bar dataKey="completed" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Completed" />
+                <Tooltip 
+                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                  labelFormatter={formatMonth}
+                />
+                <Bar dataKey="created" fill="url(#createdGradient)" radius={[4, 4, 0, 0]} name="Created" />
+                <Bar dataKey="completed" fill="url(#completedGradient)" radius={[4, 4, 0, 0]} name="Completed" />
                 <Legend wrapperStyle={{ fontSize: 10 }} />
               </BarChart>
             </ResponsiveContainer>
           </ChartCard>
+
+          {/* Goal Velocity Chart */}
+          {goalVelocity.length > 0 && (
+            <ChartCard title="Goal Velocity (Avg Days to Complete)" isEmpty={goalVelocity.length === 0}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={goalVelocity}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 10 }} 
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={formatMonth}
+                  />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip 
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    labelFormatter={formatMonth}
+                    formatter={(value: number) => [`${value} days`, "Avg completion"]}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="avgDays" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2} 
+                    dot={{ fill: "hsl(var(--primary))", strokeWidth: 0, r: 3 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          )}
         </TabsContent>
 
         {/* ═══════════════════════════════════════════════════════════════════════ */}
         {/* TAB 2: MODULES PERFORMANCE */}
         {/* ═══════════════════════════════════════════════════════════════════════ */}
         <TabsContent value="modules" className="space-y-6 mt-0">
+          {/* Module Stats with Trends */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <StatCard icon={Heart} label="Health Avg" value={`${summary.avgHealthScore}%`} color="text-emerald-400" />
-            <StatCard icon={Wallet} label="Total Saved" value={formatCurrency(summary.totalSaved, currency)} color="text-blue-400" />
-            <StatCard icon={CheckSquare} label="Todos Done" value={todoStats.reduce((a, t) => a + t.completed, 0)} color="text-amber-400" />
-            <StatCard icon={Timer} label="Focus Time" value={`${Math.round(summary.pomodoroMinutes / 60)}h`} sub={`${summary.pomodoroMinutes}min total`} color="text-violet-400" />
+            <TrendStatCard
+              icon={Heart}
+              label="Health Avg"
+              value={`${summary.avgHealthScore}%`}
+              trend={period !== "all" ? trends.healthScore.percentChange : undefined}
+              sparklineData={healthSparkline}
+              color="text-emerald-400"
+            />
+            <TrendStatCard
+              icon={Wallet}
+              label="Total Saved"
+              value={formatCurrency(summary.totalSaved, currency)}
+              color="text-blue-400"
+            />
+            <TrendStatCard
+              icon={CheckSquare}
+              label="Todos Done"
+              value={todoStats.reduce((a, t) => a + t.completed, 0)}
+              color="text-amber-400"
+            />
+            <TrendStatCard
+              icon={Timer}
+              label="Focus Time"
+              value={`${Math.round(summary.pomodoroMinutes / 60)}h`}
+              trend={period !== "all" ? trends.focusMinutes.percentChange : undefined}
+              sparklineData={pomodoroSparkline}
+              color="text-violet-400"
+            />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            {/* Health Trend */}
-            <ChartCard title="Health Score Trend">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={healthTrend.slice(-30)}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                  <Area type="monotone" dataKey="score" stroke="hsl(160, 80%, 50%)" fill="hsl(160, 80%, 50%, 0.15)" strokeWidth={2} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </ChartCard>
+          {/* Health Trend - Full Width */}
+          <ChartCard 
+            title="Health Score Trend" 
+            height="lg"
+            isEmpty={healthTrend.length === 0}
+            emptyMessage="No health data yet"
+          >
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={healthTrend.slice(-60)}>
+                <defs>
+                  <linearGradient id="healthGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="hsl(160, 80%, 50%)" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="hsl(160, 80%, 50%)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
+                <XAxis 
+                  dataKey="date" 
+                  tick={{ fontSize: 10 }} 
+                  stroke="hsl(var(--muted-foreground))"
+                  tickFormatter={formatDate}
+                />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                <Tooltip 
+                  contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                  labelFormatter={formatDate}
+                  formatter={(value: number) => [`${value}%`, "Health Score"]}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="score" 
+                  stroke="hsl(160, 80%, 50%)" 
+                  fill="url(#healthGradient)" 
+                  strokeWidth={2} 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ChartCard>
 
+          <div className="grid md:grid-cols-2 gap-4">
             {/* Finance Trend */}
-            <ChartCard title="Income vs Expenses">
+            <ChartCard 
+              title="Income vs Expenses" 
+              isEmpty={financeTrend.length === 0}
+              emptyMessage="No finance data"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={financeTrend}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 10 }} 
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={formatMonth}
+                  />
                   <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                  <Line type="monotone" dataKey="income" stroke="hsl(142, 70%, 50%)" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="expenses" stroke="hsl(0, 80%, 60%)" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="savings" stroke="hsl(212, 90%, 50%)" strokeWidth={2} dot={false} />
+                  <Tooltip 
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    labelFormatter={formatMonth}
+                    formatter={(value: number) => [formatCurrency(value, currency), ""]}
+                  />
+                  <Line type="monotone" dataKey="income" stroke="hsl(142, 70%, 50%)" strokeWidth={2} dot={false} name="Income" />
+                  <Line type="monotone" dataKey="expenses" stroke="hsl(0, 80%, 60%)" strokeWidth={2} dot={false} name="Expenses" />
+                  <Line type="monotone" dataKey="savings" stroke="hsl(212, 90%, 50%)" strokeWidth={2} dot={false} name="Savings" />
                   <Legend wrapperStyle={{ fontSize: 10 }} />
                 </LineChart>
               </ResponsiveContainer>
             </ChartCard>
 
             {/* Todos Completed */}
-            <ChartCard title="Tasks Completed by Month">
+            <ChartCard 
+              title="Tasks Completed by Month" 
+              isEmpty={todoStats.length === 0}
+              emptyMessage="No completed tasks"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={todoStats}>
+                  <defs>
+                    <linearGradient id="todoGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(43, 100%, 50%)" stopOpacity={1} />
+                      <stop offset="100%" stopColor="hsl(43, 100%, 50%)" stopOpacity={0.4} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 10 }} 
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={formatMonth}
+                  />
                   <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
-                  <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }} />
-                  <Bar dataKey="completed" fill="hsl(43, 100%, 50%)" radius={[4, 4, 0, 0]} />
+                  <Tooltip 
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    labelFormatter={formatMonth}
+                  />
+                  <Bar dataKey="completed" fill="url(#todoGradient)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </ChartCard>
           </div>
+
+          {/* Focus Time Trend */}
+          {pomodoroTrend.length > 0 && (
+            <ChartCard 
+              title="Focus Time (minutes/day)" 
+              isEmpty={pomodoroTrend.length === 0}
+              emptyMessage="No focus sessions"
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={pomodoroTrend.slice(-30)}>
+                  <defs>
+                    <linearGradient id="focusGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="hsl(280, 75%, 55%)" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="hsl(280, 75%, 55%)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.3)" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 10 }} 
+                    stroke="hsl(var(--muted-foreground))"
+                    tickFormatter={formatDate}
+                  />
+                  <YAxis tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip 
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 12 }}
+                    labelFormatter={formatDate}
+                    formatter={(value: number) => [`${value} min`, "Focus Time"]}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="minutes" 
+                    stroke="hsl(280, 75%, 55%)" 
+                    fill="url(#focusGradient)" 
+                    strokeWidth={2} 
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartCard>
+          )}
         </TabsContent>
       </Tabs>
     </div>
