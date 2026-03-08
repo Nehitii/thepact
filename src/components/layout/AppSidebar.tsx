@@ -23,7 +23,6 @@ const mainNavItems = [
   { to: "/goals", icon: Target, label: "Goals" },
   { to: "/focus", icon: Timer, label: "Focus" },
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
-  { to: "/leaderboard", icon: Trophy, label: "Leaderboard" },
   { to: "/shop", icon: ShoppingBag, label: "Shop" },
   { to: "/community", icon: Users, label: "Community" },
 ];
