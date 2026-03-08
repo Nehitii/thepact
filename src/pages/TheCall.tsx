@@ -512,7 +512,6 @@ export default function TheCall() {
             </div>
           )}
         </div>
-        </div>
       </div>
 
       {/* --- DEV TOOLBAR (Pour le test) --- */}
