@@ -52,7 +52,7 @@ export default function Home() {
 
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
-      const diffGoals = normalGoals.filter((g) => g.difficulty === difficulty);
+      const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
       const completedGoals = diffGoals.filter((g) => g.status === "fully_completed").length;
       const totalGoals = diffGoals.length;
       const totalStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
@@ -68,12 +68,12 @@ export default function Home() {
       };
     });
 
-    const totalSteps = normalGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-    const totalStepsCompleted = normalGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+    const totalSteps = allGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+    const totalStepsCompleted = allGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
     const totalHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_duration_days || 0), 0);
     const completedHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_checks?.filter(Boolean).length || 0), 0);
-    const goalsCompleted = normalGoals.filter((g) => g.status === "fully_completed").length;
-    const totalGoalsCount = normalGoals.length;
+    const goalsCompleted = allGoals.filter((g) => g.status === "fully_completed").length;
+    const totalGoalsCount = allGoals.length;
 
     const statusCounts = {
       not_started: normalGoals.filter((g) => g.status === "not_started").length,
