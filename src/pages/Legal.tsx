@@ -269,12 +269,12 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">8. Data Protection & Security</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">8. Data Protection & Security</p>
                     <p>Your data is encrypted and stored using reasonable industry-standard security measures.</p>
                     <p className="mt-1">
                       While we take security seriously, no system can guarantee absolute protection.
                     </p>
-                    <p className="mt-1 text-[#8ACBFF]/80 italic">
+                    <p className="mt-1 text-primary/80 italic">
                       You are responsible for maintaining the confidentiality of your login credentials.
                     </p>
                   </div>
