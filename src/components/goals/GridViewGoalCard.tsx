@@ -140,7 +140,7 @@ export function GridViewGoalCard({
               src={goal.image_url}
               alt={goal.name}
               loading="lazy"
-              className="w-full h-full object-cover opacity-80 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"
+              className="w-full h-full object-cover opacity-95 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"
             />
           ) : (
             <div className="w-full h-full bg-[radial-gradient(circle_at_center,#1f2937,#111827)] flex items-center justify-center text-[#374151]">
