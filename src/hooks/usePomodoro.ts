@@ -24,6 +24,7 @@ export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5) {
   const [phase, setPhase] = useState<PomodoroPhase>("idle");
   const [secondsLeft, setSecondsLeft] = useState(workMinutes * 60);
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const totalSeconds = phase === "work" ? workMinutes * 60 : breakMinutes * 60;
@@ -36,39 +37,8 @@ export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5) {
     }
   }, []);
 
-  const start = useCallback(() => {
-    setPhase("work");
-    setSecondsLeft(workMinutes * 60);
-  }, [workMinutes]);
-
-  const pause = useCallback(() => {
+  const startTicking = useCallback(() => {
     clearTimer();
-  }, [clearTimer]);
-
-  const resume = useCallback(() => {
-    // Timer effect will pick up from current state
-  }, []);
-
-  const reset = useCallback(() => {
-    clearTimer();
-    setPhase("idle");
-    setSecondsLeft(workMinutes * 60);
-  }, [clearTimer, workMinutes]);
-
-  const skip = useCallback(() => {
-    clearTimer();
-    if (phase === "work") {
-      setPhase("break");
-      setSecondsLeft(breakMinutes * 60);
-    } else {
-      setPhase("work");
-      setSecondsLeft(workMinutes * 60);
-    }
-  }, [phase, workMinutes, breakMinutes, clearTimer]);
-
-  useEffect(() => {
-    if (phase === "idle") return;
-
     intervalRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
         if (prev <= 1) {
@@ -84,21 +54,64 @@ export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5) {
         return prev - 1;
       });
     }, 1000);
-
-    return () => clearTimer();
   }, [phase, workMinutes, breakMinutes, clearTimer]);
+
+  const start = useCallback(() => {
+    setPhase("work");
+    setSecondsLeft(workMinutes * 60);
+    setIsPaused(false);
+  }, [workMinutes]);
+
+  const pause = useCallback(() => {
+    clearTimer();
+    setIsPaused(true);
+  }, [clearTimer]);
+
+  const resume = useCallback(() => {
+    setIsPaused(false);
+  }, []);
+
+  const reset = useCallback(() => {
+    clearTimer();
+    setPhase("idle");
+    setSecondsLeft(workMinutes * 60);
+    setIsPaused(false);
+  }, [clearTimer, workMinutes]);
+
+  const skip = useCallback(() => {
+    clearTimer();
+    setIsPaused(false);
+    if (phase === "work") {
+      setPhase("break");
+      setSecondsLeft(breakMinutes * 60);
+    } else {
+      setPhase("work");
+      setSecondsLeft(workMinutes * 60);
+    }
+  }, [phase, workMinutes, breakMinutes, clearTimer]);
+
+  useEffect(() => {
+    if (phase === "idle" || isPaused) {
+      clearTimer();
+      return;
+    }
+    startTicking();
+    return () => clearTimer();
+  }, [phase, isPaused, startTicking, clearTimer]);
 
   return {
     phase,
     secondsLeft,
     progress,
     sessionsCompleted,
+    isPaused,
     start,
     pause,
     resume,
     reset,
     skip,
     isRunning: phase !== "idle",
+    isActive: phase !== "idle" && !isPaused,
   };
 }
 
@@ -128,6 +141,7 @@ export function usePomodoroSessions() {
       break_minutes: number;
       completed: boolean;
       linked_goal_id?: string | null;
+      linked_todo_id?: string | null;
       started_at: string;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
@@ -154,5 +168,51 @@ export function usePomodoroSessions() {
     };
   })();
 
-  return { sessions, saveSession, todayStats };
+  // Weekly stats for sparkline
+  const weeklyStats = (() => {
+    const now = new Date();
+    const days: { label: string; minutes: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split("T")[0];
+      const dayLabel = d.toLocaleDateString("en", { weekday: "short" });
+      const mins = (sessions.data || [])
+        .filter((s) => s.completed && s.completed_at?.startsWith(dateStr))
+        .reduce((acc, s) => acc + s.duration_minutes, 0);
+      days.push({ label: dayLabel, minutes: mins });
+    }
+    return days;
+  })();
+
+  // Streak: consecutive days with at least one completed session
+  const streak = (() => {
+    const allDates = new Set(
+      (sessions.data || [])
+        .filter((s) => s.completed && s.completed_at)
+        .map((s) => s.completed_at!.split("T")[0])
+    );
+    let count = 0;
+    const now = new Date();
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split("T")[0];
+      if (allDates.has(dateStr)) {
+        count++;
+      } else {
+        break;
+      }
+    }
+    return count;
+  })();
+
+  // Best session (longest single work duration)
+  const bestSession = (() => {
+    const completed = (sessions.data || []).filter((s) => s.completed);
+    if (completed.length === 0) return 0;
+    return Math.max(...completed.map((s) => s.duration_minutes));
+  })();
+
+  return { sessions, saveSession, todayStats, weeklyStats, streak, bestSession };
 }
