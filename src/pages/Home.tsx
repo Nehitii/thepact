@@ -76,9 +76,9 @@ export default function Home() {
     const totalGoalsCount = allGoals.length;
 
     const statusCounts = {
-      not_started: normalGoals.filter((g) => g.status === "not_started").length,
-      in_progress: normalGoals.filter((g) => g.status === "in_progress").length,
-      fully_completed: normalGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
+      not_started: allGoals.filter((g) => g.status === "not_started").length,
+      in_progress: allGoals.filter((g) => g.status === "in_progress").length,
+      fully_completed: allGoals.filter((g) => g.status === "fully_completed" || g.status === "validated").length,
     };
 
     const customTarget = Number(financeSettings?.project_funding_target) || 0;
