@@ -43,7 +43,7 @@ interface GoalDetailHeroProps {
 export const GoalDetailHero = React.memo(function GoalDetailHero({
   goal, progress, completedStepsCount, totalStepsCount, difficultyColor,
   isCompleted, displayTags, getDifficultyLabel, getStatusLabel,
-  toggleFocus, onEdit, onFullyComplete, onPause, onResume, onArchive, onDuplicate, onDelete,
+  toggleFocus, onEdit, onFullyComplete, onPause, onResume, onArchive, onDuplicate, onDelete, onToggleLock,
 }: GoalDetailHeroProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
