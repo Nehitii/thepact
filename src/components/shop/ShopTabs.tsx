@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, Puzzle, Heart, History } from "lucide-react";
 import { BondIcon } from "@/components/ui/bond-icon";
+import { cn } from "@/lib/utils";
 
 export type ShopTab = "cosmetics" | "modules" | "bonds" | "wishlist" | "history";
 
@@ -20,7 +21,7 @@ const tabs = [
 
 export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabsProps) {
   return (
-    <div className="relative flex gap-0.5 p-1.5 rounded-lg bg-card/40 border border-primary/15 backdrop-blur-xl overflow-x-auto hide-scrollbar">
+    <div className="flex gap-2 overflow-x-auto hide-scrollbar">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
@@ -31,71 +32,44 @@ export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabs
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             whileTap={{ scale: 0.96 }}
-            className={`relative flex-1 flex items-center justify-center gap-2 py-3.5 px-3 sm:px-4 rounded-md font-orbitron text-[10px] sm:text-xs font-semibold tracking-wider uppercase transition-colors duration-200 whitespace-nowrap ${
+            className={cn(
+              "relative flex items-center gap-2.5 py-3 px-5 rounded-xl font-orbitron text-[11px] font-semibold tracking-wider uppercase transition-all duration-200 whitespace-nowrap border",
               isActive
-                ? "text-primary"
-                : "text-muted-foreground hover:text-primary/70"
-            }`}
+                ? "text-primary border-primary/30"
+                : "text-muted-foreground border-transparent hover:text-foreground hover:border-primary/10 hover:bg-card/40"
+            )}
           >
-            {/* Active background + beam underline */}
             {isActive && (
-              <>
-                <motion.div
-                  layoutId="shopActiveTab"
-                  className="absolute inset-0 rounded-md"
-                  style={{
-                    background: "linear-gradient(180deg, hsl(var(--primary) / 0.14), hsl(var(--primary) / 0.05))",
-                    border: "1px solid hsl(var(--primary) / 0.3)",
-                  }}
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-                {/* Animated beam underline */}
-                <motion.div
-                  layoutId="shopTabBeam"
-                  className="absolute bottom-0 left-[20%] right-[20%] h-[2px] rounded-full"
-                  style={{
-                    background: "linear-gradient(90deg, transparent, hsl(var(--primary)), transparent)",
-                    boxShadow: "0 0 8px hsl(var(--primary) / 0.6), 0 0 16px hsl(var(--primary) / 0.3)",
-                  }}
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              </>
+              <motion.div
+                layoutId="shopActiveTab"
+                className="absolute inset-0 rounded-xl"
+                style={{
+                  background: "linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--primary) / 0.04))",
+                  border: "1px solid hsl(var(--primary) / 0.25)",
+                  boxShadow: "0 0 20px hsl(var(--primary) / 0.08), inset 0 1px 0 hsl(var(--primary) / 0.1)",
+                }}
+                initial={false}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
             )}
 
-            {/* Icon with glow + active dot */}
-            <div className="relative z-10 flex flex-col items-center gap-1">
+            <div className="relative z-10">
               {tab.isImage ? (
-                <BondIcon
-                  size={15}
-                  className={`transition-all duration-200 ${isActive ? "drop-shadow-[0_0_6px_hsl(var(--primary)/0.8)]" : ""}`}
-                />
+                <BondIcon size={16} className={isActive ? "drop-shadow-[0_0_6px_hsl(var(--primary)/0.6)]" : ""} />
               ) : Icon ? (
-                <Icon
-                  className={`w-3.5 h-3.5 transition-all duration-200 ${
-                    isActive ? "drop-shadow-[0_0_6px_hsl(var(--primary)/0.8)]" : ""
-                  } ${isWishlistFull ? "text-rose-400" : ""}`}
-                />
+                <Icon className={cn("w-4 h-4", isWishlistFull && "text-rose-400")} />
               ) : null}
-              {/* Glow dot under icon when active */}
-              {isActive && (
-                <motion.div
-                  className="w-1 h-1 rounded-full bg-primary"
-                  style={{ boxShadow: "0 0 4px hsl(var(--primary))" }}
-                  layoutId="shopTabDot"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
             </div>
 
-            <span className="relative z-10 hidden sm:block">{tab.label}</span>
+            <span className="relative z-10">{tab.label}</span>
 
-            {/* Wishlist badge with pulse */}
             {isWishlistFull && (
               <motion.span
-                className="relative z-10 min-w-[16px] h-[16px] flex items-center justify-center px-1 rounded-full bg-rose-500/20 text-rose-400 text-[9px] font-bold"
+                className="relative z-10 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full text-[9px] font-bold"
+                style={{
+                  background: "hsl(350 80% 55% / 0.2)",
+                  color: "hsl(350 80% 55%)",
+                }}
                 animate={{ scale: [1, 1.15, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >

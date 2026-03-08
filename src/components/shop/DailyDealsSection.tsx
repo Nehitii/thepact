@@ -29,27 +29,17 @@ export function DailyDealsSection() {
     return false;
   };
 
-  const handlePurchaseClick = (deal: DailyDealWithItem) => {
-    setSelectedDeal(deal);
-    setShowConfirm(true);
-  };
+  const handlePurchaseClick = (deal: DailyDealWithItem) => { setSelectedDeal(deal); setShowConfirm(true); };
 
   const handleConfirmPurchase = () => {
     if (!user || !selectedDeal) return;
-    purchaseDeal.mutate(
-      { dealId: selectedDeal.id },
-      {
-        onSuccess: () => {
-          setShowConfirm(false);
-          setUnlockedItem({
-            name: selectedDeal.item?.name || "Item",
-            rarity: selectedDeal.item?.rarity || "common",
-            type: selectedDeal.item_type === "module" ? "module" : "cosmetic",
-          });
-          setShowUnlock(true);
-        },
-      }
-    );
+    purchaseDeal.mutate({ dealId: selectedDeal.id }, {
+      onSuccess: () => {
+        setShowConfirm(false);
+        setUnlockedItem({ name: selectedDeal.item?.name || "Item", rarity: selectedDeal.item?.rarity || "common", type: selectedDeal.item_type === "module" ? "module" : "cosmetic" });
+        setShowUnlock(true);
+      },
+    });
   };
 
   if (isLoading || deals.length === 0) return null;
@@ -64,68 +54,32 @@ export function DailyDealsSection() {
   } : null;
 
   return (
-    <div className="space-y-4 mb-8">
-      <div className="flex items-center gap-2">
-        <div className="relative flex items-center gap-1.5">
-          <motion.div
-            className="w-2 h-2 rounded-full"
-            style={{ background: "hsl(0 90% 55%)" }}
-            animate={{ opacity: [1, 0.3, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-          />
-          <span className="text-[10px] font-orbitron tracking-[0.2em] uppercase" style={{ color: "hsl(0 90% 55%)" }}>
-            Live
-          </span>
-        </div>
-        <motion.div
-          animate={{ rotate: [0, 10, -10, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-        >
-          <Zap className="w-4 h-4" style={{ color: "hsl(45 100% 60%)" }} />
+    <div className="space-y-5">
+      <div className="flex items-center gap-3">
+        <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}>
+          <Zap className="w-5 h-5" style={{ color: "hsl(45 100% 60%)" }} />
         </motion.div>
-        <h2 className="font-orbitron text-base text-foreground tracking-wide">
-          Daily Deals
-        </h2>
+        <h2 className="font-orbitron text-lg text-foreground tracking-wide">Daily Deals</h2>
+        <div className="flex items-center gap-1.5 ml-2">
+          <motion.div className="w-2 h-2 rounded-full" style={{ background: "hsl(0 80% 55%)" }} animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
+          <span className="text-[10px] font-orbitron tracking-[0.2em] uppercase" style={{ color: "hsl(0 80% 55%)" }}>Live</span>
+        </div>
       </div>
 
-      <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {deals.map((deal, index) => (
-          <motion.div
-            key={deal.id}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="min-w-[340px] sm:min-w-[400px] flex-shrink-0 snap-start"
-          >
-            <DailyDealCard
-              deal={deal}
-              onPurchase={() => handlePurchaseClick(deal)}
-              isOwned={isOwned(deal)}
-              canAfford={(balance?.balance || 0) >= deal.discounted_price}
-            />
+          <motion.div key={deal.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
+            <DailyDealCard deal={deal} onPurchase={() => handlePurchaseClick(deal)} isOwned={isOwned(deal)} canAfford={(balance?.balance || 0) >= deal.discounted_price} />
           </motion.div>
         ))}
       </div>
 
       {purchaseItem && (
-        <PurchaseConfirmModal
-          open={showConfirm}
-          onOpenChange={(open) => !open && setShowConfirm(false)}
-          onConfirm={handleConfirmPurchase}
-          item={purchaseItem}
-          currentBalance={balance?.balance || 0}
-          isPending={purchaseDeal.isPending}
-        />
+        <PurchaseConfirmModal open={showConfirm} onOpenChange={(open) => !open && setShowConfirm(false)} onConfirm={handleConfirmPurchase} item={purchaseItem} currentBalance={balance?.balance || 0} isPending={purchaseDeal.isPending} />
       )}
 
       {unlockedItem && (
-        <UnlockAnimation
-          isOpen={showUnlock}
-          onComplete={() => { setShowUnlock(false); setUnlockedItem(null); }}
-          itemName={unlockedItem.name}
-          itemType={unlockedItem.type}
-          rarity={unlockedItem.rarity}
-        />
+        <UnlockAnimation isOpen={showUnlock} onComplete={() => { setShowUnlock(false); setUnlockedItem(null); }} itemName={unlockedItem.name} itemType={unlockedItem.type} rarity={unlockedItem.rarity} />
       )}
     </div>
   );

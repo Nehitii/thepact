@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
-import { Clock, Sparkles, Zap, Lock, Check } from "lucide-react";
+import { Sparkles, Lock, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { WishlistButton } from "./WishlistButton";
 import { DailyDealWithItem } from "@/hooks/useDailyDeals";
 import { useEffect, useState } from "react";
+import { getRarity } from "./shopRarity";
 
 interface DailyDealCardProps {
   deal: DailyDealWithItem;
@@ -13,20 +14,10 @@ interface DailyDealCardProps {
   canAfford: boolean;
 }
 
-const rarityColors: Record<string, { accent: string; glow: string }> = {
-  common: { accent: "hsl(210 15% 60%)", glow: "hsl(210 15% 60% / 0.15)" },
-  uncommon: { accent: "hsl(142 70% 50%)", glow: "hsl(142 70% 50% / 0.15)" },
-  rare: { accent: "hsl(212 90% 55%)", glow: "hsl(212 90% 55% / 0.15)" },
-  epic: { accent: "hsl(270 80% 60%)", glow: "hsl(270 80% 60% / 0.2)" },
-  legendary: { accent: "hsl(45 100% 60%)", glow: "hsl(45 100% 60% / 0.2)" },
-};
-
 function FlipDigit({ value }: { value: string }) {
   return (
-    <span
-      className="inline-flex items-center justify-center w-5 h-6 rounded bg-black/80 border border-amber-500/30 font-mono text-xs font-bold text-amber-400 tabular-nums"
-      style={{ textShadow: "0 0 8px hsl(45 100% 60% / 0.7)" }}
-    >
+    <span className="inline-flex items-center justify-center w-6 h-7 rounded-md font-mono text-xs font-bold tabular-nums"
+      style={{ background: "hsl(var(--background) / 0.8)", border: "1px solid hsl(45 100% 60% / 0.2)", color: "hsl(45 100% 60%)", textShadow: "0 0 8px hsl(45 100% 60% / 0.5)" }}>
       {value}
     </span>
   );
@@ -43,7 +34,6 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
       const endOfDay = new Date(now);
       endOfDay.setHours(23, 59, 59, 999);
       const diff = endOfDay.getTime() - now.getTime();
-
       setHours(String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, "0"));
       setMinutes(String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0"));
       setSeconds(String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, "0"));
@@ -56,151 +46,88 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
   if (!deal.item) return null;
 
   const rarity = deal.item.rarity || "common";
-  const colors = rarityColors[rarity] || rarityColors.common;
+  const r = getRarity(rarity);
 
   return (
     <motion.div
-      whileHover={{ scale: 1.01 }}
-      className="relative rounded-xl overflow-hidden bg-card/60 backdrop-blur-sm group"
+      whileHover={{ scale: 1.02, y: -2 }}
+      className="relative rounded-2xl overflow-hidden group"
       style={{
-        borderTop: "1px solid hsl(45 100% 60% / 0.25)",
-        borderRight: "1px solid hsl(45 100% 60% / 0.25)",
-        borderBottom: "1px solid hsl(45 100% 60% / 0.25)",
-        borderLeft: "3px solid hsl(0 80% 50% / 0.7)",
-        boxShadow: `0 0 20px hsl(45 100% 60% / 0.08)`,
+        background: "hsl(var(--card) / 0.7)",
+        border: `1px solid ${r.border}`,
+        boxShadow: `0 0 24px ${r.glow}`,
       }}
     >
-      {/* Pulsing red left accent */}
-      <motion.div
-        className="absolute left-0 top-0 bottom-0 w-[3px] pointer-events-none"
-        style={{ background: "hsl(0 80% 50% / 0.7)" }}
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 1.5, repeat: Infinity }}
-      />
-
-      {/* Diagonal DEAL watermark */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
-        <span
-          className="font-orbitron text-[60px] font-black uppercase opacity-[0.02] tracking-[0.2em]"
-          style={{ transform: "rotate(-20deg)" }}
-        >
-          DEAL
-        </span>
-      </div>
-
-      {/* Scan line */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-        <div
-          className="absolute w-full h-[1px]"
-          style={{
-            background: "linear-gradient(90deg, transparent, hsl(45 100% 60% / 0.6), transparent)",
-            animation: "scan-line 3s linear infinite",
-          }}
-        />
-      </div>
-
-      {/* Discount starburst badge */}
-      <div className="absolute -top-1 -right-1 z-10">
+      {/* Discount badge */}
+      <div className="absolute top-3 right-3 z-10">
         <motion.div
-          className="relative w-12 h-12 flex items-center justify-center"
+          className="px-2.5 py-1 rounded-lg font-orbitron text-[11px] font-black"
+          style={{ background: "hsl(0 80% 50%)", color: "hsl(0 0% 100%)" }}
           animate={{ scale: [1, 1.06, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <div
-            className="absolute inset-0"
-            style={{
-              clipPath: "polygon(50% 0%, 61% 11%, 78% 5%, 78% 22%, 95% 28%, 85% 42%, 100% 50%, 85% 58%, 95% 72%, 78% 78%, 78% 95%, 61% 89%, 50% 100%, 39% 89%, 22% 95%, 22% 78%, 5% 72%, 15% 58%, 0% 50%, 15% 42%, 5% 28%, 22% 22%, 22% 5%, 39% 11%)",
-              background: "linear-gradient(135deg, hsl(45 100% 55%), hsl(25 100% 55%))",
-            }}
-          />
-          <span
-            className="relative z-10 font-orbitron text-[10px] font-black"
-            style={{ color: "hsl(0 0% 5%)" }}
-          >
-            -{deal.discount_percentage}%
-          </span>
+          -{deal.discount_percentage}%
         </motion.div>
       </div>
 
       {/* Wishlist */}
       {!isOwned && (
-        <div className="absolute top-2 left-4 z-10">
+        <div className="absolute top-3 left-3 z-10">
           <WishlistButton itemId={deal.item_id} itemType="cosmetic" size="sm" />
         </div>
       )}
 
-      <div className="relative flex items-center gap-4 p-4">
-        {/* Preview */}
-        <div
-          className="w-16 h-16 shrink-0 rounded-lg border flex items-center justify-center overflow-hidden"
-          style={{
-            borderColor: colors.accent + "40",
-            boxShadow: `inset 0 0 15px ${colors.glow}`,
-            background: `linear-gradient(135deg, ${colors.glow}, transparent)`,
-          }}
-        >
-          {deal.item.preview_url ? (
-            <img src={deal.item.preview_url} alt={deal.item.name} className="w-full h-full object-cover" />
-          ) : (
-            <Sparkles className="w-8 h-8" style={{ color: colors.accent }} />
-          )}
+      {/* Preview area */}
+      <div className="relative flex items-center justify-center p-6 pt-10 pb-4 min-h-[120px]"
+        style={{ background: `linear-gradient(180deg, ${r.glow}, transparent)` }}>
+        {deal.item.preview_url ? (
+          <img src={deal.item.preview_url} alt={deal.item.name} className="w-20 h-20 object-contain" />
+        ) : (
+          <Sparkles className="w-12 h-12" style={{ color: r.accent }} />
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="p-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <span className={`text-[9px] uppercase tracking-[0.15em] font-orbitron font-bold px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
+            {rarity}
+          </span>
+          <span className="text-[9px] uppercase tracking-wider font-orbitron text-amber-400/70">Daily Deal</span>
         </div>
 
-        {/* Info */}
-        <div className="flex-1 min-w-0 space-y-1.5">
-          <div className="text-[10px] uppercase tracking-[0.2em] font-orbitron text-amber-400/70">
-            Daily Deal
-          </div>
-          <div className="font-rajdhani font-semibold text-foreground truncate text-sm">
-            {deal.item.name}
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground line-through flex items-center gap-0.5">
-              <BondIcon size={11} />
-              {deal.item.price}
-            </span>
-            <span className="text-sm font-bold flex items-center gap-1" style={{ color: "hsl(45 100% 60%)" }}>
-              <BondIcon size={14} />
-              {deal.discounted_price}
-            </span>
-          </div>
+        <h3 className="font-orbitron text-sm font-bold text-foreground truncate">{deal.item.name}</h3>
+
+        {/* Price */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-muted-foreground line-through flex items-center gap-0.5">
+            <BondIcon size={11} /> {deal.item.price}
+          </span>
+          <span className="text-base font-bold font-orbitron flex items-center gap-1" style={{ color: "hsl(45 100% 60%)" }}>
+            <BondIcon size={16} /> {deal.discounted_price}
+          </span>
         </div>
 
-        {/* Timer + Action */}
-        <div className="shrink-0 flex flex-col items-end gap-2">
-          {/* Flip-clock timer */}
-          <div className="flex items-center gap-0.5">
-            <FlipDigit value={hours[0]} />
-            <FlipDigit value={hours[1]} />
-            <span className="text-amber-400/50 text-xs font-bold mx-0.5">:</span>
-            <FlipDigit value={minutes[0]} />
-            <FlipDigit value={minutes[1]} />
-            <span className="text-amber-400/50 text-xs font-bold mx-0.5">:</span>
-            <FlipDigit value={seconds[0]} />
-            <FlipDigit value={seconds[1]} />
-          </div>
-
-          {isOwned ? (
-            <div className="flex items-center gap-1 px-2 py-1 rounded text-[10px] font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)", background: "hsl(142 70% 50% / 0.1)" }}>
-              <Check className="w-3 h-3" /> Owned
-            </div>
-          ) : (
-            <Button
-              size="sm"
-              onClick={onPurchase}
-              disabled={!canAfford}
-              className="h-7 text-xs font-orbitron tracking-wider"
-              style={{
-                background: canAfford ? "hsl(45 100% 60% / 0.15)" : undefined,
-                borderColor: "hsl(45 100% 60% / 0.3)",
-                color: canAfford ? "hsl(45 100% 60%)" : undefined,
-              }}
-              variant="outline"
-            >
-              {canAfford ? "Get" : <Lock className="w-3 h-3" />}
-            </Button>
-          )}
+        {/* Timer */}
+        <div className="flex items-center gap-1">
+          <FlipDigit value={hours[0]} /><FlipDigit value={hours[1]} />
+          <span className="text-amber-400/40 font-bold mx-0.5">:</span>
+          <FlipDigit value={minutes[0]} /><FlipDigit value={minutes[1]} />
+          <span className="text-amber-400/40 font-bold mx-0.5">:</span>
+          <FlipDigit value={seconds[0]} /><FlipDigit value={seconds[1]} />
         </div>
+
+        {/* Action */}
+        {isOwned ? (
+          <div className="flex items-center gap-1.5 text-[10px] font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)" }}>
+            <Check className="w-3.5 h-3.5" /> Owned
+          </div>
+        ) : (
+          <Button onClick={onPurchase} disabled={!canAfford} variant="outline" className="w-full h-9 font-orbitron text-xs tracking-wider rounded-lg"
+            style={{ borderColor: "hsl(45 100% 60% / 0.3)", color: canAfford ? "hsl(45 100% 60%)" : undefined, background: canAfford ? "hsl(45 100% 60% / 0.1)" : undefined }}>
+            {canAfford ? "Grab Deal" : <Lock className="w-3 h-3" />}
+          </Button>
+        )}
       </div>
     </motion.div>
   );
