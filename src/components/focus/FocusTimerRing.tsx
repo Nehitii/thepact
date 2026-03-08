@@ -37,11 +37,17 @@ export function FocusTimerRing({
   const showControls = hovered && !isIdle;
 
   return (
-    <div
-      className="relative inline-flex items-center justify-center mb-8"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="relative inline-flex items-center justify-center mb-8">
+      {/* Hover detection zone - smaller, centered */}
+      <div
+        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+      >
+        <div
+          className="w-[280px] h-[280px] rounded-full pointer-events-auto"
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        />
+      </div>
       {/* Goal image background circle */}
       <AnimatePresence>
         {goalImageUrl && (
