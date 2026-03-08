@@ -28,6 +28,8 @@ export default function Friends() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [guildCreateOpen, setGuildCreateOpen] = useState(false);
+  const [selectedGuild, setSelectedGuild] = useState<Guild | null>(null);
 
   const {
     friends,
@@ -42,6 +44,11 @@ export default function Friends() {
     getFriendshipStatus,
     searchProfiles,
   } = useFriends();
+
+  const {
+    guilds, guildsLoading, invites,
+    createGuild, respondToInvite,
+  } = useGuilds();
 
   if (!user) return null;
 
