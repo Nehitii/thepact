@@ -378,7 +378,7 @@ export default function Legal() {
                       <li>• Misuse of the application</li>
                       <li>• Data loss caused by user error</li>
                     </ul>
-                    <p className="mt-2 text-[#ff6b6b]/80 italic">Use of the application is at your own risk.</p>
+                    <p className="mt-2 text-destructive/80 italic">Use of the application is at your own risk.</p>
                   </div>
 
                   <div>
