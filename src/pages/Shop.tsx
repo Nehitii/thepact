@@ -18,17 +18,12 @@ import { useTranslation } from "react-i18next";
 export default function Shop() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ShopTab>("cosmetics");
-  const [showGlitch, setShowGlitch] = useState(false);
   const { user } = useAuth();
   const { data: wishlist = [] } = useWishlist(user?.id);
 
   const handleTabChange = (tab: ShopTab) => {
     if (tab === activeTab) return;
-    setShowGlitch(true);
-    setTimeout(() => {
-      setActiveTab(tab);
-      setShowGlitch(false);
-    }, 120);
+    setActiveTab(tab);
   };
 
   const handlePurchaseFromWishlist = (item: any, itemType: string) => {
@@ -59,26 +54,6 @@ export default function Shop() {
         }}
       />
 
-      {/* Enhanced glitch flash on tab change */}
-      <AnimatePresence>
-        {showGlitch && (
-          <motion.div
-            className="fixed inset-0 pointer-events-none z-[60]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.06 }}
-          >
-            <div className="absolute inset-0" style={{
-              background: "linear-gradient(transparent 0%, hsl(var(--primary) / 0.08) 50%, transparent 100%)",
-              backgroundSize: "100% 4px",
-              animation: "scanline-move 0.1s linear",
-              transform: "translateX(2px)",
-            }} />
-            <div className="absolute inset-0 bg-primary/[0.05]" />
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <div className="relative z-10 px-4 pt-6 pb-6 max-w-5xl mx-auto">
         {/* ── Black Market Terminal Header ── */}
