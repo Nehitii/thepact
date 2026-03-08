@@ -39,20 +39,20 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   return (
     <div className="sticky top-0 z-[100] w-full">
       {/* Main bar */}
-      <header className="neural-bar h-12 flex items-center justify-between px-6 overflow-hidden relative backdrop-blur-xl border-b border-[hsl(var(--nexus-border))]">
+      <header className="neural-bar h-12 flex items-center justify-between px-6 overflow-hidden relative backdrop-blur-xl">
         {/* Scanline sweep */}
-        <div className="absolute bottom-0 h-px pointer-events-none neural-bar-scanline" />
+        <div className="neural-bar-scanline absolute bottom-0 h-px pointer-events-none" />
 
         {/* Left: SYS + progress + coords */}
         <div className="flex items-center gap-3 flex-1">
-          <span className="uppercase font-mono text-[9px] tracking-[2px] text-[hsl(var(--nexus-text-label))]">
+          <span className="uppercase font-mono text-[9px] tracking-[2px] text-muted-foreground/60">
             SYS
           </span>
 
           {/* Global progress track */}
           <div
-            className="overflow-hidden shrink-0 rounded-sm"
-            style={{ width: 120, height: 4, background: "hsl(var(--nexus-glow) / 0.07)" }}
+            className="overflow-hidden shrink-0 rounded-sm bg-primary/10"
+            style={{ width: 120, height: 4 }}
           >
             <div
               className="h-full neural-bar-progress"
@@ -61,7 +61,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           </div>
 
           {/* Pact name + ID */}
-          <span className="hidden sm:inline truncate max-w-[200px] font-mono text-[9px] tracking-[1px] text-[hsl(var(--nexus-glow)/0.35)]">
+          <span className="hidden sm:inline truncate max-w-[200px] font-mono text-[9px] tracking-[1px] text-primary/35">
             {pact.name} // ID:{pact.id.slice(0, 8)}
           </span>
         </div>
@@ -71,7 +71,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           <div className="font-mono text-[15px] tracking-[3px] text-primary neural-bar-clock">
             {timeStr}
           </div>
-          <div className="font-mono text-[8px] tracking-[3px] uppercase mt-px text-[hsl(var(--nexus-text-label))]">
+          <div className="font-mono text-[8px] tracking-[3px] uppercase mt-px text-muted-foreground/60">
             {dateStr}
           </div>
         </div>
@@ -113,10 +113,9 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           {/* Customize button */}
           <button
             onClick={() => navigate("/profile")}
-            className="flex items-center gap-2 cursor-pointer uppercase transition-all font-mono text-[10px] tracking-[2px] text-primary border border-[hsl(var(--nexus-border))] rounded-[4px] hover:shadow-[0_0_8px_hsl(var(--nexus-glow)/0.5)]"
+            className="neural-bar-btn flex items-center gap-2 cursor-pointer uppercase transition-all font-mono text-[10px] tracking-[2px] text-primary rounded-[4px]"
             style={{
               padding: "6px 14px",
-              background: "hsl(var(--nexus-glow) / 0.05)",
               clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)",
             }}
           >
