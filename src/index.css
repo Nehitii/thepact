@@ -123,6 +123,22 @@ All colors MUST be HSL.
     --nexus-rank-border: hsla(210, 80%, 55%, 0.25);
     --nexus-mission-bg: linear-gradient(145deg, hsla(40, 40%, 97%, 0.98), hsla(220, 25%, 97%, 0.98));
     --nexus-mission-border: hsla(30, 70%, 55%, 0.25);
+
+    /* Panel surfaces for non-Home pages */
+    --surface-panel: hsla(210, 40%, 97%, 0.95);
+    --surface-panel-hover: hsla(210, 35%, 94%, 0.95);
+    --surface-overlay: hsla(210, 40%, 98%, 0.98);
+    --surface-elevated: hsla(0, 0%, 100%, 0.95);
+    --surface-input: hsl(210, 35%, 95%);
+    --surface-input-focus: hsl(210, 30%, 93%);
+    --text-heading: hsl(210, 60%, 20%);
+    --text-body: hsl(210, 30%, 30%);
+    --text-muted-custom: hsl(210, 20%, 50%);
+    --text-dimmer: hsl(210, 15%, 65%);
+    --border-subtle: hsla(200, 40%, 70%, 0.25);
+    --border-card: hsla(200, 50%, 75%, 0.3);
+    --goal-card-bg: hsl(210, 40%, 97%);
+    --goal-card-border: hsla(200, 50%, 70%, 0.2);
   }
 
   .dark {
