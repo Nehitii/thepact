@@ -1,11 +1,17 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTwoFactor } from "@/hooks/useTwoFactor";
+import { useProfile } from "@/hooks/useProfile";
+import { usePact } from "@/hooks/usePact";
+import { useSharedPacts } from "@/hooks/useSharedPacts";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   const twoFactor = useTwoFactor();
+  const { data: profile } = useProfile(user?.id);
+  const { data: personalPact } = usePact(user?.id);
+  const { memberships } = useSharedPacts();
 
   if (loading) {
     return (
@@ -23,7 +29,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   // Gate the entire app when 2FA is enabled and required.
-  // Allow the /two-factor route itself to render to avoid redirect loops.
   if (location.pathname !== "/two-factor" && twoFactor.isRequired) {
     return (
       <Navigate
@@ -32,6 +37,18 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         state={{ from: location.pathname + location.search + location.hash }}
       />
     );
+  }
+
+  // Pact selector: if user has personal pact + shared pact memberships and no active choice
+  const exemptPaths = ["/two-factor", "/pact-selector", "/onboarding", "/auth"];
+  if (
+    !exemptPaths.includes(location.pathname) &&
+    profile &&
+    !(profile as any).active_pact_id &&
+    personalPact &&
+    memberships.length > 0
+  ) {
+    return <Navigate to="/pact-selector" replace />;
   }
 
   return <>{children}</>;

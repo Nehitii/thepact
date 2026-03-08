@@ -38,6 +38,10 @@ export interface Goal {
   tags?: string[];
   // Deadline
   deadline?: string | null;
+  // Shared goal flags
+  isShared?: boolean;
+  isReadOnly?: boolean;
+  sharedByName?: string;
 }
 
 interface UseGoalsOptions {

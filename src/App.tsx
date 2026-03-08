@@ -60,6 +60,7 @@ const App = () => (
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><SuspensePage><TwoFactor /></SuspensePage></ProtectedRoute>} />
       <Route path="/onboarding" element={<ProtectedRoute><SuspensePage><Onboarding /></SuspensePage></ProtectedRoute>} />
+      <Route path="/pact-selector" element={<ProtectedRoute><SuspensePage><PactSelector /></SuspensePage></ProtectedRoute>} />
 
       {/* Protected with layout — AppLayout mounts once, only page content swaps */}
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
