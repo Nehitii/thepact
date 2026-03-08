@@ -114,7 +114,7 @@ export default function Health() {
           titleAccent="SCAN"
           badges={[
             { label: "SCORE", value: healthScore.score, color: "#00ffe0" },
-            { label: "TREND", value: healthScore.trend > 0 ? `+${healthScore.trend}` : String(healthScore.trend), color: "#bf5af2" },
+            { label: "TREND", value: Number(healthScore.trend) > 0 ? `+${healthScore.trend}` : String(healthScore.trend), color: "#bf5af2" },
           ]}
         />
 
