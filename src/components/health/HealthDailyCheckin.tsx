@@ -358,6 +358,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                 <span className="text-hud-phosphor">STEP {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
                 <span className="text-muted-foreground/40">::</span>
                 <span>{currentStepData.label}</span>
+                <span className="text-muted-foreground/40">::</span>
+                <span className="text-hud-amber">{targetDateLabel}</span>
               </div>
 
               {/* Step progress bar */}
