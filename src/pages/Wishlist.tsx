@@ -469,7 +469,7 @@ export default function Wishlist() {
         </ModuleHeader>
 
         {/* Stats header */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             { label: "Active Items", value: String(derived.list.length + (items.filter(i => !i.acquired).length - derived.list.length)), icon: ShoppingBag, color: "primary" },
             { label: "Total Cost", value: formatCurrency(derived.totals.required + derived.totals.optional, currency), icon: Package, color: "primary" },
