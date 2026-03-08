@@ -8,6 +8,7 @@ interface QuickAccessPanelProps {
     journal: boolean;
     "track-health": boolean;
   };
+  onWeeklyReview?: () => void;
   className?: string;
 }
 
