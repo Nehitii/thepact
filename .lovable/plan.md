@@ -1,33 +1,56 @@
-# Project Roadmap
 
-## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
+
+# Focus Mode — Active Session Effects
+
+## Current State
+When a focus session is running:
+- Subtle scan lines overlay (`opacity-[0.02]`)
+- Toolbar and panels are hidden
+- Timer ring shows progress with glow
+
+## Proposed Effects During Active Focus
+
+### 1. Ambient Floating Particles
+Soft glowing particles drifting upward around the timer ring — creates a sense of energy and immersion.
+
+### 2. Pulsing Vignette
+A subtle radial gradient that pulses gently at the edges of the screen, reinforcing focus on the center.
+
+### 3. Enhanced Ring Breathing
+The outer decorative rings pulse/breathe slowly to indicate active state.
+
+### 4. Subtle Glow Aura
+A soft glow behind the timer that intensifies as progress increases.
+
+### 5. Phase Transition Flash
+Brief flash effect when transitioning between work ↔ break phases.
 
 ---
 
-## Priority Features Implementation Status
+## Implementation
 
-| # | Feature | Status | Notes |
-|---|---------|--------|-------|
-| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
-| 2 | Notification automation | ✅ Done | Smart notifications edge function |
-| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
-| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
-| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
-| 6 | Goal Templates | ✅ Done | Template browser + creation |
-| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
-| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
-| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
-| 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
+### New Component: `FocusAmbientEffects.tsx`
+Contains all ambient effects, activated only when `timer.isRunning`:
+- **Floating particles**: CSS-animated orbs drifting upward
+- **Pulsing vignette**: Radial gradient with breathing animation
+- **Respects user settings**: Uses `particles_enabled` preference
+
+### Changes to `FocusTimerRing.tsx`
+- Add breathing animation to outer decorative rings during active session
+- Increase glow intensity based on `progress`
+
+### Changes to `Focus.tsx`
+- Add `<FocusAmbientEffects />` component when running
+- Brief flash overlay on phase change
 
 ---
 
-## Codebase Optimization (Completed)
+## Files
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Supabase client consolidation (61 files) | ✅ Done |
-| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
-| 3 | Sidebar profile query deduplication | ✅ Done |
-| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
-| 5 | Layout route optimization (nested Outlet) | ✅ Done |
-| 6 | Component memoization (AppSidebar) | ✅ Done |
+| File | Action |
+|------|--------|
+| `src/components/focus/FocusAmbientEffects.tsx` | **Create** |
+| `src/components/focus/index.ts` | Export new component |
+| `src/components/focus/FocusTimerRing.tsx` | Add breathing animation to rings |
+| `src/pages/Focus.tsx` | Integrate ambient effects + phase flash |
+
