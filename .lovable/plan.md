@@ -1,33 +1,40 @@
-# Project Roadmap
 
-## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
+
+# Alignement des coûts Finance / Wishlist
+
+## Le problème
+
+Les montants diffèrent car **Finance** et **Wishlist** comptent des données différentes :
+
+| Module | Ce qui est compté | Source |
+|--------|-------------------|--------|
+| **Finance** | `SUM(goals.estimated_cost)` pour tous les goals | Table `goals` |
+| **Wishlist** | `SUM(wishlist_items.estimated_cost)` pour les items actifs | Table `wishlist_items` |
+
+Les deux ne sont pas censés être identiques par design. Un goal peut avoir un `estimated_cost` sans aucun cost item détaillé (ex: templates, anciens goals). Et la wishlist peut contenir des items manuels non liés à un goal.
+
+## Solution proposée : Garantir la cohérence
+
+### 1. Forcer `estimated_cost` = somme des cost items à tout moment
+
+Actuellement, `useSaveCostItems` recalcule le total et met à jour `goals.estimated_cost`. Mais à la **création** d'un goal (`NewGoal.tsx`), le `estimated_cost` est inséré en dur puis les cost items sont insérés après. Si un goal n'a pas de cost items, son `estimated_cost` reste à la valeur saisie manuellement.
+
+**Fix** : Après insertion des cost items dans `NewGoal.tsx`, recalculer et mettre à jour `goals.estimated_cost` pour garantir la synchronisation.
+
+### 2. Ajouter un récap cross-module dans la Wishlist
+
+Ajouter en header de la Wishlist un indicateur "Coût projet (Finance)" à côté du "Total Wishlist" pour que l'utilisateur voie clairement les deux chiffres et comprenne qu'ils mesurent des choses différentes.
+
+### 3. (Optionnel) Unifier en rendant les cost items obligatoires
+
+Si tu veux que les deux montants soient **toujours** identiques, il faut imposer que tout `estimated_cost` sur un goal soit toujours décomposé en cost items. Ça veut dire : si un utilisateur crée un goal avec un coût estimé mais sans détailler les items, on crée automatiquement un cost item générique "Coût estimé" du montant total.
 
 ---
 
-## Priority Features Implementation Status
+## Fichiers modifiés
 
-| # | Feature | Status | Notes |
-|---|---------|--------|-------|
-| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
-| 2 | Notification automation | ✅ Done | Smart notifications edge function |
-| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
-| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
-| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
-| 6 | Goal Templates | ✅ Done | Template browser + creation |
-| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
-| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
-| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
-| 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
+| Fichier | Changement |
+|---------|------------|
+| `src/pages/NewGoal.tsx` | Recalculer `estimated_cost` après insertion des cost items |
+| `src/pages/Wishlist.tsx` | Ajouter indicateur "Coût projet total" depuis goals pour comparaison |
 
----
-
-## Codebase Optimization (Completed)
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Supabase client consolidation (61 files) | ✅ Done |
-| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
-| 3 | Sidebar profile query deduplication | ✅ Done |
-| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
-| 5 | Layout route optimization (nested Outlet) | ✅ Done |
-| 6 | Component memoization (AppSidebar) | ✅ Done |
