@@ -403,11 +403,6 @@ export default function TodoList() {
 
         <Dialog open={activePanel === 'calendar'} onOpenChange={(open) => !open && setActivePanel('none')}>
           <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-4xl max-h-[85vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-primary" /> {t('todo.questCalendar')}
-              </DialogTitle>
-            </DialogHeader>
             <TodoCalendarView tasks={tasks} />
           </DialogContent>
         </Dialog>
