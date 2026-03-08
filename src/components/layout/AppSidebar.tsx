@@ -8,7 +8,7 @@ import {
   Home, Target, ShoppingBag, ShoppingCart, Users, User, LogOut, ChevronDown,
   Shield, Database, Settings, Volume2, UserCircle, Bell, Inbox, ListTodo,
   BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3, Handshake,
-  ChevronsLeft, ChevronsRight, Crown, Mail, Package,
+  ChevronsLeft, ChevronsRight, Crown, Mail, Package, RefreshCw,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
