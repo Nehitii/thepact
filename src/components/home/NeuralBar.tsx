@@ -39,97 +39,39 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   return (
     <div className="sticky top-0 z-[100] w-full">
       {/* Main bar */}
-      <header
-        className="h-12 flex items-center justify-between px-6 overflow-hidden relative"
-        style={{
-          background: "rgba(2,4,10,0.97)",
-          borderBottom: "1px solid rgba(0,210,255,0.4)",
-          backdropFilter: "blur(20px)",
-        }}
-      >
+      <header className="neural-bar h-12 flex items-center justify-between px-6 overflow-hidden relative backdrop-blur-xl">
         {/* Scanline sweep */}
-        <div
-          className="absolute bottom-0 h-px pointer-events-none"
-          style={{
-            width: "60%",
-            background: "linear-gradient(90deg, transparent, #00d4ff, transparent)",
-            animation: "scanline 4s linear infinite",
-            left: "-100%",
-          }}
-        />
+        <div className="neural-bar-scanline absolute bottom-0 h-px pointer-events-none" />
 
         {/* Left: SYS + progress + coords */}
         <div className="flex items-center gap-3 flex-1">
-          <span
-            className="uppercase"
-            style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 9,
-              color: "rgba(160,210,255,0.5)",
-              letterSpacing: 2,
-            }}
-          >
+          <span className="uppercase font-mono text-[9px] tracking-[2px] text-muted-foreground/60">
             SYS
           </span>
 
           {/* Global progress track */}
           <div
-            className="overflow-hidden shrink-0"
-            style={{
-              width: 120,
-              height: 4,
-              background: "rgba(0,212,255,0.07)",
-              borderRadius: 2,
-            }}
+            className="overflow-hidden shrink-0 rounded-sm bg-primary/10"
+            style={{ width: 120, height: 4 }}
           >
             <div
-              style={{
-                height: "100%",
-                width: `${xpProgress}%`,
-                background: "linear-gradient(90deg, #0070ff, #00d4ff)",
-                boxShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)",
-                animation: "pulseBar 3s ease-in-out infinite",
-              }}
+              className="h-full neural-bar-progress"
+              style={{ width: `${xpProgress}%` }}
             />
           </div>
 
           {/* Pact name + ID */}
-          <span
-            className="hidden sm:inline truncate max-w-[200px]"
-            style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 9,
-              color: "rgba(0,212,255,0.35)",
-              letterSpacing: 1,
-            }}
-          >
+          <span className="hidden sm:inline truncate max-w-[200px] font-mono text-[9px] tracking-[1px] text-primary/35">
             {pact.name} // ID:{pact.id.slice(0, 8)}
           </span>
         </div>
 
         {/* Center: Clock */}
         <div className="flex-1 text-center">
-          <div
-            style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 15,
-              color: "#00d4ff",
-              textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)",
-              letterSpacing: 3,
-            }}
-          >
+          <div className="font-mono text-[15px] tracking-[3px] text-primary neural-bar-clock">
             {timeStr}
           </div>
-          <div
-            style={{
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 8,
-              color: "rgba(160,210,255,0.5)",
-              letterSpacing: 3,
-              textTransform: "uppercase" as const,
-              marginTop: 1,
-            }}
-          >
+          <div className="font-mono text-[8px] tracking-[3px] uppercase mt-px text-muted-foreground/60">
             {dateStr}
           </div>
         </div>
@@ -142,24 +84,17 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
               {[4, 8, 12, 6, 10].map((h, i) => (
                 <div
                   key={i}
-                  className="rounded-[1px]"
+                  className="rounded-[1px] bg-primary"
                   style={{
                     width: 3,
                     height: h,
-                    background: "#00d4ff",
                     animation: `freqAnim 0.8s ease-in-out infinite alternate`,
                     animationDelay: `${i * 0.15}s`,
                   }}
                 />
               ))}
             </div>
-            <span
-              style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 9,
-                color: "rgba(0,212,255,0.28)",
-              }}
-            >
+            <span className="font-mono text-[9px] text-primary/30">
               2.4GHz
             </span>
           </div>
@@ -168,13 +103,8 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           <div className="hidden sm:flex items-center gap-1.5">
             <BondIcon size={14} />
             <span
-              style={{
-                fontFamily: "'Share Tech Mono', monospace",
-                fontSize: 11,
-                color: "#ffcc00",
-                textShadow: "0 0 6px rgba(255,204,0,0.4)",
-                letterSpacing: 1,
-              }}
+              className="font-mono text-[11px] tracking-[1px]"
+              style={{ color: "#ffcc00", textShadow: "0 0 6px rgba(255,204,0,0.4)" }}
             >
               {bondBalance.toLocaleString("fr-FR")}
             </span>
@@ -183,16 +113,9 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           {/* Customize button */}
           <button
             onClick={() => navigate("/profile")}
-            className="flex items-center gap-2 cursor-pointer uppercase transition-all hover:shadow-[0_0_8px_rgba(0,212,255,0.7),0_0_30px_rgba(0,212,255,0.25)]"
+            className="neural-bar-btn flex items-center gap-2 cursor-pointer uppercase transition-all font-mono text-[10px] tracking-[2px] text-primary rounded-[4px]"
             style={{
               padding: "6px 14px",
-              background: "rgba(0,212,255,0.05)",
-              border: "1px solid rgba(0,210,255,0.4)",
-              borderRadius: 4,
-              color: "#00d4ff",
-              fontFamily: "'Share Tech Mono', monospace",
-              fontSize: 10,
-              letterSpacing: 2,
               clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)",
             }}
           >
