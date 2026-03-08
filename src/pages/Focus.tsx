@@ -122,7 +122,7 @@ export default function Focus() {
             </motion.p>
           )}
 
-          {/* Timer Ring */}
+          {/* Timer Ring (all controls integrated on hover) */}
           <FocusTimerRing
             phase={timer.phase}
             progress={timer.progress}
@@ -130,13 +130,6 @@ export default function Focus() {
             sessionsCompleted={timer.sessionsCompleted}
             isPaused={timer.isPaused}
             goalImageUrl={linkedImageUrl}
-            onStart={handleStart}
-          />
-
-          {/* Controls */}
-          <FocusControls
-            phase={timer.phase}
-            isPaused={timer.isPaused}
             onStart={handleStart}
             onPause={handlePause}
             onResume={handleResume}
