@@ -220,6 +220,27 @@ export default function Focus() {
   );
 }
 
+function TogglePanelButton({ icon: Icon, label, isOpen, onClick }: {
+  icon: React.ElementType;
+  label: string;
+  isOpen: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded-md border transition-all ${
+        isOpen
+          ? "bg-primary/20 border-primary/30 text-primary"
+          : "bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
+      }`}
+    >
+      <Icon className="h-3 w-3" />
+      {label}
+    </button>
+  );
+}
+
 function DurationRow({ label, options, value, onChange, color }: {
   label: string;
   options: number[];
