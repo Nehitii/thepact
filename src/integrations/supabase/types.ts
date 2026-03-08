@@ -878,6 +878,7 @@ export type Database = {
           image_url: string | null
           is_dynamic_super: boolean | null
           is_focus: boolean | null
+          is_locked: boolean
           name: string
           notes: string | null
           pact_id: string
@@ -904,6 +905,7 @@ export type Database = {
           image_url?: string | null
           is_dynamic_super?: boolean | null
           is_focus?: boolean | null
+          is_locked?: boolean
           name: string
           notes?: string | null
           pact_id: string
@@ -930,6 +932,7 @@ export type Database = {
           image_url?: string | null
           is_dynamic_super?: boolean | null
           is_focus?: boolean | null
+          is_locked?: boolean
           name?: string
           notes?: string | null
           pact_id?: string
@@ -1725,6 +1728,7 @@ export type Database = {
           custom_difficulty_name: string | null
           display_name: string | null
           displayed_badges: string[] | null
+          goal_unlock_code: string | null
           height: number | null
           id: string
           language: string | null
@@ -1769,6 +1773,7 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
+          goal_unlock_code?: string | null
           height?: number | null
           id: string
           language?: string | null
@@ -1813,6 +1818,7 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
+          goal_unlock_code?: string | null
           height?: number | null
           id?: string
           language?: string | null
