@@ -1,6 +1,7 @@
 import React, { memo, useMemo } from "react";
-import { Star, Target, Trophy, TrendingUp } from "lucide-react";
+import { Star, Target, Trophy, TrendingUp, Link2 } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
+import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 
 interface Goal {
   id: string;
