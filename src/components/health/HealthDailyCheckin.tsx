@@ -32,8 +32,14 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [booting, setBooting] = useState(true);
   const [bootProgress, setBootProgress] = useState(0);
   
-  const { data: todayData } = useTodayHealth(user?.id);
   const { data: settings } = useHealthSettings(user?.id);
+  const checkinMode = (settings as any)?.checkin_mode || "today";
+  const targetDate = checkinMode === "yesterday"
+    ? format(subDays(new Date(), 1), "yyyy-MM-dd")
+    : format(new Date(), "yyyy-MM-dd");
+  const targetDateLabel = checkinMode === "yesterday" ? "Hier" : "Aujourd'hui";
+  
+  const { data: todayData } = useHealthByDate(user?.id, targetDate);
   const upsertHealth = useUpsertHealthData(user?.id);
   const updateStreak = useUpdateHealthStreak(user?.id);
   
