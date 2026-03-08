@@ -1,12 +1,10 @@
 import { useState, useMemo, useCallback } from 'react';
-import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Pencil, List, LayoutGrid } from 'lucide-react';
+import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Pencil, List, LayoutGrid, Flame } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTodoList, TodoTask } from '@/hooks/useTodoList';
-import { TodoGamifiedHeader } from '@/components/todo/TodoGamifiedHeader';
-import { ModuleHeader } from '@/components/layout/ModuleHeader';
 import { TodoGamifiedTaskCard } from '@/components/todo/TodoGamifiedTaskCard';
 import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
 import { TodoAdvancedStats } from '@/components/todo/TodoAdvancedStats';
@@ -17,6 +15,7 @@ import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
 import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
 import { MentalLoadIndicator } from '@/components/todo/MentalLoadIndicator';
 import { FocusOverlay } from '@/components/todo/FocusOverlay';
+import { TodoCommandInfo } from '@/components/todo/TodoCommandInfo';
 
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
