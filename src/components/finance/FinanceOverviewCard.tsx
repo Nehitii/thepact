@@ -26,8 +26,8 @@ export function FinanceOverviewCard({ totalEstimated, totalPaid, totalRemaining,
               <Wallet className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">{t('finance.overview.projectFinancing')}</h2>
-              <p className="text-sm text-slate-500">{t('finance.overview.budgetOverview')}</p>
+              <h2 className="text-lg font-bold text-foreground tracking-tight">{t('finance.overview.projectFinancing')}</h2>
+              <p className="text-sm text-muted-foreground">{t('finance.overview.budgetOverview')}</p>
             </div>
           </div>
           {isCustomMode && (
@@ -41,16 +41,16 @@ export function FinanceOverviewCard({ totalEstimated, totalPaid, totalRemaining,
         <div className={`grid gap-4 mb-8 ${isCustomMode ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-3'}`}>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="neu-inset p-5 rounded-xl min-w-0">
             <div className="flex items-center gap-2 mb-3">
-              <Target className="h-4 w-4 text-slate-400" />
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+              <Target className="h-4 w-4 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                 {isCustomMode ? t('finance.overview.customTarget') : t('finance.overview.totalTarget')}
               </span>
             </div>
-            <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight break-all">{formatCurrency(totalEstimated, currency)}</p>
+            <p className="text-2xl sm:text-3xl font-bold text-foreground tabular-nums tracking-tight break-all">{formatCurrency(totalEstimated, currency)}</p>
             {isCustomMode && (
               <div className="flex items-center gap-1.5 mt-3">
-                <Info className="h-3 w-3 text-slate-500" />
-                <span className="text-xs text-slate-500">{t('finance.overview.notLinkedToGoals')}</span>
+                <Info className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">{t('finance.overview.notLinkedToGoals')}</span>
               </div>
             )}
           </motion.div>
@@ -83,12 +83,12 @@ export function FinanceOverviewCard({ totalEstimated, totalPaid, totalRemaining,
         <div className="space-y-3">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-slate-400" />
-              <span className="text-sm text-slate-400 font-medium">{t('finance.overview.progress')}</span>
+              <Sparkles className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground font-medium">{t('finance.overview.progress')}</span>
             </div>
-            <span className="text-sm text-white font-bold tabular-nums">{progressPercentage.toFixed(1)}%</span>
+            <span className="text-sm text-foreground font-bold tabular-nums">{progressPercentage.toFixed(1)}%</span>
           </div>
-          <div className="h-3 bg-white/[0.04] rounded-full overflow-hidden border border-white/[0.06] neu-inset">
+          <div className="h-3 bg-muted/30 dark:bg-white/[0.04] rounded-full overflow-hidden border border-border neu-inset">
             <motion.div 
               initial={{ width: 0 }} animate={{ width: `${Math.min(progressPercentage, 100)}%` }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}

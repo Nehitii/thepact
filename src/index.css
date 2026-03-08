@@ -978,7 +978,11 @@ All colors MUST be HSL.
   }
 
   .finance-input {
-    @apply bg-white/[0.04] border-white/[0.1] focus:border-primary/50 text-white placeholder:text-slate-500 transition-all duration-200;
+    @apply bg-muted/50 border-border focus:border-primary/50 text-foreground placeholder:text-muted-foreground transition-all duration-200;
+  }
+
+  .dark .finance-input {
+    @apply bg-white/[0.04] border-white/[0.1] placeholder:text-slate-500;
   }
 
   /* Neumorphic Hero Balance */

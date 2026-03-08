@@ -84,48 +84,48 @@ export function SmartFinancingPanel({ totalRemaining, projectEndDate, currentMon
             <Calculator className="h-5 w-5 text-cyan-400" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white tracking-tight">{t('finance.smartFinancing.title')}</h3>
-            <p className="text-sm text-slate-500">{t('finance.smartFinancing.subtitle')}</p>
+            <h3 className="text-lg font-bold text-foreground tracking-tight">{t('finance.smartFinancing.title')}</h3>
+            <p className="text-sm text-muted-foreground">{t('finance.smartFinancing.subtitle')}</p>
           </div>
         </div>
 
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="text-center mb-6 p-5 rounded-xl neu-inset relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] to-transparent" />
           <div className="relative">
-            <p className="text-xs text-slate-400 mb-2 uppercase tracking-wider font-medium">{t('finance.smartFinancing.amountToFinance')}</p>
+            <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">{t('finance.smartFinancing.amountToFinance')}</p>
             <p className="text-3xl font-bold text-primary tabular-nums" style={{ textShadow: '0 0 30px hsla(200,100%,60%,0.3)' }}>{formatCurrency(amountToFinance, currency)}</p>
             {existingBalance > 0 && (
-              <p className="text-xs text-slate-500 mt-2">{t('finance.smartFinancing.afterBalance', { amount: formatCurrency(existingBalance, currency) })}</p>
+              <p className="text-xs text-muted-foreground mt-2">{t('finance.smartFinancing.afterBalance', { amount: formatCurrency(existingBalance, currency) })}</p>
             )}
           </div>
         </motion.div>
 
         <div className="mb-6">
-          <label className="flex items-center gap-2 text-xs text-slate-400 mb-3 font-medium uppercase tracking-wider">
+          <label className="flex items-center gap-2 text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">
             <Wallet className="h-3.5 w-3.5" />{t('finance.smartFinancing.existingBalance')}
           </label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{getCurrencySymbol(currency)}</span>
-            <Input type="number" placeholder="0.00" value={existingBalance || ''} onChange={(e) => setExistingBalance(parseFloat(e.target.value) || 0)} className="pl-8 h-12 bg-white/[0.03] border-white/[0.08] focus:border-primary/50 text-white placeholder:text-slate-600 rounded-xl" min="0" step="100" />
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
+            <Input type="number" placeholder="0.00" value={existingBalance || ''} onChange={(e) => setExistingBalance(parseFloat(e.target.value) || 0)} className="pl-8 h-12 finance-input rounded-xl" min="0" step="100" />
           </div>
-          <p className="text-xs text-slate-600 mt-2">{t('finance.smartFinancing.existingBalanceHint')}</p>
+          <p className="text-xs text-muted-foreground mt-2">{t('finance.smartFinancing.existingBalanceHint')}</p>
         </div>
 
         <div className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-slate-400" />
-              <span className="text-sm font-semibold text-white">{t('finance.smartFinancing.paymentDuration')}</span>
+              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-semibold text-foreground">{t('finance.smartFinancing.paymentDuration')}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Input type="number" placeholder={months.toString()} value={manualMonthsInput} onChange={(e) => setManualMonthsInput(e.target.value)} onBlur={handleManualMonthsSubmit} onKeyDown={(e) => e.key === 'Enter' && handleManualMonthsSubmit()} className="w-16 h-9 text-center text-sm bg-white/[0.03] border-white/[0.08] text-white placeholder:text-slate-500 rounded-lg" min="1" max={maxMonths} />
-              <span className="text-sm text-slate-400">{t('finance.smartFinancing.months')}</span>
+              <Input type="number" placeholder={months.toString()} value={manualMonthsInput} onChange={(e) => setManualMonthsInput(e.target.value)} onBlur={handleManualMonthsSubmit} onKeyDown={(e) => e.key === 'Enter' && handleManualMonthsSubmit()} className="w-16 h-9 text-center text-sm finance-input rounded-lg" min="1" max={maxMonths} />
+              <span className="text-sm text-muted-foreground">{t('finance.smartFinancing.months')}</span>
             </div>
           </div>
           <div className="py-2">
             <Slider value={[months]} onValueChange={([value]) => updateFromMonths(value)} min={1} max={maxMonths} step={1} className="w-full" />
           </div>
-          <div className="flex justify-between text-xs text-slate-600 mt-1">
+          <div className="flex justify-between text-xs text-muted-foreground mt-1">
             <span>1 {t('finance.smartFinancing.month')}</span>
             <span>{maxMonths} {t('finance.smartFinancing.months')}</span>
           </div>
@@ -133,15 +133,15 @@ export function SmartFinancingPanel({ totalRemaining, projectEndDate, currentMon
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mb-6 p-5 rounded-xl neu-inset">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-slate-400 font-medium">{t('finance.smartFinancing.monthlyPayment')}</span>
+            <span className="text-sm text-muted-foreground font-medium">{t('finance.smartFinancing.monthlyPayment')}</span>
             <div className="flex items-center gap-2">
-              <span className="text-slate-500 text-sm">{getCurrencySymbol(currency)}</span>
-              <Input type="number" placeholder={monthlyAmount.toFixed(0)} value={manualAmountInput} onChange={(e) => setManualAmountInput(e.target.value)} onBlur={handleManualAmountSubmit} onKeyDown={(e) => e.key === 'Enter' && handleManualAmountSubmit()} className="w-24 h-8 text-right text-sm bg-transparent border-white/[0.08] font-semibold text-white placeholder:text-slate-500 rounded-lg" min="1" />
+              <span className="text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
+              <Input type="number" placeholder={monthlyAmount.toFixed(0)} value={manualAmountInput} onChange={(e) => setManualAmountInput(e.target.value)} onBlur={handleManualAmountSubmit} onKeyDown={(e) => e.key === 'Enter' && handleManualAmountSubmit()} className="w-24 h-8 text-right text-sm bg-transparent border-border font-semibold text-foreground placeholder:text-muted-foreground rounded-lg" min="1" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-white tabular-nums">
+          <p className="text-2xl font-bold text-foreground tabular-nums">
             {formatCurrency(monthlyAmount, currency)}
-            <span className="text-sm font-normal text-slate-500 ml-1">/{t('finance.smartFinancing.month')}</span>
+            <span className="text-sm font-normal text-muted-foreground ml-1">/{t('finance.smartFinancing.month')}</span>
           </p>
         </motion.div>
 
@@ -157,7 +157,7 @@ export function SmartFinancingPanel({ totalRemaining, projectEndDate, currentMon
             <p className={`text-sm font-semibold ${isOnTrack ? 'text-emerald-400' : 'text-amber-400'}`}>
               {isOnTrack ? t('finance.smartFinancing.onTrack') : t('finance.smartFinancing.exceedsDeadline', { count: monthsOverDeadline })}
             </p>
-            <p className="text-xs text-slate-500 mt-0.5">{t('finance.smartFinancing.completion', { date: format(completionDate, 'MMM yyyy') })}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('finance.smartFinancing.completion', { date: format(completionDate, 'MMM yyyy') })}</p>
           </div>
         </motion.div>
       </div>

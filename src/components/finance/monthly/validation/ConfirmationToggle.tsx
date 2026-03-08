@@ -30,20 +30,20 @@ export function ConfirmationToggle({
       className={`neu-toggle p-5 rounded-2xl border transition-all duration-300 text-left ${
         isChecked
           ? 'active border-emerald-500/30'
-          : 'border-white/[0.05]'
+          : 'border-border'
       } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <div className="flex items-center gap-4 mb-3">
         <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${
           isChecked 
             ? 'bg-emerald-500/30 border-emerald-500 shadow-[0_0_15px_hsla(160,80%,50%,0.4)]' 
-            : 'border-slate-500'
+            : 'border-muted-foreground/40'
         }`}>
           {isChecked && <Check className="h-4 w-4 text-emerald-400" />}
         </div>
-        <span className="text-base font-semibold text-white">{label}</span>
+        <span className="text-base font-semibold text-foreground">{label}</span>
       </div>
-      <p className="text-sm text-slate-400 pl-10">
+      <p className="text-sm text-muted-foreground pl-10">
         {formatCurrency(amount, currency)} {subtext}
       </p>
     </motion.button>

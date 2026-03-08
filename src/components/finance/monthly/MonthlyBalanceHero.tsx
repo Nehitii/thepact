@@ -43,10 +43,10 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
                 <Sparkles className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <span className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   {t('finance.monthly.monthlyBalance')}
                 </span>
-                <p className="text-xs text-slate-600">{t('finance.monthly.currentPeriod')}</p>
+                <p className="text-xs text-muted-foreground/60">{t('finance.monthly.currentPeriod')}</p>
               </div>
             </div>
 

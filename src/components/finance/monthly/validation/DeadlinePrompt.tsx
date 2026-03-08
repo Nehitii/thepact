@@ -31,8 +31,8 @@ export function DeadlinePrompt({ daysUntilDeadline, onValidate }: DeadlinePrompt
             </motion.div>
           </div>
           <div>
-            <p className="font-bold text-white text-lg">Time to validate!</p>
-            <p className="text-sm text-slate-400">{daysUntilDeadline} days until salary day</p>
+            <p className="font-bold text-foreground text-lg">Time to validate!</p>
+            <p className="text-sm text-muted-foreground">{daysUntilDeadline} days until salary day</p>
           </div>
         </div>
         <Button

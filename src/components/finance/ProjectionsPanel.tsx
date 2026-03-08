@@ -52,7 +52,7 @@ export function ProjectionsPanel({ projectEndDate, monthlyAllocation, totalRemai
     if (active && payload?.length) {
       return (
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-modal rounded-xl p-4 shadow-2xl">
-          <p className="text-sm font-semibold text-white mb-2">{label}</p>
+          <p className="text-sm font-semibold text-foreground mb-2">{label}</p>
           {payload.map((entry: any, index: number) => entry.value !== null && (
             <p key={index} className="text-sm tabular-nums" style={{ color: entry.color }}>{entry.name}: {formatCurrency(entry.value, currency)}</p>
           ))}
@@ -78,8 +78,8 @@ export function ProjectionsPanel({ projectEndDate, monthlyAllocation, totalRemai
             <TrendingUp className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-white tracking-tight">{t('finance.projections.balanceEvolution')}</h3>
-            <p className="text-sm text-slate-500">{t('finance.projections.monthProjection')}</p>
+            <h3 className="text-lg font-bold text-foreground tracking-tight">{t('finance.projections.balanceEvolution')}</h3>
+            <p className="text-sm text-muted-foreground">{t('finance.projections.monthProjection')}</p>
           </div>
         </div>
         <div className="h-72">
@@ -91,9 +91,9 @@ export function ProjectionsPanel({ projectEndDate, monthlyAllocation, totalRemai
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.06)" vertical={false} />
-              <XAxis dataKey="monthLabel" stroke="#475569" fontSize={11} tickLine={false} axisLine={false} dy={8} />
-              <YAxis stroke="#475569" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `${value >= 0 ? '' : '-'}${Math.abs(value / 1000)}k`} dx={-8} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.5} vertical={false} />
+              <XAxis dataKey="monthLabel" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} dy={8} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `${value >= 0 ? '' : '-'}${Math.abs(value / 1000)}k`} dx={-8} />
               <Tooltip content={<CustomTooltip />} cursor={false} />
               {projectEndDate && <ReferenceLine x={format(projectEndDate, 'MMM')} stroke="hsl(var(--primary))" strokeDasharray="5 5" strokeOpacity={0.4} />}
               <Area type="monotone" dataKey="projected" name={t('finance.projections.projected')} stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#projectedGradient)" strokeDasharray="5 5" />
@@ -101,14 +101,14 @@ export function ProjectionsPanel({ projectEndDate, monthlyAllocation, totalRemai
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex items-center justify-center gap-8 mt-6 pt-4 border-t border-white/[0.04]">
+        <div className="flex items-center justify-center gap-8 mt-6 pt-4 border-t border-border">
           <div className="flex items-center gap-2">
             <div className="w-5 h-[3px] bg-emerald-500 rounded-full" />
-            <span className="text-sm text-slate-400">{t('finance.projections.actual')}</span>
+            <span className="text-sm text-muted-foreground">{t('finance.projections.actual')}</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-5 h-[3px] rounded-full" style={{ background: `repeating-linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary)) 4px, transparent 4px, transparent 8px)` }} />
-            <span className="text-sm text-slate-400">{t('finance.projections.projected')}</span>
+            <span className="text-sm text-muted-foreground">{t('finance.projections.projected')}</span>
           </div>
         </div>
       </motion.div>
@@ -124,7 +124,7 @@ export function ProjectionsPanel({ projectEndDate, monthlyAllocation, totalRemai
           <p className={`text-base font-bold ${monthlyNetBalance >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
             {monthlyNetBalance >= 0 ? t('finance.projections.positiveBalance') : t('finance.projections.negativeBalance')}
           </p>
-          <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">
+          <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
             {monthlyNetBalance >= 0
               ? t('finance.projections.savingMessage', { amount: formatCurrency(monthlyNetBalance, currency), yearly: formatCurrency(monthlyNetBalance * 12, currency) })
               : t('finance.projections.spendingMessage', { amount: formatCurrency(Math.abs(monthlyNetBalance), currency) })

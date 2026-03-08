@@ -29,8 +29,8 @@ const DonutTooltip = ({ active, payload, currency }: any) => {
         animate={{ opacity: 1, scale: 1 }}
         className="glass-modal rounded-xl px-4 py-3 shadow-2xl"
       >
-        <p className="text-xs text-slate-400 font-medium mb-1">{data.label || data.name}</p>
-        <p className="text-base font-semibold text-white tabular-nums">
+        <p className="text-xs text-muted-foreground font-medium mb-1">{data.label || data.name}</p>
+        <p className="text-base font-semibold text-foreground tabular-nums">
           {formatCurrency(data.value, currency)}
         </p>
       </motion.div>
@@ -94,14 +94,14 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: cat.color, boxShadow: `0 0 8px ${cat.color}40` }}
               />
-              <span className="text-slate-400 truncate flex-1">{cat.label || cat.name}</span>
-              <span className="text-slate-300 tabular-nums font-medium">
+              <span className="text-muted-foreground truncate flex-1">{cat.label || cat.name}</span>
+              <span className="text-foreground/80 tabular-nums font-medium">
                 {total > 0 ? Math.round((cat.value / total) * 100) : 0}%
               </span>
             </div>
           ))}
           {data.length > maxLegendItems && (
-            <p className="text-[10px] text-slate-600">+{data.length - maxLegendItems} more</p>
+            <p className="text-[10px] text-muted-foreground/60">+{data.length - maxLegendItems} more</p>
           )}
         </div>
       </div>

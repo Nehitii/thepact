@@ -95,7 +95,7 @@ export function FinanceDashboard({
       icon: Target,
       label: t('finance.projections.toGoal'),
       value: monthsToGoal !== null ? `${monthsToGoal} mo` : '—',
-      color: 'text-white',
+      color: 'text-foreground',
     },
   ];
 
@@ -113,7 +113,7 @@ export function FinanceDashboard({
           >
             <div className="flex items-center gap-2 mb-3">
               <kpi.icon className="h-4 w-4 text-primary" />
-              <span className="text-xs text-slate-400 font-medium uppercase tracking-wider">{kpi.label}</span>
+              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{kpi.label}</span>
             </div>
             <p className={`text-2xl sm:text-3xl font-bold tabular-nums ${kpi.color}`}>{kpi.value}</p>
           </motion.div>
@@ -155,8 +155,8 @@ export function FinanceDashboard({
             <div className="neu-inset p-5 rounded-2xl flex items-center gap-4">
               <SavingsRateRing rate={savingsRate} size={72} />
               <div>
-                <p className="text-sm font-semibold text-white">{t('finance.projections.savingsRate')}</p>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm font-semibold text-foreground">{t('finance.projections.savingsRate')}</p>
+                <p className="text-xs text-muted-foreground">
                   {savingsRate >= 0
                     ? t('finance.projections.positiveBalance')
                     : t('finance.projections.negativeBalance')}

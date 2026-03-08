@@ -113,7 +113,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
   if (isLoading) {
     return (
       <div className="neu-card p-8 flex items-center justify-center min-h-[200px]">
-        <div className="w-8 h-8 border-2 border-slate-600 border-t-primary rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-muted-foreground/30 border-t-primary rounded-full animate-spin" />
       </div>
     );
   }
@@ -126,16 +126,16 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
       className="space-y-4"
     >
       <div className={`neu-card overflow-hidden ${isValidated ? 'validation-complete' : isNearDeadline ? 'validation-pending' : ''}`}>
-        <div className="p-6 flex items-center justify-between border-b border-white/[0.04]">
+        <div className="p-6 flex items-center justify-between border-b border-border">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/25 flex items-center justify-center shadow-[0_0_30px_hsla(200,100%,60%,0.15)]">
               <Calendar className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">
+              <h3 className="text-lg font-bold text-foreground">
                 {format(parseISO(currentMonth), 'MMMM yyyy')}
               </h3>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-muted-foreground">
                 {t('finance.monthly.salaryDay', { day: salaryPaymentDay })}
               </p>
             </div>
@@ -146,7 +146,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsEditing(true)}
-                className="text-slate-400 hover:text-white hover:bg-white/[0.04]"
+                className="text-muted-foreground hover:text-foreground hover:bg-muted/50"
               >
                 <Edit2 className="h-4 w-4 mr-2" />
                 {t('common.edit')}
@@ -226,7 +226,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
               <Button
                 variant="outline"
                 onClick={() => setIsEditing(false)}
-                className="flex-1 h-12 border-white/[0.1] text-slate-300 hover:bg-white/[0.04] hover:text-white rounded-xl"
+                className="flex-1 h-12 border-border text-muted-foreground hover:bg-muted/50 hover:text-foreground rounded-xl"
               >
                 {t('common.cancel')}
               </Button>
@@ -246,8 +246,8 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
               animate={{ opacity: 1, y: 0 }}
               className="flex items-start gap-3 p-4 rounded-xl neu-inset"
             >
-              <AlertCircle className="h-5 w-5 text-slate-400 shrink-0 mt-0.5" />
-              <p className="text-sm text-slate-400">
+              <AlertCircle className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+              <p className="text-sm text-muted-foreground">
                 {t('finance.monthly.confirmTip')}
               </p>
             </motion.div>
