@@ -44,6 +44,19 @@ export default function Focus() {
     prevSessionsRef.current = timer.sessionsCompleted;
   }, [timer.sessionsCompleted, play]);
 
+  // Phase transition flash
+  const [showFlash, setShowFlash] = useState(false);
+  const prevPhaseRef = useRef(timer.phase);
+  useEffect(() => {
+    if (timer.phase !== prevPhaseRef.current && timer.phase !== "idle") {
+      setShowFlash(true);
+      const timeout = setTimeout(() => setShowFlash(false), 300);
+      prevPhaseRef.current = timer.phase;
+      return () => clearTimeout(timeout);
+    }
+    prevPhaseRef.current = timer.phase;
+  }, [timer.phase]);
+
   const handleStart = () => {
     play("ui");
     startTimeRef.current = new Date().toISOString();
