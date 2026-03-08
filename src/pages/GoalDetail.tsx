@@ -91,6 +91,7 @@ import {
 } from "@/components/goals/super";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
+import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
 
 // Fix 4.2: Use shared types from useGoalDetail hook
 import type { GoalDetailData as Goal, StepData } from "@/hooks/useGoalDetail";
@@ -1101,6 +1102,23 @@ export default function GoalDetail() {
                 <p className="text-xs text-muted-foreground mt-4 text-center font-rajdhani">
                   Tap a day to mark it as complete
                 </p>
+                {/* Habit Heatmap */}
+                {user && goal.id && (() => {
+                  const heatmapData = new Map<string, { count: number; completed: boolean }>();
+                  goal.habit_checks?.forEach((checked, i) => {
+                    if (goal.created_at) {
+                      const d = new Date(goal.created_at);
+                      d.setDate(d.getDate() + i);
+                      const key = d.toISOString().split("T")[0];
+                      if (checked) heatmapData.set(key, { count: 1, completed: true });
+                    }
+                  });
+                  return (
+                    <div className="mt-6 pt-6 border-t border-border">
+                      <HabitHeatmap data={heatmapData} />
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           ) : (
