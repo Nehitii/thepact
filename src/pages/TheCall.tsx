@@ -337,7 +337,8 @@ export default function TheCall() {
             variant="ghost"
             onClick={() => navigate("/")}
             className="pointer-events-auto absolute top-6 left-6 z-30 text-muted-foreground hover:text-foreground hover:bg-muted/10 font-mono text-xs tracking-[0.2em]"
-          >
+        >
+          <div className="pb-[50vh]">
             <ArrowLeft className="w-3 h-3 mr-2" /> RETURN
           </Button>
 
