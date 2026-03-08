@@ -30,6 +30,7 @@ interface GoalsListProps {
   customDifficultyName: string;
   customDifficultyColor: string;
   toggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
+  unlockCode?: string;
 }
 
 const containerVariants = {
