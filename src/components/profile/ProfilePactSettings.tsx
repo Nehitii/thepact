@@ -84,10 +84,70 @@ export function ProfilePactSettings({
   const [confirmName, setConfirmName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const { toast } = useToast();
+
   const [logLines, setLogLines] = useState<{ text: string; type: "ok" | "warn" | "info" }[]>([
     { text: "PACT SETTINGS LOADED", type: "info" },
     { text: "ALL MODULES ACTIVE", type: "ok" },
   ]);
+
+  // Unlock code state
+  const [unlockCode, setUnlockCode] = useState("");
+  const [showCode, setShowCode] = useState(false);
+  const [savingCode, setSavingCode] = useState(false);
+  const [existingCodeSet, setExistingCodeSet] = useState(false);
+
+  useEffect(() => {
+    const loadCode = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("goal_unlock_code")
+        .eq("id", userId)
+        .maybeSingle();
+      if ((data as any)?.goal_unlock_code) {
+        setExistingCodeSet(true);
+        setUnlockCode((data as any).goal_unlock_code);
+      }
+    };
+    loadCode();
+  }, [userId]);
+
+  const handleSaveUnlockCode = async () => {
+    if (unlockCode.length !== 4 || !/^\d{4}$/.test(unlockCode)) {
+      toast({ title: "Invalid code", description: "Please enter a 4-digit PIN code", variant: "destructive" });
+      return;
+    }
+    setSavingCode(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ goal_unlock_code: unlockCode } as any)
+      .eq("id", userId);
+    setSavingCode(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setExistingCodeSet(true);
+      toast({ title: "Unlock code saved", description: "Your 4-digit goal lock code has been set." });
+      setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE UPDATED", type: "ok" as const }]);
+    }
+  };
+
+  const handleRemoveUnlockCode = async () => {
+    setSavingCode(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ goal_unlock_code: null } as any)
+      .eq("id", userId);
+    setSavingCode(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setUnlockCode("");
+      setExistingCodeSet(false);
+      toast({ title: "Unlock code removed" });
+      setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE REMOVED", type: "warn" as const }]);
+    }
+  };
 
   const handleReset = async () => {
     if (!pactId) return;
