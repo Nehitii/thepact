@@ -332,6 +332,15 @@ export default function GoalDetail() {
           onArchive={actions.handleArchiveGoal}
           onDuplicate={() => actions.handleDuplicateGoal(goalTagsData)}
           onDelete={actions.handleDeleteGoal}
+          onToggleLock={async () => {
+            const newLocked = !goal.is_locked;
+            const { error } = await supabase.from("goals").update({ is_locked: newLocked }).eq("id", goal.id);
+            if (!error) {
+              setGoal({ ...goal, is_locked: newLocked });
+              queryClient.invalidateQueries({ queryKey: ["goals"] });
+              toast({ title: newLocked ? "Goal locked" : "Goal unlocked" });
+            }
+          }}
         />
 
         {/* Share Goal Button */}
