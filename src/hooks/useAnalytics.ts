@@ -123,17 +123,16 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       // First get user's pact to filter goals
       const { data: pactData } = await supabase
         .from("pacts")
-        .select("id, points")
+        .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
 
       const pactId = pactData?.id;
-      const totalXP = pactData?.points ?? 0;
 
       // Parallel fetch all data - filter goals by pact_id
       const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes] = await Promise.all([
         pactId 
-          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost").eq("pact_id", pactId)
+          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps").eq("pact_id", pactId)
           : Promise.resolve({ data: [] }),
         supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
         supabase.from("finance").select("month, income, fixed_expenses, variable_expenses, savings").eq("user_id", user.id).order("month"),
@@ -144,6 +143,19 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       ]);
 
       const allGoals = goalsRes.data || [];
+
+      // Dynamic XP calculation (same logic as useRankXP)
+      let totalXP = 0;
+      for (const g of allGoals as any[]) {
+        const goalXP = g.potential_score || 0;
+        if (g.status === "fully_completed" || g.status === "validated") {
+          totalXP += goalXP;
+        } else if (g.status === "in_progress") {
+          const total = g.total_steps || 1;
+          const completed = g.validated_steps || 0;
+          totalXP += Math.floor(goalXP * (completed / total) * 0.5);
+        }
+      }
       const goals = period === "all" 
         ? allGoals 
         : allGoals.filter((g: any) => new Date(g.created_at) >= start);
