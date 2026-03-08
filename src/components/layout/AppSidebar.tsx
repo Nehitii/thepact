@@ -270,7 +270,7 @@ export const AppSidebar = memo(function AppSidebar() {
         )}
 
         {/* ─── NAVIGATION ─── */}
-        <nav className={cn("flex-1 space-y-5 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-0" : "px-2")}>
+        <nav className={cn("flex-1 space-y-5 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-1.5" : "px-2")}>
           {/* Main nav */}
           <div className="space-y-0.5">
             {!mini && (
@@ -291,7 +291,7 @@ export const AppSidebar = memo(function AppSidebar() {
                     className={({ isActive }) =>
                       cn(
                         "group relative flex items-center rounded-md transition-all duration-200 overflow-hidden",
-                        mini ? "justify-center h-10 w-full" : "gap-3 px-3 py-2.5",
+                        mini ? "justify-center h-10 w-10 mx-auto" : "gap-3 px-3 py-2.5",
                         isActive
                           ? "text-primary bg-primary/10"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
@@ -301,10 +301,10 @@ export const AppSidebar = memo(function AppSidebar() {
                     {({ isActive }) => (
                       <>
                         {/* Active indicator bar */}
-                        {isActive && (
+                        {isActive && !mini && (
                           <div className={cn(
                             "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] rounded-r-full bg-primary shadow-[0_0_8px_rgba(var(--primary),0.8)]",
-                            mini ? "h-5" : "h-6",
+                            "h-6",
                           )} />
                         )}
 
