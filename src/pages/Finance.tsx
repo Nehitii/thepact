@@ -97,25 +97,11 @@ export default function Finance() {
           systemLabel="NEURAL_FINANCE // SYS.ACTIVE"
           title="FUND "
           titleAccent="FLOW"
-          badges={[
-            { label: "INCOME", value: formatCurrency(totalRecurringIncome, currency), color: "#00ffe0" },
-            { label: "EXPENSES", value: formatCurrency(totalRecurringExpenses, currency), color: "#bf5af2" },
-            { label: "BALANCE", value: formatCurrency(totalRecurringIncome - totalRecurringExpenses, currency), color: "#ffd60a" },
-          ]}
-        >
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-            <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}
-              className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 rounded-xl neu-button"
-            >
-              <Settings className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline text-sm font-medium">{t('common.settings')}</span>
-            </Button>
-          </motion.div>
-        </ModuleHeader>
+        />
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-8">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>
-            <TabsList className="w-full max-w-xl neu-card p-2 mb-10 border-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="flex justify-center mb-10">
+            <TabsList className="w-full max-w-xl neu-card p-2 border-0 relative">
               <TabsTrigger value="dashboard" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
                 <LayoutDashboard className="h-4 w-4 mr-2" />{t('finance.tabs.dashboard')}
               </TabsTrigger>
@@ -125,6 +111,14 @@ export default function Finance() {
               <TabsTrigger value="planner" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
                 <TrendingUp className="h-4 w-4 mr-2" />{t('finance.tabs.planner')}
               </TabsTrigger>
+              {/* Settings button integrated into tab bar */}
+              <button
+                onClick={() => setSettingsOpen(true)}
+                className="absolute -right-12 top-1/2 -translate-y-1/2 p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                title={t('common.settings')}
+              >
+                <Settings className="h-4 w-4" />
+              </button>
             </TabsList>
           </motion.div>
 
