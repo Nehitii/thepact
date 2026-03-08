@@ -38,7 +38,7 @@ export function FocusTimerRing({ phase, progress, secondsLeft, sessionsCompleted
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
             <div
-              className="w-[220px] h-[220px] rounded-full overflow-hidden opacity-[0.12] dark:opacity-[0.15]"
+              className="w-[220px] h-[220px] rounded-full overflow-hidden opacity-[0.25] dark:opacity-[0.3]"
               style={{
                 maskImage: "radial-gradient(circle, black 40%, transparent 75%)",
                 WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 75%)",
