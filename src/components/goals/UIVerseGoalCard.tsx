@@ -3,6 +3,7 @@ import { Star, CheckCircle2, Target, Zap, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
+import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
 
 interface Goal {
   id: string;
@@ -19,6 +20,7 @@ interface Goal {
   isShared?: boolean;
   isReadOnly?: boolean;
   sharedByName?: string;
+  is_locked?: boolean;
 }
 
 interface UIVerseGoalCardProps {
@@ -152,6 +154,7 @@ export function UIVerseGoalCard({
       className="cursor-pointer"
       style={{ width: "210px", height: "280px" }}
     >
+      {goal.is_locked && <GoalLockOverlay className="rounded-[22px]" />}
       <div
         className="relative overflow-hidden flex flex-col"
         style={{

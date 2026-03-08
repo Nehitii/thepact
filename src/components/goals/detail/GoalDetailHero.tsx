@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft, Edit, Star, Trophy, Pause, Play, Archive, Copy, Trash2, Check,
+  ArrowLeft, Edit, Star, Trophy, Pause, Play, Archive, Copy, Trash2, Check, Lock, LockOpen,
 } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -37,12 +37,13 @@ interface GoalDetailHeroProps {
   onArchive: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onToggleLock?: () => void;
 }
 
 export const GoalDetailHero = React.memo(function GoalDetailHero({
   goal, progress, completedStepsCount, totalStepsCount, difficultyColor,
   isCompleted, displayTags, getDifficultyLabel, getStatusLabel,
-  toggleFocus, onEdit, onFullyComplete, onPause, onResume, onArchive, onDuplicate, onDelete,
+  toggleFocus, onEdit, onFullyComplete, onPause, onResume, onArchive, onDuplicate, onDelete, onToggleLock,
 }: GoalDetailHeroProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -191,6 +192,14 @@ export const GoalDetailHero = React.memo(function GoalDetailHero({
             <Tooltip><TooltipTrigger asChild>
               <Button variant="hud" size="sm" onClick={onDuplicate} className="rounded-lg"><Copy className="h-4 w-4 mr-1.5" />Duplicate</Button>
             </TooltipTrigger><TooltipContent>Create a copy of this goal</TooltipContent></Tooltip>
+
+            {onToggleLock && (
+              <Tooltip><TooltipTrigger asChild>
+                <Button variant="hud" size="sm" onClick={onToggleLock} className={`rounded-lg ${goal.is_locked ? "text-amber-400 border-amber-500/30 hover:bg-amber-500/10" : ""}`}>
+                  {goal.is_locked ? <><LockOpen className="h-4 w-4 mr-1.5" />Unlock</> : <><Lock className="h-4 w-4 mr-1.5" />Lock</>}
+                </Button>
+              </TooltipTrigger><TooltipContent>{goal.is_locked ? "Unlock this goal" : "Lock this goal"}</TooltipContent></Tooltip>
+            )}
 
             <AlertDialog>
               <AlertDialogTrigger asChild>

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { ProjectTimelineCard } from "./ProjectTimelineCard";
 import { CustomDifficultyCard } from "./CustomDifficultyCard";
@@ -7,8 +7,12 @@ import { PactIdentityCard } from "./PactIdentityCard";
 import { PactOverviewCard } from "./PactOverviewCard";
 import { DataPanel, SettingsBreadcrumb, CyberSeparator, TerminalLog } from "./settings-ui";
 import { useResetPact } from "@/hooks/useResetPact";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, Lock, Check, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { PactSettingsCard } from "./PactSettingsCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -80,10 +84,70 @@ export function ProfilePactSettings({
   const [confirmName, setConfirmName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  const { toast } = useToast();
+
   const [logLines, setLogLines] = useState<{ text: string; type: "ok" | "warn" | "info" }[]>([
     { text: "PACT SETTINGS LOADED", type: "info" },
     { text: "ALL MODULES ACTIVE", type: "ok" },
   ]);
+
+  // Unlock code state
+  const [unlockCode, setUnlockCode] = useState("");
+  const [showCode, setShowCode] = useState(false);
+  const [savingCode, setSavingCode] = useState(false);
+  const [existingCodeSet, setExistingCodeSet] = useState(false);
+
+  useEffect(() => {
+    const loadCode = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("goal_unlock_code")
+        .eq("id", userId)
+        .maybeSingle();
+      if ((data as any)?.goal_unlock_code) {
+        setExistingCodeSet(true);
+        setUnlockCode((data as any).goal_unlock_code);
+      }
+    };
+    loadCode();
+  }, [userId]);
+
+  const handleSaveUnlockCode = async () => {
+    if (unlockCode.length !== 4 || !/^\d{4}$/.test(unlockCode)) {
+      toast({ title: "Invalid code", description: "Please enter a 4-digit PIN code", variant: "destructive" });
+      return;
+    }
+    setSavingCode(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ goal_unlock_code: unlockCode } as any)
+      .eq("id", userId);
+    setSavingCode(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setExistingCodeSet(true);
+      toast({ title: "Unlock code saved", description: "Your 4-digit goal lock code has been set." });
+      setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE UPDATED", type: "ok" as const }]);
+    }
+  };
+
+  const handleRemoveUnlockCode = async () => {
+    setSavingCode(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ goal_unlock_code: null } as any)
+      .eq("id", userId);
+    setSavingCode(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      setUnlockCode("");
+      setExistingCodeSet(false);
+      toast({ title: "Unlock code removed" });
+      setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE REMOVED", type: "warn" as const }]);
+    }
+  };
 
   const handleReset = async () => {
     if (!pactId) return;
@@ -135,6 +199,63 @@ export function ProfilePactSettings({
       />
 
       <RanksCard userId={userId} />
+
+      {/* Goal Lock Code */}
+      <PactSettingsCard
+        icon={<Lock className="h-4 w-4 text-primary" />}
+        title="Goal Lock Code"
+        description="Set a 4-digit PIN to lock/unlock sensitive goals"
+        sectionId="goal-lock"
+      >
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground font-rajdhani">
+            {existingCodeSet
+              ? "Your lock code is set. You can change or remove it below."
+              : "Set a 4-digit PIN code. Once set, you can lock individual goals to hide their content."}
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 max-w-[180px]">
+              <Input
+                type={showCode ? "text" : "password"}
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="0000"
+                value={unlockCode}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                  setUnlockCode(v);
+                }}
+                className="font-orbitron tracking-[0.5em] text-center pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCode(!showCode)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveUnlockCode}
+              disabled={savingCode || unlockCode.length !== 4}
+              className="gap-1.5"
+            >
+              {savingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+              Save
+            </Button>
+          </div>
+          {existingCodeSet && (
+            <button
+              onClick={handleRemoveUnlockCode}
+              disabled={savingCode}
+              className="text-[10px] text-destructive/70 hover:text-destructive font-mono uppercase tracking-wider transition-colors"
+            >
+              [ REMOVE CODE ]
+            </button>
+          )}
+        </div>
+      </PactSettingsCard>
 
       {/* Danger Zone — Reset Pact */}
       {pactId && (

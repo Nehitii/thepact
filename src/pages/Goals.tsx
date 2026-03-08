@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +35,14 @@ export default function Goals() {
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
   const loading = !user || goalsLoading;
+  const [unlockCode, setUnlockCode] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("goal_unlock_code").eq("id", user.id).maybeSingle().then(({ data }) => {
+      if ((data as any)?.goal_unlock_code) setUnlockCode((data as any).goal_unlock_code);
+    });
+  }, [user]);
 
   const filters = useGoalFilters(goals);
 
@@ -166,6 +174,7 @@ export default function Goals() {
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
             toggleFocus={toggleFocus}
+            unlockCode={unlockCode}
           />
         )}
       </motion.div>

@@ -16,6 +16,7 @@ import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
+import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
 import { Link2 } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
@@ -65,6 +66,8 @@ export default function GoalDetail() {
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const [editDeadline, setEditDeadline] = useState("");
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
+  const [isUnlocked, setIsUnlocked] = useState(false);
 
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
   const editInitialStateRef = useRef<string>("");
@@ -329,6 +332,15 @@ export default function GoalDetail() {
           onArchive={actions.handleArchiveGoal}
           onDuplicate={() => actions.handleDuplicateGoal(goalTagsData)}
           onDelete={actions.handleDeleteGoal}
+          onToggleLock={async () => {
+            const newLocked = !goal.is_locked;
+            const { error } = await supabase.from("goals").update({ is_locked: newLocked }).eq("id", goal.id);
+            if (!error) {
+              setGoal({ ...goal, is_locked: newLocked });
+              queryClient.invalidateQueries({ queryKey: ["goals"] });
+              toast({ title: newLocked ? "Goal locked" : "Goal unlocked" });
+            }
+          }}
         />
 
         {/* Share Goal Button */}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, List, Zap, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
 import { GridViewGoalCard } from "@/components/goals/GridViewGoalCard";
 import { UIVerseGoalCard } from "@/components/goals/UIVerseGoalCard";
+import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
 import {
   SuperGoalCard,
   computeSuperGoalProgress,
@@ -29,6 +30,7 @@ interface GoalsListProps {
   customDifficultyName: string;
   customDifficultyColor: string;
   toggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
+  unlockCode?: string;
 }
 
 const containerVariants = {
@@ -65,8 +67,21 @@ export function GoalsList({
   customDifficultyName,
   customDifficultyColor,
   toggleFocus,
+  unlockCode,
 }: GoalsListProps) {
   const navigate = useNavigate();
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
+  const [pendingGoalId, setPendingGoalId] = useState<string | null>(null);
+
+  const handleNavigate = (id: string) => {
+    const goal = allGoals.find((g) => g.id === id);
+    if (goal?.is_locked && unlockCode) {
+      setPendingGoalId(id);
+      setUnlockModalOpen(true);
+    } else {
+      navigate(`/goals/${id}`);
+    }
+  };
 
   const renderGoalCard = (goal: Goal) => {
     const isCompleted = goal.status === "fully_completed" || goal.status === "validated";
@@ -91,7 +106,7 @@ export function GoalsList({
             isDynamic={goal.is_dynamic_super || false}
             rule={goal.super_goal_rule as SuperGoalRule | undefined}
             difficulty={goal.difficulty}
-            onClick={(id) => navigate(`/goals/${id}`)}
+            onClick={(id) => handleNavigate(id)}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
             displayMode={displayMode}
@@ -106,7 +121,7 @@ export function GoalsList({
       isCompleted,
       customDifficultyName,
       customDifficultyColor,
-      onNavigate: (id: string) => navigate(`/goals/${id}`),
+      onNavigate: handleNavigate,
       onToggleFocus: toggleFocus,
     };
 
@@ -220,6 +235,19 @@ export function GoalsList({
           )}
         </motion.div>
       </AnimatePresence>
+
+      {unlockCode && (
+        <UnlockGoalModal
+          open={unlockModalOpen}
+          onClose={() => { setUnlockModalOpen(false); setPendingGoalId(null); }}
+          onUnlock={() => {
+            setUnlockModalOpen(false);
+            if (pendingGoalId) navigate(`/goals/${pendingGoalId}`);
+            setPendingGoalId(null);
+          }}
+          correctCode={unlockCode}
+        />
+      )}
     </div>
   );
 }

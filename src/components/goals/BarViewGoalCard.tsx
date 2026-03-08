@@ -2,6 +2,7 @@ import React, { memo, useMemo } from "react";
 import { Star, Target, Trophy, TrendingUp, Link2 } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
+import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
 
 interface Goal {
   id: string;
@@ -22,6 +23,7 @@ interface Goal {
   isShared?: boolean;
   isReadOnly?: boolean;
   sharedByName?: string;
+  is_locked?: boolean;
 }
 
 interface BarViewGoalCardProps {
@@ -99,7 +101,8 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   } as React.CSSProperties;
 
   return (
-    <div className="bar-card-root" style={cssVars} onClick={() => onNavigate(goal.id)}>
+    <div className="bar-card-root relative" style={cssVars} onClick={() => onNavigate(goal.id)}>
+      {goal.is_locked && <GoalLockOverlay className="rounded-none" />}
       <div className="bar-card-container noselect">
         <button
           className={`bar-card-focus-btn ${goal.is_focus ? "active" : ""}`}

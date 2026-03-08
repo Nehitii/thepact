@@ -3,6 +3,7 @@ import { Star, Target, Zap, ImageOff, CheckCircle, Link2 } from "lucide-react";
 import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 import { cn } from "@/lib/utils";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
+import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
 
 // --- Interfaces ---
 interface Goal {
@@ -21,9 +22,10 @@ interface Goal {
   tags?: string[];
   deadline?: string | null;
   isShared?: boolean;
-  isReadOnly?: boolean;
-  sharedByName?: string;
-}
+    isReadOnly?: boolean;
+    sharedByName?: string;
+    is_locked?: boolean;
+  }
 
 interface GridViewGoalCardProps {
   goal: Goal;
@@ -127,6 +129,9 @@ export function GridViewGoalCard({
       )}
       // Maintain aspect ratio via padding trick for broad compat
     >
+      {/* Lock Overlay */}
+      {goal.is_locked && <GoalLockOverlay />}
+
       {/* Card Inner */}
       <div
         className={cn(
