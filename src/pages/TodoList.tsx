@@ -16,7 +16,7 @@ import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
 import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
 import { MentalLoadIndicator } from '@/components/todo/MentalLoadIndicator';
 import { FocusOverlay } from '@/components/todo/FocusOverlay';
-import { BootSequence } from '@/components/todo/BootSequence';
+
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
 import {
@@ -65,7 +65,7 @@ function SortableTaskCard({ task, viewMode, onComplete, onPostpone, onDelete, on
 
 export default function TodoList() {
   const { t } = useTranslation();
-  const [booted, setBooted] = useState(false);
+  
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
   const [selectedTaskType, setSelectedTaskType] = useState<string | null>(null);
   const [sortField, setSortField] = useState<SortField>('created_at');
@@ -162,10 +162,7 @@ export default function TodoList() {
     return result;
   }, [tasks, selectedTaskType, sortField, sortDirection]);
 
-  // Boot sequence on first load
-  if (!booted) {
-    return <BootSequence onComplete={() => setBooted(true)} />;
-  }
+  // Boot sequence removed for instant load
 
   if (isLoading) {
     return (
