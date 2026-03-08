@@ -35,6 +35,14 @@ export default function Goals() {
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
   const loading = !user || goalsLoading;
+  const [unlockCode, setUnlockCode] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("goal_unlock_code").eq("id", user.id).maybeSingle().then(({ data }) => {
+      if ((data as any)?.goal_unlock_code) setUnlockCode((data as any).goal_unlock_code);
+    });
+  }, [user]);
 
   const filters = useGoalFilters(goals);
 
