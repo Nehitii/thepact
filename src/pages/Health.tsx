@@ -25,7 +25,7 @@ import { HealthChallengesPanel } from "@/components/health/HealthChallengesPanel
 import { HealthInsightsPanel } from "@/components/health/HealthInsightsPanel";
 import { HealthBreathingExercise } from "@/components/health/HealthBreathingExercise";
 import { HealthEnergyCurve } from "@/components/health/HealthEnergyCurve";
-import { HealthDataExport } from "@/components/health/HealthDataExport";
+
 import { HUDFrame } from "@/components/health/HUDFrame";
 import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
