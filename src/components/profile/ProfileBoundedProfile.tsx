@@ -99,7 +99,7 @@ function HolographicCard({ children }: { children: React.ReactNode }) {
       onMouseLeave={handleMouseLeave}
       className="relative w-full h-full transition-all duration-200 ease-out"
     >
-      <div className="relative h-full transform-style-3d shadow-2xl shadow-black/80 rounded-[20px] overflow-hidden bg-[#0a0a0f] border border-white/10 group">
+      <div className="relative h-full transform-style-3d shadow-2xl shadow-black/80 rounded-[20px] overflow-hidden bg-[var(--surface-elevated)] border border-border group">
         {/* Holographic Shine Effect overlay on mouse move */}
         <motion.div
           className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-[60] mix-blend-overlay"
