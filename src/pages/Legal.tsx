@@ -153,7 +153,7 @@ export default function Legal() {
                 </div>
                 <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">1. Acceptance of Terms</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">1. Acceptance of Terms</p>
                     <p>
                       By accessing or using The Pact, you agree to comply with and be bound by these Terms of Service,
                       all applicable laws and regulations, and any additional guidelines provided within the
