@@ -177,6 +177,11 @@ export default function Wishlist() {
     setEditOpen(false);
   };
 
+  // Finance-side project total from goals
+  const financeProjectTotal = useMemo(() => {
+    return goals.reduce((sum, g) => sum + Number(g.estimated_cost || 0), 0);
+  }, [goals]);
+
   const derived = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase();
     const active = items.filter((i) => !i.acquired);
