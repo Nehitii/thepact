@@ -402,7 +402,7 @@ export default function Legal() {
                   <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">Contact</h2>
                 </div>
                 <div className="text-[var(--text-body)] font-rajdhani space-y-2 text-sm leading-relaxed">
-                  <p className="text-[#c8e0f4] font-medium">15. Contact</p>
+                  <p className="text-[var(--text-heading)] font-medium">15. Contact</p>
                   <p>For legal inquiries, data requests, or account-related issues:</p>
                   <a
                     href="mailto:legal@thepact.app"
