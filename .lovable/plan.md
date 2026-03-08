@@ -1,6 +1,6 @@
 # Project Roadmap
 
-## Status: ✅ ALL FEATURES COMPLETE
+## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
 
 ---
 
@@ -8,19 +8,26 @@
 
 | # | Feature | Status | Notes |
 |---|---------|--------|-------|
-| 1 | Inbox bug fixes (timestamps + thread nav) | ✅ Done | Fixed in earlier iteration |
-| 2 | Notification automation | ✅ Done | smart-notifications cron edge function |
-| 3 | AI Coach | ✅ Done | Weekly Review AI coaching via Gemini Flash |
-| 4 | Streak/Habit overhaul | ✅ Done | habit_logs table, HabitHeatmap, streak rewards |
-| 5 | Weekly Review | ✅ Done | WeeklyReviewModal + weekly-review edge function |
-| 6 | Goal Templates | ✅ Done | TemplateBrowser in NewGoal flow |
-| 7 | Leaderboard + Social Profiles | ✅ Done | /leaderboard page, get_public_leaderboard RPC |
-| 8 | Pomodoro Timer | ✅ Done | /focus page, pomodoro_sessions table |
-| 9 | Analytics Dashboard | ✅ Done | /analytics page, cross-module data viz |
+| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
+| 2 | Notification automation | ✅ Done | Smart notifications edge function |
+| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
+| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
+| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
+| 6 | Goal Templates | ✅ Done | Template browser + creation |
+| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
+| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
+| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
 | 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
 
 ---
 
-## Health Module: Biometric HUD Redesign — ✅ COMPLETE
+## Codebase Optimization (Completed)
 
-All phases implemented. See previous plan version for details.
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Supabase client consolidation (61 files) | ✅ Done |
+| 2 | GoalDetail decomposition | ⏳ Deferred (requires careful extraction of 15+ state vars) |
+| 3 | Sidebar profile query deduplication | ✅ Done |
+| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
+| 5 | Layout route optimization (nested Outlet) | ✅ Done |
+| 6 | Component memoization (AppSidebar) | ✅ Done |
