@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
