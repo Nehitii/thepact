@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings, BarChart3, History } from "lucide-react";
 import { usePomodoroTimer, usePomodoroSessions } from "@/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
 import { useTodoList } from "@/hooks/useTodoList";
@@ -8,8 +7,15 @@ import { usePact } from "@/hooks/usePact";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FocusTimerRing, FocusControls, FocusGoalLinker, FocusStats, FocusHistory, SpotifyPlayer } from "@/components/focus";
+import {
+  FocusTimerRing,
+  FocusStats,
+  FocusHistory,
+  SpotifyPlayer,
+  FocusToolbar,
+  FocusConfigPanel,
+  type FocusPanel,
+} from "@/components/focus";
 
 export default function Focus() {
   const { user } = useAuth();
@@ -22,8 +28,7 @@ export default function Focus() {
   const [breakMin, setBreakMin] = useState(5);
   const [linkedGoalId, setLinkedGoalId] = useState<string | null>(null);
   const [linkedTodoId, setLinkedTodoId] = useState<string | null>(null);
-  const [showStats, setShowStats] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
+  const [activePanel, setActivePanel] = useState<FocusPanel>(null);
   const startTimeRef = useRef<string | null>(null);
 
   const timer = usePomodoroTimer(workMin, breakMin);
@@ -72,8 +77,7 @@ export default function Focus() {
 
   // Find linked item for display during session
   const linkedGoal = linkedGoalId ? goals.find((g) => g.id === linkedGoalId) : null;
-  const linkedName = linkedGoal?.name
-    ?? (linkedTodoId ? tasks.find((t) => t.id === linkedTodoId)?.name : null);
+  const linkedName = linkedGoal?.name ?? (linkedTodoId ? tasks.find((t) => t.id === linkedTodoId)?.name : null);
   const linkedImageUrl = linkedGoal?.image_url ?? null;
 
   return (
@@ -98,20 +102,64 @@ export default function Focus() {
           badges={[]}
         />
 
-        <div className="flex flex-col items-center gap-8">
-          {/* Goal/Task linker — only when idle */}
+        <div className="flex flex-col items-center gap-6">
+          {/* Toolbar — hidden when running */}
           {!timer.isRunning && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <FocusGoalLinker
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="w-full flex justify-center"
+            >
+              <FocusToolbar
                 goals={goals}
                 todos={tasks}
                 linkedGoalId={linkedGoalId}
                 linkedTodoId={linkedTodoId}
                 onLinkGoal={setLinkedGoalId}
                 onLinkTodo={setLinkedTodoId}
+                activePanel={activePanel}
+                onPanelChange={setActivePanel}
               />
             </motion.div>
           )}
+
+          {/* Expandable Panel Area — hidden when running */}
+          <AnimatePresence mode="wait">
+            {!timer.isRunning && activePanel && (
+              <motion.div
+                key={activePanel}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="w-full overflow-hidden flex justify-center"
+              >
+                {activePanel === "config" && (
+                  <FocusConfigPanel
+                    workMin={workMin}
+                    breakMin={breakMin}
+                    onWorkChange={setWorkMin}
+                    onBreakChange={setBreakMin}
+                  />
+                )}
+                {activePanel === "spotify" && (
+                  <SpotifyPlayer className="w-full max-w-lg" compact={false} />
+                )}
+                {activePanel === "stats" && (
+                  <FocusStats
+                    todayCount={todayStats.count}
+                    todayMinutes={todayStats.totalMinutes}
+                    streak={streak}
+                    bestSession={bestSession}
+                    weeklyData={weeklyStats}
+                  />
+                )}
+                {activePanel === "history" && (
+                  <FocusHistory sessions={sessions.data || []} />
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Linked item name during session */}
           {timer.isRunning && linkedName && (
@@ -135,137 +183,13 @@ export default function Focus() {
             onStart={handleStart}
             onPause={handlePause}
             onResume={handleResume}
-            onSkip={() => { play("ui"); timer.skip(); }}
+            onSkip={() => {
+              play("ui");
+              timer.skip();
+            }}
             onEnd={handleEnd}
           />
-
-          {/* Config (idle only) */}
-          {!timer.isRunning && (
-            <Collapsible className="w-full max-w-sm">
-              <CollapsibleTrigger className="flex items-center justify-center gap-2 w-full py-2 text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground hover:text-foreground transition-colors">
-                <Settings className="h-3 w-3" />
-                Config
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-3 space-y-3">
-                <DurationRow
-                  label="Work"
-                  options={[15, 25, 30, 45]}
-                  value={workMin}
-                  onChange={setWorkMin}
-                  color="primary"
-                />
-                <DurationRow
-                  label="Break"
-                  options={[3, 5, 10, 15]}
-                  value={breakMin}
-                  onChange={setBreakMin}
-                  color="accent"
-                />
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
-          {/* Spotify Player */}
-          <SpotifyPlayer className="w-full max-w-sm" compact={timer.isRunning} />
-          <div className="flex items-center justify-center gap-4 mt-4">
-            <TogglePanelButton
-              icon={BarChart3}
-              label="Stats"
-              isOpen={showStats}
-              onClick={() => setShowStats((v) => !v)}
-            />
-            <TogglePanelButton
-              icon={History}
-              label="History"
-              isOpen={showHistory}
-              onClick={() => setShowHistory((v) => !v)}
-            />
-          </div>
-
-          {/* Stats Panel */}
-          <AnimatePresence>
-            {showStats && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="w-full overflow-hidden"
-              >
-                <FocusStats
-                  todayCount={todayStats.count}
-                  todayMinutes={todayStats.totalMinutes}
-                  streak={streak}
-                  bestSession={bestSession}
-                  weeklyData={weeklyStats}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* History Panel */}
-          <AnimatePresence>
-            {showHistory && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                className="w-full overflow-hidden"
-              >
-                <FocusHistory sessions={sessions.data || []} />
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function TogglePanelButton({ icon: Icon, label, isOpen, onClick }: {
-  icon: React.ElementType;
-  label: string;
-  isOpen: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded-md border transition-all ${
-        isOpen
-          ? "bg-primary/20 border-primary/30 text-primary"
-          : "bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
-      }`}
-    >
-      <Icon className="h-3 w-3" />
-      {label}
-    </button>
-  );
-}
-
-function DurationRow({ label, options, value, onChange, color }: {
-  label: string;
-  options: number[];
-  value: number;
-  onChange: (v: number) => void;
-  color: "primary" | "accent";
-}) {
-  return (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-card/60 backdrop-blur border border-border/50">
-      <span className="text-xs font-mono text-foreground">{label}</span>
-      <div className="flex items-center gap-2">
-        {options.map((m) => (
-          <button
-            key={m}
-            onClick={() => onChange(m)}
-            className={`px-3 py-1 text-[10px] font-mono rounded-md transition-all ${
-              value === m
-                ? `bg-${color} text-${color}-foreground shadow-[0_0_10px_hsl(var(--${color})/0.3)]`
-                : "bg-muted/50 text-muted-foreground hover:bg-muted"
-            }`}
-          >
-            {m}m
-          </button>
-        ))}
       </div>
     </div>
   );
