@@ -240,6 +240,7 @@ export default function Home() {
               journal: ownedModules["journal"],
               "track-health": ownedModules["track-health"],
             }}
+            onWeeklyReview={() => setWeeklyReviewOpen(true)}
             className="md:col-span-5"
           />
         </div>
