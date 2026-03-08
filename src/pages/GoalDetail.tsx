@@ -331,6 +331,13 @@ export default function GoalDetail() {
           onDelete={actions.handleDeleteGoal}
         />
 
+        {/* Share Goal Button */}
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => setShareModalOpen(true)} className="text-xs font-bold uppercase tracking-wider gap-1.5">
+            <Link2 className="h-3.5 w-3.5" /> Share with Friend
+          </Button>
+        </div>
+
         {isSuperGoal ? (
           <GoalDetailSuperGoal
             goal={goal}
