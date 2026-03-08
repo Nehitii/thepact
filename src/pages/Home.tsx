@@ -240,6 +240,7 @@ export default function Home() {
               journal: ownedModules["journal"],
               "track-health": ownedModules["track-health"],
             }}
+            onWeeklyReview={() => setWeeklyReviewOpen(true)}
             className="md:col-span-5"
           />
         </div>
@@ -255,23 +256,6 @@ export default function Home() {
 
         {/* MISSION RANDOMIZER */}
         <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
-
-        {/* WEEKLY REVIEW BUTTON */}
-        <motion.button
-          onClick={() => setWeeklyReviewOpen(true)}
-          className="w-full p-4 rounded-xl border border-white/10 bg-card/50 backdrop-blur-sm hover:bg-white/5 hover:border-primary/30 transition-all text-left group"
-          whileHover={{ scale: 1.005 }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <span className="text-lg">📊</span>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold font-orbitron text-foreground tracking-wide">Weekly Review</h3>
-              <p className="text-xs text-muted-foreground">Reflect on your week with AI-powered insights</p>
-            </div>
-          </div>
-        </motion.button>
 
         <WeeklyReviewModal open={weeklyReviewOpen} onClose={() => setWeeklyReviewOpen(false)} />
 
