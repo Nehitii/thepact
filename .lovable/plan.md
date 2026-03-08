@@ -1,33 +1,49 @@
-# Project Roadmap
 
-## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
 
----
+## Refonte du header Todo : épurer, regrouper, ajouter "Info"
 
-## Priority Features Implementation Status
+### Constat actuel
+La zone au-dessus des tasks comprend :
+1. **ModuleHeader** — orbe, anneaux, "TASK OPS", 3 hexagones (ACTIVE, SCORE, STREAK)
+2. **TodoGamifiedHeader** — gros panel glassmorphism avec level circle, XP bar segmentée, 4 stat chips (Score, Streak, Best, Active)
+3. **QuickTaskInput** — barre de commande rapide
+4. **Action bar** — compteur texte + boutons (view toggle, Calendar, History, Stats, New Quest)
+5. **TodoFilterSort** — filtres type + tri
 
-| # | Feature | Status | Notes |
-|---|---------|--------|-------|
-| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
-| 2 | Notification automation | ✅ Done | Smart notifications edge function |
-| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
-| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
-| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
-| 6 | Goal Templates | ✅ Done | Template browser + creation |
-| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
-| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
-| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
-| 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
+Problèmes : doublons d'info (score, streak, active apparaissent 2 fois), hexagones lourds, trop de sections empilées.
 
----
+### Plan
 
-## Codebase Optimization (Completed)
+**Fichier : `src/pages/TodoList.tsx`**
 
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 1 | Supabase client consolidation (61 files) | ✅ Done |
-| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
-| 3 | Sidebar profile query deduplication | ✅ Done |
-| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
-| 5 | Layout route optimization (nested Outlet) | ✅ Done |
-| 6 | Component memoization (AppSidebar) | ✅ Done |
+1. **Supprimer le `ModuleHeader`** (orbe, anneaux, hexagones) — remplacer par un titre simple discret : "TASK OPS" en petit avec le system label, style mono épuré
+2. **Supprimer le `TodoGamifiedHeader`** complètement — les stats essentielles (LVL, Score, Streak, Active) seront intégrées en une ligne compacte sous le titre
+3. **Nouveau header compact** :
+   - Ligne 1 : titre "TASK OPS" à gauche (petit, mono), stats inline à droite (LVL 6 · Score 570 · Streak 1 · 8/30)
+   - Ligne 2 : XP progress bar fine (2px, pas les segments)
+4. **Regrouper la toolbar** en une seule ligne sous le QuickTaskInput :
+   - Gauche : view toggle (grid/list) + filtres type (inline chips)
+   - Droite : boutons icônes seuls (pas de texte) pour Calendar, History, Stats + bouton **Info** (icône `Info`) qui ouvre un popover/dialog expliquant les commandes rapides (`!high`, `#work`, `@today`)
+   - Bouton "+ New" reste à droite, mis en valeur
+5. **Supprimer la ligne "8 / 30 active quests"** séparée — déjà visible dans les stats inline
+
+**Fichier : `src/components/todo/TodoCommandInfo.tsx`** (nouveau)
+- Petit composant dialog/popover déclenché par le bouton "Info"
+- Liste les commandes : `!high/med/low`, `#category`, `@today/tomorrow/nextweek`
+- Style terminal mono, compact
+
+### Résultat visuel
+
+```text
+TASK OPS                          LVL 6 · Score 570 · 🔥 1 · 8/30
+━━━━━━━━━━━━━━━━━━━━━━━━━━ XP 70/100 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[>_ Type task... !high #work @today                              ↵]
+
+[⊞][≡]  All | Flexible | Deadline | Waiting | RDV    [ℹ][📅][📊][🕐] [+ New]
+
+... tasks ...
+```
+
+Gain : ~300px de hauteur récupérée, zéro hexagone, info accessible via bouton Info, toolbar unifiée.
+
