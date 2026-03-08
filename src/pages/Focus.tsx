@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { FocusTimerRing, FocusControls, FocusGoalLinker, FocusStats, FocusHistory } from "@/components/focus";
+import { FocusTimerRing, FocusControls, FocusGoalLinker, FocusStats, FocusHistory, SpotifyPlayer } from "@/components/focus";
 
 export default function Focus() {
   const { user } = useAuth();
@@ -165,7 +165,8 @@ export default function Focus() {
             </Collapsible>
           )}
 
-          {/* Discrete toggles for Stats & History */}
+          {/* Spotify Player */}
+          <SpotifyPlayer className="w-full max-w-sm" compact={timer.isRunning} />
           <div className="flex items-center justify-center gap-4 mt-4">
             <TogglePanelButton
               icon={BarChart3}

@@ -3,3 +3,4 @@ export { FocusControls } from "./FocusControls";
 export { FocusGoalLinker } from "./FocusGoalLinker";
 export { FocusStats } from "./FocusStats";
 export { FocusHistory } from "./FocusHistory";
+export { SpotifyPlayer } from "./SpotifyPlayer";
