@@ -317,8 +317,9 @@ export default function TheCall() {
       >
         {/* HEADER */}
         <div
-          className={`absolute top-0 left-0 w-full transition-opacity duration-500 ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
+          className={`absolute top-0 left-0 w-full z-20 transition-opacity duration-500 pointer-events-none ${sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED ? "opacity-100" : "opacity-0"}`}
         >
+          <div className="pointer-events-auto">
           <ModuleHeader
             systemLabel="RITUAL_ENGINE // SYS.ACTIVE"
             title="THE "
