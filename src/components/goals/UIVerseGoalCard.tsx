@@ -16,6 +16,9 @@ interface Goal {
   totalStepsCount?: number;
   completedStepsCount?: number;
   status?: string | null;
+  isShared?: boolean;
+  isReadOnly?: boolean;
+  sharedByName?: string;
 }
 
 interface UIVerseGoalCardProps {
