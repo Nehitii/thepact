@@ -130,6 +130,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
 
   const handleSubmit = async () => {
     await upsertHealth.mutateAsync({
+      entry_date: targetDate,
       sleep_hours: sleepHours,
       sleep_quality: sleepQuality,
       wake_energy: wakeEnergy,
