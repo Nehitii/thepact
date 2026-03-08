@@ -123,12 +123,11 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       // First get user's pact to filter goals
       const { data: pactData } = await supabase
         .from("pacts")
-        .select("id, points")
+        .select("id")
         .eq("user_id", user.id)
         .maybeSingle();
 
       const pactId = pactData?.id;
-      const totalXP = pactData?.points ?? 0;
 
       // Parallel fetch all data - filter goals by pact_id
       const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes] = await Promise.all([
