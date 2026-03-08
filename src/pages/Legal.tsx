@@ -348,8 +348,8 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">12. Third Parties</p>
-                    <p className="text-[#8ACBFF] font-medium">We do not sell your personal data.</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">12. Third Parties</p>
+                    <p className="text-primary font-medium">We do not sell your personal data.</p>
                     <p className="mt-1">
                       Data may be shared with trusted service providers solely for operational purposes (hosting,
                       analytics, payments), under strict confidentiality obligations.
