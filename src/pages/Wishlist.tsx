@@ -360,11 +360,7 @@ export default function Wishlist() {
           systemLabel="ACQUISITION_PLAN // SYS.ACTIVE"
           title="WISH "
           titleAccent="LIST"
-          badges={[
-            { label: "ITEMS", value: items.filter(i => !i.acquired).length, color: "#00ffe0" },
-            { label: "REQUIRED", value: formatCurrency(derived.totals.required, currency), color: "#ff6b6b" },
-            { label: "OPTIONAL", value: formatCurrency(derived.totals.optional, currency), color: "#ffd60a" },
-          ]}
+          badges={[]}
         >
           <Dialog open={newOpen} onOpenChange={setNewOpen}>
             <DialogTrigger asChild>
