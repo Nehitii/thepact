@@ -382,10 +382,10 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">14. Modifications to These Terms</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">14. Modifications to These Terms</p>
                     <p>We reserve the right to update these Terms & Legal at any time.</p>
                     <p className="mt-1">Significant changes will be communicated through the application.</p>
-                    <p className="mt-1 text-[#8ACBFF]/80 italic">
+                    <p className="mt-1 text-primary/80 italic">
                       Continued use of The Pact constitutes acceptance of the updated terms.
                     </p>
                   </div>
