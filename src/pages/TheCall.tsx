@@ -346,10 +346,7 @@ export default function TheCall() {
               systemLabel="RITUAL_ENGINE // SYS.ACTIVE"
               title="THE "
               titleAccent="CALL"
-              badges={pactData ? [
-                { label: "STREAK", value: pactData.checkin_streak, color: "#00ffe0" },
-                { label: "TOTAL", value: pactData.checkin_total_count, color: "#bf5af2" },
-              ] : []}
+              badges={[]}
             />
           </div>
         </div>
