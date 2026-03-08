@@ -33,6 +33,9 @@ const Inbox = lazy(() => import("./pages/Inbox"));
 const InboxThread = lazy(() => import("./pages/InboxThread"));
 const Health = lazy(() => import("./pages/Health"));
 const Wishlist = lazy(() => import("./pages/Wishlist"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Focus = lazy(() => import("./pages/Focus"));
+const Analytics = lazy(() => import("./pages/Analytics"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
 const AdminModuleManager = lazy(() => import("./pages/AdminModuleManager"));
@@ -82,6 +85,9 @@ const routes: RouteConfig[] = [
   { path: "/inbox/thread/:userId", type: "protected", Component: InboxThread },
   { path: "/health", type: "protected", Component: Health },
   { path: "/wishlist", type: "protected", Component: Wishlist },
+  { path: "/leaderboard", type: "protected", Component: Leaderboard },
+  { path: "/focus", type: "protected", Component: Focus },
+  { path: "/analytics", type: "protected", Component: Analytics },
 
   // Admin
   { path: "/admin", type: "admin", Component: Admin },
