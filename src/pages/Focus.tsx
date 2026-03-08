@@ -14,6 +14,7 @@ import {
   SpotifyPlayer,
   FocusToolbar,
   FocusConfigPanel,
+  FocusAmbientEffects,
   type FocusPanel,
 } from "@/components/focus";
 
