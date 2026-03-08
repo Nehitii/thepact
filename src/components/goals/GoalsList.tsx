@@ -67,8 +67,21 @@ export function GoalsList({
   customDifficultyName,
   customDifficultyColor,
   toggleFocus,
+  unlockCode,
 }: GoalsListProps) {
   const navigate = useNavigate();
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
+  const [pendingGoalId, setPendingGoalId] = useState<string | null>(null);
+
+  const handleNavigate = (id: string) => {
+    const goal = allGoals.find((g) => g.id === id);
+    if (goal?.is_locked && unlockCode) {
+      setPendingGoalId(id);
+      setUnlockModalOpen(true);
+    } else {
+      navigate(`/goals/${id}`);
+    }
+  };
 
   const renderGoalCard = (goal: Goal) => {
     const isCompleted = goal.status === "fully_completed" || goal.status === "validated";
