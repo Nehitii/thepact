@@ -307,7 +307,7 @@ export default function Legal() {
                         • Some data may be temporarily retained if legally required (e.g. security, fraud prevention)
                       </li>
                     </ul>
-                    <p className="mt-2 text-[#ff6b6b]/80 font-medium">Deleted data cannot be recovered.</p>
+                    <p className="mt-2 text-destructive/80 font-medium">Deleted data cannot be recovered.</p>
 
                     {/* Delete Account Button */}
                     <div className="mt-4 pt-4 border-t border-primary/10">
