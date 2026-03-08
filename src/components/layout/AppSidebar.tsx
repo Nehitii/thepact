@@ -158,6 +158,11 @@ export const AppSidebar = memo(function AppSidebar() {
                 >
                   {item.label}
                 </span>
+                {item.to === "/friends" && friendRequestCount > 0 && (
+                  <span className="ml-auto text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 font-black rounded-sm min-w-[18px] text-center">
+                    {friendRequestCount}
+                  </span>
+                )}
               </NavLink>
             );
           })}
