@@ -142,7 +142,7 @@ export default function Inbox() {
             </div>
 
             {/* --- CONTENT --- */}
-            <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-transparent to-black/40">
+            <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-transparent to-muted/30">
               <AnimatePresence mode="wait">
                 {/* NOTIFICATIONS PANEL */}
                 <TabsContent value="notifications" className="h-full m-0 data-[state=inactive]:hidden">
