@@ -1,19 +1,13 @@
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { CommandPalette } from "@/components/CommandPalette";
 
 export function AppLayout() {
   return (
-    <SidebarProvider>
+    <div className="flex min-h-screen w-full">
       <AppSidebar />
-      <SidebarInset className="min-w-0 overflow-x-hidden overflow-hidden isolate">
-        {/* Mobile header with trigger */}
-        <header className="flex h-14 items-center gap-2 border-b border-border px-4 md:hidden">
-          <SidebarTrigger />
-          <span className="text-sm font-orbitron font-bold text-primary tracking-wider">THE PACT</span>
-        </header>
 
+      <div className="flex-1 min-w-0 overflow-x-hidden overflow-hidden isolate flex flex-col">
         {/* Command Palette trigger (bottom-left, fixed) */}
         <div className="fixed bottom-4 left-4 z-50 md:left-auto md:ml-4">
           <CommandPalette />
@@ -23,7 +17,7 @@ export function AppLayout() {
         <div className="flex-1 min-w-0 overflow-x-clip">
           <Outlet />
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </div>
   );
 }
