@@ -42,7 +42,7 @@ const moduleConfig: Record<string, { icon: any; route: string; label: string }> 
   journal: { icon: BookOpen, route: "/journal", label: "Journal" },
   finance: { icon: Wallet, route: "/finance", label: "Finance" },
   "the-call": { icon: Zap, route: "/the-call", label: "The Call" },
-  "track-health": { icon: Heart, route: "/health", label: "Track Health" },
+  "track-health": { icon: Heart, route: "/health", label: "Health" },
   wishlist: { icon: ShoppingCart, route: "/wishlist", label: "Wishlist" },
 };
 
