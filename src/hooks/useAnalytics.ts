@@ -143,6 +143,19 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       ]);
 
       const allGoals = goalsRes.data || [];
+
+      // Dynamic XP calculation (same logic as useRankXP)
+      let totalXP = 0;
+      for (const g of allGoals as any[]) {
+        const goalXP = g.potential_score || 0;
+        if (g.status === "fully_completed" || g.status === "validated") {
+          totalXP += goalXP;
+        } else if (g.status === "in_progress") {
+          const total = g.total_steps || 1;
+          const completed = g.validated_steps || 0;
+          totalXP += Math.floor(goalXP * (completed / total) * 0.5);
+        }
+      }
       const goals = period === "all" 
         ? allGoals 
         : allGoals.filter((g: any) => new Date(g.created_at) >= start);
