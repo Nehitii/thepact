@@ -1082,7 +1082,6 @@ All colors MUST be HSL.
 
   .savings-ring-progress {
     animation: neu-ring-progress 1.5s ease-out forwards;
-    filter: drop-shadow(0 0 4px currentColor);
   }
 
   /* Category Pill */
