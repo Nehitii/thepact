@@ -200,6 +200,63 @@ export function ProfilePactSettings({
 
       <RanksCard userId={userId} />
 
+      {/* Goal Lock Code */}
+      <PactSettingsCard
+        icon={<Lock className="h-4 w-4 text-primary" />}
+        title="Goal Lock Code"
+        description="Set a 4-digit PIN to lock/unlock sensitive goals"
+        sectionId="goal-lock"
+      >
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground font-rajdhani">
+            {existingCodeSet
+              ? "Your lock code is set. You can change or remove it below."
+              : "Set a 4-digit PIN code. Once set, you can lock individual goals to hide their content."}
+          </p>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 max-w-[180px]">
+              <Input
+                type={showCode ? "text" : "password"}
+                inputMode="numeric"
+                maxLength={4}
+                placeholder="0000"
+                value={unlockCode}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+                  setUnlockCode(v);
+                }}
+                className="font-orbitron tracking-[0.5em] text-center pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCode(!showCode)}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showCode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveUnlockCode}
+              disabled={savingCode || unlockCode.length !== 4}
+              className="gap-1.5"
+            >
+              {savingCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}
+              Save
+            </Button>
+          </div>
+          {existingCodeSet && (
+            <button
+              onClick={handleRemoveUnlockCode}
+              disabled={savingCode}
+              className="text-[10px] text-destructive/70 hover:text-destructive font-mono uppercase tracking-wider transition-colors"
+            >
+              [ REMOVE CODE ]
+            </button>
+          )}
+        </div>
+      </PactSettingsCard>
+
       {/* Danger Zone — Reset Pact */}
       {pactId && (
         <DataPanel

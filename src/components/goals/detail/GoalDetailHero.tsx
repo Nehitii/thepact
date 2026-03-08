@@ -193,6 +193,14 @@ export const GoalDetailHero = React.memo(function GoalDetailHero({
               <Button variant="hud" size="sm" onClick={onDuplicate} className="rounded-lg"><Copy className="h-4 w-4 mr-1.5" />Duplicate</Button>
             </TooltipTrigger><TooltipContent>Create a copy of this goal</TooltipContent></Tooltip>
 
+            {onToggleLock && (
+              <Tooltip><TooltipTrigger asChild>
+                <Button variant="hud" size="sm" onClick={onToggleLock} className={`rounded-lg ${goal.is_locked ? "text-amber-400 border-amber-500/30 hover:bg-amber-500/10" : ""}`}>
+                  {goal.is_locked ? <><LockOpen className="h-4 w-4 mr-1.5" />Unlock</> : <><Lock className="h-4 w-4 mr-1.5" />Lock</>}
+                </Button>
+              </TooltipTrigger><TooltipContent>{goal.is_locked ? "Unlock this goal" : "Lock this goal"}</TooltipContent></Tooltip>
+            )}
+
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="hud" size="sm" className="rounded-lg text-destructive border-destructive/30 hover:bg-destructive/10"><Trash2 className="h-4 w-4 mr-1.5" />Delete</Button>
