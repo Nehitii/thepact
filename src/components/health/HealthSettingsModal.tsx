@@ -65,6 +65,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
       setSleepGoal(settings.sleep_goal_hours || 8);
       setHydrationGoal(settings.hydration_goal_glasses || 8);
       setActivityGoal(settings.activity_goal_minutes || 30);
+      setCheckinMode((settings as any).checkin_mode || "today");
     }
   }, [settings]);
 
