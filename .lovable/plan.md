@@ -1,35 +1,33 @@
+# Project Roadmap
 
+## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
 
-## Plan — Health module improvements
+---
 
-### 1. Remove SCORE & TREND hexagons from header
-**File**: `src/pages/Health.tsx` (lines 115-118)
-- Set `badges={[]}` on the `ModuleHeader`, same as done for The Call.
+## Priority Features Implementation Status
 
-### 2. Move CSV Export to Profile > Data & Portability
-**Files**:
-- `src/pages/Health.tsx` — Remove the `HealthDataExport` import and its usage from the command bar (lines 131-140).
-- `src/pages/profile/DataPortability.tsx` — Add a new export option `"health"` to the `ExportCategory` type and `exportOptions` array. Reuse the CSV export logic from `HealthDataExport.tsx` inside the existing export flow (query `health_data`, generate CSV, download). Add the health category with a Heart/Activity icon.
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
+| 2 | Notification automation | ✅ Done | Smart notifications edge function |
+| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
+| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
+| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
+| 6 | Goal Templates | ✅ Done | Template browser + creation |
+| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
+| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
+| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
+| 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
 
-### 3. Center the VitalsSummaryStrip labels
-**File**: `src/pages/Health.tsx` (line 348)
-- Change the `VitalsSummaryStrip` inner `div` from `flex gap-4` to `flex gap-4 justify-center` so "Sleep - Activity - Stress - Hydration" are centered.
+---
 
-### 4. Fix "STATUS: Critical" overflowing the rotating circles
-**File**: `src/components/health/HealthScoreCard.tsx` (lines 111-130)
-- The inner `div` positioned `absolute inset-0` contains text that can exceed the SVG viewbox circle boundaries. Fix by adding `overflow-hidden` and constraining the text container width (e.g., `max-w-[100px]`) or reducing font size of "STATUS: CRITICAL" text. Specifically, truncate/scale the status text with `text-[9px]` and `whitespace-nowrap` to prevent overflow.
+## Codebase Optimization (Completed)
 
-### 5. Add "Check-in mode" setting (today vs. yesterday)
-**DB migration**: Add column `checkin_mode` (`text`, default `'today'`) to `health_settings` table.
-
-**Files**:
-- `src/hooks/useHealth.ts` — Add `checkin_mode` to `HealthSettings`, `HealthSettingsInput` interfaces.
-- `src/components/health/HealthSettingsModal.tsx` — Add a new toggle/radio in the Config modal: "Daily check-in concerne" → "Aujourd'hui" / "Hier". Save as `checkin_mode: 'today' | 'yesterday'`.
-- `src/components/health/HealthDailyCheckin.tsx` — Read the `checkin_mode` setting. When mode is `'yesterday'`, compute `entry_date` as yesterday's date (`format(subDays(new Date(), 1), 'yyyy-MM-dd')`) and pass it to `useUpsertHealthData`. Also load yesterday's existing data instead of today's via `useTodayHealth` (or a date-parameterized query). Display the target date in the dialog header.
-- `src/hooks/useHealth.ts` — Adjust `useTodayHealth` or add a `useHealthByDate` variant that accepts a date parameter so the check-in can load the correct day's data.
-
-### Technical summary
-- 1 DB migration (add `checkin_mode text default 'today'` to `health_settings`)
-- 5 files modified: `Health.tsx`, `HealthScoreCard.tsx`, `HealthSettingsModal.tsx`, `HealthDailyCheckin.tsx`, `useHealth.ts`
-- 1 file modified: `DataPortability.tsx` (add health CSV export category)
-
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Supabase client consolidation (61 files) | ✅ Done |
+| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
+| 3 | Sidebar profile query deduplication | ✅ Done |
+| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
+| 5 | Layout route optimization (nested Outlet) | ✅ Done |
+| 6 | Component memoization (AppSidebar) | ✅ Done |

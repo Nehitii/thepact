@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Moon, Activity, Brain, Droplets, Apple, Settings, Calendar,
-  Sparkles, Wind, Download, BarChart3, Crosshair, Cpu,
+  Sparkles, Wind, BarChart3, Crosshair, Cpu,
 } from "lucide-react";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ import { HealthChallengesPanel } from "@/components/health/HealthChallengesPanel
 import { HealthInsightsPanel } from "@/components/health/HealthInsightsPanel";
 import { HealthBreathingExercise } from "@/components/health/HealthBreathingExercise";
 import { HealthEnergyCurve } from "@/components/health/HealthEnergyCurve";
-import { HealthDataExport } from "@/components/health/HealthDataExport";
+
 import { HUDFrame } from "@/components/health/HUDFrame";
 import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
@@ -112,10 +112,7 @@ export default function Health() {
           systemLabel="HEALTH_MONITOR // SYS.ACTIVE"
           title="VITA "
           titleAccent="SCAN"
-          badges={[
-            { label: "SCORE", value: healthScore.score, color: "#00ffe0" },
-            { label: "TREND", value: Number(healthScore.trend) > 0 ? `+${healthScore.trend}` : String(healthScore.trend), color: "#bf5af2" },
-          ]}
+      badges={[]}
         />
 
         {/* Command Bar — toolbar variant */}
@@ -129,15 +126,6 @@ export default function Health() {
               <HealthStreakBadge size="md" />
               <div className="w-[1px] h-8 bg-hud-phosphor/20 hidden sm:block" />
               <TooltipProvider delayDuration={200}>
-                <div className="flex flex-col items-center gap-0.5">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <span><HealthDataExport /></span>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><span className="font-mono text-xs">CSV EXPORT</span></TooltipContent>
-                  </Tooltip>
-                  <span className="text-[8px] font-mono text-muted-foreground/60 uppercase tracking-widest">Export</span>
-                </div>
                 <div className="flex flex-col items-center gap-0.5">
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -345,7 +333,7 @@ function VitalsSummaryStrip({ userId }: { userId?: string }) {
 
   return (
     <HUDFrame className="px-4 py-2" variant="toolbar">
-      <div className="flex gap-4 overflow-x-auto font-mono text-[10px] uppercase tracking-wider">
+      <div className="flex gap-4 overflow-x-auto justify-center font-mono text-[10px] uppercase tracking-wider">
         {metrics.map(({ key, value, max, invert }) => (
           <span key={key} className="flex items-center gap-1.5 text-muted-foreground/80 whitespace-nowrap">
             <span className={cn("w-1.5 h-1.5 rounded-full", getLedClass(value, invert))} />

@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useHealthSettings, useUpsertHealthSettings } from "@/hooks/useHealth";
 import { useTranslation } from "react-i18next";
+import { cn } from "@/lib/utils";
 
 interface HealthSettingsModalProps {
   open: boolean;
@@ -49,6 +50,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
   const [sleepGoal, setSleepGoal] = useState(8);
   const [hydrationGoal, setHydrationGoal] = useState(8);
   const [activityGoal, setActivityGoal] = useState(30);
+  const [checkinMode, setCheckinMode] = useState<"today" | "yesterday">("today");
 
   // Load settings when modal opens
   useEffect(() => {
@@ -64,6 +66,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
       setSleepGoal(settings.sleep_goal_hours || 8);
       setHydrationGoal(settings.hydration_goal_glasses || 8);
       setActivityGoal(settings.activity_goal_minutes || 30);
+      setCheckinMode((settings as any).checkin_mode || "today");
     }
   }, [settings]);
 
@@ -80,6 +83,7 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
       sleep_goal_hours: sleepGoal,
       hydration_goal_glasses: hydrationGoal,
       activity_goal_minutes: activityGoal,
+      checkin_mode: checkinMode,
     });
     onOpenChange(false);
   };
@@ -242,6 +246,40 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
                   step={5}
                 />
               </div>
+            </div>
+          </div>
+          
+          <Separator className="bg-border" />
+          
+          {/* Check-in Mode */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium text-foreground">Daily check-in</h3>
+            <p className="text-xs text-muted-foreground/70">
+              Le check-in concerne quelle journée ?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCheckinMode("today")}
+                className={cn(
+                  "flex-1 py-2.5 px-3 rounded-lg text-sm font-medium border transition-all",
+                  checkinMode === "today"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "border-border text-muted-foreground hover:border-emerald-500/30"
+                )}
+              >
+                Aujourd'hui
+              </button>
+              <button
+                onClick={() => setCheckinMode("yesterday")}
+                className={cn(
+                  "flex-1 py-2.5 px-3 rounded-lg text-sm font-medium border transition-all",
+                  checkinMode === "yesterday"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    : "border-border text-muted-foreground hover:border-emerald-500/30"
+                )}
+              >
+                Hier
+              </button>
             </div>
           </div>
         </div>

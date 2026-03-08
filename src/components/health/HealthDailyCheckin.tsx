@@ -12,7 +12,8 @@ import {
   Moon, Activity, Brain, Droplets, Smile, Zap, ChevronRight, ChevronLeft, Check, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTodayHealth, useUpsertHealthData, useHealthSettings } from "@/hooks/useHealth";
+import { useTodayHealth, useUpsertHealthData, useHealthSettings, useHealthByDate } from "@/hooks/useHealth";
+import { format, subDays } from "date-fns";
 import { useUpdateHealthStreak } from "@/hooks/useHealthStreak";
 import { HealthMoodSelector } from "./HealthMoodSelector";
 import { useTranslation } from "react-i18next";
@@ -31,8 +32,14 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
   const [booting, setBooting] = useState(true);
   const [bootProgress, setBootProgress] = useState(0);
   
-  const { data: todayData } = useTodayHealth(user?.id);
   const { data: settings } = useHealthSettings(user?.id);
+  const checkinMode = (settings as any)?.checkin_mode || "today";
+  const targetDate = checkinMode === "yesterday"
+    ? format(subDays(new Date(), 1), "yyyy-MM-dd")
+    : format(new Date(), "yyyy-MM-dd");
+  const targetDateLabel = checkinMode === "yesterday" ? "Hier" : "Aujourd'hui";
+  
+  const { data: todayData } = useHealthByDate(user?.id, targetDate);
   const upsertHealth = useUpsertHealthData(user?.id);
   const updateStreak = useUpdateHealthStreak(user?.id);
   
@@ -123,6 +130,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
 
   const handleSubmit = async () => {
     await upsertHealth.mutateAsync({
+      entry_date: targetDate,
       sleep_hours: sleepHours,
       sleep_quality: sleepQuality,
       wake_energy: wakeEnergy,
@@ -350,6 +358,8 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                 <span className="text-hud-phosphor">STEP {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
                 <span className="text-muted-foreground/40">::</span>
                 <span>{currentStepData.label}</span>
+                <span className="text-muted-foreground/40">::</span>
+                <span className="text-hud-amber">{targetDateLabel}</span>
               </div>
 
               {/* Step progress bar */}

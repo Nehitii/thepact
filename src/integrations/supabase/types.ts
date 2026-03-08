@@ -1065,6 +1065,7 @@ export type Database = {
       health_settings: {
         Row: {
           activity_goal_minutes: number | null
+          checkin_mode: string
           created_at: string
           height_cm: number | null
           hydration_goal_glasses: number | null
@@ -1082,6 +1083,7 @@ export type Database = {
         }
         Insert: {
           activity_goal_minutes?: number | null
+          checkin_mode?: string
           created_at?: string
           height_cm?: number | null
           hydration_goal_glasses?: number | null
@@ -1099,6 +1101,7 @@ export type Database = {
         }
         Update: {
           activity_goal_minutes?: number | null
+          checkin_mode?: string
           created_at?: string
           height_cm?: number | null
           hydration_goal_glasses?: number | null

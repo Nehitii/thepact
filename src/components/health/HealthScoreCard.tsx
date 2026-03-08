@@ -108,8 +108,8 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
             </motion.g>
           </svg>
 
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+            <div className="text-center max-w-[110px]">
               <motion.span
                 className="text-5xl font-bold font-orbitron text-hud-phosphor"
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
@@ -121,10 +121,10 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                 {t("health.scores.healthScore")}
               </p>
               <motion.p
-                className={cn("text-[10px] font-mono font-bold tracking-widest mt-0.5", status.color)}
+                className={cn("text-[9px] font-mono font-bold tracking-widest mt-0.5 whitespace-nowrap", status.color)}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
               >
-                STATUS: {status.text}
+                {status.text}
               </motion.p>
             </div>
           </div>
