@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { CyberBackground } from "@/components/CyberBackground";
@@ -355,15 +356,16 @@ export default function Wishlist() {
       </Dialog>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card/60 backdrop-blur-sm border border-border text-primary/70 font-rajdhani font-medium tracking-wider transition-all hover:border-primary/40 hover:text-primary hover:bg-primary/10"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back</span>
-          </button>
+        <ModuleHeader
+          systemLabel="ACQUISITION_PLAN // SYS.ACTIVE"
+          title="WISH "
+          titleAccent="LIST"
+          badges={[
+            { label: "ITEMS", value: items.filter(i => !i.acquired).length, color: "#00ffe0" },
+            { label: "REQUIRED", value: formatCurrency(derived.totals.required, currency), color: "#ff6b6b" },
+            { label: "OPTIONAL", value: formatCurrency(derived.totals.optional, currency), color: "#ffd60a" },
+          ]}
+        >
           <Dialog open={newOpen} onOpenChange={setNewOpen}>
             <DialogTrigger asChild>
               <Button variant="hud" className="rounded-xl font-orbitron text-xs tracking-wider">
@@ -408,17 +410,7 @@ export default function Wishlist() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-
-        {/* Title */}
-        <div className="space-y-1">
-          <h1 className="text-3xl font-orbitron font-bold tracking-wider text-primary drop-shadow-[0_0_20px_hsl(var(--primary)/0.3)]">
-            Wishlist
-          </h1>
-          <p className="text-sm text-muted-foreground font-rajdhani">
-            Strategic acquisition planning — separate needs from wants.
-          </p>
-        </div>
+        </ModuleHeader>
 
         {/* Need vs Want visualization */}
         <NeedVsWantChart

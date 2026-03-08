@@ -4,8 +4,11 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, LayoutDashboard, FileText, TrendingUp, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, TrendingUp, Settings } from "lucide-react";
 import { motion } from "framer-motion";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
+import { useCurrency } from "@/contexts/CurrencyContext";
+import { formatCurrency } from "@/lib/currency";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useFinanceSettings, useRecurringExpenses, useRecurringIncome } from "@/hooks/useFinance";
@@ -19,6 +22,7 @@ export default function Finance() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { currency } = useCurrency();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -89,31 +93,16 @@ export default function Finance() {
       />
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex items-center justify-between py-8 border-b border-border"
+        <ModuleHeader
+          systemLabel="NEURAL_FINANCE // SYS.ACTIVE"
+          title="FUND "
+          titleAccent="FLOW"
+          badges={[
+            { label: "INCOME", value: formatCurrency(totalRecurringIncome, currency), color: "#00ffe0" },
+            { label: "EXPENSES", value: formatCurrency(totalRecurringExpenses, currency), color: "#bf5af2" },
+            { label: "BALANCE", value: formatCurrency(totalRecurringIncome - totalRecurringExpenses, currency), color: "#ffd60a" },
+          ]}
         >
-          <div className="flex items-center gap-6">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Button
-                variant="ghost" size="sm"
-                onClick={() => navigate("/")}
-                className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 -ml-2 rounded-xl"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">{t('common.back')}</span>
-              </Button>
-            </motion.div>
-            <div className="hidden sm:block h-8 w-px bg-border" />
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight" style={{ fontFamily: 'Inter, system-ui, sans-serif', letterSpacing: '-0.025em' }}>
-                {t('finance.dashboard')}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1 hidden sm:block">{t('finance.dashboardSubtitle')}</p>
-            </div>
-          </div>
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button variant="ghost" size="sm" onClick={() => setSettingsOpen(true)}
               className="text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all duration-200 rounded-xl neu-button"
@@ -122,7 +111,7 @@ export default function Finance() {
               <span className="hidden sm:inline text-sm font-medium">{t('common.settings')}</span>
             </Button>
           </motion.div>
-        </motion.header>
+        </ModuleHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full mt-8">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }}>

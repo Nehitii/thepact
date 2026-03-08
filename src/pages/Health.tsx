@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Heart, Moon, Activity, Brain, Droplets, Apple, Settings, Calendar,
+  Moon, Activity, Brain, Droplets, Apple, Settings, Calendar,
   Sparkles, Wind, Download, BarChart3, Crosshair, Cpu,
 } from "lucide-react";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -107,24 +108,15 @@ export default function Health() {
       </div>
 
       <div className="max-w-6xl mx-auto p-6 space-y-6 relative z-10">
-        {/* Centered Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center text-center gap-3"
-        >
-          <div className="p-3 rounded-2xl bg-hud-phosphor/10 border border-hud-phosphor/20">
-            <Heart className="w-8 h-8 text-hud-phosphor" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-hud-phosphor to-cyan-300 font-orbitron">
-              {t("health.title")}
-            </h1>
-            <p className="text-muted-foreground/70 text-sm font-mono uppercase tracking-wider mt-1">
-              {t("health.subtitle")}
-            </p>
-          </div>
-        </motion.div>
+        <ModuleHeader
+          systemLabel="HEALTH_MONITOR // SYS.ACTIVE"
+          title="VITA "
+          titleAccent="SCAN"
+          badges={[
+            { label: "SCORE", value: healthScore.score, color: "#00ffe0" },
+            { label: "TREND", value: Number(healthScore.trend) > 0 ? `+${healthScore.trend}` : String(healthScore.trend), color: "#bf5af2" },
+          ]}
+        />
 
         {/* Command Bar — toolbar variant */}
         <motion.div
