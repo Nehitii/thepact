@@ -163,17 +163,55 @@ export default function Focus() {
             </Collapsible>
           )}
 
-          {/* Stats */}
-          <FocusStats
-            todayCount={todayStats.count}
-            todayMinutes={todayStats.totalMinutes}
-            streak={streak}
-            bestSession={bestSession}
-            weeklyData={weeklyStats}
-          />
+          {/* Discrete toggles for Stats & History */}
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <TogglePanelButton
+              icon={BarChart3}
+              label="Stats"
+              isOpen={showStats}
+              onClick={() => setShowStats((v) => !v)}
+            />
+            <TogglePanelButton
+              icon={History}
+              label="History"
+              isOpen={showHistory}
+              onClick={() => setShowHistory((v) => !v)}
+            />
+          </div>
 
-          {/* Session History */}
-          <FocusHistory sessions={sessions.data || []} />
+          {/* Stats Panel */}
+          <AnimatePresence>
+            {showStats && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="w-full overflow-hidden"
+              >
+                <FocusStats
+                  todayCount={todayStats.count}
+                  todayMinutes={todayStats.totalMinutes}
+                  streak={streak}
+                  bestSession={bestSession}
+                  weeklyData={weeklyStats}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* History Panel */}
+          <AnimatePresence>
+            {showHistory && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="w-full overflow-hidden"
+              >
+                <FocusHistory sessions={sessions.data || []} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
