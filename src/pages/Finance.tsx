@@ -22,6 +22,7 @@ export default function Finance() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { currency } = useCurrency();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [settingsOpen, setSettingsOpen] = useState(false);
 
