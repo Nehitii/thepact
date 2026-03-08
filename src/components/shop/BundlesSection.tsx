@@ -42,7 +42,7 @@ export function BundlesSection() {
     if (!user || !selectedBundle) return;
     
     purchaseBundle.mutate(
-      { userId: user.id, bundle: selectedBundle },
+      { bundleId: selectedBundle.id },
       {
         onSuccess: () => {
           setShowConfirm(false);
@@ -99,19 +99,17 @@ export function BundlesSection() {
         ))}
       </div>
       
-      {/* Purchase confirmation */}
       {purchaseItem && (
         <PurchaseConfirmModal
-          isOpen={showConfirm}
-          onClose={() => setShowConfirm(false)}
+          open={showConfirm}
+          onOpenChange={(open) => !open && setShowConfirm(false)}
           onConfirm={handleConfirmPurchase}
           item={purchaseItem}
           currentBalance={balance?.balance || 0}
-          isPurchasing={purchaseBundle.isPending}
+          isPending={purchaseBundle.isPending}
         />
       )}
       
-      {/* Unlock animation */}
       {unlockedItem && (
         <UnlockAnimation
           isOpen={showUnlock}

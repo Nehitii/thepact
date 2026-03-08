@@ -20,6 +20,7 @@ import { UnlockAnimation } from "./UnlockAnimation";
 import { CyberItemCard } from "./CyberItemCard";
 import { FittingRoom } from "./FittingRoom";
 import { useShopTransaction } from "@/hooks/useShopTransaction";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type CosmeticCategory = "frames" | "banners" | "titles";
 
@@ -37,6 +38,7 @@ const rarityDotColors: Record<string, string> = {
 
 export function CosmeticShop() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [activeCategory, setActiveCategory] = useState<CosmeticCategory>("frames");
   const [purchaseItem, setPurchaseItem] = useState<PurchaseItem | null>(null);
   const [showUnlock, setShowUnlock] = useState(false);
@@ -109,7 +111,6 @@ export function CosmeticShop() {
     return ownedCosmetics.titles.includes(id);
   };
 
-  // Count items by rarity for each category
   const getRarityCounts = (items: Array<{ rarity: string }>) => {
     const counts: Record<string, number> = {};
     items.forEach(item => {
@@ -148,49 +149,62 @@ export function CosmeticShop() {
   const visibleItems = activeCategory === "frames" ? filteredFrames.length :
     activeCategory === "banners" ? filteredBanners.length : filteredTitles.length;
 
-  return (
-    <div className="flex gap-6 h-full">
-      {/* Left sidebar - Categories */}
-      <div className="w-48 flex-shrink-0 space-y-2">
-        <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-orbitron mb-4 px-2">
-          Categories
-        </h3>
-        {categories.map((cat) => {
-          const isActive = activeCategory === cat.id;
-          const Icon = cat.icon;
-          const count = cat.id === "frames" ? frames.length :
-            cat.id === "banners" ? banners.length : titles.length;
-          const rarityCounts = categoryRarityCounts[cat.id];
+  const renderCategoryNav = () => (
+    <>
+      {categories.map((cat) => {
+        const isActive = activeCategory === cat.id;
+        const Icon = cat.icon;
+        const count = cat.id === "frames" ? frames.length :
+          cat.id === "banners" ? banners.length : titles.length;
+        const rarityCounts = categoryRarityCounts[cat.id];
 
-          return (
-            <button
-              key={cat.id}
-              onClick={() => setActiveCategory(cat.id)}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${isActive
-                ? "bg-primary/10 border-l-2 border-primary text-primary border-r border-t border-b border-r-primary/20 border-t-primary/20 border-b-primary/20"
-                : "hover:bg-card/50 text-muted-foreground hover:text-foreground border border-transparent"
-                }`}
-            >
-              <div className="flex items-center gap-3">
-                <Icon className="w-5 h-5" />
-                <span className="font-rajdhani font-medium">{cat.label}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                {/* Rarity dots */}
-                {Object.entries(rarityCounts).map(([r, c]) => (
-                  <span
-                    key={r}
-                    className="w-1.5 h-1.5 rounded-full"
-                    style={{ background: rarityDotColors[r] }}
-                    title={`${c} ${r}`}
-                  />
-                ))}
-                <span className="text-xs opacity-60 ml-1">{count}</span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+        return (
+          <button
+            key={cat.id}
+            onClick={() => setActiveCategory(cat.id)}
+            className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 ${
+              isMobile ? "flex-1 min-w-0" : "w-full"
+            } ${isActive
+              ? "bg-primary/10 border-l-2 border-primary text-primary border-r border-t border-b border-r-primary/20 border-t-primary/20 border-b-primary/20"
+              : "hover:bg-card/50 text-muted-foreground hover:text-foreground border border-transparent"
+            }`}
+          >
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <Icon className="w-5 h-5 shrink-0" />
+              <span className="font-rajdhani font-medium truncate">{cat.label}</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {!isMobile && Object.entries(rarityCounts).map(([r, c]) => (
+                <span
+                  key={r}
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ background: rarityDotColors[r] }}
+                  title={`${c} ${r}`}
+                />
+              ))}
+              <span className="text-xs opacity-60 ml-1">{count}</span>
+            </div>
+          </button>
+        );
+      })}
+    </>
+  );
+
+  return (
+    <div className={`${isMobile ? "flex flex-col" : "flex gap-6"} h-full`}>
+      {/* Category nav: horizontal tabs on mobile, sidebar on desktop */}
+      {isMobile ? (
+        <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar">
+          {renderCategoryNav()}
+        </div>
+      ) : (
+        <div className="w-48 flex-shrink-0 space-y-2">
+          <h3 className="text-xs text-muted-foreground uppercase tracking-wider font-orbitron mb-4 px-2">
+            Categories
+          </h3>
+          {renderCategoryNav()}
+        </div>
+      )}
 
       {/* Right panel */}
       <div className="flex-1 flex flex-col min-h-0">
@@ -310,7 +324,6 @@ export function CosmeticShop() {
                   );
                 })}
 
-                {/* Empty states */}
                 {activeCategory === "frames" && filteredFrames.length === 0 && !framesLoading && (
                   <div className="col-span-full text-center py-12 text-muted-foreground">
                     <Frame className="w-12 h-12 mx-auto mb-3 opacity-50" />

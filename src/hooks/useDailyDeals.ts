@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface DailyDeal {
   id: string;
@@ -34,58 +35,97 @@ export function useDailyDeals() {
       if (error) throw error;
       if (!deals || deals.length === 0) return [];
       
-      // Fetch related items for each deal
+      const typedDeals = deals as DailyDeal[];
+
+      // Group item IDs by type for batch fetching
+      const idsByType: Record<string, string[]> = {};
+      for (const deal of typedDeals) {
+        if (!idsByType[deal.item_type]) idsByType[deal.item_type] = [];
+        idsByType[deal.item_type].push(deal.item_id);
+      }
+
+      // Batch fetch all items in parallel
+      const itemMap = new Map<string, { id: string; name: string; price: number; rarity: string; preview_url?: string | null; description?: string | null }>();
+
+      const fetches: Promise<void>[] = [];
+
+      if (idsByType["cosmetic_frame"]?.length) {
+        fetches.push(
+          supabase.from("cosmetic_frames").select("id, name, price, rarity, preview_url").in("id", idsByType["cosmetic_frame"])
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, d)); })
+        );
+      }
+      if (idsByType["cosmetic_banner"]?.length) {
+        fetches.push(
+          supabase.from("cosmetic_banners").select("id, name, price, rarity, preview_url").in("id", idsByType["cosmetic_banner"])
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, d)); })
+        );
+      }
+      if (idsByType["cosmetic_title"]?.length) {
+        fetches.push(
+          supabase.from("cosmetic_titles").select("id, title_text, price, rarity").in("id", idsByType["cosmetic_title"])
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, { ...d, name: d.title_text })); })
+        );
+      }
+      if (idsByType["module"]?.length) {
+        fetches.push(
+          supabase.from("shop_modules").select("id, name, price_bonds, rarity, description").in("id", idsByType["module"])
+            .then(({ data }) => { data?.forEach(d => itemMap.set(d.id, { ...d, price: d.price_bonds })); })
+        );
+      }
+
+      await Promise.all(fetches);
+
+      // Enrich deals
       const enrichedDeals: DailyDealWithItem[] = [];
-      
-      for (const deal of deals as DailyDeal[]) {
-        let item = null;
-        
-        if (deal.item_type === "cosmetic_frame") {
-          const { data } = await supabase
-            .from("cosmetic_frames")
-            .select("id, name, price, rarity, preview_url")
-            .eq("id", deal.item_id)
-            .single();
-          item = data;
-        } else if (deal.item_type === "cosmetic_banner") {
-          const { data } = await supabase
-            .from("cosmetic_banners")
-            .select("id, name, price, rarity, preview_url")
-            .eq("id", deal.item_id)
-            .single();
-          item = data;
-        } else if (deal.item_type === "cosmetic_title") {
-          const { data } = await supabase
-            .from("cosmetic_titles")
-            .select("id, title_text, price, rarity")
-            .eq("id", deal.item_id)
-            .single();
-          if (data) {
-            item = { ...data, name: data.title_text };
-          }
-        } else if (deal.item_type === "module") {
-          const { data } = await supabase
-            .from("shop_modules")
-            .select("id, name, price_bonds, rarity, description")
-            .eq("id", deal.item_id)
-            .single();
-          if (data) {
-            item = { ...data, price: data.price_bonds };
-          }
-        }
-        
+      for (const deal of typedDeals) {
+        const item = itemMap.get(deal.item_id);
         if (item) {
           const discounted_price = Math.floor(item.price * (1 - deal.discount_percentage / 100));
-          enrichedDeals.push({
-            ...deal,
-            item: item as any,
-            discounted_price,
-          });
+          enrichedDeals.push({ ...deal, item: item as any, discounted_price });
         }
       }
       
       return enrichedDeals;
     },
-    refetchInterval: 60000, // Refetch every minute to check for new deals
+    refetchInterval: 60000,
+  });
+}
+
+/**
+ * Purchase a daily deal via secure atomic DB function.
+ * Server validates the deal, computes the discounted price, and handles the transaction.
+ */
+export function usePurchaseDailyDeal() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ dealId }: { dealId: string }) => {
+      const { data, error } = await supabase.rpc("purchase_daily_deal", {
+        p_deal_id: dealId,
+      });
+
+      if (error) throw error;
+
+      const result = data as { success: boolean; error?: string; new_balance?: number; price?: number };
+      if (!result.success) throw new Error(result.error || "Purchase failed");
+
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
+      queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
+      queryClient.invalidateQueries({ queryKey: ["daily-deals"] });
+      toast({ title: "Deal secured!" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Purchase failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
   });
 }
