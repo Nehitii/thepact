@@ -128,49 +128,41 @@ export function FocusTimerRing({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
-              className="flex flex-col items-center gap-4"
+              className="flex items-center gap-3"
             >
-              {/* Pause / Resume */}
-              <div className="flex items-center gap-3">
-                {isPaused ? (
-                  <button
-                    onClick={onResume}
-                    className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
-                    title="Resume"
-                  >
-                    <Play className="h-6 w-6 text-primary ml-0.5" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={onPause}
-                    className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
-                    title="Pause"
-                  >
-                    <Pause className="h-6 w-6 text-primary" />
-                  </button>
-                )}
-
+              {isPaused ? (
                 <button
-                  onClick={onSkip}
-                  className="w-11 h-11 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center hover:bg-muted/50 hover:border-border transition-all"
-                  title="Skip phase"
+                  onClick={onResume}
+                  className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                  title="Resume"
                 >
-                  <SkipForward className="h-4 w-4 text-muted-foreground" />
+                  <Play className="h-6 w-6 text-primary ml-0.5" />
                 </button>
-
+              ) : (
                 <button
-                  onClick={onEnd}
-                  className="w-11 h-11 rounded-full bg-destructive/15 border border-destructive/40 flex items-center justify-center hover:bg-destructive/25 hover:border-destructive/60 transition-all hover:shadow-[0_0_20px_hsl(var(--destructive)/0.3)]"
-                  title="End session"
+                  onClick={onPause}
+                  className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
+                  title="Pause"
                 >
-                  <Square className="h-4 w-4 text-destructive" />
+                  <Pause className="h-6 w-6 text-primary" />
                 </button>
-              </div>
+              )}
 
-              {/* Small timer below controls */}
-              <span className="text-lg font-orbitron font-bold text-foreground/70 tabular-nums">
-                {formatTime(secondsLeft)}
-              </span>
+              <button
+                onClick={onSkip}
+                className="w-11 h-11 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center hover:bg-muted/50 hover:border-border transition-all"
+                title="Skip phase"
+              >
+                <SkipForward className="h-4 w-4 text-muted-foreground" />
+              </button>
+
+              <button
+                onClick={onEnd}
+                className="w-11 h-11 rounded-full bg-destructive/15 border border-destructive/40 flex items-center justify-center hover:bg-destructive/25 hover:border-destructive/60 transition-all hover:shadow-[0_0_20px_hsl(var(--destructive)/0.3)]"
+                title="End session"
+              >
+                <Square className="h-4 w-4 text-destructive" />
+              </button>
             </motion.div>
 
           /* DEFAULT → Timer display */
