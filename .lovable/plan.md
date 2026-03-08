@@ -26,7 +26,7 @@
 | Phase | Description | Status |
 |-------|-------------|--------|
 | 1 | Supabase client consolidation (61 files) | ✅ Done |
-| 2 | GoalDetail decomposition | ⏳ Deferred (requires careful extraction of 15+ state vars) |
+| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
 | 3 | Sidebar profile query deduplication | ✅ Done |
 | 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
 | 5 | Layout route optimization (nested Outlet) | ✅ Done |

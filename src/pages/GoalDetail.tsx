@@ -1,112 +1,41 @@
 import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { supabase } from "@/integrations/supabase/client";
-import { trackStepCompleted } from "@/lib/achievements";
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useGoalDetail } from "@/hooks/useGoalDetail";
 import { useProfile } from "@/hooks/useProfile";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  ArrowLeft,
-  Check,
-  ChevronRight,
-  Trash2,
-  Edit,
-  Sparkles,
-  Calendar,
-  Star,
-  Trophy,
-  Receipt,
-  Target,
-  Tag,
-  Zap,
-  ListOrdered,
-  Image,
-  StickyNote,
-  DollarSign,
-  X,
-  MessageSquare,
-  Crown,
-  Pause,
-  Play,
-  Archive,
-  Copy,
-  Clock,
-} from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
-import { formatCurrency } from "@/lib/currency";
-import { GoalImageUpload } from "@/components/GoalImageUpload";
-import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
-import { EditStepsList, type EditStepItem } from "@/components/goals/EditStepsList";
 import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
 import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
-import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import type { CostItemData } from "@/components/goals/CostItemsEditor";
+import type { EditStepItem } from "@/components/goals/EditStepsList";
 import {
-  GOAL_TAGS,
-  DIFFICULTY_OPTIONS,
-  getTagLabel,
-  getTagColor,
-  getDifficultyLabel as getCentralizedDifficultyLabel,
-  getStatusLabel as getCentralizedStatusLabel,
-  getStatusColor as getCentralizedStatusColor,
-  getStatusBadgeClass,
-  getCostCategoryLabel,
-  mapToValidTag,
+  DIFFICULTY_OPTIONS, getDifficultyLabel as getCentralizedDifficultyLabel,
+  getStatusLabel as getCentralizedStatusLabel, mapToValidTag,
 } from "@/lib/goalConstants";
 import {
-  SuperGoalChildList,
-  SuperGoalEditModal,
-  computeSuperGoalProgress,
-  filterGoalsByRule,
-  type SuperGoalRule,
-  type SuperGoalChildInfo,
+  SuperGoalEditModal, computeSuperGoalProgress, filterGoalsByRule,
+  type SuperGoalRule, type SuperGoalChildInfo,
 } from "@/components/goals/super";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
-import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
+import { useGoalDetailActions } from "@/hooks/useGoalDetailActions";
+import {
+  GoalDetailHero, GoalDetailSteps, GoalDetailHabit,
+  GoalDetailCosts, GoalDetailSuperGoal, GoalDetailEditOverlay,
+} from "@/components/goals/detail";
 
-// Fix 4.2: Use shared types from useGoalDetail hook
-import type { GoalDetailData as Goal, StepData } from "@/hooks/useGoalDetail";
-
-interface Step {
-  id: string;
-  title: string;
-  order: number;
-  status: string;
-  due_date: string | null;
-  notes?: string | null;
-}
+import type { GoalDetailData as Goal } from "@/hooks/useGoalDetail";
 
 export default function GoalDetail() {
-  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { currency } = useCurrency();
@@ -115,8 +44,9 @@ export default function GoalDetail() {
   const { isModulePurchased } = useUserShop(user?.id);
   const queryClient = useQueryClient();
   const createWishlistItem = useCreatePactWishlistItem();
+
   const [goal, setGoal] = useState<Goal | null>(null);
-  const [steps, setSteps] = useState<Step[]>([]);
+  const [steps, setSteps] = useState<{ id: string; title: string; order: number; status: string; due_date: string | null; notes?: string | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -132,28 +62,40 @@ export default function GoalDetail() {
   const [editStepItems, setEditStepItems] = useState<EditStepItem[]>([]);
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const [editDeadline, setEditDeadline] = useState("");
-  const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
 
-  // Track initial edit state for unsaved changes guard
+  const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
   const editInitialStateRef = useRef<string>("");
 
   const { data: costItems = [] } = useCostItems(id);
   const saveCostItems = useSaveCostItems();
   const { data: goalTagsData = [] } = useGoalTags(id);
   const saveGoalTags = useSaveGoalTags();
-
-  // Use useProfile hook instead of raw fetch (Fix 2.2)
   const { data: profile } = useProfile(user?.id);
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
   const customDifficultyActive = profile?.custom_difficulty_active || false;
 
-  // Use React Query for goal detail (Fix 2.1)
   const { data: goalDetailData, isLoading: goalDetailLoading } = useGoalDetail(id, user?.id);
-
-  // Fetch pact and all goals for Super Goal context
   const { data: pact } = usePact(user?.id);
   const { data: allGoals = [] } = useGoals(pact?.id, { includeStepCounts: true });
+
+  const getDifficultyColor = useCallback(
+    (d: string) => getUnifiedDifficultyColor(d, customDifficultyColor),
+    [customDifficultyColor],
+  );
+
+  // Actions hook
+  const actions = useGoalDetailActions({
+    goalId: id,
+    userId: user?.id,
+    goal,
+    steps,
+    costItems,
+    setGoal,
+    setSteps,
+    triggerParticles,
+    getDifficultyColor,
+  });
 
   // Sync goal detail from React Query into local state
   useEffect(() => {
@@ -174,517 +116,142 @@ export default function GoalDetail() {
     }
   }, [goalDetailData]);
 
-  // Also set loading false if query finishes with no data
   useEffect(() => {
-    if (!goalDetailLoading && !goalDetailData) {
-      setLoading(false);
-    }
+    if (!goalDetailLoading && !goalDetailData) setLoading(false);
   }, [goalDetailLoading, goalDetailData]);
 
-  // Pre-compute child goals info for Super Goals (must be before early returns)
+  // Super Goal children
   const childGoalsInfo: SuperGoalChildInfo[] = useMemo(() => {
     if (!goal || goal.goal_type !== "super") return [];
-
     let childIds = goal.child_goal_ids || [];
-
-    // If dynamic, apply rule to get current children
     if (goal.is_dynamic_super && goal.super_goal_rule) {
       const eligibleGoals = allGoals.filter((g) => g.id !== goal.id && g.goal_type !== "super");
       const matched = filterGoalsByRule(eligibleGoals, goal.super_goal_rule as SuperGoalRule);
       childIds = matched.map((g) => g.id);
     }
-
     return childIds.map((childId) => {
       const childGoal = allGoals.find((g) => g.id === childId);
-      if (!childGoal) {
-        return {
-          id: childId,
-          name: "Missing Goal",
-          difficulty: "medium",
-          status: "not_started",
-          progress: 0,
-          isCompleted: false,
-          isMissing: true,
-        };
-      }
-
+      if (!childGoal) return { id: childId, name: "Missing Goal", difficulty: "medium", status: "not_started", progress: 0, isCompleted: false, isMissing: true };
       const total = childGoal.totalStepsCount ?? childGoal.total_steps ?? 0;
       const completed = childGoal.completedStepsCount ?? childGoal.validated_steps ?? 0;
-      const prog = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-      return {
-        id: childGoal.id,
-        name: childGoal.name,
-        difficulty: childGoal.difficulty,
-        status: childGoal.status,
-        progress: prog,
-        isCompleted: childGoal.status === "fully_completed",
-        isMissing: false,
-      };
+      return { id: childGoal.id, name: childGoal.name, difficulty: childGoal.difficulty, status: childGoal.status, progress: total > 0 ? Math.round((completed / total) * 100) : 0, isCompleted: childGoal.status === "fully_completed", isMissing: false };
     });
   }, [goal, allGoals]);
 
-  // Sync tags from junction table when loaded
+  // Sync tags
   useEffect(() => {
-    if (goalTagsData.length > 0) {
-      setEditTags(goalTagsData.map((t) => t.tag));
-    } else if (goal?.type) {
-      // Fallback to legacy type field if no junction tags exist
-      const validTag = mapToValidTag(goal.type);
-      setEditTags([validTag]);
-    }
+    if (goalTagsData.length > 0) setEditTags(goalTagsData.map((t) => t.tag));
+    else if (goal?.type) setEditTags([mapToValidTag(goal.type)]);
   }, [goalTagsData, goal?.type]);
 
-  // Sync cost items when loaded
+  // Sync cost items
   useEffect(() => {
     if (costItems.length > 0) {
-      setEditCostItems(
-        costItems.map((item) => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          category: item.category || undefined,
-          stepId: item.step_id,
-        })),
-      );
+      setEditCostItems(costItems.map((item) => ({ id: item.id, name: item.name, price: item.price, category: item.category || undefined, stepId: item.step_id })));
     }
   }, [costItems]);
 
-  // Snapshot initial edit state when opening edit overlay
+  // Edit overlay unsaved changes guard
   useEffect(() => {
     if (editDialogOpen) {
-      editInitialStateRef.current = JSON.stringify({
-        editName, editDifficulty, editTags, editNotes,
-        editStartDate, editCompletionDate, editImage,
-        editStepItems: editStepItems.map(s => ({ dbId: s.dbId, name: s.name })),
-        editCostItems,
-      });
+      editInitialStateRef.current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems });
     }
   }, [editDialogOpen]);
 
   const hasUnsavedChanges = useCallback(() => {
     if (!editInitialStateRef.current) return false;
-    const current = JSON.stringify({
-      editName, editDifficulty, editTags, editNotes,
-      editStartDate, editCompletionDate, editImage,
-      editStepItems: editStepItems.map(s => ({ dbId: s.dbId, name: s.name })),
-      editCostItems,
-    });
+    const current = JSON.stringify({ editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems: editStepItems.map((s) => ({ dbId: s.dbId, name: s.name })), editCostItems });
     return current !== editInitialStateRef.current;
   }, [editName, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editStepItems, editCostItems]);
 
   const handleCloseEdit = useCallback(() => {
-    if (hasUnsavedChanges()) {
-      if (!window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
-        return;
-      }
-    }
+    if (hasUnsavedChanges() && !window.confirm("You have unsaved changes. Are you sure you want to leave?")) return;
     setEditDialogOpen(false);
   }, [hasUnsavedChanges]);
 
-  const allDifficulties = [
-    ...DIFFICULTY_OPTIONS,
-    ...(customDifficultyActive
-      ? [{ value: "custom" as const, label: customDifficultyName || "Custom", color: customDifficultyColor }]
-      : []),
-  ];
-
-  // Toggle tag for multi-select
-  const toggleEditTag = (tagValue: string) => {
+  const toggleEditTag = useCallback((tagValue: string) => {
     setEditTags((prev) => (prev.includes(tagValue) ? prev.filter((t) => t !== tagValue) : [...prev, tagValue]));
-  };
+  }, []);
 
-  // Use centralized helpers (Fix 1.3, 1.4)
-  const getDifficultyLabel = (difficulty: string) => getCentralizedDifficultyLabel(difficulty, undefined, customDifficultyName);
-  const getDifficultyColor = (difficulty: string) => getUnifiedDifficultyColor(difficulty, customDifficultyColor);
-  const getStatusColor = (status: string) => getCentralizedStatusColor(status);
-  const getStatusLabel = (status: string) => getCentralizedStatusLabel(status);
+  const getDifficultyLabel = useCallback(
+    (d: string) => getCentralizedDifficultyLabel(d, undefined, customDifficultyName),
+    [customDifficultyName],
+  );
+  const getStatusLabel = useCallback((s: string) => getCentralizedStatusLabel(s), []);
 
-  const handleToggleStep = async (stepId: string, currentStatus: string) => {
-    if (!goal) return;
-    const newStatus = currentStatus === "completed" ? "pending" : "completed";
-    const validatedAt = newStatus === "completed" ? new Date().toISOString() : null;
-
-    if (newStatus === "completed") {
-      const difficultyColor = getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor);
-      const mockEvent = {
-        clientX: window.innerWidth / 2,
-        clientY: window.innerHeight / 2,
-        currentTarget: document.body,
-      } as unknown as React.MouseEvent;
-      triggerParticles(mockEvent, difficultyColor);
-    }
-    const { error } = await supabase
-      .from("steps")
-      .update({ status: newStatus, validated_at: validatedAt })
-      .eq("id", stepId);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-      return;
-    }
-    
-    // Fix 1.2: Recount completed steps from the array instead of incrementing
-    const updatedSteps = steps.map((s) => (s.id === stepId ? { ...s, status: newStatus } : s));
-    setSteps(updatedSteps);
-    const newValidatedCount = updatedSteps.filter((s) => s.status === "completed").length;
-    
-    const { error: goalError } = await supabase
-      .from("goals")
-      .update({ validated_steps: newValidatedCount })
-      .eq("id", goal.id);
-    if (!goalError) {
-      setGoal({ ...goal, validated_steps: newValidatedCount });
-      // Invalidate React Query cache for goals
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-      if (newStatus === "completed" && user) {
-        setTimeout(() => {
-          trackStepCompleted(user.id);
-        }, 0);
-        toast({ title: "Step Completed", description: "You're making progress!" });
-      }
-    }
-
-    // Auto-acquisition: update wishlist items linked via cost items
-    const linkedCostItems = costItems.filter((ci) => ci.step_id === stepId);
-    if (linkedCostItems.length > 0) {
-      const isAcquired = newStatus === "completed";
-      for (const ci of linkedCostItems) {
-        await supabase
-          .from("wishlist_items")
-          .update({
-            acquired: isAcquired,
-            acquired_at: isAcquired ? new Date().toISOString() : null,
-          })
-          .eq("source_goal_cost_id", ci.id);
-      }
-      queryClient.invalidateQueries({ queryKey: ["pact-wishlist"] });
-    }
-  };
-
-  const handleToggleHabitCheck = async (dayIndex: number) => {
-    if (!goal || !goal.habit_checks || !user) return;
-    const newChecks = [...goal.habit_checks];
-    newChecks[dayIndex] = !newChecks[dayIndex];
-    if (newChecks[dayIndex]) {
-      const difficultyColor = getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor);
-      const mockEvent = {
-        clientX: window.innerWidth / 2,
-        clientY: window.innerHeight / 2,
-        currentTarget: document.body,
-      } as unknown as React.MouseEvent;
-      triggerParticles(mockEvent, difficultyColor);
-    }
-    const completedCount = newChecks.filter(Boolean).length;
-    const isNowComplete = completedCount === goal.habit_duration_days;
-    const { error } = await supabase
-      .from("goals")
-      .update({
-        habit_checks: newChecks,
-        validated_steps: completedCount,
-        status: isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started",
-        completion_date: isNowComplete ? new Date().toISOString() : null,
-      })
-      .eq("id", goal.id);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-      return;
-    }
-    setGoal({
-      ...goal,
-      habit_checks: newChecks,
-      validated_steps: completedCount,
-      status: isNowComplete ? "fully_completed" : completedCount > 0 ? "in_progress" : "not_started",
-    });
-    queryClient.invalidateQueries({ queryKey: ["goals"] });
-    queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-    if (newChecks[dayIndex]) {
-      setTimeout(() => {
-        trackStepCompleted(user.id);
-      }, 0);
-      toast({
-        title: `Day ${dayIndex + 1} Complete!`,
-        description: isNowComplete
-          ? "Congratulations! Habit completed!"
-          : `${completedCount}/${goal.habit_duration_days} days done`,
-      });
-    }
-  };
-
-  const handleFullyComplete = async () => {
-    if (!goal || !user) return;
-    // Bug 6 fix: Guard against completing already-completed goals
-    if (goal.status === "fully_completed") {
-      toast({ title: "Already Completed", description: "This goal is already fully completed." });
-      return;
-    }
-    const { handleFullyComplete: completeGoal } = await import("./GoalDetail_handlers");
-    completeGoal(
-      goal.id,
-      goal.total_steps,
-      user.id,
-      goal.difficulty,
-      goal.start_date || new Date().toISOString(),
-      async () => {
-        const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
-        if (updatedGoal) setGoal(updatedGoal);
-        const { data: updatedSteps } = await supabase
-          .from("steps")
-          .select("*")
-          .eq("goal_id", goal.id)
-          .order("order", { ascending: true });
-        if (updatedSteps) setSteps(updatedSteps);
-        queryClient.invalidateQueries({ queryKey: ["goals"] });
-        queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-        toast({ title: "Goal Completed! 🎉", description: "All steps have been marked as complete" });
-      },
-      (message) => {
-        toast({ title: "Error", description: message, variant: "destructive" });
-      },
-    );
-  };
-
-  // Feature 1: Pause/Resume/Archive lifecycle
-  const handlePauseGoal = async () => {
-    if (!goal) return;
-    const { error } = await supabase.from("goals").update({ status: "paused" }).eq("id", goal.id);
-    if (!error) {
-      setGoal({ ...goal, status: "paused" });
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-      toast({ title: "Goal Paused", description: "This goal has been paused." });
-    }
-  };
-
-  const handleResumeGoal = async () => {
-    if (!goal) return;
-    const newStatus = (goal.validated_steps ?? 0) > 0 ? "in_progress" : "not_started";
-    const { error } = await supabase.from("goals").update({ status: newStatus }).eq("id", goal.id);
-    if (!error) {
-      setGoal({ ...goal, status: newStatus });
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-      toast({ title: "Goal Resumed", description: "This goal is now active again." });
-    }
-  };
-
-  const handleArchiveGoal = async () => {
-    if (!goal) return;
-    const { error } = await supabase.from("goals").update({ status: "archived" }).eq("id", goal.id);
-    if (!error) {
-      setGoal({ ...goal, status: "archived" });
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-      toast({ title: "Goal Archived", description: "This goal has been archived." });
-    }
-  };
-
-  // Feature 3: Goal Duplication
-  const handleDuplicateGoal = async () => {
-    if (!goal || !user) return;
-    try {
-      // Get pact
-      const { data: pactResult } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
-      if (!pactResult) return;
-
-      // Insert duplicated goal
-      const { data: newGoal, error: goalError } = await supabase
-        .from("goals")
-        .insert({
-          pact_id: pactResult.id,
-          name: `${goal.name} (Copy)`,
-          type: goal.type as any,
-          difficulty: goal.difficulty as any,
-          estimated_cost: goal.estimated_cost,
-          notes: goal.notes,
-          total_steps: goal.total_steps,
-          potential_score: goal.potential_score,
-          start_date: new Date().toISOString(),
-          status: "not_started" as any,
-          goal_type: goal.goal_type || "normal",
-          habit_duration_days: goal.habit_duration_days,
-          habit_checks: goal.goal_type === "habit" ? Array(goal.habit_duration_days || 7).fill(false) : null,
-          image_url: goal.image_url,
-          deadline: null,
-        } as any)
-        .select()
-        .single();
-
-      if (goalError) throw goalError;
-
-      // Duplicate tags
-      if (goalTagsData.length > 0) {
-        const { insertGoalTags } = await import("@/hooks/useGoalTags");
-        await insertGoalTags(newGoal.id, goalTagsData.map((t) => t.tag));
-      }
-
-      // Duplicate steps (for normal goals)
-      if (goal.goal_type !== "habit" && goal.goal_type !== "super" && steps.length > 0) {
-        const stepsToInsert = steps.map((s, i) => ({
-          goal_id: newGoal.id,
-          title: s.title,
-          order: i + 1,
-          status: "pending" as const,
-          description: "",
-          notes: s.notes || "",
-        }));
-        await supabase.from("steps").insert(stepsToInsert);
-      }
-
-      // Duplicate cost items
-      if (costItems.length > 0) {
-        const costToInsert = costItems.map((ci) => ({
-          goal_id: newGoal.id,
-          name: ci.name,
-          price: ci.price,
-          category: ci.category,
-          step_id: null, // Can't map step IDs to new steps easily
-        }));
-        await supabase.from("goal_cost_items").insert(costToInsert);
-      }
-
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      toast({ title: "Goal Duplicated", description: "A copy of this goal has been created." });
-      navigate(`/goals/${newGoal.id}`);
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message || "Failed to duplicate goal", variant: "destructive" });
-    }
-  };
-
-  const handleEditGoal = async () => {
+  // Handle save
+  const handleEditGoal = useCallback(async () => {
     if (!goal || saving) return;
     setSaving(true);
-    
     try {
       const { handleUpdateGoal } = await import("./GoalDetail_handlers");
       const updates: Record<string, unknown> = {};
       if (editName !== goal.name) updates.name = editName;
       if (editSteps !== goal.total_steps) updates.total_steps = editSteps;
       if (editDifficulty !== goal.difficulty) updates.difficulty = editDifficulty;
-      // Use first selected tag as primary type for DB compatibility
       const primaryTag = editTags[0] || "personal";
       if (primaryTag !== goal.type) updates.type = primaryTag;
       if (editNotes !== (goal.notes || "")) updates.notes = editNotes || null;
-      if (editStartDate && editStartDate !== goal.start_date?.split("T")[0])
-        updates.start_date = new Date(editStartDate).toISOString();
-      if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0])
-        updates.completion_date = new Date(editCompletionDate).toISOString();
+      if (editStartDate && editStartDate !== goal.start_date?.split("T")[0]) updates.start_date = new Date(editStartDate).toISOString();
+      if (editCompletionDate && editCompletionDate !== goal.completion_date?.split("T")[0]) updates.completion_date = new Date(editCompletionDate).toISOString();
       if (editImage !== goal.image_url) updates.image_url = editImage;
-      // Deadline
       const currentDeadline = (goal as any).deadline || "";
       if (editDeadline !== currentDeadline) updates.deadline = editDeadline || null;
 
-      // Save cost items
       if (id) {
-        try {
-          const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems });
-          updates.estimated_cost = newTotal;
-        } catch (err) {
-          toast({ title: "Error", description: "Failed to save cost items", variant: "destructive" });
-        }
-
-        // Save tags to junction table
-        try {
-          await saveGoalTags.mutateAsync({ goalId: id, tags: editTags });
-        } catch (err) {
-          toast({ title: "Error", description: "Failed to save tags", variant: "destructive" });
-        }
+        try { const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems }); updates.estimated_cost = newTotal; } catch { toast({ title: "Error", description: "Failed to save cost items", variant: "destructive" }); }
+        try { await saveGoalTags.mutateAsync({ goalId: id, tags: editTags }); } catch { toast({ title: "Error", description: "Failed to save tags", variant: "destructive" }); }
       }
 
-      handleUpdateGoal(
-        goal.id,
-        goal.total_steps,
-        updates as any,
-        async () => {
-          const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
-          if (updatedGoal) {
-            setGoal(updatedGoal);
-            setEditName(updatedGoal.name);
-            setEditSteps(updatedGoal.total_steps || 0);
-            setEditNotes(updatedGoal.notes || "");
-          }
+      handleUpdateGoal(goal.id, goal.total_steps, updates as any, async () => {
+        const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
+        if (updatedGoal) { setGoal(updatedGoal); setEditName(updatedGoal.name); setEditSteps(updatedGoal.total_steps || 0); setEditNotes(updatedGoal.notes || ""); }
 
-          // Fix 1.1: Batch DB operations for steps
-          if (goal.goal_type !== "habit" && goal.goal_type !== "super" && id) {
-            const existingIds = new Set(steps.map((s) => s.id));
-            const keptDbIds = new Set(editStepItems.filter((i) => i.dbId).map((i) => i.dbId!));
+        if (goal.goal_type !== "habit" && goal.goal_type !== "super" && id) {
+          const existingIds = new Set(steps.map((s) => s.id));
+          const keptDbIds = new Set(editStepItems.filter((i) => i.dbId).map((i) => i.dbId!));
+          const idsToDelete = steps.filter((s) => !keptDbIds.has(s.id)).map((s) => s.id);
+          if (idsToDelete.length > 0) await supabase.from("steps").delete().in("id", idsToDelete);
 
-            // Batch delete removed steps
-            const idsToDelete = steps.filter((s) => !keptDbIds.has(s.id)).map((s) => s.id);
-            if (idsToDelete.length > 0) {
-              await supabase.from("steps").delete().in("id", idsToDelete);
+          const updatePromises: Promise<unknown>[] = [];
+          const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number; exclude_from_spin: boolean }[] = [];
+          for (let i = 0; i < editStepItems.length; i++) {
+            const item = editStepItems[i];
+            const title = item.name?.trim() || `Step ${i + 1}`;
+            if (item.dbId && existingIds.has(item.dbId)) {
+              updatePromises.push(Promise.resolve(supabase.from("steps").update({ title, order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false }).eq("id", item.dbId)));
+            } else {
+              newStepsToInsert.push({ goal_id: id, title, description: "", notes: "", order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false });
             }
-
-            // Batch update existing + insert new steps
-            const updatePromises: Promise<unknown>[] = [];
-            const newStepsToInsert: { goal_id: string; title: string; description: string; notes: string; order: number; exclude_from_spin: boolean }[] = [];
-
-            for (let i = 0; i < editStepItems.length; i++) {
-              const item = editStepItems[i];
-              const title = item.name?.trim() || `Step ${i + 1}`;
-              if (item.dbId && existingIds.has(item.dbId)) {
-                updatePromises.push(
-                  Promise.resolve(supabase.from("steps").update({ title, order: i + 1, exclude_from_spin: item.excludeFromSpin ?? false }).eq("id", item.dbId))
-                );
-              } else {
-                newStepsToInsert.push({
-                  goal_id: id,
-                  title,
-                  description: "",
-                  notes: "",
-                  order: i + 1,
-                  exclude_from_spin: item.excludeFromSpin ?? false,
-                });
-              }
-            }
-
-            // Execute updates in parallel and batch insert
-            await Promise.all([
-              ...updatePromises,
-              ...(newStepsToInsert.length > 0 ? [supabase.from("steps").insert(newStepsToInsert)] : []),
-            ]);
           }
+          await Promise.all([...updatePromises, ...(newStepsToInsert.length > 0 ? [supabase.from("steps").insert(newStepsToInsert)] : [])]);
+        }
 
-          const { data: updatedSteps } = await supabase
-            .from("steps")
-            .select("*")
-            .eq("goal_id", goal.id)
-            .order("order", { ascending: true });
-          if (updatedSteps) {
-            setSteps(updatedSteps);
-            setEditStepItems(updatedSteps.map((s: any) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false })));
-          }
-          
-          // Invalidate caches
-          queryClient.invalidateQueries({ queryKey: ["goals"] });
-          queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-          
-          setEditDialogOpen(false);
-          setSaving(false);
-          toast({ title: "Goal Updated", description: "Changes saved successfully" });
-        },
-        (message) => {
-          setSaving(false);
-          toast({ title: "Error", description: message, variant: "destructive" });
-        },
-      );
-    } catch {
-      setSaving(false);
-    }
-  };
+        const { data: updatedSteps } = await supabase.from("steps").select("*").eq("goal_id", goal.id).order("order", { ascending: true });
+        if (updatedSteps) { setSteps(updatedSteps); setEditStepItems(updatedSteps.map((s: any) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false }))); }
 
-  const handleDeleteGoal = async () => {
-    if (!id) return;
-    const { error } = await supabase.from("goals").delete().eq("id", id);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      toast({ title: "Goal Deleted", description: "This evolution has been removed from your Pact" });
-      navigate("/goals");
-    }
-  };
+        queryClient.invalidateQueries({ queryKey: ["goals"] });
+        queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+        setEditDialogOpen(false);
+        setSaving(false);
+        toast({ title: "Goal Updated", description: "Changes saved successfully" });
+      }, (message) => { setSaving(false); toast({ title: "Error", description: message, variant: "destructive" }); });
+    } catch { setSaving(false); }
+  }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, id, steps, saveCostItems, saveGoalTags, queryClient, toast]);
 
+  // Handle super goal save
+  const handleSuperGoalSave = useCallback(async ({ childGoalIds, rule, isDynamic }: { childGoalIds: string[]; rule: SuperGoalRule | null; isDynamic: boolean }) => {
+    if (!goal) return;
+    const { error } = await supabase.from("goals").update({ child_goal_ids: childGoalIds, super_goal_rule: rule as any, is_dynamic_super: isDynamic }).eq("id", goal.id);
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
+    if (updatedGoal) setGoal(updatedGoal);
+    queryClient.invalidateQueries({ queryKey: ["goals"] });
+    queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
+    toast({ title: "Super Goal Updated", description: "Child goals have been updated" });
+  }, [goal, id, queryClient, toast]);
+
+  // Loading / Not found
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -692,15 +259,12 @@ export default function GoalDetail() {
       </div>
     );
   }
-
   if (!goal) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
           <p className="text-muted-foreground font-rajdhani">Goal not found</p>
-          <Button onClick={() => navigate("/goals")} variant="hud" className="mt-4 rounded-lg">
-            Back to Goals
-          </Button>
+          <Button onClick={() => navigate("/goals")} variant="hud" className="mt-4 rounded-lg">Back to Goals</Button>
         </div>
       </div>
     );
@@ -709,16 +273,12 @@ export default function GoalDetail() {
   const isHabitGoal = goal.goal_type === "habit";
   const isSuperGoal = goal.goal_type === "super";
 
-  // Compute progress based on goal type
   let completedStepsCount: number;
   let totalStepsCount: number;
   let progress: number;
-
   if (isSuperGoal) {
-    const superProgress = computeSuperGoalProgress(childGoalsInfo);
-    completedStepsCount = superProgress.completedCount;
-    totalStepsCount = superProgress.totalCount;
-    progress = superProgress.percentage;
+    const sp = computeSuperGoalProgress(childGoalsInfo);
+    completedStepsCount = sp.completedCount; totalStepsCount = sp.totalCount; progress = sp.percentage;
   } else if (isHabitGoal) {
     completedStepsCount = goal.habit_checks?.filter(Boolean).length || 0;
     totalStepsCount = goal.habit_duration_days || 1;
@@ -731,994 +291,107 @@ export default function GoalDetail() {
 
   const difficultyColor = getDifficultyColor(goal.difficulty);
   const isCompleted = goal.status === "fully_completed";
+  const displayTags = goalTagsData.length > 0 ? goalTagsData.map((t) => t.tag) : goal.type ? [mapToValidTag(goal.type)] : [];
 
-  const toggleFocus = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const { error } = await supabase.from("goals").update({ is_focus: !goal.is_focus }).eq("id", goal.id);
-    if (!error) {
-      setGoal({ ...goal, is_focus: !goal.is_focus });
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-    }
-  };
-
-  // Common style for readable inputs in the edit modal
-  const inputStyle =
-    "bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
-
-  // Fix 3.4: Render tags from junction table data
-  const displayTags = goalTagsData.length > 0
-    ? goalTagsData.map((t) => t.tag)
-    : goal.type ? [mapToValidTag(goal.type)] : [];
+  const wishlistHandler = isModulePurchased("wishlist")
+    ? (item: CostItemData) => {
+        if (!user?.id) return;
+        const name = (item.name || "").trim();
+        if (!name) { toast({ title: "Name required", description: "Give this cost item a name first.", variant: "destructive" }); return; }
+        createWishlistItem.mutate({ userId: user.id, name, estimatedCost: Number(item.price) || 0, itemType: "required", category: item.category ?? goal.type ?? null, goalId: goal.id });
+      }
+    : undefined;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* CyberBackground matching /goals */}
       <CyberBackground />
       <ParticleEffects />
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-6 pb-24"
-      >
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-4"
-        >
-          <button
-            onClick={() => navigate("/goals")}
-            className="relative overflow-hidden group flex items-center gap-2 px-4 py-2 rounded-xl bg-card/60 backdrop-blur-sm border border-border text-primary/70 font-rajdhani font-medium tracking-wider transition-all duration-300 hover:border-primary/40 hover:text-primary hover:bg-primary/10 hover:shadow-[0_0_15px_hsl(var(--primary)/0.2)]"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back to Goals</span>
-          </button>
-        </motion.div>
+      <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-6 pb-24">
+        <GoalDetailHero
+          goal={goal}
+          progress={progress}
+          completedStepsCount={completedStepsCount}
+          totalStepsCount={totalStepsCount}
+          difficultyColor={difficultyColor}
+          isCompleted={isCompleted}
+          displayTags={displayTags}
+          getDifficultyLabel={getDifficultyLabel}
+          getStatusLabel={getStatusLabel}
+          toggleFocus={actions.toggleFocus}
+          onEdit={() => setEditDialogOpen(true)}
+          onFullyComplete={actions.handleFullyComplete}
+          onPause={actions.handlePauseGoal}
+          onResume={actions.handleResumeGoal}
+          onArchive={actions.handleArchiveGoal}
+          onDuplicate={() => actions.handleDuplicateGoal(goalTagsData)}
+          onDelete={actions.handleDeleteGoal}
+        />
 
-        {/* Hero Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-          className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl p-6"
-          style={{
-            borderColor: `${difficultyColor}30`,
-            boxShadow: `0 0 30px ${difficultyColor}15, inset 0 1px 0 rgba(255,255,255,0.05)`,
-          }}
-        >
-          <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-
-          {isCompleted && (
-            <div className="absolute top-4 right-4 opacity-25 pointer-events-none rotate-12 z-10">
-              <div className="border-2 border-green-400 rounded-lg px-3 py-1 bg-green-400/10">
-                <span className="text-green-400 font-bold text-xs font-orbitron tracking-wider">COMPLETED</span>
-              </div>
-            </div>
-          )}
-
-          <div className="relative flex flex-col md:flex-row gap-6">
-            {/* Image */}
-            <div className="relative flex-shrink-0">
-              {goal.image_url ? (
-                <div
-                  className={`relative w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden border-2 ${isCompleted ? "grayscale" : ""}`}
-                  style={{
-                    borderColor: `${difficultyColor}60`,
-                    boxShadow: `0 0 25px ${difficultyColor}40`,
-                  }}
-                >
-                  <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
-                </div>
-              ) : (
-                <div
-                  className="relative w-24 h-24 md:w-32 md:h-32 rounded-xl border-2 flex items-center justify-center"
-                  style={{
-                    background: `radial-gradient(circle at 30% 30%, ${difficultyColor}25, hsl(var(--card)))`,
-                    borderColor: `${difficultyColor}50`,
-                    boxShadow: `0 0 25px ${difficultyColor}40`,
-                  }}
-                >
-                  <Trophy
-                    className="h-10 w-10 md:h-14 md:w-14"
-                    style={{ color: difficultyColor, filter: `drop-shadow(0 0 12px ${difficultyColor})` }}
-                  />
-                </div>
-              )}
-              <button
-                onClick={toggleFocus}
-                className="absolute -top-2 -right-2 z-20 p-2 bg-card rounded-full border border-primary/60 hover:scale-110 transition-all duration-200 shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
-              >
-                <Star
-                  className={`h-4 w-4 ${goal.is_focus ? "fill-yellow-400 text-yellow-400" : "text-primary/70"}`}
-                  style={{ filter: goal.is_focus ? "drop-shadow(0 0 6px rgba(250, 204, 21, 0.9))" : "none" }}
-                />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 min-w-0 space-y-4">
-              <h1 className="text-2xl md:text-3xl font-bold font-orbitron tracking-wider bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent drop-shadow-[0_0_20px_hsl(var(--primary)/0.4)]">
-                {goal.name}
-              </h1>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                <Badge
-                  variant="outline"
-                  className="text-xs font-bold font-rajdhani uppercase tracking-wider"
-                  style={{
-                    borderColor: difficultyColor,
-                    color: difficultyColor,
-                    backgroundColor: `${difficultyColor}15`,
-                  }}
-                >
-                  {getDifficultyLabel(goal.difficulty)}
-                </Badge>
-                {/* Fix 3.4: Show tags from junction table */}
-                {displayTags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="outline"
-                    className="text-xs capitalize font-rajdhani"
-                    style={{
-                      borderColor: `${getTagColor(tag)}60`,
-                      color: getTagColor(tag),
-                      backgroundColor: `${getTagColor(tag)}15`,
-                    }}
-                  >
-                    {getTagLabel(tag, t)}
-                  </Badge>
-                ))}
-                <Badge className={`text-xs ${getStatusBadgeClass(goal.status)} font-rajdhani font-bold uppercase`}>
-                  {getStatusLabel(goal.status)}
-                </Badge>
-              </div>
-
-              {/* Progress */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm font-rajdhani">
-                  <span className="uppercase tracking-wider text-primary/70">Progress</span>
-                  <span className="font-bold" style={{ color: difficultyColor }}>
-                    {completedStepsCount}/{totalStepsCount} • {progress.toFixed(0)}%
-                  </span>
-                </div>
-                <div className="h-2.5 w-full bg-muted/50 rounded-full overflow-hidden border border-border">
-                  <motion.div
-                    className="h-full rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    style={{
-                      background: `linear-gradient(90deg, hsl(var(--primary)), ${difficultyColor})`,
-                      boxShadow: `0 0 15px ${difficultyColor}60`,
-                    }}
-                  />
-                </div>
-              </div>
-
-              {goal.potential_score > 0 && (
-                <div className="flex items-center gap-2 font-rajdhani font-bold">
-                  <Sparkles
-                    className="h-5 w-5 text-yellow-400"
-                    style={{ filter: "drop-shadow(0 0 8px rgba(250, 204, 21, 0.9))" }}
-                  />
-                  <span className="text-yellow-400" style={{ textShadow: "0 0 10px rgba(250, 204, 21, 0.6)" }}>
-                    +{goal.potential_score} XP Reward
-                  </span>
-                </div>
-              )}
-
-              {/* Deadline Countdown */}
-              {(goal as any).deadline && (() => {
-                const deadlineDate = new Date((goal as any).deadline);
-                const now = new Date();
-                const diffMs = deadlineDate.getTime() - now.getTime();
-                const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-                const urgencyColor = daysLeft > 7 ? "text-green-400" : daysLeft > 0 ? "text-amber-400" : "text-red-400";
-                const urgencyBg = daysLeft > 7 ? "bg-green-500/10 border-green-500/30" : daysLeft > 0 ? "bg-amber-500/10 border-amber-500/30" : "bg-red-500/10 border-red-500/30";
-                return (
-                  <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${urgencyBg} font-rajdhani font-bold text-sm`}>
-                    <Clock className={`h-4 w-4 ${urgencyColor}`} />
-                    <span className={urgencyColor}>
-                      {daysLeft > 0 ? `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left` : daysLeft === 0 ? "Due today" : `${Math.abs(daysLeft)} day${Math.abs(daysLeft) !== 1 ? 's' : ''} overdue`}
-                    </span>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* Actions */}
-            <div className="flex flex-row md:flex-col gap-2 flex-shrink-0">
-              <Button variant="hud" size="sm" className="rounded-lg" onClick={() => setEditDialogOpen(true)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </Button>
-
-              {/* Complete button - hidden if already completed */}
-              {!isCompleted && goal.status !== "archived" && (
-                <Button
-                  variant="hud"
-                  size="sm"
-                  onClick={handleFullyComplete}
-                  className="rounded-lg"
-                  style={{
-                    borderColor: `${difficultyColor}50`,
-                    color: difficultyColor,
-                    boxShadow: `0 0 12px ${difficultyColor}20, inset 0 1px 0 ${difficultyColor}15`,
-                  }}
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Complete
-                </Button>
-              )}
-
-              {/* Pause / Resume */}
-              {goal.status === "paused" ? (
-                <Button variant="hud" size="sm" className="rounded-lg border-green-500/40 text-green-400" onClick={handleResumeGoal}>
-                  <Play className="h-4 w-4 mr-2" />
-                  Resume
-                </Button>
-              ) : goal.status !== "fully_completed" && goal.status !== "archived" ? (
-                <Button variant="hud" size="sm" className="rounded-lg border-orange-500/40 text-orange-400" onClick={handlePauseGoal}>
-                  <Pause className="h-4 w-4 mr-2" />
-                  Pause
-                </Button>
-              ) : null}
-
-              {/* Archive (only non-completed, non-archived) */}
-              {goal.status !== "fully_completed" && goal.status !== "archived" && (
-                <Button variant="hud" size="sm" className="rounded-lg border-zinc-500/40 text-zinc-400" onClick={handleArchiveGoal}>
-                  <Archive className="h-4 w-4 mr-2" />
-                  Archive
-                </Button>
-              )}
-
-              {/* Duplicate */}
-              <Button variant="hud" size="sm" className="rounded-lg" onClick={handleDuplicateGoal}>
-                <Copy className="h-4 w-4 mr-2" />
-                Duplicate
-              </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="hud"
-                    size="sm"
-                    className="rounded-lg border-destructive/40 text-destructive hover:border-destructive/70 hover:shadow-[0_0_20px_rgba(239,68,68,0.3)]"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Goal?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete this goal and all its steps.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteGoal}
-                      className="bg-destructive text-destructive-foreground"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Steps, Habit Tracking, or Super Goal Children */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
-          {isSuperGoal ? (
-            /* Super Goal - Child Goals List */
-            <div className="relative rounded-xl border-2 border-primary/30 bg-card/80 backdrop-blur-xl overflow-hidden">
-              {/* Legendary aura effect */}
-              <div
-                className="absolute inset-0 opacity-20 pointer-events-none"
-                style={{
-                  background: `radial-gradient(ellipse at top, hsl(var(--primary) / 0.3), transparent 70%)`,
-                }}
-              />
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-              <div className="relative p-6">
-                {/* Header with edit button */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500/20 to-amber-500/10 border border-yellow-500/30 flex items-center justify-center">
-                      <Crown className="h-5 w-5 text-yellow-500" />
-                    </div>
-                    <div>
-                      <Badge
-                        variant="outline"
-                        className="border-primary/30 text-primary text-xs font-bold uppercase mb-1"
-                      >
-                        {goal.is_dynamic_super ? "Dynamic Super Goal" : "Super Goal"}
-                      </Badge>
-                      {goal.is_dynamic_super && goal.super_goal_rule && (
-                        <p className="text-xs text-muted-foreground font-mono">Auto-updates based on rules</p>
-                      )}
-                    </div>
-                  </div>
-                  <Button variant="hud" size="sm" onClick={() => setSuperGoalEditOpen(true)} className="rounded-lg">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Goals
-                  </Button>
-                </div>
-
-                <SuperGoalChildList
-                  children={childGoalsInfo}
-                  onChildClick={(childId) => navigate(`/goals/${childId}`)}
-                  customDifficultyName={customDifficultyName}
-                  customDifficultyColor={customDifficultyColor}
-                />
-              </div>
-            </div>
-          ) : isHabitGoal ? (
-            <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-              <div className="relative p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <Calendar className="h-5 w-5" style={{ color: difficultyColor }} />
-                  <span className="font-orbitron font-bold tracking-wider">Habit Tracking</span>
-                  <Badge
-                    variant="outline"
-                    className="ml-auto font-rajdhani text-sm"
-                    style={{ borderColor: difficultyColor, color: difficultyColor }}
-                  >
-                    {completedStepsCount}/{goal.habit_duration_days} days
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-7 gap-2">
-                  {goal.habit_checks?.map((checked, index) => (
-                    <div
-                      key={index}
-                      onClick={() => handleToggleHabitCheck(index)}
-                      className={`relative flex flex-col items-center justify-center p-3 rounded-lg border cursor-pointer transition-all duration-200 ${checked ? "border-primary/60 bg-primary/10" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`}
-                      style={{ boxShadow: checked ? `0 0 20px ${difficultyColor}30` : undefined }}
-                    >
-                      <span className="text-xs text-muted-foreground mb-1 font-rajdhani uppercase">Day</span>
-                      <span
-                        className={`text-lg font-bold font-orbitron ${checked ? "" : "text-muted-foreground"}`}
-                        style={{ color: checked ? difficultyColor : undefined }}
-                      >
-                        {index + 1}
-                      </span>
-                      {checked && (
-                        <Check className="absolute top-1 right-1 h-3 w-3" style={{ color: difficultyColor }} />
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground mt-4 text-center font-rajdhani">
-                  Tap a day to mark it as complete
-                </p>
-                {/* Habit Heatmap */}
-                {user && goal.id && (() => {
-                  const heatmapData = new Map<string, { count: number; completed: boolean }>();
-                  goal.habit_checks?.forEach((checked, i) => {
-                    if (goal.created_at) {
-                      const d = new Date(goal.created_at);
-                      d.setDate(d.getDate() + i);
-                      const key = d.toISOString().split("T")[0];
-                      if (checked) heatmapData.set(key, { count: 1, completed: true });
-                    }
-                  });
-                  return (
-                    <div className="mt-6 pt-6 border-t border-border">
-                      <HabitHeatmap data={heatmapData} />
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-          ) : (
-            <div className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl">
-              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-              <div className="relative p-6">
-                <div className="flex items-center gap-3 mb-6">
-                  <Check className="h-5 w-5" style={{ color: difficultyColor }} />
-                  <span className="font-orbitron font-bold tracking-wider">Steps</span>
-                  <Badge
-                    variant="outline"
-                    className="ml-auto font-rajdhani text-sm"
-                    style={{ borderColor: difficultyColor, color: difficultyColor }}
-                  >
-                    {completedStepsCount}/{totalStepsCount}
-                  </Badge>
-                </div>
-                <div className="space-y-3">
-                  <TooltipProvider delayDuration={300}>
-                    {steps.map((step) => (
-                      <Tooltip key={step.id}>
-                        <TooltipTrigger asChild>
-                          <div
-                            className={`flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all duration-200 ${step.status === "completed" ? "border-primary/40 bg-primary/5" : "border-border bg-muted/30 hover:border-primary/40 hover:bg-muted/50"}`}
-                            onClick={() => navigate(`/step/${step.id}`)}
-                          >
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              className="p-2 -m-2 flex items-center justify-center"
-                            >
-                              <Checkbox
-                                checked={step.status === "completed"}
-                                onCheckedChange={() => handleToggleStep(step.id, step.status)}
-                                className="border-primary/50"
-                              />
-                            </div>
-                            <span
-                              className={`flex-1 font-rajdhani ${step.status === "completed" ? "text-primary" : "text-muted-foreground"}`}
-                            >
-                              {step.title}
-                            </span>
-                            {step.notes && <MessageSquare className="h-4 w-4 text-primary/50" />}
-                            {step.status === "completed" && (
-                              <Check className="h-4 w-4" style={{ color: difficultyColor }} />
-                            )}
-                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        </TooltipTrigger>
-                        {step.notes && (
-                          <TooltipContent side="top" className="max-w-[300px] p-3 bg-card border-primary/30">
-                            <p className="text-sm font-rajdhani text-foreground/90 whitespace-pre-wrap">{step.notes}</p>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    ))}
-                  </TooltipProvider>
-                </div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Details & Cost Items */}
-        {(goal.notes || goal.estimated_cost > 0 || costItems.length > 0) && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-            className="relative rounded-xl border border-border bg-card/80 backdrop-blur-xl"
-          >
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-            <div className="relative p-6 space-y-6">
-              <div className="flex items-center gap-3">
-                <Sparkles className="h-5 w-5" style={{ color: difficultyColor }} />
-                <span className="font-orbitron font-bold tracking-wider">Details</span>
-              </div>
-
-              {(goal.estimated_cost > 0 || costItems.length > 0) && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm font-rajdhani uppercase tracking-wider text-primary/70">
-                    <Receipt className="h-4 w-4" />
-                    Estimated Cost
-                  </div>
-                  {costItems.length > 0 ? (
-                    <div className="space-y-2">
-                      {costItems.map((item) => {
-                        const linkedStep = item.step_id ? steps.find((s) => s.id === item.step_id) : null;
-                        return (
-                          <div
-                            key={item.id}
-                            className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/30 gap-3"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <span className="font-rajdhani text-foreground/90">{item.name}</span>
-                              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                {item.category && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] px-1.5 py-0 border-primary/30 text-primary/70"
-                                  >
-                                    {getCostCategoryLabel(item.category, t)}
-                                  </Badge>
-                                )}
-                                {linkedStep && (
-                                  <Badge
-                                    variant="outline"
-                                    className={`text-[10px] px-1.5 py-0 ${linkedStep.status === "completed" ? "border-green-500/40 text-green-400" : "border-border text-muted-foreground"}`}
-                                  >
-                                    ↳ {linkedStep.title}
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                            <span className="font-orbitron font-bold flex-shrink-0" style={{ color: difficultyColor }}>
-                              {formatCurrency(item.price, currency)}
-                            </span>
-                          </div>
-                        );
-                      })}
-                      {(() => {
-                        const alreadyFinanced = costItems
-                          .filter(
-                            (ci) => ci.step_id && steps.find((s) => s.id === ci.step_id && s.status === "completed"),
-                          )
-                          .reduce((sum, ci) => sum + ci.price, 0);
-                        return alreadyFinanced > 0 ? (
-                          <div className="flex items-center justify-between p-3 rounded-lg border border-green-500/30 bg-green-500/5">
-                            <span className="font-rajdhani uppercase tracking-wider text-green-400/70">
-                              {t("goals.detail.alreadyFinanced")}
-                            </span>
-                            <span className="font-orbitron font-bold text-green-400">
-                              {formatCurrency(alreadyFinanced, currency)}
-                            </span>
-                          </div>
-                        ) : null;
-                      })()}
-                      <div className="flex items-center justify-between p-3 rounded-lg border border-primary/30 bg-primary/5">
-                        <span className="font-rajdhani uppercase tracking-wider text-primary/70">Total</span>
-                        <span className="font-orbitron font-bold text-lg text-primary">
-                          {formatCurrency(goal.estimated_cost, currency)}
-                        </span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-4 rounded-lg border border-border bg-muted/30">
-                      <p className="text-2xl font-bold font-orbitron" style={{ color: difficultyColor }}>
-                        {formatCurrency(goal.estimated_cost, currency)}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {goal.notes && (
-                <div className="space-y-2">
-                  <p className="text-sm font-rajdhani uppercase tracking-wider text-primary/70">Notes</p>
-                  <div className="p-4 rounded-lg border border-border bg-muted/30">
-                    <p className="text-sm font-rajdhani leading-relaxed text-foreground/90">{goal.notes}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
+        {isSuperGoal ? (
+          <GoalDetailSuperGoal
+            goal={goal}
+            childGoalsInfo={childGoalsInfo}
+            customDifficultyName={customDifficultyName}
+            customDifficultyColor={customDifficultyColor}
+            onEditChildren={() => setSuperGoalEditOpen(true)}
+          />
+        ) : isHabitGoal ? (
+          <GoalDetailHabit
+            goal={goal}
+            completedStepsCount={completedStepsCount}
+            difficultyColor={difficultyColor}
+            onToggleHabitCheck={actions.handleToggleHabitCheck}
+          />
+        ) : (
+          <GoalDetailSteps
+            steps={steps}
+            completedStepsCount={completedStepsCount}
+            totalStepsCount={totalStepsCount}
+            difficultyColor={difficultyColor}
+            onToggleStep={actions.handleToggleStep}
+          />
         )}
-      </motion.div>
 
-      {/* Full-Page Edit Goal Overlay */}
-      <AnimatePresence>
-        {editDialogOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 bg-background overflow-hidden"
-          >
-            {/* Deep space background - matching NewGoal.tsx */}
-            <div className="fixed inset-0 pointer-events-none">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-              <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-            </div>
+        <GoalDetailCosts
+          goal={goal}
+          costItems={costItems}
+          steps={steps}
+          difficultyColor={difficultyColor}
+          currency={currency}
+        />
+      </div>
 
-            {/* Sci-fi grid overlay */}
-            <div className="fixed inset-0 pointer-events-none opacity-10">
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `
-                    linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
-                  `,
-                  backgroundSize: "50px 50px",
-                }}
-              />
-            </div>
+      <GoalDetailEditOverlay
+        isOpen={editDialogOpen}
+        goal={goal}
+        userId={user?.id}
+        steps={steps}
+        editName={editName} setEditName={setEditName}
+        editDifficulty={editDifficulty} setEditDifficulty={setEditDifficulty}
+        editTags={editTags} toggleEditTag={toggleEditTag}
+        editNotes={editNotes} setEditNotes={setEditNotes}
+        editStartDate={editStartDate} setEditStartDate={setEditStartDate}
+        editCompletionDate={editCompletionDate} setEditCompletionDate={setEditCompletionDate}
+        editDeadline={editDeadline} setEditDeadline={setEditDeadline}
+        editImage={editImage} setEditImage={setEditImage}
+        editStepItems={editStepItems}
+        onStepItemsChange={(items) => { setEditStepItems(items); setEditSteps(items.length); }}
+        editCostItems={editCostItems} setEditCostItems={setEditCostItems}
+        customDifficultyActive={customDifficultyActive}
+        customDifficultyName={customDifficultyName}
+        customDifficultyColor={customDifficultyColor}
+        saving={saving}
+        onSave={handleEditGoal}
+        onClose={handleCloseEdit}
+        onAddToWishlist={wishlistHandler}
+      />
 
-            <div className="relative z-10 h-full overflow-y-auto">
-              <div className="max-w-2xl mx-auto px-6 py-8">
-                {/* Header */}
-                <motion.div
-                  className="space-y-6 mb-10"
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <Button
-                    variant="ghost"
-                    onClick={handleCloseEdit}
-                    className="text-primary/70 hover:text-primary hover:bg-primary/10 -ml-2 rounded-xl"
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Goal
-                  </Button>
-
-                  <div className="text-center space-y-3">
-                    <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_30px_rgba(91,180,255,0.6)] font-orbitron">
-                      Edit Goal
-                    </h1>
-                    <p className="text-primary/60 tracking-wide font-rajdhani text-lg">Update your evolution</p>
-                  </div>
-                </motion.div>
-
-                {/* Form Card */}
-                <motion.div
-                  className="relative rounded-3xl border-2 border-primary/20 bg-card/80 backdrop-blur-xl overflow-hidden"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 }}
-                >
-                  {/* Subtle glow effect */}
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/5 via-transparent to-transparent pointer-events-none" />
-
-                  <div className="relative p-8 md:p-10 space-y-10">
-                    {/* Section 1: Basic Info */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Target className="h-5 w-5 text-primary" />
-                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">
-                          Basic Information
-                        </h2>
-                      </div>
-
-                      {/* Goal Name */}
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                          Goal Name <span className="text-destructive">*</span>
-                        </Label>
-                        <Input
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          className={`h-12 text-base rounded-xl ${inputStyle}`}
-                          maxLength={100}
-                        />
-                      </div>
-
-                      {/* Tags Multi-Select */}
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                          <Tag className="h-4 w-4" />
-                          Tags <span className="text-destructive">*</span>
-                        </Label>
-                        <div className="flex flex-wrap gap-2">
-                          {GOAL_TAGS.map((tag) => {
-                            const isSelected = editTags.includes(tag.value);
-                            return (
-                              <button
-                                key={tag.value}
-                                type="button"
-                                onClick={() => toggleEditTag(tag.value)}
-                                className={`
-                                  relative px-4 py-2 rounded-xl font-rajdhani text-sm font-medium transition-all duration-200
-                                  ${
-                                    isSelected
-                                      ? "text-white shadow-lg"
-                                      : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground border border-border"
-                                  }
-                                `}
-                                style={
-                                  isSelected
-                                    ? {
-                                        background: tag.color,
-                                        boxShadow: `0 0 20px ${tag.color}40`,
-                                      }
-                                    : {}
-                                }
-                              >
-                                <span className="flex items-center gap-1.5">
-                                  {isSelected && <Check className="h-3.5 w-3.5" />}
-                                  {getTagLabel(tag.value, t)}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          Select your primary tag (first selected will be saved)
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Section 2: Type & Difficulty */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Zap className="h-5 w-5 text-primary" />
-                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">
-                          Type & Difficulty
-                        </h2>
-                      </div>
-
-                      {/* Goal Type Display (read-only) - Fix 3.2: Added Super Goal card */}
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                          Goal Type
-                        </Label>
-                        <div className="flex gap-3">
-                          <div
-                            className={`flex-1 p-4 rounded-xl border-2 text-center ${
-                              goal.goal_type === "normal" || (!goal.goal_type || (goal.goal_type !== "habit" && goal.goal_type !== "super")) ? "border-primary bg-primary/10" : "border-border bg-muted/30"
-                            }`}
-                          >
-                            <ListOrdered
-                              className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type === "normal" || (!goal.goal_type || (goal.goal_type !== "habit" && goal.goal_type !== "super")) ? "text-primary" : "text-muted-foreground"}`}
-                            />
-                            <span
-                              className={`text-sm font-rajdhani font-medium ${goal.goal_type === "normal" || (!goal.goal_type || (goal.goal_type !== "habit" && goal.goal_type !== "super")) ? "text-primary" : "text-muted-foreground"}`}
-                            >
-                              Normal Goal
-                            </span>
-                          </div>
-                          <div
-                            className={`flex-1 p-4 rounded-xl border-2 text-center ${
-                              goal.goal_type === "habit" ? "border-primary bg-primary/10" : "border-border bg-muted/30"
-                            }`}
-                          >
-                            <Sparkles
-                              className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`}
-                            />
-                            <span
-                              className={`text-sm font-rajdhani font-medium ${goal.goal_type === "habit" ? "text-primary" : "text-muted-foreground"}`}
-                            >
-                              Habit Goal
-                            </span>
-                          </div>
-                          <div
-                            className={`flex-1 p-4 rounded-xl border-2 text-center ${
-                              goal.goal_type === "super" ? "border-yellow-500 bg-yellow-500/10" : "border-border bg-muted/30"
-                            }`}
-                          >
-                            <Crown
-                              className={`h-6 w-6 mx-auto mb-1.5 ${goal.goal_type === "super" ? "text-yellow-500" : "text-muted-foreground"}`}
-                            />
-                            <span
-                              className={`text-sm font-rajdhani font-medium ${goal.goal_type === "super" ? "text-yellow-500" : "text-muted-foreground"}`}
-                            >
-                              Super Goal
-                            </span>
-                          </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground">Goal type cannot be changed after creation</p>
-                      </div>
-
-                      {/* Difficulty Selection */}
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                          Difficulty
-                        </Label>
-                        <div className="flex flex-wrap gap-2">
-                          {allDifficulties.map((diff) => {
-                            const isSelected = editDifficulty === diff.value;
-                            return (
-                              <button
-                                key={diff.value}
-                                type="button"
-                                onClick={() => setEditDifficulty(diff.value)}
-                                className={`
-                                  relative px-4 py-2 rounded-xl font-rajdhani font-bold text-sm uppercase tracking-wide transition-all duration-200
-                                  ${
-                                    isSelected
-                                      ? "text-white shadow-lg"
-                                      : "bg-muted/50 text-muted-foreground hover:bg-muted border border-border"
-                                  }
-                                `}
-                                style={
-                                  isSelected
-                                    ? {
-                                        background: diff.color,
-                                        boxShadow: `0 0 20px ${diff.color}40`,
-                                      }
-                                    : {}
-                                }
-                              >
-                                {diff.value === "custom"
-                                  ? customDifficultyName || t("goals.difficulties.custom")
-                                  : t(`goals.difficulties.${diff.value}`)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Steps Editor with drag-and-drop (only for normal goals) */}
-                      {goal.goal_type !== "habit" && goal.goal_type !== "super" && (
-                        <div className="space-y-3">
-                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                            <ListOrdered className="h-4 w-4" />
-                            Mission Steps
-                          </Label>
-                          <EditStepsList
-                            items={editStepItems}
-                            onItemsChange={(items) => {
-                              setEditStepItems(items);
-                              setEditSteps(items.length);
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Section 3: Dates */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Calendar className="h-5 w-5 text-primary" />
-                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Scheduling</h2>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                            Start Date
-                          </Label>
-                          <Input
-                            type="date"
-                            value={editStartDate}
-                            onChange={(e) => setEditStartDate(e.target.value)}
-                            className={`h-12 text-base rounded-xl ${inputStyle}`}
-                            style={{ colorScheme: "dark" }}
-                          />
-                        </div>
-                        <div className="space-y-3">
-                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                            Completion Date
-                          </Label>
-                          <Input
-                            type="date"
-                            value={editCompletionDate}
-                            onChange={(e) => setEditCompletionDate(e.target.value)}
-                            className={`h-12 text-base rounded-xl ${inputStyle}`}
-                            style={{ colorScheme: "dark" }}
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          Deadline (optional)
-                        </Label>
-                        <Input
-                          type="date"
-                          value={editDeadline}
-                          onChange={(e) => setEditDeadline(e.target.value)}
-                          className={`h-12 text-base rounded-xl ${inputStyle}`}
-                          style={{ colorScheme: "dark" }}
-                        />
-                        <p className="text-xs text-muted-foreground">Set a deadline to enable countdown timer on goal cards</p>
-                      </div>
-                    </div>
-
-                    {/* Section 4: Budget & Cost */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <DollarSign className="h-5 w-5 text-primary" />
-                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Budget & Cost</h2>
-                      </div>
-
-                      <CostItemsEditor
-                        items={editCostItems}
-                        onChange={setEditCostItems}
-                        legacyTotal={goal.estimated_cost}
-                        steps={steps}
-                        onAddToWishlist={
-                          isModulePurchased("wishlist")
-                            ? (item: CostItemData) => {
-                                if (!user?.id) return;
-                                const name = (item.name || "").trim();
-                                if (!name) {
-                                  toast({
-                                    title: "Name required",
-                                    description: "Give this cost item a name first.",
-                                    variant: "destructive",
-                                  });
-                                  return;
-                                }
-                                createWishlistItem.mutate({
-                                  userId: user.id,
-                                  name,
-                                  estimatedCost: Number(item.price) || 0,
-                                  itemType: "required",
-                                  category: item.category ?? goal.type ?? null,
-                                  goalId: goal.id,
-                                });
-                              }
-                            : undefined
-                        }
-                      />
-                    </div>
-
-                    {/* Section 5: Media & Notes */}
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 pb-2 border-b border-primary/20">
-                        <Image className="h-5 w-5 text-primary" />
-                        <h2 className="text-lg font-orbitron uppercase tracking-wider text-primary">Media & Notes</h2>
-                      </div>
-
-                      {/* Goal Image */}
-                      {user && (
-                        <div className="space-y-3">
-                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80">
-                            Goal Image
-                          </Label>
-                          <GoalImageUpload value={editImage} onChange={setEditImage} userId={user.id} />
-                        </div>
-                      )}
-
-                      {/* Notes */}
-                      <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                          <StickyNote className="h-4 w-4" />
-                          Notes
-                        </Label>
-                        <Textarea
-                          value={editNotes}
-                          onChange={(e) => setEditNotes(e.target.value)}
-                          rows={4}
-                          maxLength={500}
-                          placeholder="Add notes about your goal..."
-                          className={`rounded-xl resize-none text-base ${inputStyle}`}
-                        />
-                        <p className="text-xs text-muted-foreground text-right">{editNotes.length}/500</p>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons - Fix 3.1: Added saving state */}
-                    <div className="flex gap-4 pt-6 border-t border-primary/20">
-                      <Button
-                        variant="outline"
-                        onClick={handleCloseEdit}
-                        disabled={saving}
-                        className="flex-1 h-14 rounded-xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 font-rajdhani uppercase tracking-wider text-base"
-                      >
-                        <X className="h-5 w-5 mr-2" />
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleEditGoal}
-                        disabled={saving}
-                        className="flex-1 h-14 rounded-xl bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-rajdhani uppercase tracking-wider text-base shadow-[0_0_20px_rgba(91,180,255,0.3)]"
-                      >
-                        <Check className="h-5 w-5 mr-2" />
-                        {saving ? "SAVING..." : "Save Changes"}
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Super Goal Edit Modal */}
       {goal && isSuperGoal && (
         <SuperGoalEditModal
           isOpen={superGoalEditOpen}
           onClose={() => setSuperGoalEditOpen(false)}
-          onSave={async ({ childGoalIds, rule, isDynamic }) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const ruleForDb = rule as any;
-            const { error } = await supabase
-              .from("goals")
-              .update({
-                child_goal_ids: childGoalIds,
-                super_goal_rule: ruleForDb,
-                is_dynamic_super: isDynamic,
-              })
-              .eq("id", goal.id);
-
-            if (error) {
-              toast({ title: "Error", description: error.message, variant: "destructive" });
-              return;
-            }
-
-            // Refresh goal data
-            const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
-            if (updatedGoal) {
-              setGoal(updatedGoal);
-            }
-            queryClient.invalidateQueries({ queryKey: ["goals"] });
-            queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-            toast({ title: "Super Goal Updated", description: "Child goals have been updated" });
-          }}
+          onSave={handleSuperGoalSave}
           currentChildIds={goal.child_goal_ids || []}
           currentRule={goal.super_goal_rule as SuperGoalRule | null}
           currentIsDynamic={goal.is_dynamic_super || false}
