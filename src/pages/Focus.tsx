@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { Settings } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Settings, BarChart3, History } from "lucide-react";
 import { usePomodoroTimer, usePomodoroSessions } from "@/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
 import { useTodoList } from "@/hooks/useTodoList";
@@ -22,6 +22,8 @@ export default function Focus() {
   const [breakMin, setBreakMin] = useState(5);
   const [linkedGoalId, setLinkedGoalId] = useState<string | null>(null);
   const [linkedTodoId, setLinkedTodoId] = useState<string | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const startTimeRef = useRef<string | null>(null);
 
   const timer = usePomodoroTimer(workMin, breakMin);
@@ -163,20 +165,79 @@ export default function Focus() {
             </Collapsible>
           )}
 
-          {/* Stats */}
-          <FocusStats
-            todayCount={todayStats.count}
-            todayMinutes={todayStats.totalMinutes}
-            streak={streak}
-            bestSession={bestSession}
-            weeklyData={weeklyStats}
-          />
+          {/* Discrete toggles for Stats & History */}
+          <div className="flex items-center justify-center gap-4 mt-4">
+            <TogglePanelButton
+              icon={BarChart3}
+              label="Stats"
+              isOpen={showStats}
+              onClick={() => setShowStats((v) => !v)}
+            />
+            <TogglePanelButton
+              icon={History}
+              label="History"
+              isOpen={showHistory}
+              onClick={() => setShowHistory((v) => !v)}
+            />
+          </div>
 
-          {/* Session History */}
-          <FocusHistory sessions={sessions.data || []} />
+          {/* Stats Panel */}
+          <AnimatePresence>
+            {showStats && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="w-full overflow-hidden"
+              >
+                <FocusStats
+                  todayCount={todayStats.count}
+                  todayMinutes={todayStats.totalMinutes}
+                  streak={streak}
+                  bestSession={bestSession}
+                  weeklyData={weeklyStats}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* History Panel */}
+          <AnimatePresence>
+            {showHistory && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="w-full overflow-hidden"
+              >
+                <FocusHistory sessions={sessions.data || []} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
+  );
+}
+
+function TogglePanelButton({ icon: Icon, label, isOpen, onClick }: {
+  icon: React.ElementType;
+  label: string;
+  isOpen: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.15em] rounded-md border transition-all ${
+        isOpen
+          ? "bg-primary/20 border-primary/30 text-primary"
+          : "bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
+      }`}
+    >
+      <Icon className="h-3 w-3" />
+      {label}
+    </button>
   );
 }
 
