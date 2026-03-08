@@ -115,7 +115,7 @@ export default function Legal() {
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
               Terms & Legal
             </h1>
-            <p className="text-[#6b9ec4] tracking-wide font-rajdhani">Copyright, Terms of Service & Privacy</p>
+            <p className="text-[var(--text-muted-custom)] tracking-wide font-rajdhani">Copyright, Terms of Service & Privacy</p>
           </div>
 
           {/* Legal Sections */}
