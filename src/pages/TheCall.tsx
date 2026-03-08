@@ -45,6 +45,8 @@ export default function TheCall() {
   const screenShakeRef = useRef<HTMLDivElement>(null);
   const backgroundFxRef = useRef<HTMLDivElement>(null);
   const coreButtonRef = useRef<HTMLButtonElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const rafRef = useRef<number>(0);
   const startTimeRef = useRef<number>(0);
