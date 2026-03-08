@@ -9,6 +9,7 @@ interface FocusTimerRingProps {
   secondsLeft: number;
   sessionsCompleted: number;
   isPaused: boolean;
+  goalImageUrl?: string | null;
 }
 
 function formatTime(seconds: number) {

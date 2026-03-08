@@ -68,12 +68,11 @@ export default function Focus() {
     startTimeRef.current = null;
   };
 
-  // Find linked item name for display during session
-  const linkedName = linkedGoalId
-    ? goals.find((g) => g.id === linkedGoalId)?.name
-    : linkedTodoId
-      ? tasks.find((t) => t.id === linkedTodoId)?.name
-      : null;
+  // Find linked item for display during session
+  const linkedGoal = linkedGoalId ? goals.find((g) => g.id === linkedGoalId) : null;
+  const linkedName = linkedGoal?.name
+    ?? (linkedTodoId ? tasks.find((t) => t.id === linkedTodoId)?.name : null);
+  const linkedImageUrl = linkedGoal?.image_url ?? null;
 
   return (
     <div className="min-h-screen relative">
