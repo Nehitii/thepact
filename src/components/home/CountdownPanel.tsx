@@ -177,7 +177,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
             ⬝ PACTE EN COURS — {calc.phase} — COMPTE À REBOURS ACTIF
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center flex-wrap gap-y-2">
             {[
               { val: calc.days, label: "JOURS" },
               { val: calc.hours, label: "HEURES" },
@@ -185,8 +185,8 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
               { val: calc.seconds, label: "SEC" },
             ].map((t, i) => (
               <div key={t.label} className="flex items-center">
-                <div className="flex flex-col items-center" style={{ width: "clamp(44px, 6vw, 74px)" }}>
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: `0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`, lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "block", textAlign: "center" as const, width: "100%" }}>
+                <div className="flex flex-col items-center" style={{ minWidth: t.label === "JOURS" ? "clamp(50px, 8vw, 90px)" : "clamp(44px, 6vw, 74px)" }}>
+                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: c.primary, textShadow: `0 0 10px rgba(${c.rgb},0.9), 0 0 40px rgba(${c.rgb},0.35)`, lineHeight: 1, animation: c.flickerAnim, fontVariantNumeric: "tabular-nums", display: "block", textAlign: "center" as const, whiteSpace: "nowrap" }}>
                     {pad(t.val)}
                   </span>
                   <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 7, letterSpacing: 2, color: `rgba(${c.rgb},0.35)`, textTransform: "uppercase" as const, marginTop: 4 }}>
@@ -194,7 +194,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
                   </span>
                 </div>
                 {i < 3 && (
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, color: `rgba(${c.rgb},0.3)`, margin: "0 6px 12px", animation: "colonBlink 1s step-end infinite" }}>
+                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, color: `rgba(${c.rgb},0.3)`, margin: "0 4px 12px", animation: "colonBlink 1s step-end infinite", flexShrink: 0 }}>
                     :
                   </span>
                 )}
