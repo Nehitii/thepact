@@ -36,6 +36,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Focus = lazy(() => import("./pages/Focus"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const Friends = lazy(() => import("./pages/Friends"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
 const AdminModuleManager = lazy(() => import("./pages/AdminModuleManager"));
