@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { CyberBackground } from "@/components/CyberBackground";
