@@ -79,7 +79,7 @@ export default function Legal() {
   };
 
   return (
-    <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
@@ -106,7 +106,7 @@ export default function Legal() {
           <div className="pt-8 space-y-4 animate-fade-in">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-[#6b9ec4] hover:text-[#8ACBFF] transition-colors font-rajdhani"
+              className="flex items-center gap-2 text-[var(--text-muted-custom)] hover:text-[var(--text-heading)] transition-colors font-rajdhani"
             >
               <ArrowLeft className="h-4 w-4" />
               <span>Back</span>
@@ -115,7 +115,7 @@ export default function Legal() {
             <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent to-primary uppercase tracking-widest drop-shadow-[0_0_20px_rgba(91,180,255,0.6)] font-orbitron">
               Terms & Legal
             </h1>
-            <p className="text-[#6b9ec4] tracking-wide font-rajdhani">Copyright, Terms of Service & Privacy</p>
+            <p className="text-[var(--text-muted-custom)] tracking-wide font-rajdhani">Copyright, Terms of Service & Privacy</p>
           </div>
 
           {/* Legal Sections */}
@@ -123,13 +123,13 @@ export default function Legal() {
             {/* Copyright Section */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-              <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-4">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 space-y-4">
                 <div className="flex items-center gap-3">
                   <Shield className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                  <h2 className="text-xl font-orbitron font-semibold text-[#8ACBFF]">Copyright</h2>
+                  <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">Copyright</h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-3 text-sm leading-relaxed">
-                  <p className="text-[#c8e0f4] font-medium">© 2024–2025 The Pact. All rights reserved.</p>
+                <div className="text-[var(--text-body)] font-rajdhani space-y-3 text-sm leading-relaxed">
+                  <p className="text-[var(--text-heading)] font-medium">© 2024–2025 The Pact. All rights reserved.</p>
                   <p>
                     All content, visual elements, interface designs, animations, logos, texts, graphics, source code,
                     and functionality within this application are the exclusive intellectual property of The Pact and
@@ -146,26 +146,26 @@ export default function Legal() {
             {/* Terms of Service Section */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-              <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-5">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 space-y-5">
                 <div className="flex items-center gap-3">
                   <FileText className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                  <h2 className="text-xl font-orbitron font-semibold text-[#8ACBFF]">Terms of Service</h2>
+                  <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">Terms of Service</h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-4 text-sm leading-relaxed">
+                <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">1. Acceptance of Terms</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">1. Acceptance of Terms</p>
                     <p>
                       By accessing or using The Pact, you agree to comply with and be bound by these Terms of Service,
                       all applicable laws and regulations, and any additional guidelines provided within the
                       application.
                     </p>
-                    <p className="mt-1 text-[#8ACBFF]/80 italic">
+                    <p className="mt-1 text-primary/80 italic">
                       If you do not agree with these terms, you must discontinue use of the application.
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">2. Purpose of the Application</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">2. Purpose of the Application</p>
                     <p>
                       The Pact is a personal development, organization, and progression application designed to help
                       users track goals, habits, finances, and personal growth.
@@ -174,12 +174,12 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">3. User Responsibility & Accountability</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">3. User Responsibility & Accountability</p>
                     <p>
                       You are solely responsible for all content you create, upload, store, or share within the
                       application, including but not limited to:
                     </p>
-                    <ul className="mt-2 ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="mt-2 ml-4 space-y-1 text-primary/90">
                       <li>• Goals and plans</li>
                       <li>• Notes and personal reflections</li>
                       <li>• Financial data</li>
@@ -193,9 +193,9 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">4. Prohibited Use</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">4. Prohibited Use</p>
                     <p className="mb-2">The Pact must not be used to:</p>
-                    <ul className="ml-4 space-y-1 text-[#ff6b6b]/80">
+                    <ul className="ml-4 space-y-1 text-destructive/80">
                       <li>• Plan, organize, promote, or facilitate illegal activities</li>
                       <li>• Store or distribute unlawful, harmful, abusive, fraudulent, or misleading content</li>
                       <li>• Violate any local, national, or international law</li>
@@ -203,18 +203,18 @@ export default function Legal() {
                       <li>• Misuse financial tools for illegal, deceptive, or unethical purposes</li>
                       <li>• Harass, threaten, or abuse other users</li>
                     </ul>
-                    <p className="mt-2 text-[#ff6b6b]/90 font-medium">
+                    <p className="mt-2 text-destructive/90 font-medium">
                       Any attempt to divert the application from its intended lawful use is strictly forbidden.
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">5. Enforcement & Sanctions</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">5. Enforcement & Sanctions</p>
                     <p className="mb-2">
                       The Pact reserves the right to take appropriate action in case of misuse, including but not
                       limited to:
                     </p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Temporary suspension of access</li>
                       <li>• Permanent account termination</li>
                       <li>• Removal of content</li>
@@ -228,9 +228,9 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">6. No Professional Advice Disclaimer</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">6. No Professional Advice Disclaimer</p>
                     <p className="mb-2">The Pact does not provide:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Legal advice</li>
                       <li>• Financial advice</li>
                       <li>• Medical advice</li>
@@ -248,18 +248,18 @@ export default function Legal() {
             {/* Privacy & Data Protection Section */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-              <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-5">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 space-y-5">
                 <div className="flex items-center gap-3">
                   <Lock className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                  <h2 className="text-xl font-orbitron font-semibold text-[#8ACBFF]">Privacy & Data Protection</h2>
+                  <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">Privacy & Data Protection</h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-4 text-sm leading-relaxed">
+                <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">7. Data Collection</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">7. Data Collection</p>
                     <p className="mb-2">
                       We collect only the data necessary to operate and improve the application, including:
                     </p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Account information</li>
                       <li>• Usage data</li>
                       <li>• Preferences and settings</li>
@@ -269,23 +269,23 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">8. Data Protection & Security</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">8. Data Protection & Security</p>
                     <p>Your data is encrypted and stored using reasonable industry-standard security measures.</p>
                     <p className="mt-1">
                       While we take security seriously, no system can guarantee absolute protection.
                     </p>
-                    <p className="mt-1 text-[#8ACBFF]/80 italic">
+                    <p className="mt-1 text-primary/80 italic">
                       You are responsible for maintaining the confidentiality of your login credentials.
                     </p>
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">9. Your Rights</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">9. Your Rights</p>
                     <p className="mb-2">
                       In accordance with applicable data protection regulations (including GDPR where applicable), you
                       have the right to:
                     </p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Access your personal data</li>
                       <li>• Correct or update your data</li>
                       <li>• Request deletion of your data</li>
@@ -297,17 +297,17 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">10. Data Deletion & Account Removal</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">10. Data Deletion & Account Removal</p>
                     <p>You may request full account deletion at any time.</p>
                     <p className="mt-2 mb-1">Upon deletion:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Your account will be permanently removed</li>
                       <li>• Your personal data will be deleted within a reasonable timeframe</li>
                       <li>
                         • Some data may be temporarily retained if legally required (e.g. security, fraud prevention)
                       </li>
                     </ul>
-                    <p className="mt-2 text-[#ff6b6b]/80 font-medium">Deleted data cannot be recovered.</p>
+                    <p className="mt-2 text-destructive/80 font-medium">Deleted data cannot be recovered.</p>
 
                     {/* Delete Account Button */}
                     <div className="mt-4 pt-4 border-t border-primary/10">
@@ -328,18 +328,18 @@ export default function Legal() {
             {/* User Interactions Section */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-              <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-5">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 space-y-5">
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                  <h2 className="text-xl font-orbitron font-semibold text-[#8ACBFF]">
+                  <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">
                     User Interactions & Third Parties
                   </h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-4 text-sm leading-relaxed">
+                <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">11. User-to-User Interactions</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">11. User-to-User Interactions</p>
                     <p className="mb-2">When interacting with other users:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• You remain fully responsible for your communications</li>
                       <li>• The Pact does not actively monitor conversations</li>
                       <li>• Abuse, harassment, or misuse may result in sanctions</li>
@@ -348,8 +348,8 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">12. Third Parties</p>
-                    <p className="text-[#8ACBFF] font-medium">We do not sell your personal data.</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">12. Third Parties</p>
+                    <p className="text-primary font-medium">We do not sell your personal data.</p>
                     <p className="mt-1">
                       Data may be shared with trusted service providers solely for operational purposes (hosting,
                       analytics, payments), under strict confidentiality obligations.
@@ -362,30 +362,30 @@ export default function Legal() {
             {/* Liability & Modifications Section */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-              <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-5">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 space-y-5">
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                  <h2 className="text-xl font-orbitron font-semibold text-[#8ACBFF]">Liability & Modifications</h2>
+                  <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">Liability & Modifications</h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-4 text-sm leading-relaxed">
+                <div className="text-[var(--text-body)] font-rajdhani space-y-4 text-sm leading-relaxed">
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">13. Limitation of Liability</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">13. Limitation of Liability</p>
                     <p className="mb-2">The Pact shall not be held liable for:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• User-generated content</li>
                       <li>• Decisions made based on application data or projections</li>
                       <li>• Financial or personal outcomes</li>
                       <li>• Misuse of the application</li>
                       <li>• Data loss caused by user error</li>
                     </ul>
-                    <p className="mt-2 text-[#ff6b6b]/80 italic">Use of the application is at your own risk.</p>
+                    <p className="mt-2 text-destructive/80 italic">Use of the application is at your own risk.</p>
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">14. Modifications to These Terms</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">14. Modifications to These Terms</p>
                     <p>We reserve the right to update these Terms & Legal at any time.</p>
                     <p className="mt-1">Significant changes will be communicated through the application.</p>
-                    <p className="mt-1 text-[#8ACBFF]/80 italic">
+                    <p className="mt-1 text-primary/80 italic">
                       Continued use of The Pact constitutes acceptance of the updated terms.
                     </p>
                   </div>
@@ -396,17 +396,17 @@ export default function Legal() {
             {/* Contact Section */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl blur-sm opacity-50" />
-              <div className="relative bg-[#0a1525]/80 border border-primary/20 rounded-xl p-6 space-y-4">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 space-y-4">
                 <div className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-primary drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                  <h2 className="text-xl font-orbitron font-semibold text-[#8ACBFF]">Contact</h2>
+                  <h2 className="text-xl font-orbitron font-semibold text-[var(--text-heading)]">Contact</h2>
                 </div>
-                <div className="text-[#a8c8e8] font-rajdhani space-y-2 text-sm leading-relaxed">
-                  <p className="text-[#c8e0f4] font-medium">15. Contact</p>
+                <div className="text-[var(--text-body)] font-rajdhani space-y-2 text-sm leading-relaxed">
+                  <p className="text-[var(--text-heading)] font-medium">15. Contact</p>
                   <p>For legal inquiries, data requests, or account-related issues:</p>
                   <a
                     href="mailto:legal@thepact.app"
-                    className="inline-block mt-2 text-primary hover:text-[#8ACBFF] transition-colors font-medium"
+                    className="inline-block mt-2 text-primary hover:text-[var(--text-heading)] transition-colors font-medium"
                   >
                     legal@thepact.app
                   </a>
@@ -417,12 +417,12 @@ export default function Legal() {
             {/* Final Statement */}
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/30 to-accent/30 rounded-xl blur-sm opacity-60" />
-              <div className="relative bg-[#0a1525]/90 border border-primary/30 rounded-xl p-6 text-center">
+              <div className="relative bg-[var(--surface-panel)] border border-[var(--border-card)] rounded-xl p-6 text-center">
                 <Heart className="h-6 w-6 text-primary mx-auto mb-3 drop-shadow-[0_0_8px_rgba(91,180,255,0.5)]" />
-                <p className="text-[#c8e0f4] font-rajdhani text-sm leading-relaxed italic">
+                <p className="text-[var(--text-heading)] font-rajdhani text-sm leading-relaxed italic">
                   The Pact is built as a tool for clarity, discipline, and personal responsibility.
                   <br />
-                  <span className="text-[#8ACBFF]">
+                  <span className="text-primary">
                     Respect for the law, for others, and for oneself is fundamental to its use.
                   </span>
                 </p>
@@ -432,8 +432,8 @@ export default function Legal() {
 
           {/* Footer with Version Info */}
           <div className="text-center pt-6 pb-4 space-y-2">
-            <div className="text-xs text-[#6b9ec4]/60 font-rajdhani">Last updated: December 2025</div>
-            <div className="text-[10px] text-[#6b9ec4]/40 font-rajdhani tracking-wider">
+            <div className="text-xs text-[var(--text-dimmer)] font-rajdhani">Last updated: December 2025</div>
+            <div className="text-[10px] text-[var(--text-dimmer)] font-rajdhani tracking-wider">
               Version V3.5 — The Pact · Author: L.G
             </div>
           </div>
@@ -442,7 +442,7 @@ export default function Legal() {
 
       {/* First Confirmation Dialog */}
       <AlertDialog open={showFirstConfirm} onOpenChange={setShowFirstConfirm}>
-        <AlertDialogContent className="bg-[#0a1525]/95 backdrop-blur-xl border border-primary/20">
+        <AlertDialogContent className="bg-[var(--surface-overlay)] backdrop-blur-xl border border-[var(--border-card)]">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#ff6b6b] font-orbitron flex items-center gap-2">
               <Trash2 className="h-5 w-5" />
@@ -473,7 +473,7 @@ export default function Legal() {
 
       {/* Final Confirmation Dialog */}
       <AlertDialog open={showFinalConfirm} onOpenChange={setShowFinalConfirm}>
-        <AlertDialogContent className="bg-[#0a1525]/95 backdrop-blur-xl border border-red-500/30">
+        <AlertDialogContent className="bg-[var(--surface-overlay)] backdrop-blur-xl border border-red-500/30">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#ff6b6b] font-orbitron flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />

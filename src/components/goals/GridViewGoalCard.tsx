@@ -126,7 +126,7 @@ export function GridViewGoalCard({
       <div
         className={cn(
           "relative w-full rounded-[20px] overflow-hidden",
-          "bg-[#09090b] border border-white/[0.08]",
+          "bg-[var(--goal-card-bg)] border border-[var(--goal-card-border)]",
           "shadow-sm transition-all duration-400 ease-[cubic-bezier(0.25,0.8,0.25,1)]",
           "group-hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.6),0_0_0_1px_rgba(var(--accent-rgb),0.3)]",
           "group-hover:border-[rgba(var(--accent-rgb),0.3)]",

@@ -54,8 +54,8 @@ interface PactIdentityCardProps {
 }
 
 const CY_INPUT = [
-  "bg-[#010608] border border-primary/25 rounded-none",
-  "focus:border-primary/70 focus:bg-[#010b10]",
+  "bg-[var(--surface-input)] border border-primary/25 rounded-none",
+  "focus:border-primary/70 focus:bg-[var(--surface-input-focus)]",
   "text-primary/80 placeholder:text-primary/15 font-mono text-sm tracking-wide h-11",
   "transition-all duration-200",
 ].join(" ");

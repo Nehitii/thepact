@@ -61,7 +61,7 @@ export default function Inbox() {
           <div className="flex items-center gap-5">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary to-violet-500 rounded-xl blur opacity-25 group-hover:opacity-60 transition duration-500" />
-              <div className="relative w-14 h-14 rounded-xl bg-[#0a0f18] border border-white/10 flex items-center justify-center shadow-2xl">
+              <div className="relative w-14 h-14 rounded-xl bg-card border border-border flex items-center justify-center shadow-2xl">
                 <InboxIcon className="h-7 w-7 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
               </div>
             </div>
@@ -80,7 +80,7 @@ export default function Inbox() {
             variant="outline"
             size="sm"
             onClick={() => navigate("/profile/notifications")}
-            className="border-white/10 bg-white/5 hover:bg-white/10 hover:border-primary/50 transition-all text-xs uppercase tracking-wider font-bold"
+            className="border-border bg-muted/50 hover:bg-muted hover:border-primary/50 transition-all text-xs uppercase tracking-wider font-bold"
           >
             <Settings className="h-3.5 w-3.5 mr-2" />
             {t("common.settings")}
@@ -88,13 +88,13 @@ export default function Inbox() {
         </div>
 
         {/* --- MAIN CONTENT AREA --- */}
-        <div className="flex-1 flex flex-col min-h-0 bg-[#0a0f18]/80 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative">
+        <div className="flex-1 flex flex-col min-h-0 bg-card/80 backdrop-blur-xl border border-border rounded-2xl overflow-hidden shadow-2xl relative">
           {/* Decorative Top Border */}
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full">
             {/* --- TABS HEADER --- */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-black/20">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
               <TabsList className="bg-transparent p-0 gap-6 h-auto">
                 <TabItem
                   value="notifications"
@@ -142,7 +142,7 @@ export default function Inbox() {
             </div>
 
             {/* --- CONTENT --- */}
-            <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-transparent to-black/40">
+            <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-transparent to-muted/30">
               <AnimatePresence mode="wait">
                 {/* NOTIFICATIONS PANEL */}
                 <TabsContent value="notifications" className="h-full m-0 data-[state=inactive]:hidden">
@@ -207,7 +207,7 @@ export default function Inbox() {
                                 "hover:bg-white/[0.03] hover:translate-x-1",
                                 conv.unread_count > 0
                                   ? "bg-violet-500/10 border-violet-500/30 shadow-[0_0_15px_-5px_rgba(139,92,246,0.3)]"
-                                  : "bg-[#0f141e] border-white/5 hover:border-white/10",
+                                  : "bg-card border-border hover:border-border",
                               )}
                             >
                               {/* Left Accent Bar for Unread */}

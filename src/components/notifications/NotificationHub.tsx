@@ -49,7 +49,7 @@ export function NotificationHub({ trigger }: NotificationHubProps) {
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="w-full sm:max-w-md bg-[#0a1525]/98 backdrop-blur-xl border-l border-primary/20 p-0"
+        className="w-full sm:max-w-md bg-[var(--surface-overlay)] backdrop-blur-xl border-l border-border p-0"
       >
         {/* Header */}
         <SheetHeader className="p-4 border-b border-primary/20">
