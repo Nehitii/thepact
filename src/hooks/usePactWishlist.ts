@@ -23,6 +23,7 @@ export interface PactWishlistItem {
   acquired_at: string | null;
   notes: string | null;
   url: string | null;
+  image_url: string | null;
   source_type: string;
   source_goal_cost_id: string | null;
   created_at: string;
