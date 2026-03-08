@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Star, CheckCircle2, Target, Zap } from "lucide-react";
+import { Star, CheckCircle2, Target, Zap, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
+import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 
 interface Goal {
   id: string;
