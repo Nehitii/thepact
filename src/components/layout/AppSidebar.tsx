@@ -27,6 +27,8 @@ import {
   Heart,
   Sparkles,
   Trophy,
+  Timer,
+  BarChart3,
 } from "lucide-react";
 import {
   DropdownMenu,
