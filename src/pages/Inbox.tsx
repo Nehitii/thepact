@@ -61,7 +61,7 @@ export default function Inbox() {
           <div className="flex items-center gap-5">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary to-violet-500 rounded-xl blur opacity-25 group-hover:opacity-60 transition duration-500" />
-              <div className="relative w-14 h-14 rounded-xl bg-[#0a0f18] border border-white/10 flex items-center justify-center shadow-2xl">
+              <div className="relative w-14 h-14 rounded-xl bg-card border border-border flex items-center justify-center shadow-2xl">
                 <InboxIcon className="h-7 w-7 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
               </div>
             </div>
