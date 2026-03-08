@@ -201,32 +201,30 @@ export default function TodoList() {
         </div>
 
         <div className="relative z-10 p-6 max-w-5xl mx-auto space-y-6">
-          {/* Compact Header */}
+          {/* Module Header (same style as other modules) */}
+          <ModuleHeader
+            systemLabel="QUEST_ENGINE // SYS.ACTIVE"
+            title="TASK "
+            titleAccent="OPS"
+          />
+
+          {/* Compact Stats Bar */}
           <motion.div
-            initial={{ opacity: 0, y: -12 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
             className="space-y-2"
           >
-            {/* Line 1: Title + Stats */}
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-3">
-                <h1 className="font-mono text-sm font-bold tracking-widest text-foreground/80 uppercase">Task Ops</h1>
-                <span className="text-[10px] font-mono text-muted-foreground/50 tracking-wider hidden sm:inline">SYS.ACTIVE</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                <span className="text-primary font-bold">LVL {Math.floor((stats?.score ?? 0) / 100) + 1}</span>
-                <span className="text-foreground/30">·</span>
-                <span>Score <span className="text-foreground/80 font-bold">{stats?.score ?? 0}</span></span>
-                <span className="text-foreground/30">·</span>
-                <span className="flex items-center gap-0.5"><Flame className="w-3 h-3 text-orange-400" /><span className="text-foreground/80 font-bold">{stats?.current_streak ?? 0}</span></span>
-                <span className="text-foreground/30">·</span>
-                <span className="text-foreground/80 font-bold">{activeTaskCount}<span className="text-muted-foreground font-normal">/{maxTasks}</span></span>
-              </div>
+            <div className="flex items-center justify-center gap-3 text-xs font-mono text-muted-foreground">
+              <span className="text-primary font-bold">LVL {Math.floor((stats?.score ?? 0) / 100) + 1}</span>
+              <span className="text-foreground/30">·</span>
+              <span>Score <span className="text-foreground/80 font-bold">{stats?.score ?? 0}</span></span>
+              <span className="text-foreground/30">·</span>
+              <span className="flex items-center gap-0.5"><Flame className="w-3 h-3 text-orange-400" /><span className="text-foreground/80 font-bold">{stats?.current_streak ?? 0}</span></span>
+              <span className="text-foreground/30">·</span>
+              <span className="text-foreground/80 font-bold">{activeTaskCount}<span className="text-muted-foreground font-normal">/{maxTasks}</span></span>
             </div>
-
-            {/* Line 2: XP bar (thin) */}
-            <div className="relative h-[2px] w-full bg-border/30 rounded-full overflow-hidden">
+            <div className="relative h-[2px] w-full max-w-md mx-auto bg-border/30 rounded-full overflow-hidden">
               <motion.div
                 className="absolute inset-y-0 left-0 bg-primary rounded-full"
                 initial={{ width: 0 }}
