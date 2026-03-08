@@ -12,7 +12,8 @@ import {
   Moon, Activity, Brain, Droplets, Smile, Zap, ChevronRight, ChevronLeft, Check, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useTodayHealth, useUpsertHealthData, useHealthSettings } from "@/hooks/useHealth";
+import { useTodayHealth, useUpsertHealthData, useHealthSettings, useHealthByDate } from "@/hooks/useHealth";
+import { format, subDays } from "date-fns";
 import { useUpdateHealthStreak } from "@/hooks/useHealthStreak";
 import { HealthMoodSelector } from "./HealthMoodSelector";
 import { useTranslation } from "react-i18next";
