@@ -22,9 +22,10 @@ interface Goal {
   tags?: string[];
   deadline?: string | null;
   isShared?: boolean;
-  isReadOnly?: boolean;
-  sharedByName?: string;
-}
+    isReadOnly?: boolean;
+    sharedByName?: string;
+    is_locked?: boolean;
+  }
 
 interface GridViewGoalCardProps {
   goal: Goal;
