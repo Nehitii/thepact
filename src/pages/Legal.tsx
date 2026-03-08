@@ -473,7 +473,7 @@ export default function Legal() {
 
       {/* Final Confirmation Dialog */}
       <AlertDialog open={showFinalConfirm} onOpenChange={setShowFinalConfirm}>
-        <AlertDialogContent className="bg-[#0a1525]/95 backdrop-blur-xl border border-red-500/30">
+        <AlertDialogContent className="bg-[var(--surface-overlay)] backdrop-blur-xl border border-red-500/30">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-[#ff6b6b] font-orbitron flex items-center gap-2">
               <AlertTriangle className="h-5 w-5" />
