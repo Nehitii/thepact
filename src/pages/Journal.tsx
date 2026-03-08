@@ -54,7 +54,6 @@ export default function Journal() {
       const q = search.toLowerCase();
       filtered = filtered.filter((e) => e.title.toLowerCase().includes(q) || e.content.toLowerCase().includes(q));
     }
-    // Pinned first
     return [...filtered].sort((a, b) => (b.is_favorite ? 1 : 0) - (a.is_favorite ? 1 : 0));
   }, [allEntries, filterMood, search]);
 
@@ -108,7 +107,7 @@ export default function Journal() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden overflow-y-auto" style={{ background: "#04050c" }}>
+    <div className="min-h-screen relative overflow-x-hidden overflow-y-auto" style={{ background: "var(--journal-bg)" }}>
       {/* Background layers */}
       <div className="journal-scanline" />
       <div className="journal-noise" />
@@ -118,81 +117,37 @@ export default function Journal() {
 
       {/* Corner frames */}
       {[
-        {
-          top: 16,
-          left: 16,
-          borderTop: "1px solid rgba(0,255,224,0.35)",
-          borderLeft: "1px solid rgba(0,255,224,0.35)",
-        },
-        {
-          top: 16,
-          right: 16,
-          borderTop: "1px solid rgba(0,255,224,0.35)",
-          borderRight: "1px solid rgba(0,255,224,0.35)",
-        },
-        {
-          bottom: 16,
-          left: 16,
-          borderBottom: "1px solid rgba(0,255,224,0.35)",
-          borderLeft: "1px solid rgba(0,255,224,0.35)",
-        },
-        {
-          bottom: 16,
-          right: 16,
-          borderBottom: "1px solid rgba(0,255,224,0.35)",
-          borderRight: "1px solid rgba(0,255,224,0.35)",
-        },
+        { top: 16, left: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
+        { top: 16, right: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
+        { bottom: 16, left: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
+        { bottom: 16, right: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
       ].map((s, i) => (
-        <div key={i} className="absolute w-8 h-8 z-[9500] pointer-events-none" style={s as React.CSSProperties} />
+        <div key={i} className="absolute w-8 h-8 z-[9500] pointer-events-none dark:block hidden" style={s as React.CSSProperties} />
       ))}
 
-      {/* Side decorations */}
-      <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden lg:flex flex-col items-center gap-2">
-        <div
-          className="w-px h-20"
-          style={{ background: "linear-gradient(to bottom, transparent, rgba(0,255,224,0.3))" }}
-        />
+      {/* Side decorations — dark only */}
+      <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2">
+        <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,255,224,0.3))" }} />
         {["◈", "◉", "◎", "◐", "◯", "◆"].map((s, i) => (
           <div key={i} className="w-px h-5 relative" style={{ background: "rgba(0,255,224,0.1)" }}>
             {i === 2 && (
-              <span
-                className="absolute left-2 -top-1 whitespace-nowrap"
-                style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(0,255,224,0.25)" }}
-              >
+              <span className="absolute left-2 -top-1 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(0,255,224,0.25)" }}>
                 {s}
               </span>
             )}
           </div>
         ))}
-        <div
-          className="w-px h-20"
-          style={{ background: "linear-gradient(to top, transparent, rgba(0,255,224,0.3))" }}
-        />
+        <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(0,255,224,0.3))" }} />
       </div>
 
-      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden lg:flex flex-col items-center gap-2">
-        <div
-          className="w-px h-20"
-          style={{ background: "linear-gradient(to bottom, transparent, rgba(191,90,242,0.3))" }}
-        />
+      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2">
+        <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(191,90,242,0.3))" }} />
         {clock.split(":").map((t, i) => (
-          <div
-            key={i}
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: "8px",
-              color: "rgba(191,90,242,0.35)",
-              letterSpacing: "0.1em",
-              writingMode: "vertical-rl",
-            }}
-          >
+          <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" }}>
             {t}
           </div>
         ))}
-        <div
-          className="w-px h-20"
-          style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }}
-        />
+        <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }} />
       </div>
 
       {/* Main content */}
@@ -204,81 +159,41 @@ export default function Journal() {
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           className="pt-14 pb-10 text-center"
         >
-          {/* Rotating rings */}
+          {/* Rotating rings — dark only */}
           <div className="relative inline-block mb-5">
-            <div className="absolute -inset-10 pointer-events-none">
+            <div className="absolute -inset-10 pointer-events-none hidden dark:block">
               <RotatingRing size={120} color="#00ffe0" duration={20} dasharray="2 12" opacity={0.25} />
             </div>
-            <div className="absolute -inset-5 pointer-events-none">
+            <div className="absolute -inset-5 pointer-events-none hidden dark:block">
               <RotatingRing size={80} color="#bf5af2" duration={14} reverse dasharray="4 6" opacity={0.2} />
             </div>
             {/* Central orb */}
             <div
-              className="w-10 h-10 rounded-full flex items-center justify-center mx-auto"
-              style={{
-                border: "1px solid rgba(0,255,224,0.4)",
-                background: "rgba(0,255,224,0.06)",
-                boxShadow: "0 0 20px rgba(0,255,224,0.2), inset 0 0 10px rgba(0,255,224,0.05)",
-              }}
+              className="w-10 h-10 rounded-full flex items-center justify-center mx-auto border border-primary/40 bg-primary/10"
+              style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.2), inset 0 0 10px hsl(var(--primary) / 0.05)" }}
             >
               <div
-                className="w-2 h-2 rounded-full"
-                style={{
-                  background: "#00ffe0",
-                  boxShadow: "0 0 10px #00ffe0",
-                  animation: "journal-pulse 2.5s ease-in-out infinite",
-                }}
+                className="w-2 h-2 rounded-full bg-primary"
+                style={{ boxShadow: "0 0 10px hsl(var(--primary))", animation: "journal-pulse 2.5s ease-in-out infinite" }}
               />
             </div>
           </div>
 
           {/* System label */}
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div
-              className="flex-1 h-px"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(0,255,224,0.25))" }}
-            />
-            <span
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "9px",
-                color: "rgba(0,255,224,0.45)",
-                letterSpacing: "0.25em",
-              }}
-            >
+            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/25" />
+            <span className="font-mono text-[9px] text-primary/50 tracking-[0.25em]">
               NEURAL_JOURNAL // SYS.ACTIVE
             </span>
-            <div
-              className="flex-1 h-px"
-              style={{ background: "linear-gradient(90deg, rgba(0,255,224,0.25), transparent)" }}
-            />
+            <div className="flex-1 h-px bg-gradient-to-r from-primary/25 to-transparent" />
           </div>
 
           {/* Title */}
-          <h1
-            style={{
-              fontFamily: "'Orbitron', monospace",
-              fontWeight: 900,
-              fontSize: "clamp(30px, 5vw, 52px)",
-              letterSpacing: "0.08em",
-              lineHeight: 1,
-              marginBottom: "8px",
-              background: "linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            CHRONO<span style={{ WebkitTextFillColor: "#00ffe0", filter: "drop-shadow(0 0 12px #00ffe0)" }}>LOG</span>
+          <h1 className="font-orbitron font-black text-[clamp(30px,5vw,52px)] tracking-[0.08em] leading-none mb-2 text-transparent bg-clip-text bg-gradient-to-b from-foreground/95 to-foreground/50">
+            CHRONO<span className="text-primary" style={{ filter: "drop-shadow(0 0 12px hsl(var(--primary)))" }}>LOG</span>
           </h1>
 
-          <p
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: "10px",
-              color: "rgba(255,255,255,0.2)",
-              letterSpacing: "0.2em",
-            }}
-          >
+          <p className="font-mono text-[10px] text-muted-foreground/30 tracking-[0.2em]">
             PERSONAL JOURNAL INTERFACE — v3.0
           </p>
 
@@ -293,23 +208,16 @@ export default function Journal() {
           <div className="mt-8">
             <motion.button
               onClick={() => setIsNewEntryOpen(true)}
-              whileHover={{ scale: 1.04, boxShadow: "0 0 40px rgba(0,255,224,0.25), 0 0 80px rgba(0,255,224,0.1)" }}
+              whileHover={{ scale: 1.04, boxShadow: "0 0 40px hsl(var(--primary) / 0.25), 0 0 80px hsl(var(--primary) / 0.1)" }}
               whileTap={{ scale: 0.97 }}
-              className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300"
+              className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300 border border-primary text-primary rounded-[3px] font-orbitron text-[11px] font-semibold tracking-[0.2em]"
               style={{
                 padding: "13px 36px",
                 background: "transparent",
-                border: "1px solid #00ffe0",
-                color: "#00ffe0",
-                borderRadius: "3px",
-                fontFamily: "'Orbitron', monospace",
-                fontSize: "11px",
-                fontWeight: 600,
-                letterSpacing: "0.2em",
-                boxShadow: "0 0 20px rgba(0,255,224,0.12), inset 0 0 20px rgba(0,255,224,0.03)",
+                boxShadow: "0 0 20px hsl(var(--primary) / 0.12), inset 0 0 20px hsl(var(--primary) / 0.03)",
               }}
             >
-              <span style={{ fontSize: "16px", fontWeight: 300, fontFamily: "'JetBrains Mono', monospace" }}>+</span>
+              <span className="text-[16px] font-light font-mono">+</span>
               NEW ENTRY
             </motion.button>
           </div>
@@ -324,30 +232,22 @@ export default function Journal() {
         >
           {/* Search */}
           <div className="relative">
-            <span
-              className="absolute left-3.5 top-1/2 -translate-y-1/2"
-              style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "12px", color: "rgba(0,255,224,0.35)" }}
-            >
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[12px] text-primary/35">
               ◈
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="SEARCH LOGS..."
-              className="w-full outline-none transition-colors duration-200"
+              className="w-full outline-none transition-colors duration-200 font-mono text-[11px] tracking-[0.08em] text-foreground/70 rounded-[3px]"
               style={{
                 padding: "11px 16px 11px 36px",
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.07)",
-                borderRadius: "3px",
-                color: "rgba(255,255,255,0.7)",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "11px",
-                letterSpacing: "0.08em",
-                caretColor: "#00ffe0",
+                background: "var(--journal-input-bg)",
+                border: "1px solid var(--journal-input-border)",
+                caretColor: "hsl(var(--primary))",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "rgba(0,255,224,0.3)")}
-              onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.07)")}
+              onFocus={(e) => (e.target.style.borderColor = "hsl(var(--primary) / 0.4)")}
+              onBlur={(e) => (e.target.style.borderColor = "var(--journal-input-border)")}
             />
           </div>
 
@@ -357,15 +257,12 @@ export default function Journal() {
               <button
                 key={m.id}
                 onClick={() => setFilterMood(filterMood === m.id ? null : m.id)}
-                className="flex items-center gap-1.5 rounded-sm cursor-pointer transition-all duration-150"
+                className="flex items-center gap-1.5 rounded-sm cursor-pointer transition-all duration-150 font-mono text-[10px] tracking-[0.1em]"
                 style={{
                   padding: "5px 12px",
-                  background: filterMood === m.id ? `${m.color}12` : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${filterMood === m.id ? m.color + "45" : "rgba(255,255,255,0.06)"}`,
-                  color: filterMood === m.id ? m.color : "rgba(255,255,255,0.3)",
-                  fontSize: "10px",
-                  fontFamily: "'JetBrains Mono', monospace",
-                  letterSpacing: "0.1em",
+                  background: filterMood === m.id ? `${m.color}12` : "var(--journal-input-bg)",
+                  border: `1px solid ${filterMood === m.id ? m.color + "45" : "var(--journal-input-border)"}`,
+                  color: filterMood === m.id ? m.color : "var(--journal-text-dim)",
                   boxShadow: filterMood === m.id ? `0 0 12px ${m.color}20` : "none",
                 }}
               >
@@ -382,33 +279,18 @@ export default function Journal() {
             <div className="flex items-center justify-center py-24">
               <div className="flex flex-col items-center gap-3">
                 <motion.div
-                  className="w-6 h-6 rounded-full border-2 border-t-[#00ffe0]"
-                  style={{ borderColor: "rgba(0,255,224,0.2)" }}
+                  className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
                 />
-                <div
-                  style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: "12px",
-                    color: "rgba(255,255,255,0.12)",
-                    letterSpacing: "0.15em",
-                  }}
-                >
+                <div className="font-mono text-[12px] text-muted-foreground/20 tracking-[0.15em]">
                   LOADING_LOGS...
                 </div>
               </div>
             </div>
           ) : entries.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
-              <div
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: "12px",
-                  color: "rgba(255,255,255,0.12)",
-                  letterSpacing: "0.15em",
-                }}
-              >
+              <div className="font-mono text-[12px] text-muted-foreground/20 tracking-[0.15em]">
                 // NO_ENTRIES_FOUND
               </div>
             </motion.div>
@@ -438,14 +320,7 @@ export default function Journal() {
           {/* Infinite scroll sentinel */}
           <div ref={sentinelRef} className="h-10 flex items-center justify-center">
             {isFetchingNextPage && (
-              <div
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: "10px",
-                  color: "rgba(255,255,255,0.12)",
-                  letterSpacing: "0.15em",
-                }}
-              >
+              <div className="font-mono text-[10px] text-muted-foreground/20 tracking-[0.15em]">
                 LOADING_MORE...
               </div>
             )}
@@ -453,31 +328,13 @@ export default function Journal() {
 
           {/* End terminator */}
           {entries.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mt-8 text-center"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-8 text-center">
               <div className="flex items-center gap-3 justify-center">
-                <div
-                  className="h-px w-20"
-                  style={{ background: "linear-gradient(90deg, transparent, rgba(0,255,224,0.2))" }}
-                />
-                <span
-                  style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: "9px",
-                    color: "rgba(0,255,224,0.25)",
-                    letterSpacing: "0.2em",
-                  }}
-                >
+                <div className="h-px w-20 bg-gradient-to-r from-transparent to-primary/20" />
+                <span className="font-mono text-[9px] text-primary/25 tracking-[0.2em]">
                   // END_OF_LOG
                 </span>
-                <div
-                  className="h-px w-20"
-                  style={{ background: "linear-gradient(90deg, rgba(0,255,224,0.2), transparent)" }}
-                />
+                <div className="h-px w-20 bg-gradient-to-r from-primary/20 to-transparent" />
               </div>
             </motion.div>
           )}
@@ -494,36 +351,22 @@ export default function Journal() {
 
       {/* Delete Dialog */}
       <AlertDialog open={!!deletingEntryId} onOpenChange={() => setDeletingEntryId(null)}>
-        <AlertDialogContent
-          className="border shadow-2xl rounded-xl"
-          style={{
-            background: "linear-gradient(180deg, #0c0e18 0%, #04050c 100%)",
-            borderColor: "rgba(0,255,224,0.15)",
-          }}
-        >
+        <AlertDialogContent className="border border-destructive/15 shadow-2xl rounded-xl bg-card">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-mono tracking-wider" style={{ color: "rgba(255,255,255,0.9)" }}>
+            <AlertDialogTitle className="font-mono tracking-wider text-foreground">
               PURGE_LOG
             </AlertDialogTitle>
-            <AlertDialogDescription className="font-mono text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <AlertDialogDescription className="font-mono text-xs text-muted-foreground">
               This entry will be permanently erased. This action cannot be reversed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel
-              className="rounded-lg font-mono text-xs"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                borderColor: "rgba(255,255,255,0.1)",
-                color: "rgba(255,255,255,0.5)",
-              }}
-            >
+            <AlertDialogCancel className="rounded-lg font-mono text-xs bg-muted/50 border-border text-muted-foreground">
               ABORT
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="rounded-lg font-mono text-xs"
-              style={{ background: "rgba(255,55,95,0.1)", borderColor: "rgba(255,55,95,0.2)", color: "#ff375f" }}
+              className="rounded-lg font-mono text-xs bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
             >
               CONFIRM_PURGE
             </AlertDialogAction>

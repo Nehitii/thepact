@@ -33,7 +33,6 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
     toggleFav.mutate({ id: entry.id, userId: user.id, isFavorite: !entry.is_favorite });
   };
 
-  // Extract text from HTML for line numbers
   const textContent = entry.content.replace(/<[^>]+>/g, "");
   const sentences = textContent.split(". ").filter(Boolean);
 
@@ -48,12 +47,11 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
       className="relative w-full mb-0.5"
     >
       <motion.div
-        animate={{ borderColor: hovered ? accent.hex + "22" : "rgba(255,255,255,0.06)" }}
+        animate={{ borderColor: hovered ? accent.hex + "22" : "var(--journal-border)" }}
         transition={{ duration: 0.35 }}
-        className="relative z-[1] rounded-md overflow-hidden"
+        className="relative z-[1] rounded-md overflow-hidden bg-card"
         style={{
-          background: "linear-gradient(160deg, rgba(11,12,20,0.85) 0%, rgba(6,7,13,0.7) 100%)",
-          border: "1px solid rgba(255,255,255,0.06)",
+          border: "1px solid var(--journal-border)",
           padding: "28px 32px 24px",
         }}
       >
@@ -61,40 +59,20 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
         <div
           className="absolute left-0 rounded-sm transition-all duration-300"
           style={{
-            top: "18px",
-            bottom: "18px",
-            width: "2px",
+            top: "18px", bottom: "18px", width: "2px",
             background: `linear-gradient(to bottom, transparent, ${accent.hex}${hovered ? "90" : "40"}, transparent)`,
           }}
         />
 
         {/* Pinned glow bar */}
         {entry.is_favorite && (
-          <div
-            className="absolute top-0"
-            style={{
-              left: "15%",
-              right: "15%",
-              height: "1px",
-              background: `linear-gradient(90deg, transparent, ${accent.hex}, transparent)`,
-            }}
-          />
+          <div className="absolute top-0" style={{ left: "15%", right: "15%", height: "1px", background: `linear-gradient(90deg, transparent, ${accent.hex}, transparent)` }} />
         )}
 
         {/* Entry index watermark */}
         <div
-          className="absolute select-none"
-          style={{
-            right: "14px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "9px",
-            color: accent.hex,
-            opacity: 0.13,
-            writingMode: "vertical-rl",
-            letterSpacing: "0.2em",
-          }}
+          className="absolute select-none font-mono text-[9px] tracking-[0.2em]"
+          style={{ right: "14px", top: "50%", transform: "translateY(-50%)", color: accent.hex, opacity: 0.13, writingMode: "vertical-rl" }}
         >
           {`ENTRY::${String(index + 1).padStart(3, "0")}`}
         </div>
@@ -102,53 +80,22 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
         {/* META ROW */}
         <div className="flex items-center gap-4 mb-3.5 flex-wrap">
           {/* Mood badge */}
-          <div
-            className="flex items-center gap-[7px] px-2.5 py-[3px] rounded-sm"
-            style={{
-              border: `1px solid ${mood.color}28`,
-              background: `${mood.color}08`,
-            }}
-          >
-            <div
-              className="w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ background: mood.color }}
-            />
-            <span
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "9px",
-                color: mood.color,
-                letterSpacing: "0.12em",
-              }}
-            >
+          <div className="flex items-center gap-[7px] px-2.5 py-[3px] rounded-sm" style={{ border: `1px solid ${mood.color}28`, background: `${mood.color}08` }}>
+            <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: mood.color }} />
+            <span className="font-mono text-[9px] tracking-[0.12em]" style={{ color: mood.color }}>
               {mood.label}
             </span>
           </div>
 
           {/* Date */}
-          <span
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: "9px",
-              color: "rgba(255,255,255,0.25)",
-              letterSpacing: "0.12em",
-            }}
-          >
+          <span className="font-mono text-[9px] tracking-[0.12em]" style={{ color: "var(--journal-text-dim)" }}>
             {format(createdDate, "yyyy.MM.dd")}{" "}
             <span style={{ color: accent.hex, opacity: 0.6 }}>//</span>{" "}
             {format(createdDate, "HH:mm")}
           </span>
 
           {entry.is_favorite && (
-            <span
-              style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: "9px",
-                color: accent.hex,
-                opacity: 0.6,
-                letterSpacing: "0.1em",
-              }}
-            >
+            <span className="font-mono text-[9px] tracking-[0.1em]" style={{ color: accent.hex, opacity: 0.6 }}>
               ◈ PIN
             </span>
           )}
@@ -159,15 +106,12 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
           <div className="relative">
             <button
               onClick={() => setMenu(!menu)}
-              className="flex items-center justify-center transition-all duration-150 cursor-pointer"
+              className="flex items-center justify-center transition-all duration-150 cursor-pointer text-[13px] rounded-[4px]"
               style={{
-                width: "28px",
-                height: "28px",
-                borderRadius: "4px",
+                width: "28px", height: "28px",
                 background: menu ? accent.dim : "transparent",
-                border: `1px solid ${menu ? accent.hex + "50" : "rgba(255,255,255,0.08)"}`,
-                color: menu ? accent.hex : "rgba(255,255,255,0.3)",
-                fontSize: "13px",
+                border: `1px solid ${menu ? accent.hex + "50" : "var(--journal-border)"}`,
+                color: menu ? accent.hex : "var(--journal-text-dim)",
               }}
             >
               ⋮
@@ -179,14 +123,11 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
                   initial={{ opacity: 0, scale: 0.9, y: -4 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: -4 }}
-                  className="absolute right-0 overflow-hidden z-50"
+                  className="absolute right-0 overflow-hidden z-50 bg-popover rounded-md shadow-lg"
                   style={{
                     top: "34px",
-                    background: "#0c0e18",
                     border: `1px solid ${accent.hex}20`,
-                    borderRadius: "6px",
                     minWidth: "150px",
-                    boxShadow: "0 8px 32px rgba(0,0,0,0.7)",
                   }}
                 >
                   {[
@@ -197,15 +138,11 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
                     <button
                       key={a.label}
                       onClick={a.fn}
-                      className="w-full text-left flex items-center gap-2 transition-colors duration-150 cursor-pointer hover:bg-white/5"
+                      className="w-full text-left flex items-center gap-2 transition-colors duration-150 cursor-pointer hover:bg-muted/50 font-mono text-[10px] tracking-[0.1em] border-none"
                       style={{
                         padding: "9px 14px",
                         background: "transparent",
-                        border: "none",
-                        color: a.danger ? "#ff375f" : "rgba(255,255,255,0.55)",
-                        fontSize: "10px",
-                        fontFamily: "'JetBrains Mono', monospace",
-                        letterSpacing: "0.1em",
+                        color: a.danger ? "#ff375f" : "var(--journal-text-secondary)",
                       }}
                     >
                       {a.icon} {a.label}
@@ -219,14 +156,11 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
 
         {/* TITLE */}
         <h2
+          className="font-orbitron font-bold leading-tight mb-4"
           style={{
-            fontFamily: "'Orbitron', monospace",
             fontSize: "clamp(15px, 2vw, 19px)",
-            fontWeight: 700,
             letterSpacing: "-0.01em",
-            color: "rgba(255,255,255,0.92)",
-            marginBottom: "16px",
-            lineHeight: 1.25,
+            color: "var(--journal-text-primary)",
             textAlign: align.val,
             paddingRight: "28px",
           }}
@@ -240,17 +174,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
             <div className="flex gap-3.5">
               <div className="shrink-0 pt-px">
                 {sentences.map((_, i) => (
-                  <div
-                    key={i}
-                    className="select-none text-right"
-                    style={{
-                      fontFamily: "'JetBrains Mono', monospace",
-                      fontSize: "9px",
-                      color: accent.hex,
-                      opacity: 0.2,
-                      lineHeight: "1.9",
-                    }}
-                  >
+                  <div key={i} className="select-none text-right font-mono text-[9px] leading-[1.9]" style={{ color: accent.hex, opacity: 0.2 }}>
                     {String(i + 1).padStart(2, "0")}
                   </div>
                 ))}
@@ -258,11 +182,8 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
               <div
                 className="journal-html-content"
                 style={{
-                  fontFamily: font.css,
-                  fontStyle: font.style,
-                  fontSize: `${size.px}px`,
-                  lineHeight: 1.9,
-                  color: "rgba(255,255,255,0.58)",
+                  fontFamily: font.css, fontStyle: font.style, fontSize: `${size.px}px`,
+                  lineHeight: 1.9, color: "var(--journal-text-secondary)",
                   letterSpacing: font.id === "raj" ? "0.02em" : "-0.01em",
                 }}
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.content) }}
@@ -272,11 +193,8 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
             <div
               className="journal-html-content"
               style={{
-                fontFamily: font.css,
-                fontStyle: font.style,
-                fontSize: `${size.px}px`,
-                lineHeight: 1.9,
-                color: "rgba(255,255,255,0.58)",
+                fontFamily: font.css, fontStyle: font.style, fontSize: `${size.px}px`,
+                lineHeight: 1.9, color: "var(--journal-text-secondary)",
                 letterSpacing: font.id === "raj" ? "0.02em" : "-0.01em",
               }}
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(entry.content) }}
@@ -286,37 +204,18 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
 
         {/* FOOTER */}
         <div className="flex items-center justify-between flex-wrap gap-3">
-          {/* Tags */}
           <div className="flex gap-1.5 flex-wrap">
             {entry.tags?.map((t) => (
-              <span
-                key={t}
-                className="rounded-sm"
-                style={{
-                  fontFamily: "'JetBrains Mono', monospace",
-                  fontSize: "9px",
-                  color: accent.hex,
-                  opacity: 0.75,
-                  background: accent.dim,
-                  border: `1px solid ${accent.hex}22`,
-                  padding: "2px 8px",
-                  letterSpacing: "0.08em",
-                }}
-              >
+              <span key={t} className="rounded-sm font-mono text-[9px] tracking-[0.08em]" style={{ color: accent.hex, opacity: 0.75, background: accent.dim, border: `1px solid ${accent.hex}22`, padding: "2px 8px" }}>
                 /{t}
               </span>
             ))}
           </div>
 
-          {/* Valence / Energy bars */}
           {(entry.valence_level || entry.energy_level) && (
             <div className="flex flex-col gap-1.5 min-w-[120px]">
-              {entry.valence_level && (
-                <HUDStatusLine label="V" value={entry.valence_level} color={accent.hex} />
-              )}
-              {entry.energy_level && (
-                <HUDStatusLine label="E" value={entry.energy_level} color={accent.hex} />
-              )}
+              {entry.valence_level && <HUDStatusLine label="V" value={entry.valence_level} color={accent.hex} />}
+              {entry.energy_level && <HUDStatusLine label="E" value={entry.energy_level} color={accent.hex} />}
             </div>
           )}
         </div>
