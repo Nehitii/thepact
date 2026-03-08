@@ -59,7 +59,8 @@ export const AppSidebar = memo(function AppSidebar() {
 
   const { unreadCount } = useNotifications();
   const { unreadCount: messageUnreadCount } = useMessages();
-  const totalUnread = unreadCount + messageUnreadCount;
+  const { pendingCount: friendRequestCount } = useFriends();
+  const totalUnread = unreadCount + messageUnreadCount + friendRequestCount;
 
   const { data: allModules = [] } = useShopModules();
   const { data: purchasedModuleIds = [] } = useUserModulePurchases(user?.id);
