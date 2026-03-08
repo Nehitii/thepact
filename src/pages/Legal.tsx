@@ -228,9 +228,9 @@ export default function Legal() {
                   </div>
 
                   <div>
-                    <p className="text-[#c8e0f4] font-medium mb-1">6. No Professional Advice Disclaimer</p>
+                    <p className="text-[var(--text-heading)] font-medium mb-1">6. No Professional Advice Disclaimer</p>
                     <p className="mb-2">The Pact does not provide:</p>
-                    <ul className="ml-4 space-y-1 text-[#8ACBFF]/90">
+                    <ul className="ml-4 space-y-1 text-primary/90">
                       <li>• Legal advice</li>
                       <li>• Financial advice</li>
                       <li>• Medical advice</li>
