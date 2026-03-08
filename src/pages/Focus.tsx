@@ -237,8 +237,8 @@ export default function Focus() {
             }}
             onEnd={handleEnd}
           />
-    </motion.div>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
