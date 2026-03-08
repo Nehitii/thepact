@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
-import { Star, CheckCircle2, Target, Zap } from "lucide-react";
+import { Star, CheckCircle2, Target, Zap, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
+import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 
 interface Goal {
   id: string;
@@ -15,6 +16,9 @@ interface Goal {
   totalStepsCount?: number;
   completedStepsCount?: number;
   status?: string | null;
+  isShared?: boolean;
+  isReadOnly?: boolean;
+  sharedByName?: string;
 }
 
 interface UIVerseGoalCardProps {
@@ -302,6 +306,7 @@ export function UIVerseGoalCard({
             >
               {goal.name}
             </h3>
+            {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1 justify-center" />}
           </div>
 
           {/* Steps + Progress */}

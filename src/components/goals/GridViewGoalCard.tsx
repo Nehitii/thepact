@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
-import { Star, Target, Zap, ImageOff, CheckCircle } from "lucide-react";
+import { Star, Target, Zap, ImageOff, CheckCircle, Link2 } from "lucide-react";
 import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
 import { cn } from "@/lib/utils";
+import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 
 // --- Interfaces ---
 interface Goal {
@@ -19,6 +20,9 @@ interface Goal {
   status?: string | null;
   tags?: string[];
   deadline?: string | null;
+  isShared?: boolean;
+  isReadOnly?: boolean;
+  sharedByName?: string;
 }
 
 interface GridViewGoalCardProps {
@@ -119,6 +123,7 @@ export function GridViewGoalCard({
         "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
         "[perspective:1000px]",
         isCompleted && "grayscale-[0.4] hover:grayscale-0",
+        goal.isShared && "ring-1 ring-cyan-500/30",
       )}
       // Maintain aspect ratio via padding trick for broad compat
     >
@@ -221,6 +226,7 @@ export function GridViewGoalCard({
           <h3 className="text-base font-bold leading-tight text-white line-clamp-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
             {goal.name}
           </h3>
+          {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1" />}
 
           {/* Progress */}
           <div className="flex flex-col gap-1.5">

@@ -15,6 +15,8 @@ import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
 import { CyberBackground } from "@/components/CyberBackground";
 import { Button } from "@/components/ui/button";
+import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
+import { Link2 } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
 import {
@@ -62,6 +64,7 @@ export default function GoalDetail() {
   const [editStepItems, setEditStepItems] = useState<EditStepItem[]>([]);
   const [superGoalEditOpen, setSuperGoalEditOpen] = useState(false);
   const [editDeadline, setEditDeadline] = useState("");
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   const { trigger: triggerParticles, ParticleEffects } = useParticleEffect();
   const editInitialStateRef = useRef<string>("");
@@ -328,6 +331,13 @@ export default function GoalDetail() {
           onDelete={actions.handleDeleteGoal}
         />
 
+        {/* Share Goal Button */}
+        <div className="flex justify-end">
+          <Button variant="outline" size="sm" onClick={() => setShareModalOpen(true)} className="text-xs font-bold uppercase tracking-wider gap-1.5">
+            <Link2 className="h-3.5 w-3.5" /> Share with Friend
+          </Button>
+        </div>
+
         {isSuperGoal ? (
           <GoalDetailSuperGoal
             goal={goal}
@@ -399,6 +409,15 @@ export default function GoalDetail() {
           superGoalId={goal.id}
           customDifficultyName={customDifficultyName}
           customDifficultyColor={customDifficultyColor}
+        />
+      )}
+
+      {goal && (
+        <ShareGoalModal
+          open={shareModalOpen}
+          onClose={() => setShareModalOpen(false)}
+          goalId={goal.id}
+          goalName={goal.name}
         />
       )}
     </div>

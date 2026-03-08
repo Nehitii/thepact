@@ -2,7 +2,7 @@
  * Pact data hook.
  * 
  * A "pact" represents a user's commitment/project in the app.
- * Each user has one active pact containing their goals and progress.
+ * Respects active_pact_id from profile if set (for shared pacts).
  */
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,7 +27,28 @@ export function usePact(userId: string | undefined) {
     queryKey: ["pact", userId],
     queryFn: async () => {
       if (!userId) return null;
-      
+
+      // Check if user has an active_pact_id preference
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_pact_id")
+        .eq("id", userId)
+        .single();
+
+      const activePactId = (profile as any)?.active_pact_id;
+
+      if (activePactId) {
+        // Load the chosen pact (could be personal or shared)
+        const { data, error } = await supabase
+          .from("pacts")
+          .select("*")
+          .eq("id", activePactId)
+          .maybeSingle();
+        if (error) throw error;
+        if (data) return data as Pact;
+      }
+
+      // Fallback: load personal pact
       const { data, error } = await supabase
         .from("pacts")
         .select("*")
@@ -38,6 +59,6 @@ export function usePact(userId: string | undefined) {
       return data as Pact | null;
     },
     enabled: !!userId,
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 30 * 1000,
   });
 }

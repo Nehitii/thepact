@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriends } from "@/hooks/useFriends";
+import { useGuilds } from "@/hooks/useGuilds";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Users, UserPlus, UserCheck, UserX, Search, MessageSquare, Clock, X, Loader2,
+  Users, UserPlus, UserCheck, UserX, Search, MessageSquare, Clock, X, Loader2, Shield, Plus,
 } from "lucide-react";
+import { GuildCard } from "@/components/friends/GuildCard";
+import { GuildCreateModal } from "@/components/friends/GuildCreateModal";
+import { GuildDetailPanel } from "@/components/friends/GuildDetailPanel";
+import { GuildInviteCard } from "@/components/friends/GuildInviteCard";
+import type { Guild } from "@/hooks/useGuilds";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -22,6 +28,8 @@ export default function Friends() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
+  const [guildCreateOpen, setGuildCreateOpen] = useState(false);
+  const [selectedGuild, setSelectedGuild] = useState<Guild | null>(null);
 
   const {
     friends,
@@ -36,6 +44,11 @@ export default function Friends() {
     getFriendshipStatus,
     searchProfiles,
   } = useFriends();
+
+  const {
+    guilds, guildsLoading, invites,
+    createGuild, respondToInvite,
+  } = useGuilds();
 
   if (!user) return null;
 
@@ -105,6 +118,7 @@ export default function Friends() {
               <TabsList className="bg-transparent p-0 gap-6 h-auto">
                 <TabItem value="friends" icon={UserCheck} label="Friends" count={friends.length} active={activeTab === "friends"} />
                 <TabItem value="requests" icon={Clock} label="Requests" count={pendingCount} active={activeTab === "requests"} color="violet" />
+                <TabItem value="guilds" icon={Shield} label="Guilds" count={guilds.length} active={activeTab === "guilds"} />
                 <TabItem value="search" icon={Search} label="Search" active={activeTab === "search"} />
               </TabsList>
             </div>
@@ -314,7 +328,65 @@ export default function Friends() {
                     </div>
                   </ScrollArea>
                 </TabsContent>
+
+                {/* Guilds */}
+                <TabsContent value="guilds" className="h-full m-0 data-[state=inactive]:hidden">
+                  <ScrollArea className="h-full w-full">
+                    <div className="p-6 max-w-3xl mx-auto">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-black font-orbitron uppercase tracking-widest text-muted-foreground">Your Guilds</h3>
+                        <Button size="sm" onClick={() => setGuildCreateOpen(true)} className="text-xs font-bold uppercase tracking-wider h-8">
+                          <Plus className="h-3.5 w-3.5 mr-1" /> Create
+                        </Button>
+                      </div>
+
+                      {invites.length > 0 && (
+                        <div className="space-y-2 mb-6">
+                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-violet-400 mb-2">Pending Invites</h4>
+                          {invites.map((inv) => (
+                            <GuildInviteCard
+                              key={inv.id}
+                              invite={inv}
+                              onAccept={() => respondToInvite.mutate({ inviteId: inv.id, guildId: inv.guild_id, accept: true })}
+                              onDecline={() => respondToInvite.mutate({ inviteId: inv.id, guildId: inv.guild_id, accept: false })}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {guildsLoading ? (
+                        <SkeletonList />
+                      ) : guilds.length === 0 ? (
+                        <EmptyState icon={Shield} title="No guilds yet" desc="Create a guild and invite your friends to join forces." />
+                      ) : (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+                          {guilds.map((guild, i) => (
+                            <motion.div key={guild.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
+                              <GuildCard guild={guild} isOwner={guild.owner_id === user.id} onClick={() => setSelectedGuild(guild)} />
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </TabsContent>
               </AnimatePresence>
+
+              {/* Guild modals */}
+              <GuildCreateModal
+                open={guildCreateOpen}
+                onClose={() => setGuildCreateOpen(false)}
+                onCreate={async (data) => { await createGuild.mutateAsync(data); }}
+                loading={createGuild.isPending}
+              />
+              {selectedGuild && (
+                <GuildDetailPanel
+                  open={!!selectedGuild}
+                  onClose={() => setSelectedGuild(null)}
+                  guild={selectedGuild}
+                  userId={user.id}
+                />
+              )}
             </div>
           </Tabs>
         </div>

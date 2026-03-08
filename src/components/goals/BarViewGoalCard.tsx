@@ -1,6 +1,7 @@
 import React, { memo, useMemo } from "react";
-import { Star, Target, Trophy, TrendingUp } from "lucide-react";
+import { Star, Target, Trophy, TrendingUp, Link2 } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
+import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 
 interface Goal {
   id: string;
@@ -18,6 +19,9 @@ interface Goal {
   potential_score?: number | null;
   tags?: string[];
   deadline?: string | null;
+  isShared?: boolean;
+  isReadOnly?: boolean;
+  sharedByName?: string;
 }
 
 interface BarViewGoalCardProps {
@@ -142,6 +146,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                   </div>
                 </div>
                 <h3 className="bar-card-name">{goal.name}</h3>
+                {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
                 <div className="bar-card-meta">
                   <div className="bar-card-status">{statusLabel}</div>
                   {deadlineInfo && !isCompleted && (

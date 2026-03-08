@@ -8,7 +8,7 @@ import {
   Home, Target, ShoppingBag, ShoppingCart, Users, User, LogOut, ChevronDown,
   Shield, Database, Settings, Volume2, UserCircle, Bell, Inbox, ListTodo,
   BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3, Handshake,
-  ChevronsLeft, ChevronsRight, Crown, Mail, Package,
+  ChevronsLeft, ChevronsRight, Crown, Mail, Package, RefreshCw,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -565,6 +565,13 @@ export const AppSidebar = memo(function AppSidebar() {
                     {unreadCount}
                   </span>
                 )}
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator className="bg-border" />
+
+              <DropdownMenuItem onClick={() => { navigate("/pact-selector"); closeMobile(); }} className="p-2.5 focus:bg-primary/10 focus:text-primary cursor-pointer group my-0.5">
+                <RefreshCw className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
+                <span className="text-xs font-bold tracking-wide">Switch Pact</span>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator className="bg-border" />
