@@ -74,16 +74,16 @@ export function FocusTimerRing({
       </div>
 
       {/* SVG rings */}
-      <svg width="280" height="280" viewBox="0 0 280 280" className="transform -rotate-90">
-        <circle cx="140" cy="140" r="120" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
+      <svg width="320" height="320" viewBox="0 0 320 320" className="transform -rotate-90">
+        <circle cx="160" cy="160" r="140" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
         <circle
-          cx="140" cy="140" r="108" fill="none"
+          cx="160" cy="160" r="126" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
           strokeWidth="1" strokeDasharray="3 8"
           opacity={isIdle ? 0.1 : 0.25} className="transition-opacity duration-500"
         />
         <circle
-          cx="140" cy="140" r="120" fill="none"
+          cx="160" cy="160" r="140" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
           strokeWidth="5" strokeLinecap="round"
           strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
@@ -91,7 +91,7 @@ export function FocusTimerRing({
           style={{ filter: `drop-shadow(0 0 ${isIdle ? 4 : 12 + progress * 12}px ${isBreak ? "hsl(var(--accent) / 0.5)" : "hsl(var(--primary) / 0.5)"})` }}
         />
         <circle
-          cx="140" cy="140" r="130" fill="none"
+          cx="160" cy="160" r="152" fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
           strokeWidth="1" strokeDasharray="1 6"
           opacity={isIdle ? 0.08 : 0.2}
