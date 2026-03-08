@@ -129,15 +129,6 @@ export default function Health() {
                 <div className="flex flex-col items-center gap-0.5">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span><HealthDataExport /></span>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><span className="font-mono text-xs">CSV EXPORT</span></TooltipContent>
-                  </Tooltip>
-                  <span className="text-[8px] font-mono text-muted-foreground/60 uppercase tracking-widest">Export</span>
-                </div>
-                <div className="flex flex-col items-center gap-0.5">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
                       <Button variant="ghost" size="icon" onClick={() => setShowBreathing(true)}
                         className="text-hud-phosphor hover:bg-hud-phosphor/10 rounded-xl transition-all">
                         <Wind className="w-5 h-5" />
