@@ -3,10 +3,11 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
+import { useFriends } from "@/hooks/useFriends";
 import {
   Home, Target, ShoppingBag, ShoppingCart, Users, User, LogOut, ChevronDown,
   Shield, Database, Settings, Volume2, UserCircle, Bell, Inbox, ListTodo,
-  BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3,
+  BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3, UserCheck,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -23,6 +24,7 @@ const mainNavItems = [
   { to: "/goals", icon: Target, label: "Goals" },
   { to: "/focus", icon: Timer, label: "Focus" },
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
+  { to: "/friends", icon: UserCheck, label: "Friends" },
   { to: "/shop", icon: ShoppingBag, label: "Shop" },
   { to: "/community", icon: Users, label: "Community" },
 ];
@@ -57,7 +59,8 @@ export const AppSidebar = memo(function AppSidebar() {
 
   const { unreadCount } = useNotifications();
   const { unreadCount: messageUnreadCount } = useMessages();
-  const totalUnread = unreadCount + messageUnreadCount;
+  const { pendingCount: friendRequestCount } = useFriends();
+  const totalUnread = unreadCount + messageUnreadCount + friendRequestCount;
 
   const { data: allModules = [] } = useShopModules();
   const { data: purchasedModuleIds = [] } = useUserModulePurchases(user?.id);
@@ -155,6 +158,11 @@ export const AppSidebar = memo(function AppSidebar() {
                 >
                   {item.label}
                 </span>
+                {item.to === "/friends" && friendRequestCount > 0 && (
+                  <span className="ml-auto text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 font-black rounded-sm min-w-[18px] text-center">
+                    {friendRequestCount}
+                  </span>
+                )}
               </NavLink>
             );
           })}

@@ -697,6 +697,30 @@ export type Database = {
         }
         Relationships: []
       }
+      friendships: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: Database["public"]["Enums"]["friendship_status"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: Database["public"]["Enums"]["friendship_status"]
+        }
+        Relationships: []
+      }
       goal_cost_items: {
         Row: {
           category: string | null
@@ -2789,6 +2813,16 @@ export type Database = {
       }
     }
     Functions: {
+      get_accepted_friends: {
+        Args: { p_user_id: string }
+        Returns: {
+          avatar_url: string
+          created_at: string
+          display_name: string
+          friend_id: string
+          friendship_id: string
+        }[]
+      }
       get_public_leaderboard: {
         Args: { p_limit?: number }
         Returns: {
@@ -2830,6 +2864,7 @@ export type Database = {
     }
     Enums: {
       app_role: "user" | "admin"
+      friendship_status: "pending" | "accepted" | "declined"
       goal_difficulty:
         | "easy"
         | "medium"
@@ -2995,6 +3030,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["user", "admin"],
+      friendship_status: ["pending", "accepted", "declined"],
       goal_difficulty: [
         "easy",
         "medium",

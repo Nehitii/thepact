@@ -36,6 +36,7 @@ const Wishlist = lazy(() => import("./pages/Wishlist"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Focus = lazy(() => import("./pages/Focus"));
 const Analytics = lazy(() => import("./pages/Analytics"));
+const Friends = lazy(() => import("./pages/Friends"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
 const AdminModuleManager = lazy(() => import("./pages/AdminModuleManager"));
@@ -88,6 +89,7 @@ const App = () => (
         <Route path="leaderboard" element={<SuspensePage><Leaderboard /></SuspensePage>} />
         <Route path="focus" element={<SuspensePage><Focus /></SuspensePage>} />
         <Route path="analytics" element={<SuspensePage><Analytics /></SuspensePage>} />
+        <Route path="friends" element={<SuspensePage><Friends /></SuspensePage>} />
       </Route>
 
       {/* Admin */}
