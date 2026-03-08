@@ -8,7 +8,7 @@ import {
   Home, Target, ShoppingBag, ShoppingCart, Users, User, LogOut, ChevronDown,
   Shield, Database, Settings, Volume2, UserCircle, Bell, Inbox, ListTodo,
   BookOpen, Wallet, Zap, Heart, Sparkles, Trophy, Timer, BarChart3, Handshake,
-  ChevronsLeft, ChevronsRight, Crown, Mail,
+  ChevronsLeft, ChevronsRight, Crown, Mail, Package,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -17,6 +17,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
