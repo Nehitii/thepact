@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Heart, Moon, Activity, Brain, Droplets, Apple, Settings, Calendar,
+  Moon, Activity, Brain, Droplets, Apple, Settings, Calendar,
   Sparkles, Wind, Download, BarChart3, Crosshair, Cpu,
 } from "lucide-react";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
