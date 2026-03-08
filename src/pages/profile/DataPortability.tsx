@@ -55,6 +55,37 @@ export default function DataPortability() {
         const { data: journal } = await supabase.from("journal_entries").select("*").eq("user_id", user.id);
         exportData = { ...exportData, journalEntries: journal };
       }
+      if (exportCategory === "all" || exportCategory === "health") {
+        const { data: healthData, error: healthErr } = await supabase
+          .from("health_data")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("entry_date", { ascending: true });
+        if (!healthErr && healthData && healthData.length > 0) {
+          if (exportCategory === "health") {
+            // CSV export for health-only
+            const headers = ["Date","Sleep Hours","Sleep Quality","Wake Energy","Activity Level","Movement Minutes","Stress Level","Mental Load","Hydration Glasses","Meal Balance","Mood Level","Energy Morning","Energy Afternoon","Energy Evening","Notes"];
+            const rows = healthData.map((d: Record<string, unknown>) => [
+              d.entry_date, d.sleep_hours ?? "", d.sleep_quality ?? "", d.wake_energy ?? "",
+              d.activity_level ?? "", d.movement_minutes ?? "", d.stress_level ?? "",
+              d.mental_load ?? "", d.hydration_glasses ?? "", d.meal_balance ?? "",
+              d.mood_level ?? "", d.energy_morning ?? "", d.energy_afternoon ?? "",
+              d.energy_evening ?? "", `"${String(d.notes ?? "").replace(/"/g, '""')}"`,
+            ]);
+            const csv = [headers.join(","), ...rows.map((r: unknown[]) => r.join(","))].join("\n");
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `health-data-${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            toast({ title: t("profile.data.exportComplete"), description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
+            return;
+          }
+          exportData = { ...exportData, healthData };
+        }
+      }
       if (exportCategory === "all" || exportCategory === "finance") {
         const { data: profile } = await supabase.from("profiles").select("project_funding_target, project_monthly_allocation, already_funded, salary_payment_day").eq("id", user.id).maybeSingle();
         const { data: recurringIncome } = await supabase.from("recurring_income").select("*").eq("user_id", user.id);
