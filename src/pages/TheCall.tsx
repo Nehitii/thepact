@@ -299,7 +299,7 @@ export default function TheCall() {
     : `0 0 ${p * 40}px ${currentColor}`;
 
   return (
-    <div className="min-h-screen bg-[#010102] overflow-hidden flex flex-col relative text-slate-100 font-sans select-none touch-none perspective-[1000px]">
+    <div className="min-h-screen bg-background overflow-hidden flex flex-col relative text-foreground font-sans select-none touch-none perspective-[1000px]">
       {/* BACKGROUND FX */}
       <div
         ref={backgroundFxRef}

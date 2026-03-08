@@ -249,7 +249,7 @@ export default function AdminCosmeticsManager() {
   if (!isAdmin) return null;
 
   return (
-    <div className="min-h-screen bg-[#00050B] relative">
+    <div className="min-h-screen bg-background relative">
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
       </div>

@@ -79,7 +79,7 @@ export default function Legal() {
   };
 
   return (
-    <div className="min-h-screen bg-[#00050B] relative overflow-hidden">
+    <div className="min-h-screen bg-background relative overflow-hidden">
       {/* Deep space background with radial glow */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
