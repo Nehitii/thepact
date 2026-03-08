@@ -205,6 +205,40 @@ All colors MUST be HSL.
     --achievement-epic: 270 85% 65%;
     --achievement-legendary: 45 100% 65%;
     --achievement-mythic: 320 90% 65%;
+
+    /* Nexus Panel System — dark mode (pixel-perfect preservation) */
+    --nexus-bg: rgba(6, 11, 22, 0.92);
+    --nexus-border: rgba(0, 180, 255, 0.12);
+    --nexus-shadow: 0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06);
+    --nexus-glow: rgba(0, 210, 255, 0.4);
+    --nexus-glow-subtle: rgba(0, 210, 255, 0.12);
+    --nexus-text-label: rgba(160, 210, 255, 0.65);
+    --nexus-text-dim: rgba(160, 210, 255, 0.5);
+    --nexus-text-dimmer: rgba(160, 210, 255, 0.3);
+    --nexus-heading: #ddeeff;
+    --nexus-inner-bg: rgba(0, 0, 0, 0.2);
+    --nexus-inner-bg-deep: rgba(2, 4, 10, 0.8);
+    --nexus-separator: rgba(0, 180, 255, 0.06);
+    --nexus-hover-border: rgba(0, 210, 255, 0.25);
+    --nexus-hover-bg: rgba(0, 180, 255, 0.04);
+    --nexus-track-bg: rgba(255, 255, 255, 0.04);
+    --nexus-marker-dim: rgba(255, 255, 255, 0.17);
+    --nexus-countdown-bg: linear-gradient(90deg, rgba(20,0,4,0.98) 0%, rgba(10,2,6,0.97) 40%, rgba(8,0,3,0.98) 100%);
+    --nexus-countdown-border: rgba(255,23,68,0.3);
+    --nexus-rank-bg: linear-gradient(160deg, rgba(0,15,40,0.97) 0%, rgba(3,8,20,0.99) 100%);
+    --nexus-rank-border: rgba(0,140,255,0.25);
+    --nexus-mission-bg: linear-gradient(145deg, rgba(10,8,0,0.98) 0%, rgba(5,6,14,0.98) 100%);
+    --nexus-mission-border: rgba(255,140,0,0.22);
+  }
+}
+
+@layer utilities {
+  .nexus-shadow { box-shadow: var(--nexus-shadow); }
+  .nexus-glow-top {
+    background: linear-gradient(90deg, transparent, var(--nexus-glow), transparent);
+  }
+  .nexus-glow-top-subtle {
+    background: linear-gradient(90deg, transparent, var(--nexus-glow-subtle), transparent);
   }
 }
 
