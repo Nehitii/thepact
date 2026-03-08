@@ -1,12 +1,10 @@
 import { useState, useMemo, useCallback } from 'react';
-import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Pencil, List, LayoutGrid } from 'lucide-react';
+import { CheckSquare, Plus, BarChart3, History, Calendar as CalendarIcon, Pencil, List, LayoutGrid, Flame } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTodoList, TodoTask } from '@/hooks/useTodoList';
-import { TodoGamifiedHeader } from '@/components/todo/TodoGamifiedHeader';
-import { ModuleHeader } from '@/components/layout/ModuleHeader';
 import { TodoGamifiedTaskCard } from '@/components/todo/TodoGamifiedTaskCard';
 import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
 import { TodoAdvancedStats } from '@/components/todo/TodoAdvancedStats';
@@ -17,6 +15,7 @@ import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
 import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
 import { MentalLoadIndicator } from '@/components/todo/MentalLoadIndicator';
 import { FocusOverlay } from '@/components/todo/FocusOverlay';
+import { TodoCommandInfo } from '@/components/todo/TodoCommandInfo';
 
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
@@ -202,20 +201,41 @@ export default function TodoList() {
         </div>
 
         <div className="relative z-10 p-6 max-w-5xl mx-auto space-y-6">
-          {/* Header */}
-          <ModuleHeader
-            systemLabel="QUEST_ENGINE // SYS.ACTIVE"
-            title="TASK "
-            titleAccent="OPS"
-            badges={[
-              { label: "ACTIVE", value: `${activeTaskCount}/${maxTasks}`, color: "#00ffe0" },
-              { label: "SCORE", value: stats?.score ?? 0, color: "#bf5af2" },
-              { label: "STREAK", value: stats?.current_streak ?? 0, color: "#ffd60a" },
-            ]}
-          />
+          {/* Compact Header */}
+          <motion.div
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="space-y-2"
+          >
+            {/* Line 1: Title + Stats */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                <h1 className="font-mono text-sm font-bold tracking-widest text-foreground/80 uppercase">Task Ops</h1>
+                <span className="text-[10px] font-mono text-muted-foreground/50 tracking-wider hidden sm:inline">SYS.ACTIVE</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                <span className="text-primary font-bold">LVL {Math.floor((stats?.score ?? 0) / 100) + 1}</span>
+                <span className="text-foreground/30">·</span>
+                <span>Score <span className="text-foreground/80 font-bold">{stats?.score ?? 0}</span></span>
+                <span className="text-foreground/30">·</span>
+                <span className="flex items-center gap-0.5"><Flame className="w-3 h-3 text-orange-400" /><span className="text-foreground/80 font-bold">{stats?.current_streak ?? 0}</span></span>
+                <span className="text-foreground/30">·</span>
+                <span className="text-foreground/80 font-bold">{activeTaskCount}<span className="text-muted-foreground font-normal">/{maxTasks}</span></span>
+              </div>
+            </div>
 
-          {/* Gamified Stats */}
-          <TodoGamifiedHeader stats={stats} activeTaskCount={activeTaskCount} maxTasks={maxTasks} />
+            {/* Line 2: XP bar (thin) */}
+            <div className="relative h-[2px] w-full bg-border/30 rounded-full overflow-hidden">
+              <motion.div
+                className="absolute inset-y-0 left-0 bg-primary rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${(stats?.score ?? 0) % 100}%` }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                style={{ boxShadow: "0 0 8px hsl(var(--primary) / 0.5)" }}
+              />
+            </div>
+          </motion.div>
 
           {/* Neural Input (Quick Command Bar) */}
           <QuickTaskInput
@@ -224,20 +244,13 @@ export default function TodoList() {
             disabled={!canAddTask}
           />
 
-          {/* Action bar */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="flex items-center justify-between flex-wrap gap-3"
+          {/* Unified Toolbar */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+            className="flex items-center justify-between flex-wrap gap-2"
           >
-            <span className="text-sm text-muted-foreground font-mono">
-              {selectedTaskType 
-                ? t('todo.filteredQuestsCount', { count: filteredAndSortedTasks.length, type: t(`todo.filters.types.${selectedTaskType}`) })
-                : t('todo.activeQuestsCount', { count: activeTaskCount, max: maxTasks })
-              }
-            </span>
-            
+            {/* Left: View toggle + Filter chips */}
             <div className="flex items-center gap-2">
-              {/* View Mode Toggle */}
               <div className="flex items-center gap-0.5 p-0.5 rounded-lg border border-border/50 bg-card/40">
                 <button
                   onClick={() => setViewMode('expanded')}
@@ -246,7 +259,7 @@ export default function TodoList() {
                     viewMode === 'expanded' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <LayoutGrid className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setViewMode('compact')}
@@ -255,32 +268,37 @@ export default function TodoList() {
                     viewMode === 'compact' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <List className="w-4 h-4" />
+                  <List className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <Button variant="ghost" size="sm" onClick={() => setActivePanel('calendar')} className="text-muted-foreground hover:text-foreground">
-                <CalendarIcon className="w-4 h-4 mr-1.5" /> {t('todo.calendar')}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setActivePanel('history')} className="text-muted-foreground hover:text-foreground">
-                <History className="w-4 h-4 mr-1.5" /> {t('todo.history')}
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => setActivePanel('stats')} className="text-muted-foreground hover:text-foreground">
-                <BarChart3 className="w-4 h-4 mr-1.5" /> {t('todo.stats')}
-              </Button>
-              <Button onClick={() => setActivePanel('create')} disabled={!canAddTask}
-                className="bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
+              {/* Inline type filter chips */}
+              <TodoFilterSort
+                selectedTaskType={selectedTaskType} sortField={sortField} sortDirection={sortDirection}
+                onTaskTypeChange={setSelectedTaskType} onSortChange={handleSortChange}
+              />
+            </div>
+
+            {/* Right: icon buttons + New */}
+            <div className="flex items-center gap-1">
+              <TodoCommandInfo />
+              <button onClick={() => setActivePanel('calendar')} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                <CalendarIcon className="w-4 h-4" />
+              </button>
+              <button onClick={() => setActivePanel('stats')} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                <BarChart3 className="w-4 h-4" />
+              </button>
+              <button onClick={() => setActivePanel('history')} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                <History className="w-4 h-4" />
+              </button>
+              <Button onClick={() => setActivePanel('create')} disabled={!canAddTask} size="sm"
+                className="ml-1 bg-card/80 backdrop-blur-sm border border-primary/30 text-primary text-xs font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
               >
-                <Plus className="w-4 h-4 mr-1.5" /> {t('todo.newQuest')}
+                <Plus className="w-3.5 h-3.5 mr-1" /> New
               </Button>
             </div>
           </motion.div>
 
-          {/* Filter & Sort */}
-          <TodoFilterSort
-            selectedTaskType={selectedTaskType} sortField={sortField} sortDirection={sortDirection}
-            onTaskTypeChange={setSelectedTaskType} onSortChange={handleSortChange}
-          />
 
           {/* Insights */}
           <AnimatePresence>
