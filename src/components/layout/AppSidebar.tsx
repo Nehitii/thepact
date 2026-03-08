@@ -70,7 +70,78 @@ function MaybeTooltip({ collapsed, label, badge, children }: { collapsed: boolea
   );
 }
 
-// ─── Component ──────────────────────────────────────────────
+// Helper: popover section for mini mode (Modules / Settings)
+function MiniPopoverSection({ icon: Icon, label, items, location, closeMobile }: {
+  icon: any;
+  label: string;
+  items: { to: string; icon: any; label: string; exact?: boolean }[];
+  location: { pathname: string };
+  closeMobile: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const isAnyActive = items.some((item) =>
+    item.exact ? location.pathname === item.to : location.pathname.startsWith(item.to),
+  );
+
+  return (
+    <>
+      <div className="h-px mx-2 bg-gradient-to-r from-transparent via-border to-transparent my-2" />
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button
+            className={cn(
+              "flex items-center justify-center h-10 w-10 mx-auto rounded-md transition-all duration-200",
+              isAnyActive
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-primary hover:bg-primary/10",
+            )}
+          >
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="flex items-center justify-center w-full h-full">
+                  <Icon size={20} />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-rajdhani font-bold text-xs tracking-wide">
+                {label}
+              </TooltipContent>
+            </Tooltip>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent side="right" align="start" sideOffset={8} className="w-52 p-1.5">
+          <p className="px-2.5 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground font-orbitron">
+            {label}
+          </p>
+          <div className="space-y-0.5">
+            {items.map((item) => {
+              const ItemIcon = item.icon;
+              const isActive = item.exact
+                ? location.pathname === item.to
+                : location.pathname.startsWith(item.to);
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.exact}
+                  onClick={() => { setOpen(false); closeMobile(); }}
+                  className={cn(
+                    "flex items-center gap-2.5 px-2.5 py-2 rounded-md text-xs font-bold tracking-wider transition-all duration-150",
+                    isActive
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  )}
+                >
+                  <ItemIcon size={14} className={isActive ? "text-primary" : "opacity-60"} />
+                  {item.label}
+                </NavLink>
+              );
+            })}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </>
+  );
+}
 export const AppSidebar = memo(function AppSidebar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
