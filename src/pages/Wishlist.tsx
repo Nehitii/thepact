@@ -10,9 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
 import { useToast } from "@/hooks/use-toast";
@@ -26,11 +24,13 @@ import {
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useWishlistGoalSync } from "@/hooks/useWishlistGoalSync";
-import { ArrowLeft, Check, Edit, ExternalLink, Link, Plus, Trophy } from "lucide-react";
+import { Check, Edit, Globe, ImageIcon, Link, Package, Plus, ShoppingBag } from "lucide-react";
 import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/wishlist/DuplicateMergeDialog";
 import { NeedVsWantChart } from "@/components/wishlist/NeedVsWantChart";
 import { WishlistItemCard } from "@/components/wishlist/WishlistItemCard";
-import { AnimatePresence } from "framer-motion";
+import { AcquisitionArchive } from "@/components/wishlist/AcquisitionArchive";
+import { ImportFromUrlModal, type ScrapedProduct } from "@/components/wishlist/ImportFromUrlModal";
+import { AnimatePresence, motion } from "framer-motion";
 
 function normalizeWishlistName(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
@@ -68,7 +68,6 @@ export default function Wishlist() {
   const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
 
-  // Goal sync
   useWishlistGoalSync(user?.id, pact?.id, items);
 
   const [filterType, setFilterType] = useState<"all" | PactWishlistItemType>("all");
@@ -82,6 +81,10 @@ export default function Wishlist() {
   const [newType, setNewType] = useState<PactWishlistItemType>("optional");
   const [newCategory, setNewCategory] = useState("");
   const [newUrl, setNewUrl] = useState("");
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  // Import modal
+  const [importOpen, setImportOpen] = useState(false);
 
   // Edit form
   const [editOpen, setEditOpen] = useState(false);
@@ -93,6 +96,7 @@ export default function Wishlist() {
   const [editNotes, setEditNotes] = useState("");
   const [editGoalId, setEditGoalId] = useState("none");
   const [editUrl, setEditUrl] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
 
   // Merge state
   const [mergeOpen, setMergeOpen] = useState(false);
@@ -116,6 +120,7 @@ export default function Wishlist() {
     setEditNotes(item.notes ?? "");
     setEditGoalId(item.goal_id ?? "none");
     setEditUrl(item.url ?? "");
+    setEditImageUrl(item.image_url ?? "");
     setEditOpen(true);
   };
 
@@ -166,6 +171,7 @@ export default function Wishlist() {
         notes: editNotes.trim() || null,
         goal_id: nextGoalId,
         url: editUrl.trim() || null,
+        image_url: editImageUrl.trim() || null,
       },
     });
     setEditOpen(false);
@@ -199,8 +205,9 @@ export default function Wishlist() {
 
     const requiredTotal = active.reduce((sum, i) => sum + (i.item_type === "required" ? Number(i.estimated_cost || 0) : 0), 0);
     const optionalTotal = active.reduce((sum, i) => sum + (i.item_type === "optional" ? Number(i.estimated_cost || 0) : 0), 0);
+    const acquiredTotal = acquired.reduce((sum, i) => sum + Number(i.estimated_cost || 0), 0);
 
-    return { list: sorted, acquired, totals: { required: requiredTotal, optional: optionalTotal } };
+    return { list: sorted, acquired, totals: { required: requiredTotal, optional: optionalTotal, acquired: acquiredTotal } };
   }, [items, filterType, sortBy, search]);
 
   const createNew = async (opts?: { skipDuplicateCheck?: boolean }) => {
@@ -234,8 +241,19 @@ export default function Wishlist() {
       estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
       itemType: newType, category: newCategory.trim() || null,
       url: newUrl.trim() || null,
+      imageUrl: newImageUrl.trim() || null,
     });
-    setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional"); setNewUrl(""); setNewOpen(false);
+    setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional"); setNewUrl(""); setNewImageUrl(""); setNewOpen(false);
+  };
+
+  const handleImportProduct = (product: ScrapedProduct) => {
+    setNewName(product.name || "");
+    setNewCost(product.price !== null ? String(product.price) : "");
+    setNewUrl(product.source_url || "");
+    setNewImageUrl(product.image_url || "");
+    setNewType("optional");
+    setNewCategory("");
+    setNewOpen(true);
   };
 
   const performMerge = async () => {
@@ -297,6 +315,12 @@ export default function Wishlist() {
         isBusy={mergeBusy} onMerge={performMerge} onKeepBoth={keepBoth}
       />
 
+      <ImportFromUrlModal
+        open={importOpen}
+        onOpenChange={setImportOpen}
+        onImport={handleImportProduct}
+      />
+
       {/* Edit modal */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="bg-card/90 backdrop-blur-2xl border-primary/20">
@@ -323,6 +347,17 @@ export default function Wishlist() {
                 <Link className="h-3.5 w-3.5" /> URL (optional)
               </Label>
               <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} placeholder="https://..." type="url" />
+            </div>
+            <div className="space-y-2">
+              <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <ImageIcon className="h-3.5 w-3.5" /> Image URL (optional)
+              </Label>
+              <Input value={editImageUrl} onChange={(e) => setEditImageUrl(e.target.value)} placeholder="https://image..." type="url" />
+              {editImageUrl && (
+                <div className="h-20 w-20 rounded-lg border border-border/50 overflow-hidden bg-muted/10">
+                  <img src={editImageUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                </div>
+              )}
             </div>
             <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 p-3">
               <div className="space-y-0.5">
@@ -355,63 +390,108 @@ export default function Wishlist() {
         </DialogContent>
       </Dialog>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 space-y-6">
         <ModuleHeader
           systemLabel="ACQUISITION_PLAN // SYS.ACTIVE"
           title="WISH "
           titleAccent="LIST"
           badges={[]}
         >
-          <Dialog open={newOpen} onOpenChange={setNewOpen}>
-            <DialogTrigger asChild>
-              <Button variant="hud" className="rounded-xl font-orbitron text-xs tracking-wider">
-                <Plus className="h-4 w-4 mr-2" /> ADD ITEM
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="bg-card/90 backdrop-blur-2xl border-primary/20">
-              <DialogHeader>
-                <DialogTitle className="font-orbitron text-primary tracking-wider">New Item</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Name</Label>
-                  <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Running shoes" />
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Estimated cost</Label>
-                    <Input value={newCost} onChange={(e) => setNewCost(e.target.value)} placeholder="0" inputMode="decimal" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Category</Label>
-                    <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Equipment" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground flex items-center gap-1.5">
-                    <Link className="h-3.5 w-3.5" /> URL (optional)
-                  </Label>
-                  <Input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="https://..." type="url" />
-                </div>
-                <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 p-3">
-                  <div className="space-y-0.5">
-                    <p className="text-sm font-rajdhani font-semibold">Required for Pact</p>
-                    <p className="text-xs text-muted-foreground">Use this for goal-linked necessities.</p>
-                  </div>
-                  <Switch checked={newType === "required"} onCheckedChange={(v) => setNewType(v ? "required" : "optional")} />
-                </div>
-                <Button onClick={() => createNew()} disabled={!newName.trim() || createItem.isPending} className="w-full">
-                  <Plus className="h-4 w-4 mr-2" /> Add to Wishlist
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setImportOpen(true)}
+              className="rounded-xl font-orbitron text-xs tracking-wider border-primary/20 hover:border-primary/40"
+            >
+              <Globe className="h-4 w-4 mr-2" /> IMPORT URL
+            </Button>
+            <Dialog open={newOpen} onOpenChange={setNewOpen}>
+              <DialogTrigger asChild>
+                <Button variant="hud" className="rounded-xl font-orbitron text-xs tracking-wider">
+                  <Plus className="h-4 w-4 mr-2" /> ADD ITEM
                 </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </DialogTrigger>
+              <DialogContent className="bg-card/90 backdrop-blur-2xl border-primary/20">
+                <DialogHeader>
+                  <DialogTitle className="font-orbitron text-primary tracking-wider">New Item</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Name</Label>
+                    <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Running shoes" />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Estimated cost</Label>
+                      <Input value={newCost} onChange={(e) => setNewCost(e.target.value)} placeholder="0" inputMode="decimal" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Category</Label>
+                      <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Equipment" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <Link className="h-3.5 w-3.5" /> URL (optional)
+                    </Label>
+                    <Input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="https://..." type="url" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <ImageIcon className="h-3.5 w-3.5" /> Image URL (optional)
+                    </Label>
+                    <Input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="https://image..." type="url" />
+                    {newImageUrl && (
+                      <div className="h-20 w-20 rounded-lg border border-border/50 overflow-hidden bg-muted/10">
+                        <img src={newImageUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between rounded-xl border border-destructive/20 bg-destructive/5 p-3">
+                    <div className="space-y-0.5">
+                      <p className="text-sm font-rajdhani font-semibold">Required for Pact</p>
+                      <p className="text-xs text-muted-foreground">Use this for goal-linked necessities.</p>
+                    </div>
+                    <Switch checked={newType === "required"} onCheckedChange={(v) => setNewType(v ? "required" : "optional")} />
+                  </div>
+                  <Button onClick={() => createNew()} disabled={!newName.trim() || createItem.isPending} className="w-full">
+                    <Plus className="h-4 w-4 mr-2" /> Add to Wishlist
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </ModuleHeader>
 
-        {/* Need vs Want visualization */}
+        {/* Stats header */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Active Items", value: String(derived.list.length + (items.filter(i => !i.acquired).length - derived.list.length)), icon: ShoppingBag, color: "primary" },
+            { label: "Total Cost", value: formatCurrency(derived.totals.required + derived.totals.optional, currency), icon: Package, color: "primary" },
+            { label: "Acquired", value: String(derived.acquired.length), icon: Check, color: "primary" },
+            { label: "Acquired Cost", value: formatCurrency(derived.totals.acquired, currency), icon: Package, color: "primary" },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="p-4 rounded-xl border border-primary/15 bg-card/40 backdrop-blur-sm"
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <stat.icon className="h-4 w-4 text-primary/60" />
+                <p className="text-[10px] font-rajdhani uppercase tracking-wider text-muted-foreground">{stat.label}</p>
+              </div>
+              <p className="font-orbitron text-lg font-bold text-foreground">{stat.value}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Need vs Want */}
         <NeedVsWantChart
           requiredTotal={derived.totals.required}
           optionalTotal={derived.totals.optional}
+          acquiredTotal={derived.totals.acquired}
           currency={currency}
         />
 
@@ -445,16 +525,16 @@ export default function Wishlist() {
           </Select>
         </div>
 
-        {/* Active items */}
+        {/* Active items grid */}
         {isLoading ? (
           <div className="py-8 text-center text-sm text-muted-foreground font-rajdhani">Loading…</div>
         ) : derived.list.length === 0 ? (
           <div className="py-10 text-center space-y-2 rounded-2xl border border-dashed border-primary/20 bg-card/30 backdrop-blur-xl">
             <p className="text-sm text-muted-foreground font-rajdhani">No active wishlist items.</p>
-            <p className="text-xs text-muted-foreground">Add an item or link a goal cost to get started.</p>
+            <p className="text-xs text-muted-foreground">Add an item or import from a URL to get started.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <AnimatePresence mode="popLayout">
               {derived.list.map((item) => (
                 <WishlistItemCard
@@ -470,44 +550,12 @@ export default function Wishlist() {
           </div>
         )}
 
-        {/* Victory Archive (acquired items) */}
-        {derived.acquired.length > 0 && (
-          <Accordion type="single" collapsible className="mt-12">
-            <AccordionItem value="history" className="border-none">
-              <AccordionTrigger className="hover:no-underline py-2 px-4 bg-muted/20 rounded-t-xl border border-border">
-                <span className="font-orbitron text-xs tracking-[0.15em] uppercase flex items-center gap-2">
-                  <Trophy className="w-4 h-4 text-amber-400" /> Acquisition Archive
-                  <Badge variant="outline" className="ml-2 text-[10px]">{derived.acquired.length}</Badge>
-                </span>
-              </AccordionTrigger>
-              <AccordionContent className="bg-muted/10 p-4 rounded-b-xl border-x border-b border-border space-y-3">
-                {derived.acquired.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between gap-3 p-3 rounded-lg border border-border/50 bg-card/30 opacity-70"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-rajdhani text-sm line-through text-muted-foreground truncate">{item.name}</p>
-                      {item.goal?.name && (
-                        <p className="text-xs text-muted-foreground/60 truncate">{item.goal.name}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs font-orbitron text-muted-foreground">
-                        {formatCurrency(Number(item.estimated_cost || 0), currency)}
-                      </span>
-                      <Switch
-                        checked={item.acquired}
-                        onCheckedChange={(v) => handleToggleAcquired(item.id, v)}
-                        className="scale-75"
-                      />
-                    </div>
-                  </div>
-                ))}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        )}
+        {/* Acquisition Archive */}
+        <AcquisitionArchive
+          items={derived.acquired}
+          currency={currency}
+          onToggleAcquired={handleToggleAcquired}
+        />
       </div>
     </div>
   );
