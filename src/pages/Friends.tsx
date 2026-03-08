@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriends } from "@/hooks/useFriends";
+import { useGuilds } from "@/hooks/useGuilds";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-  Users, UserPlus, UserCheck, UserX, Search, MessageSquare, Clock, X, Loader2,
+  Users, UserPlus, UserCheck, UserX, Search, MessageSquare, Clock, X, Loader2, Shield, Plus,
 } from "lucide-react";
+import { GuildCard } from "@/components/friends/GuildCard";
+import { GuildCreateModal } from "@/components/friends/GuildCreateModal";
+import { GuildDetailPanel } from "@/components/friends/GuildDetailPanel";
+import { GuildInviteCard } from "@/components/friends/GuildInviteCard";
+import type { Guild } from "@/hooks/useGuilds";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
