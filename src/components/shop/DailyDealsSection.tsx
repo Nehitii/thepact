@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Zap, Clock } from "lucide-react";
+import { Zap } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useDailyDeals, DailyDealWithItem } from "@/hooks/useDailyDeals";
-import { useBondBalance, useUserCosmetics, useUserModulePurchases, usePurchaseCosmetic, usePurchaseModule } from "@/hooks/useShop";
+import { useDailyDeals, usePurchaseDailyDeal, DailyDealWithItem } from "@/hooks/useDailyDeals";
+import { useBondBalance, useUserCosmetics, useUserModulePurchases } from "@/hooks/useShop";
 import { DailyDealCard } from "./DailyDealCard";
 import { PurchaseConfirmModal, PurchaseItem } from "./PurchaseConfirmModal";
 import { UnlockAnimation } from "./UnlockAnimation";
@@ -14,8 +14,7 @@ export function DailyDealsSection() {
   const { data: balance } = useBondBalance(user?.id);
   const { data: ownedCosmetics } = useUserCosmetics(user?.id);
   const { data: ownedModules = [] } = useUserModulePurchases(user?.id);
-  const purchaseCosmetic = usePurchaseCosmetic();
-  const purchaseModule = usePurchaseModule();
+  const purchaseDeal = usePurchaseDailyDeal();
 
   const [selectedDeal, setSelectedDeal] = useState<DailyDealWithItem | null>(null);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -37,27 +36,20 @@ export function DailyDealsSection() {
 
   const handleConfirmPurchase = () => {
     if (!user || !selectedDeal) return;
-    const onSuccess = () => {
-      setShowConfirm(false);
-      setUnlockedItem({
-        name: selectedDeal.item?.name || "Item",
-        rarity: selectedDeal.item?.rarity || "common",
-        type: selectedDeal.item_type === "module" ? "module" : "cosmetic",
-      });
-      setShowUnlock(true);
-    };
-    if (selectedDeal.item_type === "module") {
-      purchaseModule.mutate(
-        { userId: user.id, moduleId: selectedDeal.item_id, price: selectedDeal.discounted_price },
-        { onSuccess }
-      );
-    } else {
-      const cosmeticType = selectedDeal.item_type.replace("cosmetic_", "") as "frame" | "banner" | "title";
-      purchaseCosmetic.mutate(
-        { userId: user.id, cosmeticId: selectedDeal.item_id, cosmeticType, price: selectedDeal.discounted_price },
-        { onSuccess }
-      );
-    }
+    purchaseDeal.mutate(
+      { dealId: selectedDeal.id },
+      {
+        onSuccess: () => {
+          setShowConfirm(false);
+          setUnlockedItem({
+            name: selectedDeal.item?.name || "Item",
+            rarity: selectedDeal.item?.rarity || "common",
+            type: selectedDeal.item_type === "module" ? "module" : "cosmetic",
+          });
+          setShowUnlock(true);
+        },
+      }
+    );
   };
 
   if (isLoading || deals.length === 0) return null;
@@ -73,7 +65,6 @@ export function DailyDealsSection() {
 
   return (
     <div className="space-y-4 mb-8">
-      {/* Header with LIVE dot */}
       <div className="flex items-center gap-2">
         <div className="relative flex items-center gap-1.5">
           <motion.div
@@ -97,7 +88,6 @@ export function DailyDealsSection() {
         </h2>
       </div>
 
-      {/* Horizontal snap-scroll carousel */}
       <div className="flex gap-4 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-2">
         {deals.map((deal, index) => (
           <motion.div
@@ -119,12 +109,12 @@ export function DailyDealsSection() {
 
       {purchaseItem && (
         <PurchaseConfirmModal
-          isOpen={showConfirm}
-          onClose={() => setShowConfirm(false)}
+          open={showConfirm}
+          onOpenChange={(open) => !open && setShowConfirm(false)}
           onConfirm={handleConfirmPurchase}
           item={purchaseItem}
           currentBalance={balance?.balance || 0}
-          isPurchasing={purchaseCosmetic.isPending || purchaseModule.isPending}
+          isPending={purchaseDeal.isPending}
         />
       )}
 

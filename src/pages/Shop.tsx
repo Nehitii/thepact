@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { CyberBackground } from "@/components/CyberBackground";
+import { useState } from "react";
 import { ShopTabs, ShopTab } from "@/components/shop/ShopTabs";
 import { ShopBondDisplay } from "@/components/shop/ShopBondDisplay";
 import { CosmeticShop } from "@/components/shop/CosmeticShop";
@@ -10,9 +9,13 @@ import { PurchaseHistory } from "@/components/shop/PurchaseHistory";
 import { DailyDealsSection } from "@/components/shop/DailyDealsSection";
 import { BundlesSection } from "@/components/shop/BundlesSection";
 import { ShopSpotlight } from "@/components/shop/ShopSpotlight";
+import { PurchaseConfirmModal, PurchaseItem } from "@/components/shop/PurchaseConfirmModal";
+import { UnlockAnimation } from "@/components/shop/UnlockAnimation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useBondBalance } from "@/hooks/useShop";
+import { useShopTransaction } from "@/hooks/useShopTransaction";
 import { useTranslation } from "react-i18next";
 
 export default function Shop() {
@@ -20,23 +23,56 @@ export default function Shop() {
   const [activeTab, setActiveTab] = useState<ShopTab>("cosmetics");
   const { user } = useAuth();
   const { data: wishlist = [] } = useWishlist(user?.id);
+  const { data: balance } = useBondBalance(user?.id);
+  const transaction = useShopTransaction();
+
+  // Shared purchase modal state for Spotlight + Wishlist
+  const [purchaseItem, setPurchaseItem] = useState<PurchaseItem | null>(null);
+  const [showUnlock, setShowUnlock] = useState(false);
 
   const handleTabChange = (tab: ShopTab) => {
     if (tab === activeTab) return;
     setActiveTab(tab);
   };
 
-  const handlePurchaseFromWishlist = (item: any, itemType: string) => {
-    if (itemType === "module") {
-      setActiveTab("modules");
-    } else {
-      setActiveTab("cosmetics");
+  const handleSpotlightPurchase = (item: any, type: string) => {
+    setPurchaseItem({
+      id: item.id,
+      name: item.name,
+      type: type as PurchaseItem["type"],
+      price: item.price,
+      rarity: item.rarity,
+    });
+  };
+
+  const handleWishlistPurchase = (item: any, itemType: string) => {
+    const type = itemType === "module" ? "module" : (item.type || "cosmetic");
+    setPurchaseItem({
+      id: item.id,
+      name: item.name,
+      type: type as PurchaseItem["type"],
+      price: item.price,
+      rarity: item.rarity,
+    });
+  };
+
+  const handleConfirmSharedPurchase = async () => {
+    if (!purchaseItem) return;
+    const success = await transaction.initiatePurchase({
+      itemId: purchaseItem.id,
+      itemName: purchaseItem.name,
+      itemType: purchaseItem.type as "frame" | "banner" | "title" | "module",
+      price: purchaseItem.price,
+      rarity: purchaseItem.rarity,
+    });
+    if (success) {
+      setPurchaseItem(null);
+      setShowUnlock(true);
     }
   };
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Hexagonal grid ambient background */}
       <div
         className="fixed inset-0 pointer-events-none z-[1]"
         style={{
@@ -45,7 +81,6 @@ export default function Shop() {
         }}
       />
 
-      {/* Vignette overlay */}
       <div
         className="fixed inset-0 pointer-events-none z-[5]"
         style={{
@@ -54,24 +89,19 @@ export default function Shop() {
         }}
       />
 
-
       <div className="relative z-10 px-4 pt-6 pb-6 max-w-5xl mx-auto">
-        {/* ── Black Market Terminal Header ── */}
         <motion.div
           className="relative mb-6 overflow-hidden"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Full-bleed gradient hero strip with purple tint */}
           <div
             className="absolute inset-0 rounded-xl"
             style={{
               background: "linear-gradient(135deg, hsl(var(--background)), hsl(270 30% 8%), hsl(var(--background)))",
             }}
           />
-
-          {/* Radial glow */}
           <div
             className="absolute inset-0 rounded-xl"
             style={{
@@ -82,7 +112,6 @@ export default function Shop() {
 
           <div className="relative flex items-center justify-between p-5 sm:p-7">
             <div className="space-y-2">
-              {/* Title with signal bars */}
               <div className="flex items-center gap-3">
                 <h1 className="font-orbitron text-xl sm:text-2xl font-bold tracking-widest">
                   <span
@@ -98,7 +127,6 @@ export default function Shop() {
                     {t("shop.title")}
                   </span>
                 </h1>
-                {/* Signal bars */}
                 <div className="flex items-end gap-[2px] h-5">
                   {[0, 1, 2].map((i) => (
                     <motion.div
@@ -111,7 +139,6 @@ export default function Shop() {
                   ))}
                 </div>
               </div>
-              {/* Static styled subtitle */}
               <p className="text-xs sm:text-sm text-muted-foreground font-mono uppercase tracking-[0.3em]">
                 {t("shop.subtitle")}
               </p>
@@ -119,7 +146,6 @@ export default function Shop() {
             <ShopBondDisplay onBuyBonds={() => setActiveTab("bonds")} />
           </div>
 
-          {/* Data stream line with traveling dot */}
           <div className="relative h-[1px] overflow-hidden">
             <div
               style={{
@@ -140,7 +166,6 @@ export default function Shop() {
           </div>
         </motion.div>
 
-        {/* ── Tabs ── */}
         <div className="mb-6">
           <ShopTabs
             activeTab={activeTab}
@@ -149,7 +174,6 @@ export default function Shop() {
           />
         </div>
 
-        {/* ── Content ── */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -160,7 +184,10 @@ export default function Shop() {
           >
             {activeTab === "cosmetics" && (
               <div className="space-y-8">
-                <ShopSpotlight />
+                <ShopSpotlight
+                  onPurchase={handleSpotlightPurchase}
+                  onPreview={handleSpotlightPurchase}
+                />
                 <DailyDealsSection />
                 <BundlesSection />
                 <CosmeticShop />
@@ -169,12 +196,35 @@ export default function Shop() {
             {activeTab === "modules" && <ModulesShop />}
             {activeTab === "bonds" && <BondsShop />}
             {activeTab === "wishlist" && (
-              <WishlistPanel onPurchaseItem={handlePurchaseFromWishlist} />
+              <WishlistPanel onPurchaseItem={handleWishlistPurchase} />
             )}
             {activeTab === "history" && <PurchaseHistory />}
           </motion.div>
         </AnimatePresence>
       </div>
+
+      {/* Shared purchase modal for Spotlight & Wishlist */}
+      <PurchaseConfirmModal
+        open={!!purchaseItem}
+        onOpenChange={(open) => !open && setPurchaseItem(null)}
+        item={purchaseItem}
+        currentBalance={balance?.balance || 0}
+        onConfirm={handleConfirmSharedPurchase}
+        isPending={transaction.isPending}
+      />
+
+      {transaction.lastPurchased && (
+        <UnlockAnimation
+          isOpen={showUnlock}
+          onComplete={() => {
+            setShowUnlock(false);
+            transaction.clearLastPurchased();
+          }}
+          itemName={transaction.lastPurchased.name}
+          itemType="cosmetic"
+          rarity={transaction.lastPurchased.rarity}
+        />
+      )}
     </div>
   );
 }

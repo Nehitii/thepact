@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, Gift, Zap, ShieldCheck, TrendingUp, Star, Crown, ChevronRight } from "lucide-react";
+import { Sparkles, Zap, ShieldCheck, TrendingUp, Crown, ChevronRight } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondPacks, useBondBalance, useSpecialOffers } from "@/hooks/useShop";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { BondIcon } from "@/components/ui/bond-icon";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -23,8 +24,16 @@ export function BondsShop() {
   const { data: packs = [], isLoading: loadingPacks } = useBondPacks();
   const { data: balance, isLoading: loadingBalance } = useBondBalance(user?.id);
   const { data: offers = [], isLoading: loadingOffers } = useSpecialOffers();
+  const { toast } = useToast();
 
   const isLoading = loadingPacks || loadingOffers;
+
+  const handlePackPurchase = () => {
+    toast({
+      title: "Coming Soon",
+      description: "Payment integration is under development. Stay tuned!",
+    });
+  };
 
   return (
     <motion.div
@@ -33,7 +42,7 @@ export function BondsShop() {
       variants={containerVariants}
       className="space-y-10 max-w-5xl mx-auto pb-16"
     >
-      {/* --- HEADER SECTION (harmonized) --- */}
+      {/* --- HEADER SECTION --- */}
       <section className="relative overflow-hidden rounded-2xl p-1 border border-primary/15 bg-card/60 backdrop-blur-sm">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-purple-600/5" />
 
@@ -52,7 +61,6 @@ export function BondsShop() {
           </div>
 
           <div className="relative group">
-            {/* Balance Card (harmonized) */}
             <div className="flex items-center gap-4 px-6 py-4 rounded-2xl bg-card/80 border border-primary/15 backdrop-blur-xl transition-all group-hover:border-primary/30">
               <div className="relative">
                 <BondIcon size={48} className="relative z-10 drop-shadow-[0_0_10px_hsl(var(--primary)/0.4)]" />
@@ -121,7 +129,10 @@ export function BondsShop() {
                         <span className="block text-xs text-muted-foreground line-through">€{offer.original_price_eur}</span>
                         <span className="text-2xl font-black text-amber-400">€{offer.price_eur}</span>
                       </div>
-                      <Button className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black uppercase px-8 py-5 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                      <Button
+                        onClick={handlePackPurchase}
+                        className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black uppercase px-8 py-5 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+                      >
                         Seize Pack <ChevronRight className="ml-1 w-4 h-4" />
                       </Button>
                     </div>
@@ -133,7 +144,7 @@ export function BondsShop() {
         )}
       </AnimatePresence>
 
-      {/* --- STANDARD PACKS (harmonized) --- */}
+      {/* --- STANDARD PACKS --- */}
       <section className="space-y-6">
         <h2 className="flex items-center gap-3 font-orbitron text-xl text-foreground px-2">
           <Zap className="text-primary fill-primary/20" /> Standard Supply
@@ -159,7 +170,6 @@ export function BondsShop() {
                         : "bg-card/60 border-primary/15 hover:border-primary/30",
                     )}
                   >
-                    {/* Badge */}
                     {pack.bonus_percentage > 0 && (
                       <div
                         className={cn(
@@ -194,6 +204,7 @@ export function BondsShop() {
                       </div>
 
                       <Button
+                        onClick={handlePackPurchase}
                         className={cn(
                           "w-full py-5 rounded-xl font-orbitron font-black text-lg transition-all",
                           isEpic
@@ -205,7 +216,7 @@ export function BondsShop() {
                       </Button>
 
                       <p className="mt-3 text-center text-[10px] text-muted-foreground font-rajdhani uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
-                        Instant Delivery
+                        Coming Soon
                       </p>
                     </div>
                   </motion.div>
@@ -214,7 +225,7 @@ export function BondsShop() {
         </div>
       </section>
 
-      {/* --- TRUST FOOTER (reduced padding) --- */}
+      {/* --- TRUST FOOTER --- */}
       <motion.footer
         variants={itemVariants}
         className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-8 border-t border-primary/10"

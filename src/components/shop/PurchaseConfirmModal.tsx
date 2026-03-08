@@ -24,15 +24,12 @@ export interface PurchaseItem {
 }
 
 interface PurchaseConfirmModalProps {
-  open?: boolean;
-  isOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
-  onClose?: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
   item: PurchaseItem | null;
   currentBalance: number;
   onConfirm: () => void;
   isPending?: boolean;
-  isPurchasing?: boolean;
 }
 
 const rarityConfig: Record<string, { gradient: string; border: string; particle: string; glow: string }> = {
@@ -62,7 +59,6 @@ function AnimatedNumber({ value, className }: { value: number; className?: strin
   return <span className={className}>{display.toLocaleString()}</span>;
 }
 
-// Floating particle for background
 function FloatingParticle({ color, delay }: { color: string; delay: number }) {
   const x = Math.random() * 100;
   const size = 2 + Math.random() * 3;
@@ -79,22 +75,12 @@ function FloatingParticle({ color, delay }: { color: string; delay: number }) {
 
 export function PurchaseConfirmModal({
   open,
-  isOpen,
   onOpenChange,
-  onClose,
   item,
   currentBalance,
   onConfirm,
-  isPending,
-  isPurchasing,
+  isPending = false,
 }: PurchaseConfirmModalProps) {
-  const isDialogOpen = open ?? isOpen ?? false;
-  const handleOpenChange = (value: boolean) => {
-    if (onOpenChange) onOpenChange(value);
-    if (!value && onClose) onClose();
-  };
-  const isLoading = isPending ?? isPurchasing ?? false;
-
   if (!item) return null;
 
   const canAfford = currentBalance >= item.price;
@@ -105,16 +91,14 @@ export function PurchaseConfirmModal({
   const lowBalanceWarning = canAfford && newBalance < 100;
 
   return (
-    <AlertDialog open={isDialogOpen} onOpenChange={handleOpenChange}>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className={`max-w-md border-2 ${cfg.border} bg-gradient-to-br ${cfg.gradient} backdrop-blur-xl overflow-hidden`}>
-        {/* Particle background */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {Array.from({ length: 8 }).map((_, i) => (
             <FloatingParticle key={i} color={cfg.particle} delay={i * 0.4} />
           ))}
         </div>
 
-        {/* Scanline overlay */}
         <div
           className="absolute inset-0 pointer-events-none opacity-[0.03]"
           style={{
@@ -134,9 +118,7 @@ export function PurchaseConfirmModal({
           </AlertDialogHeader>
 
           <div className="py-6 space-y-6">
-            {/* Item Preview with spotlight */}
             <div className="relative flex items-center gap-4 p-4 rounded-xl bg-card/50 border border-primary/20 overflow-hidden">
-              {/* Spotlight glow behind preview */}
               <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -169,7 +151,6 @@ export function PurchaseConfirmModal({
               </div>
             </div>
 
-            {/* Price Breakdown with animated numbers */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-sm font-rajdhani">
                 <span className="text-muted-foreground">Current Balance</span>
@@ -206,7 +187,6 @@ export function PurchaseConfirmModal({
               </div>
             </div>
 
-            {/* Low balance warning */}
             {lowBalanceWarning && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
@@ -220,7 +200,6 @@ export function PurchaseConfirmModal({
               </motion.div>
             )}
 
-            {/* Insufficient Funds Warning */}
             {!canAfford && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -239,9 +218,9 @@ export function PurchaseConfirmModal({
           <AlertDialogFooter className="gap-3">
             <Button
               variant="ghost"
-              onClick={() => handleOpenChange(false)}
+              onClick={() => onOpenChange(false)}
               className="font-rajdhani"
-              disabled={isLoading}
+              disabled={isPending}
             >
               Cancel
             </Button>
@@ -249,7 +228,7 @@ export function PurchaseConfirmModal({
               <HoldPurchaseButton
                 onComplete={onConfirm}
                 disabled={!canAfford}
-                isPending={isLoading}
+                isPending={isPending}
               />
             </div>
           </AlertDialogFooter>
