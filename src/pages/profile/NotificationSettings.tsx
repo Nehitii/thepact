@@ -1,19 +1,25 @@
 import { useState, useCallback, useRef } from "react";
-import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2 } from "lucide-react";
+import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock } from "lucide-react";
 import { useNotificationSettings } from "@/hooks/useNotifications";
 import { toast } from "@/hooks/use-toast";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
-  SettingsBreadcrumb, CyberSeparator, DataPanel, SettingRow, SyncIndicator, TerminalLog,
+  SettingsBreadcrumb, CyberSeparator, DataPanel, SettingRow, SettingContentRow, SyncIndicator, TerminalLog,
 } from "@/components/profile/settings-ui";
+
+const HOURS = Array.from({ length: 24 }, (_, i) => ({
+  value: `${String(i).padStart(2, "0")}:00`,
+  label: `${String(i).padStart(2, "0")}:00`,
+}));
 
 export default function NotificationSettings() {
   const { t } = useTranslation();
   const { settings, isLoading, updateSettings } = useNotificationSettings();
-  const [syncingPanel, setSyncingPanel] = useState<1 | 2 | null>(null);
+  const [syncingPanel, setSyncingPanel] = useState<number | null>(null);
   const syncTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const [logLines, setLogLines] = useState<{ text: string; type: "ok" | "warn" | "info" }[]>([
@@ -29,7 +35,13 @@ export default function NotificationSettings() {
     });
   }, []);
 
-  const handleToggle = useCallback((key: string, value: boolean, panel: 1 | 2) => {
+  const markSync = useCallback((panel: number) => {
+    setSyncingPanel(panel);
+    clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(() => setSyncingPanel(null), 2000);
+  }, []);
+
+  const handleToggle = useCallback((key: string, value: boolean, panel: number) => {
     updateSettings.mutate({ [key]: value }, {
       onSuccess: () => {
         toast({ title: t("settings.notifications.toasts.updated"), description: t("settings.notifications.toasts.updatedDesc") });
@@ -39,16 +51,28 @@ export default function NotificationSettings() {
           push_enabled: "PUSH_SERVICE", focus_mode: "FOCUS_MODE",
         };
         addLog(`${labelMap[key] || key.toUpperCase()}: ${value ? "ENABLED" : "DISABLED"}`, value ? "ok" : "warn");
-        setSyncingPanel(panel);
-        clearTimeout(syncTimer.current);
-        syncTimer.current = setTimeout(() => setSyncingPanel(null), 2000);
+        markSync(panel);
       },
     });
-  }, [updateSettings, t, addLog]);
+  }, [updateSettings, t, addLog, markSync]);
+
+  const handleQuietHoursChange = useCallback((key: string, value: string | null) => {
+    updateSettings.mutate({ [key]: value || null } as any, {
+      onSuccess: () => {
+        toast({ title: "Mis à jour", description: "Heures calmes mises à jour." });
+        addLog(`QUIET_HOURS ${key.includes("start") ? "START" : "END"}: ${value || "DISABLED"}`, value ? "ok" : "warn");
+        markSync(3);
+      },
+    });
+  }, [updateSettings, addLog, markSync]);
 
   const isPending = isLoading || updateSettings.isPending;
   const categoryKeys = ["system_enabled", "progress_enabled", "social_enabled", "marketing_enabled"] as const;
   const activeCount = categoryKeys.filter(k => settings?.[k] ?? true).length;
+
+  const quietStart = (settings as any)?.quiet_hours_start || "";
+  const quietEnd = (settings as any)?.quiet_hours_end || "";
+  const quietActive = !!quietStart && !!quietEnd;
 
   if (isLoading) {
     return (
@@ -92,6 +116,47 @@ export default function NotificationSettings() {
             </motion.div>
           )}
         </AnimatePresence>
+      </DataPanel>
+
+      {/* ── PANEL 3: Quiet Hours ── */}
+      <DataPanel
+        code="MODULE_03" title="HEURES CALMES"
+        statusText={<span className={cn(quietActive ? "text-[hsl(195,100%,50%)]" : "text-muted-foreground")}>{quietActive ? "ACTIF" : "INACTIF"}</span>}
+        footerLeft={quietActive ? <span>{quietStart} → {quietEnd}</span> : <span>NON CONFIGURÉ</span>}
+        footerRight={<SyncIndicator syncing={syncingPanel === 3} />}
+      >
+        <SettingContentRow icon={<Clock className="h-4 w-4 text-primary" />} label="Mode Ne Pas Déranger" description="Désactive les notifications push pendant une plage horaire définie">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <span className="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Début</span>
+              <Select value={quietStart || "none"} onValueChange={(v) => handleQuietHoursChange("quiet_hours_start", v === "none" ? null : v)}>
+                <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5 rounded-none">
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent className="bg-background/98 backdrop-blur-xl border-primary/20 rounded-none">
+                  <SelectItem value="none" className="font-mono text-xs">— Désactivé</SelectItem>
+                  {HOURS.map((h) => (
+                    <SelectItem key={h.value} value={h.value} className="font-mono text-xs">{h.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <span className="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Fin</span>
+              <Select value={quietEnd || "none"} onValueChange={(v) => handleQuietHoursChange("quiet_hours_end", v === "none" ? null : v)}>
+                <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5 rounded-none">
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent className="bg-background/98 backdrop-blur-xl border-primary/20 rounded-none">
+                  <SelectItem value="none" className="font-mono text-xs">— Désactivé</SelectItem>
+                  {HOURS.map((h) => (
+                    <SelectItem key={h.value} value={h.value} className="font-mono text-xs">{h.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </SettingContentRow>
       </DataPanel>
 
       <TerminalLog lines={logLines} />
