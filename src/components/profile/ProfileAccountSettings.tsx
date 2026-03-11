@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import {
@@ -15,8 +15,6 @@ import {
   Smartphone,
   Check,
   AlertCircle,
-  Fingerprint,
-  KeyRound,
   Activity,
   Trash2,
   History,
@@ -31,7 +29,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -41,14 +47,18 @@ import { useTwoFactor } from "@/hooks/useTwoFactor";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useQuery } from "@tanstack/react-query";
-import {
-  SettingsBreadcrumb, CyberSeparator, DataPanel, SyncIndicator, TerminalLog,
-} from "@/components/profile/settings-ui";
+import { SettingsBreadcrumb, CyberSeparator, DataPanel, TerminalLog } from "@/components/profile/settings-ui";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const TIMEZONES = [
-  "UTC", "Europe/Paris", "Europe/London", "America/New_York",
-  "America/Los_Angeles", "Asia/Tokyo", "Asia/Shanghai", "Australia/Sydney",
+  "UTC",
+  "Europe/Paris",
+  "Europe/London",
+  "America/New_York",
+  "America/Los_Angeles",
+  "Asia/Tokyo",
+  "Asia/Shanghai",
+  "Australia/Sydney",
 ] as const;
 const COUNTRIES = ["us", "uk", "fr", "de", "jp", "cn", "au", "ca", "es", "it", "br", "in", "other"] as const;
 
@@ -150,7 +160,15 @@ function Field({ label, children, hint }: { label: string; children: React.React
 }
 
 // ─── Status chip ──────────────────────────────────────────────────────────────
-function StatusChip({ active, activeLabel, inactiveLabel }: { active: boolean; activeLabel: string; inactiveLabel: string }) {
+function StatusChip({
+  active,
+  activeLabel,
+  inactiveLabel,
+}: {
+  active: boolean;
+  activeLabel: string;
+  inactiveLabel: string;
+}) {
   return (
     <span
       className={cn(
@@ -175,18 +193,33 @@ function StatusChip({ active, activeLabel, inactiveLabel }: { active: boolean; a
 function CyInput({ className, disabled, ...props }: React.ComponentProps<typeof Input>) {
   return (
     <div className="relative">
-      <Input {...props} disabled={disabled} className={cn(CY.input, "rounded-none", disabled && "opacity-30 cursor-not-allowed", className)} style={clipSm} />
+      <Input
+        {...props}
+        disabled={disabled}
+        className={cn(CY.input, "rounded-none", disabled && "opacity-30 cursor-not-allowed", className)}
+        style={clipSm}
+      />
       <CornerBrackets dim={disabled} />
     </div>
   );
 }
 
 // ─── CySelect ─────────────────────────────────────────────────────────────────
-function CySelect({ value, onValueChange, children }: { value: string; onValueChange: (v: string) => void; children: React.ReactNode }) {
+function CySelect({
+  value,
+  onValueChange,
+  children,
+}: {
+  value: string;
+  onValueChange: (v: string) => void;
+  children: React.ReactNode;
+}) {
   return (
     <div className="relative">
       <Select value={value} onValueChange={onValueChange}>
-        <SelectTrigger className={cn(CY.selectTrigger)} style={clipSm}><SelectValue /></SelectTrigger>
+        <SelectTrigger className={cn(CY.selectTrigger)} style={clipSm}>
+          <SelectValue />
+        </SelectTrigger>
         <SelectContent className={CY.selectContent}>{children}</SelectContent>
       </Select>
       <CornerBrackets dim />
@@ -203,7 +236,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
   const [formData, setFormData] = useState(initialData);
   const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
 
   const [logLines, setLogLines] = useState<{ text: string; type: "ok" | "warn" | "info" }[]>([
     { text: "ACCOUNT SETTINGS LOADED", type: "info" },
@@ -212,11 +245,17 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
   ]);
 
   const addLog = (text: string, type: "ok" | "warn" | "info") => {
-    setLogLines(prev => {
+    setLogLines((prev) => {
       const next = [...prev, { text, type }];
-      return next.length > 5 ? next.slice(-5) : next;
+      return next.length > 8 ? next.slice(-8) : next;
     });
   };
+
+  // Traquer les modifications
+  useEffect(() => {
+    const isChanged = JSON.stringify(formData) !== JSON.stringify(initialData);
+    setHasChanges(isChanged);
+  }, [formData, initialData]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -236,8 +275,8 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
       if (formData.language !== i18n.language) await i18n.changeLanguage(formData.language);
       updateGlobalCurrency(formData.currency);
       await refreshCurrency();
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+
+      setHasChanges(false);
       addLog("PROFILE DATA COMMITTED", "ok");
       toast({ title: t("profile.updatedTitle"), description: t("profile.updatedDesc") });
     } catch (error: any) {
@@ -249,145 +288,269 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
   };
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }} className="max-w-2xl mx-auto space-y-4 pb-8">
-      <SettingsBreadcrumb code="ACC.01" />
-      <CyberSeparator />
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-6xl mx-auto pb-24 h-full flex flex-col lg:flex-row gap-8 relative"
+    >
+      {/* ─── COLONNE PRINCIPALE : TABS ──────────────────────────────────── */}
+      <div className="flex-1 space-y-6">
+        <SettingsBreadcrumb code="ACC.01" />
 
-      {/* ─── SECTION 01 : Identity ──────────────────────────────────── */}
-      <DataPanel code="MODULE_01" title="IDENTITY MATRIX" footerLeft={<span>USER: <b className="text-primary">{formData.displayName || formData.email}</b></span>}>
-        <div className="py-5 space-y-5">
-          <Field label={t("common.email")} hint={t("profile.emailCantChange")}>
-            <div className="relative">
-              <CyInput value={formData.email} disabled />
-              <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-primary/15 pointer-events-none z-10" />
-            </div>
-          </Field>
+        <Tabs defaultValue="identity" className="w-full">
+          <TabsList className="w-full h-12 bg-transparent border-b border-primary/20 rounded-none justify-start gap-6 p-0 mb-6">
+            {["identity", "security", "system"].map((tab) => (
+              <TabsTrigger
+                key={tab}
+                value={tab}
+                className="relative h-full rounded-none px-0 text-[10px] tracking-[0.25em] uppercase font-mono text-primary/40 data-[state=active]:text-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none hover:text-primary/70 transition-colors group"
+              >
+                {tab === "identity" && <User className="w-3.5 h-3.5 mr-2 inline-block" />}
+                {tab === "security" && <ShieldCheck className="w-3.5 h-3.5 mr-2 inline-block" />}
+                {tab === "system" && <Activity className="w-3.5 h-3.5 mr-2 inline-block" />}
+                {tab}
+                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-primary scale-x-0 transition-transform origin-left data-[state=active]:scale-x-100 group-data-[state=active]:scale-x-100" />
+              </TabsTrigger>
+            ))}
+          </TabsList>
 
-          <Field label={t("profile.displayName")}>
-            <CyInput
-              placeholder={t("profile.displayNamePlaceholder")}
-              value={formData.displayName}
-              onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
-            />
-          </Field>
+          {/* TAB 1: IDENTITY & REGION */}
+          <TabsContent
+            value="identity"
+            className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
+          >
+            <DataPanel
+              code="MODULE_01"
+              title="IDENTITY MATRIX"
+              footerLeft={
+                <span>
+                  USER: <b className="text-primary">{formData.displayName || formData.email}</b>
+                </span>
+              }
+            >
+              <div className="py-5 space-y-5">
+                <Field label={t("common.email")} hint={t("profile.emailCantChange")}>
+                  <div className="relative">
+                    <CyInput value={formData.email} disabled />
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3 w-3 text-primary/15 pointer-events-none z-10" />
+                  </div>
+                </Field>
 
-          <Field label={t("profile.birthday")}>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className={cn(
-                    "relative w-full flex items-center justify-between px-3 h-11",
-                    "bg-[var(--surface-input)] border border-primary/25",
-                    "hover:border-primary/50 hover:bg-[var(--surface-input-focus)]",
-                    "text-primary/80 font-mono text-sm tracking-wide",
-                    "transition-all duration-200",
-                    !formData.birthday && "text-primary/20",
-                  )}
-                  style={clipSm}
-                >
-                  <span className="flex items-center gap-2">
-                    <CalendarIcon className="h-3.5 w-3.5 text-primary/35 shrink-0" />
-                    {formData.birthday ? format(formData.birthday, "PPP", { locale: dateLocale }) : t("profile.birthdayPlaceholder")}
-                  </span>
-                  <ChevronRight className="h-3.5 w-3.5 text-primary/25 shrink-0" />
-                  <CornerBrackets dim />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent className={cn("w-auto p-0", CY.selectContent)} align="start">
-                <Calendar mode="single" selected={formData.birthday} onSelect={(date) => setFormData((p) => ({ ...p, birthday: date }))} fromYear={1920} toYear={new Date().getFullYear()} initialFocus />
-              </PopoverContent>
-            </Popover>
-          </Field>
-        </div>
-      </DataPanel>
+                <Field label={t("profile.displayName")}>
+                  <CyInput
+                    placeholder={t("profile.displayNamePlaceholder")}
+                    value={formData.displayName}
+                    onChange={(e) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
+                  />
+                </Field>
 
-      {/* ─── SECTION 02 : Regional ──────────────────────────────────── */}
-      <DataPanel code="MODULE_02" title="LOCALE CONFIG" footerLeft={<span>LANG: <b className="text-primary">{formData.language.toUpperCase()}</b></span>} footerRight={<span>TZ: <b className="text-primary">{formData.timezone}</b></span>}>
-        <div className="py-5">
-          <div className="grid grid-cols-2 gap-x-4 gap-y-5">
-            <Field label={t("profile.country")}>
-              <CySelect value={formData.country} onValueChange={(v) => setFormData((p) => ({ ...p, country: v }))}>
-                {COUNTRIES.map((c) => (
-                  <SelectItem key={c} value={c} className="font-mono text-xs tracking-wider">{t(`profile.countries.${c}`)}</SelectItem>
-                ))}
-              </CySelect>
-            </Field>
-            <Field label={t("profile.timezone")}>
-              <CySelect value={formData.timezone} onValueChange={(v) => setFormData((p) => ({ ...p, timezone: v }))}>
-                {TIMEZONES.map((tz) => (
-                  <SelectItem key={tz} value={tz} className="font-mono text-xs">{tz}</SelectItem>
-                ))}
-              </CySelect>
-            </Field>
-            <Field label={t("profile.language")}>
-              <CySelect value={formData.language} onValueChange={(v) => setFormData((p) => ({ ...p, language: v }))}>
-                <SelectItem value="en" className="font-mono text-xs">English</SelectItem>
-                <SelectItem value="fr" className="font-mono text-xs">Français</SelectItem>
-              </CySelect>
-            </Field>
-            <Field label={t("profile.currency")}>
-              <CySelect value={formData.currency} onValueChange={(v) => setFormData((p) => ({ ...p, currency: v }))}>
-                <SelectItem value="eur" className="font-mono text-xs">EUR (€)</SelectItem>
-                <SelectItem value="usd" className="font-mono text-xs">USD ($)</SelectItem>
-              </CySelect>
-            </Field>
-          </div>
-        </div>
-      </DataPanel>
+                <Field label={t("profile.birthday")}>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        className={cn(
+                          "relative w-full flex items-center justify-between px-3 h-11",
+                          "bg-[var(--surface-input)] border border-primary/25",
+                          "hover:border-primary/50 hover:bg-[var(--surface-input-focus)]",
+                          "text-primary/80 font-mono text-sm tracking-wide",
+                          "transition-all duration-200",
+                          !formData.birthday && "text-primary/20",
+                        )}
+                        style={clipSm}
+                      >
+                        <span className="flex items-center gap-2">
+                          <CalendarIcon className="h-3.5 w-3.5 text-primary/35 shrink-0" />
+                          {formData.birthday
+                            ? format(formData.birthday, "PPP", { locale: dateLocale })
+                            : t("profile.birthdayPlaceholder")}
+                        </span>
+                        <ChevronRight className="h-3.5 w-3.5 text-primary/25 shrink-0" />
+                        <CornerBrackets dim />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className={cn("w-auto p-0", CY.selectContent)} align="start">
+                      <Calendar
+                        mode="single"
+                        selected={formData.birthday}
+                        onSelect={(date) => setFormData((p) => ({ ...p, birthday: date }))}
+                        fromYear={1920}
+                        toYear={new Date().getFullYear()}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </Field>
+              </div>
+            </DataPanel>
 
-      {/* ─── SECTION 03 : Password ──────────────────────────────────── */}
-      <ChangePasswordSection onLog={addLog} />
+            <DataPanel
+              code="MODULE_02"
+              title="LOCALE CONFIG"
+              footerLeft={
+                <span>
+                  LANG: <b className="text-primary">{formData.language.toUpperCase()}</b>
+                </span>
+              }
+              footerRight={
+                <span>
+                  TZ: <b className="text-primary">{formData.timezone}</b>
+                </span>
+              }
+            >
+              <div className="py-5">
+                <div className="grid grid-cols-2 gap-x-4 gap-y-5">
+                  <Field label={t("profile.country")}>
+                    <CySelect
+                      value={formData.country}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, country: v }))}
+                    >
+                      {COUNTRIES.map((c) => (
+                        <SelectItem key={c} value={c} className="font-mono text-xs tracking-wider">
+                          {t(`profile.countries.${c}`)}
+                        </SelectItem>
+                      ))}
+                    </CySelect>
+                  </Field>
+                  <Field label={t("profile.timezone")}>
+                    <CySelect
+                      value={formData.timezone}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, timezone: v }))}
+                    >
+                      {TIMEZONES.map((tz) => (
+                        <SelectItem key={tz} value={tz} className="font-mono text-xs">
+                          {tz}
+                        </SelectItem>
+                      ))}
+                    </CySelect>
+                  </Field>
+                  <Field label={t("profile.language")}>
+                    <CySelect
+                      value={formData.language}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, language: v }))}
+                    >
+                      <SelectItem value="en" className="font-mono text-xs">
+                        English
+                      </SelectItem>
+                      <SelectItem value="fr" className="font-mono text-xs">
+                        Français
+                      </SelectItem>
+                    </CySelect>
+                  </Field>
+                  <Field label={t("profile.currency")}>
+                    <CySelect
+                      value={formData.currency}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, currency: v }))}
+                    >
+                      <SelectItem value="eur" className="font-mono text-xs">
+                        EUR (€)
+                      </SelectItem>
+                      <SelectItem value="usd" className="font-mono text-xs">
+                        USD ($)
+                      </SelectItem>
+                    </CySelect>
+                  </Field>
+                </div>
+              </div>
+            </DataPanel>
+          </TabsContent>
 
-      {/* ─── SECTION 04 : 2FA ───────────────────────────────────────── */}
-      <TwoFactorSection onLog={addLog} />
+          {/* TAB 2: SECURITY */}
+          <TabsContent
+            value="security"
+            className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500"
+          >
+            <ChangePasswordSection onLog={addLog} />
+            <TwoFactorSection onLog={addLog} />
+          </TabsContent>
 
-      {/* ─── SECTION 05 : Sessions & Login History ──────────────────── */}
-      <SessionsSection userId={userId} onLog={addLog} />
-
-      {/* ─── SECTION 06 : Danger Zone ───────────────────────────────── */}
-      <DangerZoneSection onLog={addLog} />
-
-      {/* ─── Save ───────────────────────────────────────────────────── */}
-      <div className="flex justify-end pt-2">
-        <motion.button
-          onClick={handleSave}
-          disabled={isSaving}
-          whileTap={{ scale: 0.97 }}
-          className={cn(
-            "relative h-11 min-w-[220px] font-mono text-[10px] tracking-[0.28em] uppercase",
-            "border overflow-hidden transition-all duration-300",
-            saved
-              ? "bg-emerald-950/40 border-emerald-500/45 text-emerald-400"
-              : "bg-primary/8 border-primary/35 text-primary hover:bg-primary/14 hover:border-primary/65 shadow-[0_0_18px_hsl(var(--primary)/0.14)]",
-            "disabled:opacity-40",
-          )}
-          style={clipSm}
-        >
-          <CornerBrackets />
-          <AnimatePresence mode="wait">
-            {isSaving ? (
-              <motion.span key="saving" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-2 relative z-10">
-                <Activity className="h-3.5 w-3.5 animate-pulse" /> PROCESSING...
-              </motion.span>
-            ) : saved ? (
-              <motion.span key="saved" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center justify-center gap-2 relative z-10">
-                <Check className="h-3.5 w-3.5" /> DATA COMMITTED
-              </motion.span>
-            ) : (
-              <motion.span key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="relative z-10">[ COMMIT CHANGES ]</motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
+          {/* TAB 3: SYSTEM */}
+          <TabsContent value="system" className="space-y-6 mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <SessionsSection userId={userId} onLog={addLog} />
+            <DangerZoneSection onLog={addLog} />
+          </TabsContent>
+        </Tabs>
       </div>
 
-      <TerminalLog lines={logLines} />
-      <div className="h-8" />
+      {/* ─── COLONNE LATERALE (DESKTOP) : TERMINAL LOG ──────────────── */}
+      <div className="hidden lg:block w-80 shrink-0">
+        <div className="sticky top-6">
+          <TerminalLog lines={logLines} />
+        </div>
+      </div>
+
+      {/* Mobile Terminal Log fallback */}
+      <div className="block lg:hidden mt-8">
+        <TerminalLog lines={logLines} />
+      </div>
+
+      {/* ─── STICKY COMMAND BAR (SAUVEGARDE) ────────────────────────── */}
+      <AnimatePresence>
+        {hasChanges && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-3xl px-4 z-50 pointer-events-none"
+          >
+            <div
+              className="pointer-events-auto bg-[#020c12]/95 backdrop-blur-md border border-primary/40 shadow-[0_10px_40px_rgba(0,242,255,0.15)] flex items-center justify-between p-3 pl-6"
+              style={{
+                clipPath: "polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px)",
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/60 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+                </span>
+                <span className="text-[10px] font-mono text-primary/80 uppercase tracking-widest hidden sm:inline-block">
+                  Unsaved Changes Detected
+                </span>
+                <span className="text-[10px] font-mono text-primary/80 uppercase tracking-widest sm:hidden">
+                  Unsaved Changes
+                </span>
+              </div>
+
+              <motion.button
+                onClick={handleSave}
+                disabled={isSaving}
+                whileTap={{ scale: 0.97 }}
+                className={cn(
+                  "relative h-10 px-6 font-mono text-[10px] tracking-[0.2em] uppercase",
+                  "bg-primary text-[#020c12] hover:bg-primary/90 font-bold",
+                  "disabled:opacity-50 transition-colors shadow-[0_0_15px_rgba(0,242,255,0.4)]",
+                )}
+                style={{
+                  clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)",
+                }}
+              >
+                {isSaving ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> COMMITTING...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <Check className="h-4 w-4" /> COMMIT OVERRIDE
+                  </span>
+                )}
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
 // ─── Sessions & Login History ─────────────────────────────────────────────────
-function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
+function SessionsSection({
+  userId,
+  onLog,
+}: {
+  userId: string;
+  onLog: (text: string, type: "ok" | "warn" | "info") => void;
+}) {
   const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
 
@@ -422,7 +585,15 @@ function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: stri
   };
 
   return (
-    <DataPanel code="MODULE_05" title="SESSIONS & HISTORIQUE" footerLeft={<span>EVENTS: <b className="text-primary">{loginHistory?.length || 0}</b></span>}>
+    <DataPanel
+      code="MODULE_05"
+      title="SESSIONS & HISTORIQUE"
+      footerLeft={
+        <span>
+          EVENTS: <b className="text-primary">{loginHistory?.length || 0}</b>
+        </span>
+      }
+    >
       <div className="py-5 space-y-4">
         {/* Sign out all */}
         <button
@@ -430,7 +601,7 @@ function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: stri
           disabled={signingOut}
           className={cn(
             "flex items-center gap-2 px-4 py-2.5 w-full border border-primary/20 bg-primary/[0.03] hover:border-primary/40 hover:bg-primary/[0.06] transition-colors",
-            "font-mono text-[10px] tracking-[0.18em] uppercase text-primary/70 hover:text-primary"
+            "font-mono text-[10px] tracking-[0.18em] uppercase text-primary/70 hover:text-primary",
           )}
           style={clipSm}
         >
@@ -442,13 +613,18 @@ function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: stri
         <div className="space-y-1">
           <p className="text-[9px] text-primary/40 font-mono tracking-wider uppercase mb-2">Historique de connexion</p>
           {isLoading ? (
-            <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            </div>
           ) : !loginHistory || loginHistory.length === 0 ? (
             <p className="text-[10px] text-muted-foreground font-mono text-center py-4">Aucun événement enregistré</p>
           ) : (
             <div className="space-y-1 max-h-[200px] overflow-y-auto">
               {loginHistory.map((event: any) => (
-                <div key={event.id} className="flex items-center gap-3 px-3 py-2 border border-primary/8 bg-primary/[0.01] text-[10px] font-mono">
+                <div
+                  key={event.id}
+                  className="flex items-center gap-3 px-3 py-2 border border-primary/8 bg-primary/[0.01] text-[10px] font-mono"
+                >
                   <History className="h-3 w-3 text-primary/40 shrink-0" />
                   <span className="text-primary/60 uppercase tracking-wider flex-1 truncate">{event.event_type}</span>
                   <span className="text-muted-foreground shrink-0">{new Date(event.created_at).toLocaleString()}</span>
@@ -495,22 +671,29 @@ function DangerZoneSection({ onLog }: { onLog: (text: string, type: "ok" | "warn
 
   return (
     <>
-      <DataPanel code="MODULE_06" title="⚠ DANGER ZONE" statusText={<span className="text-red-400">ZONE CRITIQUE</span>}>
+      <DataPanel
+        code="MODULE_06"
+        title="⚠ DANGER ZONE"
+        statusText={<span className="text-red-400">ZONE CRITIQUE</span>}
+      >
         <div className="py-5">
           <div className="border border-red-500/20 bg-red-950/10 p-4" style={clipSm}>
             <div className="flex items-start gap-3">
               <Trash2 className="h-5 w-5 text-red-400/60 shrink-0 mt-0.5" />
               <div className="flex-1 space-y-2">
-                <p className="text-xs font-mono text-red-400/80 tracking-wider uppercase font-bold">Supprimer le compte</p>
+                <p className="text-xs font-mono text-red-400/80 tracking-wider uppercase font-bold">
+                  Supprimer le compte
+                </p>
                 <p className="text-[10px] text-red-400/50 font-mono leading-relaxed">
-                  Cette action est irréversible. Toutes tes données, objectifs, pacts, et historiques seront définitivement supprimés.
+                  Cette action est irréversible. Toutes tes données, objectifs, pacts, et historiques seront
+                  définitivement supprimés.
                 </p>
                 <button
                   onClick={() => setShowDeleteModal(true)}
                   className={cn(
                     "px-4 py-2 border border-red-500/30 bg-red-950/30 text-red-400",
                     "hover:bg-red-900/40 hover:border-red-400/50",
-                    "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors"
+                    "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors",
                   )}
                   style={clipSm}
                 >
@@ -542,7 +725,10 @@ function DangerZoneSection({ onLog }: { onLog: (text: string, type: "ok" | "warn
           </div>
           <DialogFooter className="gap-2">
             <button
-              onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+              onClick={() => {
+                setShowDeleteModal(false);
+                setDeleteConfirm("");
+              }}
               className={cn(CY.btnGhost, "px-4")}
               style={clipSm}
             >
@@ -555,11 +741,17 @@ function DangerZoneSection({ onLog }: { onLog: (text: string, type: "ok" | "warn
                 "px-4 py-2 border border-red-500/40 bg-red-950/40 text-red-400",
                 "hover:bg-red-900/50 hover:border-red-400/60",
                 "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors",
-                "disabled:opacity-30 disabled:cursor-not-allowed"
+                "disabled:opacity-30 disabled:cursor-not-allowed",
               )}
               style={clipSm}
             >
-              {isDeleting ? <><Loader2 className="inline h-3 w-3 animate-spin mr-1.5" /> SUPPRESSION...</> : "CONFIRMER LA SUPPRESSION"}
+              {isDeleting ? (
+                <>
+                  <Loader2 className="inline h-3 w-3 animate-spin mr-1.5" /> SUPPRESSION...
+                </>
+              ) : (
+                "CONFIRMER LA SUPPRESSION"
+              )}
             </button>
           </DialogFooter>
         </DialogContent>
@@ -647,12 +839,27 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
 
           <AnimatePresence>
             {newPassword && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden pt-2 space-y-1">
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden pt-2 space-y-1"
+              >
                 <div className="flex items-center gap-1.5">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className={cn("h-0.5 flex-1 transition-all duration-300", i <= passwordStrength ? cn(strengthMeta?.color, strengthMeta?.glow) : "bg-primary/8")} />
+                    <div
+                      key={i}
+                      className={cn(
+                        "h-0.5 flex-1 transition-all duration-300",
+                        i <= passwordStrength ? cn(strengthMeta?.color, strengthMeta?.glow) : "bg-primary/8",
+                      )}
+                    />
                   ))}
-                  {strengthMeta && <span className="font-mono text-[8px] tracking-[0.22em] text-primary/35 w-12 text-right shrink-0">{strengthMeta.label}</span>}
+                  {strengthMeta && (
+                    <span className="font-mono text-[8px] tracking-[0.22em] text-primary/35 w-12 text-right shrink-0">
+                      {strengthMeta.label}
+                    </span>
+                  )}
                 </div>
               </motion.div>
             )}
@@ -671,12 +878,24 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
             />
             <AnimatePresence>
               {mismatch && (
-                <motion.div key="err" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
+                <motion.div
+                  key="err"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10"
+                >
                   <AlertCircle size={14} className="text-red-400" />
                 </motion.div>
               )}
               {confirmPassword && !mismatch && (
-                <motion.div key="ok" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="absolute right-3 top-1/2 -translate-y-1/2 z-10">
+                <motion.div
+                  key="ok"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 z-10"
+                >
                   <Check size={14} className="text-emerald-400" />
                 </motion.div>
               )}
@@ -691,7 +910,16 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
           className={cn(CY.btnPrimary, "px-6 flex items-center gap-2")}
           style={clipSm}
         >
-          {isSaving ? (<><Loader2 className="h-3.5 w-3.5 animate-spin" /> PROCESSING</>) : (<><Lock className="h-3.5 w-3.5" />{t("profile.changePassword.update")}</>)}
+          {isSaving ? (
+            <>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> PROCESSING
+            </>
+          ) : (
+            <>
+              <Lock className="h-3.5 w-3.5" />
+              {t("profile.changePassword.update")}
+            </>
+          )}
         </button>
       </div>
     </DataPanel>
@@ -767,17 +995,37 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
     }
   };
 
-  const TFARow = ({ icon: Icon, label, active, onEnable, onDisable, enabling, disabling, blockEnable = false, enableLabel, disableLabel, enablingLabel, disablingLabel }: any) => (
+  const TFARow = ({
+    icon: Icon,
+    label,
+    active,
+    onEnable,
+    onDisable,
+    enabling,
+    disabling,
+    blockEnable = false,
+    enableLabel,
+    disableLabel,
+    enablingLabel,
+    disablingLabel,
+  }: any) => (
     <div className="relative border border-primary/12 bg-primary/[0.015]" style={clipSm}>
       <CornerBrackets dim />
       <div className="flex items-center justify-between gap-4 px-4 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 bg-primary/8 border border-primary/20 shrink-0" style={{ clipPath: "polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%)" }}>
+          <div
+            className="flex items-center justify-center w-8 h-8 bg-primary/8 border border-primary/20 shrink-0"
+            style={{ clipPath: "polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%)" }}
+          >
             <Icon className="h-3.5 w-3.5 text-primary/70" />
           </div>
           <div className="space-y-1">
             <p className="text-[11px] font-mono text-primary/65 tracking-wider">{label}</p>
-            <StatusChip active={active} activeLabel={t("twoFactor.email2fa.active")} inactiveLabel={t("twoFactor.email2fa.inactive")} />
+            <StatusChip
+              active={active}
+              activeLabel={t("twoFactor.email2fa.active")}
+              inactiveLabel={t("twoFactor.email2fa.inactive")}
+            />
           </div>
         </div>
         {active ? (
@@ -786,7 +1034,12 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
             {disabling ? disablingLabel : disableLabel}
           </button>
         ) : (
-          <button onClick={onEnable} disabled={enabling || blockEnable} className={cn(CY.btnGhost, "px-3")} style={clipSm}>
+          <button
+            onClick={onEnable}
+            disabled={enabling || blockEnable}
+            className={cn(CY.btnGhost, "px-3")}
+            style={clipSm}
+          >
             {enabling && <Loader2 className="inline mr-1.5 h-3 w-3 animate-spin" />}
             {enabling ? enablingLabel : enableLabel}
           </button>
@@ -796,9 +1049,25 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
   );
 
   return (
-    <DataPanel code="MODULE_04" title="SECURITY LAYER"
-      footerLeft={<span>TOTP: <b className={cn(twoFactor.enabled ? "text-primary" : "text-muted-foreground")}>{twoFactor.enabled ? "ON" : "OFF"}</b></span>}
-      footerRight={<span>EMAIL: <b className={cn(twoFactor.emailEnabled ? "text-[hsl(195,100%,50%)]" : "text-muted-foreground")}>{twoFactor.emailEnabled ? "ON" : "OFF"}</b></span>}
+    <DataPanel
+      code="MODULE_04"
+      title="SECURITY LAYER"
+      footerLeft={
+        <span>
+          TOTP:{" "}
+          <b className={cn(twoFactor.enabled ? "text-primary" : "text-muted-foreground")}>
+            {twoFactor.enabled ? "ON" : "OFF"}
+          </b>
+        </span>
+      }
+      footerRight={
+        <span>
+          EMAIL:{" "}
+          <b className={cn(twoFactor.emailEnabled ? "text-[hsl(195,100%,50%)]" : "text-muted-foreground")}>
+            {twoFactor.emailEnabled ? "ON" : "OFF"}
+          </b>
+        </span>
+      }
     >
       <div className="py-5 space-y-2">
         {/* TOTP */}
@@ -821,22 +1090,39 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
           <CornerBrackets dim />
           <div className="flex items-center justify-between gap-4 px-4 py-3.5">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 bg-primary/8 border border-primary/20 shrink-0" style={{ clipPath: "polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%)" }}>
+              <div
+                className="flex items-center justify-center w-8 h-8 bg-primary/8 border border-primary/20 shrink-0"
+                style={{ clipPath: "polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%)" }}
+              >
                 <Mail className="h-3.5 w-3.5 text-primary/70" />
               </div>
               <div className="space-y-1">
                 <p className="text-[11px] font-mono text-primary/65 tracking-wider">{t("twoFactor.email2fa.title")}</p>
-                <StatusChip active={twoFactor.emailEnabled} activeLabel={t("twoFactor.email2fa.active")} inactiveLabel={t("twoFactor.email2fa.inactive")} />
+                <StatusChip
+                  active={twoFactor.emailEnabled}
+                  activeLabel={t("twoFactor.email2fa.active")}
+                  inactiveLabel={t("twoFactor.email2fa.inactive")}
+                />
               </div>
             </div>
 
             {twoFactor.emailEnabled ? (
-              <button onClick={handleDisableEmail2FA} disabled={disablingEmail} className={cn(CY.btnDestructive, "px-3")} style={clipSm}>
+              <button
+                onClick={handleDisableEmail2FA}
+                disabled={disablingEmail}
+                className={cn(CY.btnDestructive, "px-3")}
+                style={clipSm}
+              >
                 {disablingEmail && <Loader2 className="inline mr-1.5 h-3 w-3 animate-spin" />}
                 {disablingEmail ? t("twoFactor.email2fa.disabling") : t("twoFactor.email2fa.disable")}
               </button>
             ) : (
-              <button onClick={handleEnableEmail2FA} disabled={enablingEmail || showEmailConfirm} className={cn(CY.btnGhost, "px-3")} style={clipSm}>
+              <button
+                onClick={handleEnableEmail2FA}
+                disabled={enablingEmail || showEmailConfirm}
+                className={cn(CY.btnGhost, "px-3")}
+                style={clipSm}
+              >
                 {enablingEmail && <Loader2 className="inline mr-1.5 h-3 w-3 animate-spin" />}
                 {enablingEmail ? t("twoFactor.email2fa.enabling") : t("twoFactor.email2fa.enable")}
               </button>
@@ -846,21 +1132,41 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
           {/* OTP confirm flow */}
           <AnimatePresence>
             {showEmailConfirm && !twoFactor.emailEnabled && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden border-t border-primary/10">
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden border-t border-primary/10"
+              >
                 <div className="px-4 py-5 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="h-px flex-1 bg-gradient-to-r from-primary/20 to-transparent" />
-                    <span className="text-[8px] font-mono text-primary/35 tracking-[0.25em] uppercase">Verification Code</span>
+                    <span className="text-[8px] font-mono text-primary/35 tracking-[0.25em] uppercase">
+                      Verification Code
+                    </span>
                     <div className="h-px flex-1 bg-gradient-to-l from-primary/20 to-transparent" />
                   </div>
 
-                  <p className="text-[9px] text-primary/25 font-mono tracking-wider text-center">{t("twoFactor.email2fa.confirmDesc")}</p>
+                  <p className="text-[9px] text-primary/25 font-mono tracking-wider text-center">
+                    {t("twoFactor.email2fa.confirmDesc")}
+                  </p>
 
                   <div className="flex justify-center">
                     <InputOTP maxLength={6} value={emailConfirmCode} onChange={setEmailConfirmCode}>
                       <InputOTPGroup className="gap-1.5">
                         {[0, 1, 2, 3, 4, 5].map((i) => (
-                          <InputOTPSlot key={i} index={i} className={cn("w-10 h-12 rounded-none font-mono text-base", "bg-[#010608] border-primary/20", "focus:border-primary/60", "text-primary/80 tracking-widest")} style={clipSm} />
+                          <InputOTPSlot
+                            key={i}
+                            index={i}
+                            className={cn(
+                              "w-10 h-12 rounded-none font-mono text-base",
+                              "bg-[#010608] border-primary/20",
+                              "focus:border-primary/60",
+                              "text-primary/80 tracking-widest",
+                            )}
+                            style={clipSm}
+                          />
                         ))}
                       </InputOTPGroup>
                     </InputOTP>
@@ -879,7 +1185,9 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
                     style={clipSm}
                   >
                     {confirmingEmail && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                    {confirmingEmail ? t("twoFactor.email2fa.confirming") : `[ ${t("twoFactor.email2fa.confirmButton")} ]`}
+                    {confirmingEmail
+                      ? t("twoFactor.email2fa.confirming")
+                      : `[ ${t("twoFactor.email2fa.confirmButton")} ]`}
                   </button>
                 </div>
               </motion.div>
