@@ -20,8 +20,8 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
   const [openCount, setOpenCount] = useState(0);
   const openTimestampsRef = useRef<number[]>([]);
   
-  const pressTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const tapResetTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const pressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tapResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressStartRef = useRef<number>(0);
   const pressActiveRef = useRef(false);
 
