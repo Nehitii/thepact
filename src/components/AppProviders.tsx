@@ -11,6 +11,7 @@ import { I18nProvider } from "@/contexts/I18nProvider";
 import { SoundProvider } from "@/contexts/SoundContext";
 import { SoundSettingsSync } from "@/components/sound/SoundSettingsSync";
 import { ProfilePreferencesSync } from "@/components/profile/ProfilePreferencesSync";
+import { AccentColorSync } from "@/components/profile/AccentColorSync";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
           <BrowserRouter>
             <AuthProvider>
               <ProfilePreferencesSync />
+              <AccentColorSync />
               <I18nProvider>
                 <SoundProvider>
                   <SoundSettingsSync />
