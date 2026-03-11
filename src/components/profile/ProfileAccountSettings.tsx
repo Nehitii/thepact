@@ -18,6 +18,9 @@ import {
   Fingerprint,
   KeyRound,
   Activity,
+  Trash2,
+  History,
+  LogOut,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -36,6 +40,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTwoFactor } from "@/hooks/useTwoFactor";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useQuery } from "@tanstack/react-query";
 import {
   SettingsBreadcrumb, CyberSeparator, DataPanel, SyncIndicator, TerminalLog,
 } from "@/components/profile/settings-ui";
@@ -336,6 +341,12 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
       {/* ─── SECTION 04 : 2FA ───────────────────────────────────────── */}
       <TwoFactorSection onLog={addLog} />
 
+      {/* ─── SECTION 05 : Sessions & Login History ──────────────────── */}
+      <SessionsSection userId={userId} onLog={addLog} />
+
+      {/* ─── SECTION 06 : Danger Zone ───────────────────────────────── */}
+      <DangerZoneSection onLog={addLog} />
+
       {/* ─── Save ───────────────────────────────────────────────────── */}
       <div className="flex justify-end pt-2">
         <motion.button
@@ -372,6 +383,188 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
       <TerminalLog lines={logLines} />
       <div className="h-8" />
     </motion.div>
+  );
+}
+
+// ─── Sessions & Login History ─────────────────────────────────────────────────
+function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
+  const { toast } = useToast();
+  const [signingOut, setSigningOut] = useState(false);
+
+  const { data: loginHistory, isLoading } = useQuery({
+    queryKey: ["security-events", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("security_events")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!userId,
+  });
+
+  const handleSignOutAll = async () => {
+    setSigningOut(true);
+    try {
+      const { error } = await supabase.auth.signOut({ scope: "others" as any });
+      if (error) throw error;
+      onLog("ALL OTHER SESSIONS TERMINATED", "ok");
+      toast({ title: "Sessions terminées", description: "Toutes les autres sessions ont été déconnectées." });
+    } catch (e: any) {
+      onLog("SESSION TERMINATION FAILED", "warn");
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setSigningOut(false);
+    }
+  };
+
+  return (
+    <DataPanel code="MODULE_05" title="SESSIONS & HISTORIQUE" footerLeft={<span>EVENTS: <b className="text-primary">{loginHistory?.length || 0}</b></span>}>
+      <div className="py-5 space-y-4">
+        {/* Sign out all */}
+        <button
+          onClick={handleSignOutAll}
+          disabled={signingOut}
+          className={cn(
+            "flex items-center gap-2 px-4 py-2.5 w-full border border-primary/20 bg-primary/[0.03] hover:border-primary/40 hover:bg-primary/[0.06] transition-colors",
+            "font-mono text-[10px] tracking-[0.18em] uppercase text-primary/70 hover:text-primary"
+          )}
+          style={clipSm}
+        >
+          <LogOut className="h-3.5 w-3.5" />
+          {signingOut ? "PROCESSING..." : "DÉCONNECTER TOUTES LES AUTRES SESSIONS"}
+        </button>
+
+        {/* Login history */}
+        <div className="space-y-1">
+          <p className="text-[9px] text-primary/40 font-mono tracking-wider uppercase mb-2">Historique de connexion</p>
+          {isLoading ? (
+            <div className="flex justify-center py-4"><Loader2 className="h-4 w-4 animate-spin text-primary" /></div>
+          ) : !loginHistory || loginHistory.length === 0 ? (
+            <p className="text-[10px] text-muted-foreground font-mono text-center py-4">Aucun événement enregistré</p>
+          ) : (
+            <div className="space-y-1 max-h-[200px] overflow-y-auto">
+              {loginHistory.map((event: any) => (
+                <div key={event.id} className="flex items-center gap-3 px-3 py-2 border border-primary/8 bg-primary/[0.01] text-[10px] font-mono">
+                  <History className="h-3 w-3 text-primary/40 shrink-0" />
+                  <span className="text-primary/60 uppercase tracking-wider flex-1 truncate">{event.event_type}</span>
+                  <span className="text-muted-foreground shrink-0">{new Date(event.created_at).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </DataPanel>
+  );
+}
+
+// ─── Danger Zone ──────────────────────────────────────────────────────────────
+function DangerZoneSection({ onLog }: { onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { session } = useAuth();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== "DELETE") return;
+    setIsDeleting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-account", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      onLog("ACCOUNT DELETION: COMPLETE", "warn");
+      await supabase.auth.signOut();
+      navigate("/auth");
+    } catch (e: any) {
+      onLog("ACCOUNT DELETION FAILED", "warn");
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+      setDeleteConfirm("");
+    }
+  };
+
+  return (
+    <>
+      <DataPanel code="MODULE_06" title="⚠ DANGER ZONE" statusText={<span className="text-red-400">ZONE CRITIQUE</span>}>
+        <div className="py-5">
+          <div className="border border-red-500/20 bg-red-950/10 p-4" style={clipSm}>
+            <div className="flex items-start gap-3">
+              <Trash2 className="h-5 w-5 text-red-400/60 shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-2">
+                <p className="text-xs font-mono text-red-400/80 tracking-wider uppercase font-bold">Supprimer le compte</p>
+                <p className="text-[10px] text-red-400/50 font-mono leading-relaxed">
+                  Cette action est irréversible. Toutes tes données, objectifs, pacts, et historiques seront définitivement supprimés.
+                </p>
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className={cn(
+                    "px-4 py-2 border border-red-500/30 bg-red-950/30 text-red-400",
+                    "hover:bg-red-900/40 hover:border-red-400/50",
+                    "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors"
+                  )}
+                  style={clipSm}
+                >
+                  SUPPRIMER MON COMPTE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DataPanel>
+
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="bg-background border-red-500/30 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-400 font-orbitron tracking-wider flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" /> SUPPRESSION DU COMPTE
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs font-mono">
+              Cette action est définitive. Tape <span className="text-red-400 font-bold">DELETE</span> pour confirmer.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              value={deleteConfirm}
+              onChange={(e) => setDeleteConfirm(e.target.value)}
+              placeholder='Tape "DELETE" pour confirmer'
+              className="font-mono text-sm border-red-500/25 bg-red-950/10 text-red-400 rounded-none"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <button
+              onClick={() => { setShowDeleteModal(false); setDeleteConfirm(""); }}
+              className={cn(CY.btnGhost, "px-4")}
+              style={clipSm}
+            >
+              ANNULER
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirm !== "DELETE" || isDeleting}
+              className={cn(
+                "px-4 py-2 border border-red-500/40 bg-red-950/40 text-red-400",
+                "hover:bg-red-900/50 hover:border-red-400/60",
+                "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors",
+                "disabled:opacity-30 disabled:cursor-not-allowed"
+              )}
+              style={clipSm}
+            >
+              {isDeleting ? <><Loader2 className="inline h-3 w-3 animate-spin mr-1.5" /> SUPPRESSION...</> : "CONFIRMER LA SUPPRESSION"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 

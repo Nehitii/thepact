@@ -1,13 +1,15 @@
-import { useState } from "react";
-import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useState, useRef } from "react";
+import { Database, Download, BarChart3, Scale, Target, BookOpen, Wallet, Loader2, Heart, Upload, Trash2, AlertCircle } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -18,11 +20,21 @@ import {
 type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 
 export default function DataPortability() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [exportCategory, setExportCategory] = useState<ExportCategory>("all");
   const [isExporting, setIsExporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importPreview, setImportPreview] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Delete all data
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
 
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["user-stats", user?.id],
@@ -56,14 +68,9 @@ export default function DataPortability() {
         exportData = { ...exportData, journalEntries: journal };
       }
       if (exportCategory === "all" || exportCategory === "health") {
-        const { data: healthData, error: healthErr } = await supabase
-          .from("health_data")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("entry_date", { ascending: true });
+        const { data: healthData, error: healthErr } = await supabase.from("health_data").select("*").eq("user_id", user.id).order("entry_date", { ascending: true });
         if (!healthErr && healthData && healthData.length > 0) {
           if (exportCategory === "health") {
-            // CSV export for health-only
             const headers = ["Date","Sleep Hours","Sleep Quality","Wake Energy","Activity Level","Movement Minutes","Stress Level","Mental Load","Hydration Glasses","Meal Balance","Mood Level","Energy Morning","Energy Afternoon","Energy Evening","Notes"];
             const rows = healthData.map((d: Record<string, unknown>) => [
               d.entry_date, d.sleep_hours ?? "", d.sleep_quality ?? "", d.wake_energy ?? "",
@@ -75,11 +82,7 @@ export default function DataPortability() {
             const csv = [headers.join(","), ...rows.map((r: unknown[]) => r.join(","))].join("\n");
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `health-data-${new Date().toISOString().slice(0, 10)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
+            const a = document.createElement("a"); a.href = url; a.download = `health-data-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
             toast({ title: t("profile.data.exportComplete"), description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
             return;
           }
@@ -110,6 +113,71 @@ export default function DataPortability() {
       toast({ title: t("profile.data.exportFailed"), description: t("profile.data.exportError"), variant: "destructive" });
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImportFile(file);
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      setImportPreview({
+        category: parsed.category || "unknown",
+        exportedAt: parsed.exportedAt || "unknown",
+        goals: parsed.goals?.length || 0,
+        steps: parsed.steps?.length || 0,
+        journalEntries: parsed.journalEntries?.length || 0,
+      });
+    } catch {
+      toast({ title: "Fichier invalide", description: "Le fichier n'est pas un export JSON valide.", variant: "destructive" });
+      setImportFile(null);
+      setImportPreview(null);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importFile || !user?.id) return;
+    setIsImporting(true);
+    try {
+      const text = await importFile.text();
+      const data = JSON.parse(text);
+
+      // Import journal entries
+      if (data.journalEntries && data.journalEntries.length > 0) {
+        for (const entry of data.journalEntries) {
+          const { id, ...rest } = entry;
+          await supabase.from("journal_entries").upsert({ ...rest, user_id: user.id }, { onConflict: "id" });
+        }
+      }
+
+      toast({ title: "Import terminé", description: "Les données ont été importées avec succès." });
+      setImportFile(null);
+      setImportPreview(null);
+    } catch (e: any) {
+      toast({ title: "Erreur d'import", description: e.message, variant: "destructive" });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handleDeleteAllData = async () => {
+    if (resetConfirm !== "RESET") return;
+    setIsResetting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("delete-all-data", {
+        headers: { Authorization: `Bearer ${session?.access_token}` },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Données supprimées", description: "Toutes tes données ont été réinitialisées." });
+      setShowResetModal(false);
+      setResetConfirm("");
+    } catch (e: any) {
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -198,8 +266,50 @@ export default function DataPortability() {
         </div>
       </DataPanel>
 
-      {/* ── PANEL 3: Legal ── */}
-      <DataPanel code="MODULE_03" title="MENTIONS LÉGALES">
+      {/* ── PANEL 3: Import ── */}
+      <DataPanel code="MODULE_03" title="IMPORT DE DONNÉES">
+        <div className="py-4 space-y-4">
+          <p className="text-[11px] text-muted-foreground tracking-wide">
+            Restaure tes données à partir d'un fichier JSON exporté précédemment.
+          </p>
+
+          <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelect} />
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className={cn(
+              "w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors",
+              "border-primary/25 hover:border-primary/50 bg-primary/[0.03] hover:bg-primary/[0.06]",
+              "font-mono text-[10px] tracking-[0.18em] uppercase text-primary/60 hover:text-primary"
+            )}
+            style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}
+          >
+            <Upload className="h-4 w-4" />
+            {importFile ? importFile.name : "SÉLECTIONNER UN FICHIER .JSON"}
+          </button>
+
+          {importPreview && (
+            <div className="border border-primary/15 bg-primary/[0.03] p-3 space-y-2" style={{ clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
+              <p className="text-[9px] text-primary/40 font-mono tracking-wider uppercase">APERÇU DE L'IMPORT</p>
+              <div className="grid grid-cols-3 gap-2 text-[10px] font-mono">
+                <div className="text-center"><span className="text-primary font-bold">{importPreview.goals}</span><br /><span className="text-muted-foreground">Goals</span></div>
+                <div className="text-center"><span className="text-primary font-bold">{importPreview.steps}</span><br /><span className="text-muted-foreground">Steps</span></div>
+                <div className="text-center"><span className="text-primary font-bold">{importPreview.journalEntries}</span><br /><span className="text-muted-foreground">Journal</span></div>
+              </div>
+              <Button
+                onClick={handleImport}
+                disabled={isImporting}
+                className="w-full bg-primary/20 border border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider disabled:opacity-50 [clip-path:polygon(8px_0%,100%_0%,calc(100%-8px)_100%,0%_100%)]"
+              >
+                {isImporting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> IMPORT EN COURS...</> : <><Upload className="mr-2 h-4 w-4" /> IMPORTER LES DONNÉES</>}
+              </Button>
+            </div>
+          )}
+        </div>
+      </DataPanel>
+
+      {/* ── PANEL 4: Legal ── */}
+      <DataPanel code="MODULE_04" title="MENTIONS LÉGALES">
         <div className="py-4 space-y-3">
           <p className="text-[11px] text-muted-foreground tracking-wide">{t("profile.data.termsDesc")}</p>
           <Link to="/legal">
@@ -210,6 +320,75 @@ export default function DataPortability() {
           </Link>
         </div>
       </DataPanel>
+
+      {/* ── PANEL 5: Danger Zone — Delete All Data ── */}
+      <DataPanel code="MODULE_05" title="⚠ ZONE DE RÉINITIALISATION" statusText={<span className="text-red-400">DANGER</span>}>
+        <div className="py-5">
+          <div className="border border-red-500/20 bg-red-950/10 p-4" style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
+            <div className="flex items-start gap-3">
+              <Trash2 className="h-5 w-5 text-red-400/60 shrink-0 mt-0.5" />
+              <div className="flex-1 space-y-2">
+                <p className="text-xs font-mono text-red-400/80 tracking-wider uppercase font-bold">Supprimer toutes les données</p>
+                <p className="text-[10px] text-red-400/50 font-mono leading-relaxed">
+                  Supprime tous tes objectifs, pacts, journal, finances et historiques. Ton compte reste actif mais vide (fresh start).
+                </p>
+                <button
+                  onClick={() => setShowResetModal(true)}
+                  className={cn(
+                    "px-4 py-2 border border-red-500/30 bg-red-950/30 text-red-400",
+                    "hover:bg-red-900/40 hover:border-red-400/50",
+                    "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors"
+                  )}
+                  style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}
+                >
+                  RÉINITIALISER MES DONNÉES
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </DataPanel>
+
+      <Dialog open={showResetModal} onOpenChange={setShowResetModal}>
+        <DialogContent className="bg-background border-red-500/30 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-red-400 font-orbitron tracking-wider flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" /> RÉINITIALISATION
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs font-mono">
+              Tape <span className="text-red-400 font-bold">RESET</span> pour confirmer la suppression de toutes tes données.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              value={resetConfirm}
+              onChange={(e) => setResetConfirm(e.target.value)}
+              placeholder='Tape "RESET" pour confirmer'
+              className="font-mono text-sm border-red-500/25 bg-red-950/10 text-red-400 rounded-none"
+            />
+          </div>
+          <DialogFooter className="gap-2">
+            <button
+              onClick={() => { setShowResetModal(false); setResetConfirm(""); }}
+              className="px-4 py-2 border border-primary/12 text-primary/35 hover:text-primary/65 font-mono text-[10px] tracking-[0.22em] uppercase transition-all"
+            >
+              ANNULER
+            </button>
+            <button
+              onClick={handleDeleteAllData}
+              disabled={resetConfirm !== "RESET" || isResetting}
+              className={cn(
+                "px-4 py-2 border border-red-500/40 bg-red-950/40 text-red-400",
+                "hover:bg-red-900/50 hover:border-red-400/60",
+                "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors",
+                "disabled:opacity-30 disabled:cursor-not-allowed"
+              )}
+            >
+              {isResetting ? <><Loader2 className="inline h-3 w-3 animate-spin mr-1.5" /> SUPPRESSION...</> : "CONFIRMER"}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="h-8" />
     </ProfileSettingsShell>

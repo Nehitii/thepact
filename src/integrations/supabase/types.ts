@@ -230,6 +230,27 @@ export type Database = {
         }
         Relationships: []
       }
+      blocked_users: {
+        Row: {
+          blocked_user_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          blocked_user_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          blocked_user_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bond_balance: {
         Row: {
           balance: number
@@ -1433,6 +1454,8 @@ export type Database = {
           marketing_enabled: boolean
           progress_enabled: boolean
           push_enabled: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
           social_enabled: boolean
           system_enabled: boolean
           updated_at: string
@@ -1445,6 +1468,8 @@ export type Database = {
           marketing_enabled?: boolean
           progress_enabled?: boolean
           push_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
           social_enabled?: boolean
           system_enabled?: boolean
           updated_at?: string
@@ -1457,6 +1482,8 @@ export type Database = {
           marketing_enabled?: boolean
           progress_enabled?: boolean
           push_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
           social_enabled?: boolean
           system_enabled?: boolean
           updated_at?: string
@@ -1708,6 +1735,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent_color: string
           achievement_celebrations_enabled: boolean
           active_banner_id: string | null
           active_frame_id: string | null
@@ -1728,6 +1756,7 @@ export type Database = {
           custom_difficulty_name: string | null
           display_name: string | null
           displayed_badges: string[] | null
+          font_size: number
           goal_unlock_code: string | null
           height: number | null
           id: string
@@ -1753,6 +1782,7 @@ export type Database = {
           weight: number | null
         }
         Insert: {
+          accent_color?: string
           achievement_celebrations_enabled?: boolean
           active_banner_id?: string | null
           active_frame_id?: string | null
@@ -1773,6 +1803,7 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
+          font_size?: number
           goal_unlock_code?: string | null
           height?: number | null
           id: string
@@ -1798,6 +1829,7 @@ export type Database = {
           weight?: number | null
         }
         Update: {
+          accent_color?: string
           achievement_celebrations_enabled?: boolean
           active_banner_id?: string | null
           active_frame_id?: string | null
@@ -1818,6 +1850,7 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
+          font_size?: number
           goal_unlock_code?: string | null
           height?: number | null
           id?: string
