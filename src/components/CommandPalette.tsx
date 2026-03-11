@@ -98,8 +98,11 @@ export function CommandPalette() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // Référence pour limiter la zone de drag à l'écran
+  // Limites pour le drag
   const constraintsRef = useRef<HTMLDivElement>(null);
+
+  // Tracking du drag en cours pour annuler le clic intempestif
+  const isDragging = useRef(false);
 
   // Ctrl+K / Cmd+K to toggle
   useEffect(() => {
@@ -129,20 +132,27 @@ export function CommandPalette() {
 
   return (
     <>
-      {/* Zone de contrainte invisible prenant tout l'écran */}
       <div ref={constraintsRef} className="fixed inset-4 md:inset-8 z-50 pointer-events-none" aria-hidden="true" />
 
-      {/* Pilule de recherche flottante et déplaçable */}
       <motion.div
         drag
         dragConstraints={constraintsRef}
-        dragElastic={0.15} // Donne l'effet "sticky" (magnétique/rebond) sur les bords
+        dragElastic={0.15}
         dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }}
+        // Activation du flag pendant le drag
+        onDragStart={() => {
+          isDragging.current = true;
+        }}
+        // Désactivation du flag avec un léger délai pour ignorer le clic
+        onDragEnd={() => {
+          setTimeout(() => {
+            isDragging.current = false;
+          }, 150);
+        }}
         whileHover={{ scale: 1.02 }}
         whileDrag={{ scale: 1.05, cursor: "grabbing" }}
-        className="fixed bottom-6 right-6 z-[60] pointer-events-auto flex items-center shadow-[0_0_20px_rgba(0,242,255,0.15)] rounded-full bg-[#03060A]/85 backdrop-blur-md border border-[#00F2FF]/30 p-1 cursor-grab active:cursor-grabbing"
+        className="fixed bottom-6 right-6 z-[999] pointer-events-auto flex items-center shadow-[0_0_20px_rgba(0,242,255,0.15)] rounded-full bg-[#03060A]/85 backdrop-blur-md border border-[#00F2FF]/30 p-1 cursor-grab active:cursor-grabbing"
       >
-        {/* Poignée de drag (Grip) */}
         <div
           className="flex items-center justify-center p-2 text-white/30 hover:text-white/80 transition-colors"
           title="Drag to move"
@@ -150,9 +160,16 @@ export function CommandPalette() {
           <GripVertical className="h-4 w-4" />
         </div>
 
-        {/* Bouton pour ouvrir la recherche */}
         <button
-          onClick={() => setOpen(true)}
+          onClick={(e) => {
+            // Si on était en train de drag, on bloque purement et simplement l'action
+            if (isDragging.current) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            setOpen(true);
+          }}
           className="flex items-center gap-2 pr-5 pl-1 py-2 text-[#00F2FF]/80 hover:text-[#00F2FF] transition-all outline-none"
         >
           <Search className="h-4 w-4" />
