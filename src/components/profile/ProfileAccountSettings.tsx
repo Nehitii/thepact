@@ -2,11 +2,9 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import {
-  Calendar as CalendarIcon,
   Loader2,
   User,
   ShieldCheck,
-  ChevronRight,
   Lock,
   Eye,
   EyeOff,
@@ -24,8 +22,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import {
   Dialog,
@@ -97,9 +93,7 @@ const CyberPanel = ({
       className={cn("relative border bg-gradient-to-br p-6 md:p-8", borderColor, bgGrad)}
       style={{ clipPath: "polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)" }}
     >
-      {/* Decals */}
       <div className={cn("absolute top-0 left-0 w-8 h-[2px]", accent === "red" ? "bg-red-500" : "bg-[#00F2FF]")} />
-
       <div className="flex items-center gap-3 mb-8 border-b border-white/5 pb-4">
         <span className={cn("w-2 h-2 rounded-none animate-pulse", accent === "red" ? "bg-red-500" : "bg-[#00F2FF]")} />
         <h3 className={cn("font-orbitron tracking-[0.2em] text-sm uppercase", textColor)}>{title}</h3>
@@ -127,10 +121,119 @@ const CyberInput = ({ label, className, ...props }: any) => (
   </div>
 );
 
+// ─── Component: Cyber Birthday Picker (3 Dropdowns) ───
+function CyberBirthdayPicker({
+  value,
+  onChange,
+  label,
+}: {
+  value: Date | undefined;
+  onChange: (d: Date) => void;
+  label: string;
+}) {
+  const dateLocale = useDateFnsLocale();
+
+  // Generates past 100 years
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 100 }).map((_, i) => currentYear - i);
+  }, []);
+
+  // Generates 12 months, localized
+  const months = useMemo(() => {
+    return Array.from({ length: 12 }).map((_, i) => ({
+      value: i,
+      label: format(new Date(2000, i, 1), "MMM", { locale: dateLocale }).toUpperCase(),
+    }));
+  }, [dateLocale]);
+
+  const [year, setYear] = useState<number | undefined>(value?.getFullYear());
+  const [month, setMonth] = useState<number | undefined>(value?.getMonth());
+  const [day, setDay] = useState<number | undefined>(value?.getDate());
+
+  useEffect(() => {
+    if (value) {
+      setYear(value.getFullYear());
+      setMonth(value.getMonth());
+      setDay(value.getDate());
+    }
+  }, [value]);
+
+  // Automatically adjust maximum days based on selected month/year (handles leap years)
+  const daysInMonth = year !== undefined && month !== undefined ? new Date(year, month + 1, 0).getDate() : 31;
+  const days = useMemo(() => Array.from({ length: daysInMonth }).map((_, i) => i + 1), [daysInMonth]);
+
+  const handleUpdate = (y?: number, m?: number, d?: number) => {
+    let newY = y !== undefined ? y : year;
+    let newM = m !== undefined ? m : month;
+    let newD = d !== undefined ? d : day;
+
+    if (newY !== undefined && newM !== undefined && newD !== undefined) {
+      const max = new Date(newY, newM + 1, 0).getDate();
+      if (newD > max) newD = max; // Clamp day if user switches from Jan 31 to Feb
+    }
+
+    setYear(newY);
+    setMonth(newM);
+    setDay(newD);
+
+    if (newY !== undefined && newM !== undefined && newD !== undefined) {
+      onChange(new Date(newY, newM, newD));
+    }
+  };
+
+  return (
+    <div className="space-y-2 group">
+      <label className="text-[10px] font-mono tracking-[0.2em] text-white/40 uppercase group-focus-within:text-[#00F2FF] transition-colors flex items-center gap-2">
+        <span className="text-[#00F2FF]/40">{">"}</span> {label}
+      </label>
+      <div className="flex gap-2 w-full">
+        <Select value={day?.toString()} onValueChange={(v) => handleUpdate(year, month, parseInt(v))}>
+          <SelectTrigger className="bg-white/5 border-none border-b-2 border-white/10 rounded-none h-[68px] font-mono text-sm focus:ring-0 focus:border-[#00F2FF] text-white flex-1 transition-colors hover:bg-[#00F2FF]/5">
+            <SelectValue placeholder="DD" />
+          </SelectTrigger>
+          <SelectContent className="bg-black border-[#00F2FF]/30 rounded-none font-mono">
+            {days.map((d) => (
+              <SelectItem key={d} value={d.toString()}>
+                {d.toString().padStart(2, "0")}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={month?.toString()} onValueChange={(v) => handleUpdate(year, parseInt(v), day)}>
+          <SelectTrigger className="bg-white/5 border-none border-b-2 border-white/10 rounded-none h-[68px] font-mono text-sm focus:ring-0 focus:border-[#00F2FF] text-white flex-[1.2] transition-colors hover:bg-[#00F2FF]/5">
+            <SelectValue placeholder="MM" />
+          </SelectTrigger>
+          <SelectContent className="bg-black border-[#00F2FF]/30 rounded-none font-mono max-h-[300px]">
+            {months.map((m) => (
+              <SelectItem key={m.value} value={m.value.toString()}>
+                {m.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select value={year?.toString()} onValueChange={(v) => handleUpdate(parseInt(v), month, day)}>
+          <SelectTrigger className="bg-white/5 border-none border-b-2 border-white/10 rounded-none h-[68px] font-mono text-sm focus:ring-0 focus:border-[#00F2FF] text-white flex-[1.5] transition-colors hover:bg-[#00F2FF]/5">
+            <SelectValue placeholder="YYYY" />
+          </SelectTrigger>
+          <SelectContent className="bg-black border-[#00F2FF]/30 rounded-none font-mono max-h-[300px]">
+            {years.map((y) => (
+              <SelectItem key={y} value={y.toString()}>
+                {y}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSettingsProps) {
   const { t, i18n } = useTranslation();
-  const dateLocale = useDateFnsLocale();
   const { toast } = useToast();
   const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
 
@@ -241,29 +344,14 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
                     value={formData.displayName}
                     onChange={(e: any) => setFormData((p) => ({ ...p, displayName: e.target.value }))}
                   />
-                  <div className="space-y-2 group">
-                    <label className="text-[10px] font-mono tracking-[0.2em] text-white/40 uppercase">
-                      <span className="text-[#00F2FF]/40">{">"}</span> {t("profile.birthday")}
-                    </label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button className="w-full flex items-center justify-between bg-white/5 border-b-2 border-white/10 px-4 h-[68px] font-mono text-sm text-white/80 hover:bg-[#00F2FF]/5 hover:border-[#00F2FF] transition-all">
-                          <span className="flex items-center gap-3">
-                            <CalendarIcon className="h-4 w-4 text-[#00F2FF]/50" />
-                            {formData.birthday ? format(formData.birthday, "PPP", { locale: dateLocale }) : "[ NULL ]"}
-                          </span>
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="bg-black border border-[#00F2FF]/30 rounded-none shadow-[0_0_30px_rgba(0,242,255,0.1)] p-0">
-                        <Calendar
-                          mode="single"
-                          selected={formData.birthday}
-                          onSelect={(d) => setFormData((p) => ({ ...p, birthday: d }))}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+
+                  {/* NEW CYBER BIRTHDAY PICKER */}
+                  <CyberBirthdayPicker
+                    label={t("profile.birthday")}
+                    value={formData.birthday}
+                    onChange={(d) => setFormData((p) => ({ ...p, birthday: d }))}
+                  />
+                  {/* END CYBER BIRTHDAY PICKER */}
                 </div>
               </CyberPanel>
 
@@ -555,7 +643,6 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
             </div>
             <StatusTag active={twoFactor.emailEnabled} />
           </div>
-          {/* Note: Simplified interaction here for brevity, original logic can be injected back if you want full OTP flow here */}
           <button disabled className="text-[10px] font-mono text-white/30 uppercase tracking-widest">
             {">"} LOCKED (CLI ONLY)
           </button>
