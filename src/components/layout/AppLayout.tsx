@@ -7,11 +7,9 @@ export function AppLayout() {
     <div className="flex min-h-screen w-full">
       <AppSidebar />
 
-      <div className="flex-1 min-w-0 overflow-x-hidden overflow-hidden isolate flex flex-col">
-        {/* Command Palette trigger (bottom-left, fixed) */}
-        <div className="fixed bottom-4 left-4 z-50 md:left-auto md:ml-4">
-          <CommandPalette />
-        </div>
+      <div className="flex-1 min-w-0 overflow-x-hidden overflow-hidden isolate flex flex-col relative">
+        {/* Le composant gère désormais lui-même sa position et ses limites (drag) */}
+        <CommandPalette />
 
         {/* Main content */}
         <div className="flex-1 min-w-0 overflow-x-clip overflow-y-auto">
