@@ -10,6 +10,8 @@ export type ProfileSettings = {
   reduce_motion: boolean;
   particles_enabled: boolean;
   particles_intensity: number;
+  accent_color: string;
+  font_size: number;
 
   community_profile_discoverable: boolean;
   show_activity_status: boolean;
@@ -20,7 +22,7 @@ export type ProfileSettings = {
 };
 
 const PROFILE_SETTINGS_SELECT =
-  "id, theme_preference, reduce_motion, particles_enabled, particles_intensity, community_profile_discoverable, show_activity_status, share_goals_progress, share_achievements, community_updates_enabled, achievement_celebrations_enabled";
+  "id, theme_preference, reduce_motion, particles_enabled, particles_intensity, accent_color, font_size, community_profile_discoverable, show_activity_status, share_goals_progress, share_achievements, community_updates_enabled, achievement_celebrations_enabled";
 
 export function useProfileSettings() {
   const { user } = useAuth();
