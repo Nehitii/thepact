@@ -4,15 +4,18 @@ import { CommandPalette } from "@/components/CommandPalette";
 
 export function AppLayout() {
   return (
-    <div className="flex min-h-screen w-full">
+    <div className="flex min-h-screen w-full relative">
+      {/* La palette est maintenant à la racine du layout.
+        Elle n'est plus bloquée par la classe "isolate" du contenu.
+        Elle passera par-dessus la Sidebar et le contenu principal.
+      */}
+      <CommandPalette />
+
       <AppSidebar />
 
-      <div className="flex-1 min-w-0 overflow-x-hidden overflow-hidden isolate flex flex-col relative">
-        {/* Le composant gère désormais lui-même sa position et ses limites (drag) */}
-        <CommandPalette />
-
+      <div className="flex-1 min-w-0 overflow-x-hidden overflow-hidden isolate flex flex-col">
         {/* Main content */}
-        <div className="flex-1 min-w-0 overflow-x-clip overflow-y-auto">
+        <div className="flex-1 min-w-0 overflow-x-clip overflow-y-auto relative z-0">
           <Outlet />
         </div>
       </div>
