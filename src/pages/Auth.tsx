@@ -1,78 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 /* ═══════════════════════════════════════════════════════════
-   VOWPACT — Auth v6 (The "Monolith" Overhaul)
-   - Asymmetrical Split-Screen Layout
-   - Abstract Fluid Orbs (CSS-only, high performance)
-   - Brutalist / High-End Minimalist Form
+   VOWPACT — Auth v7 (Deep Cyber Terminal)
+   - Hexadecimal Data Rain
+   - Clip-path Sci-Fi Borders
+   - Glitch UI & Command Prompt Inputs
 ═══════════════════════════════════════════════════════════ */
 
-/* ── Minimalist Input Field ── */
-function MonolithField({ id, type, placeholder, value, onChange, disabled, label }: any) {
+/* ── Hexadecimal Background Stream ── */
+function HexDataStream() {
+  const [data, setData] = useState<string[]>([]);
+
+  useEffect(() => {
+    const chars = "0123456789ABCDEF";
+    const generateLine = () =>
+      Array.from({ length: 40 })
+        .map(() => chars[Math.floor(Math.random() * chars.length)])
+        .join(" ");
+
+    setData(Array.from({ length: 30 }).map(generateLine));
+
+    const interval = setInterval(() => {
+      setData((prev) => [generateLine(), ...prev.slice(0, 29)]);
+    }, 150);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="hex-stream" aria-hidden="true">
+      {data.map((line, i) => (
+        <div key={i} className="hex-line" style={{ opacity: 1 - i * 0.03 }}>
+          {line}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Cyber Terminal Input ── */
+function CyberTerminalField({ id, type, placeholder, value, onChange, disabled, label }: any) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <div className="monolith-field" style={{ position: "relative", marginBottom: "40px" }}>
-      <label
-        htmlFor={id}
-        style={{
-          display: "block",
-          fontFamily: "var(--f-orbit)",
-          fontSize: "10px",
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          color: focused ? "var(--c-cyan)" : "rgba(255,255,255,0.4)",
-          marginBottom: "10px",
-          transition: "color 0.4s ease",
-        }}
-      >
-        {label}
-      </label>
-      <input
-        id={id}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        disabled={disabled}
-        className="monolith-input"
-        style={{
-          width: "100%",
-          background: "transparent",
-          border: "none",
-          borderBottom: "1px solid rgba(255,255,255,0.1)",
-          padding: "10px 0 15px 0",
-          color: "#fff",
-          fontFamily: "var(--f-mono)",
-          fontSize: "18px",
-          outline: "none",
-          transition: "all 0.4s ease",
-        }}
-      />
-      {/* Animated Bottom Line */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: focused ? 1 : 0 }}
-        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "2px",
-          background: "var(--c-cyan)",
-          transformOrigin: "left",
-          boxShadow: "0 0 15px var(--c-cyan)",
-        }}
-      />
+    <div className={`cyber-field-container ${focused ? "focused" : ""}`}>
+      <div className="cyber-field-label">
+        <span className="blink-arrow">{">"}</span> {label}
+      </div>
+      <div className="cyber-input-wrapper">
+        <input
+          id={id}
+          type={type}
+          placeholder={focused ? "" : placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          disabled={disabled}
+          className="cyber-input"
+        />
+        {focused && <span className="cursor-block"></span>}
+      </div>
     </div>
   );
 }
@@ -88,8 +82,8 @@ export default function Auth() {
   const { toast } = useToast();
 
   const authSchema = z.object({
-    email: z.string().email(t("auth.invalidEmail") || "Invalid email format"),
-    password: z.string().min(6, t("auth.passwordMin") || "Minimum 6 characters required"),
+    email: z.string().email(t("auth.invalidEmail") || "ERR: INVALID_FORMAT"),
+    password: z.string().min(6, t("auth.passwordMin") || "ERR: INSUFFICIENT_LENGTH"),
   });
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -97,11 +91,7 @@ export default function Auth() {
     setLoading(true);
     const validation = authSchema.safeParse({ email, password });
     if (!validation.success) {
-      toast({
-        title: t("auth.validationError"),
-        description: validation.error.errors[0].message,
-        variant: "destructive",
-      });
+      toast({ title: "SYSTEM ERROR", description: validation.error.errors[0].message, variant: "destructive" });
       setLoading(false);
       return;
     }
@@ -117,110 +107,112 @@ export default function Auth() {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        toast({ title: t("common.success"), description: t("auth.accountCreated") });
+        toast({ title: "SUCCESS", description: "IDENTITY ESTABLISHED." });
         setIsLogin(true);
       }
     } catch (err: any) {
-      toast({ title: t("common.error"), description: err.message, variant: "destructive" });
+      toast({ title: "ACCESS DENIED", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth-monolith-layout">
+    <div className="cyber-auth-layout">
       <style>{STYLES}</style>
 
-      {/* --- LEFT SIDE : VISUAL ART --- */}
-      <div className="auth-visual-side">
-        {/* Abstract Fluid Gradient Background */}
-        <div className="fluid-container">
-          <div className="orb orb-1"></div>
-          <div className="orb orb-2"></div>
-          <div className="orb orb-3"></div>
-        </div>
+      {/* Background Overlays */}
+      <HexDataStream />
+      <div className="scanlines"></div>
+      <div className="vignette"></div>
 
-        {/* Global Grid Overlay */}
-        <div className="cyber-grid-overlay"></div>
+      {/* Crosshairs & HUD elements */}
+      <div className="hud-corner top-left"></div>
+      <div className="hud-corner top-right"></div>
+      <div className="hud-corner bottom-left"></div>
+      <div className="hud-corner bottom-right"></div>
 
-        {/* Branding */}
-        <div className="brand-container">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <h1 className="brand-title">VOWPACT</h1>
-            <p className="brand-subtitle">THE ULTIMATE COMMITMENT FRAMEWORK.</p>
-          </motion.div>
-        </div>
+      <div className="hud-rec">
+        <span className="rec-dot"></span> REC
       </div>
 
-      {/* --- RIGHT SIDE : FORM --- */}
-      <div className="auth-form-side">
+      <div className="cyber-content-wrapper">
+        {/* LEFT: Branding & Lore */}
         <motion.div
-          className="form-wrapper"
-          initial={{ opacity: 0, x: 50 }}
+          className="cyber-branding"
+          initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.8 }}
         >
-          {/* Top Status */}
-          <div className="system-status">
-            <span className="status-dot pulse"></span>
-            SYSTEM ONLINE — AWAITING CREDENTIALS
+          <div className="tech-badge">SEC. LEVEL 04 // OVERRIDE</div>
+          <h1 className="glitch-title" data-text="VOWPACT">
+            VOWPACT
+          </h1>
+          <div className="barcode">||| | || ||| | ||| | || | |||</div>
+          <p className="lore-text">
+            WARNING: UNAUTHORIZED ACCESS IS STRICTLY PROHIBITED.
+            <br />
+            ALL PROTOCOLS ARE MONITORED. MAKE YOUR PACT.
+          </p>
+        </motion.div>
+
+        {/* RIGHT: Form Terminal */}
+        <motion.div
+          className="cyber-terminal"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <div className="terminal-header">
+            <div className="header-stripes">///</div>
+            <span>TERMINAL_OS v4.2</span>
+            <div className="status-indicator">ONLINE</div>
           </div>
 
-          {/* Dynamic Header */}
-          <div className="form-header">
-            <AnimatePresence mode="wait">
-              <motion.h2
-                key={isLogin ? "login" : "register"}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.3 }}
-                className="form-title"
-              >
-                {isLogin ? "Authenticate." : "Initialize."}
-              </motion.h2>
-            </AnimatePresence>
-            <p className="form-desc">
-              {isLogin ? "Enter your coordinates to access the nexus." : "Create your identity within the system."}
-            </p>
-          </div>
+          <div className="terminal-body">
+            <div className="auth-tabs">
+              <button type="button" onClick={() => setIsLogin(true)} className={isLogin ? "active" : ""}>
+                [ AUTHENTICATE ]
+              </button>
+              <button type="button" onClick={() => setIsLogin(false)} className={!isLogin ? "active" : ""}>
+                [ REGISTER ]
+              </button>
+            </div>
 
-          <form onSubmit={handleAuth} className="monolith-form">
-            <MonolithField
-              id="email"
-              type="email"
-              placeholder="agent@vowpact.io"
-              value={email}
-              onChange={setEmail}
-              disabled={loading}
-              label={t("common.email") || "Email Identity"}
-            />
-            <MonolithField
-              id="password"
-              type="password"
-              placeholder="••••••••••••"
-              value={password}
-              onChange={setPassword}
-              disabled={loading}
-              label={t("common.password") || "Access Code"}
-            />
+            <form onSubmit={handleAuth} className="terminal-form">
+              <CyberTerminalField
+                id="email"
+                type="email"
+                placeholder="identity@matrix.net"
+                value={email}
+                onChange={setEmail}
+                disabled={loading}
+                label={isLogin ? "REQ. IDENTITY_ID" : "SET IDENTITY_ID"}
+              />
+              <CyberTerminalField
+                id="password"
+                type="password"
+                placeholder="[ HIDDEN ]"
+                value={password}
+                onChange={setPassword}
+                disabled={loading}
+                label="REQ. ENCRYPTION_KEY"
+              />
 
-            <button type="submit" disabled={loading} className="monolith-submit-btn">
-              <span className="btn-text">{loading ? "PROCESSING..." : isLogin ? "ENTER NEXUS" : "ESTABLISH PACT"}</span>
-              <div className="btn-hover-effect"></div>
-            </button>
-          </form>
+              <button type="submit" disabled={loading} className="cyber-submit-btn">
+                <span className="btn-glitch-layer"></span>
+                <span className="btn-text">
+                  {loading ? "EXECUTING..." : isLogin ? "INITIATE_HANDSHAKE" : "FORGE_PACT"}
+                </span>
+                <div className="btn-corners"></div>
+              </button>
+            </form>
 
-          {/* Toggle Action */}
-          <div className="toggle-container">
-            <span className="toggle-text">{isLogin ? "New to the system?" : "Already established?"}</span>
-            <button type="button" onClick={() => setIsLogin(!isLogin)} disabled={loading} className="toggle-btn">
-              {isLogin ? "Request Access" : "Return to Login"}
-            </button>
+            <div className="sys-log">
+              {">"} SYSTEM READY...
+              <br />
+              {">"} AWAITING USER INPUT...
+            </div>
           </div>
         </motion.div>
       </div>
@@ -229,239 +221,176 @@ export default function Auth() {
 }
 
 const STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&family=Inter:wght@300;400;600&family=JetBrains+Mono:wght@400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap');
 
   :root {
-    --c-bg-dark: #030407;
-    --c-bg-panel: #0a0b10;
+    --bg-dark: #020202;
     --c-cyan: #00F2FF;
-    --c-purple: #7000FF;
+    --c-cyan-dim: rgba(0, 242, 255, 0.2);
+    --c-red: #FF003C;
     --f-orbit: 'Orbitron', sans-serif;
-    --f-inter: 'Inter', sans-serif;
     --f-mono: 'JetBrains Mono', monospace;
   }
 
-  body { margin: 0; background-color: var(--c-bg-dark); overflow-x: hidden; }
+  body { margin: 0; background-color: var(--bg-dark); color: var(--c-cyan); font-family: var(--f-mono); overflow: hidden; }
 
   /* ── Layout ── */
-  .auth-monolith-layout {
-    display: flex;
-    min-height: 100vh;
+  .cyber-auth-layout {
+    position: relative;
     width: 100vw;
-  }
-
-  .auth-visual-side {
-    position: relative;
-    flex: 1;
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: var(--c-bg-dark);
-    overflow: hidden;
   }
 
-  .auth-form-side {
-    flex: 1;
+  .cyber-content-wrapper {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 1200px;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background-color: var(--c-bg-panel);
-    border-left: 1px solid rgba(255,255,255,0.05);
+    gap: 60px;
     padding: 40px;
-    z-index: 10;
+    align-items: center;
   }
 
-  /* Responsive: Cache la partie visuelle sur mobile */
   @media (max-width: 968px) {
-    .auth-monolith-layout { flex-direction: column; }
-    .auth-visual-side { display: none; }
-    .auth-form-side { border-left: none; padding: 20px; }
+    .cyber-content-wrapper { flex-direction: column; gap: 40px; }
+    .cyber-branding { text-align: center; }
   }
 
-  /* ── Art Abstrait (Orbes fluides) ── */
-  .fluid-container {
+  /* ── Background Effects ── */
+  .hex-stream {
     position: absolute;
-    inset: 0;
-    filter: blur(80px); /* Magie du flou qui mélange les couleurs */
-    opacity: 0.6;
-    z-index: 1;
-  }
-
-  .orb {
-    position: absolute;
-    border-radius: 50%;
-    animation: drift linear infinite;
-  }
-
-  .orb-1 {
-    width: 600px; height: 600px;
-    background: var(--c-cyan);
-    top: -10%; left: -10%;
-    animation-duration: 25s;
-  }
-  .orb-2 {
-    width: 500px; height: 500px;
-    background: var(--c-purple);
-    bottom: -10%; right: -20%;
-    animation-duration: 30s;
-    animation-direction: reverse;
-  }
-  .orb-3 {
-    width: 400px; height: 400px;
-    background: #0055FF;
-    top: 40%; left: 30%;
-    animation-duration: 20s;
-  }
-
-  @keyframes drift {
-    0% { transform: rotate(0deg) translate(50px) rotate(0deg); }
-    100% { transform: rotate(360deg) translate(50px) rotate(-360deg); }
-  }
-
-  /* ── Grille Cyberpunk Globale ── */
-  .cyber-grid-overlay {
-    position: absolute;
-    inset: 0;
-    background-image: 
-      linear-gradient(to right, rgba(255,255,255,0.02) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,0.02) 1px, transparent 1px);
-    background-size: 50px 50px;
-    z-index: 2;
-    mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-    -webkit-mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-  }
-
-  /* ── Branding ── */
-  .brand-container {
-    position: relative;
-    z-index: 10;
-    text-align: center;
-  }
-  .brand-title {
-    font-family: var(--f-orbit);
-    font-weight: 900;
-    font-size: clamp(3rem, 8vw, 6rem);
-    color: #fff;
-    margin: 0;
-    letter-spacing: 0.2em;
-    text-shadow: 0 10px 40px rgba(0,242,255,0.4);
-  }
-  .brand-subtitle {
-    font-family: var(--f-mono);
-    color: var(--c-cyan);
-    font-size: 12px;
-    letter-spacing: 0.5em;
-    margin-top: 20px;
-  }
-
-  /* ── Formulaire ── */
-  .form-wrapper {
-    width: 100%;
-    max-width: 440px;
-    margin: 0 auto;
-  }
-
-  .system-status {
-    font-family: var(--f-mono);
+    top: 0; left: 0; right: 0; bottom: 0;
     font-size: 10px;
-    color: rgba(255,255,255,0.3);
-    letter-spacing: 0.1em;
-    margin-bottom: 60px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .status-dot {
-    width: 6px; height: 6px;
-    background-color: var(--c-cyan);
-    border-radius: 50%;
-  }
-  .pulse { animation: statusPulse 2s infinite; }
-  @keyframes statusPulse {
-    0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--c-cyan); }
-    50% { opacity: 0.3; box-shadow: none; }
-  }
-
-  .form-header { margin-bottom: 50px; }
-  .form-title {
-    font-family: var(--f-inter);
-    font-weight: 300;
-    font-size: 42px;
-    color: #fff;
-    margin: 0 0 10px 0;
-    letter-spacing: -0.02em;
-  }
-  .form-desc {
-    font-family: var(--f-inter);
-    color: rgba(255,255,255,0.5);
-    font-size: 15px;
-    margin: 0;
-  }
-
-  .monolith-input::placeholder { color: rgba(255,255,255,0.1); }
-  .monolith-input:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  /* ── Bouton d'action massif ── */
-  .monolith-submit-btn {
-    width: 100%;
-    position: relative;
-    background: #fff;
-    color: #000;
-    border: none;
+    line-height: 1.5;
+    color: rgba(0, 242, 255, 0.15);
+    word-wrap: break-word;
+    white-space: pre-wrap;
     padding: 20px;
-    font-family: var(--f-orbit);
-    font-weight: 900;
-    font-size: 14px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    cursor: pointer;
-    overflow: hidden;
-    margin-top: 20px;
-    transition: transform 0.2s;
-  }
-  .monolith-submit-btn:disabled { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); cursor: not-allowed; }
-  .monolith-submit-btn:active:not(:disabled) { transform: scale(0.98); }
-  
-  .btn-text { position: relative; z-index: 2; transition: color 0.3s; }
-  .monolith-submit-btn:hover:not(:disabled) .btn-text { color: #000; }
-
-  .btn-hover-effect {
-    position: absolute;
-    inset: 0;
-    background: var(--c-cyan);
-    transform: translateY(100%);
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 1;
-  }
-  .monolith-submit-btn:hover:not(:disabled) .btn-hover-effect {
-    transform: translateY(0);
+    overflow: hidden;
+    user-select: none;
+    mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
   }
 
-  /* ── Toggle bas de page ── */
-  .toggle-container {
-    margin-top: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    padding-top: 30px;
+  .scanlines {
+    position: absolute; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.2) 2px, rgba(0, 0, 0, 0.2) 4px);
   }
-  .toggle-text {
-    font-family: var(--f-inter);
-    font-size: 13px;
-    color: rgba(255,255,255,0.4);
+  .vignette {
+    position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.8) 100%);
   }
-  .toggle-btn {
-    background: none;
-    border: none;
-    color: var(--c-cyan);
-    font-family: var(--f-mono);
-    font-size: 12px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    cursor: pointer;
-    padding: 0;
-    transition: text-shadow 0.3s;
+
+  /* ── HUD Elements ── */
+  .hud-corner { position: absolute; width: 40px; height: 40px; border: 2px solid var(--c-cyan); z-index: 5; opacity: 0.5; }
+  .hud-corner.top-left { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+  .hud-corner.top-right { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+  .hud-corner.bottom-left { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+  .hud-corner.bottom-right { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+  .hud-rec {
+    position: absolute; top: 30px; left: 80px; font-family: var(--f-orbit); font-size: 12px; color: var(--c-red);
+    display: flex; align-items: center; gap: 8px; z-index: 5; font-weight: bold; letter-spacing: 2px;
   }
-  .toggle-btn:hover { text-shadow: 0 0 10px rgba(0,242,255,0.5); }
+  .rec-dot { width: 10px; height: 10px; background: var(--c-red); border-radius: 50%; animation: blink 1s infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* ── LEFT: Branding ── */
+  .cyber-branding { flex: 1; }
+  .tech-badge {
+    display: inline-block; padding: 4px 10px; border: 1px solid var(--c-cyan); background: var(--c-cyan-dim);
+    font-size: 10px; letter-spacing: 0.2em; margin-bottom: 20px;
+  }
+  
+  .glitch-title {
+    font-family: var(--f-orbit); font-weight: 900; font-size: clamp(3rem, 7vw, 5rem);
+    color: #fff; margin: 0; letter-spacing: 0.1em; position: relative;
+    text-shadow: 0 0 20px var(--c-cyan);
+  }
+  .glitch-title::before, .glitch-title::after {
+    content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--bg-dark);
+  }
+  .glitch-title::before {
+    left: 2px; text-shadow: -2px 0 var(--c-red); clip-path: inset(20% 0 80% 0);
+    animation: glitch-anim 2s infinite linear alternate-reverse;
+  }
+  .glitch-title::after {
+    left: -2px; text-shadow: -2px 0 var(--c-cyan); clip-path: inset(80% 0 10% 0);
+    animation: glitch-anim 3s infinite linear alternate-reverse;
+  }
+  @keyframes glitch-anim {
+    0% { clip-path: inset(20% 0 80% 0); }
+    20% { clip-path: inset(60% 0 10% 0); }
+    40% { clip-path: inset(40% 0 50% 0); }
+    60% { clip-path: inset(80% 0 5% 0); }
+    80% { clip-path: inset(10% 0 70% 0); }
+    100% { clip-path: inset(30% 0 50% 0); }
+  }
+
+  .barcode { font-family: 'Times New Roman', serif; font-size: 24px; color: var(--c-cyan); opacity: 0.5; margin: 15px 0; letter-spacing: 2px; transform: scaleY(1.5); }
+  .lore-text { font-size: 11px; color: rgba(0, 242, 255, 0.6); max-width: 400px; line-height: 1.6; }
+
+  /* ── RIGHT: Terminal Form ── */
+  .cyber-terminal {
+    flex: 1; max-width: 480px; width: 100%;
+    background: rgba(0, 15, 20, 0.85); border: 1px solid var(--c-cyan);
+    /* SCIFI CLIP PATH CORNERS */
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 30px), calc(100% - 30px) 100%, 0 100%);
+    box-shadow: 0 0 30px rgba(0, 242, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+
+  .terminal-header {
+    background: var(--c-cyan); color: #000; padding: 8px 15px; font-weight: 800;
+    display: flex; justify-content: space-between; align-items: center; font-size: 12px;
+  }
+  .header-stripes { letter-spacing: -2px; opacity: 0.5; }
+  .status-indicator { background: #000; color: var(--c-cyan); padding: 2px 8px; font-size: 10px; }
+
+  .terminal-body { padding: 30px; }
+
+  .auth-tabs { display: flex; gap: 15px; margin-bottom: 30px; border-bottom: 1px solid var(--c-cyan-dim); padding-bottom: 10px; }
+  .auth-tabs button { background: none; border: none; color: rgba(0,242,255,0.4); font-family: var(--f-mono); cursor: pointer; font-size: 12px; transition: 0.3s; }
+  .auth-tabs button:hover { color: var(--c-cyan); text-shadow: 0 0 10px var(--c-cyan); }
+  .auth-tabs button.active { color: #fff; font-weight: bold; text-shadow: 0 0 10px var(--c-cyan); }
+
+  /* Inputs */
+  .cyber-field-container { margin-bottom: 25px; }
+  .cyber-field-label { font-size: 10px; color: rgba(0, 242, 255, 0.6); margin-bottom: 8px; transition: 0.3s; }
+  .blink-arrow { animation: blink 1s infinite; }
+  
+  .cyber-input-wrapper { display: flex; align-items: center; background: rgba(0, 242, 255, 0.05); border-left: 3px solid var(--c-cyan-dim); padding: 12px; transition: 0.3s; }
+  .cyber-field-container.focused .cyber-input-wrapper { border-left-color: var(--c-cyan); background: rgba(0, 242, 255, 0.1); box-shadow: inset 20px 0 30px -20px var(--c-cyan); }
+  .cyber-field-container.focused .cyber-field-label { color: var(--c-cyan); text-shadow: 0 0 8px var(--c-cyan); }
+  
+  .cyber-input { flex: 1; background: transparent; border: none; outline: none; color: #fff; font-family: var(--f-mono); font-size: 14px; letter-spacing: 2px; }
+  .cyber-input::placeholder { color: rgba(0, 242, 255, 0.2); }
+  .cursor-block { width: 10px; height: 18px; background: var(--c-cyan); animation: blink 1s infinite; margin-left: 5px; }
+
+  /* Submit Button */
+  .cyber-submit-btn {
+    width: 100%; position: relative; background: transparent; border: 1px solid var(--c-cyan); color: var(--c-cyan);
+    padding: 18px; font-family: var(--f-orbit); font-weight: 800; font-size: 14px; letter-spacing: 3px;
+    cursor: pointer; text-transform: uppercase; overflow: hidden; margin-top: 10px;
+    clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+    transition: 0.3s;
+  }
+  .btn-text { position: relative; z-index: 2; }
+  .cyber-submit-btn:hover { background: var(--c-cyan); color: #000; box-shadow: 0 0 20px var(--c-cyan); }
+  
+  /* Glitch hover effect */
+  .btn-glitch-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--c-red);
+    transform: translateX(-100%); z-index: 1; mix-blend-mode: overlay;
+  }
+  .cyber-submit-btn:hover .btn-glitch-layer { animation: btn-glitch 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite; }
+  @keyframes btn-glitch { 0% { transform: translate(0) } 20% { transform: translate(-5px, 5px) } 40% { transform: translate(-5px, -5px) } 60% { transform: translate(5px, 5px) } 80% { transform: translate(5px, -5px) } 100% { transform: translate(0) } }
+
+  .sys-log { margin-top: 30px; font-size: 9px; color: rgba(0, 242, 255, 0.4); line-height: 1.5; border-top: 1px dashed rgba(0,242,255,0.2); padding-top: 15px; }
 `;
