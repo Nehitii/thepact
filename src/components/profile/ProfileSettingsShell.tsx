@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { CyberBackground } from "@/components/CyberBackground";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface ProfileSettingsShellProps {
   title: ReactNode;
@@ -22,38 +23,40 @@ export function ProfileSettingsShell({
   containerClassName,
 }: ProfileSettingsShellProps) {
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
+    <div className="min-h-screen bg-[#03060A] relative overflow-hidden selection:bg-[#00F2FF]/30">
       <CyberBackground />
 
-      <div
-        className={cn(
-          "relative z-10 px-4 pt-6 pb-6 max-w-5xl mx-auto",
-          containerClassName
-        )}
-      >
-        <header className="mb-6">
-          <div className="flex items-center gap-4">
-            <div className="relative shrink-0">
-              <div className="absolute inset-0 rounded-xl bg-primary/20 blur-lg" />
-              <div className="relative w-14 h-14 rounded-xl border-2 border-primary/30 bg-card/70 backdrop-blur-xl flex items-center justify-center shop-card">
-                {icon}
-              </div>
-            </div>
-
-            <div className="min-w-0">
-              <h1 className="font-orbitron text-2xl md:text-3xl font-bold tracking-wider">
-                <span className="bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent">
-                  {title}
-                </span>
-              </h1>
-              {subtitle ? (
-                <p className="text-sm text-muted-foreground font-rajdhani mt-1">{subtitle}</p>
-              ) : null}
+      <div className={cn("relative z-10 px-4 pt-12 pb-6 max-w-5xl mx-auto", containerClassName)}>
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-14 text-center flex flex-col items-center"
+        >
+          {/* Halo & Icône centrale */}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 rounded-full bg-[#00F2FF]/20 blur-xl animate-pulse" />
+            <div className="relative w-16 h-16 rounded-full border border-[#00F2FF]/40 bg-black/50 backdrop-blur-xl flex items-center justify-center shadow-[0_0_30px_rgba(0,242,255,0.15)]">
+              {icon}
             </div>
           </div>
-        </header>
 
-        <main className="space-y-6">{children}</main>
+          {/* Sous-titre (Label Système) avec lignes de visée */}
+          <div className="flex items-center justify-center gap-4 mb-4 w-full">
+            <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-r from-transparent to-[#00F2FF]/50" />
+            <span className="font-mono text-[10px] md:text-xs text-[#00F2FF]/70 tracking-[0.3em] uppercase">
+              {subtitle || "SYSTEM CONFIGURATION"}
+            </span>
+            <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-l from-transparent to-[#00F2FF]/50" />
+          </div>
+
+          {/* Titre Principal Massif */}
+          <h1 className="font-orbitron font-black text-3xl md:text-5xl tracking-[0.15em] uppercase text-white drop-shadow-[0_0_15px_rgba(0,242,255,0.4)]">
+            {title}
+          </h1>
+        </motion.header>
+
+        <main className="space-y-6 relative z-10">{children}</main>
       </div>
 
       {floating ? <div className="relative z-20">{floating}</div> : null}
