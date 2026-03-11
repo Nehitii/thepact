@@ -1,6 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import {
   CommandDialog,
   CommandEmpty,
@@ -30,6 +31,7 @@ import {
   Database,
   Volume2,
   Search,
+  GripVertical,
 } from "lucide-react";
 
 interface PaletteItem {
@@ -47,7 +49,13 @@ const allItems: PaletteItem[] = [
   { label: "New Goal", icon: Target, route: "/goals/new", group: "Navigation", keywords: "create add goal" },
   { label: "Shop", icon: ShoppingBag, route: "/shop", group: "Navigation", keywords: "store buy bonds cosmetics" },
   { label: "Community", icon: Users, route: "/community", group: "Navigation", keywords: "social feed posts" },
-  { label: "Achievements", icon: Trophy, route: "/achievements", group: "Navigation", keywords: "badges hall eternity" },
+  {
+    label: "Achievements",
+    icon: Trophy,
+    route: "/achievements",
+    group: "Navigation",
+    keywords: "badges hall eternity",
+  },
   { label: "Inbox", icon: Inbox, route: "/inbox", group: "Navigation", keywords: "notifications messages" },
 
   // Modules
@@ -60,9 +68,27 @@ const allItems: PaletteItem[] = [
 
   // Settings
   { label: "Account Info", icon: User, route: "/profile", group: "Settings", keywords: "profile account" },
-  { label: "Pact Settings", icon: Settings, route: "/profile/pact-settings", group: "Settings", keywords: "pact config" },
-  { label: "Display & Sound", icon: Volume2, route: "/profile/display-sound", group: "Settings", keywords: "theme volume particles" },
-  { label: "Notifications", icon: Bell, route: "/profile/notifications", group: "Settings", keywords: "alerts reminders" },
+  {
+    label: "Pact Settings",
+    icon: Settings,
+    route: "/profile/pact-settings",
+    group: "Settings",
+    keywords: "pact config",
+  },
+  {
+    label: "Display & Sound",
+    icon: Volume2,
+    route: "/profile/display-sound",
+    group: "Settings",
+    keywords: "theme volume particles",
+  },
+  {
+    label: "Notifications",
+    icon: Bell,
+    route: "/profile/notifications",
+    group: "Settings",
+    keywords: "alerts reminders",
+  },
   { label: "Privacy & Control", icon: Shield, route: "/profile/privacy", group: "Settings", keywords: "security data" },
   { label: "Data & Portability", icon: Database, route: "/profile/data", group: "Settings", keywords: "export import" },
 ];
@@ -71,6 +97,9 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  // Référence pour limiter la zone de drag à l'écran
+  const constraintsRef = useRef<HTMLDivElement>(null);
 
   // Ctrl+K / Cmd+K to toggle
   useEffect(() => {
@@ -100,20 +129,46 @@ export function CommandPalette() {
 
   return (
     <>
-      {/* Trigger button for mobile */}
-      <button
-        onClick={() => setOpen(true)}
-        className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-md border border-white/10 bg-white/5 text-muted-foreground text-xs font-mono hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer"
+      {/* Zone de contrainte invisible prenant tout l'écran */}
+      <div ref={constraintsRef} className="fixed inset-4 md:inset-8 z-50 pointer-events-none" aria-hidden="true" />
+
+      {/* Pilule de recherche flottante et déplaçable */}
+      <motion.div
+        drag
+        dragConstraints={constraintsRef}
+        dragElastic={0.15} // Donne l'effet "sticky" (magnétique/rebond) sur les bords
+        dragTransition={{ bounceStiffness: 300, bounceDamping: 20 }}
+        whileHover={{ scale: 1.02 }}
+        whileDrag={{ scale: 1.05, cursor: "grabbing" }}
+        className="fixed bottom-6 right-6 z-[60] pointer-events-auto flex items-center shadow-[0_0_20px_rgba(0,242,255,0.15)] rounded-full bg-[#03060A]/85 backdrop-blur-md border border-[#00F2FF]/30 p-1 cursor-grab active:cursor-grabbing"
       >
-        <Search className="h-3.5 w-3.5" />
-        <span>Search...</span>
-        <kbd className="ml-2 px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-bold">⌘K</kbd>
-      </button>
+        {/* Poignée de drag (Grip) */}
+        <div
+          className="flex items-center justify-center p-2 text-white/30 hover:text-white/80 transition-colors"
+          title="Drag to move"
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+
+        {/* Bouton pour ouvrir la recherche */}
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 pr-5 pl-1 py-2 text-[#00F2FF]/80 hover:text-[#00F2FF] transition-all outline-none"
+        >
+          <Search className="h-4 w-4" />
+          <span className="hidden sm:inline-block text-xs font-mono font-bold tracking-[0.15em] uppercase mt-0.5">
+            TERMINAL
+          </span>
+          <kbd className="hidden sm:inline-flex ml-2 items-center gap-1 px-2 py-0.5 rounded bg-[#00F2FF]/10 border border-[#00F2FF]/20 text-[10px] font-bold text-[#00F2FF]">
+            <span className="text-xs">⌘</span>K
+          </kbd>
+        </button>
+      </motion.div>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Search pages, modules, settings..." />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
+        <CommandInput placeholder="Search modules, settings, coordinates..." />
+        <CommandList className="font-mono text-sm">
+          <CommandEmpty>No signals found.</CommandEmpty>
           {Array.from(groups.entries()).map(([group, items], idx) => (
             <div key={group}>
               {idx > 0 && <CommandSeparator />}
@@ -125,7 +180,7 @@ export function CommandPalette() {
                     onSelect={() => handleSelect(item.route)}
                     className="flex items-center gap-3 cursor-pointer"
                   >
-                    <item.icon className="h-4 w-4 opacity-60" />
+                    <item.icon className="h-4 w-4 text-[#00F2FF]/70" />
                     <span>{item.label}</span>
                   </CommandItem>
                 ))}
