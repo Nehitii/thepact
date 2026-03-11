@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.scrape-product]
 verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+[functions.delete-all-data]
+verify_jwt = false
