@@ -61,7 +61,8 @@ const moduleConfig: Record<string, { icon: any; route: string; label: string; in
 const theCallModule = { icon: Zap, route: "/the-call", label: "The Call", key: "the-call" };
 
 const settingsItems = [
-  { to: "/profile", icon: UserCircle, label: "Profile & Account", exact: true },
+  { to: "/profile", icon: UserCircle, label: "Profile & Account" },
+  { to: "/profile/bounded", icon: User, label: "Bounded Profile" },
   { to: "/profile/pact-settings", icon: Settings, label: "Pact Settings" },
   { to: "/profile/display-sound", icon: Volume2, label: "Display & Sound" },
   { to: "/profile/notifications", icon: Bell, label: "Notifications" },
@@ -485,11 +486,6 @@ export const AppSidebar = memo(function AppSidebar() {
                   >
                     <ItemIcon className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
                     <span className="text-xs font-bold tracking-wide">{item.label}</span>
-                    {item.to === "/profile/notifications" && unreadCount > 0 && (
-                      <span className="ml-auto text-[9px] bg-primary text-primary-foreground px-1.5 py-0.5 font-black rounded-sm">
-                        {unreadCount}
-                      </span>
-                    )}
                   </DropdownMenuItem>
                 );
               })}
