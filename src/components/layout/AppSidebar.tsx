@@ -61,7 +61,8 @@ const moduleConfig: Record<string, { icon: any; route: string; label: string; in
 const theCallModule = { icon: Zap, route: "/the-call", label: "The Call", key: "the-call" };
 
 const settingsItems = [
-  { to: "/profile", icon: UserCircle, label: "Profile & Account", exact: true },
+  { to: "/profile", icon: UserCircle, label: "Profile & Account" },
+  { to: "/profile/bounded", icon: User, label: "Bounded Profile" },
   { to: "/profile/pact-settings", icon: Settings, label: "Pact Settings" },
   { to: "/profile/display-sound", icon: Volume2, label: "Display & Sound" },
   { to: "/profile/notifications", icon: Bell, label: "Notifications" },
