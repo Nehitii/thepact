@@ -33,6 +33,8 @@ import {
   Mail,
   RefreshCw,
   Hexagon,
+  User,
+  TerminalSquare,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -49,7 +51,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
-// ─── TYPES & CONFIG ────────────────────────────────────────
+// ─── CONFIGURATION DE LA NAVIGATION ────────────────────────
 
 type NavCategory = "overview" | "operations" | "lifeSystems" | "network" | "system";
 
@@ -60,38 +62,47 @@ interface NavItem {
   badgeKey?: "friends" | "messages";
 }
 
-// 1. Définition des catégories de base de l'OS
 const baseNavigation: Record<NavCategory, NavItem[]> = {
   overview: [
-    { to: "/", icon: Home, label: "Home" },
-    { to: "/analytics", icon: BarChart3, label: "Analytics" },
+    { to: "/", icon: Home, label: "Dashboard" },
+    { to: "/analytics", icon: BarChart3, label: "Data_Core" },
   ],
   operations: [
-    { to: "/goals", icon: Target, label: "Goals" },
-    { to: "/focus", icon: Timer, label: "Focus" },
+    { to: "/goals", icon: Target, label: "Objectives" },
+    { to: "/focus", icon: Timer, label: "Focus_Mode" },
   ],
-  lifeSystems: [], // Rempli dynamiquement par les modules
+  lifeSystems: [],
   network: [
-    { to: "/community", icon: Users, label: "Community" },
-    { to: "/friends", icon: Handshake, label: "Friends", badgeKey: "friends" },
-    { to: "/inbox", icon: Mail, label: "Inbox", badgeKey: "messages" },
-    { to: "/leaderboard", icon: Crown, label: "Leaderboard" },
-    { to: "/achievements", icon: Trophy, label: "Achievements" },
+    { to: "/community", icon: Users, label: "Nexus_Feed" },
+    { to: "/friends", icon: Handshake, label: "Alliances", badgeKey: "friends" },
+    { to: "/inbox", icon: Mail, label: "Comms", badgeKey: "messages" },
+    { to: "/leaderboard", icon: Crown, label: "Rankings" },
+    { to: "/achievements", icon: Trophy, label: "Milestones" },
   ],
-  system: [{ to: "/shop", icon: ShoppingBag, label: "Shop" }],
+  system: [{ to: "/shop", icon: ShoppingBag, label: "Black_Market" }],
 };
 
-// 2. Configuration des modules achetables et de leur destination
 const moduleConfig: Record<string, NavItem & { category: NavCategory }> = {
-  "todo-list": { icon: ListTodo, to: "/todo", label: "To-Do List", category: "operations" },
-  "the-call": { icon: Zap, to: "/the-call", label: "The Call", category: "operations" },
-  journal: { icon: BookOpen, to: "/journal", label: "Journal", category: "lifeSystems" },
-  finance: { icon: Wallet, to: "/finance", label: "Finance", category: "lifeSystems" },
-  "track-health": { icon: Heart, to: "/health", label: "Health", category: "lifeSystems" },
-  wishlist: { icon: ShoppingCart, to: "/wishlist", label: "Wishlist", category: "lifeSystems" },
+  "todo-list": { icon: ListTodo, to: "/todo", label: "Task_Queue", category: "operations" },
+  "the-call": { icon: Zap, to: "/the-call", label: "The_Call", category: "operations" },
+  journal: { icon: BookOpen, to: "/journal", label: "Logs", category: "lifeSystems" },
+  finance: { icon: Wallet, to: "/finance", label: "Credits", category: "lifeSystems" },
+  "track-health": { icon: Heart, to: "/health", label: "Vitals", category: "lifeSystems" },
+  wishlist: { icon: ShoppingCart, to: "/wishlist", label: "Acquisitions", category: "lifeSystems" },
 };
 
-// ─── UI COMPONENTS ─────────────────────────────────────────
+// Paramètres originaux restaurés
+const settingsItems = [
+  { to: "/profile", icon: UserCircle, label: "Account" },
+  { to: "/profile/bounded", icon: User, label: "Bounded" },
+  { to: "/profile/pact-settings", icon: Settings, label: "Pact Rules" },
+  { to: "/profile/display-sound", icon: Volume2, label: "A/V Config" },
+  { to: "/profile/notifications", icon: Bell, label: "Alerts" },
+  { to: "/profile/privacy", icon: Shield, label: "Privacy" },
+  { to: "/profile/data", icon: Database, label: "Data Core" },
+];
+
+// ─── UI COMPONENTS (HUD STYLE) ─────────────────────────────
 
 interface NavItemProps extends NavItem {
   badge?: number;
@@ -114,26 +125,27 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
               closeMobile();
             }}
             className={cn(
-              "flex items-center justify-center h-10 w-10 mx-auto rounded-lg transition-all duration-300 relative group",
+              "flex items-center justify-center h-10 w-10 mx-auto transition-all duration-300 relative group",
+              "border-l-2",
               isActive
-                ? "text-primary bg-primary/15 shadow-[inset_0_0_10px_rgba(var(--primary),0.2)]"
-                : "text-muted-foreground hover:text-primary hover:bg-primary/10",
+                ? "text-primary border-primary bg-primary/10 shadow-[inset_4px_0_15px_-5px_rgba(var(--primary),0.3)]"
+                : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
             )}
+            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
           >
-            <Icon size={20} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]")} />
+            <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),1)]")} />
             {badge != null && badge > 0 && (
-              <span className="absolute -top-1 -right-1 text-[8px] leading-none bg-primary text-primary-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-full shadow-[0_0_8px_rgba(var(--primary),0.6)]">
-                {badge > 99 ? "99+" : badge}
+              <span className="absolute top-1 right-1 text-[8px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)] animate-pulse">
+                {badge > 99 ? "99" : badge}
               </span>
             )}
           </button>
         </TooltipTrigger>
         <TooltipContent
           side="right"
-          className="font-rajdhani font-bold text-xs tracking-wider border-primary/30 bg-background/95 backdrop-blur-md"
+          className="font-mono font-bold text-xs tracking-wider border-primary/50 bg-black/95 text-primary rounded-none uppercase"
         >
-          {label}
-          {badge != null && badge > 0 && <span className="ml-1.5 text-primary">({badge})</span>}
+          {label} {badge != null && badge > 0 && `[${badge}]`}
         </TooltipContent>
       </Tooltip>
     );
@@ -146,43 +158,51 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
       onClick={closeMobile}
       className={({ isActive }) =>
         cn(
-          "group relative flex items-center rounded-lg transition-all duration-300 overflow-hidden gap-3 px-3 py-2.5",
+          "group relative flex items-center transition-all duration-300 overflow-hidden px-3 py-2.5 mb-1",
+          "border-l-2 before:absolute before:inset-0 before:z-0",
           isActive
-            ? "text-primary bg-primary/10 shadow-[inset_0_0_12px_rgba(var(--primary),0.1)]"
-            : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+            ? "text-primary border-primary bg-primary/10 before:bg-[linear-gradient(90deg,rgba(var(--primary),0.1)_1px,transparent_1px)] before:bg-[size:4px_4px]"
+            : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
         )
       }
+      style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
     >
       {({ isActive }) => (
         <>
-          {/* Active Cyberpunk Edge Glow */}
-          {isActive && (
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-6 rounded-r-full bg-primary shadow-[0_0_12px_rgba(var(--primary),1)]" />
-          )}
-
-          <div className="relative shrink-0 flex items-center justify-center">
+          <div className="relative z-10 shrink-0 flex items-center justify-center mr-3">
             <Icon
               size={18}
               className={cn(
                 "transition-all duration-300",
                 isActive
-                  ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)] scale-110"
-                  : "group-hover:text-primary group-hover:scale-110 group-hover:drop-shadow-[0_0_5px_rgba(var(--primary),0.4)]",
+                  ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.9)]"
+                  : "group-hover:text-primary group-hover:scale-110",
               )}
             />
           </div>
           <span
             className={cn(
-              "text-sm font-bold tracking-wider font-rajdhani whitespace-nowrap",
+              "relative z-10 text-xs font-bold tracking-[0.1em] font-mono uppercase transition-all duration-300",
               isActive
-                ? "text-primary drop-shadow-[0_0_2px_rgba(var(--primary),0.5)]"
-                : "group-hover:translate-x-1 transition-transform",
+                ? "text-primary drop-shadow-[0_0_4px_rgba(var(--primary),0.5)] translate-x-1"
+                : "group-hover:translate-x-1",
             )}
           >
+            {isActive && <span className="opacity-50 mr-1">{">"}</span>}
             {label}
+            {!isActive && (
+              <span className="opacity-0 group-hover:opacity-100 ml-1 text-primary/50 transition-opacity">_</span>
+            )}
           </span>
+
+          {isActive && (
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-mono text-primary/40 tracking-widest">
+              ACTV
+            </span>
+          )}
+
           {badge != null && badge > 0 && (
-            <span className="ml-auto text-[10px] bg-primary/20 border border-primary/50 text-primary px-1.5 py-0.5 font-black rounded min-w-[20px] text-center shadow-[0_0_5px_rgba(var(--primary),0.3)]">
+            <span className="relative z-10 ml-auto text-[9px] bg-destructive/20 border border-destructive text-destructive px-1.5 py-0.5 font-black min-w-[20px] text-center shadow-[0_0_10px_rgba(220,38,38,0.4)] animate-pulse">
               {badge > 99 ? "99+" : badge}
             </span>
           )}
@@ -194,10 +214,11 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <p className="px-3 text-[10px] font-black uppercase tracking-[0.25em] text-primary/60 mb-2 mt-4 font-orbitron flex items-center gap-2">
-      <Hexagon size={8} className="text-primary/40 fill-primary/20" />
-      {label}
-    </p>
+    <div className="flex items-center gap-2 mb-2 mt-5 px-3">
+      <Hexagon size={10} className="text-primary/50 fill-primary/20" />
+      <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/60 font-orbitron">{label}</p>
+      <div className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
+    </div>
   );
 }
 
@@ -243,7 +264,6 @@ export const AppSidebar = memo(function AppSidebar() {
 
   const mini = collapsed && !isMobile;
 
-  // 3. Construction dynamique de la navigation
   const activeCategories = useMemo(() => {
     const categories: Record<NavCategory, NavItem[]> = {
       overview: [...baseNavigation.overview],
@@ -253,7 +273,6 @@ export const AppSidebar = memo(function AppSidebar() {
       system: [...baseNavigation.system],
     };
 
-    // Injection des modules achetés dans leurs catégories respectives
     Object.entries(moduleConfig).forEach(([key, config]) => {
       if (purchasedModuleKeys.includes(key)) {
         categories[config.category].push({
@@ -270,42 +289,44 @@ export const AppSidebar = memo(function AppSidebar() {
   const hasAnyModule = purchasedModuleKeys.some((k) => k in moduleConfig);
 
   return (
-    <TooltipProvider delayDuration={200}>
-      {/* Mobile backdrop */}
+    <TooltipProvider delayDuration={100}>
       {isMobile && mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm animate-in fade-in-0 duration-300"
+          className="fixed inset-0 z-40 bg-black/90 backdrop-blur-sm animate-in fade-in-0 duration-300"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
-      {/* Mobile hamburger */}
       {isMobile && !mobileOpen && (
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 rounded-md bg-card/90 border border-primary/20 backdrop-blur-md text-foreground hover:text-primary transition-colors shadow-[0_0_15px_rgba(0,0,0,0.5)]"
-          aria-label="Open menu"
+          className="fixed top-4 left-4 z-50 p-2 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+          style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
         >
           <ChevronsRight size={20} />
         </button>
       )}
 
       <aside
-        style={{ width: isMobile ? 288 : collapsed ? 72 : 288 }}
+        style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
         className={cn(
-          "flex-shrink-0 z-50 flex flex-col bg-background/95 backdrop-blur-xl border-r border-primary/10 font-rajdhani hide-scrollbar relative",
-          "shadow-[4px_0_24px_-12px_rgba(var(--primary),0.15)] dark:shadow-[4px_0_24px_-12px_rgba(var(--primary),0.3)]",
+          "flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
+          "shadow-[8px_0_30px_-10px_rgba(var(--primary),0.15)]",
           "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
           !isMobile && "sticky top-0 h-screen overflow-hidden",
           isMobile && "fixed top-0 left-0 h-full transition-transform duration-300",
           isMobile && (mobileOpen ? "translate-x-0" : "-translate-x-full"),
         )}
       >
-        {/* Subtle background tech lines */}
-        <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:20px_20px]" />
+        {/* HUD Grid Overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:24px_24px]" />
+
+        {/* Decorative Corner Brackets */}
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary/50 pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary/50 pointer-events-none" />
 
         {/* ─── HEADER ─── */}
-        <div className="relative mb-2" style={{ padding: mini ? "16px 8px" : "24px" }}>
+        <div className="relative mb-4" style={{ padding: mini ? "20px 8px" : "24px 20px" }}>
           <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
 
           <div
@@ -314,6 +335,7 @@ export const AppSidebar = memo(function AppSidebar() {
               mini ? "justify-center" : "gap-4",
             )}
           >
+            {/* HUD Logo */}
             <div
               className="relative shrink-0 group cursor-pointer"
               onClick={() => {
@@ -321,17 +343,17 @@ export const AppSidebar = memo(function AppSidebar() {
                 closeMobile();
               }}
             >
-              <div className="absolute -inset-2 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute -inset-3 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
               <div
                 className={cn(
-                  "relative bg-card border border-primary/40 flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-[0_0_15px_rgba(var(--primary),0.2)]",
+                  "relative bg-[#0a0a0c] border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.3)]",
                   mini ? "w-10 h-10" : "w-12 h-12",
                 )}
                 style={{ clipPath: "polygon(25% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%, 0% 25%)" }}
               >
                 <span
                   className={cn(
-                    "font-black font-orbitron text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]",
+                    "font-black font-orbitron text-primary drop-shadow-[0_0_8px_rgba(var(--primary),1)]",
                     mini ? "text-lg" : "text-2xl",
                   )}
                 >
@@ -346,41 +368,39 @@ export const AppSidebar = memo(function AppSidebar() {
                 mini ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100 overflow-visible",
               )}
             >
-              <h1 className="text-xl font-black font-orbitron text-foreground tracking-[0.2em] leading-none mb-1.5 drop-shadow-sm whitespace-nowrap">
-                THE PACT
+              <h1 className="text-xl font-black font-orbitron text-foreground tracking-[0.25em] leading-none mb-1 drop-shadow-md whitespace-nowrap">
+                THE_PACT
               </h1>
               <div className="flex items-center gap-2 whitespace-nowrap">
-                <span className="relative flex h-2 w-2">
+                <div className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-emerald-500/90 font-mono">
-                  System Online
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_5px_#10b981]" />
+                </div>
+                <span className="text-[9px] uppercase font-bold tracking-[0.2em] text-emerald-400 font-mono">
+                  SYS.ONLINE // v4.0.1
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="h-px mx-4 bg-gradient-to-r from-transparent via-primary/30 to-transparent mb-2" />
-
         {/* Desktop collapse toggle */}
         {!isMobile && (
           <div className={cn("flex mb-2 px-3", mini ? "justify-center" : "justify-end")}>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="p-1.5 rounded-md text-primary/50 hover:text-primary hover:bg-primary/10 transition-all duration-200 border border-transparent hover:border-primary/20"
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              className="p-1 text-primary/40 hover:text-primary transition-all duration-200 border border-transparent hover:border-primary/40 bg-black/40 hover:bg-primary/10"
+              style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)" }}
+              aria-label={collapsed ? "Expand" : "Collapse"}
             >
-              {collapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}
+              {collapsed ? <ChevronsRight size={14} /> : <ChevronsLeft size={14} />}
             </button>
           </div>
         )}
 
         {/* ─── NAVIGATION ─── */}
-        <nav className={cn("flex-1 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-2" : "px-3")}>
-          {/* OVERVIEW */}
-          <div className="space-y-0.5 mb-4">
+        <nav className={cn("flex-1 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-1.5" : "px-3")}>
+          <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="Overview" />}
             {activeCategories.overview.map((item) => (
               <SidebarNavItem
@@ -394,8 +414,7 @@ export const AppSidebar = memo(function AppSidebar() {
             ))}
           </div>
 
-          {/* OPERATIONS */}
-          <div className="space-y-0.5 mb-4">
+          <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="Operations" />}
             {activeCategories.operations.map((item) => (
               <SidebarNavItem
@@ -408,24 +427,23 @@ export const AppSidebar = memo(function AppSidebar() {
               />
             ))}
 
-            {/* CTA Shop si aucun module d'opération acheté */}
             {!hasAnyModule && !mini && (
               <button
                 onClick={() => {
                   navigate("/shop");
                   closeMobile();
                 }}
-                className="mt-2 px-3 py-2 w-full rounded-lg border border-dashed border-primary/30 text-muted-foreground hover:text-primary hover:border-primary hover:bg-primary/5 transition-all text-xs font-bold tracking-wider text-left flex items-center gap-3 group"
+                className="mt-2 px-3 py-2.5 w-full border border-dashed border-primary/30 text-primary/60 hover:text-primary hover:border-primary hover:bg-primary/10 transition-all text-xs font-bold tracking-[0.1em] font-mono text-left flex items-center gap-3 group"
+                style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
               >
                 <Sparkles size={14} className="opacity-50 group-hover:opacity-100 group-hover:animate-pulse" />
-                Install Modules
+                INSTALL_MODULES
               </button>
             )}
           </div>
 
-          {/* LIFE SYSTEMS (Affiché uniquement si des modules sont achetés) */}
           {activeCategories.lifeSystems.length > 0 && (
-            <div className="space-y-0.5 mb-4">
+            <div className="space-y-0.5 mb-2">
               {!mini && <SectionLabel label="Life_Systems" />}
               {activeCategories.lifeSystems.map((item) => (
                 <SidebarNavItem
@@ -440,8 +458,7 @@ export const AppSidebar = memo(function AppSidebar() {
             </div>
           )}
 
-          {/* NETWORK */}
-          <div className="space-y-0.5 mb-4">
+          <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="Nexus_Network" />}
             {activeCategories.network.map((item) => (
               <SidebarNavItem
@@ -456,8 +473,7 @@ export const AppSidebar = memo(function AppSidebar() {
             ))}
           </div>
 
-          {/* SYSTEM */}
-          <div className="space-y-0.5 mb-4">
+          <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="System" />}
             {activeCategories.system.map((item) => (
               <SidebarNavItem
@@ -472,36 +488,35 @@ export const AppSidebar = memo(function AppSidebar() {
           </div>
         </nav>
 
-        {/* ─── FOOTER (MENU SIMPLIFIÉ) ─── */}
-        <div
-          className={cn(
-            "mt-auto relative border-t border-primary/20 bg-black/40 backdrop-blur-xl",
-            mini ? "p-2" : "p-4",
-          )}
-        >
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+        {/* ─── TERMINAL FOOTER (PARAMÈTRES RESTAURÉS) ─── */}
+        <div className={cn("mt-auto relative bg-[#0a0a0c] border-t border-primary/30", mini ? "p-1.5" : "p-3")}>
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="w-full group outline-none">
                 <div
                   className={cn(
-                    "flex items-center transition-all duration-300 rounded-lg hover:bg-primary/10 border border-transparent hover:border-primary/30 relative overflow-hidden",
-                    mini ? "justify-center p-1.5" : "gap-3 p-2.5",
+                    "flex items-center transition-all duration-300 hover:bg-primary/10 border border-transparent hover:border-primary/40 relative overflow-hidden",
+                    mini ? "justify-center p-2 rounded-none" : "gap-3 p-2",
                   )}
+                  style={{
+                    clipPath: mini
+                      ? "none"
+                      : "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)",
+                  }}
                 >
-                  {/* Hover scanline effect */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent -translate-y-full group-hover:animate-[scan_2s_ease-in-out_infinite]" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent -translate-y-full group-hover:animate-[scan_2s_linear_infinite]" />
 
                   <div className="relative shrink-0">
                     <Avatar
                       className={cn(
-                        "border border-primary/40 ring-2 ring-transparent transition-all group-hover:border-primary group-hover:shadow-[0_0_15px_rgba(var(--primary),0.5)]",
-                        mini ? "h-8 w-8" : "h-10 w-10",
+                        "border border-primary/40 rounded-none transition-all group-hover:border-primary group-hover:shadow-[0_0_10px_rgba(var(--primary),0.5)]",
+                        mini ? "h-8 w-8" : "h-9 w-9",
                       )}
                     >
                       <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
-                      <AvatarFallback className="bg-muted text-primary font-orbitron text-xs">
+                      <AvatarFallback className="bg-black text-primary font-orbitron text-xs rounded-none">
                         {profile?.display_name?.[0] || "U"}
                       </AvatarFallback>
                     </Avatar>
@@ -509,90 +524,89 @@ export const AppSidebar = memo(function AppSidebar() {
                       <NotificationBadge
                         count={totalUnread}
                         size="sm"
-                        className="absolute -top-1 -right-1 shadow-[0_0_8px_rgba(var(--primary),0.8)]"
+                        className="absolute -top-1.5 -right-1.5 shadow-[0_0_8px_rgba(var(--primary),0.8)] rounded-none border border-black"
                       />
                     )}
                   </div>
 
                   {!mini && (
                     <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-bold text-foreground uppercase tracking-wider font-orbitron truncate group-hover:text-primary transition-colors drop-shadow-md">
-                        {profile?.display_name || "Agent"}
+                      <p className="text-sm font-bold text-primary uppercase tracking-widest font-orbitron truncate group-hover:text-primary drop-shadow-[0_0_2px_rgba(var(--primary),0.8)]">
+                        {profile?.display_name || "AGENT_UNKNOWN"}
                       </p>
-                      <p className="text-[10px] text-muted-foreground font-mono tracking-widest truncate">
-                        ID:{user?.id?.slice(0, 6).toUpperCase() || "UNKNOWN"}
+                      <p className="text-[9px] text-primary/50 font-mono tracking-widest truncate">
+                        ID:{user?.id?.slice(0, 8).toUpperCase() || "00000000"}
                       </p>
                     </div>
                   )}
 
                   {!mini && (
-                    <div className="text-primary/50 group-hover:text-primary transition-colors">
-                      <Settings size={16} className="group-hover:rotate-90 transition-transform duration-500" />
+                    <div className="text-primary/40 group-hover:text-primary transition-colors">
+                      <TerminalSquare size={16} className="group-hover:animate-pulse" />
                     </div>
                   )}
                 </div>
               </button>
             </DropdownMenuTrigger>
 
-            {/* Menu Dropdown Allégé */}
+            {/* Menu Dropdown Type Terminal HUD */}
             <DropdownMenuContent
               align={mini ? "start" : "end"}
               side="right"
-              className="w-56 bg-background/95 border-primary/30 text-popover-foreground font-rajdhani shadow-[0_0_30px_rgba(0,0,0,0.8)] backdrop-blur-xl p-1"
-              sideOffset={12}
+              className="w-72 bg-[#050508]/95 border border-primary/40 text-primary font-mono shadow-[0_0_30px_rgba(var(--primary),0.15)] rounded-none backdrop-blur-xl p-0"
+              sideOffset={16}
             >
-              <div className="px-3 py-2 text-[10px] uppercase font-black text-primary/70 tracking-[0.2em] font-orbitron flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                System Terminal
+              {/* Header du dropdown */}
+              <div className="px-3 py-2 bg-primary/10 border-b border-primary/30 flex items-center justify-between">
+                <span className="text-[10px] uppercase font-black tracking-[0.2em] font-orbitron drop-shadow-[0_0_5px_rgba(var(--primary),0.5)]">
+                  System_Config
+                </span>
+                <div className="w-1.5 h-1.5 bg-primary animate-pulse shadow-[0_0_5px_rgba(var(--primary),1)]" />
               </div>
 
-              <DropdownMenuSeparator className="bg-primary/20 mb-1" />
+              {/* Grille de paramètres restaurée (2 colonnes) */}
+              <div className="p-2 grid grid-cols-2 gap-1 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:10px_10px]">
+                {settingsItems.map((item) => {
+                  const ItemIcon = item.icon;
+                  return (
+                    <DropdownMenuItem
+                      key={item.to}
+                      onClick={() => {
+                        navigate(item.to);
+                        closeMobile();
+                      }}
+                      className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none border border-transparent hover:border-primary/30 transition-all flex items-center h-10"
+                    >
+                      <ItemIcon className="mr-2 h-3.5 w-3.5 opacity-60 group-hover:opacity-100 group-hover:text-primary" />
+                      <span className="text-[10px] font-bold tracking-wider uppercase truncate">{item.label}</span>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </div>
 
-              <DropdownMenuItem
-                onClick={() => {
-                  navigate("/profile");
-                  closeMobile();
-                }}
-                className="p-3 focus:bg-primary/15 focus:text-primary cursor-pointer group rounded-sm"
-              >
-                <UserCircle className="mr-3 h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
-                <span className="text-sm font-bold tracking-wide">My Profile</span>
-              </DropdownMenuItem>
+              <div className="h-px bg-primary/20" />
 
-              {/* Raccourci vers une future page de settings globale (ou garde le routing actuel vers un onglet spécifique) */}
-              <DropdownMenuItem
-                onClick={() => {
-                  navigate("/profile/settings");
-                  closeMobile();
-                }}
-                className="p-3 focus:bg-primary/15 focus:text-primary cursor-pointer group rounded-sm"
-              >
-                <Settings className="mr-3 h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
-                <span className="text-sm font-bold tracking-wide">System Settings</span>
-              </DropdownMenuItem>
+              {/* Actions Globales */}
+              <div className="p-2 space-y-1">
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate("/pact-selector");
+                    closeMobile();
+                  }}
+                  className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center"
+                >
+                  <RefreshCw className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
+                  <span className="text-xs font-bold tracking-widest uppercase">Switch_Pact</span>
+                </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="bg-primary/20 my-1" />
-
-              <DropdownMenuItem
-                onClick={() => {
-                  navigate("/pact-selector");
-                  closeMobile();
-                }}
-                className="p-3 focus:bg-primary/15 focus:text-primary cursor-pointer group rounded-sm"
-              >
-                <RefreshCw className="mr-3 h-4 w-4 text-primary/70 group-hover:text-primary transition-colors" />
-                <span className="text-sm font-bold tracking-wide">Switch Pact</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator className="bg-primary/20 my-1" />
-
-              <DropdownMenuItem
-                onClick={handleSignOut}
-                className="p-3 text-red-400 focus:bg-red-500/15 focus:text-red-400 cursor-pointer group rounded-sm"
-              >
-                <LogOut className="mr-3 h-4 w-4 text-red-400/70 group-hover:text-red-400 transition-colors" />
-                <span className="text-sm font-bold tracking-wide">Disconnect</span>
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="p-2 text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer group rounded-none flex items-center"
+                >
+                  <LogOut className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
+                  <span className="text-xs font-bold tracking-widest uppercase">Terminate_Session</span>
+                </DropdownMenuItem>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
