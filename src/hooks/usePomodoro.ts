@@ -20,15 +20,17 @@ export interface PomodoroSession {
   created_at: string;
 }
 
-export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5) {
+export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5, longBreakMinutes = 15) {
   const [phase, setPhase] = useState<PomodoroPhase>("idle");
   const [secondsLeft, setSecondsLeft] = useState(workMinutes * 60);
+  const [currentTotalSeconds, setCurrentTotalSeconds] = useState(workMinutes * 60);
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+
+  const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const totalSeconds = phase === "work" ? workMinutes * 60 : breakMinutes * 60;
-  const progress = 1 - secondsLeft / totalSeconds;
+  const progress = 1 - secondsLeft / currentTotalSeconds;
 
   const clearTimer = useCallback(() => {
     if (intervalRef.current) {
@@ -40,41 +42,63 @@ export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5) {
   const startTicking = useCallback(() => {
     clearTimer();
     intervalRef.current = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          if (phase === "work") {
-            setSessionsCompleted((s) => s + 1);
-            setPhase("break");
-            return breakMinutes * 60;
+      if (!endTimeRef.current) return;
+
+      const now = Date.now();
+      const remaining = Math.max(0, Math.ceil((endTimeRef.current - now) / 1000));
+      setSecondsLeft(remaining);
+
+      if (remaining <= 0) {
+        setPhase((currentPhase) => {
+          if (currentPhase === "work") {
+            setSessionsCompleted((s) => {
+              const newCount = s + 1;
+              // Pause longue tous les 4 cycles
+              const isLongBreak = newCount > 0 && newCount % 4 === 0;
+              const breakSecs = (isLongBreak ? longBreakMinutes : breakMinutes) * 60;
+              setCurrentTotalSeconds(breakSecs);
+              endTimeRef.current = Date.now() + breakSecs * 1000;
+              return newCount;
+            });
+            return "break";
           } else {
-            setPhase("work");
-            return workMinutes * 60;
+            const workSecs = workMinutes * 60;
+            setCurrentTotalSeconds(workSecs);
+            endTimeRef.current = Date.now() + workSecs * 1000;
+            return "work";
           }
-        }
-        return prev - 1;
-      });
+        });
+      }
     }, 1000);
-  }, [phase, workMinutes, breakMinutes, clearTimer]);
+  }, [workMinutes, breakMinutes, longBreakMinutes, clearTimer]);
 
   const start = useCallback(() => {
+    const workSecs = workMinutes * 60;
     setPhase("work");
-    setSecondsLeft(workMinutes * 60);
+    setCurrentTotalSeconds(workSecs);
+    setSecondsLeft(workSecs);
+    endTimeRef.current = Date.now() + workSecs * 1000;
     setIsPaused(false);
   }, [workMinutes]);
 
   const pause = useCallback(() => {
     clearTimer();
+    endTimeRef.current = null;
     setIsPaused(true);
   }, [clearTimer]);
 
   const resume = useCallback(() => {
+    endTimeRef.current = Date.now() + secondsLeft * 1000;
     setIsPaused(false);
-  }, []);
+  }, [secondsLeft]);
 
   const reset = useCallback(() => {
     clearTimer();
     setPhase("idle");
-    setSecondsLeft(workMinutes * 60);
+    const workSecs = workMinutes * 60;
+    setCurrentTotalSeconds(workSecs);
+    setSecondsLeft(workSecs);
+    endTimeRef.current = null;
     setIsPaused(false);
   }, [clearTimer, workMinutes]);
 
@@ -83,12 +107,19 @@ export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5) {
     setIsPaused(false);
     if (phase === "work") {
       setPhase("break");
-      setSecondsLeft(breakMinutes * 60);
+      const isLongBreak = (sessionsCompleted + 1) % 4 === 0;
+      const breakSecs = (isLongBreak ? longBreakMinutes : breakMinutes) * 60;
+      setCurrentTotalSeconds(breakSecs);
+      setSecondsLeft(breakSecs);
+      endTimeRef.current = Date.now() + breakSecs * 1000;
     } else {
       setPhase("work");
-      setSecondsLeft(workMinutes * 60);
+      const workSecs = workMinutes * 60;
+      setCurrentTotalSeconds(workSecs);
+      setSecondsLeft(workSecs);
+      endTimeRef.current = Date.now() + workSecs * 1000;
     }
-  }, [phase, workMinutes, breakMinutes, clearTimer]);
+  }, [phase, sessionsCompleted, workMinutes, breakMinutes, longBreakMinutes, clearTimer]);
 
   useEffect(() => {
     if (phase === "idle" || isPaused) {
@@ -115,6 +146,7 @@ export function usePomodoroTimer(workMinutes = 25, breakMinutes = 5) {
   };
 }
 
+// ... (La suite du fichier: export function usePomodoroSessions() reste inchangée)
 export function usePomodoroSessions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -145,13 +177,11 @@ export function usePomodoroSessions() {
       started_at: string;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { error } = await (supabase as any)
-        .from("pomodoro_sessions")
-        .insert({
-          ...session,
-          user_id: user.id,
-          completed_at: session.completed ? new Date().toISOString() : null,
-        });
+      const { error } = await (supabase as any).from("pomodoro_sessions").insert({
+        ...session,
+        user_id: user.id,
+        completed_at: session.completed ? new Date().toISOString() : null,
+      });
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["pomodoro-sessions"] }),
@@ -159,16 +189,13 @@ export function usePomodoroSessions() {
 
   const todayStats = (() => {
     const today = new Date().toISOString().split("T")[0];
-    const todaySessions = (sessions.data || []).filter(
-      (s) => s.completed && s.completed_at?.startsWith(today)
-    );
+    const todaySessions = (sessions.data || []).filter((s) => s.completed && s.completed_at?.startsWith(today));
     return {
       count: todaySessions.length,
       totalMinutes: todaySessions.reduce((acc, s) => acc + s.duration_minutes, 0),
     };
   })();
 
-  // Weekly stats for sparkline
   const weeklyStats = (() => {
     const now = new Date();
     const days: { label: string; minutes: number }[] = [];
@@ -185,12 +212,9 @@ export function usePomodoroSessions() {
     return days;
   })();
 
-  // Streak: consecutive days with at least one completed session
   const streak = (() => {
     const allDates = new Set(
-      (sessions.data || [])
-        .filter((s) => s.completed && s.completed_at)
-        .map((s) => s.completed_at!.split("T")[0])
+      (sessions.data || []).filter((s) => s.completed && s.completed_at).map((s) => s.completed_at!.split("T")[0]),
     );
     let count = 0;
     const now = new Date();
@@ -207,7 +231,6 @@ export function usePomodoroSessions() {
     return count;
   })();
 
-  // Best session (longest single work duration)
   const bestSession = (() => {
     const completed = (sessions.data || []).filter((s) => s.completed);
     if (completed.length === 0) return 0;
