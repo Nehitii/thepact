@@ -357,7 +357,7 @@ export const AppSidebar = memo(function AppSidebar() {
                     mini ? "text-lg" : "text-2xl"
                   )}>
                   
-                  P
+                  ​V
                 </span>
               </div>
             </div>
