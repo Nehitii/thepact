@@ -125,7 +125,7 @@ export function FocusTimerRing({
           style={{ borderColor: colorHsl }}
         />
 
-        {/* Données de ciblage microscopiques */}
+        {/* Données de ciblage microscopiques (CORRECTION ICI: progress au lieu de timer.progress) */}
         <div
           className={`absolute left-0 top-1/2 -translate-y-1/2 text-[7px] font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 origin-left`}
           style={{ color: colorHsl }}
@@ -136,7 +136,7 @@ export function FocusTimerRing({
           className={`absolute right-0 top-1/2 -translate-y-1/2 text-[7px] font-mono tracking-[0.3em] uppercase whitespace-nowrap rotate-90 origin-right`}
           style={{ color: colorHsl }}
         >
-          VITAL_SYNC: Nominal // N-SYNC {Math.round(timer.progress * 100)}%
+          VITAL_SYNC: Nominal // N-SYNC {Math.round(progress * 100)}%
         </div>
       </div>
 
