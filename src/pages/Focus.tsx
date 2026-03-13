@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Maximize, Minimize } from "lucide-react";
 import { usePomodoroTimer, usePomodoroSessions } from "@/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
 import { useTodoList } from "@/hooks/useTodoList";
@@ -38,12 +39,40 @@ export default function Focus() {
   const timer = usePomodoroTimer(workMin, breakMin, 15);
   const { saveSession, todayStats, weeklyStats, streak, bestSession, sessions } = usePomodoroSessions();
 
+  // ── Fullscreen Protocol ──
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const enterFullscreen = useCallback(async () => {
+    try {
+      await document.documentElement.requestFullscreen();
+    } catch { /* browser blocked */ }
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+    } catch { /* ignored */ }
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (isFullscreen) exitFullscreen();
+    else enterFullscreen();
+  }, [isFullscreen, enterFullscreen, exitFullscreen]);
+
+  // ── Notifications ──
   useEffect(() => {
     if ("Notification" in window && Notification.permission === "default") {
       Notification.requestPermission();
     }
   }, []);
 
+  // ── Session completion sound ──
   const prevSessionsRef = useRef(timer.sessionsCompleted);
   useEffect(() => {
     if (timer.sessionsCompleted > prevSessionsRef.current) {
@@ -52,6 +81,7 @@ export default function Focus() {
     prevSessionsRef.current = timer.sessionsCompleted;
   }, [timer.sessionsCompleted, play]);
 
+  // ── Phase-change flash + notification ──
   const [showFlash, setShowFlash] = useState(false);
   const prevPhaseRef = useRef(timer.phase);
 
@@ -76,19 +106,24 @@ export default function Focus() {
     prevPhaseRef.current = timer.phase;
   }, [timer.phase]);
 
+  // ── Handlers ──
   const handleStart = () => {
     play("ui");
     startTimeRef.current = new Date().toISOString();
     timer.start();
+    enterFullscreen();
   };
+
   const handlePause = () => {
     play("ui");
     timer.pause();
   };
+
   const handleResume = () => {
     play("ui");
     timer.resume();
   };
+
   const handleEnd = () => {
     play("ui");
     if (timer.sessionsCompleted > 0 || timer.phase === "work") {
@@ -103,8 +138,41 @@ export default function Focus() {
     }
     timer.reset();
     startTimeRef.current = null;
+    exitFullscreen();
   };
 
+  const handleSkip = useCallback(() => {
+    play("ui");
+    timer.skip();
+  }, [play, timer]);
+
+  // ── Terminal Overrides (Keyboard shortcuts) ──
+  useEffect(() => {
+    if (!timer.isRunning) return;
+
+    const handler = (e: KeyboardEvent) => {
+      // Ignore when typing in inputs
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        if (timer.isPaused) handleResume();
+        else handlePause();
+      } else if (e.shiftKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        handleSkip();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        handleEnd();
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [timer.isRunning, timer.isPaused, handleSkip]);
+
+  // ── Derived state ──
   const linkedGoal = linkedGoalId ? goals.find((g) => g.id === linkedGoalId) : null;
   const linkedName = linkedGoal?.name ?? (linkedTodoId ? tasks.find((t) => t.id === linkedTodoId)?.name : null);
   const linkedImageUrl = linkedGoal?.image_url ?? null;
@@ -126,9 +194,7 @@ export default function Focus() {
       transition={{ duration: 1.2, ease: "easeInOut" }}
     >
       {timer.isRunning && (
-        <>
-          <FocusAmbientEffects progress={timer.progress} isBreak={isBreak} />
-        </>
+        <FocusAmbientEffects progress={timer.progress} isBreak={isBreak} />
       )}
 
       <AnimatePresence>
@@ -148,18 +214,20 @@ export default function Focus() {
 
       <div className="fixed inset-4 pointer-events-none z-0 border border-transparent">
         {/* Corner Brackets */}
-        <div
-          className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 transition-colors duration-1000 ${frameColor}`}
-        />
-        <div
-          className={`absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 transition-colors duration-1000 ${frameColor}`}
-        />
-        <div
-          className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000 ${frameColor}`}
-        />
-        <div
-          className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`}
-        />
+        <div className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
+        <div className={`absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
+        <div className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
+        <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
+
+        {/* Fullscreen toggle — top-right, inside brackets */}
+        <button
+          onClick={toggleFullscreen}
+          className="absolute top-1 right-10 pointer-events-auto w-7 h-7 flex items-center justify-center bg-transparent border border-primary/20 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/40 hover:text-primary z-10"
+          style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
+          title={isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen"}
+        >
+          {isFullscreen ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
+        </button>
 
         {/* CORRECTION : Vertical Data Streams avec Flexbox */}
         {!isMobile && (
@@ -216,10 +284,7 @@ export default function Focus() {
             onStart={handleStart}
             onPause={handlePause}
             onResume={handleResume}
-            onSkip={() => {
-              play("ui");
-              timer.skip();
-            }}
+            onSkip={handleSkip}
             onEnd={handleEnd}
           />
 
@@ -250,10 +315,7 @@ export default function Focus() {
                 onStart={handleStart}
                 onPause={handlePause}
                 onResume={handleResume}
-                onSkip={() => {
-                  play("ui");
-                  timer.skip();
-                }}
+                onSkip={handleSkip}
                 onEnd={handleEnd}
               />
             </motion.div>

@@ -44,6 +44,7 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
         >
           <span className="text-[10px] font-mono font-bold tracking-widest uppercase relative z-10">
             {isPaused ? "[ > EXE.RESUME ]" : "[ || SYS.HALT ]"}
+            <span className="text-[8px] text-primary/40 ml-1.5">(SPACE)</span>
           </span>
           {isPaused ? <Play className="h-4 w-4 relative z-10 ml-1" /> : <Pause className="h-4 w-4 relative z-10" />}
         </button>
@@ -51,11 +52,12 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
         {/* Skip Action */}
         <button
           onClick={onSkip}
-          className="w-12 h-12 bg-muted/10 border border-border flex items-center justify-center hover:bg-muted/30 transition-all text-muted-foreground hover:text-foreground group"
+          className="w-12 h-12 bg-muted/10 border border-border flex flex-col items-center justify-center hover:bg-muted/30 transition-all text-muted-foreground hover:text-foreground group"
           style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
-          title="Skip Phase"
+          title="Skip Phase (⇧+S)"
         >
           <SkipForward className="h-4 w-4 group-hover:text-foreground" />
+          <span className="text-[8px] font-mono text-muted-foreground/50 leading-none mt-0.5">⇧+S</span>
         </button>
       </div>
 
@@ -69,6 +71,7 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
         <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase group-hover:text-destructive">
           Abort Operation
         </span>
+        <span className="text-[8px] font-mono text-destructive/40">(ESC)</span>
       </button>
     </div>
   );
