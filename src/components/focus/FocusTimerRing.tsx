@@ -11,6 +11,7 @@ interface FocusTimerRingProps {
   sessionsCompleted: number;
   isPaused: boolean;
   goalImageUrl?: string | null;
+  disableHoverControls?: boolean; // Prop d'accessibilité mobile
   onStart?: () => void;
   onPause?: () => void;
   onResume?: () => void;
@@ -25,8 +26,18 @@ function formatTime(seconds: number) {
 }
 
 export function FocusTimerRing({
-  phase, progress, secondsLeft, sessionsCompleted, isPaused, goalImageUrl,
-  onStart, onPause, onResume, onSkip, onEnd,
+  phase,
+  progress,
+  secondsLeft,
+  sessionsCompleted,
+  isPaused,
+  goalImageUrl,
+  disableHoverControls = false,
+  onStart,
+  onPause,
+  onResume,
+  onSkip,
+  onEnd,
 }: FocusTimerRingProps) {
   const [hovered, setHovered] = useState(false);
   const circumference = 2 * Math.PI * 140;
@@ -34,12 +45,15 @@ export function FocusTimerRing({
   const isWork = phase === "work";
   const isBreak = phase === "break";
   const isIdle = phase === "idle";
-  const showControls = hovered && !isIdle;
+
+  // N'afficher les contrôles au survol QUE si l'option le permet
+  const showControls = hovered && !isIdle && !disableHoverControls;
 
   return (
     <div
-      className="relative inline-flex items-center justify-center mb-8"
+      className="relative inline-flex items-center justify-center mb-4"
       onMouseMove={(event) => {
+        if (disableHoverControls) return;
         const rect = event.currentTarget.getBoundingClientRect();
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
@@ -70,13 +84,16 @@ export function FocusTimerRing({
         )}
       </AnimatePresence>
 
-      {/* Outer decorative rotating rings with breathing animation */}
       <motion.div
         className="absolute -inset-16 pointer-events-none hidden dark:block"
-        animate={!isIdle ? {
-          scale: [1, 1.02, 1],
-          opacity: [1, 0.85, 1],
-        } : {}}
+        animate={
+          !isIdle
+            ? {
+                scale: [1, 1.02, 1],
+                opacity: [1, 0.85, 1],
+              }
+            : {}
+        }
         transition={{
           duration: 4,
           repeat: Infinity,
@@ -87,10 +104,14 @@ export function FocusTimerRing({
       </motion.div>
       <motion.div
         className="absolute -inset-10 pointer-events-none hidden dark:block"
-        animate={!isIdle ? {
-          scale: [1, 0.98, 1],
-          opacity: [1, 0.7, 1],
-        } : {}}
+        animate={
+          !isIdle
+            ? {
+                scale: [1, 0.98, 1],
+                opacity: [1, 0.7, 1],
+              }
+            : {}
+        }
         transition={{
           duration: 3,
           repeat: Infinity,
@@ -101,36 +122,50 @@ export function FocusTimerRing({
         <RotatingRing size={360} color="hsl(var(--accent))" duration={22} reverse dasharray="4 10" opacity={0.1} />
       </motion.div>
 
-      {/* SVG rings */}
       <svg width="320" height="320" viewBox="0 0 320 320" className="transform -rotate-90">
         <circle cx="160" cy="160" r="140" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
         <circle
-          cx="160" cy="160" r="126" fill="none"
+          cx="160"
+          cy="160"
+          r="126"
+          fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-          strokeWidth="1" strokeDasharray="3 8"
-          opacity={isIdle ? 0.1 : 0.25} className="transition-opacity duration-500"
+          strokeWidth="1"
+          strokeDasharray="3 8"
+          opacity={isIdle ? 0.1 : 0.25}
+          className="transition-opacity duration-500"
         />
         <circle
-          cx="160" cy="160" r="140" fill="none"
+          cx="160"
+          cy="160"
+          r="140"
+          fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-          strokeWidth="5" strokeLinecap="round"
-          strokeDasharray={circumference} strokeDashoffset={strokeDashoffset}
+          strokeWidth="5"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
           className="transition-all duration-1000"
-          style={{ filter: `drop-shadow(0 0 ${isIdle ? 4 : 12 + progress * 12}px ${isBreak ? "hsl(var(--accent) / 0.5)" : "hsl(var(--primary) / 0.5)"})` }}
+          style={{
+            filter: `drop-shadow(0 0 ${isIdle ? 4 : 12 + progress * 12}px ${isBreak ? "hsl(var(--accent) / 0.5)" : "hsl(var(--primary) / 0.5)"})`,
+          }}
         />
         <circle
-          cx="160" cy="160" r="152" fill="none"
+          cx="160"
+          cy="160"
+          r="152"
+          fill="none"
           stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-          strokeWidth="1" strokeDasharray="1 6"
+          strokeWidth="1"
+          strokeDasharray="1 6"
           opacity={isIdle ? 0.08 : 0.2}
         />
       </svg>
 
-      {/* Center content */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
         <AnimatePresence mode="wait">
-          {/* IDLE + HOVER → Play button */}
-          {isIdle && hovered && onStart ? (
+          {/* Si on est IDLE, et qu'on ne bloque PAS les hovers OU qu'on est sur mobile -> Bouton start principal */}
+          {isIdle && (hovered || disableHoverControls) && onStart ? (
             <motion.button
               key="start-hover"
               initial={{ opacity: 0, scale: 0.7 }}
@@ -144,11 +179,9 @@ export function FocusTimerRing({
                 <Play className="h-7 w-7 text-primary ml-1" />
               </div>
               <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-primary/70 group-hover:text-primary transition-colors">
-                Start
+                Initiate
               </span>
             </motion.button>
-
-          /* RUNNING/PAUSED + HOVER → Control buttons */
           ) : showControls ? (
             <motion.div
               key="controls-hover"
@@ -192,8 +225,6 @@ export function FocusTimerRing({
                 <Square className="h-4 w-4 text-destructive" />
               </button>
             </motion.div>
-
-          /* DEFAULT → Timer display */
           ) : (
             <motion.div
               key="timer-content"
@@ -224,10 +255,13 @@ export function FocusTimerRing({
                 </motion.div>
               </AnimatePresence>
 
+              {/* Remplacement par font-mono pure pour éviter tout tremblement entre les nombres */}
               <motion.p
-                className="text-5xl font-orbitron font-black text-foreground tabular-nums tracking-wider"
+                className="text-5xl font-mono font-black text-foreground tabular-nums tracking-wider"
                 style={{
-                  textShadow: !isIdle ? `0 0 20px ${isBreak ? "hsl(var(--accent) / 0.3)" : "hsl(var(--primary) / 0.3)"}` : undefined,
+                  textShadow: !isIdle
+                    ? `0 0 20px ${isBreak ? "hsl(var(--accent) / 0.3)" : "hsl(var(--primary) / 0.3)"}`
+                    : undefined,
                 }}
                 animate={isPaused ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
                 transition={isPaused ? { repeat: Infinity, duration: 1.5, ease: "easeInOut" } : {}}
@@ -236,7 +270,14 @@ export function FocusTimerRing({
               </motion.p>
 
               <p className="text-[10px] font-mono text-muted-foreground mt-3 tracking-wider">
-                SESSIONS: <span className="text-primary font-bold">{sessionsCompleted}</span>
+                SESSIONS:{" "}
+                <span
+                  className={
+                    isBreak && sessionsCompleted % 4 === 0 ? "text-accent font-bold" : "text-primary font-bold"
+                  }
+                >
+                  {sessionsCompleted}
+                </span>
               </p>
             </motion.div>
           )}
