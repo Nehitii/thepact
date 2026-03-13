@@ -34,15 +34,15 @@ import {
   RefreshCw,
   Hexagon,
   User,
-  TerminalSquare,
-} from "lucide-react";
+  TerminalSquare } from
+"lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger } from
+"@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
@@ -64,43 +64,43 @@ interface NavItem {
 
 const baseNavigation: Record<NavCategory, NavItem[]> = {
   overview: [
-    { to: "/", icon: Home, label: "Dashboard" },
-    { to: "/analytics", icon: BarChart3, label: "Data_Core" },
-  ],
+  { to: "/", icon: Home, label: "Dashboard" },
+  { to: "/analytics", icon: BarChart3, label: "Data_Core" }],
+
   operations: [
-    { to: "/goals", icon: Target, label: "Objectives" },
-    { to: "/focus", icon: Timer, label: "Focus_Mode" },
-  ],
+  { to: "/goals", icon: Target, label: "Objectives" },
+  { to: "/focus", icon: Timer, label: "Focus_Mode" }],
+
   lifeSystems: [],
   network: [
-    { to: "/community", icon: Users, label: "Nexus_Feed" },
-    { to: "/friends", icon: Handshake, label: "Alliances", badgeKey: "friends" },
-    { to: "/inbox", icon: Mail, label: "Comms", badgeKey: "messages" },
-    { to: "/leaderboard", icon: Crown, label: "Rankings" },
-    { to: "/achievements", icon: Trophy, label: "Milestones" },
-  ],
-  system: [{ to: "/shop", icon: ShoppingBag, label: "Black_Market" }],
+  { to: "/community", icon: Users, label: "Nexus_Feed" },
+  { to: "/friends", icon: Handshake, label: "Alliances", badgeKey: "friends" },
+  { to: "/inbox", icon: Mail, label: "Comms", badgeKey: "messages" },
+  { to: "/leaderboard", icon: Crown, label: "Rankings" },
+  { to: "/achievements", icon: Trophy, label: "Milestones" }],
+
+  system: [{ to: "/shop", icon: ShoppingBag, label: "Black_Market" }]
 };
 
-const moduleConfig: Record<string, NavItem & { category: NavCategory }> = {
+const moduleConfig: Record<string, NavItem & {category: NavCategory;}> = {
   "todo-list": { icon: ListTodo, to: "/todo", label: "Task_Queue", category: "operations" },
   "the-call": { icon: Zap, to: "/the-call", label: "The_Call", category: "operations" },
   journal: { icon: BookOpen, to: "/journal", label: "Logs", category: "lifeSystems" },
   finance: { icon: Wallet, to: "/finance", label: "Credits", category: "lifeSystems" },
   "track-health": { icon: Heart, to: "/health", label: "Vitals", category: "lifeSystems" },
-  wishlist: { icon: ShoppingCart, to: "/wishlist", label: "Acquisitions", category: "lifeSystems" },
+  wishlist: { icon: ShoppingCart, to: "/wishlist", label: "Acquisitions", category: "lifeSystems" }
 };
 
 // Paramètres originaux restaurés
 const settingsItems = [
-  { to: "/profile", icon: UserCircle, label: "Account" },
-  { to: "/profile/bounded", icon: User, label: "Bounded" },
-  { to: "/profile/pact-settings", icon: Settings, label: "Pact Rules" },
-  { to: "/profile/display-sound", icon: Volume2, label: "A/V Config" },
-  { to: "/profile/notifications", icon: Bell, label: "Alerts" },
-  { to: "/profile/privacy", icon: Shield, label: "Privacy" },
-  { to: "/profile/data", icon: Database, label: "Data Core" },
-];
+{ to: "/profile", icon: UserCircle, label: "Account" },
+{ to: "/profile/bounded", icon: User, label: "Bounded" },
+{ to: "/profile/pact-settings", icon: Settings, label: "Pact Rules" },
+{ to: "/profile/display-sound", icon: Volume2, label: "A/V Config" },
+{ to: "/profile/notifications", icon: Bell, label: "Alerts" },
+{ to: "/profile/privacy", icon: Shield, label: "Privacy" },
+{ to: "/profile/data", icon: Database, label: "Data Core" }];
+
 
 // ─── UI COMPONENTS (HUD STYLE) ─────────────────────────────
 
@@ -109,7 +109,7 @@ interface NavItemProps extends NavItem {
   mini: boolean;
   closeMobile: () => void;
   navigate: (to: string) => void;
-  location: { pathname: string };
+  location: {pathname: string;};
 }
 
 function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navigate, location }: NavItemProps) {
@@ -127,28 +127,28 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
             className={cn(
               "flex items-center justify-center h-10 w-10 mx-auto transition-all duration-300 relative group",
               "border-l-2",
-              isActive
-                ? "text-primary border-primary bg-primary/10 shadow-[inset_4px_0_15px_-5px_rgba(var(--primary),0.3)]"
-                : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
+              isActive ?
+              "text-primary border-primary bg-primary/10 shadow-[inset_4px_0_15px_-5px_rgba(var(--primary),0.3)]" :
+              "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5"
             )}
-            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
-          >
+            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}>
+            
             <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),1)]")} />
-            {badge != null && badge > 0 && (
-              <span className="absolute top-1 right-1 text-[8px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)] animate-pulse">
+            {badge != null && badge > 0 &&
+            <span className="absolute top-1 right-1 text-[8px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)] animate-pulse">
                 {badge > 99 ? "99" : badge}
               </span>
-            )}
+            }
           </button>
         </TooltipTrigger>
         <TooltipContent
           side="right"
-          className="font-mono font-bold text-xs tracking-wider border-primary/50 bg-black/95 text-primary rounded-none uppercase"
-        >
+          className="font-mono font-bold text-xs tracking-wider border-primary/50 bg-black/95 text-primary rounded-none uppercase">
+          
           {label} {badge != null && badge > 0 && `[${badge}]`}
         </TooltipContent>
-      </Tooltip>
-    );
+      </Tooltip>);
+
   }
 
   return (
@@ -157,69 +157,69 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
       end={to === "/"}
       onClick={closeMobile}
       className={({ isActive }) =>
-        cn(
-          "group relative flex items-center transition-all duration-300 overflow-hidden px-3 py-2.5 mb-1",
-          "border-l-2 before:absolute before:inset-0 before:z-0",
-          isActive
-            ? "text-primary border-primary bg-primary/10 before:bg-[linear-gradient(90deg,rgba(var(--primary),0.1)_1px,transparent_1px)] before:bg-[size:4px_4px]"
-            : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
-        )
+      cn(
+        "group relative flex items-center transition-all duration-300 overflow-hidden px-3 py-2.5 mb-1",
+        "border-l-2 before:absolute before:inset-0 before:z-0",
+        isActive ?
+        "text-primary border-primary bg-primary/10 before:bg-[linear-gradient(90deg,rgba(var(--primary),0.1)_1px,transparent_1px)] before:bg-[size:4px_4px]" :
+        "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5"
+      )
       }
-      style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
-    >
-      {({ isActive }) => (
-        <>
+      style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}>
+      
+      {({ isActive }) =>
+      <>
           <div className="relative z-10 shrink-0 flex items-center justify-center mr-3">
             <Icon
-              size={18}
-              className={cn(
-                "transition-all duration-300",
-                isActive
-                  ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.9)]"
-                  : "group-hover:text-primary group-hover:scale-110",
-              )}
-            />
+            size={18}
+            className={cn(
+              "transition-all duration-300",
+              isActive ?
+              "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.9)]" :
+              "group-hover:text-primary group-hover:scale-110"
+            )} />
+          
           </div>
           <span
-            className={cn(
-              "relative z-10 text-xs font-bold tracking-[0.1em] font-mono uppercase transition-all duration-300",
-              isActive
-                ? "text-primary drop-shadow-[0_0_4px_rgba(var(--primary),0.5)] translate-x-1"
-                : "group-hover:translate-x-1",
-            )}
-          >
+          className={cn(
+            "relative z-10 text-xs font-bold tracking-[0.1em] font-mono uppercase transition-all duration-300",
+            isActive ?
+            "text-primary drop-shadow-[0_0_4px_rgba(var(--primary),0.5)] translate-x-1" :
+            "group-hover:translate-x-1"
+          )}>
+          
             {isActive && <span className="opacity-50 mr-1">{">"}</span>}
             {label}
-            {!isActive && (
-              <span className="opacity-0 group-hover:opacity-100 ml-1 text-primary/50 transition-opacity">_</span>
-            )}
+            {!isActive &&
+          <span className="opacity-0 group-hover:opacity-100 ml-1 text-primary/50 transition-opacity">_</span>
+          }
           </span>
 
-          {isActive && (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-mono text-primary/40 tracking-widest">
+          {isActive &&
+        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-mono text-primary/40 tracking-widest">
               ACTV
             </span>
-          )}
+        }
 
-          {badge != null && badge > 0 && (
-            <span className="relative z-10 ml-auto text-[9px] bg-destructive/20 border border-destructive text-destructive px-1.5 py-0.5 font-black min-w-[20px] text-center shadow-[0_0_10px_rgba(220,38,38,0.4)] animate-pulse">
+          {badge != null && badge > 0 &&
+        <span className="relative z-10 ml-auto text-[9px] bg-destructive/20 border border-destructive text-destructive px-1.5 py-0.5 font-black min-w-[20px] text-center shadow-[0_0_10px_rgba(220,38,38,0.4)] animate-pulse">
               {badge > 99 ? "99+" : badge}
             </span>
-          )}
+        }
         </>
-      )}
-    </NavLink>
-  );
+      }
+    </NavLink>);
+
 }
 
-function SectionLabel({ label }: { label: string }) {
+function SectionLabel({ label }: {label: string;}) {
   return (
     <div className="flex items-center gap-2 mb-2 mt-5 px-3">
       <Hexagon size={10} className="text-primary/50 fill-primary/20" />
       <p className="text-[10px] font-black uppercase tracking-[0.25em] text-primary/60 font-orbitron">{label}</p>
       <div className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
-    </div>
-  );
+    </div>);
+
 }
 
 // ─── MAIN COMPONENT ────────────────────────────────────────
@@ -244,7 +244,7 @@ export const AppSidebar = memo(function AppSidebar() {
 
   const purchasedModuleKeys = useMemo(
     () => allModules.filter((m) => purchasedModuleIds.includes(m.id)).map((m) => m.key),
-    [allModules, purchasedModuleIds],
+    [allModules, purchasedModuleIds]
   );
 
   const handleSignOut = async () => {
@@ -270,7 +270,7 @@ export const AppSidebar = memo(function AppSidebar() {
       operations: [...baseNavigation.operations],
       lifeSystems: [...baseNavigation.lifeSystems],
       network: [...baseNavigation.network],
-      system: [...baseNavigation.system],
+      system: [...baseNavigation.system]
     };
 
     Object.entries(moduleConfig).forEach(([key, config]) => {
@@ -278,7 +278,7 @@ export const AppSidebar = memo(function AppSidebar() {
         categories[config.category].push({
           to: config.to,
           icon: config.icon,
-          label: config.label,
+          label: config.label
         });
       }
     });
@@ -290,22 +290,22 @@ export const AppSidebar = memo(function AppSidebar() {
 
   return (
     <TooltipProvider delayDuration={100}>
-      {isMobile && mobileOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/90 backdrop-blur-sm animate-in fade-in-0 duration-300"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      {isMobile && mobileOpen &&
+      <div
+        className="fixed inset-0 z-40 bg-black/90 backdrop-blur-sm animate-in fade-in-0 duration-300"
+        onClick={() => setMobileOpen(false)} />
 
-      {isMobile && !mobileOpen && (
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(var(--primary),0.3)]"
-          style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
-        >
+      }
+
+      {isMobile && !mobileOpen &&
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed top-4 left-4 z-50 p-2 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+        style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}>
+        
           <ChevronsRight size={20} />
         </button>
-      )}
+      }
 
       <aside
         style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
@@ -315,9 +315,9 @@ export const AppSidebar = memo(function AppSidebar() {
           "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
           !isMobile && "sticky top-0 h-screen overflow-hidden",
           isMobile && "fixed top-0 left-0 h-full transition-transform duration-300",
-          isMobile && (mobileOpen ? "translate-x-0" : "-translate-x-full"),
-        )}
-      >
+          isMobile && (mobileOpen ? "translate-x-0" : "-translate-x-full")
+        )}>
+        
         {/* HUD Grid Overlay */}
         <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:24px_24px]" />
 
@@ -332,31 +332,31 @@ export const AppSidebar = memo(function AppSidebar() {
           <div
             className={cn(
               "flex items-center relative z-10 transition-all duration-300",
-              mini ? "justify-center" : "gap-4",
-            )}
-          >
+              mini ? "justify-center" : "gap-4"
+            )}>
+            
             {/* HUD Logo */}
             <div
               className="relative shrink-0 group cursor-pointer"
               onClick={() => {
                 navigate("/");
                 closeMobile();
-              }}
-            >
+              }}>
+              
               <div className="absolute -inset-3 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
               <div
                 className={cn(
                   "relative bg-[#0a0a0c] border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.3)]",
-                  mini ? "w-10 h-10" : "w-12 h-12",
+                  mini ? "w-10 h-10" : "w-12 h-12"
                 )}
-                style={{ clipPath: "polygon(25% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%, 0% 25%)" }}
-              >
+                style={{ clipPath: "polygon(25% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%, 0% 25%)" }}>
+                
                 <span
                   className={cn(
                     "font-black font-orbitron text-primary drop-shadow-[0_0_8px_rgba(var(--primary),1)]",
-                    mini ? "text-lg" : "text-2xl",
-                  )}
-                >
+                    mini ? "text-lg" : "text-2xl"
+                  )}>
+                  
                   P
                 </span>
               </div>
@@ -365,11 +365,11 @@ export const AppSidebar = memo(function AppSidebar() {
             <div
               className={cn(
                 "flex flex-col transition-all duration-300",
-                mini ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100 overflow-visible",
-              )}
-            >
+                mini ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100 overflow-visible"
+              )}>
+              
               <h1 className="text-xl font-black font-orbitron text-foreground tracking-[0.25em] leading-none mb-1 drop-shadow-md whitespace-nowrap">
-                THE_PACT
+                VOWPACT
               </h1>
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="relative flex h-1.5 w-1.5">
@@ -385,106 +385,106 @@ export const AppSidebar = memo(function AppSidebar() {
         </div>
 
         {/* Desktop collapse toggle */}
-        {!isMobile && (
-          <div className={cn("flex mb-2 px-3", mini ? "justify-center" : "justify-end")}>
+        {!isMobile &&
+        <div className={cn("flex mb-2 px-3", mini ? "justify-center" : "justify-end")}>
             <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-1 text-primary/40 hover:text-primary transition-all duration-200 border border-transparent hover:border-primary/40 bg-black/40 hover:bg-primary/10"
-              style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)" }}
-              aria-label={collapsed ? "Expand" : "Collapse"}
-            >
+            onClick={() => setCollapsed(!collapsed)}
+            className="p-1 text-primary/40 hover:text-primary transition-all duration-200 border border-transparent hover:border-primary/40 bg-black/40 hover:bg-primary/10"
+            style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%)" }}
+            aria-label={collapsed ? "Expand" : "Collapse"}>
+            
               {collapsed ? <ChevronsRight size={14} /> : <ChevronsLeft size={14} />}
             </button>
           </div>
-        )}
+        }
 
         {/* ─── NAVIGATION ─── */}
         <nav className={cn("flex-1 overflow-y-auto hide-scrollbar relative z-10 pb-6", mini ? "px-1.5" : "px-3")}>
           <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="Overview" />}
-            {activeCategories.overview.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
+            {activeCategories.overview.map((item) =>
+            <SidebarNavItem
+              key={item.to}
+              {...item}
+              mini={mini}
+              closeMobile={closeMobile}
+              navigate={navigate}
+              location={location} />
+
+            )}
           </div>
 
           <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="Operations" />}
-            {activeCategories.operations.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
+            {activeCategories.operations.map((item) =>
+            <SidebarNavItem
+              key={item.to}
+              {...item}
+              mini={mini}
+              closeMobile={closeMobile}
+              navigate={navigate}
+              location={location} />
 
-            {!hasAnyModule && !mini && (
-              <button
-                onClick={() => {
-                  navigate("/shop");
-                  closeMobile();
-                }}
-                className="mt-2 px-3 py-2.5 w-full border border-dashed border-primary/30 text-primary/60 hover:text-primary hover:border-primary hover:bg-primary/10 transition-all text-xs font-bold tracking-[0.1em] font-mono text-left flex items-center gap-3 group"
-                style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}
-              >
+            )}
+
+            {!hasAnyModule && !mini &&
+            <button
+              onClick={() => {
+                navigate("/shop");
+                closeMobile();
+              }}
+              className="mt-2 px-3 py-2.5 w-full border border-dashed border-primary/30 text-primary/60 hover:text-primary hover:border-primary hover:bg-primary/10 transition-all text-xs font-bold tracking-[0.1em] font-mono text-left flex items-center gap-3 group"
+              style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)" }}>
+              
                 <Sparkles size={14} className="opacity-50 group-hover:opacity-100 group-hover:animate-pulse" />
                 INSTALL_MODULES
               </button>
-            )}
+            }
           </div>
 
-          {activeCategories.lifeSystems.length > 0 && (
-            <div className="space-y-0.5 mb-2">
+          {activeCategories.lifeSystems.length > 0 &&
+          <div className="space-y-0.5 mb-2">
               {!mini && <SectionLabel label="Life_Systems" />}
-              {activeCategories.lifeSystems.map((item) => (
-                <SidebarNavItem
-                  key={item.to}
-                  {...item}
-                  mini={mini}
-                  closeMobile={closeMobile}
-                  navigate={navigate}
-                  location={location}
-                />
-              ))}
+              {activeCategories.lifeSystems.map((item) =>
+            <SidebarNavItem
+              key={item.to}
+              {...item}
+              mini={mini}
+              closeMobile={closeMobile}
+              navigate={navigate}
+              location={location} />
+
+            )}
             </div>
-          )}
+          }
 
           <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="Nexus_Network" />}
-            {activeCategories.network.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                badge={getBadgeCount(item.badgeKey)}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
+            {activeCategories.network.map((item) =>
+            <SidebarNavItem
+              key={item.to}
+              {...item}
+              badge={getBadgeCount(item.badgeKey)}
+              mini={mini}
+              closeMobile={closeMobile}
+              navigate={navigate}
+              location={location} />
+
+            )}
           </div>
 
           <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="System" />}
-            {activeCategories.system.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
+            {activeCategories.system.map((item) =>
+            <SidebarNavItem
+              key={item.to}
+              {...item}
+              mini={mini}
+              closeMobile={closeMobile}
+              navigate={navigate}
+              location={location} />
+
+            )}
           </div>
         </nav>
 
@@ -498,39 +498,39 @@ export const AppSidebar = memo(function AppSidebar() {
                 <div
                   className={cn(
                     "flex items-center transition-all duration-300 hover:bg-primary/10 border border-transparent hover:border-primary/40 relative overflow-hidden",
-                    mini ? "justify-center p-2 rounded-none" : "gap-3 p-2",
+                    mini ? "justify-center p-2 rounded-none" : "gap-3 p-2"
                   )}
                   style={{
-                    clipPath: mini
-                      ? "none"
-                      : "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)",
-                  }}
-                >
+                    clipPath: mini ?
+                    "none" :
+                    "polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%)"
+                  }}>
+                  
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent -translate-y-full group-hover:animate-[scan_2s_linear_infinite]" />
 
                   <div className="relative shrink-0">
                     <Avatar
                       className={cn(
                         "border border-primary/40 rounded-none transition-all group-hover:border-primary group-hover:shadow-[0_0_10px_rgba(var(--primary),0.5)]",
-                        mini ? "h-8 w-8" : "h-9 w-9",
-                      )}
-                    >
+                        mini ? "h-8 w-8" : "h-9 w-9"
+                      )}>
+                      
                       <AvatarImage src={profile?.avatar_url || undefined} className="object-cover" />
                       <AvatarFallback className="bg-black text-primary font-orbitron text-xs rounded-none">
                         {profile?.display_name?.[0] || "U"}
                       </AvatarFallback>
                     </Avatar>
-                    {totalUnread > 0 && (
-                      <NotificationBadge
-                        count={totalUnread}
-                        size="sm"
-                        className="absolute -top-1.5 -right-1.5 shadow-[0_0_8px_rgba(var(--primary),0.8)] rounded-none border border-black"
-                      />
-                    )}
+                    {totalUnread > 0 &&
+                    <NotificationBadge
+                      count={totalUnread}
+                      size="sm"
+                      className="absolute -top-1.5 -right-1.5 shadow-[0_0_8px_rgba(var(--primary),0.8)] rounded-none border border-black" />
+
+                    }
                   </div>
 
-                  {!mini && (
-                    <div className="flex-1 text-left min-w-0">
+                  {!mini &&
+                  <div className="flex-1 text-left min-w-0">
                       <p className="text-sm font-bold text-primary uppercase tracking-widest font-orbitron truncate group-hover:text-primary drop-shadow-[0_0_2px_rgba(var(--primary),0.8)]">
                         {profile?.display_name || "AGENT_UNKNOWN"}
                       </p>
@@ -538,13 +538,13 @@ export const AppSidebar = memo(function AppSidebar() {
                         ID:{user?.id?.slice(0, 8).toUpperCase() || "00000000"}
                       </p>
                     </div>
-                  )}
+                  }
 
-                  {!mini && (
-                    <div className="text-primary/40 group-hover:text-primary transition-colors">
+                  {!mini &&
+                  <div className="text-primary/40 group-hover:text-primary transition-colors">
                       <TerminalSquare size={16} className="group-hover:animate-pulse" />
                     </div>
-                  )}
+                  }
                 </div>
               </button>
             </DropdownMenuTrigger>
@@ -554,8 +554,8 @@ export const AppSidebar = memo(function AppSidebar() {
               align={mini ? "start" : "end"}
               side="right"
               className="w-72 bg-[#050508]/95 border border-primary/40 text-primary font-mono shadow-[0_0_30px_rgba(var(--primary),0.15)] rounded-none backdrop-blur-xl p-0"
-              sideOffset={16}
-            >
+              sideOffset={16}>
+              
               {/* Header du dropdown */}
               <div className="px-3 py-2 bg-primary/10 border-b border-primary/30 flex items-center justify-between">
                 <span className="text-[10px] uppercase font-black tracking-[0.2em] font-orbitron drop-shadow-[0_0_5px_rgba(var(--primary),0.5)]">
@@ -575,12 +575,12 @@ export const AppSidebar = memo(function AppSidebar() {
                         navigate(item.to);
                         closeMobile();
                       }}
-                      className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none border border-transparent hover:border-primary/30 transition-all flex items-center h-10"
-                    >
+                      className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none border border-transparent hover:border-primary/30 transition-all flex items-center h-10">
+                      
                       <ItemIcon className="mr-2 h-3.5 w-3.5 opacity-60 group-hover:opacity-100 group-hover:text-primary" />
                       <span className="text-[10px] font-bold tracking-wider uppercase truncate">{item.label}</span>
-                    </DropdownMenuItem>
-                  );
+                    </DropdownMenuItem>);
+
                 })}
               </div>
 
@@ -593,16 +593,16 @@ export const AppSidebar = memo(function AppSidebar() {
                     navigate("/pact-selector");
                     closeMobile();
                   }}
-                  className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center"
-                >
+                  className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center">
+                  
                   <RefreshCw className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
                   <span className="text-xs font-bold tracking-widest uppercase">Switch_Pact</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
                   onClick={handleSignOut}
-                  className="p-2 text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer group rounded-none flex items-center"
-                >
+                  className="p-2 text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer group rounded-none flex items-center">
+                  
                   <LogOut className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
                   <span className="text-xs font-bold tracking-widest uppercase">Terminate_Session</span>
                 </DropdownMenuItem>
@@ -611,6 +611,6 @@ export const AppSidebar = memo(function AppSidebar() {
           </DropdownMenu>
         </div>
       </aside>
-    </TooltipProvider>
-  );
+    </TooltipProvider>);
+
 });
