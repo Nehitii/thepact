@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, SkipForward, Square } from "lucide-react";
+import { Play, Pause, SkipForward, Square, Target } from "lucide-react";
 import type { PomodoroPhase } from "@/hooks/usePomodoro";
 
 interface FocusTimerRingProps {
@@ -39,40 +39,40 @@ export function FocusTimerRing({
   onEnd,
 }: FocusTimerRingProps) {
   const [hovered, setHovered] = useState(false);
-  const [jitter, setJitter] = useState("00");
+  const [jitter, setJitter] = useState("000");
 
   const isWork = phase === "work";
   const isBreak = phase === "break";
   const isIdle = phase === "idle";
   const showControls = hovered && !isIdle && !disableHoverControls;
 
-  const colorVar = isBreak ? "var(--accent)" : "var(--primary)";
   const colorHsl = isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))";
 
-  // Effet Jitter (millisecondes défilantes)
+  // Effet Jitter (millisecondes réelles)
   useEffect(() => {
     if (isIdle || isPaused) {
-      setJitter("00");
+      setJitter("000");
       return;
     }
     const interval = setInterval(() => {
       setJitter(
-        Math.floor(Math.random() * 99)
+        Math.floor(Math.random() * 999)
           .toString()
-          .padStart(2, "0"),
+          .padStart(3, "0"),
       );
-    }, 50);
+    }, 10);
     return () => clearInterval(interval);
   }, [isIdle, isPaused]);
 
-  // Constantes SVG
+  // Constantes SVG pour l'anneau
   const radius = 140;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference * (1 - progress);
 
   return (
     <div
-      className="relative inline-flex items-center justify-center mb-4"
+      className="relative inline-flex items-center justify-center mb-4 p-4 border border-primary/20 bg-black/40"
+      style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
       onMouseMove={(event) => {
         if (disableHoverControls) return;
         const rect = event.currentTarget.getBoundingClientRect();
@@ -83,7 +83,7 @@ export function FocusTimerRing({
       }}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Objectif d'arrière plan */}
+      {/* Objectif d'arrière plan (Mise en avant massive) */}
       <AnimatePresence>
         {goalImageUrl && (
           <motion.div
@@ -94,38 +94,50 @@ export function FocusTimerRing({
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
             <div
-              className="w-[260px] h-[260px] opacity-[0.25]"
+              className="w-[280px] h-[280px] opacity-50"
               style={{
                 clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
-                maskImage: "radial-gradient(circle, black 40%, transparent 80%)",
-                WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 80%)",
+                filter: `drop-shadow(0 0 15px ${colorHsl})`,
               }}
             >
-              <img src={goalImageUrl} alt="" className="w-full h-full object-cover mix-blend-luminosity" />
+              <img src={goalImageUrl} alt="" className="w-full h-full object-cover" />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Réticule de visée tactique (HUD Crosshairs) */}
-      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-        {/* Lignes cardinales */}
-        <div className="absolute w-[360px] h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-        <div className="absolute h-[360px] w-[1px] bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
+      {/* Réticule de ciblage tactique intégré (Tactical Brackets) */}
+      <div className="absolute inset-4 pointer-events-none z-10">
+        <div
+          className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 transition-colors duration-1000`}
+          style={{ borderColor: colorHsl }}
+        />
+        <div
+          className={`absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 transition-colors duration-1000`}
+          style={{ borderColor: colorHsl }}
+        />
+        <div
+          className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000`}
+          style={{ borderColor: colorHsl }}
+        />
+        <div
+          className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000`}
+          style={{ borderColor: colorHsl }}
+        />
 
-        {/* Repères angulaires extérieurs */}
-        <svg width="340" height="340" className="absolute" style={{ transform: "rotate(45deg)" }}>
-          {[0, 90, 180, 270].map((deg) => (
-            <path
-              key={deg}
-              d="M 170 10 L 170 30 M 160 20 L 180 20"
-              stroke={colorHsl}
-              strokeWidth="2"
-              opacity="0.4"
-              transform={`rotate(${deg} 170 170)`}
-            />
-          ))}
-        </svg>
+        {/* Données de ciblage microscopiques */}
+        <div
+          className={`absolute left-0 top-1/2 -translate-y-1/2 text-[7px] font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 origin-left`}
+          style={{ color: colorHsl }}
+        >
+          UPLINK: SECURE // B-R: {sessionsCompleted % 4}/{4}
+        </div>
+        <div
+          className={`absolute right-0 top-1/2 -translate-y-1/2 text-[7px] font-mono tracking-[0.3em] uppercase whitespace-nowrap rotate-90 origin-right`}
+          style={{ color: colorHsl }}
+        >
+          VITAL_SYNC: Nominal // N-SYNC {Math.round(timer.progress * 100)}%
+        </div>
       </div>
 
       {/* Anneaux du réacteur (SVG) */}
@@ -137,7 +149,6 @@ export function FocusTimerRing({
         animate={!isIdle && !isPaused ? { rotate: -90 + 360 } : {}}
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       >
-        {/* Anneau de fond */}
         <circle
           cx="160"
           cy="160"
@@ -148,7 +159,6 @@ export function FocusTimerRing({
           strokeWidth="1"
         />
 
-        {/* Anneau de progression principal (Épais, brille) */}
         <circle
           cx="160"
           cy="160"
@@ -163,30 +173,18 @@ export function FocusTimerRing({
           style={{ filter: `drop-shadow(0 0 ${isIdle ? 4 : 10}px ${colorHsl})` }}
         />
 
-        {/* Anneau interne hachuré (Rotation inverse) */}
+        {/* Anneau interne hachuré (Segments de données) */}
         <motion.circle
           cx="160"
           cy="160"
           r={radius - 16}
           fill="none"
           stroke={colorHsl}
-          strokeWidth="2"
-          strokeDasharray="4 8"
+          strokeWidth="3"
+          strokeDasharray="1 10"
           opacity={isIdle ? 0.2 : 0.6}
           animate={!isIdle && !isPaused ? { strokeDashoffset: -100 } : {}}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-        />
-
-        {/* Anneau de précision (pointillés denses) */}
-        <circle
-          cx="160"
-          cy="160"
-          r={radius + 12}
-          fill="none"
-          stroke={colorHsl}
-          strokeWidth="1"
-          strokeDasharray="1 4"
-          opacity={isIdle ? 0.1 : 0.3}
         />
       </motion.svg>
 
@@ -202,12 +200,11 @@ export function FocusTimerRing({
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               onClick={onStart}
-              className="group relative flex flex-col items-center justify-center w-28 h-28 bg-primary/10 border border-primary/40 hover:bg-primary/20 hover:border-primary hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all cursor-pointer"
+              className="group relative flex flex-col items-center justify-center w-32 h-32 bg-primary/10 border border-primary/40 hover:bg-primary/20 hover:border-primary hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all cursor-pointer"
               style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }}
             >
-              <div className="absolute inset-0 bg-[linear-gradient(rgba(var(--primary),0.1)_1px,transparent_1px)] bg-[size:100%_4px] opacity-20 pointer-events-none" />
-              <Play className="h-8 w-8 text-primary ml-1 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
-              <span className="mt-2 text-[9px] font-mono uppercase tracking-[0.3em] text-primary">Init</span>
+              <Target className="h-8 w-8 text-primary group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+              <span className="mt-2 text-[9px] font-mono uppercase tracking-[0.3em] text-primary">Init Sync</span>
             </motion.button>
           ) : showControls ? (
             /* ETAT HOVER : Commandes tactiques */
@@ -224,7 +221,11 @@ export function FocusTimerRing({
                   className="w-16 h-12 bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/30 hover:border-primary transition-all"
                   style={{ clipPath: "polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px)" }}
                 >
-                  {isPaused ? <Play className="h-5 w-5 text-primary" /> : <Pause className="h-5 w-5 text-primary" />}
+                  {isPaused ? (
+                    <Play className="h-5 w-5 text-primary ml-1" />
+                  ) : (
+                    <Pause className="h-5 w-5 text-primary" />
+                  )}
                 </button>
                 <button
                   onClick={onSkip}
@@ -241,7 +242,7 @@ export function FocusTimerRing({
               >
                 <Square className="h-3 w-3 text-destructive" />
                 <span className="text-[10px] font-mono font-bold tracking-widest text-destructive uppercase">
-                  Abort
+                  Terminate
                 </span>
               </button>
             </motion.div>
@@ -252,29 +253,33 @@ export function FocusTimerRing({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex flex-col items-center w-full relative"
+              className="flex flex-col items-center w-full relative pt-4 pb-2 bg-black/40"
+              style={{
+                clipPath:
+                  "polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px)",
+              }}
             >
               {/* Statut Système */}
               <motion.div
-                className="mb-1 border border-current bg-background/50 px-2 py-0.5"
-                style={{ color: colorHsl }}
+                className="mb-1 border border-current bg-background px-2 py-0.5"
+                style={{ color: colorHsl, clipPath: "polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px)" }}
               >
                 <span className="text-[9px] font-mono uppercase tracking-[0.2em]">
                   {isIdle
-                    ? "[ SYS :: STANDBY ]"
+                    ? "[ SYS::STANDBY ]"
                     : isPaused
-                      ? "[ SYS :: HALTED ]"
+                      ? "[ SYS::HALTED ]"
                       : isWork
-                        ? "[ SYS :: DEEP_SYNC ]"
-                        : "[ SYS :: COOLING ]"}
+                        ? "[ SYS::FOCUSED ]"
+                        : "[ SYS::COOLING ]"}
                 </span>
               </motion.div>
 
               {/* Chronomètre principal */}
-              <div className="relative flex items-end">
+              <div className="relative flex items-end justify-center">
                 <motion.p
-                  className="text-6xl font-orbitron font-black tabular-nums tracking-widest"
-                  style={{ color: colorHsl, textShadow: !isIdle ? `0 0 20px ${colorHsl}` : "none" }}
+                  className="text-6xl font-orbitron font-black tabular-nums tracking-widest text-foreground"
+                  style={{ textShadow: !isIdle ? `0 0 20px ${colorHsl}` : "none" }}
                   animate={isPaused ? { opacity: [1, 0.3, 1] } : { opacity: 1 }}
                   transition={isPaused ? { repeat: Infinity, duration: 2 } : {}}
                 >
@@ -282,23 +287,11 @@ export function FocusTimerRing({
                 </motion.p>
                 {/* Jitter des millisecondes */}
                 <span
-                  className="absolute -right-7 bottom-2 text-sm font-mono font-bold tracking-tighter opacity-70"
+                  className="absolute -right-9 bottom-3 text-lg font-mono font-bold tracking-tighter opacity-70"
                   style={{ color: colorHsl }}
                 >
-                  {jitter}
+                  :{jitter}
                 </span>
-              </div>
-
-              {/* Data Tracker inférieur */}
-              <div
-                className="mt-2 flex items-center gap-4 text-[10px] font-mono opacity-80"
-                style={{ color: colorHsl }}
-              >
-                <span>
-                  SEQ: {sessionsCompleted % 4}/{4}
-                </span>
-                <span className="w-1 h-1 rounded-full bg-current opacity-50" />
-                <span>TOTAL: {sessionsCompleted}</span>
               </div>
             </motion.div>
           )}

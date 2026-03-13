@@ -54,19 +54,18 @@ export default function Focus() {
 
   const [showFlash, setShowFlash] = useState(false);
   const prevPhaseRef = useRef(timer.phase);
-
+  
   useEffect(() => {
     if (timer.phase !== prevPhaseRef.current && timer.phase !== "idle") {
       setShowFlash(true);
       const timeout = setTimeout(() => setShowFlash(false), 500);
-
+      
       if ("Notification" in window && Notification.permission === "granted") {
         new Notification("THE PACT // Focus System", {
-          body:
-            timer.phase === "break"
-              ? "Phase cible atteinte. Initier récupération."
-              : "Pause terminée. Reprise du protocole.",
-          icon: "/favicon.ico",
+          body: timer.phase === "break" 
+            ? "Phase cible atteinte. Initier récupération." 
+            : "Pause terminée. Reprise du protocole.",
+          icon: "/favicon.ico"
         });
       }
 
@@ -76,33 +75,20 @@ export default function Focus() {
     prevPhaseRef.current = timer.phase;
   }, [timer.phase]);
 
-  const handleStart = () => {
-    play("ui");
-    startTimeRef.current = new Date().toISOString();
-    timer.start();
-  };
-  const handlePause = () => {
-    play("ui");
-    timer.pause();
-  };
-  const handleResume = () => {
-    play("ui");
-    timer.resume();
-  };
+  const handleStart = () => { play("ui"); startTimeRef.current = new Date().toISOString(); timer.start(); };
+  const handlePause = () => { play("ui"); timer.pause(); };
+  const handleResume = () => { play("ui"); timer.resume(); };
   const handleEnd = () => {
     play("ui");
     if (timer.sessionsCompleted > 0 || timer.phase === "work") {
       saveSession.mutate({
-        duration_minutes: workMin,
-        break_minutes: breakMin,
+        duration_minutes: workMin, break_minutes: breakMin,
         completed: timer.sessionsCompleted > 0,
-        linked_goal_id: linkedGoalId,
-        linked_todo_id: linkedTodoId,
+        linked_goal_id: linkedGoalId, linked_todo_id: linkedTodoId,
         started_at: startTimeRef.current || new Date().toISOString(),
       });
     }
-    timer.reset();
-    startTimeRef.current = null;
+    timer.reset(); startTimeRef.current = null;
   };
 
   const linkedGoal = linkedGoalId ? goals.find((g) => g.id === linkedGoalId) : null;
@@ -118,27 +104,15 @@ export default function Focus() {
       className="min-h-screen relative overflow-hidden bg-[#050508]"
       animate={{
         backgroundColor: timer.isRunning
-          ? isBreak
-            ? "rgba(var(--accent-rgb), 0.03)"
-            : "rgba(var(--primary-rgb), 0.03)"
+          ? isBreak ? "rgba(var(--accent-rgb), 0.03)" : "rgba(var(--primary-rgb), 0.03)"
           : "#050508",
       }}
       transition={{ duration: 1.2, ease: "easeInOut" }}
     >
-      {/* HUD Background Grid & Scanlines */}
-      <div className="absolute inset-0 pointer-events-none opacity-20 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:32px_32px]" />
-
+      
       {timer.isRunning && (
         <>
           <FocusAmbientEffects progress={timer.progress} isBreak={isBreak} />
-          <div
-            className="fixed inset-0 pointer-events-none z-0 opacity-10"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(0deg, transparent, transparent 2px, currentColor 2px, currentColor 4px)",
-              color: isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))",
-            }}
-          />
         </>
       )}
 
@@ -147,13 +121,8 @@ export default function Focus() {
         {showFlash && (
           <motion.div
             className="fixed inset-0 pointer-events-none z-50"
-            initial={{ opacity: 0.3 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            style={{
-              background: `radial-gradient(circle at center, hsl(var(--${isBreak ? "accent" : "primary"}) / 0.4) 0%, transparent 80%)`,
-            }}
+            initial={{ opacity: 0.3 }} animate={{ opacity: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.6 }}
+            style={{ background: `radial-gradient(circle at center, hsl(var(--${isBreak ? "accent" : "primary"}) / 0.4) 0%, transparent 80%)` }}
           />
         )}
       </AnimatePresence>
@@ -161,30 +130,18 @@ export default function Focus() {
       {/* Cyberpunk HUD Frame Elements (Greebles) */}
       <div className="fixed inset-4 pointer-events-none z-0 border border-transparent">
         {/* Corner Brackets */}
-        <div
-          className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 transition-colors duration-1000 ${frameColor}`}
-        />
-        <div
-          className={`absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 transition-colors duration-1000 ${frameColor}`}
-        />
-        <div
-          className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000 ${frameColor}`}
-        />
-        <div
-          className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`}
-        />
-
+        <div className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
+        <div className={`absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
+        <div className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
+        <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
+        
         {/* Vertical Data Streams */}
         {!isMobile && (
           <>
-            <div
-              className={`absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 origin-left text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap transition-colors duration-1000 ${textColor}`}
-            >
+            <div className={`absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 origin-left text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap transition-colors duration-1000 ${textColor}`}>
               Uplink :: Secure // Latency 12ms // Protocol {isBreak ? "B-RK" : "F-CS"}
             </div>
-            <div
-              className={`absolute right-0 top-1/2 -translate-y-1/2 rotate-90 origin-right text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap transition-colors duration-1000 ${textColor}`}
-            >
+            <div className={`absolute right-0 top-1/2 -translate-y-1/2 rotate-90 origin-right text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap transition-colors duration-1000 ${textColor}`}>
               Vitals :: Nominal // Neural Sync {Math.round(timer.progress * 100)}%
             </div>
           </>
@@ -192,17 +149,16 @@ export default function Focus() {
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 pb-20 pt-6">
-        <ModuleHeader title="FOCUS" titleAccent="_CORE" systemLabel="DEEP_WORK // TACTICAL" badges={[]} />
+        <ModuleHeader title="FOCUS" titleAccent="_CORE" systemLabel="DEEP_WORK // POMODORO" badges={[]} />
 
         <div className="flex flex-col items-center gap-6 mt-8">
+          
           {/* Linked Target Info (Top center) */}
           <div className="h-6 flex items-center justify-center">
             <AnimatePresence>
               {timer.isRunning && linkedName && (
                 <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
                   className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-primary/30"
                   style={{ clipPath: "polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}
                 >
@@ -226,10 +182,7 @@ export default function Focus() {
             onStart={handleStart}
             onPause={handlePause}
             onResume={handleResume}
-            onSkip={() => {
-              play("ui");
-              timer.skip();
-            }}
+            onSkip={() => { play("ui"); timer.skip(); }}
             onEnd={handleEnd}
           />
 
@@ -237,37 +190,16 @@ export default function Focus() {
           {!timer.isRunning ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex justify-center mt-4">
               <FocusToolbar
-                goals={goals}
-                todos={tasks}
-                linkedGoalId={linkedGoalId}
-                linkedTodoId={linkedTodoId}
-                onLinkGoal={setLinkedGoalId}
-                onLinkTodo={setLinkedTodoId}
-                activePanel={activePanel}
-                onPanelChange={setActivePanel}
+                goals={goals} todos={tasks}
+                linkedGoalId={linkedGoalId} linkedTodoId={linkedTodoId}
+                onLinkGoal={setLinkedGoalId} onLinkTodo={setLinkedTodoId}
+                activePanel={activePanel} onPanelChange={setActivePanel}
               />
             </motion.div>
-          ) : (
-            isMobile && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-[280px] mx-auto mt-4 z-20"
-              >
-                <FocusControls
-                  phase={timer.phase}
-                  isPaused={timer.isPaused}
-                  onStart={handleStart}
-                  onPause={handlePause}
-                  onResume={handleResume}
-                  onSkip={() => {
-                    play("ui");
-                    timer.skip();
-                  }}
-                  onEnd={handleEnd}
-                />
-              </motion.div>
-            )
+          ) : isMobile && (
+             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[280px] mx-auto mt-4 z-20 relative">
+                <FocusControls phase={timer.phase} isPaused={timer.isPaused} onStart={handleStart} onPause={handlePause} onResume={handleResume} onSkip={() => { play("ui"); timer.skip(); }} onEnd={handleEnd} />
+             </motion.div>
           )}
 
           {/* Expandable Technical Panels */}
@@ -275,47 +207,11 @@ export default function Focus() {
             {activePanel && (!timer.isRunning || activePanel === "spotify") && (
               <motion.div
                 key={activePanel}
-                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                animate={{ opacity: 1, height: "auto", scale: 1 }}
-                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, height: 0, scale: 0.95 }} animate={{ opacity: 1, height: "auto", scale: 1 }} exit={{ opacity: 0, height: 0, scale: 0.95 }} transition={{ duration: 0.2 }}
                 className="w-full flex justify-center z-20 relative mt-4"
               >
-                <div className="w-full max-w-lg relative">
-                  {/* Decorative Terminal Border for Active Panels */}
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-primary/50 to-transparent" />
-                  <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-primary via-primary/20 to-transparent" />
-                  <div className="absolute -top-3 left-2 text-[8px] font-mono text-primary uppercase tracking-widest bg-[#050508] px-1">
-                    {activePanel === "spotify" ? ">> AUDIO_LINK_ESTABLISHED" : `>> ${activePanel.toUpperCase()}_SYS`}
-                  </div>
-
-                  <div className="pt-4 pl-3 pb-2 border border-primary/10 bg-black/40 backdrop-blur-md">
-                    {activePanel === "config" && !timer.isRunning && (
-                      <FocusConfigPanel
-                        workMin={workMin}
-                        breakMin={breakMin}
-                        onWorkChange={setWorkMin}
-                        onBreakChange={setBreakMin}
-                      />
-                    )}
-                    {activePanel === "spotify" && <SpotifyPlayer className="w-full" compact={false} />}
-                    {activePanel === "stats" && !timer.isRunning && (
-                      <FocusStats
-                        todayCount={todayStats.count}
-                        todayMinutes={todayStats.totalMinutes}
-                        streak={streak}
-                        bestSession={bestSession}
-                        weeklyData={weeklyStats}
-                      />
-                    )}
-                    {activePanel === "history" && !timer.isRunning && <FocusHistory sessions={sessions.data || []} />}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+                <div className="w-full max-w-lg relative bg-[#0a0a0c] border border-primary/20 p-2" style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}>
+                  
+                  {/* Panel Title */}
+                  <div className="flex items-center gap-2 mb-3 border-b border-primary/20 pb-2">
+                    <div
