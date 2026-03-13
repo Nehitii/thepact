@@ -131,7 +131,6 @@ export default function Focus() {
         </>
       )}
 
-      {/* Soft Flash */}
       <AnimatePresence>
         {showFlash && (
           <motion.div
@@ -147,7 +146,6 @@ export default function Focus() {
         )}
       </AnimatePresence>
 
-      {/* Cyberpunk HUD Frame Elements (Greebles) */}
       <div className="fixed inset-4 pointer-events-none z-0 border border-transparent">
         {/* Corner Brackets */}
         <div
@@ -163,18 +161,22 @@ export default function Focus() {
           className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`}
         />
 
-        {/* Vertical Data Streams */}
+        {/* CORRECTION : Vertical Data Streams avec Flexbox */}
         {!isMobile && (
           <>
-            <div
-              className={`absolute left-0 top-1/2 -translate-y-1/2 -rotate-90 origin-left text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap transition-colors duration-1000 ${textColor}`}
-            >
-              Uplink :: Secure // Latency 12ms // Protocol {isBreak ? "B-RK" : "F-CS"}
+            <div className="absolute left-1 top-12 bottom-12 flex items-center justify-center w-6">
+              <span
+                className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 transition-colors duration-1000 ${textColor}`}
+              >
+                Uplink :: Secure // Latency 12ms // Protocol {isBreak ? "B-RK" : "F-CS"}
+              </span>
             </div>
-            <div
-              className={`absolute right-0 top-1/2 -translate-y-1/2 rotate-90 origin-right text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap transition-colors duration-1000 ${textColor}`}
-            >
-              Vitals :: Nominal // Neural Sync {Math.round(timer.progress * 100)}%
+            <div className="absolute right-1 top-12 bottom-12 flex items-center justify-center w-6">
+              <span
+                className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap rotate-90 transition-colors duration-1000 ${textColor}`}
+              >
+                Vitals :: Nominal // Neural Sync {Math.round(timer.progress * 100)}%
+              </span>
             </div>
           </>
         )}
@@ -184,7 +186,6 @@ export default function Focus() {
         <ModuleHeader title="FOCUS" titleAccent="_CORE" systemLabel="DEEP_WORK // POMODORO" badges={[]} />
 
         <div className="flex flex-col items-center gap-6 mt-8">
-          {/* Linked Target Info (Top center) */}
           <div className="h-6 flex items-center justify-center">
             <AnimatePresence>
               {timer.isRunning && linkedName && (
@@ -222,7 +223,6 @@ export default function Focus() {
             onEnd={handleEnd}
           />
 
-          {/* Controls Bar (Desktop) */}
           {!timer.isRunning && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex justify-center mt-4">
               <FocusToolbar
@@ -238,7 +238,6 @@ export default function Focus() {
             </motion.div>
           )}
 
-          {/* Controls Bar (Mobile) */}
           {timer.isRunning && isMobile && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -260,7 +259,6 @@ export default function Focus() {
             </motion.div>
           )}
 
-          {/* Expandable Technical Panels */}
           <AnimatePresence mode="wait">
             {activePanel && (!timer.isRunning || activePanel === "spotify") && (
               <motion.div
@@ -277,11 +275,9 @@ export default function Focus() {
                     clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)",
                   }}
                 >
-                  {/* Panel Title */}
                   <div className="flex items-center gap-2 mb-3 border-b border-primary/20 pb-2">
                     <div className="w-1 h-3 bg-primary" />
                     <span className="text-[10px] font-mono text-primary uppercase tracking-[0.2em]">
-                      {/* L'erreur venait des caractères '>' tapés en brut ci-dessous */}
                       {" >> "}{" "}
                       {activePanel === "spotify" ? "AUDIO_LINK_ESTABLISHED" : `${activePanel.toUpperCase()}_SYS`}
                     </span>
