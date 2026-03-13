@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Flame, Coffee, Clock, Play, Pause, SkipForward, Square } from "lucide-react";
-import { RotatingRing } from "@/components/journal/JournalDecorations";
+import { Play, Pause, SkipForward, Square } from "lucide-react";
 import type { PomodoroPhase } from "@/hooks/usePomodoro";
 
 interface FocusTimerRingProps {
@@ -11,7 +10,7 @@ interface FocusTimerRingProps {
   sessionsCompleted: number;
   isPaused: boolean;
   goalImageUrl?: string | null;
-  disableHoverControls?: boolean; // Prop d'accessibilité mobile
+  disableHoverControls?: boolean;
   onStart?: () => void;
   onPause?: () => void;
   onResume?: () => void;
@@ -40,14 +39,36 @@ export function FocusTimerRing({
   onEnd,
 }: FocusTimerRingProps) {
   const [hovered, setHovered] = useState(false);
-  const circumference = 2 * Math.PI * 140;
-  const strokeDashoffset = circumference * (1 - progress);
+  const [jitter, setJitter] = useState("00");
+
   const isWork = phase === "work";
   const isBreak = phase === "break";
   const isIdle = phase === "idle";
-
-  // N'afficher les contrôles au survol QUE si l'option le permet
   const showControls = hovered && !isIdle && !disableHoverControls;
+
+  const colorVar = isBreak ? "var(--accent)" : "var(--primary)";
+  const colorHsl = isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))";
+
+  // Effet Jitter (millisecondes défilantes)
+  useEffect(() => {
+    if (isIdle || isPaused) {
+      setJitter("00");
+      return;
+    }
+    const interval = setInterval(() => {
+      setJitter(
+        Math.floor(Math.random() * 99)
+          .toString()
+          .padStart(2, "0"),
+      );
+    }, 50);
+    return () => clearInterval(interval);
+  }, [isIdle, isPaused]);
+
+  // Constantes SVG
+  const radius = 140;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - progress);
 
   return (
     <div
@@ -62,6 +83,7 @@ export function FocusTimerRing({
       }}
       onMouseLeave={() => setHovered(false)}
     >
+      {/* Objectif d'arrière plan */}
       <AnimatePresence>
         {goalImageUrl && (
           <motion.div
@@ -72,213 +94,212 @@ export function FocusTimerRing({
             className="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
             <div
-              className="w-[260px] h-[260px] rounded-full overflow-hidden opacity-[0.35] dark:opacity-[0.4]"
+              className="w-[260px] h-[260px] opacity-[0.25]"
               style={{
-                maskImage: "radial-gradient(circle, black 40%, transparent 75%)",
-                WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 75%)",
+                clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
+                maskImage: "radial-gradient(circle, black 40%, transparent 80%)",
+                WebkitMaskImage: "radial-gradient(circle, black 40%, transparent 80%)",
               }}
             >
-              <img src={goalImageUrl} alt="" className="w-full h-full object-cover" />
+              <img src={goalImageUrl} alt="" className="w-full h-full object-cover mix-blend-luminosity" />
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <motion.div
-        className="absolute -inset-16 pointer-events-none hidden dark:block"
-        animate={
-          !isIdle
-            ? {
-                scale: [1, 1.02, 1],
-                opacity: [1, 0.85, 1],
-              }
-            : {}
-        }
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      >
-        <RotatingRing size={400} color="hsl(var(--primary))" duration={30} dasharray="2 16" opacity={0.15} />
-      </motion.div>
-      <motion.div
-        className="absolute -inset-10 pointer-events-none hidden dark:block"
-        animate={
-          !isIdle
-            ? {
-                scale: [1, 0.98, 1],
-                opacity: [1, 0.7, 1],
-              }
-            : {}
-        }
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: "easeInOut",
-          delay: 0.5,
-        }}
-      >
-        <RotatingRing size={360} color="hsl(var(--accent))" duration={22} reverse dasharray="4 10" opacity={0.1} />
-      </motion.div>
+      {/* Réticule de visée tactique (HUD Crosshairs) */}
+      <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+        {/* Lignes cardinales */}
+        <div className="absolute w-[360px] h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+        <div className="absolute h-[360px] w-[1px] bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
 
-      <svg width="320" height="320" viewBox="0 0 320 320" className="transform -rotate-90">
-        <circle cx="160" cy="160" r="140" fill="none" stroke="hsl(var(--muted))" strokeWidth="3" opacity="0.2" />
+        {/* Repères angulaires extérieurs */}
+        <svg width="340" height="340" className="absolute" style={{ transform: "rotate(45deg)" }}>
+          {[0, 90, 180, 270].map((deg) => (
+            <path
+              key={deg}
+              d="M 170 10 L 170 30 M 160 20 L 180 20"
+              stroke={colorHsl}
+              strokeWidth="2"
+              opacity="0.4"
+              transform={`rotate(${deg} 170 170)`}
+            />
+          ))}
+        </svg>
+      </div>
+
+      {/* Anneaux du réacteur (SVG) */}
+      <motion.svg
+        width="320"
+        height="320"
+        viewBox="0 0 320 320"
+        className="transform -rotate-90 relative z-10"
+        animate={!isIdle && !isPaused ? { rotate: -90 + 360 } : {}}
+        transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+      >
+        {/* Anneau de fond */}
         <circle
           cx="160"
           cy="160"
-          r="126"
+          r={radius}
           fill="none"
-          stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
+          stroke="currentColor"
+          className="text-muted/20"
           strokeWidth="1"
-          strokeDasharray="3 8"
-          opacity={isIdle ? 0.1 : 0.25}
-          className="transition-opacity duration-500"
         />
+
+        {/* Anneau de progression principal (Épais, brille) */}
         <circle
           cx="160"
           cy="160"
-          r="140"
+          r={radius}
           fill="none"
-          stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
-          strokeWidth="5"
-          strokeLinecap="round"
+          stroke={colorHsl}
+          strokeWidth="6"
+          strokeLinecap="square"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
           className="transition-all duration-1000"
-          style={{
-            filter: `drop-shadow(0 0 ${isIdle ? 4 : 12 + progress * 12}px ${isBreak ? "hsl(var(--accent) / 0.5)" : "hsl(var(--primary) / 0.5)"})`,
-          }}
+          style={{ filter: `drop-shadow(0 0 ${isIdle ? 4 : 10}px ${colorHsl})` }}
         />
+
+        {/* Anneau interne hachuré (Rotation inverse) */}
+        <motion.circle
+          cx="160"
+          cy="160"
+          r={radius - 16}
+          fill="none"
+          stroke={colorHsl}
+          strokeWidth="2"
+          strokeDasharray="4 8"
+          opacity={isIdle ? 0.2 : 0.6}
+          animate={!isIdle && !isPaused ? { strokeDashoffset: -100 } : {}}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+        />
+
+        {/* Anneau de précision (pointillés denses) */}
         <circle
           cx="160"
           cy="160"
-          r="152"
+          r={radius + 12}
           fill="none"
-          stroke={isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))"}
+          stroke={colorHsl}
           strokeWidth="1"
-          strokeDasharray="1 6"
-          opacity={isIdle ? 0.08 : 0.2}
+          strokeDasharray="1 4"
+          opacity={isIdle ? 0.1 : 0.3}
         />
-      </svg>
+      </motion.svg>
 
+      {/* Contenu Central (Données système) */}
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
         <AnimatePresence mode="wait">
-          {/* Si on est IDLE, et qu'on ne bloque PAS les hovers OU qu'on est sur mobile -> Bouton start principal */}
+          {/* ETAT IDLE : Bouton d'amorçage */}
           {isIdle && (hovered || disableHoverControls) && onStart ? (
             <motion.button
-              key="start-hover"
-              initial={{ opacity: 0, scale: 0.7 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.7 }}
-              transition={{ duration: 0.2 }}
-              onClick={onStart}
-              className="flex flex-col items-center gap-3 cursor-pointer group"
-            >
-              <div className="w-16 h-16 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center group-hover:bg-primary/25 group-hover:border-primary/60 transition-all group-hover:shadow-[0_0_25px_hsl(var(--primary)/0.3)]">
-                <Play className="h-7 w-7 text-primary ml-1" />
-              </div>
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-primary/70 group-hover:text-primary transition-colors">
-                Initiate
-              </span>
-            </motion.button>
-          ) : showControls ? (
-            <motion.div
-              key="controls-hover"
+              key="start-btn"
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
-              className="flex items-center gap-3"
+              onClick={onStart}
+              className="group relative flex flex-col items-center justify-center w-28 h-28 bg-primary/10 border border-primary/40 hover:bg-primary/20 hover:border-primary hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all cursor-pointer"
+              style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }}
             >
-              {isPaused ? (
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(var(--primary),0.1)_1px,transparent_1px)] bg-[size:100%_4px] opacity-20 pointer-events-none" />
+              <Play className="h-8 w-8 text-primary ml-1 group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+              <span className="mt-2 text-[9px] font-mono uppercase tracking-[0.3em] text-primary">Init</span>
+            </motion.button>
+          ) : showControls ? (
+            /* ETAT HOVER : Commandes tactiques */
+            <motion.div
+              key="controls"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="flex flex-col items-center gap-2"
+            >
+              <div className="flex gap-2">
                 <button
-                  onClick={onResume}
-                  className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
-                  title="Resume"
+                  onClick={isPaused ? onResume : onPause}
+                  className="w-16 h-12 bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/30 hover:border-primary transition-all"
+                  style={{ clipPath: "polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px)" }}
                 >
-                  <Play className="h-6 w-6 text-primary ml-0.5" />
+                  {isPaused ? <Play className="h-5 w-5 text-primary" /> : <Pause className="h-5 w-5 text-primary" />}
                 </button>
-              ) : (
                 <button
-                  onClick={onPause}
-                  className="w-14 h-14 rounded-full bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/25 hover:border-primary/60 transition-all hover:shadow-[0_0_20px_hsl(var(--primary)/0.3)]"
-                  title="Pause"
+                  onClick={onSkip}
+                  className="w-16 h-12 bg-muted/20 border border-muted-foreground/40 flex items-center justify-center hover:bg-muted/40 hover:border-muted-foreground transition-all"
+                  style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}
                 >
-                  <Pause className="h-6 w-6 text-primary" />
+                  <SkipForward className="h-5 w-5 text-muted-foreground" />
                 </button>
-              )}
-
-              <button
-                onClick={onSkip}
-                className="w-11 h-11 rounded-full bg-muted/30 border border-border/50 flex items-center justify-center hover:bg-muted/50 hover:border-border transition-all"
-                title="Skip phase"
-              >
-                <SkipForward className="h-4 w-4 text-muted-foreground" />
-              </button>
-
+              </div>
               <button
                 onClick={onEnd}
-                className="w-11 h-11 rounded-full bg-destructive/15 border border-destructive/40 flex items-center justify-center hover:bg-destructive/25 hover:border-destructive/60 transition-all hover:shadow-[0_0_20px_hsl(var(--destructive)/0.3)]"
-                title="End session"
+                className="w-[136px] h-8 bg-destructive/20 border border-destructive/50 flex items-center justify-center hover:bg-destructive/40 hover:border-destructive transition-all gap-2"
+                style={{ clipPath: "polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%, 0 10px)" }}
               >
-                <Square className="h-4 w-4 text-destructive" />
+                <Square className="h-3 w-3 text-destructive" />
+                <span className="text-[10px] font-mono font-bold tracking-widest text-destructive uppercase">
+                  Abort
+                </span>
               </button>
             </motion.div>
           ) : (
+            /* ETAT ACTIF : Données HUD */
             <motion.div
-              key="timer-content"
+              key="timer-data"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-col items-center"
+              className="flex flex-col items-center w-full relative"
             >
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={phase + String(isPaused)}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  className="flex items-center gap-2 mb-2"
-                >
-                  {isWork ? (
-                    <Flame className="h-4 w-4 text-primary" />
-                  ) : isBreak ? (
-                    <Coffee className="h-4 w-4 text-accent" />
-                  ) : (
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-muted-foreground">
-                    {isIdle ? "Ready" : isPaused ? "Paused" : isWork ? "Focus" : "Break"}
-                  </span>
-                </motion.div>
-              </AnimatePresence>
-
-              {/* Remplacement par font-mono pure pour éviter tout tremblement entre les nombres */}
-              <motion.p
-                className="text-5xl font-mono font-black text-foreground tabular-nums tracking-wider"
-                style={{
-                  textShadow: !isIdle
-                    ? `0 0 20px ${isBreak ? "hsl(var(--accent) / 0.3)" : "hsl(var(--primary) / 0.3)"}`
-                    : undefined,
-                }}
-                animate={isPaused ? { opacity: [1, 0.4, 1] } : { opacity: 1 }}
-                transition={isPaused ? { repeat: Infinity, duration: 1.5, ease: "easeInOut" } : {}}
+              {/* Statut Système */}
+              <motion.div
+                className="mb-1 border border-current bg-background/50 px-2 py-0.5"
+                style={{ color: colorHsl }}
               >
-                {formatTime(secondsLeft)}
-              </motion.p>
-
-              <p className="text-[10px] font-mono text-muted-foreground mt-3 tracking-wider">
-                SESSIONS:{" "}
-                <span
-                  className={
-                    isBreak && sessionsCompleted % 4 === 0 ? "text-accent font-bold" : "text-primary font-bold"
-                  }
-                >
-                  {sessionsCompleted}
+                <span className="text-[9px] font-mono uppercase tracking-[0.2em]">
+                  {isIdle
+                    ? "[ SYS :: STANDBY ]"
+                    : isPaused
+                      ? "[ SYS :: HALTED ]"
+                      : isWork
+                        ? "[ SYS :: DEEP_SYNC ]"
+                        : "[ SYS :: COOLING ]"}
                 </span>
-              </p>
+              </motion.div>
+
+              {/* Chronomètre principal */}
+              <div className="relative flex items-end">
+                <motion.p
+                  className="text-6xl font-orbitron font-black tabular-nums tracking-widest"
+                  style={{ color: colorHsl, textShadow: !isIdle ? `0 0 20px ${colorHsl}` : "none" }}
+                  animate={isPaused ? { opacity: [1, 0.3, 1] } : { opacity: 1 }}
+                  transition={isPaused ? { repeat: Infinity, duration: 2 } : {}}
+                >
+                  {formatTime(secondsLeft)}
+                </motion.p>
+                {/* Jitter des millisecondes */}
+                <span
+                  className="absolute -right-7 bottom-2 text-sm font-mono font-bold tracking-tighter opacity-70"
+                  style={{ color: colorHsl }}
+                >
+                  {jitter}
+                </span>
+              </div>
+
+              {/* Data Tracker inférieur */}
+              <div
+                className="mt-2 flex items-center gap-4 text-[10px] font-mono opacity-80"
+                style={{ color: colorHsl }}
+              >
+                <span>
+                  SEQ: {sessionsCompleted % 4}/{4}
+                </span>
+                <span className="w-1 h-1 rounded-full bg-current opacity-50" />
+                <span>TOTAL: {sessionsCompleted}</span>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
