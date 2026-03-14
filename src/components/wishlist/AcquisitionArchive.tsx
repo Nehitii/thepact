@@ -57,9 +57,9 @@ export function AcquisitionArchive({ items, currency, onToggleAcquired }: Acquis
 
             {/* Image */}
             <div className="aspect-[4/3] bg-muted/10 relative overflow-hidden">
-              {(item as any).image_url ? (
+              {item.image_url ? (
                 <img
-                  src={(item as any).image_url}
+                  src={item.image_url}
                   alt={item.name}
                   className="w-full h-full object-cover grayscale-[30%]"
                   loading="lazy"
