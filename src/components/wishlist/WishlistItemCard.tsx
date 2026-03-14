@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
-import { Edit, ExternalLink, ImageIcon, Target, Trash2, CheckCircle2, ShieldCheck, Tag } from "lucide-react";
+import { Edit, ExternalLink, ImageIcon, Target, Trash2, CheckCircle2, ShieldCheck, Tag, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useCallback, useEffect } from "react";
 import { Switch } from "@/components/ui/switch";
@@ -21,9 +21,22 @@ interface WishlistItemCardProps {
   onEdit: (item: PactWishlistItem) => void;
   onDelete: (id: string) => void;
   onToggleAcquired: (id: string, acquired: boolean) => void;
+  // Ajout des propriétés pour le Bulk Mode :
+  bulkMode?: boolean;
+  selected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
-export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcquired }: WishlistItemCardProps) {
+export function WishlistItemCard({
+  item,
+  currency,
+  onEdit,
+  onDelete,
+  onToggleAcquired,
+  bulkMode = false,
+  selected = false,
+  onSelect,
+}: WishlistItemCardProps) {
   const navigate = useNavigate();
   const { id, name, category, notes, estimated_cost, acquired, goal, item_type, url, source_type, image_url } = item;
 
@@ -31,32 +44,29 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
   const isSynced = source_type === "goal_sync";
 
   const [showCelebration, setShowCelebration] = useState(false);
-  // État local pour tricher visuellement le temps de l'animation
   const [localAcquired, setLocalAcquired] = useState(acquired);
 
-  // Synchronisation avec la base de données si l'état global change
   useEffect(() => {
     setLocalAcquired(acquired);
   }, [acquired]);
 
   const handleAcquiredToggle = useCallback(
     (checked: boolean) => {
-      setLocalAcquired(checked); // L'UI passe en "Acquis" instantanément
+      // Si on est en mode sélection, le switch ne doit pas marcher
+      if (bulkMode) return;
 
+      setLocalAcquired(checked);
       if (checked) {
-        setShowCelebration(true); // Déclenche le gros effet vert
-
-        // On attend 2 secondes (le temps de l'animation) AVANT d'avertir le parent
+        setShowCelebration(true);
         setTimeout(() => {
           setShowCelebration(false);
           onToggleAcquired(id, checked);
         }, 2000);
       } else {
-        // Si on décoche, pas besoin d'attendre
         onToggleAcquired(id, checked);
       }
     },
-    [id, onToggleAcquired],
+    [id, onToggleAcquired, bulkMode],
   );
 
   const theme = {
@@ -66,16 +76,27 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
     bgClass: isRequired ? "bg-destructive/10" : "bg-primary/10",
   };
 
+  // Gestion de la bordure lumineuse de la carte
+  const ringClass = selected
+    ? isRequired
+      ? "ring-2 ring-destructive shadow-[0_0_30px_hsl(var(--destructive)/0.3)]"
+      : "ring-2 ring-primary shadow-[0_0_30px_hsl(var(--primary)/0.3)]"
+    : localAcquired
+      ? "ring-2 ring-emerald-500/40"
+      : `hover:border-${isRequired ? "destructive" : "primary"}/50`;
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      whileHover={{ y: -4 }}
+      whileHover={!bulkMode ? { y: -4 } : { scale: 1.02 }}
+      // Si le Bulk Mode est actif, un clic sur la carte déclenche la sélection
+      onClick={() => bulkMode && onSelect?.(id)}
       className={`group relative flex flex-col rounded-[24px] bg-black/60 backdrop-blur-2xl border border-white/10 overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] ${
-        localAcquired ? "ring-2 ring-emerald-500/40" : `hover:border-${isRequired ? "destructive" : "primary"}/50`
-      }`}
+        bulkMode ? "cursor-pointer" : ""
+      } ${ringClass}`}
     >
       {/* ==================== 1. ZONE IMAGE SPECTACULAIRE ==================== */}
       <div className="relative h-64 w-full shrink-0 overflow-hidden bg-white/5">
@@ -96,13 +117,9 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
           </div>
         )}
 
-        {/* Dégradé doux uniquement en bas pour lier l'image au contenu */}
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
-
-        {/* HUD: Ligne de scanline subtile */}
         <div className="absolute inset-0 bg-[url('/scanline-pattern.png')] opacity-10 mix-blend-overlay pointer-events-none" />
 
-        {/* Badges de classification */}
         <div className="absolute top-4 left-4 flex flex-col gap-2">
           <Badge
             className={`font-orbitron text-[10px] font-black tracking-widest uppercase border backdrop-blur-md px-3 py-1 shadow-lg ${theme.bgClass} ${theme.textClass} ${theme.borderClass}`}
@@ -116,27 +133,49 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
           )}
         </div>
 
-        {/* Actions Rapides (Flottantes au survol) */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2 translate-x-12 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 focus-within:opacity-100 focus-within:translate-x-0">
-          <Button
-            size="icon"
-            variant="secondary"
-            onClick={() => onEdit(item)}
-            className="h-9 w-9 rounded-full bg-black/50 backdrop-blur-xl border border-white/20 hover:bg-white/20 text-white"
-          >
-            <Edit className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="destructive"
-            onClick={() => onDelete(id)}
-            className="h-9 w-9 rounded-full bg-destructive/50 backdrop-blur-xl border border-destructive/50 hover:bg-destructive text-white"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
+        {/* HUD ACTIONS OU CHECKBOX BULK */}
+        {bulkMode ? (
+          <div className="absolute top-4 right-4 z-40">
+            <div
+              className={`h-7 w-7 rounded-md border-2 flex items-center justify-center transition-all duration-300 backdrop-blur-md ${
+                selected
+                  ? isRequired
+                    ? "bg-destructive border-destructive text-white shadow-[0_0_15px_hsl(var(--destructive)/0.5)]"
+                    : "bg-primary border-primary text-white shadow-[0_0_15px_hsl(var(--primary)/0.5)]"
+                  : "bg-black/50 border-white/30 text-transparent hover:border-white/60"
+              }`}
+            >
+              <Check className="h-4 w-4" />
+            </div>
+          </div>
+        ) : (
+          <div className="absolute top-4 right-4 flex flex-col gap-2 translate-x-12 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100 focus-within:opacity-100 focus-within:translate-x-0">
+            <Button
+              size="icon"
+              variant="secondary"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(item);
+              }}
+              className="h-9 w-9 rounded-full bg-black/50 backdrop-blur-xl border border-white/20 hover:bg-white/20 text-white"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              size="icon"
+              variant="destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(id);
+              }}
+              className="h-9 w-9 rounded-full bg-destructive/50 backdrop-blur-xl border border-destructive/50 hover:bg-destructive text-white"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
 
-        {/* Overlay d'Acquisition (Hack animation) */}
+        {/* Overlay d'Acquisition */}
         <AnimatePresence>
           {showCelebration && (
             <motion.div
@@ -155,8 +194,8 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
       </div>
 
       {/* ==================== 2. ZONE CONTENU DÉTAILLÉE ==================== */}
-      <div className="relative z-10 flex flex-col flex-grow p-6 pt-2">
-        {/* Titre & Lien Externe */}
+      {/* Si bulkMode est actif, on désactive les événements de la souris à l'intérieur pour que la carte entière soit cliquable proprement */}
+      <div className={`relative z-10 flex flex-col flex-grow p-6 pt-2 ${bulkMode ? "pointer-events-none" : ""}`}>
         <div className="flex items-start justify-between gap-4 mb-3">
           <h3
             className={`font-rajdhani text-2xl font-bold leading-tight break-words transition-colors duration-300 ${localAcquired ? "text-emerald-50" : "text-white"}`}
@@ -164,11 +203,12 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
             {name}
           </h3>
 
-          {url && (
+          {url && !bulkMode && (
             <a
               href={url}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="mt-1 p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-muted-foreground hover:text-white transition-colors shrink-0"
               title="Accéder au lien"
             >
@@ -177,7 +217,6 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
           )}
         </div>
 
-        {/* Tags : Catégorie & Objectif Lié */}
         <div className="flex flex-wrap gap-2 mb-4">
           {category && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-xs font-rajdhani text-white/70">
@@ -187,7 +226,10 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
           )}
           {goal?.name && (
             <button
-              onClick={() => navigate(`/goals/${goal.id}`)}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/goals/${goal.id}`);
+              }}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20 text-xs font-rajdhani text-primary/90 hover:bg-primary/20 transition-colors text-left"
             >
               <Target className="h-3 w-3" />
@@ -196,7 +238,6 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
           )}
         </div>
 
-        {/* Notes */}
         {notes && (
           <p className="text-sm font-rajdhani text-muted-foreground/90 line-clamp-3 leading-relaxed mb-6 flex-grow">
             {notes}
@@ -205,7 +246,6 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
 
         {/* ==================== 3. TABLEAU DE BORD (DATA GRID) ==================== */}
         <div className="mt-auto grid grid-cols-2 gap-3 p-4 rounded-xl bg-black/40 border border-white/5 shadow-inner">
-          {/* Bloc Prix */}
           <div className="flex flex-col justify-center">
             <span className="text-[9px] font-orbitron text-muted-foreground/60 tracking-widest uppercase mb-1">
               Estimated Value
@@ -217,7 +257,6 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
             </span>
           </div>
 
-          {/* Bloc Statut / Switch */}
           <div className="flex flex-col items-end justify-center border-l border-white/5 pl-3">
             <span
               className={`text-[9px] font-orbitron tracking-widest uppercase mb-2 ${localAcquired ? "text-emerald-400" : "text-muted-foreground/60"}`}
@@ -233,6 +272,7 @@ export function WishlistItemCard({ item, currency, onEdit, onDelete, onToggleAcq
                 checked={localAcquired}
                 onCheckedChange={handleAcquiredToggle}
                 className={`scale-110 data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-white/10`}
+                disabled={bulkMode}
               />
               {localAcquired && <CheckCircle2 className="h-5 w-5 text-emerald-500 ml-1" />}
             </div>
