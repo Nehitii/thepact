@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/currency";
 import { Edit, ExternalLink, ImageIcon, Target, Trash2, CheckCircle2, ShieldCheck, Tag, Check } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import type { PactWishlistItem } from "@/hooks/usePactWishlist";
@@ -21,7 +21,6 @@ interface WishlistItemCardProps {
   onEdit: (item: PactWishlistItem) => void;
   onDelete: (id: string) => void;
   onToggleAcquired: (id: string, acquired: boolean) => void;
-  // Ajout des propriétés pour le Bulk Mode :
   bulkMode?: boolean;
   selected?: boolean;
   onSelect?: (id: string) => void;
@@ -43,30 +42,42 @@ export function WishlistItemCard({
   const isRequired = item_type === "required";
   const isSynced = source_type === "goal_sync";
 
-  const [showCelebration, setShowCelebration] = useState(false);
+  const [isAcquiring, setIsAcquiring] = useState(false);
   const [localAcquired, setLocalAcquired] = useState(acquired);
 
+  // 1. SOLUTION ANTI-BUG : Garder une référence toujours à jour de la fonction parente
+  const latestToggleRef = useRef(onToggleAcquired);
   useEffect(() => {
-    setLocalAcquired(acquired);
-  }, [acquired]);
+    latestToggleRef.current = onToggleAcquired;
+  }, [onToggleAcquired]);
+
+  // 2. Synchronisation avec le parent (seulement si on n'est pas en pleine animation)
+  useEffect(() => {
+    if (!isAcquiring) {
+      setLocalAcquired(acquired);
+    }
+  }, [acquired, isAcquiring]);
 
   const handleAcquiredToggle = useCallback(
     (checked: boolean) => {
-      // Si on est en mode sélection, le switch ne doit pas marcher
-      if (bulkMode) return;
+      if (bulkMode || isAcquiring) return;
 
-      setLocalAcquired(checked);
+      setLocalAcquired(checked); // On passe en vert visuellement tout de suite
+
       if (checked) {
-        setShowCelebration(true);
+        setIsAcquiring(true); // Lance l'overlay géant
+
         setTimeout(() => {
-          setShowCelebration(false);
-          onToggleAcquired(id, checked);
+          setIsAcquiring(false);
+          // On appelle la fonction la plus RÉCENTE (bloque le bug où la carte remonte)
+          latestToggleRef.current(id, checked);
         }, 2000);
       } else {
-        onToggleAcquired(id, checked);
+        // Si on décoche, on appelle immédiatement
+        latestToggleRef.current(id, checked);
       }
     },
-    [id, onToggleAcquired, bulkMode],
+    [id, bulkMode, isAcquiring],
   );
 
   const theme = {
@@ -76,7 +87,6 @@ export function WishlistItemCard({
     bgClass: isRequired ? "bg-destructive/10" : "bg-primary/10",
   };
 
-  // Gestion de la bordure lumineuse de la carte
   const ringClass = selected
     ? isRequired
       ? "ring-2 ring-destructive shadow-[0_0_30px_hsl(var(--destructive)/0.3)]"
@@ -92,7 +102,6 @@ export function WishlistItemCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       whileHover={!bulkMode ? { y: -4 } : { scale: 1.02 }}
-      // Si le Bulk Mode est actif, un clic sur la carte déclenche la sélection
       onClick={() => bulkMode && onSelect?.(id)}
       className={`group relative flex flex-col rounded-[24px] bg-black/60 backdrop-blur-2xl border border-white/10 overflow-hidden shadow-2xl transition-all duration-500 hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] ${
         bulkMode ? "cursor-pointer" : ""
@@ -177,7 +186,7 @@ export function WishlistItemCard({
 
         {/* Overlay d'Acquisition */}
         <AnimatePresence>
-          {showCelebration && (
+          {isAcquiring && (
             <motion.div
               className="absolute inset-0 z-50 flex items-center justify-center bg-emerald-950/90 backdrop-blur-md"
               initial={{ opacity: 0 }}
@@ -194,7 +203,6 @@ export function WishlistItemCard({
       </div>
 
       {/* ==================== 2. ZONE CONTENU DÉTAILLÉE ==================== */}
-      {/* Si bulkMode est actif, on désactive les événements de la souris à l'intérieur pour que la carte entière soit cliquable proprement */}
       <div className={`relative z-10 flex flex-col flex-grow p-6 pt-2 ${bulkMode ? "pointer-events-none" : ""}`}>
         <div className="flex items-start justify-between gap-4 mb-3">
           <h3
@@ -272,7 +280,7 @@ export function WishlistItemCard({
                 checked={localAcquired}
                 onCheckedChange={handleAcquiredToggle}
                 className={`scale-110 data-[state=checked]:bg-emerald-500 data-[state=unchecked]:bg-white/10`}
-                disabled={bulkMode}
+                disabled={bulkMode || isAcquiring}
               />
               {localAcquired && <CheckCircle2 className="h-5 w-5 text-emerald-500 ml-1" />}
             </div>
