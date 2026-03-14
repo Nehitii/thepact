@@ -24,12 +24,14 @@ import {
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useWishlistGoalSync } from "@/hooks/useWishlistGoalSync";
-import { Check, Edit, Globe, ImageIcon, Link, Package, Plus, ShoppingBag } from "lucide-react";
+import { Check, Edit, Globe, ImageIcon, Link, Package, Plus, ShoppingBag, ListChecks } from "lucide-react";
 import { DuplicateMergeDialog, type DuplicateMergePreview } from "@/components/wishlist/DuplicateMergeDialog";
 import { NeedVsWantChart } from "@/components/wishlist/NeedVsWantChart";
 import { WishlistItemCard } from "@/components/wishlist/WishlistItemCard";
 import { AcquisitionArchive } from "@/components/wishlist/AcquisitionArchive";
 import { ImportFromUrlModal, type ScrapedProduct } from "@/components/wishlist/ImportFromUrlModal";
+import { DeleteConfirmDialog } from "@/components/wishlist/DeleteConfirmDialog";
+import { WishlistBulkBar } from "@/components/wishlist/WishlistBulkBar";
 import { AnimatePresence, motion } from "framer-motion";
 
 function normalizeWishlistName(value: string) {
@@ -82,6 +84,7 @@ export default function Wishlist() {
   const [newCategory, setNewCategory] = useState("");
   const [newUrl, setNewUrl] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [newGoalId, setNewGoalId] = useState("none");
 
   // Import modal
   const [importOpen, setImportOpen] = useState(false);
@@ -105,6 +108,14 @@ export default function Wishlist() {
   const [mergeDuplicateId, setMergeDuplicateId] = useState<string | null>(null);
   const [mergeExistingPreview, setMergeExistingPreview] = useState<DuplicateMergePreview | null>(null);
   const [mergeIncomingPreview, setMergeIncomingPreview] = useState<DuplicateMergePreview | null>(null);
+
+  // Delete confirmation
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; isSynced: boolean } | null>(null);
+
+  // Bulk select
+  const [bulkMode, setBulkMode] = useState(false);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
 
   const editingItem = useMemo(
     () => (editId ? items.find((i) => i.id === editId) ?? null : null),
@@ -212,7 +223,7 @@ export default function Wishlist() {
     const optionalTotal = active.reduce((sum, i) => sum + (i.item_type === "optional" ? Number(i.estimated_cost || 0) : 0), 0);
     const acquiredTotal = acquired.reduce((sum, i) => sum + Number(i.estimated_cost || 0), 0);
 
-    return { list: sorted, acquired, totals: { required: requiredTotal, optional: optionalTotal, acquired: acquiredTotal } };
+    return { list: sorted, active, acquired, totals: { required: requiredTotal, optional: optionalTotal, acquired: acquiredTotal } };
   }, [items, filterType, sortBy, search]);
 
   const createNew = async (opts?: { skipDuplicateCheck?: boolean }) => {
@@ -220,9 +231,10 @@ export default function Wishlist() {
     const trimmed = newName.trim();
     if (!trimmed) return;
     const parsedCost = Number((newCost || "0").replace(",", "."));
+    const nextGoalId = newGoalId === "none" ? null : newGoalId;
 
     if (!opts?.skipDuplicateCheck) {
-      const dupe = findDuplicateByNameAndGoal({ items, name: trimmed, goalId: null });
+      const dupe = findDuplicateByNameAndGoal({ items, name: trimmed, goalId: nextGoalId });
       if (dupe) {
         const dupeFull = items.find((i) => i.id === dupe.id);
         setMergeMode("create");
@@ -233,7 +245,8 @@ export default function Wishlist() {
           itemType: (dupeFull?.item_type ?? "optional") as any, notes: dupeFull?.notes ?? null,
         });
         setMergeIncomingPreview({
-          name: trimmed, goalId: null, goalName: null, category: newCategory.trim() || null,
+          name: trimmed, goalId: nextGoalId, goalName: nextGoalId ? goals.find((g) => g.id === nextGoalId)?.name ?? null : null,
+          category: newCategory.trim() || null,
           estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0, itemType: newType, notes: null,
         });
         setMergeOpen(true);
@@ -245,10 +258,11 @@ export default function Wishlist() {
       userId: user.id, name: trimmed,
       estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
       itemType: newType, category: newCategory.trim() || null,
+      goalId: nextGoalId,
       url: newUrl.trim() || null,
       imageUrl: newImageUrl.trim() || null,
     });
-    setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional"); setNewUrl(""); setNewImageUrl(""); setNewOpen(false);
+    setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional"); setNewUrl(""); setNewImageUrl(""); setNewGoalId("none"); setNewOpen(false);
   };
 
   const handleImportProduct = (product: ScrapedProduct) => {
@@ -258,6 +272,7 @@ export default function Wishlist() {
     setNewImageUrl(product.image_url || "");
     setNewType("optional");
     setNewCategory("");
+    setNewGoalId("none");
     setNewOpen(true);
   };
 
@@ -304,9 +319,52 @@ export default function Wishlist() {
     updateItem.mutate({ userId: user.id, id, patch: { acquired } });
   };
 
-  const handleDelete = (id: string) => {
+  const handleDeleteRequest = (id: string) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    setDeleteTarget({ id, name: item.name, isSynced: item.source_type === "goal_sync" });
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (!user || !deleteTarget) return;
+    deleteItem.mutate({ userId: user.id, id: deleteTarget.id });
+    setDeleteConfirmOpen(false);
+    setDeleteTarget(null);
+  };
+
+  // Bulk actions
+  const toggleBulkSelect = (id: string) => {
+    setBulkSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkAcquired = () => {
     if (!user) return;
-    deleteItem.mutate({ userId: user.id, id });
+    bulkSelected.forEach((id) => {
+      updateItem.mutate({ userId: user.id, id, patch: { acquired: true } });
+    });
+    toast({ title: "Bulk acquired", description: `${bulkSelected.size} items marked as acquired.` });
+    setBulkSelected(new Set());
+    setBulkMode(false);
+  };
+
+  const handleBulkDelete = () => {
+    if (!user) return;
+    bulkSelected.forEach((id) => {
+      deleteItem.mutate({ userId: user.id, id });
+    });
+    toast({ title: "Bulk deleted", description: `${bulkSelected.size} items removed.` });
+    setBulkSelected(new Set());
+    setBulkMode(false);
+  };
+
+  const cancelBulk = () => {
+    setBulkMode(false);
+    setBulkSelected(new Set());
   };
 
   return (
@@ -324,6 +382,14 @@ export default function Wishlist() {
         open={importOpen}
         onOpenChange={setImportOpen}
         onImport={handleImportProduct}
+      />
+
+      <DeleteConfirmDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        itemName={deleteTarget?.name ?? ""}
+        isSynced={deleteTarget?.isSynced}
+        onConfirm={handleDeleteConfirm}
       />
 
       {/* Edit modal */}
@@ -405,6 +471,13 @@ export default function Wishlist() {
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
+              onClick={() => { setBulkMode(!bulkMode); setBulkSelected(new Set()); }}
+              className={`rounded-xl font-orbitron text-xs tracking-wider border-primary/20 hover:border-primary/40 ${bulkMode ? "bg-primary/10 border-primary/40" : ""}`}
+            >
+              <ListChecks className="h-4 w-4 mr-2" /> {bulkMode ? "EXIT BULK" : "BULK"}
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setImportOpen(true)}
               className="rounded-xl font-orbitron text-xs tracking-wider border-primary/20 hover:border-primary/40"
             >
@@ -434,6 +507,16 @@ export default function Wishlist() {
                       <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Category</Label>
                       <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Equipment" />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground">Link to Goal</Label>
+                    <Select value={newGoalId} onValueChange={setNewGoalId}>
+                      <SelectTrigger><SelectValue placeholder="Select a goal" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">No goal</SelectItem>
+                        {goals.map((g) => (<SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label className="font-rajdhani uppercase text-xs tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -468,10 +551,10 @@ export default function Wishlist() {
           </div>
         </ModuleHeader>
 
-        {/* Stats header */}
+        {/* Stats header — fix 1.1: use unfiltered active count */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
-            { label: "Active Items", value: String(derived.list.length + (items.filter(i => !i.acquired).length - derived.list.length)), icon: ShoppingBag, color: "primary" },
+            { label: "Active Items", value: String(derived.active.length), icon: ShoppingBag, color: "primary" },
             { label: "Total Cost", value: formatCurrency(derived.totals.required + derived.totals.optional, currency), icon: Package, color: "primary" },
             { label: "Project Total (Finance)", value: formatCurrency(financeProjectTotal, currency), icon: Package, color: "primary" },
             { label: "Acquired", value: String(derived.acquired.length), icon: Check, color: "primary" },
@@ -531,7 +614,7 @@ export default function Wishlist() {
           </Select>
         </div>
 
-        {/* Active items grid */}
+        {/* Active items grid — fix 2.6: 1/2/3 cols */}
         {isLoading ? (
           <div className="py-8 text-center text-sm text-muted-foreground font-rajdhani">Loading…</div>
         ) : derived.list.length === 0 ? (
@@ -540,7 +623,7 @@ export default function Wishlist() {
             <p className="text-xs text-muted-foreground">Add an item or import from a URL to get started.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence mode="popLayout">
               {derived.list.map((item) => (
                 <WishlistItemCard
@@ -548,8 +631,11 @@ export default function Wishlist() {
                   item={item}
                   currency={currency}
                   onEdit={openEdit}
-                  onDelete={handleDelete}
+                  onDelete={handleDeleteRequest}
                   onToggleAcquired={handleToggleAcquired}
+                  bulkMode={bulkMode}
+                  selected={bulkSelected.has(item.id)}
+                  onSelect={toggleBulkSelect}
                 />
               ))}
             </AnimatePresence>
@@ -563,6 +649,18 @@ export default function Wishlist() {
           onToggleAcquired={handleToggleAcquired}
         />
       </div>
+
+      {/* Bulk action bar */}
+      <AnimatePresence>
+        {bulkMode && bulkSelected.size > 0 && (
+          <WishlistBulkBar
+            count={bulkSelected.size}
+            onMarkAcquired={handleBulkAcquired}
+            onDelete={handleBulkDelete}
+            onCancel={cancelBulk}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
