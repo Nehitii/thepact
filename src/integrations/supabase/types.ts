@@ -2956,6 +2956,8 @@ export type Database = {
           item_type: string
           name: string
           notes: string | null
+          priority: string
+          sort_order: number
           source_goal_cost_id: string | null
           source_type: string
           updated_at: string
@@ -2974,6 +2976,8 @@ export type Database = {
           item_type?: string
           name: string
           notes?: string | null
+          priority?: string
+          sort_order?: number
           source_goal_cost_id?: string | null
           source_type?: string
           updated_at?: string
@@ -2992,6 +2996,8 @@ export type Database = {
           item_type?: string
           name?: string
           notes?: string | null
+          priority?: string
+          sort_order?: number
           source_goal_cost_id?: string | null
           source_type?: string
           updated_at?: string
