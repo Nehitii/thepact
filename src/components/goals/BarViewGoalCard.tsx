@@ -37,11 +37,16 @@ interface BarViewGoalCardProps {
 
 const getDifficultyTheme = (difficulty: string, customColor?: string) => {
   switch (difficulty) {
-    case "easy": return { color: "#22c55e", rgb: "34, 197, 94" };
-    case "medium": return { color: "#fbbf24", rgb: "251, 191, 36" };
-    case "hard": return { color: "#f97316", rgb: "249, 115, 22" };
-    case "extreme": return { color: "#ef4444", rgb: "239, 68, 68" };
-    case "impossible": return { color: "#d946ef", rgb: "217, 70, 239" };
+    case "easy":
+      return { color: "#22c55e", rgb: "34, 197, 94" };
+    case "medium":
+      return { color: "#fbbf24", rgb: "251, 191, 36" };
+    case "hard":
+      return { color: "#f97316", rgb: "249, 115, 22" };
+    case "extreme":
+      return { color: "#ef4444", rgb: "239, 68, 68" };
+    case "impossible":
+      return { color: "#d946ef", rgb: "217, 70, 239" };
     case "custom": {
       const base = customColor || "#a855f7";
       const hex = base.replace("#", "");
@@ -50,7 +55,8 @@ const getDifficultyTheme = (difficulty: string, customColor?: string) => {
       const b = parseInt(hex.substring(4, 6), 16) || 247;
       return { color: base, rgb: `${r}, ${g}, ${b}` };
     }
-    default: return { color: "#94a3b8", rgb: "148, 163, 184" };
+    default:
+      return { color: "#94a3b8", rgb: "148, 163, 184" };
   }
 };
 
@@ -101,12 +107,19 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   } as React.CSSProperties;
 
   return (
-    <div className="bar-card-root relative" style={cssVars} onClick={() => onNavigate(goal.id)}>
-      {goal.is_locked && <GoalLockOverlay className="rounded-none" />}
+    <div
+      className="bar-card-root relative overflow-hidden rounded-xl"
+      style={cssVars}
+      onClick={() => onNavigate(goal.id)}
+    >
+      {goal.is_locked && <GoalLockOverlay className="z-50" />}
       <div className="bar-card-container noselect">
         <button
           className={`bar-card-focus-btn ${goal.is_focus ? "active" : ""}`}
-          onClick={(e) => { e.stopPropagation(); onToggleFocus(goal.id, !!goal.is_focus, e); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFocus(goal.id, !!goal.is_focus, e);
+          }}
         >
           <Star className="star-icon" size={14} fill={goal.is_focus ? theme.color : "none"} stroke={theme.color} />
         </button>
@@ -132,7 +145,9 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                 {totalSteps > 0 && (
                   <div
                     className="bar-card-mini-ring"
-                    style={{ background: `conic-gradient(${theme.color} ${progressPercent}%, rgba(255,255,255,0.1) 0)` }}
+                    style={{
+                      background: `conic-gradient(${theme.color} ${progressPercent}%, rgba(255,255,255,0.1) 0)`,
+                    }}
                   >
                     <div className="bar-card-ring-inner">
                       {isCompleted ? <Trophy size={10} color={theme.color} /> : <TrendingUp size={10} color="white" />}
@@ -154,7 +169,11 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                   <div className="bar-card-status">{statusLabel}</div>
                   {deadlineInfo && !isCompleted && (
                     <div className="bar-card-steps" style={{ color: deadlineInfo.color }}>
-                      {deadlineInfo.daysLeft > 0 ? `${deadlineInfo.daysLeft}d` : deadlineInfo.daysLeft === 0 ? "Today" : `${Math.abs(deadlineInfo.daysLeft)}d late`}
+                      {deadlineInfo.daysLeft > 0
+                        ? `${deadlineInfo.daysLeft}d`
+                        : deadlineInfo.daysLeft === 0
+                          ? "Today"
+                          : `${Math.abs(deadlineInfo.daysLeft)}d late`}
                     </div>
                   )}
                   {totalSteps > 0 && (
