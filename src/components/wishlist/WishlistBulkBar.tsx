@@ -17,26 +17,27 @@ export function WishlistBulkBar({ count, onMarkAcquired, onDelete, onCancel }: W
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 100, opacity: 0 }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-3 rounded-2xl bg-card/95 backdrop-blur-2xl border border-primary/30 shadow-2xl shadow-primary/10"
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-3 bg-slate-950/95 backdrop-blur-2xl border border-cyan-500/25 shadow-[0_0_30px_rgba(0,200,255,0.1)]"
+      style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))" }}
     >
-      <span className="font-orbitron text-xs tracking-wider text-primary font-bold">
+      <span className="font-mono text-[10px] tracking-[0.15em] text-cyan-400 font-bold">
         {count} SELECTED
       </span>
-      <div className="w-px h-6 bg-primary/20" />
+      <div className="w-px h-6 bg-cyan-500/20" />
       <Button
         size="sm"
         variant="outline"
         onClick={onMarkAcquired}
-        className="font-rajdhani text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10"
+        className="font-mono text-[10px] tracking-wider border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 rounded-sm"
       >
         <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-        Mark Acquired ({count})
+        Acquire ({count})
       </Button>
       <Button
         size="sm"
         variant="outline"
         onClick={onDelete}
-        className="font-rajdhani text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+        className="font-mono text-[10px] tracking-wider border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-sm"
       >
         <Trash2 className="h-3.5 w-3.5 mr-1.5" />
         Delete ({count})
@@ -45,7 +46,7 @@ export function WishlistBulkBar({ count, onMarkAcquired, onDelete, onCancel }: W
         size="icon"
         variant="ghost"
         onClick={onCancel}
-        className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        className="h-8 w-8 text-slate-500 hover:text-foreground rounded-sm"
       >
         <X className="h-4 w-4" />
       </Button>
