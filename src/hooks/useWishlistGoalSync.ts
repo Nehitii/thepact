@@ -14,7 +14,7 @@ import type { PactWishlistItem } from "@/hooks/usePactWishlist";
 export function useWishlistGoalSync(
   userId: string | undefined,
   pactId: string | undefined,
-  wishlistItems: PactWishlistItem[]
+  wishlistItems: PactWishlistItem[],
 ) {
   const queryClient = useQueryClient();
   const { data: goals = [] } = useGoals(pactId);
@@ -28,10 +28,7 @@ export function useWishlistGoalSync(
       try {
         // Fetch ALL cost items for all goals in one query
         const goalIds = goals.map((g) => g.id);
-        const { data: allCostItems, error } = await supabase
-          .from("goal_cost_items")
-          .select("*")
-          .in("goal_id", goalIds);
+        const { data: allCostItems, error } = await supabase.from("goal_cost_items").select("*").in("goal_id", goalIds);
 
         if (error || !allCostItems) {
           syncInProgress.current = false;
@@ -39,23 +36,16 @@ export function useWishlistGoalSync(
         }
 
         // Fetch steps for step-based acquisition
-        const { data: allSteps } = await supabase
-          .from("steps")
-          .select("id, status")
-          .in("goal_id", goalIds);
-        const stepsMap = new Map((allSteps || []).map(s => [s.id, s.status]));
+        const { data: allSteps } = await supabase.from("steps").select("id, status").in("goal_id", goalIds);
+        const stepsMap = new Map((allSteps || []).map((s) => [s.id, s.status]));
 
         // Get existing synced items (source_type = 'goal_sync')
         const syncedItems = wishlistItems.filter((w) => (w as any).source_type === "goal_sync");
         const syncedByCostId = new Map(
-          syncedItems
-            .filter((w) => (w as any).source_goal_cost_id)
-            .map((w) => [(w as any).source_goal_cost_id, w])
+          syncedItems.filter((w) => (w as any).source_goal_cost_id).map((w) => [(w as any).source_goal_cost_id, w]),
         );
         // Secondary lookup by normalized name + goal_id for fallback matching
-        const syncedByNameGoal = new Map(
-          syncedItems.map((w) => [`${w.name?.toLowerCase().trim()}|${w.goal_id}`, w])
-        );
+        const syncedByNameGoal = new Map(syncedItems.map((w) => [`${w.name?.toLowerCase().trim()}|${w.goal_id}`, w]));
 
         const toInsert: any[] = [];
         const toUpdate: any[] = [];
@@ -78,20 +68,22 @@ export function useWishlistGoalSync(
             existing = syncedByNameGoal.get(key);
             // If found by fallback, update the source_goal_cost_id to the new cost item ID
             if (existing) {
-              await supabase
-                .from("wishlist_items")
-                .update({ source_goal_cost_id: costItem.id })
-                .eq("id", existing.id);
+              await supabase.from("wishlist_items").update({ source_goal_cost_id: costItem.id }).eq("id", existing.id);
             }
           }
 
           if (existing) {
             matchedWishlistIds.add(existing.id);
+
+            // FIX: On conserve l'état acquis s'il a été validé manuellement par l'utilisateur
+            // L'item doit être considéré comme acquis soit par la synchro, soit par l'action manuelle précédente
+            const targetAcquired = existing.acquired || shouldBeAcquired;
+
             // Update if name, price, or acquisition status changed
             const needsUpdate =
               existing.name !== costItem.name ||
               Number(existing.estimated_cost) !== costItem.price ||
-              existing.acquired !== shouldBeAcquired;
+              existing.acquired !== targetAcquired;
 
             if (needsUpdate) {
               toUpdate.push({
@@ -99,8 +91,12 @@ export function useWishlistGoalSync(
                 name: costItem.name,
                 estimated_cost: costItem.price,
                 notes: goal ? `Source: ${goal.name}` : null,
-                acquired: shouldBeAcquired,
-                acquired_at: shouldBeAcquired ? (existing.acquired ? existing.acquired_at : new Date().toISOString()) : null,
+                acquired: targetAcquired,
+                acquired_at: targetAcquired
+                  ? existing.acquired
+                    ? existing.acquired_at
+                    : new Date().toISOString()
+                  : null,
               });
             }
           } else {
@@ -123,7 +119,9 @@ export function useWishlistGoalSync(
 
         // Deleted cost items → remove from wishlist (only unmatched synced items)
         const toDelete = syncedItems.filter(
-          (w) => !matchedWishlistIds.has(w.id) && (!(w as any).source_goal_cost_id || !seenCostIds.has((w as any).source_goal_cost_id))
+          (w) =>
+            !matchedWishlistIds.has(w.id) &&
+            (!(w as any).source_goal_cost_id || !seenCostIds.has((w as any).source_goal_cost_id)),
         );
 
         // Execute mutations
@@ -133,15 +131,16 @@ export function useWishlistGoalSync(
           // Use individual inserts; ignore duplicate errors from the partial unique index
           for (const item of toInsert) {
             promises.push(
-              supabase.from("wishlist_items").insert(item).then(
-                (res) => {
+              supabase
+                .from("wishlist_items")
+                .insert(item)
+                .then((res) => {
                   if (res.error && res.error.code === "23505") {
                     // Duplicate — already exists, safe to ignore
                     return;
                   }
                   if (res.error) throw res.error;
-                }
-              )
+                }),
             );
           }
         }
@@ -158,7 +157,7 @@ export function useWishlistGoalSync(
                 acquired_at: item.acquired_at,
               })
               .eq("id", item.id)
-              .then()
+              .then(),
           );
         }
 
