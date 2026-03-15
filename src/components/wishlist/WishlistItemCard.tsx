@@ -99,7 +99,7 @@ export function WishlistItemCard({
       onClick={() => bulkMode && onSelect?.(id)}
       className={`group relative flex flex-col bg-slate-950/80 backdrop-blur-2xl border border-cyan-500/15 overflow-hidden shadow-2xl transition-all duration-500 ${bulkMode ? "cursor-pointer" : ""} ${ringClass}`}
       style={{
-        ...dndStyle,
+        ...(dndStyle as React.CSSProperties),
         clipPath: "polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))",
       }}
     >

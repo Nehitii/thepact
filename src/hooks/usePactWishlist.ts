@@ -84,22 +84,19 @@ export function useCreatePactWishlistItem() {
       imageUrl?: string | null;
       priority?: WishlistPriority;
     }) => {
-      const row: Record<string, any> = {
-        user_id: input.userId,
-        name: input.name.trim(),
-        estimated_cost: input.estimatedCost ?? 0,
-        item_type: input.itemType,
-        category: input.category ?? null,
-        goal_id: input.goalId ?? null,
-        notes: input.notes ?? null,
-        url: input.url ?? null,
-        image_url: input.imageUrl ?? null,
-        priority: input.priority ?? "low",
-      };
-
       const { data, error } = await supabase
         .from("wishlist_items")
-        .insert(row)
+        .insert({
+          user_id: input.userId,
+          name: input.name.trim(),
+          estimated_cost: input.estimatedCost ?? 0,
+          item_type: input.itemType,
+          category: input.category ?? null,
+          goal_id: input.goalId ?? null,
+          notes: input.notes ?? null,
+          url: input.url ?? null,
+          image_url: input.imageUrl ?? null,
+        } as any)
         .select("id")
         .single();
 
