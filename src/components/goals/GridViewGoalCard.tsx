@@ -133,7 +133,7 @@ export function GridViewGoalCard({
         "group relative w-full max-w-[340px] min-w-[260px] mx-auto cursor-pointer select-none rounded-[20px]",
         "transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
         "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
-        "[perspective:1000px]",
+        // Le bug venait d'ici : on a retiré `[perspective:1000px]` qui cassait les animations des éléments absolus
         isCompleted && "grayscale-[0.4] hover:grayscale-0",
         goal.isShared && "ring-1 ring-cyan-500/30",
       )}
@@ -141,7 +141,7 @@ export function GridViewGoalCard({
       {/* Card Inner */}
       <div
         className={cn(
-          "relative w-full rounded-[20px] overflow-hidden",
+          "relative w-full h-full rounded-[20px] overflow-hidden",
           "bg-[var(--goal-card-bg)] border border-[var(--goal-card-border)]",
           "shadow-sm transition-all duration-400 ease-[cubic-bezier(0.25,0.8,0.25,1)]",
           "group-hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.6),0_0_0_1px_rgba(var(--accent-rgb),0.3)]",
@@ -149,7 +149,7 @@ export function GridViewGoalCard({
         )}
         style={{ aspectRatio: "4/5" }}
       >
-        {/* L'Overlay DOIT être ici, à l'intérieur du container overflow-hidden */}
+        {/* Overlay Cadenas */}
         {goal.is_locked && <GoalLockOverlay />}
 
         {/* Image Layer */}
