@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export type PactWishlistItemType = "required" | "optional";
+export type WishlistPriority = "low" | "med" | "high" | "critical";
 
 export interface PactWishlistGoalLink {
   id: string;
@@ -26,6 +27,8 @@ export interface PactWishlistItem {
   image_url: string | null;
   source_type: string;
   source_goal_cost_id: string | null;
+  priority: WishlistPriority;
+  sort_order: number;
   created_at: string;
   updated_at: string;
   goal?: PactWishlistGoalLink | null;
@@ -46,22 +49,7 @@ export function usePactWishlistItems(userId: string | undefined) {
         .from("wishlist_items")
         .select(
           `
-          id,
-          user_id,
-          goal_id,
-          name,
-          category,
-          estimated_cost,
-          item_type,
-          acquired,
-          acquired_at,
-          notes,
-          url,
-          image_url,
-          source_type,
-          source_goal_cost_id,
-          created_at,
-          updated_at,
+          *,
           goal:goals(id,name,type,status)
         `
         )
@@ -70,7 +58,11 @@ export function usePactWishlistItems(userId: string | undefined) {
 
       if (error) throw error;
 
-      return (data ?? []) as PactWishlistItem[];
+      return (data ?? []).map((d: any) => ({
+        ...d,
+        priority: d.priority || "low",
+        sort_order: d.sort_order ?? 0,
+      })) as PactWishlistItem[];
     },
   });
 }
@@ -90,20 +82,24 @@ export function useCreatePactWishlistItem() {
       notes?: string | null;
       url?: string | null;
       imageUrl?: string | null;
+      priority?: WishlistPriority;
     }) => {
+      const row: Record<string, any> = {
+        user_id: input.userId,
+        name: input.name.trim(),
+        estimated_cost: input.estimatedCost ?? 0,
+        item_type: input.itemType,
+        category: input.category ?? null,
+        goal_id: input.goalId ?? null,
+        notes: input.notes ?? null,
+        url: input.url ?? null,
+        image_url: input.imageUrl ?? null,
+        priority: input.priority ?? "low",
+      };
+
       const { data, error } = await supabase
         .from("wishlist_items")
-        .insert({
-          user_id: input.userId,
-          name: input.name.trim(),
-          estimated_cost: input.estimatedCost ?? 0,
-          item_type: input.itemType,
-          category: input.category ?? null,
-          goal_id: input.goalId ?? null,
-          notes: input.notes ?? null,
-          url: input.url ?? null,
-          image_url: input.imageUrl ?? null,
-        })
+        .insert(row)
         .select("id")
         .single();
 
@@ -135,16 +131,16 @@ export function useUpdatePactWishlistItem() {
     mutationFn: async (input: {
       userId: string;
       id: string;
-      patch: Partial<Pick<PactWishlistItem, "name" | "category" | "estimated_cost" | "item_type" | "goal_id" | "acquired" | "notes" | "url" | "image_url">>;
+      patch: Record<string, any>;
     }) => {
+      const patch = { ...input.patch };
+      if (typeof patch.acquired === "boolean") {
+        patch.acquired_at = patch.acquired ? new Date().toISOString() : null;
+      }
+
       const { error } = await supabase
         .from("wishlist_items")
-        .update({
-          ...input.patch,
-          ...(typeof input.patch.acquired === "boolean"
-            ? { acquired_at: input.patch.acquired ? new Date().toISOString() : null }
-            : {}),
-        })
+        .update(patch)
         .eq("id", input.id);
 
       if (error) throw error;
