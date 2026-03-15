@@ -9,16 +9,13 @@ export function GoalLockOverlay({ className }: GoalLockOverlayProps) {
   return (
     <div
       className={cn(
-        "absolute inset-0 z-[50] flex items-center justify-center rounded-[inherit]",
-        "overflow-hidden transform-gpu", // Force l'accélération GPU et limite strictement la zone
+        "absolute inset-0 z-[100] flex items-center justify-center rounded-[inherit]",
+        "bg-[#050508]/85", // Remplacement du blur par un fond sombre uni à 85% d'opacité
         "cursor-pointer select-none",
         className,
       )}
     >
-      {/* Calque statique pour le flou (on ne l'anime pas pour éviter le bug visuel global) */}
-      <div className="absolute inset-0 bg-background/50 backdrop-blur-md" />
-
-      {/* Calque animé pour le contenu (cadenas + texte) */}
+      {/* Contenu animé */}
       <div className="relative z-10 flex flex-col items-center gap-2 animate-pulse">
         <div className="p-3 rounded-full bg-primary/10 border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
           <Lock className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
