@@ -22,10 +22,10 @@ interface Goal {
   tags?: string[];
   deadline?: string | null;
   isShared?: boolean;
-    isReadOnly?: boolean;
-    sharedByName?: string;
-    is_locked?: boolean;
-  }
+  isReadOnly?: boolean;
+  sharedByName?: string;
+  is_locked?: boolean;
+}
 
 interface GridViewGoalCardProps {
   goal: Goal;
@@ -97,7 +97,17 @@ export function GridViewGoalCard({
     };
   }, [goal, isCompleted, customDifficultyColor]);
 
-  const { difficulty, isHabitGoal, totalSteps, completedSteps, progress, theme, statusLabel, displayTags, remainingTagsCount } = derived;
+  const {
+    difficulty,
+    isHabitGoal,
+    totalSteps,
+    completedSteps,
+    progress,
+    theme,
+    statusLabel,
+    displayTags,
+    remainingTagsCount,
+  } = derived;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -127,11 +137,7 @@ export function GridViewGoalCard({
         isCompleted && "grayscale-[0.4] hover:grayscale-0",
         goal.isShared && "ring-1 ring-cyan-500/30",
       )}
-      // Maintain aspect ratio via padding trick for broad compat
     >
-      {/* Lock Overlay */}
-      {goal.is_locked && <GoalLockOverlay />}
-
       {/* Card Inner */}
       <div
         className={cn(
@@ -143,6 +149,9 @@ export function GridViewGoalCard({
         )}
         style={{ aspectRatio: "4/5" }}
       >
+        {/* L'Overlay DOIT être ici, à l'intérieur du container overflow-hidden */}
+        {goal.is_locked && <GoalLockOverlay />}
+
         {/* Image Layer */}
         <div className="absolute inset-0 z-0">
           {goal.image_url ? (
@@ -190,7 +199,11 @@ export function GridViewGoalCard({
             }}
             aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
           >
-            <Star className="w-4 h-4" fill={goal.is_focus ? "currentColor" : "none"} strokeWidth={goal.is_focus ? 0 : 2} />
+            <Star
+              className="w-4 h-4"
+              fill={goal.is_focus ? "currentColor" : "none"}
+              strokeWidth={goal.is_focus ? 0 : 2}
+            />
           </button>
         </div>
 
