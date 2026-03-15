@@ -58,7 +58,7 @@ interface NavItem {
   to: string;
   icon: any;
   label: string;
-  badgeKey?: "friends" | "messages";
+  badgeKey?: "friends" | "messages" | "inbox";
   moduleKey?: string; // Permet de lier une notification à ce menu via un module_key
 }
 
@@ -75,7 +75,8 @@ const baseNavigation: Record<NavCategory, NavItem[]> = {
   network: [
     { to: "/community", icon: Users, label: "Community", moduleKey: "community" },
     { to: "/friends", icon: Handshake, label: "Friends", badgeKey: "friends" },
-    { to: "/inbox", icon: Mail, label: "Inbox", badgeKey: "messages" },
+    // On utilise badgeKey: "inbox" pour englober les messages ET les notifications
+    { to: "/inbox", icon: Mail, label: "Inbox", badgeKey: "inbox" },
     { to: "/leaderboard", icon: Crown, label: "Leaderboard", moduleKey: "leaderboard" },
     { to: "/achievements", icon: Trophy, label: "Achievements", moduleKey: "achievements" },
   ],
@@ -261,6 +262,8 @@ export const AppSidebar = memo(function AppSidebar() {
     let count = 0;
     if (item.badgeKey === "friends") count += friendRequestCount;
     if (item.badgeKey === "messages") count += messageUnreadCount;
+    // INBOX montre la somme des messages ET des notifications globales
+    if (item.badgeKey === "inbox") count += messageUnreadCount + unreadCount;
     if (item.moduleKey && unreadByModule[item.moduleKey]) count += unreadByModule[item.moduleKey];
     return count;
   };
@@ -596,10 +599,12 @@ export const AppSidebar = memo(function AppSidebar() {
 
               {/* Actions Globales */}
               <div className="p-2 space-y-1">
-                {/* Nouveau lien Hub de Notifications ajouté ici */}
+                {/* 1. Redirige vers /inbox (au lieu de /notifications)
+                  2. Affiche totalUnread pour être strictement cohérent avec la pastille de l'avatar 
+                */}
                 <DropdownMenuItem
                   onClick={() => {
-                    navigate("/notifications");
+                    navigate("/inbox");
                     closeMobile();
                   }}
                   className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center justify-between"
@@ -608,9 +613,9 @@ export const AppSidebar = memo(function AppSidebar() {
                     <Bell className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
                     <span className="text-xs font-bold tracking-widest uppercase">Notifications</span>
                   </div>
-                  {unreadCount > 0 && (
+                  {totalUnread > 0 && (
                     <span className="bg-primary text-[#050508] text-[9px] px-1.5 py-0.5 font-bold rounded-sm">
-                      {unreadCount}
+                      {totalUnread}
                     </span>
                   )}
                 </DropdownMenuItem>
