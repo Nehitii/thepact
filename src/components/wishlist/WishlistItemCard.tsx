@@ -89,7 +89,6 @@ export function WishlistItemCard({
   return (
     <motion.div
       ref={setNodeRef}
-      style={dndStyle}
       {...(draggable ? { ...attributes } : {})}
       layout={!draggable}
       initial={{ opacity: 0, y: 20 }}
