@@ -76,7 +76,7 @@ const baseNavigation: Record<NavCategory, NavItem[]> = {
     { to: "/community", icon: Users, label: "Community", moduleKey: "community" },
     { to: "/friends", icon: Handshake, label: "Friends", badgeKey: "friends" },
     // On utilise badgeKey: "inbox" pour englober les messages ET les notifications
-    { to: "/inbox", icon: Mail, label: "Inbox", badgeKey: "inbox" },
+    
     { to: "/leaderboard", icon: Crown, label: "Leaderboard", moduleKey: "leaderboard" },
     { to: "/achievements", icon: Trophy, label: "Achievements", moduleKey: "achievements" },
   ],
@@ -136,7 +136,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
           >
             <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),1)]")} />
             {badge != null && badge > 0 && (
-              <span className="absolute top-1 right-1 text-[8px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)] animate-pulse">
+              <span className="absolute top-1 right-1 text-[8px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
                 {badge > 99 ? "99" : badge}
               </span>
             )}
@@ -203,7 +203,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
           )}
 
           {badge != null && badge > 0 && (
-            <span className="relative z-10 ml-auto text-[9px] bg-destructive/20 border border-destructive text-destructive px-1.5 py-0.5 font-black min-w-[20px] text-center shadow-[0_0_10px_rgba(220,38,38,0.4)] animate-pulse">
+            <span className="relative z-20 ml-auto text-[8px] bg-destructive text-destructive-foreground min-w-[16px] h-[16px] flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
               {badge > 99 ? "99+" : badge}
             </span>
           )}
@@ -610,8 +610,8 @@ export const AppSidebar = memo(function AppSidebar() {
                   className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center justify-between"
                 >
                   <div className="flex items-center">
-                    <Bell className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
-                    <span className="text-xs font-bold tracking-widest uppercase">Notifications</span>
+                    <Mail className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
+                    <span className="text-xs font-bold tracking-widest uppercase">Inbox</span>
                   </div>
                   {totalUnread > 0 && (
                     <span className="bg-primary text-[#050508] text-[9px] px-1.5 py-0.5 font-bold rounded-sm">

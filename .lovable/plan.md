@@ -1,33 +1,33 @@
+# Project Roadmap
 
+## Status: ✅ ALL FEATURES COMPLETE + OPTIMIZATION PASS DONE
 
-# Fix Notification Badges & Move Inbox to Dropdown
+---
 
-## Problems Identified
+## Priority Features Implementation Status
 
-1. **Expanded sidebar badges** (line 206): Use `bg-destructive/20 border border-destructive text-destructive animate-pulse` — transparent red with pulsing animation, overlaps the "ACTV" label making it unreadable.
-2. **Mini sidebar badges** (line 139): Use solid `bg-destructive` with `animate-pulse` — better but still pulses.
-3. **Avatar badge** (line 534-540): Solid, small, clean square — this is the target style.
-4. **Inbox** is a standalone sidebar item but should be in the dropdown menu replacing the current "Notifications" entry.
+| # | Feature | Status | Notes |
+|---|---------|--------|-------|
+| 1 | Inbox bug fixes | ✅ Done | Timestamps + thread nav fixed |
+| 2 | Notification automation | ✅ Done | Smart notifications edge function |
+| 3 | AI Coach | ⏳ Deferred | Requires deeper UX design |
+| 4 | Streak/Habit overhaul | ✅ Done | Heatmaps + streak tracking |
+| 5 | Weekly Review | ✅ Done | AI-powered weekly review modal |
+| 6 | Goal Templates | ✅ Done | Template browser + creation |
+| 7 | Leaderboard + Social Profiles | ✅ Done | Public leaderboard with RPC |
+| 8 | Pomodoro Timer | ✅ Done | Focus page with session tracking |
+| 9 | Analytics Dashboard | ✅ Done | Cross-module data visualization |
+| 10 | Onboarding Overhaul | ✅ Done | Multi-step interactive flow |
 
-## Changes — Single File: `src/components/layout/AppSidebar.tsx`
+---
 
-### 1. Fix expanded sidebar badge (line 206)
-Replace the transparent red badge with a solid compact square matching the avatar badge style:
-- `bg-destructive text-destructive-foreground` (solid, not transparent)
-- Remove `animate-pulse`
-- Small square: `min-w-[16px] h-[16px] text-[8px] font-black`
-- `rounded-sm` (square-ish like avatar badge)
-- Position: keep `ml-auto` but ensure `z-20` so it sits above the "ACTV" text
+## Codebase Optimization (Completed)
 
-### 2. Fix mini sidebar badge (line 139)
-- Remove `animate-pulse`
-- Keep solid style but match sizing with avatar badge
-
-### 3. Remove Inbox from sidebar navigation
-- Remove the Inbox entry from `baseNavigation.network` (line 79)
-- Remove `Mail` from lucide imports
-
-### 4. Replace dropdown "Notifications" with "Inbox"
-- Change the dropdown item (line 605-621) to navigate to `/inbox` (already does) but update icon from `Bell` to `Mail` and label from "Notifications" to "Inbox"
-- Keep the `totalUnread` badge on this item
-
+| Phase | Description | Status |
+|-------|-------------|--------|
+| 1 | Supabase client consolidation (61 files) | ✅ Done |
+| 2 | GoalDetail decomposition | ✅ Done — Split into 6 sub-components + actions hook (1733→~280 lines) |
+| 3 | Sidebar profile query deduplication | ✅ Done |
+| 4 | Render-time navigation fix (Home.tsx) | ✅ Done |
+| 5 | Layout route optimization (nested Outlet) | ✅ Done |
+| 6 | Component memoization (AppSidebar) | ✅ Done |
