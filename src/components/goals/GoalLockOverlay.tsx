@@ -9,14 +9,13 @@ export function GoalLockOverlay({ className }: GoalLockOverlayProps) {
   return (
     <div
       className={cn(
-        "absolute inset-0 z-[50] flex items-center justify-center rounded-[inherit]",
-        "overflow-hidden transform-gpu", // Force l'accélération GPU et limite strictement la zone
+        "absolute inset-0 z-30 flex items-center justify-center rounded-[inherit]",
+        "overflow-hidden transform-gpu isolate [contain:paint]",
         "cursor-pointer select-none",
         className,
       )}
     >
-      {/* Calque statique pour le flou (on ne l'anime pas pour éviter le bug visuel global) */}
-      <div className="absolute inset-0 bg-background/50 backdrop-blur-md" />
+      <div className="absolute inset-0 bg-black/60 will-change-[backdrop-filter] backdrop-blur-sm" />
 
       {/* Calque animé pour le contenu (cadenas + texte) */}
       <div className="relative z-10 flex flex-col items-center gap-2 animate-pulse">
