@@ -76,7 +76,7 @@ const baseNavigation: Record<NavCategory, NavItem[]> = {
     { to: "/community", icon: Users, label: "Community", moduleKey: "community" },
     { to: "/friends", icon: Handshake, label: "Friends", badgeKey: "friends" },
     // On utilise badgeKey: "inbox" pour englober les messages ET les notifications
-    { to: "/inbox", icon: Mail, label: "Inbox", badgeKey: "inbox" },
+    
     { to: "/leaderboard", icon: Crown, label: "Leaderboard", moduleKey: "leaderboard" },
     { to: "/achievements", icon: Trophy, label: "Achievements", moduleKey: "achievements" },
   ],
