@@ -203,7 +203,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
           )}
 
           {badge != null && badge > 0 && (
-            <span className="relative z-10 ml-auto text-[9px] bg-destructive/20 border border-destructive text-destructive px-1.5 py-0.5 font-black min-w-[20px] text-center shadow-[0_0_10px_rgba(220,38,38,0.4)] animate-pulse">
+            <span className="relative z-20 ml-auto text-[8px] bg-destructive text-destructive-foreground min-w-[16px] h-[16px] flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
               {badge > 99 ? "99+" : badge}
             </span>
           )}
