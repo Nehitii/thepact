@@ -136,7 +136,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
           >
             <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),1)]")} />
             {badge != null && badge > 0 && (
-              <span className="absolute top-1 right-1 text-[8px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)] animate-pulse">
+              <span className="absolute top-1 right-1 text-[8px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
                 {badge > 99 ? "99" : badge}
               </span>
             )}
