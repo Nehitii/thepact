@@ -610,8 +610,8 @@ export const AppSidebar = memo(function AppSidebar() {
                   className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center justify-between"
                 >
                   <div className="flex items-center">
-                    <Bell className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
-                    <span className="text-xs font-bold tracking-widest uppercase">Notifications</span>
+                    <Mail className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
+                    <span className="text-xs font-bold tracking-widest uppercase">Inbox</span>
                   </div>
                   {totalUnread > 0 && (
                     <span className="bg-primary text-[#050508] text-[9px] px-1.5 py-0.5 font-bold rounded-sm">
