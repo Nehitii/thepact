@@ -118,7 +118,12 @@ export function SmartFinancingPanel({ totalRemaining, projectEndDate, currentMon
           </label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
-            <Input type="number" placeholder="0.00" value={existingBalance || ''} onChange={(e) => setExistingBalance(parseFloat(e.target.value) || 0)} className="pl-8 h-12 finance-input rounded-xl" min="0" step="100" />
+            <Input type="number" placeholder="0.00" value={existingBalance || ''} onChange={(e) => {
+              const val = Math.max(0, parseFloat(e.target.value) || 0);
+              setExistingBalance(val);
+            }} onBlur={() => {
+              updateSettings.mutate({ already_funded: existingBalance });
+            }} className="pl-8 h-12 finance-input rounded-xl" min="0" step="100" />
           </div>
           <p className="text-xs text-muted-foreground mt-2">{t('finance.smartFinancing.existingBalanceHint')}</p>
         </div>

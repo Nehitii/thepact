@@ -38,6 +38,7 @@ export function CategoryGroup({
   onCancelEdit,
   onEditDataChange,
   onDelete,
+  onToggleActive,
 }: CategoryGroupProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
