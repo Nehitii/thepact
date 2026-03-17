@@ -22,6 +22,7 @@ export interface CategoryGroupProps {
   onCancelEdit: () => void;
   onEditDataChange: (data: { name: string; amount: string; category: string }) => void;
   onDelete: (id: string) => void;
+  onToggleActive?: (id: string, isActive: boolean) => void;
 }
 
 export function CategoryGroup({
