@@ -57,11 +57,15 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
         await addExpense.mutateAsync({ name: 'Project Allocation', amount: allocationAmount });
       }
 
+      const parsedDay = Math.max(1, Math.min(31, parseInt(salaryDay) || 1));
+      const parsedTarget = Math.max(0, parseFloat(fundingTarget) || 0);
+      const parsedFunded = Math.max(0, parseFloat(alreadyFunded) || 0);
+
       await updateSettings.mutateAsync({
-        salary_payment_day: parseInt(salaryDay) || 1,
-        project_funding_target: useCustomTarget ? (parseFloat(fundingTarget) || 0) : 0,
-        project_monthly_allocation: allocationAmount,
-        already_funded: useCustomTarget ? 0 : (parseFloat(alreadyFunded) || 0),
+        salary_payment_day: parsedDay,
+        project_funding_target: useCustomTarget ? parsedTarget : 0,
+        project_monthly_allocation: Math.max(0, allocationAmount),
+        already_funded: useCustomTarget ? 0 : parsedFunded,
       });
       
       toast.success(t('finance.settings.saved'));

@@ -666,7 +666,9 @@
     },
     "validation": {
       "title": "Validation mensuelle",
+      "monthlyValidation": "Validation mensuelle",
       "step": "Étape {{current}} sur {{total}}",
+      "stepOf": "Étape {{current}} sur {{total}}",
       "reviewExpenses": "Vérifier les dépenses récurrentes",
       "confirmExpensesHint": "Confirme que toutes les dépenses ont été payées correctement.",
       "allExpensesPaid": "Toutes les dépenses payées correctement",
@@ -675,6 +677,7 @@
       "allIncomeReceived": "Tous les revenus reçus correctement",
       "additionalTransactions": "Transactions supplémentaires",
       "additionalHint": "Ajoute des dépenses ou revenus imprévus.",
+      "addUnexpected": "Ajoute des dépenses ou revenus imprévus.",
       "extraExpenses": "Dépenses supplémentaires",
       "extraIncome": "Revenus supplémentaires",
       "readyToValidate": "Prêt à valider",
@@ -682,8 +685,11 @@
       "totalIncome": "Revenus totaux",
       "totalExpenses": "Dépenses totales",
       "confirmAndValidate": "Confirmer et valider",
+      "confirmValidate": "Confirmer et valider",
       "continue": "Continuer",
-      "total": "Total :"
+      "total": "Total :",
+      "timeToValidate": "Il est temps de valider !",
+      "daysUntilSalary": "{{count}} jours avant le jour de salaire"
     },
     "deleteConfirm": {
       "title": "Supprimer l'élément ?",

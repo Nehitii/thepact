@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,8 @@ interface DeadlinePromptProps {
 }
 
 export function DeadlinePrompt({ daysUntilDeadline, onValidate }: DeadlinePromptProps) {
+  const { t } = useTranslation();
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -31,15 +34,15 @@ export function DeadlinePrompt({ daysUntilDeadline, onValidate }: DeadlinePrompt
             </motion.div>
           </div>
           <div>
-            <p className="font-bold text-foreground text-lg">Time to validate!</p>
-            <p className="text-sm text-muted-foreground">{daysUntilDeadline} days until salary day</p>
+            <p className="font-bold text-foreground text-lg">{t('finance.validation.timeToValidate')}</p>
+            <p className="text-sm text-muted-foreground">{t('finance.validation.daysUntilSalary', { count: daysUntilDeadline })}</p>
           </div>
         </div>
         <Button
           onClick={onValidate}
           className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-3 h-auto shadow-[0_0_30px_hsla(200,100%,60%,0.3)]"
         >
-          Validate Month
+          {t('finance.monthly.validate')}
           <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </div>

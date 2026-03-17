@@ -678,7 +678,9 @@
     },
     "validation": {
       "title": "Monthly Validation",
+      "monthlyValidation": "Monthly Validation",
       "step": "Step {{current}} of {{total}}",
+      "stepOf": "Step {{current}} of {{total}}",
       "reviewExpenses": "Review Recurring Expenses",
       "confirmExpensesHint": "Confirm all expenses were paid as expected.",
       "allExpensesPaid": "All expenses paid correctly",
@@ -687,6 +689,7 @@
       "allIncomeReceived": "All income received correctly",
       "additionalTransactions": "Additional Transactions",
       "additionalHint": "Add any unexpected expenses or income.",
+      "addUnexpected": "Add any unexpected expenses or income.",
       "extraExpenses": "Extra Expenses",
       "extraIncome": "Extra Income",
       "readyToValidate": "Ready to Validate",
@@ -694,8 +697,11 @@
       "totalIncome": "Total Income",
       "totalExpenses": "Total Expenses",
       "confirmAndValidate": "Confirm & Validate",
+      "confirmValidate": "Confirm & Validate",
       "continue": "Continue",
-      "total": "Total:"
+      "total": "Total:",
+      "timeToValidate": "Time to validate!",
+      "daysUntilSalary": "{{count}} days until salary day"
     },
     "deleteConfirm": {
       "title": "Delete item?",
