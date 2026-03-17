@@ -4,7 +4,7 @@
  */
 export { FinanceOverviewCard } from "./FinanceOverviewCard";
 export { FinanceSettingsModal } from "./FinanceSettingsModal";
-export { FinanceSlider } from "./FinanceSlider";
+
 export { ProjectionsPanel } from "./ProjectionsPanel";
 export { SmartFinancingPanel } from "./SmartFinancingPanel";
 
