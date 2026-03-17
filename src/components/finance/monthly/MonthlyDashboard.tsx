@@ -105,6 +105,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
             onAdd={handleAddIncome}
             onUpdate={handleUpdateIncome}
             onDelete={(id) => deleteIncome.mutate(id)}
+            onToggleActive={handleToggleIncome}
             isPending={addIncome.isPending}
           />
         </motion.div>
