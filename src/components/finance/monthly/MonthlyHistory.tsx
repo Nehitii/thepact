@@ -8,7 +8,11 @@ import { format, parseISO, subMonths, startOfMonth } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMonthlyValidations } from '@/hooks/useFinance';
 
-export function MonthlyHistory() {
+interface MonthlyHistoryProps {
+  onEditMonth?: (month: string) => void;
+}
+
+export function MonthlyHistory({ onEditMonth }: MonthlyHistoryProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
