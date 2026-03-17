@@ -103,6 +103,7 @@ export interface FinancialBlockProps {
   onAdd: (name: string, amount: number, category?: string) => Promise<void>;
   onUpdate: (id: string, name: string, amount: number, category?: string) => Promise<void>;
   onDelete: (id: string) => void;
+  onToggleActive?: (id: string, isActive: boolean) => void;
   isPending?: boolean;
 }
 
