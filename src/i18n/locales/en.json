@@ -618,7 +618,9 @@
       "expenseSingle": "expense",
       "incomeSingle": "income",
       "emptyTitle": "No recurring {{type}}s yet",
-      "emptyHint": "Click above to add your first one"
+      "emptyHint": "Click above to add your first one",
+      "deactivate": "Deactivate this item",
+      "activate": "Activate this item"
     },
     "categories": {
       "housing": "Housing",
