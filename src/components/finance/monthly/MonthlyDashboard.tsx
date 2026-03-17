@@ -66,6 +66,16 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
+  const handleToggleExpense = async (id: string, isActive: boolean) => {
+    try { await updateExpense.mutateAsync({ id, is_active: isActive }); }
+    catch { toast.error(t('finance.recurring.updateFailed')); }
+  };
+
+  const handleToggleIncome = async (id: string, isActive: boolean) => {
+    try { await updateIncome.mutateAsync({ id, is_active: isActive }); }
+    catch { toast.error(t('finance.recurring.updateFailed')); }
+  };
+
   return (
     <div className="space-y-8">
       <MonthlyBalanceHero totalIncome={totalIncome} totalExpenses={totalExpenses} />
