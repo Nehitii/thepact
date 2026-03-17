@@ -8,7 +8,11 @@ import { format, parseISO, subMonths, startOfMonth } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMonthlyValidations } from '@/hooks/useFinance';
 
-export function MonthlyHistory() {
+interface MonthlyHistoryProps {
+  onEditMonth?: (month: string) => void;
+}
+
+export function MonthlyHistory({ onEditMonth }: MonthlyHistoryProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
@@ -192,10 +196,20 @@ export function MonthlyHistory() {
                                       </div>
                                     </div>
                                   </div>
-                                  <button className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors">
-                                    <Edit2 className="w-3.5 h-3.5" />
-                                    <span>{t('finance.monthly.editThisMonth')}</span>
-                                  </button>
+                                  {onEditMonth ? (
+                                    <button
+                                      onClick={() => onEditMonth(month.key)}
+                                      className="flex items-center gap-2 text-xs text-muted-foreground hover:text-primary transition-colors"
+                                    >
+                                      <Edit2 className="w-3.5 h-3.5" />
+                                      <span>{t('finance.monthly.editThisMonth')}</span>
+                                    </button>
+                                  ) : (
+                                    <span className="flex items-center gap-2 text-xs text-muted-foreground/50">
+                                      <Edit2 className="w-3.5 h-3.5" />
+                                      <span>{t('finance.monthly.editThisMonth')}</span>
+                                    </span>
+                                  )}
                                 </div>
                               </motion.div>
                             )}

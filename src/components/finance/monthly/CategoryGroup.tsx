@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Edit2, Check, X, ChevronRight } from 'lucide-react';
+import { Trash2, Edit2, Check, X, ChevronRight, EyeOff, Eye } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -22,6 +22,7 @@ export interface CategoryGroupProps {
   onCancelEdit: () => void;
   onEditDataChange: (data: { name: string; amount: string; category: string }) => void;
   onDelete: (id: string) => void;
+  onToggleActive?: (id: string, isActive: boolean) => void;
 }
 
 export function CategoryGroup({
@@ -37,6 +38,7 @@ export function CategoryGroup({
   onCancelEdit,
   onEditDataChange,
   onDelete,
+  onToggleActive,
 }: CategoryGroupProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
@@ -147,6 +149,14 @@ export function CategoryGroup({
                         {formatCurrency(item.amount, currency)}
                       </span>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {onToggleActive && (
+                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => onToggleActive(item.id, !item.is_active)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                            title={item.is_active ? t('finance.recurring.deactivate') : t('finance.recurring.activate')}
+                          >
+                            {item.is_active ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                          </motion.button>
+                        )}
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => onStartEdit(item)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                         >

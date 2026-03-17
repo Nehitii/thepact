@@ -22,6 +22,7 @@ interface FinancialBlockProps {
   onAdd: (name: string, amount: number, category?: string) => Promise<void>;
   onUpdate: (id: string, name: string, amount: number, category?: string) => Promise<void>;
   onDelete: (id: string) => void;
+  onToggleActive?: (id: string, isActive: boolean) => void;
   isPending?: boolean;
 }
 
@@ -34,6 +35,7 @@ export function FinancialBlock({
   onAdd,
   onUpdate,
   onDelete,
+  onToggleActive,
   isPending,
 }: FinancialBlockProps) {
   const { t } = useTranslation();
@@ -158,6 +160,7 @@ export function FinancialBlock({
                         onCancelEdit={() => setEditingId(null)}
                         onEditDataChange={setEditingData}
                         onDelete={onDelete}
+                        onToggleActive={onToggleActive}
                       />
                     </motion.div>
                   ))

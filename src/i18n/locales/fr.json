@@ -606,7 +606,18 @@
       "updateFailed": "Échec de la mise à jour",
       "categoriesCount": "{{count}} catégories",
       "categoryCount": "{{count}} catégorie",
-      "itemsCount": "{{count}} éléments"
+      "itemsCount": "{{count}} éléments",
+      "categorySummary": "{{categories}} catégories · {{items}} éléments",
+      "namePlaceholder": "Nom",
+      "amountPlaceholder": "Montant",
+      "newPlaceholder": "Nouveau {{type}}...",
+      "addType": "Ajouter {{type}}",
+      "expenseSingle": "dépense",
+      "incomeSingle": "revenu",
+      "emptyTitle": "Aucun {{type}} récurrent",
+      "emptyHint": "Clique ci-dessus pour ajouter le premier",
+      "deactivate": "Désactiver cet élément",
+      "activate": "Activer cet élément"
     },
     "categories": {
       "housing": "Logement",

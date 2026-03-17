@@ -66,6 +66,16 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
+  const handleToggleExpense = async (id: string, isActive: boolean) => {
+    try { await updateExpense.mutateAsync({ id, is_active: isActive }); }
+    catch { toast.error(t('finance.recurring.updateFailed')); }
+  };
+
+  const handleToggleIncome = async (id: string, isActive: boolean) => {
+    try { await updateIncome.mutateAsync({ id, is_active: isActive }); }
+    catch { toast.error(t('finance.recurring.updateFailed')); }
+  };
+
   return (
     <div className="space-y-8">
       <MonthlyBalanceHero totalIncome={totalIncome} totalExpenses={totalExpenses} />
@@ -81,6 +91,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
             onAdd={handleAddExpense}
             onUpdate={handleUpdateExpense}
             onDelete={(id) => deleteExpense.mutate(id)}
+            onToggleActive={handleToggleExpense}
             isPending={addExpense.isPending}
           />
         </motion.div>
@@ -94,6 +105,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
             onAdd={handleAddIncome}
             onUpdate={handleUpdateIncome}
             onDelete={(id) => deleteIncome.mutate(id)}
+            onToggleActive={handleToggleIncome}
             isPending={addIncome.isPending}
           />
         </motion.div>
