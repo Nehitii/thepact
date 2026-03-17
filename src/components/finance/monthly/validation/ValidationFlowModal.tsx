@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,7 @@ export function ValidationFlowModal({
   setUnplannedIncome,
   currency,
 }: ValidationFlowModalProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<Step>('expenses');
 
   const totalExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
@@ -86,8 +88,8 @@ export function ValidationFlowModal({
         {/* Header */}
         <div className="p-6 border-b border-border flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-foreground">Monthly Validation</h2>
-            <p className="text-sm text-muted-foreground mt-1">Step {currentStepIndex + 1} of {steps.length}</p>
+            <h2 className="text-xl font-bold text-foreground">{t('finance.validation.monthlyValidation')}</h2>
+            <p className="text-sm text-muted-foreground mt-1">{t('finance.validation.stepOf', { current: currentStepIndex + 1, total: steps.length })}</p>
           </div>
           <button 
             onClick={onClose}
@@ -170,7 +172,7 @@ export function ValidationFlowModal({
               onClick={handleBack}
               className="flex-1 h-12 border-border text-muted-foreground hover:bg-muted/50 rounded-xl"
             >
-              Back
+              {t('common.back')}
             </Button>
           ) : (
             <Button
@@ -178,7 +180,7 @@ export function ValidationFlowModal({
               onClick={onClose}
               className="flex-1 h-12 border-border text-muted-foreground hover:bg-muted/50 rounded-xl"
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
           )}
           {step !== 'confirm' ? (
@@ -190,7 +192,7 @@ export function ValidationFlowModal({
               }
               className="flex-1 h-12 rounded-xl"
             >
-              Continue
+              {t('common.next')}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
@@ -199,7 +201,7 @@ export function ValidationFlowModal({
               disabled={isPending}
               className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-[0_0_30px_hsla(160,80%,50%,0.3)]"
             >
-              {isPending ? 'Validating...' : 'Confirm & Validate'}
+              {isPending ? t('finance.monthly.validating') : t('finance.validation.confirmValidate')}
               <Check className="w-4 h-4 ml-2" />
             </Button>
           )}
@@ -219,6 +221,7 @@ interface StepExpensesProps {
 }
 
 function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, setConfirmedExpenses, currency }: StepExpensesProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="expenses"
@@ -229,8 +232,8 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
       className="space-y-5"
     >
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Review Recurring Expenses</h3>
-        <p className="text-sm text-muted-foreground mt-1">Confirm all expenses were paid as expected.</p>
+        <h3 className="text-lg font-semibold text-foreground">{t('finance.validation.reviewExpenses')}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t('finance.validation.confirmExpensesHint')}</p>
       </div>
       <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
         {recurringExpenses.filter(e => e.is_active).map((expense) => (
@@ -246,7 +249,7 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
         ))}
       </div>
       <div className="pt-2 flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">Total:</span>
+        <span className="text-sm text-muted-foreground">{t('finance.validation.total')}:</span>
         <span className="text-xl font-bold text-rose-400">{formatCurrency(totalExpenses, currency)}</span>
       </div>
       <motion.button
@@ -263,7 +266,7 @@ function StepExpenses({ recurringExpenses, totalExpenses, confirmedExpenses, set
           }`}>
             {confirmedExpenses && <Check className="h-4 w-4 text-emerald-400" />}
           </div>
-          <span className="text-sm font-medium text-foreground">All expenses paid correctly</span>
+          <span className="text-sm font-medium text-foreground">{t('finance.validation.allExpensesPaid')}</span>
         </div>
       </motion.button>
     </motion.div>
@@ -279,6 +282,7 @@ interface StepIncomeProps {
 }
 
 function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirmedIncome, currency }: StepIncomeProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="income"
@@ -289,8 +293,8 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
       className="space-y-5"
     >
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Review Recurring Income</h3>
-        <p className="text-sm text-muted-foreground mt-1">Confirm all income was received as expected.</p>
+        <h3 className="text-lg font-semibold text-foreground">{t('finance.validation.reviewIncome')}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t('finance.validation.confirmIncomeHint')}</p>
       </div>
       <div className="space-y-2 max-h-[180px] overflow-y-auto scrollbar-thin">
         {recurringIncome.filter(i => i.is_active).map((income) => (
@@ -306,7 +310,7 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
         ))}
       </div>
       <div className="pt-2 flex justify-between items-center">
-        <span className="text-sm text-muted-foreground">Total:</span>
+        <span className="text-sm text-muted-foreground">{t('finance.validation.total')}:</span>
         <span className="text-xl font-bold text-emerald-400">{formatCurrency(totalIncome, currency)}</span>
       </div>
       <motion.button
@@ -323,7 +327,7 @@ function StepIncome({ recurringIncome, totalIncome, confirmedIncome, setConfirme
           }`}>
             {confirmedIncome && <Check className="h-4 w-4 text-emerald-400" />}
           </div>
-          <span className="text-sm font-medium text-foreground">All income received correctly</span>
+          <span className="text-sm font-medium text-foreground">{t('finance.validation.allIncomeReceived')}</span>
         </div>
       </motion.button>
     </motion.div>
@@ -339,6 +343,7 @@ interface StepExtrasProps {
 }
 
 function StepExtras({ unplannedExpenses, unplannedIncome, setUnplannedExpenses, setUnplannedIncome, currency }: StepExtrasProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="extras"
@@ -349,12 +354,12 @@ function StepExtras({ unplannedExpenses, unplannedIncome, setUnplannedExpenses, 
       className="space-y-6"
     >
       <div>
-        <h3 className="text-lg font-semibold text-foreground">Additional Transactions</h3>
-        <p className="text-sm text-muted-foreground mt-1">Add any unexpected expenses or income.</p>
+        <h3 className="text-lg font-semibold text-foreground">{t('finance.validation.additionalTransactions')}</h3>
+        <p className="text-sm text-muted-foreground mt-1">{t('finance.validation.addUnexpected')}</p>
       </div>
       <div className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm text-muted-foreground font-medium">Extra Expenses</label>
+          <label className="text-sm text-muted-foreground font-medium">{t('finance.validation.extraExpenses')}</label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
               {getCurrencySymbol(currency)}
@@ -370,7 +375,7 @@ function StepExtras({ unplannedExpenses, unplannedIncome, setUnplannedExpenses, 
           </div>
         </div>
         <div className="space-y-2">
-          <label className="text-sm text-muted-foreground font-medium">Extra Income</label>
+          <label className="text-sm text-muted-foreground font-medium">{t('finance.validation.extraIncome')}</label>
           <div className="relative">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
               {getCurrencySymbol(currency)}
@@ -399,6 +404,7 @@ interface StepConfirmProps {
 }
 
 function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExpenses, currency }: StepConfirmProps) {
+  const { t } = useTranslation();
   return (
     <motion.div
       key="confirm"
@@ -417,8 +423,8 @@ function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExp
         >
           <PartyPopper className="w-10 h-10 text-primary" />
         </motion.div>
-        <h3 className="text-xl font-bold text-foreground mb-2">Ready to Validate</h3>
-        <p className="text-sm text-muted-foreground">Review your monthly summary before confirming.</p>
+        <h3 className="text-xl font-bold text-foreground mb-2">{t('finance.validation.readyToValidate')}</h3>
+        <p className="text-sm text-muted-foreground">{t('finance.validation.reviewSummary')}</p>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <motion.div 
@@ -427,7 +433,7 @@ function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExp
           transition={{ delay: 0.3 }}
           className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25"
         >
-          <p className="text-xs text-emerald-400/80 mb-2 uppercase tracking-wider font-medium">Total Income</p>
+          <p className="text-xs text-emerald-400/80 mb-2 uppercase tracking-wider font-medium">{t('finance.validation.totalIncome')}</p>
           <p className="text-2xl font-bold text-emerald-400">
             {formatCurrency(totalIncome + (parseFloat(unplannedIncome) || 0), currency)}
           </p>
@@ -438,7 +444,7 @@ function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExp
           transition={{ delay: 0.4 }}
           className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/25"
         >
-          <p className="text-xs text-rose-400/80 mb-2 uppercase tracking-wider font-medium">Total Expenses</p>
+          <p className="text-xs text-rose-400/80 mb-2 uppercase tracking-wider font-medium">{t('finance.validation.totalExpenses')}</p>
           <p className="text-2xl font-bold text-rose-400">
             {formatCurrency(totalExpenses + (parseFloat(unplannedExpenses) || 0), currency)}
           </p>

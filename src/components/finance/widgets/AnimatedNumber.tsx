@@ -14,16 +14,19 @@ export function AnimatedNumber({ value, currency, isPositive, className }: Anima
   useEffect(() => {
     const duration = 1000;
     const steps = 60;
-    const stepValue = value / steps;
+    const absValue = Math.abs(value);
+    const stepValue = absValue / steps;
     let current = 0;
+    let frame = 0;
 
     const timer = setInterval(() => {
+      frame++;
       current += stepValue;
-      if (current >= value) {
+      if (frame >= steps || current >= absValue) {
         setDisplayValue(value);
         clearInterval(timer);
       } else {
-        setDisplayValue(current);
+        setDisplayValue(value >= 0 ? current : -current);
       }
     }, duration / steps);
 

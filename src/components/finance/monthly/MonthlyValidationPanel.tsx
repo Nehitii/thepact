@@ -55,7 +55,7 @@ export function MonthlyValidationPanel({ salaryPaymentDay }: MonthlyValidationPa
   const totalRecurringExpenses = calculateActiveTotal(recurringExpenses);
   const totalRecurringIncome = calculateActiveTotal(recurringIncome);
 
-  const isValidated = currentValidation?.validated_at !== null;
+  const isValidated = !!currentValidation && currentValidation.validated_at !== null;
   const canEdit = isValidated && isEditing;
 
   const today = getDate(new Date());
