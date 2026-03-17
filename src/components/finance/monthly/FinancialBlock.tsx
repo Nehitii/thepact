@@ -35,6 +35,7 @@ export function FinancialBlock({
   onAdd,
   onUpdate,
   onDelete,
+  onToggleActive,
   isPending,
 }: FinancialBlockProps) {
   const { t } = useTranslation();
