@@ -7,6 +7,8 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
 import { differenceInMonths, addMonths, format } from 'date-fns';
 import { AlertCircle, CheckCircle, Calculator, Wallet, Calendar } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useFinanceSettings, useUpdateFinanceSettings } from '@/hooks/useFinance';
 
 interface SmartFinancingPanelProps {
   totalRemaining: number;
@@ -17,11 +19,21 @@ interface SmartFinancingPanelProps {
 export function SmartFinancingPanel({ totalRemaining, projectEndDate, currentMonthlyAllocation }: SmartFinancingPanelProps) {
   const { t } = useTranslation();
   const { currency } = useCurrency();
+  const { user } = useAuth();
+  const { data: financeSettings } = useFinanceSettings(user?.id);
+  const updateSettings = useUpdateFinanceSettings();
   const [months, setMonths] = useState(12);
   const [monthlyAmount, setMonthlyAmount] = useState(currentMonthlyAllocation);
   const [existingBalance, setExistingBalance] = useState(0);
   const [manualMonthsInput, setManualMonthsInput] = useState('');
   const [manualAmountInput, setManualAmountInput] = useState('');
+
+  // Load persisted balance from profile
+  useEffect(() => {
+    if (financeSettings?.already_funded != null) {
+      setExistingBalance(financeSettings.already_funded);
+    }
+  }, [financeSettings?.already_funded]);
 
   const today = new Date();
   const maxMonths = 60;
