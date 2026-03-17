@@ -160,6 +160,7 @@ export function FinancialBlock({
                         onCancelEdit={() => setEditingId(null)}
                         onEditDataChange={setEditingData}
                         onDelete={onDelete}
+                        onToggleActive={onToggleActive}
                       />
                     </motion.div>
                   ))
