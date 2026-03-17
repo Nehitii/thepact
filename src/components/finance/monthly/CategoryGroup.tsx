@@ -149,6 +149,14 @@ export function CategoryGroup({
                         {formatCurrency(item.amount, currency)}
                       </span>
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        {onToggleActive && (
+                          <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => onToggleActive(item.id, !item.is_active)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                            title={item.is_active ? t('finance.recurring.deactivate') : t('finance.recurring.activate')}
+                          >
+                            {item.is_active ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
+                          </motion.button>
+                        )}
                         <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => onStartEdit(item)}
                           className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
                         >
