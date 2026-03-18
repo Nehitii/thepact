@@ -104,7 +104,7 @@ export function useAddRecurringIncome() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (income: { name: string; amount: number; category?: string }) => {
+    mutationFn: async (income: { name: string; amount: number; category?: string; icon_emoji?: string }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('recurring_income')
