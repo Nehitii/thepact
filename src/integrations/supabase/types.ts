@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_transfers: {
+        Row: {
+          amount: number
+          created_at: string | null
+          from_account_id: string
+          id: string
+          note: string | null
+          to_account_id: string
+          transfer_date: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          from_account_id: string
+          id?: string
+          note?: string | null
+          to_account_id: string
+          transfer_date?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          from_account_id?: string
+          id?: string
+          note?: string | null
+          to_account_id?: string
+          transfer_date?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "account_transfers_from_account_id_fkey"
+            columns: ["from_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "account_transfers_to_account_id_fkey"
+            columns: ["to_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       achievement_definitions: {
         Row: {
           category: string
@@ -2009,6 +2057,8 @@ export type Database = {
           amount: number
           category: string | null
           created_at: string
+          icon_emoji: string | null
+          icon_url: string | null
           id: string
           is_active: boolean
           name: string
@@ -2019,6 +2069,8 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          icon_emoji?: string | null
+          icon_url?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -2029,6 +2081,8 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          icon_emoji?: string | null
+          icon_url?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -2042,6 +2096,8 @@ export type Database = {
           amount: number
           category: string | null
           created_at: string
+          icon_emoji: string | null
+          icon_url: string | null
           id: string
           is_active: boolean
           name: string
@@ -2052,6 +2108,8 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          icon_emoji?: string | null
+          icon_url?: string | null
           id?: string
           is_active?: boolean
           name: string
@@ -2062,6 +2120,8 @@ export type Database = {
           amount?: number
           category?: string | null
           created_at?: string
+          icon_emoji?: string | null
+          icon_url?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -2651,6 +2711,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_accounts: {
+        Row: {
+          account_type: string | null
+          balance: number | null
+          bank_name: string | null
+          color: string | null
+          created_at: string | null
+          icon_emoji: string | null
+          icon_url: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          sort_order: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_type?: string | null
+          balance?: number | null
+          bank_name?: string | null
+          color?: string | null
+          created_at?: string | null
+          icon_emoji?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_type?: string | null
+          balance?: number | null
+          bank_name?: string | null
+          color?: string | null
+          created_at?: string | null
+          icon_emoji?: string | null
+          icon_url?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_key: string
@@ -3039,6 +3147,15 @@ export type Database = {
       }
     }
     Functions: {
+      execute_account_transfer: {
+        Args: {
+          p_amount: number
+          p_from_account_id: string
+          p_note?: string
+          p_to_account_id: string
+        }
+        Returns: Json
+      }
       get_accepted_friends: {
         Args: { p_user_id: string }
         Returns: {
