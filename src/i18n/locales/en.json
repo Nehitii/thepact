@@ -511,7 +511,51 @@
       "projections": "Projections",
       "dashboard": "Dashboard",
       "budget": "Budget",
-      "planner": "Planner"
+      "planner": "Planner",
+      "accounts": "Accounts"
+    },
+    "accounts": {
+      "netWorth": "Net Worth",
+      "myAccounts": "My Accounts",
+      "addAccount": "Add Account",
+      "editAccount": "Edit Account",
+      "accountName": "Account Name",
+      "bankName": "Bank / Institution",
+      "type": "Account Type",
+      "initialBalance": "Balance",
+      "icon": "Icon",
+      "color": "Color",
+      "added": "Account added",
+      "updated": "Account updated",
+      "deleted": "Account deleted",
+      "saveFailed": "Failed to save account",
+      "deleteFailed": "Failed to delete account",
+      "empty": "No accounts yet",
+      "emptyHint": "Add your bank accounts to track your balances",
+      "addFirst": "Add Your First Account",
+      "accountsCount": "{{count}} active accounts",
+      "inactive": "Inactive",
+      "types": {
+        "checking": "Checking",
+        "savings": "Savings",
+        "investment": "Investment",
+        "credit": "Credit",
+        "cash": "Cash"
+      }
+    },
+    "transfers": {
+      "title": "Transfer Simulator",
+      "subtitle": "Simulate transfers between your accounts",
+      "from": "From Account",
+      "to": "To Account",
+      "amount": "Amount",
+      "note": "Note",
+      "notePlaceholder": "Optional note...",
+      "selectAccount": "Select an account",
+      "execute": "Execute Transfer",
+      "success": "Transfer completed",
+      "history": "Transfer History",
+      "noHistory": "No transfers yet"
     },
     "overview": {
       "projectFinancing": "Project Financing",
