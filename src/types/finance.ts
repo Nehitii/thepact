@@ -14,6 +14,8 @@ export interface RecurringExpense {
   amount: number;
   is_active: boolean;
   category?: string | null;
+  icon_emoji?: string | null;
+  icon_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +30,8 @@ export interface RecurringIncome {
   amount: number;
   is_active: boolean;
   category?: string | null;
+  icon_emoji?: string | null;
+  icon_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -89,6 +93,8 @@ export interface FinancialItem {
   amount: number;
   is_active: boolean;
   category?: string | null;
+  icon_emoji?: string | null;
+  icon_url?: string | null;
 }
 
 /**
@@ -100,8 +106,8 @@ export interface FinancialBlockProps {
   items: FinancialItem[];
   categories: import('@/lib/financeCategories').FinanceCategory[];
   isLoading: boolean;
-  onAdd: (name: string, amount: number, category?: string) => Promise<void>;
-  onUpdate: (id: string, name: string, amount: number, category?: string) => Promise<void>;
+  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string) => Promise<void>;
+  onUpdate: (id: string, name: string, amount: number, category?: string, iconEmoji?: string) => Promise<void>;
   onDelete: (id: string) => void;
   onToggleActive?: (id: string, isActive: boolean) => void;
   isPending?: boolean;
@@ -115,4 +121,37 @@ export interface FinanceStats {
   monthsToGoal: number | null;
   monthlyNet: number;
   yearlyProjection: number;
+}
+
+/**
+ * User bank account
+ */
+export interface UserAccount {
+  id: string;
+  user_id: string;
+  name: string;
+  bank_name: string | null;
+  account_type: string;
+  balance: number;
+  icon_emoji: string | null;
+  icon_url: string | null;
+  color: string;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Account transfer record
+ */
+export interface AccountTransfer {
+  id: string;
+  user_id: string;
+  from_account_id: string;
+  to_account_id: string;
+  amount: number;
+  note: string | null;
+  transfer_date: string;
+  created_at: string;
 }
