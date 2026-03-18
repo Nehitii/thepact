@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, FileText, TrendingUp, Settings } from "lucide-react";
+import { LayoutDashboard, FileText, TrendingUp, Settings, Landmark } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -16,6 +16,7 @@ import { FinanceDashboard } from "@/components/finance/FinanceDashboard";
 import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard";
 import { ProjectionsPanel } from "@/components/finance/ProjectionsPanel";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
+import { AccountsOverview } from "@/components/finance/accounts";
 import { parseISO } from "date-fns";
 
 export default function Finance() {
@@ -101,12 +102,15 @@ export default function Finance() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="flex justify-center mb-10">
-            <TabsList className="w-full max-w-xl neu-card p-2 border-0 relative">
+            <TabsList className="w-full max-w-2xl neu-card p-2 border-0 relative">
               <TabsTrigger value="dashboard" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
                 <LayoutDashboard className="h-4 w-4 mr-2" />{t('finance.tabs.dashboard')}
               </TabsTrigger>
               <TabsTrigger value="budget" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
                 <FileText className="h-4 w-4 mr-2" />{t('finance.tabs.budget')}
+              </TabsTrigger>
+              <TabsTrigger value="accounts" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
+                <Landmark className="h-4 w-4 mr-2" />{t('finance.tabs.accounts')}
               </TabsTrigger>
               <TabsTrigger value="planner" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
                 <TrendingUp className="h-4 w-4 mr-2" />{t('finance.tabs.planner')}
@@ -137,6 +141,12 @@ export default function Finance() {
           <TabsContent value="budget" className="mt-0 pb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <MonthlyDashboard salaryPaymentDay={settings.salary_payment_day} />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="accounts" className="mt-0 pb-12">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <AccountsOverview />
             </motion.div>
           </TabsContent>
 

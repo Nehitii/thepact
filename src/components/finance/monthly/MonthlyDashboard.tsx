@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,11 +17,14 @@ import { MonthlyBalanceHero } from './MonthlyBalanceHero';
 import { FinancialBlock } from './FinancialBlock';
 import { MonthlyValidationPanel } from './MonthlyValidationPanel';
 import { MonthlyHistory } from './MonthlyHistory';
+import { ValidationFlowModal } from './validation/ValidationFlowModal';
 import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
   calculateActiveTotal,
 } from '@/lib/financeCategories';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { useMonthlyValidation, useUpsertMonthlyValidation } from '@/hooks/useFinance';
 
 interface MonthlyDashboardProps {
   salaryPaymentDay: number;
@@ -30,6 +33,7 @@ interface MonthlyDashboardProps {
 export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { currency } = useCurrency();
 
   const { data: expenses = [], isLoading: expensesLoading } = useRecurringExpenses(user?.id);
   const { data: income = [], isLoading: incomeLoading } = useRecurringIncome(user?.id);
@@ -40,29 +44,77 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const updateIncome = useUpdateRecurringIncome();
   const deleteExpense = useDeleteRecurringExpense();
   const deleteIncome = useDeleteRecurringIncome();
+  const upsertValidation = useUpsertMonthlyValidation();
+
+  // Editing past month state
+  const [editingMonth, setEditingMonth] = useState<string | null>(null);
+  const { data: editingValidation } = useMonthlyValidation(user?.id, editingMonth ?? undefined);
+
+  // Validation modal state for editing past months
+  const [editConfirmedExpenses, setEditConfirmedExpenses] = useState(false);
+  const [editConfirmedIncome, setEditConfirmedIncome] = useState(false);
+  const [editUnplannedExpenses, setEditUnplannedExpenses] = useState('');
+  const [editUnplannedIncome, setEditUnplannedIncome] = useState('');
 
   const totalExpenses = calculateActiveTotal(expenses);
   const totalIncome = calculateActiveTotal(income);
 
-  const handleAddExpense = async (name: string, amount: number, category?: string) => {
+  // When editingMonth changes and data loads, pre-populate
+  useMemo(() => {
+    if (editingValidation) {
+      setEditConfirmedExpenses(editingValidation.confirmed_expenses);
+      setEditConfirmedIncome(editingValidation.confirmed_income);
+      setEditUnplannedExpenses(editingValidation.unplanned_expenses?.toString() ?? '0');
+      setEditUnplannedIncome(editingValidation.unplanned_income?.toString() ?? '0');
+    } else if (editingMonth) {
+      setEditConfirmedExpenses(false);
+      setEditConfirmedIncome(false);
+      setEditUnplannedExpenses('0');
+      setEditUnplannedIncome('0');
+    }
+  }, [editingValidation, editingMonth]);
+
+  const handleEditValidate = async () => {
+    if (!editingMonth) return;
+    const totalActualIncome = totalIncome + (parseFloat(editUnplannedIncome) || 0);
+    const totalActualExpenses = totalExpenses + (parseFloat(editUnplannedExpenses) || 0);
+    try {
+      await upsertValidation.mutateAsync({
+        month: editingMonth,
+        confirmed_expenses: editConfirmedExpenses,
+        confirmed_income: editConfirmedIncome,
+        unplanned_expenses: parseFloat(editUnplannedExpenses) || 0,
+        unplanned_income: parseFloat(editUnplannedIncome) || 0,
+        actual_total_income: totalActualIncome,
+        actual_total_expenses: totalActualExpenses,
+        validated_at: new Date().toISOString(),
+      });
+      toast.success(t('finance.monthly.validated'));
+      setEditingMonth(null);
+    } catch {
+      toast.error(t('finance.monthly.validationFailed'));
+    }
+  };
+
+  const handleAddExpense = async (name: string, amount: number, category?: string, iconEmoji?: string) => {
     if (expenses.length >= 30) { toast.error(t('finance.recurring.maxReached')); return; }
-    try { await addExpense.mutateAsync({ name, amount, category }); toast.success(t('finance.recurring.expenseAdded')); }
+    try { await addExpense.mutateAsync({ name, amount, category, icon_emoji: iconEmoji }); toast.success(t('finance.recurring.expenseAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };
 
-  const handleAddIncome = async (name: string, amount: number, category?: string) => {
+  const handleAddIncome = async (name: string, amount: number, category?: string, iconEmoji?: string) => {
     if (income.length >= 30) { toast.error(t('finance.recurring.maxReached')); return; }
-    try { await addIncome.mutateAsync({ name, amount, category }); toast.success(t('finance.recurring.incomeAdded')); }
+    try { await addIncome.mutateAsync({ name, amount, category, icon_emoji: iconEmoji }); toast.success(t('finance.recurring.incomeAdded')); }
     catch { toast.error(t('finance.recurring.addFailed')); }
   };
 
-  const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string) => {
-    try { await updateExpense.mutateAsync({ id, name, amount, category }); toast.success(t('finance.recurring.expenseUpdated')); }
+  const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string) => {
+    try { await updateExpense.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji }); toast.success(t('finance.recurring.expenseUpdated')); }
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
-  const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string) => {
-    try { await updateIncome.mutateAsync({ id, name, amount, category }); toast.success(t('finance.recurring.incomeUpdated')); }
+  const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string) => {
+    try { await updateIncome.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji }); toast.success(t('finance.recurring.incomeUpdated')); }
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
@@ -112,7 +164,27 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
       </div>
 
       <MonthlyValidationPanel salaryPaymentDay={salaryPaymentDay} />
-      <MonthlyHistory />
+      <MonthlyHistory onEditMonth={(month) => setEditingMonth(month)} />
+
+      {/* Edit past month validation modal */}
+      {editingMonth && (
+        <ValidationFlowModal
+          onClose={() => setEditingMonth(null)}
+          onValidate={handleEditValidate}
+          isPending={upsertValidation.isPending}
+          recurringExpenses={expenses}
+          recurringIncome={income}
+          confirmedExpenses={editConfirmedExpenses}
+          confirmedIncome={editConfirmedIncome}
+          setConfirmedExpenses={setEditConfirmedExpenses}
+          setConfirmedIncome={setEditConfirmedIncome}
+          unplannedExpenses={editUnplannedExpenses}
+          unplannedIncome={editUnplannedIncome}
+          setUnplannedExpenses={setEditUnplannedExpenses}
+          setUnplannedIncome={setEditUnplannedIncome}
+          currency={currency}
+        />
+      )}
     </div>
   );
 }
