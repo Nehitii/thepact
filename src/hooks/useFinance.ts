@@ -28,7 +28,7 @@ export function useAddRecurringExpense() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (expense: { name: string; amount: number; category?: string }) => {
+    mutationFn: async (expense: { name: string; amount: number; category?: string; icon_emoji?: string }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('recurring_expenses')
@@ -48,7 +48,7 @@ export function useUpdateRecurringExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string; icon_emoji?: string }) => {
       const { data, error } = await supabase
         .from('recurring_expenses')
         .update(updates)
@@ -104,7 +104,7 @@ export function useAddRecurringIncome() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (income: { name: string; amount: number; category?: string }) => {
+    mutationFn: async (income: { name: string; amount: number; category?: string; icon_emoji?: string }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('recurring_income')
@@ -124,7 +124,7 @@ export function useUpdateRecurringIncome() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string; icon_emoji?: string }) => {
       const { data, error } = await supabase
         .from('recurring_income')
         .update(updates)

@@ -508,7 +508,54 @@
     "tabs": {
       "overview": "Vue d'ensemble",
       "monthly": "Mensuel",
-      "projections": "Projections"
+      "projections": "Projections",
+      "dashboard": "Tableau de bord",
+      "budget": "Budget",
+      "planner": "Planificateur",
+      "accounts": "Comptes"
+    },
+    "accounts": {
+      "netWorth": "Patrimoine net",
+      "myAccounts": "Mes comptes",
+      "addAccount": "Ajouter un compte",
+      "editAccount": "Modifier le compte",
+      "accountName": "Nom du compte",
+      "bankName": "Banque / Institution",
+      "type": "Type de compte",
+      "initialBalance": "Solde",
+      "icon": "Icône",
+      "color": "Couleur",
+      "added": "Compte ajouté",
+      "updated": "Compte mis à jour",
+      "deleted": "Compte supprimé",
+      "saveFailed": "Échec de l'enregistrement",
+      "deleteFailed": "Échec de la suppression",
+      "empty": "Aucun compte",
+      "emptyHint": "Ajoute tes comptes bancaires pour suivre tes soldes",
+      "addFirst": "Ajouter ton premier compte",
+      "accountsCount": "{{count}} comptes actifs",
+      "inactive": "Inactif",
+      "types": {
+        "checking": "Courant",
+        "savings": "Épargne",
+        "investment": "Investissement",
+        "credit": "Crédit",
+        "cash": "Espèces"
+      }
+    },
+    "transfers": {
+      "title": "Simulateur de virements",
+      "subtitle": "Simule des virements entre tes comptes",
+      "from": "Depuis le compte",
+      "to": "Vers le compte",
+      "amount": "Montant",
+      "note": "Note",
+      "notePlaceholder": "Note optionnelle...",
+      "selectAccount": "Sélectionner un compte",
+      "execute": "Exécuter le virement",
+      "success": "Virement effectué",
+      "history": "Historique des virements",
+      "noHistory": "Aucun virement"
     },
     "overview": {
       "projectFinancing": "Financement du projet",
