@@ -31,7 +31,8 @@ export function TransferSimulator({ accounts, transfers, currency, onTransfer, i
   const toAccount = activeAccounts.find(a => a.id === toId);
   const parsedAmount = parseFloat(amount) || 0;
 
-  const canTransfer = fromId && toId && fromId !== toId && parsedAmount > 0;
+  const exceedsBalance = fromAccount ? parsedAmount > fromAccount.balance : false;
+  const canTransfer = fromId && toId && fromId !== toId && parsedAmount > 0 && !exceedsBalance;
 
   const handleTransfer = async () => {
     if (!canTransfer) return;
