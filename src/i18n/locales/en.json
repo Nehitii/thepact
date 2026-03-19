@@ -596,6 +596,7 @@
       "currentPeriod": "Current period",
       "sixMonthTrend": "6-Month Trend",
       "saved": "saved",
+      "notEnoughData": "Validate at least 2 months to see your trend",
       "deficit": "deficit",
       "selectMonth": "Select Month",
       "income": "Income",
