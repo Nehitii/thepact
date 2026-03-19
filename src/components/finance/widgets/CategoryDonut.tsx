@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatCurrency } from '@/lib/currency';
 import type { LucideIcon } from 'lucide-react';
