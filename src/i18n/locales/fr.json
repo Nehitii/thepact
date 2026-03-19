@@ -556,7 +556,8 @@
       "execute": "Exécuter le virement",
       "success": "Virement effectué",
       "history": "Historique des virements",
-      "noHistory": "Aucun virement"
+      "noHistory": "Aucun virement",
+      "exceedsBalance": "Le montant dépasse le solde du compte source ({{balance}})"
     },
     "overview": {
       "projectFinancing": "Financement du projet",
