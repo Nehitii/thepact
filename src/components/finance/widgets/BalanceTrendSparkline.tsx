@@ -37,7 +37,21 @@ const SparklineTooltip = ({ active, payload, currency }: any) => {
 export function BalanceTrendSparkline({ data, currency }: BalanceTrendSparklineProps) {
   const { t } = useTranslation();
 
-  if (data.length < 2) return null;
+  if (data.length < 2) {
+    return (
+      <div className="neu-inset p-5 rounded-2xl">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Activity className="w-4 h-4 text-primary" />
+          </div>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            {t('finance.monthly.sixMonthTrend')}
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground text-center py-6">{t('finance.monthly.notEnoughData')}</p>
+      </div>
+    );
+  }
 
   const minBalance = Math.min(...data.map(d => d.balance));
   const maxBalance = Math.max(...data.map(d => d.balance));

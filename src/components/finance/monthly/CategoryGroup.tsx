@@ -153,7 +153,7 @@ export function CategoryGroup({
                       <span className={`font-semibold text-sm tabular-nums ${isExpense ? 'text-rose-400/90' : 'text-emerald-400/90'}`}>
                         {formatCurrency(item.amount, currency)}
                       </span>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                         {onToggleActive && (
                           <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => onToggleActive(item.id, !item.is_active)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"

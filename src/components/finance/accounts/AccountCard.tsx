@@ -47,7 +47,7 @@ export function AccountCard({ account, currency, onEdit, onDelete }: AccountCard
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 opacity-0 group-hover:opacity-100 transition-all">
+            <button className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
               <MoreVertical className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>

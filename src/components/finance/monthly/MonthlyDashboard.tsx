@@ -60,7 +60,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const totalIncome = calculateActiveTotal(income);
 
   // When editingMonth changes and data loads, pre-populate
-  useMemo(() => {
+  useEffect(() => {
     if (editingValidation) {
       setEditConfirmedExpenses(editingValidation.confirmed_expenses);
       setEditConfirmedIncome(editingValidation.confirmed_income);

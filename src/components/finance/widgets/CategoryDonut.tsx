@@ -41,6 +41,7 @@ const DonutTooltip = ({ active, payload, currency }: any) => {
 };
 
 export function CategoryDonut({ data, currency, title, total, colorAccent, maxLegendItems = 4 }: CategoryDonutProps) {
+  const { t } = useTranslation();
   if (data.length === 0) return null;
 
   const accentClasses = colorAccent === 'emerald'

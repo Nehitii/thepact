@@ -39,9 +39,9 @@ export function AddItemForm({ type, categories, currency, isPending, onAdd }: Ad
           exit={{ opacity: 0, height: 0 }}
           className="neu-inset rounded-xl p-4 space-y-3"
         >
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Select value={newItem.category} onValueChange={(val) => setNewItem({ ...newItem, category: val })}>
-              <SelectTrigger className="w-[140px] h-11 bg-muted dark:bg-slate-800/60 border-border text-foreground rounded-lg">
+              <SelectTrigger className="w-full sm:w-[140px] h-11 bg-muted dark:bg-slate-800/60 border-border text-foreground rounded-lg">
                 <SelectValue placeholder={t('finance.recurring.category')} />
               </SelectTrigger>
               <SelectContent className="bg-popover border-border z-50 rounded-xl">
@@ -62,7 +62,7 @@ export function AddItemForm({ type, categories, currency, isPending, onAdd }: Ad
               className="flex-1 h-11 finance-input rounded-lg"
               maxLength={50}
             />
-            <div className="relative w-28">
+            <div className="relative w-full sm:w-28">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
                 {getCurrencySymbol(currency)}
               </span>
