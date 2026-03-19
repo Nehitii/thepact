@@ -556,7 +556,8 @@
       "execute": "Execute Transfer",
       "success": "Transfer completed",
       "history": "Transfer History",
-      "noHistory": "No transfers yet"
+      "noHistory": "No transfers yet",
+      "exceedsBalance": "Amount exceeds source balance ({{balance}})"
     },
     "overview": {
       "projectFinancing": "Project Financing",
