@@ -596,6 +596,7 @@
       "currentPeriod": "Période en cours",
       "sixMonthTrend": "Tendance sur 6 mois",
       "saved": "économisé",
+      "notEnoughData": "Validez au moins 2 mois pour voir la tendance",
       "deficit": "déficit",
       "selectMonth": "Sélectionner le mois",
       "income": "Revenus",
