@@ -101,7 +101,7 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
             </div>
           ))}
           {data.length > maxLegendItems && (
-            <p className="text-[10px] text-muted-foreground/60">+{data.length - maxLegendItems} more</p>
+            <p className="text-[10px] text-muted-foreground/60">+{data.length - maxLegendItems} {t('common.more')}</p>
           )}
         </div>
       </div>
