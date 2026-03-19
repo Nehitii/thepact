@@ -102,28 +102,29 @@ export default function Finance() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="flex justify-center mb-10">
-            <TabsList className="w-full max-w-2xl neu-card p-2 border-0 relative">
-              <TabsTrigger value="dashboard" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
-                <LayoutDashboard className="h-4 w-4 mr-2" />{t('finance.tabs.dashboard')}
-              </TabsTrigger>
-              <TabsTrigger value="budget" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
-                <FileText className="h-4 w-4 mr-2" />{t('finance.tabs.budget')}
-              </TabsTrigger>
-              <TabsTrigger value="accounts" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
-                <Landmark className="h-4 w-4 mr-2" />{t('finance.tabs.accounts')}
-              </TabsTrigger>
-              <TabsTrigger value="planner" className="flex-1 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-sm rounded-xl transition-all duration-300 py-3">
-                <TrendingUp className="h-4 w-4 mr-2" />{t('finance.tabs.planner')}
-              </TabsTrigger>
-              {/* Settings button integrated into tab bar */}
+            <div className="w-full max-w-2xl flex items-center gap-2">
+              <TabsList className="flex-1 neu-card p-2 border-0 overflow-x-auto scrollbar-hide">
+                <TabsTrigger value="dashboard" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                  <LayoutDashboard className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.dashboard')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="budget" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                  <FileText className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.budget')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="accounts" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                  <Landmark className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.accounts')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="planner" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                  <TrendingUp className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.planner')}</span>
+                </TabsTrigger>
+              </TabsList>
               <button
                 onClick={() => setSettingsOpen(true)}
-                className="absolute -right-12 top-1/2 -translate-y-1/2 p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                className="p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200 shrink-0"
                 title={t('common.settings')}
               >
                 <Settings className="h-4 w-4" />
               </button>
-            </TabsList>
+            </div>
           </motion.div>
 
           <TabsContent value="dashboard" className="mt-0 pb-12">

@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatCurrency } from '@/lib/currency';
 import type { LucideIcon } from 'lucide-react';
@@ -40,6 +41,7 @@ const DonutTooltip = ({ active, payload, currency }: any) => {
 };
 
 export function CategoryDonut({ data, currency, title, total, colorAccent, maxLegendItems = 4 }: CategoryDonutProps) {
+  const { t } = useTranslation();
   if (data.length === 0) return null;
 
   const accentClasses = colorAccent === 'emerald'
@@ -101,7 +103,7 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
             </div>
           ))}
           {data.length > maxLegendItems && (
-            <p className="text-[10px] text-muted-foreground/60">+{data.length - maxLegendItems} more</p>
+            <p className="text-[10px] text-muted-foreground/60">+{data.length - maxLegendItems} {t('common.more')}</p>
           )}
         </div>
       </div>

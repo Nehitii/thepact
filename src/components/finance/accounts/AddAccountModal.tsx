@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Check } from 'lucide-react';
@@ -36,12 +36,24 @@ interface AddAccountModalProps {
 
 export function AddAccountModal({ open, onClose, onSave, editingAccount, currency, isPending }: AddAccountModalProps) {
   const { t } = useTranslation();
-  const [name, setName] = useState(editingAccount?.name ?? '');
-  const [bankName, setBankName] = useState(editingAccount?.bank_name ?? '');
-  const [accountType, setAccountType] = useState(editingAccount?.account_type ?? 'checking');
-  const [balance, setBalance] = useState(editingAccount?.balance?.toString() ?? '0');
-  const [iconEmoji, setIconEmoji] = useState(editingAccount?.icon_emoji ?? '🏦');
-  const [color, setColor] = useState(editingAccount?.color ?? '#60a5fa');
+  const [name, setName] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountType, setAccountType] = useState('checking');
+  const [balance, setBalance] = useState('0');
+  const [iconEmoji, setIconEmoji] = useState('🏦');
+  const [color, setColor] = useState('#60a5fa');
+
+  // Reset form fields when modal opens or editingAccount changes
+  useEffect(() => {
+    if (open) {
+      setName(editingAccount?.name ?? '');
+      setBankName(editingAccount?.bank_name ?? '');
+      setAccountType(editingAccount?.account_type ?? 'checking');
+      setBalance(editingAccount?.balance?.toString() ?? '0');
+      setIconEmoji(editingAccount?.icon_emoji ?? '🏦');
+      setColor(editingAccount?.color ?? '#60a5fa');
+    }
+  }, [open, editingAccount]);
 
   const handleSave = async () => {
     if (!name.trim()) return;

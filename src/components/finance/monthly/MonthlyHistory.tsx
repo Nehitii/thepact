@@ -168,7 +168,7 @@ export function MonthlyHistory({ onEditMonth }: MonthlyHistoryProps) {
                                 className="mt-2"
                               >
                                 <div className="p-5 rounded-xl neu-inset space-y-4">
-                                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div>
                                       <p className="text-xs text-muted-foreground mb-1.5 uppercase tracking-wider font-medium">{t('finance.monthly.income')}</p>
                                       <p className="text-lg font-bold text-emerald-400 tabular-nums">

@@ -33,7 +33,8 @@
     "customize": "Personnaliser",
     "save": "Enregistrer",
     "settings": "Paramètres",
-    "updated": "Mis à jour"
+    "updated": "Mis à jour",
+    "more": "de plus"
   },
   "auth": {
     "brand": "Pact",
@@ -555,7 +556,8 @@
       "execute": "Exécuter le virement",
       "success": "Virement effectué",
       "history": "Historique des virements",
-      "noHistory": "Aucun virement"
+      "noHistory": "Aucun virement",
+      "exceedsBalance": "Le montant dépasse le solde du compte source ({{balance}})"
     },
     "overview": {
       "projectFinancing": "Financement du projet",
@@ -594,6 +596,7 @@
       "currentPeriod": "Période en cours",
       "sixMonthTrend": "Tendance sur 6 mois",
       "saved": "économisé",
+      "notEnoughData": "Validez au moins 2 mois pour voir la tendance",
       "deficit": "déficit",
       "selectMonth": "Sélectionner le mois",
       "income": "Revenus",

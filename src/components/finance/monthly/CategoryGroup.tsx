@@ -97,12 +97,12 @@ export function CategoryGroup({
                 >
                   {editingId === item.id ? (
                     <div className="flex-1 flex flex-col gap-3">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                         <Select
                           value={editingData.category}
                           onValueChange={(val) => onEditDataChange({ ...editingData, category: val })}
                         >
-                          <SelectTrigger className="w-[130px] h-9 text-xs bg-muted dark:bg-slate-800/80 border-border text-foreground rounded-lg">
+                          <SelectTrigger className="w-full sm:w-[130px] h-9 text-xs bg-muted dark:bg-slate-800/80 border-border text-foreground rounded-lg">
                             <SelectValue placeholder={t('finance.recurring.category')} />
                           </SelectTrigger>
                           <SelectContent className="bg-popover border-border z-50 rounded-xl">
@@ -122,24 +122,26 @@ export function CategoryGroup({
                           className="flex-1 h-9 text-sm finance-input rounded-lg"
                           placeholder={t('finance.recurring.namePlaceholder')}
                         />
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          value={editingData.amount}
-                          onChange={(e) => onEditDataChange({ ...editingData, amount: e.target.value.replace(/[^0-9.]/g, '') })}
-                          className="w-24 h-9 text-sm finance-input rounded-lg"
-                          placeholder={t('finance.recurring.amountPlaceholder')}
-                        />
-                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onSaveEdit}
-                          className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors shadow-[0_0_15px_hsla(160,80%,50%,0.2)]"
-                        >
-                          <Check className="h-4 w-4" />
-                        </motion.button>
-                        <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onCancelEdit}
-                          className="p-2 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-                        >
-                          <X className="h-4 w-4" />
-                        </motion.button>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={editingData.amount}
+                            onChange={(e) => onEditDataChange({ ...editingData, amount: e.target.value.replace(/[^0-9.]/g, '') })}
+                            className="flex-1 sm:w-24 h-9 text-sm finance-input rounded-lg"
+                            placeholder={t('finance.recurring.amountPlaceholder')}
+                          />
+                          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onSaveEdit}
+                            className="p-2 rounded-lg bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30 transition-colors shadow-[0_0_15px_hsla(160,80%,50%,0.2)]"
+                          >
+                            <Check className="h-4 w-4" />
+                          </motion.button>
+                          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={onCancelEdit}
+                            className="p-2 rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+                          >
+                            <X className="h-4 w-4" />
+                          </motion.button>
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -151,7 +153,7 @@ export function CategoryGroup({
                       <span className={`font-semibold text-sm tabular-nums ${isExpense ? 'text-rose-400/90' : 'text-emerald-400/90'}`}>
                         {formatCurrency(item.amount, currency)}
                       </span>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <div className="flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
                         {onToggleActive && (
                           <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => onToggleActive(item.id, !item.is_active)}
                             className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
