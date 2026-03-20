@@ -4,20 +4,27 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, FileText, TrendingUp, Settings, Landmark } from "lucide-react";
+import { LayoutDashboard, FileText, TrendingUp, Settings, Landmark, Target, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
-import { useFinanceSettings, useRecurringExpenses, useRecurringIncome } from "@/hooks/useFinance";
+import { useFinanceSettings, useRecurringExpenses, useRecurringIncome, useMonthlyValidations } from "@/hooks/useFinance";
+import { useAccounts } from "@/hooks/useAccounts";
+import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget, useSavingsGoals, useAddSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal } from "@/hooks/useBudgets";
 import { FinanceDashboard } from "@/components/finance/FinanceDashboard";
 import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard";
 import { ProjectionsPanel } from "@/components/finance/ProjectionsPanel";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
 import { AccountsOverview } from "@/components/finance/accounts";
+import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
+import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
+import { exportFullReport } from "@/lib/financeExport";
 import { parseISO } from "date-fns";
+import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export default function Finance() {
   const { t } = useTranslation();
@@ -32,9 +39,18 @@ export default function Finance() {
   const { data: financeSettings } = useFinanceSettings(user?.id);
   const { data: recurringExpenses = [] } = useRecurringExpenses(user?.id);
   const { data: recurringIncome = [] } = useRecurringIncome(user?.id);
+  const { data: validations = [] } = useMonthlyValidations(user?.id);
+  const { data: accounts = [] } = useAccounts(user?.id);
+  const { data: budgets = [] } = useCategoryBudgets(user?.id);
+  const { data: savingsGoals = [] } = useSavingsGoals(user?.id);
+
+  const upsertBudget = useUpsertCategoryBudget();
+  const deleteBudget = useDeleteCategoryBudget();
+  const addSavingsGoal = useAddSavingsGoal();
+  const updateSavingsGoal = useUpdateSavingsGoal();
+  const deleteSavingsGoal = useDeleteSavingsGoal();
 
   const projectEndDate = pact?.project_end_date ? parseISO(pact.project_end_date) : null;
-
   const isCustomMode = (financeSettings?.project_funding_target ?? 0) > 0;
 
   const { totalEstimated, financed, remaining } = useMemo(() => {
@@ -65,17 +81,16 @@ export default function Finance() {
     already_funded: financeSettings?.already_funded ?? 0,
   };
 
-  const totalRecurringExpenses = recurringExpenses
-    .filter(e => e.is_active)
-    .reduce((sum, e) => sum + e.amount, 0);
+  const totalRecurringExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
+  const totalRecurringIncome = recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
 
-  const totalRecurringIncome = recurringIncome
-    .filter(i => i.is_active)
-    .reduce((sum, i) => sum + i.amount, 0);
+  const handleExportAll = () => {
+    exportFullReport(recurringExpenses, recurringIncome, validations, accounts, currency);
+    toast.success(t('finance.export.success'));
+  };
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Premium Neumorphic Background */}
       <div className="fixed inset-0 bg-background dark:bg-gradient-to-b dark:from-[#070a10] dark:via-[#0c1018] dark:to-[#080c14]" />
       <div className="fixed inset-0 mesh-gradient-bg opacity-60 dark:opacity-60 opacity-20" />
       <div className="noise-overlay" />
@@ -102,13 +117,16 @@ export default function Finance() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="flex justify-center mb-10">
-            <div className="w-full max-w-2xl flex items-center gap-2">
+            <div className="w-full max-w-3xl flex items-center gap-2">
               <TabsList className="flex-1 neu-card p-2 border-0 overflow-x-auto scrollbar-hide">
                 <TabsTrigger value="dashboard" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
                   <LayoutDashboard className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.dashboard')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="budget" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
                   <FileText className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.budget')}</span>
+                </TabsTrigger>
+                <TabsTrigger value="goals" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                  <Target className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.goals')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="accounts" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
                   <Landmark className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.accounts')}</span>
@@ -117,13 +135,27 @@ export default function Finance() {
                   <TrendingUp className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.planner')}</span>
                 </TabsTrigger>
               </TabsList>
-              <button
-                onClick={() => setSettingsOpen(true)}
-                className="p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200 shrink-0"
-                title={t('common.settings')}
-              >
-                <Settings className="h-4 w-4" />
-              </button>
+              <div className="flex items-center gap-1 shrink-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200" title={t('finance.export.title')}>
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-popover border-border rounded-xl">
+                    <DropdownMenuItem onClick={handleExportAll} className="text-foreground">
+                      <Download className="w-3.5 h-3.5 mr-2" />{t('finance.export.fullReport')}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <button
+                  onClick={() => setSettingsOpen(true)}
+                  className="p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                  title={t('common.settings')}
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </motion.div>
 
@@ -142,6 +174,31 @@ export default function Finance() {
           <TabsContent value="budget" className="mt-0 pb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <MonthlyDashboard salaryPaymentDay={settings.salary_payment_day} />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="goals" className="mt-0 pb-12">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <div className="space-y-8">
+                <BudgetProgressPanel
+                  budgets={budgets}
+                  expenseItems={recurringExpenses}
+                  categories={EXPENSE_CATEGORIES}
+                  currency={currency}
+                  onUpsert={async (b) => { await upsertBudget.mutateAsync(b); }}
+                  onDelete={(id) => deleteBudget.mutate(id)}
+                  isPending={upsertBudget.isPending}
+                />
+                <SavingsGoalTracker
+                  goals={savingsGoals}
+                  accounts={accounts}
+                  currency={currency}
+                  onAdd={async (g) => { await addSavingsGoal.mutateAsync(g); }}
+                  onUpdate={async (g) => { await updateSavingsGoal.mutateAsync(g); }}
+                  onDelete={(id) => deleteSavingsGoal.mutate(id)}
+                  isPending={addSavingsGoal.isPending}
+                />
+              </div>
             </motion.div>
           </TabsContent>
 

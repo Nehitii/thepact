@@ -16,6 +16,19 @@ export function AccountCard({ account, currency, onEdit, onDelete }: AccountCard
   const { t } = useTranslation();
   const isPositive = account.balance >= 0;
 
+  const renderIcon = () => {
+    if (account.icon_url) {
+      return (
+        <img
+          src={account.icon_url}
+          alt={account.name}
+          className="w-full h-full object-cover rounded-xl"
+        />
+      );
+    }
+    return <span className="text-xl">{account.icon_emoji || '🏦'}</span>;
+  };
+
   return (
     <motion.div
       layout
@@ -23,7 +36,6 @@ export function AccountCard({ account, currency, onEdit, onDelete }: AccountCard
       animate={{ opacity: 1, y: 0 }}
       className="neu-card p-5 relative overflow-hidden group"
     >
-      {/* Color accent bar */}
       <div
         className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
         style={{ backgroundColor: account.color || 'hsl(var(--primary))' }}
@@ -32,10 +44,10 @@ export function AccountCard({ account, currency, onEdit, onDelete }: AccountCard
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0"
-            style={{ backgroundColor: `${account.color}15` }}
+            className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
+            style={{ backgroundColor: account.icon_url ? undefined : `${account.color}15` }}
           >
-            {account.icon_emoji || '🏦'}
+            {renderIcon()}
           </div>
           <div>
             <h3 className="text-sm font-bold text-foreground">{account.name}</h3>

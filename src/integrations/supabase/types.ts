@@ -398,6 +398,36 @@ export type Database = {
         }
         Relationships: []
       }
+      category_budgets: {
+        Row: {
+          budget_type: string
+          category: string
+          created_at: string | null
+          id: string
+          monthly_limit: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          budget_type?: string
+          category: string
+          created_at?: string | null
+          id?: string
+          monthly_limit?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          budget_type?: string
+          category?: string
+          created_at?: string | null
+          id?: string
+          monthly_limit?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       community_posts: {
         Row: {
           content: string
@@ -2129,6 +2159,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      savings_goals: {
+        Row: {
+          color: string | null
+          completed_at: string | null
+          created_at: string | null
+          current_amount: number
+          deadline: string | null
+          icon_emoji: string | null
+          id: string
+          is_completed: boolean | null
+          linked_account_id: string | null
+          name: string
+          target_amount: number
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          current_amount?: number
+          deadline?: string | null
+          icon_emoji?: string | null
+          id?: string
+          is_completed?: boolean | null
+          linked_account_id?: string | null
+          name: string
+          target_amount?: number
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          current_amount?: number
+          deadline?: string | null
+          icon_emoji?: string | null
+          id?: string
+          is_completed?: boolean | null
+          linked_account_id?: string | null
+          name?: string
+          target_amount?: number
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "savings_goals_linked_account_id_fkey"
+            columns: ["linked_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_events: {
         Row: {
