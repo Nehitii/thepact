@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getCurrencySymbol } from '@/lib/currency';
+import { FinanceImageUpload } from '@/components/finance/FinanceImageUpload';
 import type { UserAccount } from '@/types/finance';
 
 const ACCOUNT_TYPES = ['checking', 'savings', 'investment', 'credit', 'cash'] as const;
@@ -27,6 +28,7 @@ interface AddAccountModalProps {
     account_type?: string;
     balance?: number;
     icon_emoji?: string;
+    icon_url?: string;
     color?: string;
   }) => Promise<void>;
   editingAccount?: UserAccount | null;
@@ -41,9 +43,9 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
   const [accountType, setAccountType] = useState('checking');
   const [balance, setBalance] = useState('0');
   const [iconEmoji, setIconEmoji] = useState('🏦');
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [color, setColor] = useState('#60a5fa');
 
-  // Reset form fields when modal opens or editingAccount changes
   useEffect(() => {
     if (open) {
       setName(editingAccount?.name ?? '');
@@ -51,6 +53,7 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
       setAccountType(editingAccount?.account_type ?? 'checking');
       setBalance(editingAccount?.balance?.toString() ?? '0');
       setIconEmoji(editingAccount?.icon_emoji ?? '🏦');
+      setIconUrl(editingAccount?.icon_url ?? null);
       setColor(editingAccount?.color ?? '#60a5fa');
     }
   }, [open, editingAccount]);
@@ -62,7 +65,8 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
       bank_name: bankName.trim() || undefined,
       account_type: accountType,
       balance: parseFloat(balance) || 0,
-      icon_emoji: iconEmoji,
+      icon_emoji: iconUrl ? undefined : iconEmoji,
+      icon_url: iconUrl || undefined,
       color,
     });
     onClose();
@@ -85,7 +89,7 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="w-full max-w-md glass-modal rounded-3xl overflow-hidden"
+          className="w-full max-w-md glass-modal rounded-3xl overflow-hidden max-h-[90vh] overflow-y-auto"
         >
           <div className="p-6 border-b border-border flex items-center justify-between">
             <h2 className="text-lg font-bold text-foreground">
@@ -97,21 +101,31 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
           </div>
 
           <div className="p-6 space-y-5">
-            {/* Emoji picker */}
+            {/* Icon: image upload or emoji picker */}
             <div>
               <Label>{t('finance.accounts.icon')}</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {BANK_EMOJIS.map(emoji => (
-                  <button
-                    key={emoji}
-                    onClick={() => setIconEmoji(emoji)}
-                    className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all ${
-                      iconEmoji === emoji ? 'neu-inset ring-2 ring-primary/50' : 'hover:bg-muted/50'
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+              <div className="flex items-center gap-4 mt-2">
+                <FinanceImageUpload
+                  currentUrl={iconUrl}
+                  onUpload={(url) => setIconUrl(url)}
+                  onClear={() => setIconUrl(null)}
+                  size="md"
+                />
+                {!iconUrl && (
+                  <div className="flex flex-wrap gap-2">
+                    {BANK_EMOJIS.map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => setIconEmoji(emoji)}
+                        className={`w-10 h-10 rounded-xl text-lg flex items-center justify-center transition-all ${
+                          iconEmoji === emoji ? 'neu-inset ring-2 ring-primary/50' : 'hover:bg-muted/50'
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
