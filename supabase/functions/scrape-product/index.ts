@@ -1,10 +1,49 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+/** Block private/internal IP ranges and metadata endpoints to prevent SSRF */
+function isUrlSafe(urlString: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(urlString);
+  } catch {
+    return false;
+  }
+
+  // Only allow https
+  if (parsed.protocol !== 'https:') return false;
+
+  const hostname = parsed.hostname.toLowerCase();
+
+  // Block localhost variants
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]') return false;
+
+  // Block metadata endpoints
+  if (hostname === '169.254.169.254' || hostname === 'metadata.google.internal') return false;
+
+  // Block private IP ranges
+  const parts = hostname.split('.');
+  if (parts.length === 4 && parts.every(p => /^\d+$/.test(p))) {
+    const a = parseInt(parts[0]);
+    const b = parseInt(parts[1]);
+    if (a === 10) return false;                          // 10.0.0.0/8
+    if (a === 172 && b >= 16 && b <= 31) return false;   // 172.16.0.0/12
+    if (a === 192 && b === 168) return false;             // 192.168.0.0/16
+    if (a === 169 && b === 254) return false;             // 169.254.0.0/16
+    if (a === 0) return false;                            // 0.0.0.0/8
+  }
+
+  // Block IPv6 private (fc00::/7, fe80::/10)
+  if (hostname.startsWith('[fc') || hostname.startsWith('[fd') || hostname.startsWith('[fe8') || hostname.startsWith('[fe9') || hostname.startsWith('[fea') || hostname.startsWith('[feb')) return false;
+
+  return true;
+}
+
 function extractMeta(html: string, property: string): string | null {
-  // Try og: tags first, then name= tags
   const patterns = [
     new RegExp(`<meta[^>]+(?:property|name)=["']${property}["'][^>]+content=["']([^"']+)["']`, 'i'),
     new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${property}["']`, 'i'),
@@ -22,7 +61,6 @@ function extractTitle(html: string): string | null {
 }
 
 function extractPrice(html: string): { price: number | null; currency: string | null } {
-  // Try og:price:amount first
   const amount = extractMeta(html, 'og:price:amount') || extractMeta(html, 'product:price:amount');
   const curr = extractMeta(html, 'og:price:currency') || extractMeta(html, 'product:price:currency');
   if (amount) {
@@ -30,7 +68,6 @@ function extractPrice(html: string): { price: number | null; currency: string | 
     if (!isNaN(parsed)) return { price: parsed, currency: curr || null };
   }
 
-  // Try JSON-LD
   const jsonLdMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
   if (jsonLdMatch) {
     for (const block of jsonLdMatch) {
@@ -58,6 +95,30 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // Authenticate the caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { url } = await req.json();
     if (!url || typeof url !== 'string') {
       return new Response(
@@ -71,7 +132,15 @@ Deno.serve(async (req) => {
       formattedUrl = `https://${formattedUrl}`;
     }
 
-    console.log('Scraping product URL:', formattedUrl);
+    // SSRF protection: validate URL before fetching
+    if (!isUrlSafe(formattedUrl)) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'URL not allowed' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Scraping product URL for user:', claimsData.claims.sub);
 
     const response = await fetch(formattedUrl, {
       headers: {
@@ -111,7 +180,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Scrape error:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Failed to scrape' }),
+      JSON.stringify({ success: false, error: 'Failed to scrape' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
