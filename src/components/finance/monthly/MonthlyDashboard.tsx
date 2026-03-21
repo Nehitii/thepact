@@ -74,10 +74,10 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
     }
   }, [editingValidation, editingMonth]);
 
-  const handleEditValidate = async () => {
+  const handleEditValidate = async (overrides?: { actualIncome?: number; actualExpenses?: number }) => {
     if (!editingMonth) return;
-    const totalActualIncome = totalIncome + (parseFloat(editUnplannedIncome) || 0);
-    const totalActualExpenses = totalExpenses + (parseFloat(editUnplannedExpenses) || 0);
+    const totalActualIncome = overrides?.actualIncome ?? (totalIncome + (parseFloat(editUnplannedIncome) || 0));
+    const totalActualExpenses = overrides?.actualExpenses ?? (totalExpenses + (parseFloat(editUnplannedExpenses) || 0));
     try {
       await upsertValidation.mutateAsync({
         month: editingMonth,
