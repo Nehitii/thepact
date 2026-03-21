@@ -15,7 +15,7 @@ interface RecurringItem {
 
 interface ValidationFlowModalProps {
   onClose: () => void;
-  onValidate: () => Promise<void>;
+  onValidate: (overrides?: { actualIncome?: number; actualExpenses?: number }) => Promise<void>;
   isPending: boolean;
   recurringExpenses: RecurringItem[];
   recurringIncome: RecurringItem[];
@@ -28,6 +28,9 @@ interface ValidationFlowModalProps {
   setUnplannedExpenses: (v: string) => void;
   setUnplannedIncome: (v: string) => void;
   currency: string;
+  isEditing?: boolean;
+  initialActualIncome?: number;
+  initialActualExpenses?: number;
 }
 
 type Step = 'expenses' | 'income' | 'extras' | 'confirm';
