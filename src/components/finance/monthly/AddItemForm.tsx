@@ -42,7 +42,8 @@ export function AddItemForm({ type, categories, currency, isPending, onAdd }: Ad
           exit={{ opacity: 0, height: 0 }}
           className="neu-inset rounded-xl p-4 space-y-3"
         >
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 items-start">
+            <FinanceImageUpload size="sm" currentUrl={iconUrl} onUpload={setIconUrl} onClear={() => setIconUrl(null)} />
             <Select value={newItem.category} onValueChange={(val) => setNewItem({ ...newItem, category: val })}>
               <SelectTrigger className="w-full sm:w-[140px] h-11 bg-muted dark:bg-slate-800/60 border-border text-foreground rounded-lg">
                 <SelectValue placeholder={t('finance.recurring.category')} />
