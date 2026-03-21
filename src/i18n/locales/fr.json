@@ -809,7 +809,13 @@
       "alreadyFundedHint": "Montant déjà mis de côté pour ce projet",
       "saved": "Paramètres enregistrés",
       "saveFailed": "Échec de l'enregistrement",
-      "saveSettings": "Enregistrer"
+      "saveSettings": "Enregistrer",
+      "budgetAlertPct": "Seuil d'alerte budget",
+      "budgetAlertPctHint": "Alerte quand une catégorie atteint ce % de son budget",
+      "csvDateFormat": "Format de date CSV",
+      "csvDelimiter": "Délimiteur CSV",
+      "defaultAccount": "Compte par défaut",
+      "defaultAccountHint": "Compte par défaut pour les nouvelles opérations"
     }
   },
   "health": {

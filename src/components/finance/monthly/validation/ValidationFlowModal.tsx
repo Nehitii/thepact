@@ -50,6 +50,9 @@ export function ValidationFlowModal({
   setUnplannedExpenses,
   setUnplannedIncome,
   currency,
+  isEditing = false,
+  initialActualIncome,
+  initialActualExpenses,
 }: ValidationFlowModalProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState<Step>('expenses');
