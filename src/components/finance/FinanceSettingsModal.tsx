@@ -9,6 +9,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCurrencySymbol } from '@/lib/currency';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useUpdateFinanceSettings, useAddRecurringExpense, useRecurringExpenses } from '@/hooks/useFinance';
+import { useAccounts } from '@/hooks/useAccounts';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
