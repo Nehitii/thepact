@@ -25,14 +25,14 @@ export function CsvImportModal({ open, onClose, accounts }: Props) {
   const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement>(null);
   const addBatch = useAddTransactionsBatch();
-  const { profile } = useProfileSettings();
 
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [accountId, setAccountId] = useState('');
   const [fileName, setFileName] = useState('');
+  const [dateFormat, setDateFormat] = useState<string>('YYYY-MM-DD');
+  const [delimiterSetting, setDelimiterSetting] = useState<string>(',');
 
-  const delimiter = profile?.finance_csv_delimiter || ',';
-  const dateFormat = profile?.finance_csv_date_format || 'YYYY-MM-DD';
+  const delimiter = delimiterSetting === 'tab' ? '\t' : delimiterSetting;
 
   const parseDate = (raw: string): string => {
     const cleaned = raw.trim().replace(/["']/g, '');
