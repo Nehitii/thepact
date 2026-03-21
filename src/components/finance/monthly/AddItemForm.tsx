@@ -21,12 +21,14 @@ export function AddItemForm({ type, categories, currency, isPending, onAdd }: Ad
   const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', amount: '', category: '' });
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
   const isExpense = type === 'expense';
 
   const handleAdd = async () => {
     if (!newItem.name.trim() || !newItem.amount) return;
-    await onAdd(newItem.name.trim(), parseFloat(newItem.amount), newItem.category || undefined);
+    await onAdd(newItem.name.trim(), parseFloat(newItem.amount), newItem.category || undefined, undefined, iconUrl || undefined);
     setNewItem({ name: '', amount: '', category: '' });
+    setIconUrl(null);
     setShowForm(false);
   };
 
