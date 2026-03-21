@@ -809,7 +809,13 @@
       "alreadyFundedHint": "Amount you've already set aside for this project",
       "saved": "Settings saved",
       "saveFailed": "Failed to save settings",
-      "saveSettings": "Save Settings"
+      "saveSettings": "Save Settings",
+      "budgetAlertPct": "Budget Alert Threshold",
+      "budgetAlertPctHint": "Get warned when a category reaches this % of its budget",
+      "csvDateFormat": "CSV Date Format",
+      "csvDelimiter": "CSV Delimiter",
+      "defaultAccount": "Default Account",
+      "defaultAccountHint": "Default account for new transactions"
     }
   },
   "health": {
