@@ -278,6 +278,56 @@ export type Database = {
         }
         Relationships: []
       }
+      bank_transactions: {
+        Row: {
+          account_id: string | null
+          amount: number
+          category: string | null
+          created_at: string
+          description: string
+          id: string
+          note: string | null
+          source: string
+          transaction_date: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number
+          category?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          note?: string | null
+          source?: string
+          transaction_date?: string
+          transaction_type?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          category?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          note?: string | null
+          source?: string
+          transaction_date?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       blocked_users: {
         Row: {
           blocked_user_id: string
@@ -1834,6 +1884,10 @@ export type Database = {
           custom_difficulty_name: string | null
           display_name: string | null
           displayed_badges: string[] | null
+          finance_budget_alert_pct: number | null
+          finance_csv_date_format: string | null
+          finance_csv_delimiter: string | null
+          finance_default_account_id: string | null
           font_size: number
           goal_unlock_code: string | null
           height: number | null
@@ -1881,6 +1935,10 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
+          finance_budget_alert_pct?: number | null
+          finance_csv_date_format?: string | null
+          finance_csv_delimiter?: string | null
+          finance_default_account_id?: string | null
           font_size?: number
           goal_unlock_code?: string | null
           height?: number | null
@@ -1928,6 +1986,10 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
+          finance_budget_alert_pct?: number | null
+          finance_csv_date_format?: string | null
+          finance_csv_delimiter?: string | null
+          finance_default_account_id?: string | null
           font_size?: number
           goal_unlock_code?: string | null
           height?: number | null
@@ -1959,6 +2021,13 @@ export type Database = {
             columns: ["active_pact_id"]
             isOneToOne: false
             referencedRelation: "pacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_finance_default_account_id_fkey"
+            columns: ["finance_default_account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
             referencedColumns: ["id"]
           },
         ]
