@@ -205,7 +205,16 @@ export function ValidationFlowModal({
             </Button>
           ) : (
             <Button
-              onClick={onValidate}
+              onClick={() => {
+                if (isEditing) {
+                  onValidate({
+                    actualIncome: parseFloat(overrideIncome) || undefined,
+                    actualExpenses: parseFloat(overrideExpenses) || undefined,
+                  });
+                } else {
+                  onValidate();
+                }
+              }}
               disabled={isPending}
               className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-[0_0_30px_hsla(160,80%,50%,0.3)]"
             >
