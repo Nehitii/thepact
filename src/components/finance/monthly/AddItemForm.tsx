@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getCurrencySymbol } from '@/lib/currency';
 import { type FinanceCategory, getCategoryLabel } from '@/lib/financeCategories';
+import { FinanceImageUpload } from '@/components/finance/FinanceImageUpload';
 
 interface AddItemFormProps {
   type: 'expense' | 'income';
   categories: FinanceCategory[];
   currency: string;
   isPending?: boolean;
-  onAdd: (name: string, amount: number, category?: string) => Promise<void>;
+  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
 }
 
 export function AddItemForm({ type, categories, currency, isPending, onAdd }: AddItemFormProps) {
