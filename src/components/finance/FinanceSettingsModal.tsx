@@ -31,6 +31,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
   const updateSettings = useUpdateFinanceSettings();
   const addExpense = useAddRecurringExpense();
   const { data: expenses = [] } = useRecurringExpenses(user?.id);
+  const { data: accounts = [] } = useAccounts(user?.id);
 
   const [salaryDay, setSalaryDay] = useState(currentSettings.salary_payment_day.toString());
   const [useCustomTarget, setUseCustomTarget] = useState(currentSettings.project_funding_target > 0);
