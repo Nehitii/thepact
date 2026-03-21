@@ -56,6 +56,8 @@ export function ValidationFlowModal({
 }: ValidationFlowModalProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState<Step>('expenses');
+  const [overrideIncome, setOverrideIncome] = useState(initialActualIncome?.toString() ?? '');
+  const [overrideExpenses, setOverrideExpenses] = useState(initialActualExpenses?.toString() ?? '');
 
   const totalExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
