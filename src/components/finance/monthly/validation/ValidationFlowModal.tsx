@@ -167,6 +167,11 @@ export function ValidationFlowModal({
                 unplannedIncome={unplannedIncome}
                 unplannedExpenses={unplannedExpenses}
                 currency={currency}
+                isEditing={isEditing}
+                overrideIncome={overrideIncome}
+                overrideExpenses={overrideExpenses}
+                setOverrideIncome={setOverrideIncome}
+                setOverrideExpenses={setOverrideExpenses}
               />
             )}
           </AnimatePresence>
