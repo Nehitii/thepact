@@ -513,7 +513,45 @@
       "dashboard": "Tableau de bord",
       "budget": "Budget",
       "planner": "Planificateur",
-      "accounts": "Comptes"
+      "accounts": "Comptes",
+      "transactions": "Opérations"
+    },
+    "export": {
+      "title": "Exporter",
+      "success": "Rapport exporté",
+      "fullReport": "Rapport complet (CSV)"
+    },
+    "transactions": {
+      "title": "Opérations bancaires",
+      "subtitle": "Suis toutes tes opérations bancaires en détail",
+      "add": "Ajouter une opération",
+      "addTitle": "Nouvelle opération",
+      "importCsv": "Importer CSV",
+      "csvImportTitle": "Importer un relevé CSV",
+      "csvSelectFile": "Sélectionner un fichier CSV",
+      "csvHint": "Formats supportés : Date, Description, Montant",
+      "csvEmpty": "Le fichier CSV est vide ou invalide",
+      "csvRowsParsed": "{{count}} opérations détectées",
+      "importBtn": "Importer {{count}} opérations",
+      "importSuccess": "{{count}} opérations importées",
+      "importFailed": "Échec de l'import",
+      "linkToAccount": "Lier à un compte",
+      "searchPlaceholder": "Rechercher des opérations…",
+      "date": "Date",
+      "description": "Description",
+      "descriptionPlaceholder": "ex. Courses, Loyer…",
+      "account": "Compte",
+      "category": "Catégorie",
+      "type": "Type",
+      "note": "Note",
+      "debit": "Débit",
+      "credit": "Crédit",
+      "empty": "Aucune opération",
+      "emptyHint": "Ajoute des opérations manuellement ou importe un CSV",
+      "added": "Opération ajoutée",
+      "addFailed": "Échec de l'ajout",
+      "deleted": "Opération supprimée",
+      "deleteFailed": "Échec de la suppression"
     },
     "accounts": {
       "netWorth": "Patrimoine net",
@@ -771,7 +809,13 @@
       "alreadyFundedHint": "Montant déjà mis de côté pour ce projet",
       "saved": "Paramètres enregistrés",
       "saveFailed": "Échec de l'enregistrement",
-      "saveSettings": "Enregistrer"
+      "saveSettings": "Enregistrer",
+      "budgetAlertPct": "Seuil d'alerte budget",
+      "budgetAlertPctHint": "Alerte quand une catégorie atteint ce % de son budget",
+      "csvDateFormat": "Format de date CSV",
+      "csvDelimiter": "Délimiteur CSV",
+      "defaultAccount": "Compte par défaut",
+      "defaultAccountHint": "Compte par défaut pour les nouvelles opérations"
     }
   },
   "health": {

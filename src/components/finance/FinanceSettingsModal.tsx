@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings, Calendar, Target, Wallet, DollarSign } from 'lucide-react';
+import { Settings, Calendar, Target, Wallet, DollarSign, Landmark, FileText, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,6 +9,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { getCurrencySymbol } from '@/lib/currency';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useUpdateFinanceSettings, useAddRecurringExpense, useRecurringExpenses } from '@/hooks/useFinance';
+import { useAccounts } from '@/hooks/useAccounts';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 
@@ -30,6 +31,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
   const updateSettings = useUpdateFinanceSettings();
   const addExpense = useAddRecurringExpense();
   const { data: expenses = [] } = useRecurringExpenses(user?.id);
+  const { data: accounts = [] } = useAccounts(user?.id);
 
   const [salaryDay, setSalaryDay] = useState(currentSettings.salary_payment_day.toString());
   const [useCustomTarget, setUseCustomTarget] = useState(currentSettings.project_funding_target > 0);

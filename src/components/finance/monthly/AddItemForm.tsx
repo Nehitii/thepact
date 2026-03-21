@@ -7,25 +7,28 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getCurrencySymbol } from '@/lib/currency';
 import { type FinanceCategory, getCategoryLabel } from '@/lib/financeCategories';
+import { FinanceImageUpload } from '@/components/finance/FinanceImageUpload';
 
 interface AddItemFormProps {
   type: 'expense' | 'income';
   categories: FinanceCategory[];
   currency: string;
   isPending?: boolean;
-  onAdd: (name: string, amount: number, category?: string) => Promise<void>;
+  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
 }
 
 export function AddItemForm({ type, categories, currency, isPending, onAdd }: AddItemFormProps) {
   const { t } = useTranslation();
   const [showForm, setShowForm] = useState(false);
   const [newItem, setNewItem] = useState({ name: '', amount: '', category: '' });
+  const [iconUrl, setIconUrl] = useState<string | null>(null);
   const isExpense = type === 'expense';
 
   const handleAdd = async () => {
     if (!newItem.name.trim() || !newItem.amount) return;
-    await onAdd(newItem.name.trim(), parseFloat(newItem.amount), newItem.category || undefined);
+    await onAdd(newItem.name.trim(), parseFloat(newItem.amount), newItem.category || undefined, undefined, iconUrl || undefined);
     setNewItem({ name: '', amount: '', category: '' });
+    setIconUrl(null);
     setShowForm(false);
   };
 
@@ -39,7 +42,8 @@ export function AddItemForm({ type, categories, currency, isPending, onAdd }: Ad
           exit={{ opacity: 0, height: 0 }}
           className="neu-inset rounded-xl p-4 space-y-3"
         >
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 items-start">
+            <FinanceImageUpload size="sm" currentUrl={iconUrl} onUpload={setIconUrl} onClear={() => setIconUrl(null)} />
             <Select value={newItem.category} onValueChange={(val) => setNewItem({ ...newItem, category: val })}>
               <SelectTrigger className="w-full sm:w-[140px] h-11 bg-muted dark:bg-slate-800/60 border-border text-foreground rounded-lg">
                 <SelectValue placeholder={t('finance.recurring.category')} />

@@ -15,7 +15,7 @@ interface RecurringItem {
 
 interface ValidationFlowModalProps {
   onClose: () => void;
-  onValidate: () => Promise<void>;
+  onValidate: (overrides?: { actualIncome?: number; actualExpenses?: number }) => Promise<void>;
   isPending: boolean;
   recurringExpenses: RecurringItem[];
   recurringIncome: RecurringItem[];
@@ -28,6 +28,9 @@ interface ValidationFlowModalProps {
   setUnplannedExpenses: (v: string) => void;
   setUnplannedIncome: (v: string) => void;
   currency: string;
+  isEditing?: boolean;
+  initialActualIncome?: number;
+  initialActualExpenses?: number;
 }
 
 type Step = 'expenses' | 'income' | 'extras' | 'confirm';
@@ -47,9 +50,14 @@ export function ValidationFlowModal({
   setUnplannedExpenses,
   setUnplannedIncome,
   currency,
+  isEditing = false,
+  initialActualIncome,
+  initialActualExpenses,
 }: ValidationFlowModalProps) {
   const { t } = useTranslation();
   const [step, setStep] = useState<Step>('expenses');
+  const [overrideIncome, setOverrideIncome] = useState(initialActualIncome?.toString() ?? '');
+  const [overrideExpenses, setOverrideExpenses] = useState(initialActualExpenses?.toString() ?? '');
 
   const totalExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
   const totalIncome = recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
@@ -159,6 +167,11 @@ export function ValidationFlowModal({
                 unplannedIncome={unplannedIncome}
                 unplannedExpenses={unplannedExpenses}
                 currency={currency}
+                isEditing={isEditing}
+                overrideIncome={overrideIncome}
+                overrideExpenses={overrideExpenses}
+                setOverrideIncome={setOverrideIncome}
+                setOverrideExpenses={setOverrideExpenses}
               />
             )}
           </AnimatePresence>
@@ -197,7 +210,16 @@ export function ValidationFlowModal({
             </Button>
           ) : (
             <Button
-              onClick={onValidate}
+              onClick={() => {
+                if (isEditing) {
+                  onValidate({
+                    actualIncome: parseFloat(overrideIncome) || undefined,
+                    actualExpenses: parseFloat(overrideExpenses) || undefined,
+                  });
+                } else {
+                  onValidate();
+                }
+              }}
               disabled={isPending}
               className="flex-1 h-12 bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-[0_0_30px_hsla(160,80%,50%,0.3)]"
             >
@@ -401,10 +423,20 @@ interface StepConfirmProps {
   unplannedIncome: string;
   unplannedExpenses: string;
   currency: string;
+  isEditing?: boolean;
+  overrideIncome?: string;
+  overrideExpenses?: string;
+  setOverrideIncome?: (v: string) => void;
+  setOverrideExpenses?: (v: string) => void;
 }
 
-function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExpenses, currency }: StepConfirmProps) {
+function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExpenses, currency, isEditing, overrideIncome, overrideExpenses, setOverrideIncome, setOverrideExpenses }: StepConfirmProps) {
   const { t } = useTranslation();
+  const computedIncome = totalIncome + (parseFloat(unplannedIncome) || 0);
+  const computedExpenses = totalExpenses + (parseFloat(unplannedExpenses) || 0);
+  const displayIncome = isEditing && overrideIncome ? parseFloat(overrideIncome) || computedIncome : computedIncome;
+  const displayExpenses = isEditing && overrideExpenses ? parseFloat(overrideExpenses) || computedExpenses : computedExpenses;
+
   return (
     <motion.div
       key="confirm"
@@ -426,30 +458,36 @@ function StepConfirm({ totalIncome, totalExpenses, unplannedIncome, unplannedExp
         <h3 className="text-xl font-bold text-foreground mb-2">{t('finance.validation.readyToValidate')}</h3>
         <p className="text-sm text-muted-foreground">{t('finance.validation.reviewSummary')}</p>
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25"
-        >
-          <p className="text-xs text-emerald-400/80 mb-2 uppercase tracking-wider font-medium">{t('finance.validation.totalIncome')}</p>
-          <p className="text-2xl font-bold text-emerald-400">
-            {formatCurrency(totalIncome + (parseFloat(unplannedIncome) || 0), currency)}
-          </p>
-        </motion.div>
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/25"
-        >
-          <p className="text-xs text-rose-400/80 mb-2 uppercase tracking-wider font-medium">{t('finance.validation.totalExpenses')}</p>
-          <p className="text-2xl font-bold text-rose-400">
-            {formatCurrency(totalExpenses + (parseFloat(unplannedExpenses) || 0), currency)}
-          </p>
-        </motion.div>
-      </div>
+
+      {isEditing && setOverrideIncome && setOverrideExpenses ? (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground font-medium">{t('finance.monthly.actualIncome')}</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
+              <Input type="text" inputMode="decimal" value={overrideIncome} onChange={e => setOverrideIncome(e.target.value.replace(/[^0-9.]/g, ''))} className="pl-8 h-12 finance-input rounded-xl" placeholder={computedIncome.toString()} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm text-muted-foreground font-medium">{t('finance.monthly.actualExpenses')}</label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
+              <Input type="text" inputMode="decimal" value={overrideExpenses} onChange={e => setOverrideExpenses(e.target.value.replace(/[^0-9.]/g, ''))} className="pl-8 h-12 finance-input rounded-xl" placeholder={computedExpenses.toString()} />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25">
+            <p className="text-xs text-emerald-400/80 mb-2 uppercase tracking-wider font-medium">{t('finance.validation.totalIncome')}</p>
+            <p className="text-2xl font-bold text-emerald-400">{formatCurrency(displayIncome, currency)}</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/25">
+            <p className="text-xs text-rose-400/80 mb-2 uppercase tracking-wider font-medium">{t('finance.validation.totalExpenses')}</p>
+            <p className="text-2xl font-bold text-rose-400">{formatCurrency(displayExpenses, currency)}</p>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }

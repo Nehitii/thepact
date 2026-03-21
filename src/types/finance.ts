@@ -155,3 +155,20 @@ export interface AccountTransfer {
   transfer_date: string;
   created_at: string;
 }
+
+/**
+ * Bank transaction for detailed tracking
+ */
+export interface BankTransaction {
+  id: string;
+  user_id: string;
+  account_id: string | null;
+  transaction_date: string;
+  description: string;
+  amount: number;
+  transaction_type: 'debit' | 'credit';
+  category: string | null;
+  note: string | null;
+  source: 'manual' | 'csv_import';
+  created_at: string;
+}

@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, FileText, TrendingUp, Settings, Landmark, Target, Download } from "lucide-react";
+import { LayoutDashboard, FileText, TrendingUp, Settings, Landmark, ArrowLeftRight, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useCurrency } from "@/contexts/CurrencyContext";
@@ -20,6 +20,7 @@ import { ProjectionsPanel } from "@/components/finance/ProjectionsPanel";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
 import { AccountsOverview } from "@/components/finance/accounts";
 import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
+import { TransactionsTab } from "@/components/finance/transactions";
 import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
 import { exportFullReport } from "@/lib/financeExport";
 import { parseISO } from "date-fns";
@@ -89,6 +90,8 @@ export default function Finance() {
     toast.success(t('finance.export.success'));
   };
 
+  const tabTriggerClass = "flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4";
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       <div className="fixed inset-0 bg-background dark:bg-gradient-to-b dark:from-[#070a10] dark:via-[#0c1018] dark:to-[#080c14]" />
@@ -119,19 +122,19 @@ export default function Finance() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="flex justify-center mb-10">
             <div className="w-full max-w-3xl flex items-center gap-2">
               <TabsList className="flex-1 neu-card p-2 border-0 overflow-x-auto scrollbar-hide">
-                <TabsTrigger value="dashboard" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                <TabsTrigger value="dashboard" className={tabTriggerClass}>
                   <LayoutDashboard className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.dashboard')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="budget" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                <TabsTrigger value="budget" className={tabTriggerClass}>
                   <FileText className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.budget')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="goals" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
-                  <Target className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.goals')}</span>
+                <TabsTrigger value="transactions" className={tabTriggerClass}>
+                  <ArrowLeftRight className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.transactions')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="accounts" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                <TabsTrigger value="accounts" className={tabTriggerClass}>
                   <Landmark className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.accounts')}</span>
                 </TabsTrigger>
-                <TabsTrigger value="planner" className="flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4">
+                <TabsTrigger value="planner" className={tabTriggerClass}>
                   <TrendingUp className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.planner')}</span>
                 </TabsTrigger>
               </TabsList>
@@ -177,9 +180,16 @@ export default function Finance() {
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="goals" className="mt-0 pb-12">
+          <TabsContent value="transactions" className="mt-0 pb-12">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              <TransactionsTab />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="accounts" className="mt-0 pb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <div className="space-y-8">
+                <AccountsOverview />
                 <BudgetProgressPanel
                   budgets={budgets}
                   expenseItems={recurringExpenses}
@@ -199,12 +209,6 @@ export default function Finance() {
                   isPending={addSavingsGoal.isPending}
                 />
               </div>
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="accounts" className="mt-0 pb-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <AccountsOverview />
             </motion.div>
           </TabsContent>
 
