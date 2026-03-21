@@ -6,7 +6,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Upload, FileSpreadsheet, Check } from 'lucide-react';
 import { useAddTransactionsBatch } from '@/hooks/useTransactions';
 import { toast } from 'sonner';
-import { useProfileSettings } from '@/hooks/useProfileSettings';
 import type { UserAccount } from '@/types/finance';
 
 interface Props {
