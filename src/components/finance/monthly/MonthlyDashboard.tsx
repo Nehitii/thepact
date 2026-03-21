@@ -183,6 +183,9 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
           setUnplannedExpenses={setEditUnplannedExpenses}
           setUnplannedIncome={setEditUnplannedIncome}
           currency={currency}
+          isEditing
+          initialActualIncome={editingValidation?.actual_total_income ?? undefined}
+          initialActualExpenses={editingValidation?.actual_total_expenses ?? undefined}
         />
       )}
     </div>
