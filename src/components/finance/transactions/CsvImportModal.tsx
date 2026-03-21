@@ -26,7 +26,7 @@ export function CsvImportModal({ open, onClose, accounts }: Props) {
   const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement>(null);
   const addBatch = useAddTransactionsBatch();
-  const { data: profile } = useProfileSettings();
+  const { profile } = useProfileSettings();
 
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [accountId, setAccountId] = useState('');
