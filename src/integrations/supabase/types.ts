@@ -3252,6 +3252,38 @@ export type Database = {
           friendship_id: string
         }[]
       }
+      get_community_profile: {
+        Args: { p_user_id: string }
+        Returns: {
+          accent_color: string
+          active_banner_id: string
+          active_frame_id: string
+          active_title_id: string
+          avatar_frame: string
+          avatar_url: string
+          community_profile_discoverable: boolean
+          display_name: string
+          displayed_badges: string[]
+          id: string
+          personal_quote: string
+        }[]
+      }
+      get_community_profiles: {
+        Args: { p_user_ids: string[] }
+        Returns: {
+          accent_color: string
+          active_banner_id: string
+          active_frame_id: string
+          active_title_id: string
+          avatar_frame: string
+          avatar_url: string
+          community_profile_discoverable: boolean
+          display_name: string
+          displayed_badges: string[]
+          id: string
+          personal_quote: string
+        }[]
+      }
       get_guild_role: {
         Args: { _guild_id: string; _user_id: string }
         Returns: string
