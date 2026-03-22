@@ -62,6 +62,10 @@ export interface FinanceSettings {
   project_funding_target: number;
   project_monthly_allocation: number;
   already_funded: number;
+  finance_default_account_id?: string | null;
+  finance_csv_date_format?: string | null;
+  finance_csv_delimiter?: string | null;
+  finance_budget_alert_pct?: number | null;
 }
 
 /**
