@@ -257,7 +257,7 @@ export function useUpdateFinanceSettings() {
         .from('profiles')
         .update(settings)
         .eq('id', user.id)
-        .select('salary_payment_day, project_funding_target, project_monthly_allocation, already_funded')
+        .select('salary_payment_day, project_funding_target, project_monthly_allocation, already_funded, finance_default_account_id, finance_csv_date_format, finance_csv_delimiter, finance_budget_alert_pct')
         .single();
       if (error) throw error;
       return data;

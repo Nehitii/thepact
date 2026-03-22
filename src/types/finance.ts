@@ -110,7 +110,7 @@ export interface FinancialBlockProps {
   items: FinancialItem[];
   categories: import('@/lib/financeCategories').FinanceCategory[];
   isLoading: boolean;
-  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string) => Promise<void>;
+  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
   onUpdate: (id: string, name: string, amount: number, category?: string, iconEmoji?: string) => Promise<void>;
   onDelete: (id: string) => void;
   onToggleActive?: (id: string, isActive: boolean) => void;
