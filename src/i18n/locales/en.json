@@ -500,12 +500,16 @@
       "subscriptions": "Subscriptions",
       "other": "Other"
     }
-  },
   "finance": {
     "dashboard": "Finance Dashboard",
     "dashboardSubtitle": "Track your project financing & monthly budget",
     "title": "TRACK FINANCE",
     "subtitle": "Your financial command center",
+    "analytics": {
+      "incomeVsExpenses": "Income vs Expenses",
+      "last6Months": "Last 6 months",
+      "perYear": "per year"
+    },
     "tabs": {
       "overview": "Overview",
       "monthly": "Monthly",
