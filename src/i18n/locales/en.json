@@ -814,18 +814,12 @@
       "saved": "Settings saved",
       "saveFailed": "Failed to save settings",
       "saveSettings": "Save Settings",
+      "budgetAlertPct": "Budget Alert Threshold",
+      "budgetAlertPctHint": "Get warned when a category reaches this % of its budget",
+      "csvDateFormat": "CSV Date Format",
+      "csvDelimiter": "CSV Delimiter",
       "defaultAccount": "Default Account",
-      "defaultAccountPlaceholder": "Select default account",
-      "defaultAccountHint": "Pre-selected account when adding new transactions",
-      "noDefault": "No default",
-      "csvSettings": "CSV Import Settings",
-      "csvDateFormat": "Date Format",
-      "csvDelimiter": "Delimiter",
-      "delimiterComma": "Comma (,)",
-      "delimiterSemicolon": "Semicolon (;)",
-      "delimiterTab": "Tab",
-      "budgetAlertThreshold": "Budget Alert Threshold",
-      "budgetAlertHint": "Warn when a category reaches this % of its budget"
+      "defaultAccountHint": "Default account for new transactions"
     }
   },
   "health": {
