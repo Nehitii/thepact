@@ -810,12 +810,18 @@
       "saved": "Paramètres enregistrés",
       "saveFailed": "Échec de l'enregistrement",
       "saveSettings": "Enregistrer",
-      "budgetAlertPct": "Seuil d'alerte budget",
-      "budgetAlertPctHint": "Alerte quand une catégorie atteint ce % de son budget",
-      "csvDateFormat": "Format de date CSV",
-      "csvDelimiter": "Délimiteur CSV",
       "defaultAccount": "Compte par défaut",
-      "defaultAccountHint": "Compte par défaut pour les nouvelles opérations"
+      "defaultAccountPlaceholder": "Sélectionner un compte par défaut",
+      "defaultAccountHint": "Compte pré-sélectionné lors de l'ajout de nouvelles opérations",
+      "noDefault": "Aucun par défaut",
+      "csvSettings": "Paramètres d'import CSV",
+      "csvDateFormat": "Format de date",
+      "csvDelimiter": "Délimiteur",
+      "delimiterComma": "Virgule (,)",
+      "delimiterSemicolon": "Point-virgule (;)",
+      "delimiterTab": "Tabulation",
+      "budgetAlertThreshold": "Seuil d'alerte budget",
+      "budgetAlertHint": "Alerte quand une catégorie atteint ce % de son budget"
     }
   },
   "health": {
