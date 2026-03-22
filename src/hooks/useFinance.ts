@@ -48,7 +48,7 @@ export function useUpdateRecurringExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string; icon_emoji?: string }) => {
+    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string; icon_emoji?: string; icon_url?: string }) => {
       const { data, error } = await supabase
         .from('recurring_expenses')
         .update(updates)
