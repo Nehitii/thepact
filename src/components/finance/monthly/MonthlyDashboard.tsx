@@ -108,13 +108,13 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
     catch { toast.error(t('finance.recurring.addFailed')); }
   };
 
-  const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string) => {
-    try { await updateExpense.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji }); toast.success(t('finance.recurring.expenseUpdated')); }
+  const handleUpdateExpense = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => {
+    try { await updateExpense.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji, icon_url: iconUrl }); toast.success(t('finance.recurring.expenseUpdated')); }
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
-  const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string) => {
-    try { await updateIncome.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji }); toast.success(t('finance.recurring.incomeUpdated')); }
+  const handleUpdateIncome = async (id: string, name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => {
+    try { await updateIncome.mutateAsync({ id, name, amount, category, icon_emoji: iconEmoji, icon_url: iconUrl }); toast.success(t('finance.recurring.incomeUpdated')); }
     catch { toast.error(t('finance.recurring.updateFailed')); }
   };
 
