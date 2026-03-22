@@ -19,8 +19,8 @@ interface FinancialBlockProps {
   items: FinancialItem[];
   categories: FinanceCategory[];
   isLoading: boolean;
-  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string) => Promise<void>;
-  onUpdate: (id: string, name: string, amount: number, category?: string, iconEmoji?: string) => Promise<void>;
+  onAdd: (name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
+  onUpdate: (id: string, name: string, amount: number, category?: string, iconEmoji?: string, iconUrl?: string) => Promise<void>;
   onDelete: (id: string) => void;
   onToggleActive?: (id: string, isActive: boolean) => void;
   isPending?: boolean;
