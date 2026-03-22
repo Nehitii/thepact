@@ -506,6 +506,11 @@
     "dashboardSubtitle": "Suis le financement de ton projet et ton budget mensuel",
     "title": "SUIVI FINANCIER",
     "subtitle": "Ton centre de commande financier",
+    "analytics": {
+      "incomeVsExpenses": "Revenus vs Dépenses",
+      "last6Months": "6 derniers mois",
+      "perYear": "par an"
+    },
     "tabs": {
       "overview": "Vue d'ensemble",
       "monthly": "Mensuel",
