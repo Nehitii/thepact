@@ -28,7 +28,7 @@ export function useAddRecurringExpense() {
   const { user } = useAuth();
 
   return useMutation({
-    mutationFn: async (expense: { name: string; amount: number; category?: string; icon_emoji?: string }) => {
+    mutationFn: async (expense: { name: string; amount: number; category?: string; icon_emoji?: string; icon_url?: string }) => {
       if (!user) throw new Error('Not authenticated');
       const { data, error } = await supabase
         .from('recurring_expenses')
