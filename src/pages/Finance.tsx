@@ -80,6 +80,10 @@ export default function Finance() {
     project_funding_target: financeSettings?.project_funding_target ?? 0,
     project_monthly_allocation: financeSettings?.project_monthly_allocation ?? 0,
     already_funded: financeSettings?.already_funded ?? 0,
+    finance_default_account_id: financeSettings?.finance_default_account_id ?? null,
+    finance_csv_date_format: financeSettings?.finance_csv_date_format ?? 'YYYY-MM-DD',
+    finance_csv_delimiter: financeSettings?.finance_csv_delimiter ?? ',',
+    finance_budget_alert_pct: financeSettings?.finance_budget_alert_pct ?? 80,
   };
 
   const totalRecurringExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
