@@ -582,9 +582,14 @@
       "types": {
         "checking": "Courant",
         "savings": "Épargne",
+        "livret": "Livret",
         "investment": "Investissement",
+        "retirement": "Retraite (PER)",
+        "insurance": "Assurance-vie",
         "credit": "Crédit",
-        "cash": "Espèces"
+        "cash": "Espèces",
+        "crypto": "Crypto",
+        "other": "Autre"
       }
     },
     "transfers": {
