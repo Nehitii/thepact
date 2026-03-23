@@ -10,6 +10,7 @@ interface AccountCardProps {
   currency: string;
   onEdit: (account: UserAccount) => void;
   onDelete: (id: string) => void;
+  onSelect?: (account: UserAccount) => void;
 }
 
 export function AccountCard({ account, currency, onEdit, onDelete }: AccountCardProps) {
