@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Plus, Upload, Trash2, ArrowUpCircle, ArrowDownCircle, Search } from 'lucide-react';
+import { Plus, Upload, Trash2, ArrowUpCircle, ArrowDownCircle, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,7 +15,16 @@ import { toast } from 'sonner';
 import { AddTransactionModal } from './AddTransactionModal';
 import { CsvImportModal } from './CsvImportModal';
 
-export function TransactionsTab() {
+interface TransactionsTabProps {
+  accountFilter?: string | null;
+  onClearAccountFilter?: () => void;
+  financeSettings?: {
+    finance_csv_date_format?: string;
+    finance_csv_delimiter?: string;
+  };
+}
+
+export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSettings }: TransactionsTabProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
@@ -27,14 +36,23 @@ export function TransactionsTab() {
   const [csvOpen, setCsvOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('all');
+
+  // Sync external account filter
+  useEffect(() => {
+    if (accountFilter) {
+      setSelectedAccountId(accountFilter);
+    }
+  }, [accountFilter]);
 
   const filtered = useMemo(() => {
     return transactions.filter(tx => {
       if (typeFilter !== 'all' && tx.transaction_type !== typeFilter) return false;
+      if (selectedAccountId !== 'all' && tx.account_id !== selectedAccountId) return false;
       if (search && !tx.description.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [transactions, search, typeFilter]);
+  }, [transactions, search, typeFilter, selectedAccountId]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -49,6 +67,10 @@ export function TransactionsTab() {
     if (!id) return '—';
     return accounts.find(a => a.id === id)?.name ?? '—';
   };
+
+  const activeAccountName = selectedAccountId !== 'all'
+    ? accounts.find(a => a.id === selectedAccountId)?.name
+    : null;
 
   return (
     <div className="space-y-6">
@@ -67,6 +89,21 @@ export function TransactionsTab() {
           </Button>
         </div>
       </motion.div>
+
+      {/* Active account filter badge */}
+      {activeAccountName && (
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex items-center gap-2">
+          <span className="text-xs px-3 py-1.5 rounded-full bg-primary/10 text-primary font-medium flex items-center gap-1.5">
+            {activeAccountName}
+            <button
+              onClick={() => { setSelectedAccountId('all'); onClearAccountFilter?.(); }}
+              className="hover:bg-primary/20 rounded-full p-0.5 transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        </motion.div>
+      )}
 
       {/* Filters */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-col sm:flex-row gap-3">
@@ -89,6 +126,19 @@ export function TransactionsTab() {
             <SelectItem value="credit">{t('finance.transactions.credit')}</SelectItem>
           </SelectContent>
         </Select>
+        {accounts.length > 0 && (
+          <Select value={selectedAccountId} onValueChange={(v) => { setSelectedAccountId(v); if (v === 'all') onClearAccountFilter?.(); }}>
+            <SelectTrigger className="w-full sm:w-[180px] h-10 bg-muted dark:bg-slate-800/60 border-border rounded-xl">
+              <SelectValue placeholder={t('finance.transactions.account')} />
+            </SelectTrigger>
+            <SelectContent className="bg-popover border-border rounded-xl">
+              <SelectItem value="all">{t('common.all')}</SelectItem>
+              {accounts.map(a => (
+                <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </motion.div>
 
       {/* Table */}
@@ -162,7 +212,13 @@ export function TransactionsTab() {
       </motion.div>
 
       <AddTransactionModal open={addOpen} onClose={() => setAddOpen(false)} accounts={accounts} currency={currency} />
-      <CsvImportModal open={csvOpen} onClose={() => setCsvOpen(false)} accounts={accounts} />
+      <CsvImportModal
+        open={csvOpen}
+        onClose={() => setCsvOpen(false)}
+        accounts={accounts}
+        defaultDateFormat={financeSettings?.finance_csv_date_format}
+        defaultDelimiter={financeSettings?.finance_csv_delimiter}
+      />
     </div>
   );
 }

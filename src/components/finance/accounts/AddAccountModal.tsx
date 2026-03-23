@@ -10,13 +10,18 @@ import { getCurrencySymbol } from '@/lib/currency';
 import { FinanceImageUpload } from '@/components/finance/FinanceImageUpload';
 import type { UserAccount } from '@/types/finance';
 
-const ACCOUNT_TYPES = ['checking', 'savings', 'investment', 'credit', 'cash'] as const;
+const ACCOUNT_TYPES = ['checking', 'savings', 'livret', 'investment', 'retirement', 'insurance', 'credit', 'cash', 'crypto', 'other'] as const;
 
 const BANK_EMOJIS = ['🏦', '💰', '💳', '🏧', '📈', '🪙', '💎', '🏠', '🚗', '💵', '🔒', '🌍'];
 
 const ACCENT_COLORS = [
-  '#60a5fa', '#34d399', '#f472b6', '#fbbf24', '#a78bfa',
-  '#fb923c', '#22d3ee', '#f87171', '#4ade80', '#c084fc',
+  '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8',
+  '#34d399', '#10b981', '#059669',
+  '#f472b6', '#ec4899', '#db2777',
+  '#fbbf24', '#f59e0b', '#d97706',
+  '#a78bfa', '#8b5cf6', '#7c3aed',
+  '#fb923c', '#22d3ee', '#f87171',
+  '#6366f1', '#14b8a6',
 ];
 
 interface AddAccountModalProps {
@@ -132,12 +137,12 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
             {/* Color picker */}
             <div>
               <Label>{t('finance.accounts.color')}</Label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {ACCENT_COLORS.map(c => (
                   <button
                     key={c}
                     onClick={() => setColor(c)}
-                    className={`w-8 h-8 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-offset-background ring-primary' : ''}`}
+                    className={`w-7 h-7 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-offset-background ring-primary scale-110' : 'hover:scale-105'}`}
                     style={{ backgroundColor: c }}
                   />
                 ))}

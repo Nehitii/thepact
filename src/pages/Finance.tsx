@@ -34,6 +34,7 @@ export default function Finance() {
   const { currency } = useCurrency();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [accountFilter, setAccountFilter] = useState<string | null>(null);
 
   const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
@@ -186,14 +187,17 @@ export default function Finance() {
 
           <TabsContent value="transactions" className="mt-0 pb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <TransactionsTab />
+              <TransactionsTab accountFilter={accountFilter} onClearAccountFilter={() => setAccountFilter(null)} financeSettings={settings} />
             </motion.div>
           </TabsContent>
 
           <TabsContent value="accounts" className="mt-0 pb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <div className="space-y-8">
-                <AccountsOverview />
+                <AccountsOverview onSelectAccount={(account) => {
+                  setAccountFilter(account.id);
+                  setActiveTab('transactions');
+                }} />
                 <BudgetProgressPanel
                   budgets={budgets}
                   expenseItems={recurringExpenses}

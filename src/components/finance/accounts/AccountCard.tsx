@@ -10,9 +10,10 @@ interface AccountCardProps {
   currency: string;
   onEdit: (account: UserAccount) => void;
   onDelete: (id: string) => void;
+  onSelect?: (account: UserAccount) => void;
 }
 
-export function AccountCard({ account, currency, onEdit, onDelete }: AccountCardProps) {
+export function AccountCard({ account, currency, onEdit, onDelete, onSelect }: AccountCardProps) {
   const { t } = useTranslation();
   const isPositive = account.balance >= 0;
 
@@ -34,7 +35,8 @@ export function AccountCard({ account, currency, onEdit, onDelete }: AccountCard
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="neu-card p-5 relative overflow-hidden group"
+      className={`neu-card p-5 relative overflow-hidden group ${onSelect ? 'cursor-pointer hover:ring-1 hover:ring-primary/30 transition-all' : ''}`}
+      onClick={() => onSelect?.(account)}
     >
       <div
         className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
@@ -57,9 +59,9 @@ export function AccountCard({ account, currency, onEdit, onDelete }: AccountCard
           </div>
         </div>
 
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <button className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
+            <button onClick={(e) => e.stopPropagation()} className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
               <MoreVertical className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
