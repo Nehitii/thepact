@@ -13,7 +13,11 @@ import { AddAccountModal } from './AddAccountModal';
 import { TransferSimulator } from './TransferSimulator';
 import type { UserAccount } from '@/types/finance';
 
-export function AccountsOverview() {
+interface AccountsOverviewProps {
+  onSelectAccount?: (account: UserAccount) => void;
+}
+
+export function AccountsOverview({ onSelectAccount }: AccountsOverviewProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
