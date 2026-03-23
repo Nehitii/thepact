@@ -34,6 +34,7 @@ export default function Finance() {
   const { currency } = useCurrency();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [accountFilter, setAccountFilter] = useState<string | null>(null);
 
   const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
