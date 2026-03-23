@@ -187,7 +187,7 @@ export default function Finance() {
 
           <TabsContent value="transactions" className="mt-0 pb-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <TransactionsTab />
+              <TransactionsTab accountFilter={accountFilter} onClearAccountFilter={() => setAccountFilter(null)} financeSettings={settings} />
             </motion.div>
           </TabsContent>
 
