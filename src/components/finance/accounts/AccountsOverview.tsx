@@ -149,6 +149,7 @@ export function AccountsOverview({ onSelectAccount }: AccountsOverviewProps) {
                   currency={currency}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
+                  onSelect={onSelectAccount}
                 />
               </motion.div>
             ))}
