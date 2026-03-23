@@ -137,12 +137,12 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
             {/* Color picker */}
             <div>
               <Label>{t('finance.accounts.color')}</Label>
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2">
                 {ACCENT_COLORS.map(c => (
                   <button
                     key={c}
                     onClick={() => setColor(c)}
-                    className={`w-8 h-8 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-offset-background ring-primary' : ''}`}
+                    className={`w-7 h-7 rounded-full transition-all ${color === c ? 'ring-2 ring-offset-2 ring-offset-background ring-primary scale-110' : 'hover:scale-105'}`}
                     style={{ backgroundColor: c }}
                   />
                 ))}

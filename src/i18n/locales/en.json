@@ -827,6 +827,26 @@
       "delimiterTab": "Tab",
       "budgetAlertThreshold": "Budget Alert Threshold",
       "budgetAlertHint": "Warn when a category reaches this % of its budget"
+    },
+    "budgets": {
+      "title": "Category Budgets",
+      "subtitle": "Set spending limits per category",
+      "empty": "No budgets set",
+      "emptyHint": "Add a budget to track your spending by category",
+      "limitPlaceholder": "Monthly limit",
+      "exceeded": "Exceeded by {{amount}}",
+      "used": "used"
+    },
+    "savings": {
+      "title": "Savings Goals",
+      "subtitle": "Track progress towards your savings targets",
+      "empty": "No savings goals yet",
+      "goalName": "Goal Name",
+      "targetAmount": "Target Amount",
+      "currentAmount": "Current Amount",
+      "deadline": "Deadline",
+      "daysLeft": "{{count}} days left",
+      "updateAmount": "Update amount"
     }
   },
   "health": {

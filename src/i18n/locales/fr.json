@@ -832,6 +832,26 @@
       "delimiterTab": "Tabulation",
       "budgetAlertThreshold": "Seuil d'alerte budget",
       "budgetAlertHint": "Alerte quand une catégorie atteint ce % de son budget"
+    },
+    "budgets": {
+      "title": "Budgets par catégorie",
+      "subtitle": "Définis des limites de dépenses par catégorie",
+      "empty": "Aucun budget défini",
+      "emptyHint": "Ajoute un budget pour suivre tes dépenses par catégorie",
+      "limitPlaceholder": "Limite mensuelle",
+      "exceeded": "Dépassé de {{amount}}",
+      "used": "utilisé"
+    },
+    "savings": {
+      "title": "Objectifs d'épargne",
+      "subtitle": "Suis ta progression vers tes objectifs d'épargne",
+      "empty": "Aucun objectif d'épargne",
+      "goalName": "Nom de l'objectif",
+      "targetAmount": "Montant cible",
+      "currentAmount": "Montant actuel",
+      "deadline": "Échéance",
+      "daysLeft": "{{count}} jours restants",
+      "updateAmount": "Mettre à jour le montant"
     }
   },
   "health": {
