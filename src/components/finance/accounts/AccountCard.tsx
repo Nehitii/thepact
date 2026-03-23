@@ -59,7 +59,7 @@ export function AccountCard({ account, currency, onEdit, onDelete, onSelect }: A
           </div>
         </div>
 
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <button className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
               <MoreVertical className="w-4 h-4" />
