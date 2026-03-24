@@ -509,7 +509,10 @@
     "analytics": {
       "incomeVsExpenses": "Revenus vs Dépenses",
       "last6Months": "6 derniers mois",
-      "perYear": "par an"
+      "perYear": "par an",
+      "monthComparison": "Comparaison mensuelle",
+      "noPreviousMonth": "Aucun mois validé précédent à comparer",
+      "topExpenses": "Top dépenses"
     },
     "tabs": {
       "overview": "Vue d'ensemble",
@@ -556,7 +559,9 @@
       "added": "Opération ajoutée",
       "addFailed": "Échec de l'ajout",
       "deleted": "Opération supprimée",
-      "deleteFailed": "Échec de la suppression"
+      "deleteFailed": "Échec de la suppression",
+      "skippedRows": "{{count}} lignes ignorées (date ou montant invalide)",
+      "chooseAnotherFile": "Choisir un autre fichier"
     },
     "accounts": {
       "netWorth": "Patrimoine net",

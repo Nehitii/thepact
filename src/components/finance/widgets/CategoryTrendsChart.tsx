@@ -21,7 +21,7 @@ export function CategoryTrendsChart({ validations, currency }: CategoryTrendsCha
 
     for (let i = 5; i >= 0; i--) {
       const d = subMonths(now, i);
-      const key = format(d, 'yyyy-MM');
+      const key = format(d, 'yyyy-MM-01');
       const label = format(d, 'MMM');
       const v = validations.find(val => val.month === key && val.validated_at);
       months.push({

@@ -298,7 +298,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
               {skippedCount > 0 && (
                 <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
                   <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-                  <p className="text-xs text-amber-400">{skippedCount} rows skipped (invalid date or amount)</p>
+                  <p className="text-xs text-amber-400">{t('finance.transactions.skippedRows', { count: skippedCount })}</p>
                 </div>
               )}
 
@@ -329,7 +329,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
 
               {/* Re-upload button */}
               <Button variant="outline" size="sm" onClick={() => { setRows([]); setSkippedCount(0); fileRef.current?.click(); }} className="w-full border-border rounded-xl text-xs">
-                <Upload className="w-3.5 h-3.5 mr-1.5" /> Choose another file
+                <Upload className="w-3.5 h-3.5 mr-1.5" /> {t('finance.transactions.chooseAnotherFile')}
               </Button>
 
               {/* Account selector */}

@@ -48,9 +48,13 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
     ? { text: 'text-emerald-400', bg: 'bg-emerald-500/15', border: 'border-emerald-500/25' }
     : { text: 'text-rose-400', bg: 'bg-rose-500/15', border: 'border-rose-500/25' };
 
+  const gradientBg = colorAccent === 'emerald'
+    ? 'rgba(16, 185, 129, 0.05)'
+    : 'rgba(244, 63, 94, 0.05)';
+
   return (
     <div className="neu-inset p-5 rounded-2xl relative overflow-hidden">
-      <div className={`absolute inset-0 bg-gradient-to-br from-${colorAccent}-500/[0.05] to-transparent`} />
+      <div className="absolute inset-0" style={{ background: `linear-gradient(to bottom right, ${gradientBg}, transparent)` }} />
       <div className="relative z-10">
         <h4 className={`text-xs font-medium ${accentClasses.text} uppercase tracking-wider mb-3`}>{title}</h4>
         <div className="h-32">
@@ -86,6 +90,13 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
                 ))}
               </Pie>
               <Tooltip content={<DonutTooltip currency={currency} />} />
+              {/* Center label */}
+              <text x="50%" y="48%" textAnchor="middle" dominantBaseline="central" className="fill-foreground" style={{ fontSize: '11px', fontWeight: 700 }}>
+                {formatCurrency(total, currency).replace(/\.00$/, '')}
+              </text>
+              <text x="50%" y="62%" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground" style={{ fontSize: '8px' }}>
+                {title}
+              </text>
             </PieChart>
           </ResponsiveContainer>
         </div>
