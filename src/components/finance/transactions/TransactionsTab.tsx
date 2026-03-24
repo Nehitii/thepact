@@ -1,14 +1,14 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Plus, Upload, Trash2, ArrowUpCircle, ArrowDownCircle, Search, X } from 'lucide-react';
+import { Plus, Upload, Trash2, Edit2, Copy, ArrowUpCircle, ArrowDownCircle, Search, X, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
-import { useTransactions, useDeleteTransaction } from '@/hooks/useTransactions';
+import { useTransactions, useDeleteTransaction, useAddTransaction } from '@/hooks/useTransactions';
 import { useAccounts } from '@/hooks/useAccounts';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
@@ -24,6 +24,8 @@ interface TransactionsTabProps {
   };
 }
 
+const PAGE_SIZE = 50;
+
 export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSettings }: TransactionsTabProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -31,12 +33,15 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
   const { data: transactions = [], isLoading } = useTransactions(user?.id);
   const { data: accounts = [] } = useAccounts(user?.id);
   const deleteTx = useDeleteTransaction();
+  const duplicateTx = useAddTransaction();
 
   const [addOpen, setAddOpen] = useState(false);
   const [csvOpen, setCsvOpen] = useState(false);
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [selectedAccountId, setSelectedAccountId] = useState<string>('all');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [editingTx, setEditingTx] = useState<any>(null);
 
   // Sync external account filter
   useEffect(() => {
@@ -54,6 +59,9 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
     });
   }, [transactions, search, typeFilter, selectedAccountId]);
 
+  const visibleItems = filtered.slice(0, visibleCount);
+  const hasMore = filtered.length > visibleCount;
+
   const handleDelete = async (id: string) => {
     try {
       await deleteTx.mutateAsync(id);
@@ -61,6 +69,28 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
     } catch {
       toast.error(t('finance.transactions.deleteFailed'));
     }
+  };
+
+  const handleDuplicate = async (tx: any) => {
+    try {
+      await duplicateTx.mutateAsync({
+        description: tx.description,
+        amount: tx.amount,
+        transaction_type: tx.transaction_type,
+        transaction_date: format(new Date(), 'yyyy-MM-dd'),
+        category: tx.category || undefined,
+        account_id: tx.account_id || undefined,
+        source: 'manual',
+      });
+      toast.success(t('finance.transactions.added'));
+    } catch {
+      toast.error(t('finance.transactions.addFailed'));
+    }
+  };
+
+  const handleEdit = (tx: any) => {
+    setEditingTx(tx);
+    setAddOpen(true);
   };
 
   const getAccountName = (id: string | null) => {
@@ -84,7 +114,7 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
           <Button size="sm" variant="outline" onClick={() => setCsvOpen(true)} className="rounded-xl border-border">
             <Upload className="w-4 h-4 mr-1" />{t('finance.transactions.importCsv')}
           </Button>
-          <Button size="sm" onClick={() => setAddOpen(true)} className="rounded-xl">
+          <Button size="sm" onClick={() => { setEditingTx(null); setAddOpen(true); }} className="rounded-xl">
             <Plus className="w-4 h-4 mr-1" />{t('finance.transactions.add')}
           </Button>
         </div>
@@ -141,6 +171,13 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
         )}
       </motion.div>
 
+      {/* Results count */}
+      {filtered.length > 0 && (
+        <p className="text-xs text-muted-foreground tabular-nums">
+          {filtered.length} {t('finance.transactions.title').toLowerCase()}
+        </p>
+      )}
+
       {/* Table */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="neu-card overflow-hidden">
         {isLoading ? (
@@ -162,17 +199,16 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
                   <th className="text-left p-4 font-medium hidden sm:table-cell">{t('finance.transactions.account')}</th>
                   <th className="text-left p-4 font-medium hidden md:table-cell">{t('finance.transactions.category')}</th>
                   <th className="text-right p-4 font-medium">{t('finance.recurring.amount')}</th>
-                  <th className="text-right p-4 font-medium w-12"></th>
+                  <th className="text-right p-4 font-medium w-24"></th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((tx, i) => (
-                  <motion.tr
+                {visibleItems.map((tx, i) => (
+                  <tr
                     key={tx.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.02 }}
-                    className="border-b border-border/50 hover:bg-muted/30 dark:hover:bg-white/[0.02] transition-colors group"
+                    className={`border-b border-border/50 hover:bg-muted/30 dark:hover:bg-white/[0.02] transition-colors group ${
+                      i % 2 === 1 ? 'bg-muted/10 dark:bg-white/[0.01]' : ''
+                    }`}
                   >
                     <td className="p-4 text-sm text-muted-foreground tabular-nums">
                       {format(parseISO(tx.transaction_date), 'dd/MM/yyyy')}
@@ -196,22 +232,60 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
                       {tx.transaction_type === 'credit' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount), currency)}
                     </td>
                     <td className="p-4 text-right">
-                      <button
-                        onClick={() => handleDelete(tx.id)}
-                        className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => handleEdit(tx)}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all"
+                          title={t('common.edit')}
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDuplicate(tx)}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-all"
+                          title="Duplicate"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(tx.id)}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                          title={t('common.delete')}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
-                  </motion.tr>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
         )}
+
+        {/* Load more */}
+        {hasMore && (
+          <div className="p-4 flex justify-center border-t border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setVisibleCount(c => c + PAGE_SIZE)}
+              className="text-xs text-muted-foreground hover:text-foreground gap-1.5"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+              {t('common.more')} ({filtered.length - visibleCount} {t('finance.transactions.title').toLowerCase()})
+            </Button>
+          </div>
+        )}
       </motion.div>
 
-      <AddTransactionModal open={addOpen} onClose={() => setAddOpen(false)} accounts={accounts} currency={currency} />
+      <AddTransactionModal
+        open={addOpen}
+        onClose={() => { setAddOpen(false); setEditingTx(null); }}
+        accounts={accounts}
+        currency={currency}
+        editingTransaction={editingTx}
+      />
       <CsvImportModal
         open={csvOpen}
         onClose={() => setCsvOpen(false)}
