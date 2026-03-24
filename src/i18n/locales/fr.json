@@ -509,7 +509,10 @@
     "analytics": {
       "incomeVsExpenses": "Revenus vs Dépenses",
       "last6Months": "6 derniers mois",
-      "perYear": "par an"
+      "perYear": "par an",
+      "monthComparison": "Comparaison mensuelle",
+      "noPreviousMonth": "Aucun mois validé précédent à comparer",
+      "topExpenses": "Top dépenses"
     },
     "tabs": {
       "overview": "Vue d'ensemble",
