@@ -1,95 +1,125 @@
 
 
-# Finance Module — Full Audit & Fixes
+# Finance Module — Complete Audit, Fixes & Improvements
 
-## Issues Found
+## BUGS & MISSING TRANSLATIONS
 
-### 1. CSV Import Only Detects 4 Rows
-**Root cause**: The parser assumes a rigid format (date=col[0], desc=col[1], amount=col[2]) and skips rows where:
-- Amount parses as `0` or `NaN` (French decimals use commas like `1 234,56` — the regex strips spaces but not thousands separators)
-- Date parsing fails (returns `NaN-NaN-NaN`) for formats that don't match the selected `dateFormat`
-- Lines with extra quoted fields or embedded delimiters get split incorrectly
+### Critical: 6 Missing i18n Key Groups
+The console logs confirm these keys are completely absent from both `en.json` and `fr.json`:
 
-**Fix**:
-- Improve amount parsing: handle thousands separators (`1.234,56` or `1 234,56`), strip spaces before parsing
-- Add smarter column auto-detection: scan header row for keywords (date, montant, débit, crédit, libellé, description, amount)
-- Support separate debit/credit columns (common in French bank CSVs)
-- Use the user's CSV settings from `FinanceSettingsModal` (date format + delimiter) as defaults instead of hardcoded values
-- Remove the `amount === 0` skip — legitimate zero-amount rows are rare but rows with parsing failures shouldn't be silently dropped; show a warning count
+| Key | Used In |
+|-----|---------|
+| `finance.analytics.last6Months` | CategoryTrendsChart L69, L139 |
+| `finance.analytics.perYear` | FinanceDashboard L192 |
+| `finance.analytics.monthComparison` | MonthComparisonWidget L63 |
+| `finance.analytics.noPreviousMonth` | MonthComparisonWidget L68 |
+| `finance.analytics.topExpenses` | TopCategoriesBar L40 |
+| `finance.analytics.incomeVsExpenses` | CategoryTrendsChart L68 |
 
-### 2. Missing i18n Keys: `finance.budgets.*` and `finance.savings.*`
-**Root cause**: `BudgetProgressPanel` uses `t('finance.budgets.title')`, `t('finance.budgets.subtitle')`, etc. and `SavingsGoalTracker` uses `t('finance.savings.title')`, `t('finance.savings.subtitle')`, etc. — none of these keys exist in `en.json` or `fr.json`.
+Additionally, `finance.budgets.*` and `finance.savings.*` keys are still missing (confirmed by search returning zero results).
 
-**Fix**: Add complete `finance.budgets` and `finance.savings` key blocks to both locale files.
+**Fix**: Add complete `finance.analytics`, `finance.budgets`, and `finance.savings` key blocks to both locale files.
 
-### 3. Account Types Too Limited
-**Root cause**: `ACCOUNT_TYPES` in `AddAccountModal.tsx` only has `['checking', 'savings', 'investment', 'credit', 'cash']`. Missing French products like livrets (Livret A, LDDS, LEP), PEL, PEA, assurance-vie, etc.
+### Bug: AnimatedNumber shows NaN briefly for negatives
+In `AnimatedNumber.tsx`, the animation starts from `0` and interpolates toward `Math.abs(value)`. But on the final frame it sets `displayValue = value` (negative). The prefix logic `isPositive ? '+' : ''` doesn't add a minus sign — `formatCurrency` handles it, but during interpolation negative values show as positive amounts then jump to negative.
 
-**Fix**: Expand `ACCOUNT_TYPES` to include: `checking`, `savings`, `livret`, `investment`, `retirement`, `insurance`, `credit`, `cash`, `crypto`, `other`. Add i18n keys for each.
+**Fix**: Simplify — animate `displayValue` from 0 toward `value` directly (not `Math.abs`), remove the manual sign prefix, let `formatCurrency` handle signs consistently.
 
-### 4. Not Enough Colors in Account Modal
-**Root cause**: `ACCENT_COLORS` array in `AddAccountModal.tsx` only has 10 colors.
+### Bug: Hardcoded English text in CsvImportModal
+- Line 302: `"rows skipped (invalid date or amount)"` — not translated
+- Line 332: `"Choose another file"` — not translated
 
-**Fix**: Expand to ~20 colors covering a wider spectrum including darker/warmer tones.
+**Fix**: Replace with `t('finance.transactions.skippedRows', { count: skippedCount })` and `t('finance.transactions.chooseAnotherFile')`.
 
-### 5. Clicking Account Card → Navigate to Filtered Transactions
-**Current behavior**: Account cards only show edit/delete actions.
+### Bug: ProjectionsPanel month key format mismatch
+`ProjectionsPanel` uses `format(monthDate, 'yyyy-MM-01')` (with `-01`) to find validations, but `MonthlyValidationPanel` stores months as `'yyyy-MM-01'` while `MonthlyHistory` also uses `'yyyy-MM-01'`. However, `FinanceDashboard` and `CategoryTrendsChart` search validations using `format(d, 'yyyy-MM')` (without `-01`). If the DB stores `yyyy-MM-01`, the dashboard widgets will never find matches.
 
-**Fix**: Make the account card body clickable. On click, navigate to the Transactions tab with a pre-set account filter. This requires:
-- Adding an `onSelect` callback to `AccountCard`
-- In `AccountsOverview`, when an account is clicked, call a callback that sets the active tab to "transactions" and passes the account ID as a filter
-- Lift the tab state + account filter state up to `Finance.tsx` so it can be shared between tabs
-- In `TransactionsTab`, accept an optional `defaultAccountFilter` prop and apply it
+**Fix**: Standardize all lookups to match the DB storage format (`yyyy-MM-01`), or normalize during comparison.
 
-### 6. Finance Settings → CSV Settings Not Used by CsvImportModal
-**Current behavior**: `CsvImportModal` has its own hardcoded defaults for delimiter and date format instead of reading from user settings.
+### Bug: CategoryDonut dynamic class not compiled by Tailwind
+Line 53: `` `from-${colorAccent}-500/[0.05]` `` — Tailwind can't generate dynamic class names at runtime.
 
-**Fix**: Pass `financeSettings` (date format + delimiter) to `TransactionsTab` → `CsvImportModal` so they're pre-filled.
+**Fix**: Use inline style or explicit conditional classes.
 
 ---
 
-## Implementation Steps
+## UX/UI IMPROVEMENTS
 
-### Step 1: Fix i18n — Add Missing Keys
-Add `finance.budgets` and `finance.savings` sections to both `en.json` and `fr.json`:
-- `budgets.title`, `budgets.subtitle`, `budgets.empty`, `budgets.emptyHint`, `budgets.limitPlaceholder`, `budgets.exceeded`, `budgets.used`
-- `savings.title`, `savings.subtitle`, `savings.empty`, `savings.goalName`, `savings.targetAmount`, `savings.currentAmount`, `savings.deadline`, `savings.daysLeft`, `savings.updateAmount`
-- New account types i18n: `finance.accounts.types.livret`, `.retirement`, `.insurance`, `.crypto`, `.other`
+### 1. Transaction Table: No inline edit capability
+Currently transactions can only be deleted, not edited. `useUpdateTransaction` hook exists but is unused.
 
-### Step 2: Expand Account Types & Colors
-- `AddAccountModal.tsx`: expand `ACCOUNT_TYPES` and `ACCENT_COLORS` arrays
-- Add corresponding i18n translations
+**Fix**: Add an edit button alongside delete in `TransactionsTab`, opening a pre-filled `AddTransactionModal` in edit mode.
 
-### Step 3: Fix CSV Import Parser
-- Rewrite `handleFile` in `CsvImportModal.tsx`:
-  - Auto-detect header columns by matching keywords
-  - Handle French number formats (thousands separator, comma decimal)
-  - Use settings-provided delimiter and date format as defaults
-  - Accept `defaultDateFormat` and `defaultDelimiter` props from parent
+### 2. Transaction Table: No pagination
+All 500 transactions render at once. With heavy CSV imports, this can lag.
 
-### Step 4: Account Click → Transaction Filter
-- Add `accountFilter` state + `setAccountFilter` to `Finance.tsx`
-- Pass `onSelectAccount` callback through `AccountsOverview` → `AccountCard`
-- On click: set `activeTab = 'transactions'` + `accountFilter = account.id`
-- `TransactionsTab`: accept `accountFilter` prop, add account filter dropdown, pre-select when provided
-- Reset filter when user clears it
+**Fix**: Add a "Load more" button or virtual scrolling (show 50 at a time).
 
-### Step 5: Pass Finance Settings to CSV Modal
-- Thread `financeSettings` from `Finance.tsx` → `TransactionsTab` → `CsvImportModal`
-- Use `finance_csv_date_format` and `finance_csv_delimiter` as initial state
+### 3. Dashboard: No empty state
+When no data exists, the dashboard shows `0%`, `+€0`, and empty charts with no guidance.
+
+**Fix**: Add a welcoming empty state with quick-start actions (add first income, add first expense, add first account).
+
+### 4. MonthlyHistory: Edit button not working for unvalidated months
+The edit button appears for validated months only. For unvalidated past months, there's no way to create a validation retroactively.
+
+**Fix**: Show a "Validate" action for unvalidated months that opens ValidationFlowModal with that month context.
+
+### 5. Budget Panel: No edit for existing budgets
+Users can only delete and re-create budgets. No inline limit editing.
+
+**Fix**: Add an edit button on each budget row to change the `monthly_limit`.
+
+### 6. Savings Goal: No link to account
+The `accounts` prop is passed to `SavingsGoalTracker` but never used — users can't associate a savings goal with an account.
+
+**Fix**: Add optional account selector in the goal creation form.
 
 ---
 
-## Files to Modify
+## VISUAL/GRAPHIC IMPROVEMENTS
 
-| File | Change |
-|------|--------|
-| `src/i18n/locales/en.json` | Add `finance.budgets.*`, `finance.savings.*`, new account types |
-| `src/i18n/locales/fr.json` | Same keys in French |
-| `src/components/finance/accounts/AddAccountModal.tsx` | Expand types & colors |
-| `src/components/finance/accounts/AccountCard.tsx` | Add onClick handler for navigation |
-| `src/components/finance/accounts/AccountsOverview.tsx` | Add onSelectAccount prop |
-| `src/components/finance/transactions/CsvImportModal.tsx` | Rewrite parser, accept settings props |
-| `src/components/finance/transactions/TransactionsTab.tsx` | Accept accountFilter prop, add account dropdown filter |
-| `src/pages/Finance.tsx` | Add accountFilter state, wire callbacks between tabs |
+### 7. KPI Cards: Add micro-trend indicators
+Currently just static numbers. Add a small up/down arrow comparing to last validated month.
+
+### 8. Net Worth in Accounts tab: Add sparkline
+Show a mini trend of net worth evolution based on transfer history.
+
+### 9. Donut charts: Center label
+Add total amount as a center label inside the donut for immediate readability.
+
+### 10. Transaction table: Alternating row background
+Add subtle zebra striping for better readability.
+
+### 11. Category progress bars (BudgetProgressPanel): Gradient fill
+Use category-colored gradients instead of flat color for a more premium look.
+
+### 12. Validation Panel: Progress stepper dots
+Add visual step indicators (1-2-3-4) to show progress through the validation flow.
+
+---
+
+## FEATURE ADDITIONS
+
+### 13. Recurring item frequency support
+Currently all items are monthly. Add frequency field: weekly, biweekly, monthly, quarterly, yearly. Adjust calculations accordingly.
+
+### 14. Balance snapshot history
+Track account balance snapshots at each month validation to build a true net worth evolution chart over time.
+
+### 15. Quick duplicate transaction
+Add a "duplicate" action on transaction rows for fast entry of similar operations.
+
+---
+
+## IMPLEMENTATION ORDER
+
+| Phase | Items | Files |
+|-------|-------|-------|
+| **Phase 1: Fix all bugs** | Missing i18n keys, AnimatedNumber, hardcoded strings, month format mismatch, Tailwind dynamic class | `en.json`, `fr.json`, `AnimatedNumber.tsx`, `CsvImportModal.tsx`, `ProjectionsPanel.tsx`, `FinanceDashboard.tsx`, `CategoryTrendsChart.tsx`, `CategoryDonut.tsx` |
+| **Phase 2: UX fixes** | Transaction edit, pagination, empty states, budget edit, unvalidated month actions | `TransactionsTab.tsx`, `AddTransactionModal.tsx`, `FinanceDashboard.tsx`, `MonthlyHistory.tsx`, `BudgetProgressPanel.tsx`, `SavingsGoalTracker.tsx` |
+| **Phase 3: Visual polish** | KPI trends, donut center label, zebra rows, gradient bars, stepper dots | `FinanceDashboard.tsx`, `CategoryDonut.tsx`, `TransactionsTab.tsx`, `BudgetProgressPanel.tsx`, `ValidationFlowModal.tsx` |
+| **Phase 4: Features** | Frequency support, balance snapshots, duplicate transaction | Migration (add `frequency` column), `useFinance.ts`, `FinancialBlock.tsx`, `AddItemForm.tsx`, `TransactionsTab.tsx` |
+
+No database changes needed for Phases 1-3. Phase 4 requires one migration to add a `frequency` column to `recurring_expenses` and `recurring_income` tables.
 
