@@ -122,7 +122,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
                   <SelectValue placeholder={t('finance.settings.defaultAccountPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border rounded-xl">
-                  <SelectItem value="">{t('finance.settings.noDefault')}</SelectItem>
+                  <SelectItem value="none">{t('finance.settings.noDefault')}</SelectItem>
                   {accounts.map(a => (
                     <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
                   ))}
