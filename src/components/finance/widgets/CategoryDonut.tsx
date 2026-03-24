@@ -90,6 +90,13 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
                 ))}
               </Pie>
               <Tooltip content={<DonutTooltip currency={currency} />} />
+              {/* Center label */}
+              <text x="50%" y="48%" textAnchor="middle" dominantBaseline="central" className="fill-foreground" style={{ fontSize: '11px', fontWeight: 700 }}>
+                {formatCurrency(total, currency).replace(/\.00$/, '')}
+              </text>
+              <text x="50%" y="62%" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground" style={{ fontSize: '8px' }}>
+                {title}
+              </text>
             </PieChart>
           </ResponsiveContainer>
         </div>
