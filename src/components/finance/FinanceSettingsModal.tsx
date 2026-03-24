@@ -76,7 +76,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
         project_funding_target: useCustomTarget ? parsedTarget : 0,
         project_monthly_allocation: Math.max(0, allocationAmount),
         already_funded: useCustomTarget ? 0 : parsedFunded,
-        finance_default_account_id: defaultAccountId || null,
+        finance_default_account_id: defaultAccountId === 'none' ? null : defaultAccountId,
         finance_csv_date_format: csvDateFormat,
         finance_csv_delimiter: csvDelimiter,
         finance_budget_alert_pct: parsedAlertPct,
