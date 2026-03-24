@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { formatCurrency } from '@/lib/currency';
 
 interface AnimatedNumberProps {
@@ -10,32 +10,34 @@ interface AnimatedNumberProps {
 
 export function AnimatedNumber({ value, currency, isPositive, className }: AnimatedNumberProps) {
   const [displayValue, setDisplayValue] = useState(0);
+  const prevValue = useRef(0);
 
   useEffect(() => {
-    const duration = 1000;
-    const steps = 60;
-    const absValue = Math.abs(value);
-    const stepValue = absValue / steps;
-    let current = 0;
+    const duration = 800;
+    const steps = 50;
+    const start = prevValue.current;
+    const diff = value - start;
     let frame = 0;
 
     const timer = setInterval(() => {
       frame++;
-      current += stepValue;
-      if (frame >= steps || current >= absValue) {
+      if (frame >= steps) {
         setDisplayValue(value);
         clearInterval(timer);
       } else {
-        setDisplayValue(value >= 0 ? current : -current);
+        // Ease-out interpolation
+        const progress = 1 - Math.pow(1 - frame / steps, 3);
+        setDisplayValue(start + diff * progress);
       }
     }, duration / steps);
 
+    prevValue.current = value;
     return () => clearInterval(timer);
   }, [value]);
 
   return (
     <span className={className || `neu-hero-balance ${!isPositive ? 'negative' : ''}`}>
-      {isPositive ? '+' : ''}{formatCurrency(displayValue, currency)}
+      {isPositive && value >= 0 ? '+' : ''}{formatCurrency(displayValue, currency)}
     </span>
   );
 }

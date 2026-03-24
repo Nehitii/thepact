@@ -559,7 +559,9 @@
       "added": "Transaction added",
       "addFailed": "Failed to add transaction",
       "deleted": "Transaction deleted",
-      "deleteFailed": "Failed to delete transaction"
+      "deleteFailed": "Failed to delete transaction",
+      "skippedRows": "{{count}} rows skipped (invalid date or amount)",
+      "chooseAnotherFile": "Choose another file"
     },
     "accounts": {
       "netWorth": "Net Worth",

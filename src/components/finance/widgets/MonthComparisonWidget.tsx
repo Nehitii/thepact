@@ -18,8 +18,8 @@ export function MonthComparisonWidget({ validations, currentIncome, currentExpen
 
   const comparison = useMemo(() => {
     const now = new Date();
-    const currentMonth = format(now, 'yyyy-MM');
-    const prevMonth = format(subMonths(now, 1), 'yyyy-MM');
+    const currentMonth = format(now, 'yyyy-MM-01');
+    const prevMonth = format(subMonths(now, 1), 'yyyy-MM-01');
     
     const prevValidation = validations.find(v => v.month === prevMonth && v.validated_at);
     

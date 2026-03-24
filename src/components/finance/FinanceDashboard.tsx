@@ -68,14 +68,14 @@ export function FinanceDashboard({
     const months: { month: string; label: string }[] = [];
     for (let i = 5; i >= 0; i--) {
       const date = subMonths(now, i);
-      months.push({ month: format(date, 'yyyy-MM'), label: format(date, 'MMM') });
+      months.push({ month: format(date, 'yyyy-MM-01'), label: format(date, 'MMM') });
     }
     return months.map(m => {
       const validation = validations.find(v => v.month === m.month);
       if (validation && validation.validated_at) {
         return { month: m.month, label: m.label, balance: (validation.actual_total_income || 0) - (validation.actual_total_expenses || 0) };
       }
-      if (m.month === format(now, 'yyyy-MM')) {
+      if (m.month === format(now, 'yyyy-MM-01')) {
         return { month: m.month, label: m.label, balance: monthlyNet };
       }
       return { month: m.month, label: m.label, balance: 0 };

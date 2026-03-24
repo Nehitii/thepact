@@ -559,7 +559,9 @@
       "added": "Opération ajoutée",
       "addFailed": "Échec de l'ajout",
       "deleted": "Opération supprimée",
-      "deleteFailed": "Échec de la suppression"
+      "deleteFailed": "Échec de la suppression",
+      "skippedRows": "{{count}} lignes ignorées (date ou montant invalide)",
+      "chooseAnotherFile": "Choisir un autre fichier"
     },
     "accounts": {
       "netWorth": "Patrimoine net",
