@@ -502,6 +502,14 @@
     }
   },
   "finance": {
+    "analytics": {
+      "incomeVsExpenses": "Income vs Expenses",
+      "last6Months": "Last 6 months",
+      "perYear": "per year",
+      "monthComparison": "Month Comparison",
+      "noPreviousMonth": "No previous validated month to compare",
+      "topExpenses": "Top Expenses"
+    },
     "dashboard": "Finance Dashboard",
     "dashboardSubtitle": "Track your project financing & monthly budget",
     "title": "TRACK FINANCE",
