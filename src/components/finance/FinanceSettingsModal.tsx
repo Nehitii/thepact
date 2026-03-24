@@ -50,7 +50,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
       setFundingTarget(currentSettings.project_funding_target.toString());
       setMonthlyAllocation(currentSettings.project_monthly_allocation.toString());
       setAlreadyFunded(currentSettings.already_funded.toString());
-      setDefaultAccountId(currentSettings.finance_default_account_id ?? '');
+      setDefaultAccountId(currentSettings.finance_default_account_id ?? 'none');
       setCsvDateFormat(currentSettings.finance_csv_date_format ?? 'YYYY-MM-DD');
       setCsvDelimiter(currentSettings.finance_csv_delimiter ?? ',');
       setBudgetAlertPct((currentSettings.finance_budget_alert_pct ?? 80).toString());
