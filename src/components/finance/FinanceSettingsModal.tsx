@@ -38,7 +38,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
   const [addToRecurring, setAddToRecurring] = useState(false);
 
   // New settings
-  const [defaultAccountId, setDefaultAccountId] = useState(currentSettings.finance_default_account_id ?? '');
+  const [defaultAccountId, setDefaultAccountId] = useState(currentSettings.finance_default_account_id ?? 'none');
   const [csvDateFormat, setCsvDateFormat] = useState(currentSettings.finance_csv_date_format ?? 'YYYY-MM-DD');
   const [csvDelimiter, setCsvDelimiter] = useState(currentSettings.finance_csv_delimiter ?? ',');
   const [budgetAlertPct, setBudgetAlertPct] = useState((currentSettings.finance_budget_alert_pct ?? 80).toString());
