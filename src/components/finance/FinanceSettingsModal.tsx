@@ -38,7 +38,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
   const [addToRecurring, setAddToRecurring] = useState(false);
 
   // New settings
-  const [defaultAccountId, setDefaultAccountId] = useState(currentSettings.finance_default_account_id ?? '');
+  const [defaultAccountId, setDefaultAccountId] = useState(currentSettings.finance_default_account_id ?? 'none');
   const [csvDateFormat, setCsvDateFormat] = useState(currentSettings.finance_csv_date_format ?? 'YYYY-MM-DD');
   const [csvDelimiter, setCsvDelimiter] = useState(currentSettings.finance_csv_delimiter ?? ',');
   const [budgetAlertPct, setBudgetAlertPct] = useState((currentSettings.finance_budget_alert_pct ?? 80).toString());
@@ -50,7 +50,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
       setFundingTarget(currentSettings.project_funding_target.toString());
       setMonthlyAllocation(currentSettings.project_monthly_allocation.toString());
       setAlreadyFunded(currentSettings.already_funded.toString());
-      setDefaultAccountId(currentSettings.finance_default_account_id ?? '');
+      setDefaultAccountId(currentSettings.finance_default_account_id ?? 'none');
       setCsvDateFormat(currentSettings.finance_csv_date_format ?? 'YYYY-MM-DD');
       setCsvDelimiter(currentSettings.finance_csv_delimiter ?? ',');
       setBudgetAlertPct((currentSettings.finance_budget_alert_pct ?? 80).toString());
@@ -76,7 +76,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
         project_funding_target: useCustomTarget ? parsedTarget : 0,
         project_monthly_allocation: Math.max(0, allocationAmount),
         already_funded: useCustomTarget ? 0 : parsedFunded,
-        finance_default_account_id: defaultAccountId || null,
+        finance_default_account_id: defaultAccountId === 'none' ? null : defaultAccountId,
         finance_csv_date_format: csvDateFormat,
         finance_csv_delimiter: csvDelimiter,
         finance_budget_alert_pct: parsedAlertPct,
@@ -122,7 +122,7 @@ export function FinanceSettingsModal({ open, onOpenChange, currentSettings }: Fi
                   <SelectValue placeholder={t('finance.settings.defaultAccountPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border rounded-xl">
-                  <SelectItem value="">{t('finance.settings.noDefault')}</SelectItem>
+                  <SelectItem value="none">{t('finance.settings.noDefault')}</SelectItem>
                   {accounts.map(a => (
                     <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
                   ))}
