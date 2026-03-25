@@ -251,7 +251,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
         <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
 
         <div className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-xs text-muted-foreground font-medium">{t('finance.settings.csvDateFormat')}</label>
               <Select value={dateFormat} onValueChange={setDateFormat}>
@@ -274,6 +274,20 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
                 </SelectContent>
               </Select>
             </div>
+            {accounts.length > 0 && (
+              <div>
+                <label className="text-xs text-muted-foreground font-medium">{t('finance.transactions.linkToAccount')}</label>
+                <Select value={accountId} onValueChange={setAccountId}>
+                  <SelectTrigger className="mt-1 bg-muted border-border rounded-lg h-9 text-xs"><SelectValue placeholder={t('common.optional')} /></SelectTrigger>
+                  <SelectContent className="bg-popover border-border rounded-xl">
+                    <SelectItem value="none">{t('common.optional')}</SelectItem>
+                    {accounts.map(a => (
+                      <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {rows.length === 0 ? (
