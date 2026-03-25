@@ -10,6 +10,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { useTransactions, useDeleteTransaction, useAddTransaction } from '@/hooks/useTransactions';
 import { useAccounts } from '@/hooks/useAccounts';
+import { useAccountBalances } from '@/hooks/useAccountBalances';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 import { AddTransactionModal } from './AddTransactionModal';
