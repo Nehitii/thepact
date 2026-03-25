@@ -227,6 +227,9 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
                   <th className="text-left p-4 font-medium hidden sm:table-cell">{t('finance.transactions.account')}</th>
                   <th className="text-left p-4 font-medium hidden md:table-cell">{t('finance.transactions.category')}</th>
                   <th className="text-right p-4 font-medium">{t('finance.recurring.amount')}</th>
+                  {showRunningBalance && (
+                    <th className="text-right p-4 font-medium hidden lg:table-cell">{t('finance.accounts.runningBalance')}</th>
+                  )}
                   <th className="text-right p-4 font-medium w-24"></th>
                 </tr>
               </thead>
