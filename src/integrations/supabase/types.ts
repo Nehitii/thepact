@@ -2870,12 +2870,14 @@ export type Database = {
         Row: {
           account_type: string | null
           balance: number | null
+          balance_date: string | null
           bank_name: string | null
           color: string | null
           created_at: string | null
           icon_emoji: string | null
           icon_url: string | null
           id: string
+          initial_balance: number | null
           is_active: boolean | null
           name: string
           sort_order: number | null
@@ -2885,12 +2887,14 @@ export type Database = {
         Insert: {
           account_type?: string | null
           balance?: number | null
+          balance_date?: string | null
           bank_name?: string | null
           color?: string | null
           created_at?: string | null
           icon_emoji?: string | null
           icon_url?: string | null
           id?: string
+          initial_balance?: number | null
           is_active?: boolean | null
           name: string
           sort_order?: number | null
@@ -2900,12 +2904,14 @@ export type Database = {
         Update: {
           account_type?: string | null
           balance?: number | null
+          balance_date?: string | null
           bank_name?: string | null
           color?: string | null
           created_at?: string | null
           icon_emoji?: string | null
           icon_url?: string | null
           id?: string
+          initial_balance?: number | null
           is_active?: boolean | null
           name?: string
           sort_order?: number | null
