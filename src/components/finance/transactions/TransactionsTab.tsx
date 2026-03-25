@@ -33,6 +33,7 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
   const { currency } = useCurrency();
   const { data: transactions = [], isLoading } = useTransactions(user?.id);
   const { data: accounts = [] } = useAccounts(user?.id);
+  const { data: balancesMap } = useAccountBalances(accounts, user?.id);
   const deleteTx = useDeleteTransaction();
   const duplicateTx = useAddTransaction();
 
