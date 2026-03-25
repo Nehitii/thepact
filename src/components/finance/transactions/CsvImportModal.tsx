@@ -224,7 +224,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
           amount: r.amount,
           transaction_type: r.type,
           transaction_date: r.date,
-          account_id: accountId || undefined,
+          account_id: accountId !== 'none' ? accountId : undefined,
           source: 'csv_import',
         }))
       );
