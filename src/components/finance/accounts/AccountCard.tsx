@@ -11,11 +11,14 @@ interface AccountCardProps {
   onEdit: (account: UserAccount) => void;
   onDelete: (id: string) => void;
   onSelect?: (account: UserAccount) => void;
+  computedBalance?: number;
+  txCount?: number;
 }
 
-export function AccountCard({ account, currency, onEdit, onDelete, onSelect }: AccountCardProps) {
+export function AccountCard({ account, currency, onEdit, onDelete, onSelect, computedBalance, txCount }: AccountCardProps) {
   const { t } = useTranslation();
-  const isPositive = account.balance >= 0;
+  const displayBalance = computedBalance ?? account.balance;
+  const isPositive = displayBalance >= 0;
 
   const renderIcon = () => {
     if (account.icon_url) {
@@ -81,8 +84,13 @@ export function AccountCard({ account, currency, onEdit, onDelete, onSelect }: A
           {t(`finance.accounts.types.${account.account_type}`)}
         </p>
         <p className={`text-2xl font-bold tabular-nums ${isPositive ? 'text-foreground' : 'text-rose-400'}`}>
-          {formatCurrency(account.balance, currency)}
+          {formatCurrency(displayBalance, currency)}
         </p>
+        {txCount != null && txCount > 0 && (
+          <p className="text-[10px] text-muted-foreground/60 mt-1">
+            {t('finance.accounts.linkedTransactions', { count: txCount })}
+          </p>
+        )}
       </div>
 
       {!account.is_active && (
