@@ -30,6 +30,8 @@ export function useAddAccount() {
       bank_name?: string;
       account_type?: string;
       balance?: number;
+      initial_balance?: number;
+      balance_date?: string;
       icon_emoji?: string;
       icon_url?: string;
       color?: string;
