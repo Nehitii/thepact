@@ -77,7 +77,10 @@ export function useDeleteTransaction() {
       const { error } = await supabase.from('bank_transactions').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['bank_transactions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['bank_transactions'] });
+      qc.invalidateQueries({ queryKey: ['user-accounts'] });
+    },
   });
 }
 
