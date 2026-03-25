@@ -61,6 +61,32 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
     });
   }, [transactions, search, typeFilter, selectedAccountId]);
 
+  const showRunningBalance = selectedAccountId !== 'all';
+
+  // Compute running balance when filtering by account
+  const runningBalances = useMemo(() => {
+    if (!showRunningBalance) return new Map<string, number>();
+    const account = accounts.find(a => a.id === selectedAccountId);
+    if (!account) return new Map<string, number>();
+
+    const initial = account.initial_balance ?? account.balance ?? 0;
+    const balanceDate = account.balance_date || account.created_at?.split('T')[0] || '1970-01-01';
+
+    // Sort ascending by date for cumulative calc
+    const sorted = [...filtered].sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
+    const map = new Map<string, number>();
+    let running = initial;
+
+    for (const tx of sorted) {
+      if (tx.transaction_date >= balanceDate) {
+        if (tx.transaction_type === 'credit') running += tx.amount;
+        else running -= tx.amount;
+      }
+      map.set(tx.id, running);
+    }
+    return map;
+  }, [filtered, showRunningBalance, selectedAccountId, accounts]);
+
   const visibleItems = filtered.slice(0, visibleCount);
   const hasMore = filtered.length > visibleCount;
 
