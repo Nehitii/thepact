@@ -262,6 +262,15 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
                     <td className={`p-4 text-sm font-semibold text-right tabular-nums ${tx.transaction_type === 'credit' ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {tx.transaction_type === 'credit' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount), currency)}
                     </td>
+                    {showRunningBalance && (
+                      <td className="p-4 text-sm text-right tabular-nums hidden lg:table-cell">
+                        {runningBalances.has(tx.id) ? (
+                          <span className={runningBalances.get(tx.id)! >= 0 ? 'text-foreground' : 'text-rose-400'}>
+                            {formatCurrency(runningBalances.get(tx.id)!, currency)}
+                          </span>
+                        ) : '—'}
+                      </td>
+                    )}
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
