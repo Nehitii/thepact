@@ -341,19 +341,6 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
                 <Upload className="w-3.5 h-3.5 mr-1.5" /> {t('finance.transactions.chooseAnotherFile')}
               </Button>
 
-              {accounts.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground font-medium">{t('finance.transactions.linkToAccount')}</label>
-                  <Select value={accountId} onValueChange={setAccountId}>
-                    <SelectTrigger className="bg-muted border-border rounded-lg"><SelectValue placeholder={t('common.optional')} /></SelectTrigger>
-                    <SelectContent className="bg-popover border-border rounded-xl">
-                      {accounts.map(a => (
-                        <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </>
           )}
 
