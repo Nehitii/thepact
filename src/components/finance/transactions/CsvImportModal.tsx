@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,6 @@ interface ParsedRow {
   type: 'debit' | 'credit';
 }
 
-// Keywords for auto-detecting column roles from headers
 const DATE_KEYWORDS = ['date', 'datum', 'jour', 'day', 'valeur', 'opération', 'operation', 'booking'];
 const DESC_KEYWORDS = ['description', 'libellé', 'libelle', 'label', 'wording', 'motif', 'référence', 'reference', 'text', 'memo', 'narrative'];
 const AMOUNT_KEYWORDS = ['amount', 'montant', 'somme', 'betrag', 'value'];
@@ -39,32 +38,18 @@ function matchesKeywords(header: string, keywords: string[]): boolean {
   return keywords.some(k => h.includes(k));
 }
 
-/** Parse an amount string handling French/European formats:
- *  "1 234,56" → 1234.56
- *  "1.234,56" → 1234.56
- *  "-1234.56" → -1234.56
- *  "1,234.56" → 1234.56
- */
 function parseAmount(raw: string): number {
   let s = raw.trim().replace(/["']/g, '').replace(/\s/g, '');
   if (!s) return NaN;
-
-  // Detect format: if both . and , exist, the last one is the decimal separator
   const lastComma = s.lastIndexOf(',');
   const lastDot = s.lastIndexOf('.');
-
   if (lastComma > lastDot) {
-    // European: 1.234,56 → remove dots, replace comma with dot
     s = s.replace(/\./g, '').replace(',', '.');
   } else if (lastDot > lastComma) {
-    // US/standard: 1,234.56 → remove commas
     s = s.replace(/,/g, '');
   } else if (lastComma >= 0 && lastDot < 0) {
-    // Only comma: 1234,56 → replace comma with dot
     s = s.replace(',', '.');
   }
-  // else only dot or no separator — already fine
-
   return parseFloat(s);
 }
 
@@ -80,17 +65,14 @@ function parseDate(raw: string, dateFormat: string): string {
     if (!d || !m || !y) return '';
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
   }
-  // YYYY-MM-DD or auto
   const parts = cleaned.split(/[/\-.]/);
   if (parts.length === 3 && parts[0].length === 4) return cleaned;
-  // Try DD/MM/YYYY as fallback
   if (parts.length === 3 && parts[2]?.length === 4) {
     return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
   }
   return cleaned;
 }
 
-/** Split a CSV line respecting quoted fields */
 function splitCsvLine(line: string, delimiter: string): string[] {
   const result: string[] = [];
   let current = '';
@@ -98,12 +80,8 @@ function splitCsvLine(line: string, delimiter: string): string[] {
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
+      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+      else { inQuotes = !inQuotes; }
     } else if (ch === delimiter && !inQuotes) {
       result.push(current.trim().replace(/^"|"$/g, ''));
       current = '';
@@ -115,11 +93,84 @@ function splitCsvLine(line: string, delimiter: string): string[] {
   return result;
 }
 
+/** Auto-detect best delimiter from header line */
+function detectDelimiter(headerLine: string): string {
+  const candidates = [';', ',', '\t'];
+  let best = ';';
+  let bestCount = 0;
+  for (const d of candidates) {
+    const count = splitCsvLine(headerLine, d).length;
+    if (count > bestCount) { bestCount = count; best = d; }
+  }
+  return best === '\t' ? 'tab' : best;
+}
+
+function parseText(text: string, delimiter: string, dateFormat: string): { rows: ParsedRow[]; skipped: number } {
+  const delim = delimiter === 'tab' ? '\t' : delimiter;
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return { rows: [], skipped: 0 };
+
+  const headers = splitCsvLine(lines[0], delim);
+
+  let dateCol = -1, descCol = -1, amountCol = -1, debitCol = -1, creditCol = -1;
+
+  headers.forEach((h, i) => {
+    if (dateCol < 0 && matchesKeywords(h, DATE_KEYWORDS)) dateCol = i;
+    else if (descCol < 0 && matchesKeywords(h, DESC_KEYWORDS)) descCol = i;
+    else if (debitCol < 0 && matchesKeywords(h, DEBIT_KEYWORDS)) debitCol = i;
+    else if (creditCol < 0 && matchesKeywords(h, CREDIT_KEYWORDS)) creditCol = i;
+    else if (amountCol < 0 && matchesKeywords(h, AMOUNT_KEYWORDS)) amountCol = i;
+  });
+
+  if (dateCol < 0) dateCol = 0;
+  if (descCol < 0) descCol = dateCol === 0 ? 1 : 0;
+  const hasDebitCredit = debitCol >= 0 || creditCol >= 0;
+  if (amountCol < 0 && !hasDebitCredit) {
+    amountCol = Math.max(dateCol, descCol) + 1;
+  }
+
+  const parsed: ParsedRow[] = [];
+  let skipped = 0;
+
+  for (let i = 1; i < lines.length && i < 5001; i++) {
+    const cols = splitCsvLine(lines[i], delim);
+    if (cols.length < 2) { skipped++; continue; }
+
+    const dateStr = parseDate(cols[dateCol] || '', dateFormat);
+    if (!dateStr || dateStr.includes('NaN') || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) { skipped++; continue; }
+
+    const desc = (cols[descCol] || 'Imported').trim();
+    let amount: number;
+    let txType: 'debit' | 'credit';
+
+    if (hasDebitCredit) {
+      const debitVal = debitCol >= 0 ? parseAmount(cols[debitCol] || '') : NaN;
+      const creditVal = creditCol >= 0 ? parseAmount(cols[creditCol] || '') : NaN;
+      if (!isNaN(debitVal) && Math.abs(debitVal) > 0) {
+        amount = Math.abs(debitVal); txType = 'debit';
+      } else if (!isNaN(creditVal) && Math.abs(creditVal) > 0) {
+        amount = Math.abs(creditVal); txType = 'credit';
+      } else { skipped++; continue; }
+    } else {
+      amount = parseAmount(cols[amountCol] || '');
+      if (isNaN(amount)) { skipped++; continue; }
+      txType = amount < 0 ? 'debit' : 'credit';
+      amount = Math.abs(amount);
+    }
+
+    if (amount === 0) { skipped++; continue; }
+    parsed.push({ date: dateStr, description: desc, amount, type: txType });
+  }
+
+  return { rows: parsed, skipped };
+}
+
 export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, defaultDelimiter }: Props) {
   const { t } = useTranslation();
   const fileRef = useRef<HTMLInputElement>(null);
   const addBatch = useAddTransactionsBatch();
 
+  const [rawText, setRawText] = useState('');
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [skippedCount, setSkippedCount] = useState(0);
   const [accountId, setAccountId] = useState('');
@@ -127,88 +178,42 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
   const [dateFormat, setDateFormat] = useState<string>(defaultDateFormat || 'DD/MM/YYYY');
   const [delimiterSetting, setDelimiterSetting] = useState<string>(defaultDelimiter || ';');
 
-  const delimiter = delimiterSetting === 'tab' ? '\t' : delimiterSetting;
+  // Re-parse whenever settings change and we have raw text
+  useEffect(() => {
+    if (!rawText) return;
+    const { rows: parsed, skipped } = parseText(rawText, delimiterSetting, dateFormat);
+    setRows(parsed);
+    setSkippedCount(skipped);
+  }, [rawText, delimiterSetting, dateFormat]);
 
-  const handleFile = (file: File) => {
+  const processText = useCallback((text: string) => {
+    if (!text || text.split(/\r?\n/).filter(l => l.trim()).length < 2) {
+      toast.error(t('finance.transactions.csvEmpty'));
+      return;
+    }
+    // Auto-detect delimiter from header
+    const headerLine = text.split(/\r?\n/).find(l => l.trim()) || '';
+    const detected = detectDelimiter(headerLine);
+    setDelimiterSetting(detected);
+    setRawText(text);
+  }, [t]);
+
+  const handleFile = useCallback((file: File) => {
     setFileName(file.name);
+    // Try UTF-8 first, fallback to ISO-8859-1 if garbled
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
-      const lines = text.split(/\r?\n/).filter(l => l.trim());
-      if (lines.length < 2) { toast.error(t('finance.transactions.csvEmpty')); return; }
-
-      // Parse header to auto-detect columns
-      const headers = splitCsvLine(lines[0], delimiter);
-
-      let dateCol = -1;
-      let descCol = -1;
-      let amountCol = -1;
-      let debitCol = -1;
-      let creditCol = -1;
-
-      headers.forEach((h, i) => {
-        if (dateCol < 0 && matchesKeywords(h, DATE_KEYWORDS)) dateCol = i;
-        else if (descCol < 0 && matchesKeywords(h, DESC_KEYWORDS)) descCol = i;
-        else if (debitCol < 0 && matchesKeywords(h, DEBIT_KEYWORDS)) debitCol = i;
-        else if (creditCol < 0 && matchesKeywords(h, CREDIT_KEYWORDS)) creditCol = i;
-        else if (amountCol < 0 && matchesKeywords(h, AMOUNT_KEYWORDS)) amountCol = i;
-      });
-
-      // Fallback: if no specific debit/credit found and no amount, try positional
-      if (dateCol < 0) dateCol = 0;
-      if (descCol < 0) descCol = dateCol === 0 ? 1 : 0;
-      const hasDebitCredit = debitCol >= 0 || creditCol >= 0;
-      if (amountCol < 0 && !hasDebitCredit) {
-        // Use first numeric-looking column after desc
-        amountCol = Math.max(dateCol, descCol) + 1;
+      if (text.includes('\uFFFD')) {
+        const retryReader = new FileReader();
+        retryReader.onload = (re) => processText(re.target?.result as string);
+        retryReader.readAsText(file, 'ISO-8859-1');
+      } else {
+        processText(text);
       }
-
-      const parsed: ParsedRow[] = [];
-      let skipped = 0;
-
-      for (let i = 1; i < lines.length && i < 5001; i++) {
-        const cols = splitCsvLine(lines[i], delimiter);
-        if (cols.length < 2) { skipped++; continue; }
-
-        const dateStr = parseDate(cols[dateCol] || '', dateFormat);
-        if (!dateStr || dateStr.includes('NaN') || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) { skipped++; continue; }
-
-        const desc = (cols[descCol] || 'Imported').trim();
-
-        let amount: number;
-        let txType: 'debit' | 'credit';
-
-        if (hasDebitCredit) {
-          const debitVal = debitCol >= 0 ? parseAmount(cols[debitCol] || '') : NaN;
-          const creditVal = creditCol >= 0 ? parseAmount(cols[creditCol] || '') : NaN;
-
-          if (!isNaN(debitVal) && Math.abs(debitVal) > 0) {
-            amount = Math.abs(debitVal);
-            txType = 'debit';
-          } else if (!isNaN(creditVal) && Math.abs(creditVal) > 0) {
-            amount = Math.abs(creditVal);
-            txType = 'credit';
-          } else {
-            skipped++;
-            continue;
-          }
-        } else {
-          amount = parseAmount(cols[amountCol] || '');
-          if (isNaN(amount)) { skipped++; continue; }
-          txType = amount < 0 ? 'debit' : 'credit';
-          amount = Math.abs(amount);
-        }
-
-        if (amount === 0) { skipped++; continue; }
-
-        parsed.push({ date: dateStr, description: desc, amount, type: txType });
-      }
-
-      setRows(parsed);
-      setSkippedCount(skipped);
     };
-    reader.readAsText(file);
-  };
+    reader.readAsText(file, 'UTF-8');
+  }, [processText]);
 
   const handleImport = async () => {
     if (rows.length === 0) return;
@@ -224,18 +229,18 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
         }))
       );
       toast.success(t('finance.transactions.importSuccess', { count: rows.length }));
-      setRows([]);
-      setFileName('');
-      setSkippedCount(0);
+      setRows([]); setFileName(''); setSkippedCount(0); setRawText('');
       onClose();
     } catch {
       toast.error(t('finance.transactions.importFailed'));
     }
   };
 
+  const reset = () => { setRows([]); setFileName(''); setSkippedCount(0); setRawText(''); };
+
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) { setRows([]); setFileName(''); setSkippedCount(0); onClose(); } }}>
-      <DialogContent className="bg-card dark:bg-gradient-to-br dark:from-[#0d1220] dark:to-[#080c14] border-border sm:max-w-lg">
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
+      <DialogContent className="bg-card border-border sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-foreground flex items-center gap-2">
             <FileSpreadsheet className="w-5 h-5 text-primary" />
@@ -246,14 +251,11 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
         <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
 
         <div className="space-y-4 pt-2">
-          {/* Settings row always visible */}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs text-muted-foreground font-medium">{t('finance.settings.csvDateFormat')}</label>
               <Select value={dateFormat} onValueChange={setDateFormat}>
-                <SelectTrigger className="mt-1 bg-muted dark:bg-slate-800/60 border-border rounded-lg h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="mt-1 bg-muted border-border rounded-lg h-9 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-popover border-border rounded-xl">
                   <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
                   <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
@@ -264,9 +266,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
             <div>
               <label className="text-xs text-muted-foreground font-medium">{t('finance.settings.csvDelimiter')}</label>
               <Select value={delimiterSetting} onValueChange={setDelimiterSetting}>
-                <SelectTrigger className="mt-1 bg-muted dark:bg-slate-800/60 border-border rounded-lg h-9 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="mt-1 bg-muted border-border rounded-lg h-9 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent className="bg-popover border-border rounded-xl">
                   <SelectItem value=",">{t('finance.settings.delimiterComma')}</SelectItem>
                   <SelectItem value=";">{t('finance.settings.delimiterSemicolon')}</SelectItem>
@@ -277,10 +277,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
           </div>
 
           {rows.length === 0 ? (
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="w-full p-8 border-2 border-dashed border-border hover:border-primary/50 rounded-2xl flex flex-col items-center gap-3 transition-colors"
-            >
+            <button onClick={() => fileRef.current?.click()} className="w-full p-8 border-2 border-dashed border-border hover:border-primary/50 rounded-2xl flex flex-col items-center gap-3 transition-colors">
               <Upload className="w-8 h-8 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">{t('finance.transactions.csvSelectFile')}</span>
               <span className="text-xs text-muted-foreground/60">{t('finance.transactions.csvHint')}</span>
@@ -302,7 +299,6 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
                 </div>
               )}
 
-              {/* Preview */}
               <div className="max-h-[200px] overflow-y-auto rounded-xl border border-border">
                 <table className="w-full text-xs">
                   <thead>
@@ -327,19 +323,15 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
                 {rows.length > 30 && <p className="p-2 text-xs text-center text-muted-foreground">…{t('common.more')} ({rows.length - 30})</p>}
               </div>
 
-              {/* Re-upload button */}
-              <Button variant="outline" size="sm" onClick={() => { setRows([]); setSkippedCount(0); fileRef.current?.click(); }} className="w-full border-border rounded-xl text-xs">
+              <Button variant="outline" size="sm" onClick={() => { reset(); fileRef.current?.click(); }} className="w-full border-border rounded-xl text-xs">
                 <Upload className="w-3.5 h-3.5 mr-1.5" /> {t('finance.transactions.chooseAnotherFile')}
               </Button>
 
-              {/* Account selector */}
               {accounts.length > 0 && (
                 <div className="space-y-2">
                   <label className="text-sm text-muted-foreground font-medium">{t('finance.transactions.linkToAccount')}</label>
                   <Select value={accountId} onValueChange={setAccountId}>
-                    <SelectTrigger className="bg-muted dark:bg-slate-800/60 border-border rounded-lg">
-                      <SelectValue placeholder={t('common.optional')} />
-                    </SelectTrigger>
+                    <SelectTrigger className="bg-muted border-border rounded-lg"><SelectValue placeholder={t('common.optional')} /></SelectTrigger>
                     <SelectContent className="bg-popover border-border rounded-xl">
                       {accounts.map(a => (
                         <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
@@ -352,7 +344,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
           )}
 
           <div className="flex gap-3 pt-2">
-            <Button variant="outline" onClick={() => { setRows([]); setFileName(''); setSkippedCount(0); onClose(); }} className="flex-1 border-border">{t('common.cancel')}</Button>
+            <Button variant="outline" onClick={() => { reset(); onClose(); }} className="flex-1 border-border">{t('common.cancel')}</Button>
             <Button onClick={handleImport} disabled={rows.length === 0 || addBatch.isPending} className="flex-1">
               {addBatch.isPending ? t('common.saving') : t('finance.transactions.importBtn', { count: rows.length })}
             </Button>
