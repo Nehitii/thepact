@@ -173,7 +173,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
   const [rawText, setRawText] = useState('');
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [skippedCount, setSkippedCount] = useState(0);
-  const [accountId, setAccountId] = useState('');
+  const [accountId, setAccountId] = useState('none');
   const [fileName, setFileName] = useState('');
   const [dateFormat, setDateFormat] = useState<string>(defaultDateFormat || 'DD/MM/YYYY');
   const [delimiterSetting, setDelimiterSetting] = useState<string>(defaultDelimiter || ';');
@@ -224,7 +224,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
           amount: r.amount,
           transaction_type: r.type,
           transaction_date: r.date,
-          account_id: accountId || undefined,
+          account_id: accountId !== 'none' ? accountId : undefined,
           source: 'csv_import',
         }))
       );
@@ -236,7 +236,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
     }
   };
 
-  const reset = () => { setRows([]); setFileName(''); setSkippedCount(0); setRawText(''); };
+  const reset = () => { setRows([]); setFileName(''); setSkippedCount(0); setRawText(''); setAccountId('none'); };
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
@@ -251,7 +251,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
         <input ref={fileRef} type="file" accept=".csv,.txt" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); e.target.value = ''; }} />
 
         <div className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="text-xs text-muted-foreground font-medium">{t('finance.settings.csvDateFormat')}</label>
               <Select value={dateFormat} onValueChange={setDateFormat}>
@@ -274,6 +274,20 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
                 </SelectContent>
               </Select>
             </div>
+            {accounts.length > 0 && (
+              <div>
+                <label className="text-xs text-muted-foreground font-medium">{t('finance.transactions.linkToAccount')}</label>
+                <Select value={accountId} onValueChange={setAccountId}>
+                  <SelectTrigger className="mt-1 bg-muted border-border rounded-lg h-9 text-xs"><SelectValue placeholder={t('common.optional')} /></SelectTrigger>
+                  <SelectContent className="bg-popover border-border rounded-xl">
+                    <SelectItem value="none">{t('common.optional')}</SelectItem>
+                    {accounts.map(a => (
+                      <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {rows.length === 0 ? (
@@ -327,19 +341,6 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
                 <Upload className="w-3.5 h-3.5 mr-1.5" /> {t('finance.transactions.chooseAnotherFile')}
               </Button>
 
-              {accounts.length > 0 && (
-                <div className="space-y-2">
-                  <label className="text-sm text-muted-foreground font-medium">{t('finance.transactions.linkToAccount')}</label>
-                  <Select value={accountId} onValueChange={setAccountId}>
-                    <SelectTrigger className="bg-muted border-border rounded-lg"><SelectValue placeholder={t('common.optional')} /></SelectTrigger>
-                    <SelectContent className="bg-popover border-border rounded-xl">
-                      {accounts.map(a => (
-                        <SelectItem key={a.id} value={a.id}>{a.icon_emoji} {a.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </>
           )}
 

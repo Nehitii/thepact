@@ -10,6 +10,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { useTransactions, useDeleteTransaction, useAddTransaction } from '@/hooks/useTransactions';
 import { useAccounts } from '@/hooks/useAccounts';
+import { useAccountBalances } from '@/hooks/useAccountBalances';
 import { format, parseISO } from 'date-fns';
 import { toast } from 'sonner';
 import { AddTransactionModal } from './AddTransactionModal';
@@ -32,6 +33,7 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
   const { currency } = useCurrency();
   const { data: transactions = [], isLoading } = useTransactions(user?.id);
   const { data: accounts = [] } = useAccounts(user?.id);
+  const { data: balancesMap } = useAccountBalances(accounts, user?.id);
   const deleteTx = useDeleteTransaction();
   const duplicateTx = useAddTransaction();
 
@@ -58,6 +60,32 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
       return true;
     });
   }, [transactions, search, typeFilter, selectedAccountId]);
+
+  const showRunningBalance = selectedAccountId !== 'all';
+
+  // Compute running balance when filtering by account
+  const runningBalances = useMemo(() => {
+    if (!showRunningBalance) return new Map<string, number>();
+    const account = accounts.find(a => a.id === selectedAccountId);
+    if (!account) return new Map<string, number>();
+
+    const initial = account.initial_balance ?? account.balance ?? 0;
+    const balanceDate = account.balance_date || account.created_at?.split('T')[0] || '1970-01-01';
+
+    // Sort ascending by date for cumulative calc
+    const sorted = [...filtered].sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
+    const map = new Map<string, number>();
+    let running = initial;
+
+    for (const tx of sorted) {
+      if (tx.transaction_date >= balanceDate) {
+        if (tx.transaction_type === 'credit') running += tx.amount;
+        else running -= tx.amount;
+      }
+      map.set(tx.id, running);
+    }
+    return map;
+  }, [filtered, showRunningBalance, selectedAccountId, accounts]);
 
   const visibleItems = filtered.slice(0, visibleCount);
   const hasMore = filtered.length > visibleCount;
@@ -199,6 +227,9 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
                   <th className="text-left p-4 font-medium hidden sm:table-cell">{t('finance.transactions.account')}</th>
                   <th className="text-left p-4 font-medium hidden md:table-cell">{t('finance.transactions.category')}</th>
                   <th className="text-right p-4 font-medium">{t('finance.recurring.amount')}</th>
+                  {showRunningBalance && (
+                    <th className="text-right p-4 font-medium hidden lg:table-cell">{t('finance.accounts.runningBalance')}</th>
+                  )}
                   <th className="text-right p-4 font-medium w-24"></th>
                 </tr>
               </thead>
@@ -231,6 +262,15 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
                     <td className={`p-4 text-sm font-semibold text-right tabular-nums ${tx.transaction_type === 'credit' ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {tx.transaction_type === 'credit' ? '+' : '-'}{formatCurrency(Math.abs(tx.amount), currency)}
                     </td>
+                    {showRunningBalance && (
+                      <td className="p-4 text-sm text-right tabular-nums hidden lg:table-cell">
+                        {runningBalances.has(tx.id) ? (
+                          <span className={runningBalances.get(tx.id)! >= 0 ? 'text-foreground' : 'text-rose-400'}>
+                            {formatCurrency(runningBalances.get(tx.id)!, currency)}
+                          </span>
+                        ) : '—'}
+                      </td>
+                    )}
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button

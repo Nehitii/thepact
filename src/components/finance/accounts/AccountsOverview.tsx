@@ -8,6 +8,7 @@ import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
 import { toast } from 'sonner';
 import { useAccounts, useAddAccount, useUpdateAccount, useDeleteAccount, useAccountTransfers, useExecuteTransfer } from '@/hooks/useAccounts';
+import { useAccountBalances } from '@/hooks/useAccountBalances';
 import { AccountCard } from './AccountCard';
 import { AddAccountModal } from './AddAccountModal';
 import { TransferSimulator } from './TransferSimulator';
@@ -23,6 +24,7 @@ export function AccountsOverview({ onSelectAccount }: AccountsOverviewProps) {
   const { currency } = useCurrency();
   const { data: accounts = [], isLoading } = useAccounts(user?.id);
   const { data: transfers = [] } = useAccountTransfers(user?.id);
+  const { data: balancesMap } = useAccountBalances(accounts, user?.id);
   const addAccount = useAddAccount();
   const updateAccount = useUpdateAccount();
   const deleteAccount = useDeleteAccount();
@@ -31,14 +33,20 @@ export function AccountsOverview({ onSelectAccount }: AccountsOverviewProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAccount, setEditingAccount] = useState<UserAccount | null>(null);
 
-  const totalNetWorth = accounts.filter(a => a.is_active).reduce((sum, a) => sum + a.balance, 0);
+  const totalNetWorth = accounts.filter(a => a.is_active).reduce((sum, a) => {
+    const computed = balancesMap?.get(a.id);
+    return sum + (computed ? computed.computedBalance : a.balance);
+  }, 0);
 
   const handleSave = async (data: {
     name: string;
     bank_name?: string;
     account_type?: string;
     balance?: number;
+    initial_balance?: number;
+    balance_date?: string;
     icon_emoji?: string;
+    icon_url?: string;
     color?: string;
   }) => {
     try {
@@ -142,17 +150,22 @@ export function AccountsOverview({ onSelectAccount }: AccountsOverviewProps) {
           </motion.div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {accounts.map((account, i) => (
-              <motion.div key={account.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-                <AccountCard
-                  account={account}
-                  currency={currency}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onSelect={onSelectAccount}
-                />
-              </motion.div>
-            ))}
+            {accounts.map((account, i) => {
+              const computed = balancesMap?.get(account.id);
+              return (
+                <motion.div key={account.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                  <AccountCard
+                    account={account}
+                    currency={currency}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onSelect={onSelectAccount}
+                    computedBalance={computed?.computedBalance}
+                    txCount={computed?.txCount}
+                  />
+                </motion.div>
+              );
+            })}
           </div>
         )}
       </div>

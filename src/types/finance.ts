@@ -137,6 +137,8 @@ export interface UserAccount {
   bank_name: string | null;
   account_type: string;
   balance: number;
+  initial_balance: number;
+  balance_date: string | null;
   icon_emoji: string | null;
   icon_url: string | null;
   color: string;

@@ -37,7 +37,10 @@ export function useAddTransaction() {
       const { error } = await supabase.from('bank_transactions').insert({ ...tx, user_id: user.id });
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['bank_transactions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['bank_transactions'] });
+      qc.invalidateQueries({ queryKey: ['user-accounts'] });
+    },
   });
 }
 
@@ -60,7 +63,10 @@ export function useAddTransactionsBatch() {
       const { error } = await supabase.from('bank_transactions').insert(rows);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['bank_transactions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['bank_transactions'] });
+      qc.invalidateQueries({ queryKey: ['user-accounts'] });
+    },
   });
 }
 
@@ -71,7 +77,10 @@ export function useDeleteTransaction() {
       const { error } = await supabase.from('bank_transactions').delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['bank_transactions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['bank_transactions'] });
+      qc.invalidateQueries({ queryKey: ['user-accounts'] });
+    },
   });
 }
 
@@ -83,6 +92,9 @@ export function useUpdateTransaction() {
       const { error } = await supabase.from('bank_transactions').update(updates).eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['bank_transactions'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['bank_transactions'] });
+      qc.invalidateQueries({ queryKey: ['user-accounts'] });
+    },
   });
 }

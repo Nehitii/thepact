@@ -32,6 +32,8 @@ interface AddAccountModalProps {
     bank_name?: string;
     account_type?: string;
     balance?: number;
+    initial_balance?: number;
+    balance_date?: string;
     icon_emoji?: string;
     icon_url?: string;
     color?: string;
@@ -47,6 +49,7 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
   const [bankName, setBankName] = useState('');
   const [accountType, setAccountType] = useState('checking');
   const [balance, setBalance] = useState('0');
+  const [balanceDate, setBalanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [iconEmoji, setIconEmoji] = useState('🏦');
   const [iconUrl, setIconUrl] = useState<string | null>(null);
   const [color, setColor] = useState('#60a5fa');
@@ -56,7 +59,8 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
       setName(editingAccount?.name ?? '');
       setBankName(editingAccount?.bank_name ?? '');
       setAccountType(editingAccount?.account_type ?? 'checking');
-      setBalance(editingAccount?.balance?.toString() ?? '0');
+      setBalance((editingAccount?.initial_balance ?? editingAccount?.balance ?? 0).toString());
+      setBalanceDate(editingAccount?.balance_date ?? new Date().toISOString().split('T')[0]);
       setIconEmoji(editingAccount?.icon_emoji ?? '🏦');
       setIconUrl(editingAccount?.icon_url ?? null);
       setColor(editingAccount?.color ?? '#60a5fa');
@@ -65,11 +69,14 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
 
   const handleSave = async () => {
     if (!name.trim()) return;
+    const numBalance = parseFloat(balance) || 0;
     await onSave({
       name: name.trim(),
       bank_name: bankName.trim() || undefined,
       account_type: accountType,
-      balance: parseFloat(balance) || 0,
+      balance: numBalance,
+      initial_balance: numBalance,
+      balance_date: balanceDate,
       icon_emoji: iconUrl ? undefined : iconEmoji,
       icon_url: iconUrl || undefined,
       color,
@@ -160,22 +167,23 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
               </div>
             </div>
 
+            <div>
+              <Label>{t('finance.accounts.type')}</Label>
+              <Select value={accountType} onValueChange={setAccountType}>
+                <SelectTrigger className="mt-1.5 bg-muted dark:bg-slate-800/60 border-border text-foreground rounded-lg">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border rounded-xl">
+                  {ACCOUNT_TYPES.map(type => (
+                    <SelectItem key={type} value={type} className="text-foreground rounded-lg">
+                      {t(`finance.accounts.types.${type}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>{t('finance.accounts.type')}</Label>
-                <Select value={accountType} onValueChange={setAccountType}>
-                  <SelectTrigger className="mt-1.5 bg-muted dark:bg-slate-800/60 border-border text-foreground rounded-lg">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border rounded-xl">
-                    {ACCOUNT_TYPES.map(type => (
-                      <SelectItem key={type} value={type} className="text-foreground rounded-lg">
-                        {t(`finance.accounts.types.${type}`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <div>
                 <Label>{t('finance.accounts.initialBalance')}</Label>
                 <div className="relative mt-1.5">
@@ -188,6 +196,15 @@ export function AddAccountModal({ open, onClose, onSave, editingAccount, currenc
                     className="pl-7 finance-input"
                   />
                 </div>
+              </div>
+              <div>
+                <Label>{t('finance.accounts.balanceAsOf')}</Label>
+                <Input
+                  type="date"
+                  value={balanceDate}
+                  onChange={e => setBalanceDate(e.target.value)}
+                  className="mt-1.5 finance-input"
+                />
               </div>
             </div>
           </div>
