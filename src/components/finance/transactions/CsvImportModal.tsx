@@ -236,7 +236,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
     }
   };
 
-  const reset = () => { setRows([]); setFileName(''); setSkippedCount(0); setRawText(''); };
+  const reset = () => { setRows([]); setFileName(''); setSkippedCount(0); setRawText(''); setAccountId('none'); };
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
