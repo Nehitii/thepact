@@ -173,7 +173,7 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
   const [rawText, setRawText] = useState('');
   const [rows, setRows] = useState<ParsedRow[]>([]);
   const [skippedCount, setSkippedCount] = useState(0);
-  const [accountId, setAccountId] = useState('');
+  const [accountId, setAccountId] = useState('none');
   const [fileName, setFileName] = useState('');
   const [dateFormat, setDateFormat] = useState<string>(defaultDateFormat || 'DD/MM/YYYY');
   const [delimiterSetting, setDelimiterSetting] = useState<string>(defaultDelimiter || ';');
