@@ -1,125 +1,64 @@
 
 
-# Finance Module — Complete Audit, Fixes & Improvements
+# Fix: CSV Import Fails — Encoding Issue
 
-## BUGS & MISSING TRANSLATIONS
+## Root Cause
 
-### Critical: 6 Missing i18n Key Groups
-The console logs confirm these keys are completely absent from both `en.json` and `fr.json`:
+The CSV file from Societe Generale uses ISO-8859-1 encoding (standard for French bank CSVs):
+```
+Date de l'opération;Libellé;Détail de l'écriture;Montant de l'opération;Devise
+```
 
-| Key | Used In |
-|-----|---------|
-| `finance.analytics.last6Months` | CategoryTrendsChart L69, L139 |
-| `finance.analytics.perYear` | FinanceDashboard L192 |
-| `finance.analytics.monthComparison` | MonthComparisonWidget L63 |
-| `finance.analytics.noPreviousMonth` | MonthComparisonWidget L68 |
-| `finance.analytics.topExpenses` | TopCategoriesBar L40 |
-| `finance.analytics.incomeVsExpenses` | CategoryTrendsChart L68 |
+`FileReader.readAsText()` defaults to UTF-8. Accented bytes (`é` = 0xE9 in Latin-1) become replacement characters (`�`), so:
+- `"Date de l'opération"` → `"Date de l'op�ration"` — no longer contains `"operation"`
+- `"Libellé"` → `"Libell�"` — no longer contains `"libelle"`
+- `"Montant de l'opération"` → `"Montant de l'op�ration"` — no longer contains `"montant"` ... wait, "montant" has no accents. Let me recheck.
 
-Additionally, `finance.budgets.*` and `finance.savings.*` keys are still missing (confirmed by search returning zero results).
+Actually `"Montant"` has no accent, so AMOUNT detection works. But `dateCol` and `descCol` fail. Since `dateCol` defaults to 0 and `descCol` defaults to 1 (fallback logic), those actually work by fallback. The real issue may be more subtle — let me verify the actual data row parsing too.
 
-**Fix**: Add complete `finance.analytics`, `finance.budgets`, and `finance.savings` key blocks to both locale files.
+Looking again at the data: amounts like `-16,49` with comma decimals. The `parseAmount` handles this. Dates like `24/03/2026` with `DD/MM/YYYY` format. The `parseDate` handles this.
 
-### Bug: AnimatedNumber shows NaN briefly for negatives
-In `AnimatedNumber.tsx`, the animation starts from `0` and interpolates toward `Math.abs(value)`. But on the final frame it sets `displayValue = value` (negative). The prefix logic `isPositive ? '+' : ''` doesn't add a minus sign — `formatCurrency` handles it, but during interpolation negative values show as positive amounts then jump to negative.
+Wait — the file has 5 columns per row. Column 3 (index 3) is `"Montant de l'opération"`. The keyword `"montant"` is in AMOUNT_KEYWORDS and has no accent. So `amountCol = 3` should be set correctly even with garbled encoding.
 
-**Fix**: Simplify — animate `displayValue` from 0 toward `value` directly (not `Math.abs`), remove the manual sign prefix, let `formatCurrency` handle signs consistently.
+Let me re-trace more carefully with garbled headers:
+- Header 0: `"Date de l'op\uFFFDration"` → normalized NFD: still contains `\uFFFD`. Does NOT match `"operation"` in DATE_KEYWORDS. `dateCol` stays -1.
+- Header 1: `"Libell\uFFFD"` → does NOT match `"libelle"`. `descCol` stays -1.
+- Header 2: `"D\uFFFDtail de l'\uFFFDcriture"` → no match.
+- Header 3: `"Montant de l'op\uFFFDration"` → contains `"montant"` → matches AMOUNT_KEYWORDS? No wait — the `else if` chain first checks DATE_KEYWORDS. Does it contain `"operation"`? No (it's `"op\uFFFDration"`). DESC_KEYWORDS? Does it contain any desc keyword? "montant de l'op\uFFFDration" doesn't match desc keywords. DEBIT? No. CREDIT? No. AMOUNT? Contains "montant" → yes! `amountCol = 3`. 
+- Header 4: `"Devise"` → no match.
 
-### Bug: Hardcoded English text in CsvImportModal
-- Line 302: `"rows skipped (invalid date or amount)"` — not translated
-- Line 332: `"Choose another file"` — not translated
+Fallback: `dateCol = 0`, `descCol = 1` (since dateCol fallback is 0, descCol = 1). `amountCol = 3`. These are actually correct!
 
-**Fix**: Replace with `t('finance.transactions.skippedRows', { count: skippedCount })` and `t('finance.transactions.chooseAnotherFile')`.
+So column detection works via fallbacks. The data parsing should work too. Let me look deeper...
 
-### Bug: ProjectionsPanel month key format mismatch
-`ProjectionsPanel` uses `format(monthDate, 'yyyy-MM-01')` (with `-01`) to find validations, but `MonthlyValidationPanel` stores months as `'yyyy-MM-01'` while `MonthlyHistory` also uses `'yyyy-MM-01'`. However, `FinanceDashboard` and `CategoryTrendsChart` search validations using `format(d, 'yyyy-MM')` (without `-01`). If the DB stores `yyyy-MM-01`, the dashboard widgets will never find matches.
+Actually, the file view showed 185 lines. Let me check if the issue might be that `readAsText` with UTF-8 encoding completely breaks on certain byte sequences, causing the entire text to be empty or mangled at certain lines.
 
-**Fix**: Standardize all lookups to match the DB storage format (`yyyy-MM-01`), or normalize during comparison.
+No — UTF-8 `readAsText` replaces invalid bytes with U+FFFD but still produces output. The parsing should work.
 
-### Bug: CategoryDonut dynamic class not compiled by Tailwind
-Line 53: `` `from-${colorAccent}-500/[0.05]` `` — Tailwind can't generate dynamic class names at runtime.
+Let me check if there's a state issue — maybe `delimiter` isn't applied because the state updates after `handleFile` runs. The `delimiterSetting` defaults to `defaultDelimiter || ';'` but `delimiter` is derived with `const delimiter = delimiterSetting === 'tab' ? '\t' : delimiterSetting`. If `defaultDelimiter` is passed as `','` from settings, that would break everything since the file uses `;`.
 
-**Fix**: Use inline style or explicit conditional classes.
+Looking at `Finance.tsx`, `financeSettings` passes `finance_csv_delimiter` which defaults to `','`. So the user's delimiter setting is probably `','` (comma), but the actual file uses `;` (semicolon). When the user picks the file, `delimiter` is `,` and all 5-column rows get parsed as 1-column rows → `cols.length < 2` → everything is skipped!
 
----
+**This is the real bug**: the delimiter is set to `,` by default from settings, but French bank CSVs use `;`. Even though the UI shows the delimiter selector, the user must manually change it BEFORE selecting the file. If they select the file first, parsing uses the wrong delimiter.
 
-## UX/UI IMPROVEMENTS
+## Fix
 
-### 1. Transaction Table: No inline edit capability
-Currently transactions can only be deleted, not edited. `useUpdateTransaction` hook exists but is unused.
+**File: `CsvImportModal.tsx`**
 
-**Fix**: Add an edit button alongside delete in `TransactionsTab`, opening a pre-filled `AddTransactionModal` in edit mode.
+1. **Auto-detect delimiter**: Before parsing, scan the header line for the most likely delimiter (`;`, `,`, `\t`). Pick the one that produces the most columns.
+2. **Re-parse on settings change**: When the user changes delimiter or date format after selecting a file, re-parse automatically instead of requiring a re-upload.
+3. **Encoding fallback**: Try UTF-8 first, and if replacement characters are detected, retry with ISO-8859-1.
 
-### 2. Transaction Table: No pagination
-All 500 transactions render at once. With heavy CSV imports, this can lag.
+### Implementation
 
-**Fix**: Add a "Load more" button or virtual scrolling (show 50 at a time).
+- Store the raw file text in state so re-parsing can happen when settings change
+- Add an `autoDetectDelimiter()` function that tests `;`, `,`, `\t` on the header line
+- Add a `useEffect` that re-runs parsing when `dateFormat` or `delimiterSetting` change (if raw text exists)
+- Use `reader.readAsText(file, 'UTF-8')` then check for `\uFFFD`, and if found, retry with `reader.readAsText(file, 'ISO-8859-1')`
 
-### 3. Dashboard: No empty state
-When no data exists, the dashboard shows `0%`, `+€0`, and empty charts with no guidance.
+| File | Change |
+|------|--------|
+| `src/components/finance/transactions/CsvImportModal.tsx` | Auto-detect delimiter, encoding fallback, re-parse on settings change |
 
-**Fix**: Add a welcoming empty state with quick-start actions (add first income, add first expense, add first account).
-
-### 4. MonthlyHistory: Edit button not working for unvalidated months
-The edit button appears for validated months only. For unvalidated past months, there's no way to create a validation retroactively.
-
-**Fix**: Show a "Validate" action for unvalidated months that opens ValidationFlowModal with that month context.
-
-### 5. Budget Panel: No edit for existing budgets
-Users can only delete and re-create budgets. No inline limit editing.
-
-**Fix**: Add an edit button on each budget row to change the `monthly_limit`.
-
-### 6. Savings Goal: No link to account
-The `accounts` prop is passed to `SavingsGoalTracker` but never used — users can't associate a savings goal with an account.
-
-**Fix**: Add optional account selector in the goal creation form.
-
----
-
-## VISUAL/GRAPHIC IMPROVEMENTS
-
-### 7. KPI Cards: Add micro-trend indicators
-Currently just static numbers. Add a small up/down arrow comparing to last validated month.
-
-### 8. Net Worth in Accounts tab: Add sparkline
-Show a mini trend of net worth evolution based on transfer history.
-
-### 9. Donut charts: Center label
-Add total amount as a center label inside the donut for immediate readability.
-
-### 10. Transaction table: Alternating row background
-Add subtle zebra striping for better readability.
-
-### 11. Category progress bars (BudgetProgressPanel): Gradient fill
-Use category-colored gradients instead of flat color for a more premium look.
-
-### 12. Validation Panel: Progress stepper dots
-Add visual step indicators (1-2-3-4) to show progress through the validation flow.
-
----
-
-## FEATURE ADDITIONS
-
-### 13. Recurring item frequency support
-Currently all items are monthly. Add frequency field: weekly, biweekly, monthly, quarterly, yearly. Adjust calculations accordingly.
-
-### 14. Balance snapshot history
-Track account balance snapshots at each month validation to build a true net worth evolution chart over time.
-
-### 15. Quick duplicate transaction
-Add a "duplicate" action on transaction rows for fast entry of similar operations.
-
----
-
-## IMPLEMENTATION ORDER
-
-| Phase | Items | Files |
-|-------|-------|-------|
-| **Phase 1: Fix all bugs** | Missing i18n keys, AnimatedNumber, hardcoded strings, month format mismatch, Tailwind dynamic class | `en.json`, `fr.json`, `AnimatedNumber.tsx`, `CsvImportModal.tsx`, `ProjectionsPanel.tsx`, `FinanceDashboard.tsx`, `CategoryTrendsChart.tsx`, `CategoryDonut.tsx` |
-| **Phase 2: UX fixes** | Transaction edit, pagination, empty states, budget edit, unvalidated month actions | `TransactionsTab.tsx`, `AddTransactionModal.tsx`, `FinanceDashboard.tsx`, `MonthlyHistory.tsx`, `BudgetProgressPanel.tsx`, `SavingsGoalTracker.tsx` |
-| **Phase 3: Visual polish** | KPI trends, donut center label, zebra rows, gradient bars, stepper dots | `FinanceDashboard.tsx`, `CategoryDonut.tsx`, `TransactionsTab.tsx`, `BudgetProgressPanel.tsx`, `ValidationFlowModal.tsx` |
-| **Phase 4: Features** | Frequency support, balance snapshots, duplicate transaction | Migration (add `frequency` column), `useFinance.ts`, `FinancialBlock.tsx`, `AddItemForm.tsx`, `TransactionsTab.tsx` |
-
-No database changes needed for Phases 1-3. Phase 4 requires one migration to add a `frequency` column to `recurring_expenses` and `recurring_income` tables.
+No database changes.
 
