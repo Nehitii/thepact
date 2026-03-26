@@ -68,11 +68,11 @@ export function AccountCard({ account, currency, onEdit, onDelete, onSelect, com
               <MoreVertical className="w-4 h-4" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-popover border-border rounded-xl">
-            <DropdownMenuItem onClick={() => onEdit(account)} className="text-foreground">
+          <DropdownMenuContent align="end" className="bg-popover border-border rounded-xl" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit(account); }} className="text-foreground">
               <Edit2 className="w-3.5 h-3.5 mr-2" />{t('common.edit')}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onDelete(account.id)} className="text-rose-400">
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onDelete(account.id); }} className="text-rose-400">
               <Trash2 className="w-3.5 h-3.5 mr-2" />{t('common.delete')}
             </DropdownMenuItem>
           </DropdownMenuContent>
