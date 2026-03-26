@@ -29,7 +29,7 @@ export function useProfile(userId: string | undefined) {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active")
+        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active, timezone, language, currency, birthday, country")
         .eq("id", userId)
         .maybeSingle();
 
