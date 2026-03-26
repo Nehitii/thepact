@@ -99,7 +99,7 @@ export default function TheCall() {
   const saveCheckInData = async () => {
     // En mode Dev/AutoPlay, on évite d'écrire en base pour ne pas polluer les données
     if (isAutoPlayingRef.current || timeSpeedRef.current > 1) {
-      console.log("DEV MODE: Database update skipped");
+      if (import.meta.env.DEV) console.log("DEV MODE: Database update skipped");
       return;
     }
 
