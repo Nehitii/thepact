@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
 import { ProfileAccountSettings } from "@/components/profile/ProfileAccountSettings";
 import { ProfileDevilNote } from "@/components/profile/ProfileDevilNote";
 import { useTranslation } from "react-i18next";
@@ -10,10 +10,7 @@ import { User, Loader2 } from "lucide-react";
 export default function Profile() {
   const { t } = useTranslation();
   const { user } = useAuth();
-
-  // On ne garde qu'un seul état pour les données chargées
-  const [initialData, setInitialData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: profile, isLoading } = useProfile(user?.id);
   const [isAtBottom, setIsAtBottom] = useState(false);
 
   const handleScroll = useCallback(() => {
@@ -30,29 +27,17 @@ export default function Profile() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const loadProfileData = async () => {
-      setLoading(true);
-      const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
-
-      if (profile) {
-        setInitialData({
-          email: user.email || "",
-          displayName: profile.display_name || "",
-          timezone: profile.timezone || "UTC",
-          language: profile.language || "en",
-          currency: profile.currency || "eur",
-          birthday: profile.birthday ? new Date(profile.birthday) : undefined,
-          country: profile.country || "",
-        });
+  const initialData = profile
+    ? {
+        email: user?.email || "",
+        displayName: profile.display_name || "",
+        timezone: (profile as any).timezone || "UTC",
+        language: (profile as any).language || "en",
+        currency: (profile as any).currency || "eur",
+        birthday: (profile as any).birthday ? new Date((profile as any).birthday) : undefined,
+        country: (profile as any).country || "",
       }
-      setLoading(false);
-    };
-
-    loadProfileData();
-  }, [user]);
+    : null;
 
   return (
     <ProfileSettingsShell
@@ -62,7 +47,7 @@ export default function Profile() {
       floating={user ? <ProfileDevilNote isVisible={isAtBottom} /> : null}
       containerClassName="max-w-3xl"
     >
-      {loading ? (
+      {isLoading ? (
         <div className="flex items-center justify-center py-20">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
