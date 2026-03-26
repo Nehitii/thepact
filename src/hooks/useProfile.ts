@@ -14,6 +14,11 @@ export interface ProfileSettings {
   custom_difficulty_name: string | null;
   custom_difficulty_color: string | null;
   custom_difficulty_active: boolean | null;
+  timezone: string | null;
+  language: string | null;
+  currency: string | null;
+  birthday: string | null;
+  country: string | null;
 }
 
 export function useProfile(userId: string | undefined) {
