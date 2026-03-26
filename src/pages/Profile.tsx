@@ -31,11 +31,11 @@ export default function Profile() {
     ? {
         email: user?.email || "",
         displayName: profile.display_name || "",
-        timezone: (profile as any).timezone || "UTC",
-        language: (profile as any).language || "en",
-        currency: (profile as any).currency || "eur",
-        birthday: (profile as any).birthday ? new Date((profile as any).birthday) : undefined,
-        country: (profile as any).country || "",
+        timezone: profile.timezone || "UTC",
+        language: profile.language || "en",
+        currency: profile.currency || "eur",
+        birthday: profile.birthday ? new Date(profile.birthday) : undefined,
+        country: profile.country || "",
       }
     : null;
 
