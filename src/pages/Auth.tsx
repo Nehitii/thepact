@@ -16,22 +16,26 @@ import { motion } from "framer-motion";
 /* ── Hexadecimal Background Stream ── */
 function HexDataStream() {
   const [data, setData] = useState<string[]>([]);
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
   useEffect(() => {
     const chars = "0123456789ABCDEF";
+    const lineLen = isMobile ? 20 : 40;
+    const lineCount = isMobile ? 15 : 30;
+    const interval_ms = isMobile ? 400 : 150;
     const generateLine = () =>
-      Array.from({ length: 40 })
+      Array.from({ length: lineLen })
         .map(() => chars[Math.floor(Math.random() * chars.length)])
         .join(" ");
 
-    setData(Array.from({ length: 30 }).map(generateLine));
+    setData(Array.from({ length: lineCount }).map(generateLine));
 
     const interval = setInterval(() => {
-      setData((prev) => [generateLine(), ...prev.slice(0, 29)]);
-    }, 150);
+      setData((prev) => [generateLine(), ...prev.slice(0, lineCount - 1)]);
+    }, interval_ms);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isMobile]);
 
   return (
     <div className="hex-stream" aria-hidden="true">
