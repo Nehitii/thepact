@@ -1,169 +1,85 @@
 
 
-# Audit Complet VowPact — Plan d'Amélioration Ultra-Poussé
+# Focus Module — Full Overhaul: All Fixes + Improvements + No Auto-Fullscreen
 
-## Architecture de l'application
+## Changes Overview
 
-VowPact est une app de productivité gamifiée cyberpunk avec 20+ modules : Dashboard, Goals, Finance, Health, Todo, Journal, Focus, Wishlist, Community, Friends, Leaderboard, Achievements, Shop, Analytics, Inbox, et un panneau Admin. Backend sur Lovable Cloud (Supabase).
+### 1. Remove Auto-Fullscreen on Session Start
+- **`Focus.tsx`**: Remove `enterFullscreen()` call from `handleStart()` and `exitFullscreen()` from `handleEnd()`
+- Keep the manual fullscreen toggle button (top-right corner) so users can opt-in if they want
+- Fix Escape key: when in fullscreen, first Escape exits fullscreen only; second Escape aborts session
 
----
+### 2. Delete Dead Code `FocusGoalLinker.tsx`
+- Delete `src/components/focus/FocusGoalLinker.tsx`
+- Remove its export from `src/components/focus/index.ts`
 
-## 🔴 BUGS CRITIQUES & SÉCURITÉ
+### 3. Fix Jitter Interval (10ms → 200ms)
+- **`FocusTimerRing.tsx` L62**: Change `setInterval(..., 10)` to `setInterval(..., 200)`
 
-### 1. Privilege Escalation — `user_roles` sans INSERT policy
-Le scan de sécurité confirme : la table `user_roles` a RLS activé mais aucune policy INSERT/UPDATE/DELETE. N'importe quel utilisateur authentifié peut s'auto-attribuer le rôle `admin`.
+### 4. Fix SVG Rotation Performance
+- **`FocusTimerRing.tsx` L149**: Replace framer-motion `animate={{ rotate }}` with CSS `animation: spin 60s linear infinite` + `will-change: transform`
 
-**Fix** : Migration SQL ajoutant des policies restrictives — seuls les admins existants peuvent insérer/supprimer des rôles.
+### 5. Fix Stale Closures in Keyboard Shortcuts
+- **`Focus.tsx`**: Wrap `handlePause`, `handleResume`, `handleEnd` in `useCallback` with proper deps, add them to the keyboard `useEffect` dependency array
 
-### 2. Vue `user_2fa_settings_safe` accessible sans authentification
-Pas de RLS → toute personne peut lire si un utilisateur a le 2FA activé + user_id.
+### 6. Spotify localStorage Per-User
+- **`SpotifyPlayer.tsx`**: Accept `userId` prop, change `STORAGE_KEY` to `focus-spotify-${userId}`
+- **`Focus.tsx`**: Pass `user?.id` to `SpotifyPlayer`
 
-**Fix** : Ajouter une policy SELECT `auth.uid() = user_id`.
+### 7. Abort Confirmation Dialog
+- **`Focus.tsx`**: Add `showAbortConfirm` state. When user clicks End or presses Escape (while not in fullscreen), show a confirmation dialog instead of immediately ending. Use an AlertDialog.
 
-### 3. 263 utilisations de `as any` dans le codebase
-Perte totale de type-safety. Les plus critiques :
-- `NewGoal.tsx` : insertion Supabase avec `as any` — masque des erreurs de schéma
-- `GoalDetail.tsx` : accès à `(goal as any).deadline` — le type Goal devrait inclure `deadline`
-- `ProfileDisplaySounds.tsx` : `{ theme_preference: next } as any` pour les mutations profil
-- `HealthDailyCheckin.tsx` : `(settings as any)?.checkin_mode`
+### 8. Long Break Duration Configurable
+- **`FocusConfigPanel.tsx`**: Add a third `DurationRow` for "Long Break" with options `[10, 15, 20, 30]`
+- **`Focus.tsx`**: Add `longBreakMin` state, pass to `usePomodoroTimer(workMin, breakMin, longBreakMin)`
 
-**Fix** : Étendre les types `ProfileSettings`, `Goal`, `HealthSettings` avec les champs réels. Supprimer progressivement les `as any`.
+### 9. Session Counter Header
+- **`Focus.tsx`**: When timer is running, show `Session {sessionsCompleted % 4 + 1}/4` badge near the target badge at the top
 
-### 4. `console.log("DEV MODE...")` dans TheCall.tsx (production)
-Un `console.log` de debug reste en production + le mode auto-play/fast-forward semble accessible.
+### 10. Full i18n (40+ keys)
+Add `focus.*` block to both `en.json` and `fr.json`:
+- `focus.title`, `focus.systemLabel`, `focus.initSync`, `focus.terminate`, `focus.hyperfocusActive`
+- `focus.config.title`, `focus.config.work`, `focus.config.break`, `focus.config.longBreak`
+- `focus.stats.today`, `focus.stats.focused`, `focus.stats.streak`, `focus.stats.best`, `focus.stats.weeklyFocus`
+- `focus.history.recentSessions`, `focus.history.showAll`, `focus.history.showLess`
+- `focus.spotify.add`, `focus.spotify.paste`, `focus.spotify.invalid`, `focus.spotify.pasteHint`
+- `focus.controls.resume`, `focus.controls.halt`, `focus.controls.abort`, `focus.controls.overrideControls`
+- `focus.ring.standby`, `focus.ring.halted`, `focus.ring.focused`, `focus.ring.cooling`
+- `focus.toolbar.config`, `focus.toolbar.spotify`, `focus.toolbar.stats`, `focus.toolbar.history`
+- `focus.linker.goal`, `focus.linker.task`, `focus.linker.noGoal`, `focus.linker.noTask`
+- `focus.abort.title`, `focus.abort.message`, `focus.abort.confirm`, `focus.abort.cancel`
+- `focus.session`, `focus.target`
 
-**Fix** : Supprimer ou conditionner avec `import.meta.env.DEV`.
+Then update all 9 focus components to use `useTranslation()` + `t()`.
 
----
+### 11. Accessibility
+- Add `aria-hidden="true"` on all decorative elements (scan lines, corner brackets, ambient effects, vertical text, jitter number)
+- Add `role="progressbar"` + `aria-valuenow` + `aria-valuemin/max` on the SVG ring
+- Add `focus-visible:ring-2 focus-visible:ring-primary` on all custom `<button>` elements
 
-## 🟡 PROBLÈMES UX/UI
-
-### 5. Suspense sans fallback UI
-`<Suspense>` dans `SuspensePage` n'a pas de `fallback` — écran blanc pendant le chargement des chunks lazy.
-
-**Fix** : Ajouter un skeleton/spinner global comme fallback.
-
-### 6. Page 404 non-stylée
-`NotFound.tsx` utilise un style minimal basique, complètement hors du design cyberpunk du reste de l'app.
-
-**Fix** : Redesign en style HUD cohérent avec le reste.
-
-### 7. Sidebar — labels hardcodés en anglais
-Navigation items (`"Dashboard"`, `"Goals"`, `"Finance"`) ne passent pas par `t()` → non traduits en français.
-
-**Fix** : Passer tous les labels sidebar par i18n.
-
-### 8. Onboarding non traduit
-`Onboarding.tsx` utilise des chaînes hardcodées en anglais (`"Welcome"`, `"Choose your symbol"`, etc.)
-
-**Fix** : Extraire vers i18n.
-
-### 9. Auth page — HexDataStream performance
-Le composant `HexDataStream` génère 30 lignes × 40 chars et met à jour toutes les 150ms → potentiellement lourd sur mobile.
-
-**Fix** : Réduire la fréquence ou désactiver sur mobile via `useIsMobile()`.
-
-### 10. Leaderboard — aucune traduction i18n
-Textes comme "Anonymous Agent", "(YOU)", tous hardcodés.
-
-### 11. Achievements — pas de React Query
-`Achievements.tsx` utilise `useState` + `useEffect` manuel au lieu de React Query, ce qui casse le pattern du reste de l'app (pas de cache, pas de refetch).
-
-**Fix** : Migrer vers `useQuery`.
+### 12. FocusHistory — Show Linked Goal/Todo Name
+- **`FocusHistory.tsx`**: Accept `goals` and `todos` props, display linked goal/todo name in each session row
+- **`Focus.tsx`**: Pass `goals` and `tasks` to `FocusHistory`
 
 ---
 
-## 🟠 DETTE TECHNIQUE
+## Files Impact
 
-### 12. GoalDetail.tsx — 437 lignes, 20+ états locaux
-Ce fichier est un monolithe avec trop d'états (`useState` x20+). Difficile à maintenir.
+| Action | File |
+|--------|------|
+| **Delete** | `src/components/focus/FocusGoalLinker.tsx` |
+| **Edit** | `src/components/focus/index.ts` (remove FocusGoalLinker export) |
+| **Edit** | `src/pages/Focus.tsx` (remove auto-fullscreen, useCallback fixes, abort dialog, session counter, long break state, pass props) |
+| **Edit** | `src/components/focus/FocusTimerRing.tsx` (jitter 200ms, CSS rotation, a11y, i18n) |
+| **Edit** | `src/components/focus/FocusControls.tsx` (i18n, a11y) |
+| **Edit** | `src/components/focus/FocusToolbar.tsx` (i18n) |
+| **Edit** | `src/components/focus/FocusConfigPanel.tsx` (long break row, i18n) |
+| **Edit** | `src/components/focus/FocusStats.tsx` (i18n) |
+| **Edit** | `src/components/focus/FocusHistory.tsx` (goal/todo names, i18n) |
+| **Edit** | `src/components/focus/SpotifyPlayer.tsx` (per-user localStorage, i18n) |
+| **Edit** | `src/components/focus/FocusAmbientEffects.tsx` (aria-hidden) |
+| **Edit** | `src/i18n/locales/en.json` (add focus.* block) |
+| **Edit** | `src/i18n/locales/fr.json` (add focus.* block) |
 
-**Fix** : Extraire la logique vers un hook `useGoalDetailState` et des sous-composants.
-
-### 13. AppSidebar.tsx — 648 lignes
-Fichier massif combinant config, UI, état, mobile drawer.
-
-**Fix** : Séparer en `SidebarConfig.ts`, `SidebarDesktop`, `SidebarMobile`.
-
-### 14. Wishlist.tsx — 745 lignes
-Même problème — trop de logique dans un seul fichier.
-
-### 15. `index.css` — 2418 lignes
-CSS monolithique. Devrait être découpé en fichiers thématiques ou utiliser davantage Tailwind.
-
-### 16. Profile.tsx — requête Supabase directe au lieu de `useProfile`
-Le composant `Profile` fait un `supabase.from("profiles").select("*")` manuellement au lieu d'utiliser le hook `useProfile` existant, créant une requête dupliquée.
-
-### 17. Goals.tsx — requête directe pour `goal_unlock_code`
-Même pattern : `supabase.from("profiles").select("goal_unlock_code")` au lieu d'étendre `useProfile`.
-
----
-
-## 📊 PROPOSITIONS D'AMÉLIORATION
-
-### A. Cross-Module Intelligence
-- **Smart Dashboard Widgets** : Le Home affiche déjà beaucoup d'info, mais manque de corrélations cross-module (ex: "Tes sessions Focus ont augmenté de 30% cette semaine, tes goals avancent 2x plus vite").
-- **Weekly Review enrichi** : Intégrer automatiquement les données Finance (solde, dépenses) dans le résumé hebdo.
-
-### B. Mobile Experience
-- **Bottom navigation mobile** : La sidebar se transforme en drawer sur mobile, mais un bottom tab bar serait plus natif (Dashboard/Goals/Finance/Profile).
-- **Pull-to-refresh** : Aucune page ne supporte le geste natif.
-- **Swipe actions** : Sur les listes Todo/Transactions, swipe-left pour supprimer, swipe-right pour compléter.
-
-### C. Onboarding 2.0
-- L'onboarding actuel (4 étapes) ne guide pas l'utilisateur vers les modules. Ajouter un **tutorial interactif** post-onboarding avec des tooltips guidés (style product tour) qui montrent Dashboard → Goals → First Goal.
-
-### D. Data Integrity & Offline
-- **Optimistic updates partout** : Seul Goals utilise l'optimistic update. Todo, Finance, Health devraient aussi.
-- **Error boundaries par module** : Un crash dans Finance ne devrait pas casser toute l'app. Ajouter des `ErrorBoundary` par route.
-
-### E. Performance
-- **Virtual scrolling** : Les listes longues (Transactions 500 items, Goals, Todo) devraient utiliser `react-virtuoso` ou `tanstack-virtual`.
-- **Image lazy loading** : Les images de comptes/goals ne sont pas lazy-loaded.
-- **Bundle splitting** : Déjà en place avec `lazy()`, mais certains imports lourds (recharts, dnd-kit, framer-motion) sont importés dans beaucoup de pages.
-
-### F. Accessibilité
-- **Contraste** : Beaucoup de textes `text-primary/40` ou `text-muted-foreground/50` qui risquent de ne pas passer WCAG AA.
-- **Keyboard navigation** : Les custom buttons dans la sidebar (`<button>` avec `clipPath`) n'ont pas de `focus-visible` styling.
-- **Screen reader** : Les décorations cyberpunk (scan lines, hex stream, particle effects) n'ont pas toutes `aria-hidden="true"`.
-
-### G. Nouvelles Fonctionnalités à Fort Impact
-1. **Mode hors-ligne** avec Service Worker pour les données critiques (todo, checkin)
-2. **Notifications push** (PWA) — le champ `push_enabled` existe déjà dans la table
-3. **Calendrier unifié** fusionnant deadlines Goals + Todo + rendez-vous + dépenses récurrentes
-4. **Export PDF** du bilan mensuel Finance
-5. **Dark/Light mode preview** dans les settings (preview live avant de changer)
-6. **Raccourcis clavier globaux** — CommandPalette existe déjà mais pourrait être étendue avec plus d'actions (new goal, new todo, start focus)
-7. **Widget "Streak" global** visible partout — combiner check-in streak, habit streaks, health streak en un seul indicateur motivant
-8. **Templates de budget** prédéfinis (étudiant, freelance, famille) dans Finance
-
----
-
-## ORDRE DE PRIORITÉ D'IMPLÉMENTATION
-
-| Phase | Catégorie | Items |
-|-------|-----------|-------|
-| **Phase 1** | Sécurité critique | #1 user_roles policies, #2 2FA view RLS |
-| **Phase 2** | Bugs UX | #5 Suspense fallback, #7-8-10 i18n manquant, #4 console.log |
-| **Phase 3** | Type-safety | #3 supprimer les `as any` critiques (NewGoal, GoalDetail, Profile) |
-| **Phase 4** | Performance | #9 HexStream mobile, #E virtual scrolling, lazy images |
-| **Phase 5** | Refactoring | #12-14 split gros fichiers, #16-17 centraliser requêtes |
-| **Phase 6** | UX polish | #6 NotFound redesign, #F accessibilité, #B mobile bottom nav |
-| **Phase 7** | Features | #G calendrier unifié, notifications push, export PDF, templates budget |
-
----
-
-## RÉSUMÉ TECHNIQUE
-
-| Métrique | Valeur |
-|----------|--------|
-| **Pages** | 28 routes |
-| **Composants** | 180+ fichiers .tsx |
-| **Hooks** | 50+ hooks custom |
-| **Edge Functions** | 8 |
-| **Tables DB** | 30+ |
-| **Vulnérabilités sécurité** | 2 critiques |
-| **`as any` count** | 263 |
-| **Fichiers > 400 lignes** | 8 (GoalDetail, Wishlist, AppSidebar, Auth, TheCall, Focus, Friends, Analytics) |
-| **i18n coverage** | ~70% (sidebar, onboarding, leaderboard, achievements non traduits) |
+No database changes needed.
 
