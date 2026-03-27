@@ -1619,5 +1619,77 @@
     "allRarities": "All Rarities",
     "showAll": "Show All",
     "noResults": "Data Remnants Not Found"
+  },
+  "focus": {
+    "title": "FOCUS",
+    "titleAccent": "_CORE",
+    "systemLabel": "DEEP_WORK // POMODORO",
+    "initSync": "Init Sync",
+    "terminate": "Terminate",
+    "hyperfocusActive": "HYPERFOCUS ACTIVE",
+    "target": "Target",
+    "session": "Session",
+    "config": {
+      "title": "Timer Configuration",
+      "work": "Work",
+      "break": "Break",
+      "longBreak": "Long Break"
+    },
+    "stats": {
+      "today": "Today",
+      "focused": "Focused",
+      "streak": "Streak",
+      "best": "Best",
+      "weeklyFocus": "Weekly Focus"
+    },
+    "history": {
+      "recentSessions": "Recent Sessions",
+      "showAll": "Show all {{count}} sessions",
+      "showLess": "Show less"
+    },
+    "spotify": {
+      "add": "Add Spotify",
+      "paste": "Paste Spotify URL...",
+      "invalid": "Invalid Spotify URL",
+      "pasteHint": "Paste a Spotify playlist, album, or track URL"
+    },
+    "controls": {
+      "resume": "[ > EXE.RESUME ]",
+      "halt": "[ || SYS.HALT ]",
+      "abort": "Abort Operation",
+      "overrideControls": "Manual Override controls"
+    },
+    "ring": {
+      "standby": "[ SYS::STANDBY ]",
+      "halted": "[ SYS::HALTED ]",
+      "focused": "[ SYS::FOCUSED ]",
+      "cooling": "[ SYS::COOLING ]"
+    },
+    "toolbar": {
+      "config": "Config",
+      "spotify": "Spotify",
+      "stats": "Stats",
+      "history": "History"
+    },
+    "linker": {
+      "goal": "Goal...",
+      "task": "Task...",
+      "noGoal": "No goal",
+      "noTask": "No task"
+    },
+    "abort": {
+      "title": "Abort Session?",
+      "message": "Your current session progress will be saved. Are you sure you want to stop?",
+      "confirm": "Yes, abort",
+      "cancel": "Continue session"
+    },
+    "notification": {
+      "breakStart": "Target phase reached. Initiating recovery.",
+      "workResume": "Break over. Resuming protocol."
+    },
+    "sideData": {
+      "uplink": "Uplink :: Secure // Latency 12ms // Protocol",
+      "vitals": "Vitals :: Nominal // Neural Sync"
+    }
   }
 }
