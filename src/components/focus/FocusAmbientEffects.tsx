@@ -10,7 +10,6 @@ export function FocusAmbientEffects({ progress, isBreak = false }: FocusAmbientE
   const { profile } = useProfileSettings();
   const particlesEnabled = profile?.particles_enabled ?? true;
 
-  // Use concrete colors for proper rendering
   const mainColor = isBreak ? "160, 80%, 55%" : "195, 100%, 50%";
   const mainColorRgb = isBreak ? "60, 180, 130" : "0, 170, 255";
 
@@ -21,6 +20,7 @@ export function FocusAmbientEffects({ progress, isBreak = false }: FocusAmbientE
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.5 }}
+      aria-hidden="true"
     >
       {/* Full-screen dark overlay for immersion */}
       <div

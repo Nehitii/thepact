@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Maximize, Minimize } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { usePomodoroTimer, usePomodoroSessions } from "@/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
 import { useTodoList } from "@/hooks/useTodoList";
@@ -9,6 +10,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   FocusTimerRing,
   FocusStats,
@@ -22,6 +33,7 @@ import {
 } from "@/components/focus";
 
 export default function Focus() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
@@ -31,15 +43,17 @@ export default function Focus() {
 
   const [workMin, setWorkMin] = useState(25);
   const [breakMin, setBreakMin] = useState(5);
+  const [longBreakMin, setLongBreakMin] = useState(15);
   const [linkedGoalId, setLinkedGoalId] = useState<string | null>(null);
   const [linkedTodoId, setLinkedTodoId] = useState<string | null>(null);
   const [activePanel, setActivePanel] = useState<FocusPanel>(null);
+  const [showAbortConfirm, setShowAbortConfirm] = useState(false);
   const startTimeRef = useRef<string | null>(null);
 
-  const timer = usePomodoroTimer(workMin, breakMin, 15);
+  const timer = usePomodoroTimer(workMin, breakMin, longBreakMin);
   const { saveSession, todayStats, weeklyStats, streak, bestSession, sessions } = usePomodoroSessions();
 
-  // ── Fullscreen Protocol ──
+  // ── Fullscreen (manual only) ──
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -94,8 +108,8 @@ export default function Focus() {
         new Notification("THE PACT // Focus System", {
           body:
             timer.phase === "break"
-              ? "Phase cible atteinte. Initier récupération."
-              : "Pause terminée. Reprise du protocole.",
+              ? t("focus.notification.breakStart")
+              : t("focus.notification.workResume"),
           icon: "/favicon.ico",
         });
       }
@@ -104,27 +118,27 @@ export default function Focus() {
       return () => clearTimeout(timeout);
     }
     prevPhaseRef.current = timer.phase;
-  }, [timer.phase]);
+  }, [timer.phase, t]);
 
-  // ── Handlers ──
-  const handleStart = () => {
+  // ── Handlers (memoized) ──
+  const handleStart = useCallback(() => {
     play("ui");
     startTimeRef.current = new Date().toISOString();
     timer.start();
-    enterFullscreen();
-  };
+    // No auto-fullscreen — user can toggle manually
+  }, [play, timer]);
 
-  const handlePause = () => {
+  const handlePause = useCallback(() => {
     play("ui");
     timer.pause();
-  };
+  }, [play, timer]);
 
-  const handleResume = () => {
+  const handleResume = useCallback(() => {
     play("ui");
     timer.resume();
-  };
+  }, [play, timer]);
 
-  const handleEnd = () => {
+  const confirmEnd = useCallback(() => {
     play("ui");
     if (timer.sessionsCompleted > 0 || timer.phase === "work") {
       saveSession.mutate({
@@ -138,8 +152,12 @@ export default function Focus() {
     }
     timer.reset();
     startTimeRef.current = null;
-    exitFullscreen();
-  };
+    setShowAbortConfirm(false);
+  }, [play, timer, saveSession, workMin, breakMin, linkedGoalId, linkedTodoId]);
+
+  const handleEnd = useCallback(() => {
+    setShowAbortConfirm(true);
+  }, []);
 
   const handleSkip = useCallback(() => {
     play("ui");
@@ -151,7 +169,6 @@ export default function Focus() {
     if (!timer.isRunning) return;
 
     const handler = (e: KeyboardEvent) => {
-      // Ignore when typing in inputs
       const tag = (e.target as HTMLElement)?.tagName;
       if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
 
@@ -164,13 +181,18 @@ export default function Focus() {
         handleSkip();
       } else if (e.key === "Escape") {
         e.preventDefault();
-        handleEnd();
+        // If in fullscreen, just exit fullscreen first
+        if (document.fullscreenElement) {
+          exitFullscreen();
+        } else {
+          handleEnd();
+        }
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [timer.isRunning, timer.isPaused, handleSkip]);
+  }, [timer.isRunning, timer.isPaused, handleSkip, handlePause, handleResume, handleEnd, exitFullscreen]);
 
   // ── Derived state ──
   const linkedGoal = linkedGoalId ? goals.find((g) => g.id === linkedGoalId) : null;
@@ -201,6 +223,7 @@ export default function Focus() {
         {showFlash && (
           <motion.div
             className="fixed inset-0 pointer-events-none z-50"
+            aria-hidden="true"
             initial={{ opacity: 0.3 }}
             animate={{ opacity: 0 }}
             exit={{ opacity: 0 }}
@@ -212,38 +235,34 @@ export default function Focus() {
         )}
       </AnimatePresence>
 
-      <div className="fixed inset-4 pointer-events-none z-0 border border-transparent">
+      <div className="fixed inset-4 pointer-events-none z-0 border border-transparent" aria-hidden="true">
         {/* Corner Brackets */}
         <div className={`absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
         <div className={`absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
         <div className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
         <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
 
-        {/* Fullscreen toggle — top-right, inside brackets */}
+        {/* Fullscreen toggle */}
         <button
           onClick={toggleFullscreen}
-          className="absolute top-1 right-10 pointer-events-auto w-7 h-7 flex items-center justify-center bg-transparent border border-primary/20 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/40 hover:text-primary z-10"
+          className="absolute top-1 right-10 pointer-events-auto w-7 h-7 flex items-center justify-center bg-transparent border border-primary/20 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/40 hover:text-primary z-10 focus-visible:ring-2 focus-visible:ring-primary"
           style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
           title={isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen"}
         >
           {isFullscreen ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
         </button>
 
-        {/* CORRECTION : Vertical Data Streams avec Flexbox */}
+        {/* Vertical Data Streams */}
         {!isMobile && (
           <>
             <div className="absolute left-1 top-12 bottom-12 flex items-center justify-center w-6">
-              <span
-                className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 transition-colors duration-1000 ${textColor}`}
-              >
-                Uplink :: Secure // Latency 12ms // Protocol {isBreak ? "B-RK" : "F-CS"}
+              <span className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 transition-colors duration-1000 ${textColor}`}>
+                {t("focus.sideData.uplink")} {isBreak ? "B-RK" : "F-CS"}
               </span>
             </div>
             <div className="absolute right-1 top-12 bottom-12 flex items-center justify-center w-6">
-              <span
-                className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap rotate-90 transition-colors duration-1000 ${textColor}`}
-              >
-                Vitals :: Nominal // Neural Sync {Math.round(timer.progress * 100)}%
+              <span className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap rotate-90 transition-colors duration-1000 ${textColor}`}>
+                {t("focus.sideData.vitals")} {Math.round(timer.progress * 100)}%
               </span>
             </div>
           </>
@@ -251,23 +270,33 @@ export default function Focus() {
       </div>
 
       <div className="relative z-10 max-w-2xl mx-auto px-4 pb-20 pt-6">
-        <ModuleHeader title="FOCUS" titleAccent="_CORE" systemLabel="DEEP_WORK // POMODORO" badges={[]} />
+        <ModuleHeader title={t("focus.title")} titleAccent={t("focus.titleAccent")} systemLabel={t("focus.systemLabel")} badges={[]} />
 
         <div className="flex flex-col items-center gap-6 mt-8">
-          <div className="h-6 flex items-center justify-center">
+          {/* Target badge + session counter */}
+          <div className="h-6 flex items-center justify-center gap-3">
             <AnimatePresence>
-              {timer.isRunning && linkedName && (
+              {timer.isRunning && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-primary/30"
-                  style={{ clipPath: "polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}
+                  className="flex items-center gap-3"
                 >
-                  <span className="text-[9px] font-mono text-primary/60 uppercase tracking-widest">Target:</span>
-                  <span className="text-[10px] font-mono text-primary font-bold tracking-wider truncate max-w-[200px] uppercase">
-                    {linkedName}
-                  </span>
+                  {linkedName && (
+                    <div
+                      className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-primary/30"
+                      style={{ clipPath: "polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}
+                    >
+                      <span className="text-[9px] font-mono text-primary/60 uppercase tracking-widest">{t("focus.target")}:</span>
+                      <span className="text-[10px] font-mono text-primary font-bold tracking-wider truncate max-w-[200px] uppercase">
+                        {linkedName}
+                      </span>
+                    </div>
+                  )}
+                  <div className="px-2 py-0.5 bg-black/40 border border-accent/30 text-accent text-[9px] font-mono uppercase tracking-widest">
+                    {t("focus.session")} {(timer.sessionsCompleted % 4) + 1}/4
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -337,7 +366,7 @@ export default function Focus() {
                     clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)",
                   }}
                 >
-                  <div className="flex items-center gap-2 mb-3 border-b border-primary/20 pb-2">
+                  <div className="flex items-center gap-2 mb-3 border-b border-primary/20 pb-2" aria-hidden="true">
                     <div className="w-1 h-3 bg-primary" />
                     <span className="text-[10px] font-mono text-primary uppercase tracking-[0.2em]">
                       {" >> "}{" "}
@@ -350,11 +379,13 @@ export default function Focus() {
                       <FocusConfigPanel
                         workMin={workMin}
                         breakMin={breakMin}
+                        longBreakMin={longBreakMin}
                         onWorkChange={setWorkMin}
                         onBreakChange={setBreakMin}
+                        onLongBreakChange={setLongBreakMin}
                       />
                     )}
-                    {activePanel === "spotify" && <SpotifyPlayer className="w-full compact-player" compact={false} />}
+                    {activePanel === "spotify" && <SpotifyPlayer className="w-full compact-player" compact={false} userId={user?.id} />}
                     {activePanel === "stats" && !timer.isRunning && (
                       <FocusStats
                         todayCount={todayStats.count}
@@ -364,7 +395,13 @@ export default function Focus() {
                         weeklyData={weeklyStats}
                       />
                     )}
-                    {activePanel === "history" && !timer.isRunning && <FocusHistory sessions={sessions.data || []} />}
+                    {activePanel === "history" && !timer.isRunning && (
+                      <FocusHistory
+                        sessions={sessions.data || []}
+                        goals={goals}
+                        todos={tasks}
+                      />
+                    )}
                   </div>
                 </div>
               </motion.div>
@@ -372,6 +409,22 @@ export default function Focus() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Abort Confirmation Dialog */}
+      <AlertDialog open={showAbortConfirm} onOpenChange={setShowAbortConfirm}>
+        <AlertDialogContent className="bg-card border-destructive/30">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("focus.abort.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("focus.abort.message")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("focus.abort.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmEnd} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t("focus.abort.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }
