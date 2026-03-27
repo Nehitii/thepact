@@ -1,33 +1,48 @@
+import { useTranslation } from "react-i18next";
+
 interface FocusConfigPanelProps {
   workMin: number;
   breakMin: number;
+  longBreakMin: number;
   onWorkChange: (v: number) => void;
   onBreakChange: (v: number) => void;
+  onLongBreakChange: (v: number) => void;
 }
 
 export function FocusConfigPanel({
   workMin,
   breakMin,
+  longBreakMin,
   onWorkChange,
   onBreakChange,
+  onLongBreakChange,
 }: FocusConfigPanelProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="w-full max-w-lg space-y-3 p-4 rounded-xl bg-card/40 backdrop-blur border border-border/50">
-      <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground text-center mb-3">
-        Timer Configuration
+      <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground text-center mb-3" aria-hidden="true">
+        {t("focus.config.title")}
       </p>
       <DurationRow
-        label="Work"
+        label={t("focus.config.work")}
         options={[15, 25, 30, 45]}
         value={workMin}
         onChange={onWorkChange}
         color="primary"
       />
       <DurationRow
-        label="Break"
+        label={t("focus.config.break")}
         options={[3, 5, 10, 15]}
         value={breakMin}
         onChange={onBreakChange}
+        color="accent"
+      />
+      <DurationRow
+        label={t("focus.config.longBreak")}
+        options={[10, 15, 20, 30]}
+        value={longBreakMin}
+        onChange={onLongBreakChange}
         color="accent"
       />
     </div>
@@ -55,7 +70,7 @@ function DurationRow({
           <button
             key={m}
             onClick={() => onChange(m)}
-            className={`px-3 py-1 text-[10px] font-mono rounded-md transition-all ${
+            className={`px-3 py-1 text-[10px] font-mono rounded-md transition-all focus-visible:ring-2 focus-visible:ring-primary ${
               value === m
                 ? color === "primary"
                   ? "bg-primary text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.3)]"

@@ -1619,5 +1619,77 @@
     "allRarities": "Toutes les raretés",
     "showAll": "Tout afficher",
     "noResults": "Vestiges de données introuvables"
+  },
+  "focus": {
+    "title": "FOCUS",
+    "titleAccent": "_CORE",
+    "systemLabel": "DEEP_WORK // POMODORO",
+    "initSync": "Lancer la sync",
+    "terminate": "Terminer",
+    "hyperfocusActive": "HYPERFOCUS ACTIF",
+    "target": "Cible",
+    "session": "Session",
+    "config": {
+      "title": "Configuration du timer",
+      "work": "Travail",
+      "break": "Pause",
+      "longBreak": "Pause longue"
+    },
+    "stats": {
+      "today": "Aujourd'hui",
+      "focused": "Concentré",
+      "streak": "Série",
+      "best": "Record",
+      "weeklyFocus": "Focus hebdo"
+    },
+    "history": {
+      "recentSessions": "Sessions récentes",
+      "showAll": "Voir les {{count}} sessions",
+      "showLess": "Voir moins"
+    },
+    "spotify": {
+      "add": "Ajouter Spotify",
+      "paste": "Coller l'URL Spotify...",
+      "invalid": "URL Spotify invalide",
+      "pasteHint": "Colle l'URL d'une playlist, album ou track Spotify"
+    },
+    "controls": {
+      "resume": "[ > EXE.REPRISE ]",
+      "halt": "[ || SYS.HALT ]",
+      "abort": "Abandonner l'opération",
+      "overrideControls": "Contrôles manuels"
+    },
+    "ring": {
+      "standby": "[ SYS::VEILLE ]",
+      "halted": "[ SYS::PAUSE ]",
+      "focused": "[ SYS::FOCUS ]",
+      "cooling": "[ SYS::REPOS ]"
+    },
+    "toolbar": {
+      "config": "Config",
+      "spotify": "Spotify",
+      "stats": "Stats",
+      "history": "Historique"
+    },
+    "linker": {
+      "goal": "Objectif...",
+      "task": "Tâche...",
+      "noGoal": "Aucun objectif",
+      "noTask": "Aucune tâche"
+    },
+    "abort": {
+      "title": "Abandonner la session ?",
+      "message": "Ta progression sera sauvegardée. Tu es sûr de vouloir arrêter ?",
+      "confirm": "Oui, abandonner",
+      "cancel": "Continuer la session"
+    },
+    "notification": {
+      "breakStart": "Phase cible atteinte. Initier récupération.",
+      "workResume": "Pause terminée. Reprise du protocole."
+    },
+    "sideData": {
+      "uplink": "Uplink :: Sécurisé // Latence 12ms // Protocole",
+      "vitals": "Vitals :: Nominal // Sync neurale"
+    }
   }
 }
