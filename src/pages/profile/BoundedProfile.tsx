@@ -2,15 +2,18 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileBoundedProfile } from "@/components/profile/ProfileBoundedProfile";
-import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { UserCircle2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import {
+  SettingsPageShell, StickyCommandBar,
+} from "@/components/profile/settings-ui";
 
 export default function BoundedProfile() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const [displayName, setDisplayName] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [latestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "PROFILE CONFIG LOADED", type: "info" });
 
   useEffect(() => {
     if (!user) return;
@@ -34,11 +37,11 @@ export default function BoundedProfile() {
   if (!user) return null;
 
   return (
-    <ProfileSettingsShell
+    <SettingsPageShell
       title={t("settings.boundedProfile.title")}
       subtitle={t("settings.boundedProfile.subtitle")}
       icon={<UserCircle2 className="h-7 w-7 text-primary" />}
-      containerClassName="max-w-2xl"
+      stickyBar={<StickyCommandBar latestLog={latestLog} />}
     >
       <ProfileBoundedProfile
         userId={user.id}
@@ -52,6 +55,6 @@ export default function BoundedProfile() {
         onPersonalQuoteChange={() => {}}
         onDisplayedBadgesChange={() => {}}
       />
-    </ProfileSettingsShell>
+    </SettingsPageShell>
   );
 }
