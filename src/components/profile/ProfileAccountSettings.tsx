@@ -139,7 +139,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
   return (
     <div className="w-full max-w-4xl mx-auto pb-32">
-      <SettingsTabBar tabs={["IDENTITY", "SECURITY", "SYSTEM"] as const} activeTab={activeTab} onChange={setActiveTab} />
+      <SettingsTabBar tabs={["IDENTITY", "SECURITY", "SYSTEM"] as const} activeTab={activeTab} onChange={(tab) => setActiveTab(tab as typeof activeTab)} />
 
       <AnimatePresence mode="wait">
         <motion.div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }} className="space-y-8">
