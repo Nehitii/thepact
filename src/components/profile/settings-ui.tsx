@@ -1,11 +1,248 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import { Check, Loader2 } from "lucide-react";
+import { CyberBackground } from "@/components/CyberBackground";
 
 /* ══════════════════════════════════════════════
    Shared cyberpunk UI primitives for settings pages
    ══════════════════════════════════════════════ */
+
+/* ── Settings Page Shell (replaces ProfileSettingsShell with AccountSettings DA) ── */
+export function SettingsPageShell({
+  icon,
+  title,
+  subtitle,
+  children,
+  stickyBar,
+}: {
+  icon: React.ReactNode;
+  title: React.ReactNode;
+  subtitle?: React.ReactNode;
+  children: React.ReactNode;
+  stickyBar?: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-[hsl(var(--background))] relative overflow-hidden selection:bg-primary/30">
+      <CyberBackground />
+      <div className="relative z-10 px-4 pt-12 pb-6 max-w-4xl mx-auto">
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-14 text-center flex flex-col items-center"
+        >
+          <div className="relative mb-6">
+            <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl animate-pulse" />
+            <div className="relative w-16 h-16 rounded-full border border-primary/40 bg-card/50 backdrop-blur-xl flex items-center justify-center shadow-[0_0_30px_hsl(var(--primary)/0.15)]">
+              {icon}
+            </div>
+          </div>
+          <div className="flex items-center justify-center gap-4 mb-4 w-full">
+            <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-r from-transparent to-primary/50" />
+            <span className="font-mono text-[10px] md:text-xs text-primary/70 tracking-[0.3em] uppercase">
+              {subtitle || "SYSTEM CONFIGURATION"}
+            </span>
+            <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-l from-transparent to-primary/50" />
+          </div>
+          <h1 className="font-orbitron font-black text-3xl md:text-5xl tracking-[0.15em] uppercase text-foreground drop-shadow-[0_0_15px_hsl(var(--primary)/0.4)]">
+            {title}
+          </h1>
+        </motion.header>
+        <main className="space-y-8 relative z-10 pb-32">{children}</main>
+      </div>
+      {stickyBar}
+    </div>
+  );
+}
+
+/* ── CyberPanel ── */
+export function CyberPanel({
+  title,
+  children,
+  accent = "cyan",
+  statusText,
+}: {
+  title: string;
+  children: React.ReactNode;
+  accent?: "cyan" | "red";
+  statusText?: React.ReactNode;
+}) {
+  const borderColor = accent === "red" ? "border-destructive/30" : "border-primary/20";
+  const textColor = accent === "red" ? "text-destructive" : "text-primary";
+  const bgGrad = accent === "red" ? "from-destructive/5 to-transparent" : "from-primary/5 to-transparent";
+  const dotColor = accent === "red" ? "bg-destructive" : "bg-primary";
+  const lineColor = accent === "red" ? "bg-destructive" : "bg-primary";
+
+  return (
+    <div
+      className={cn("relative border bg-gradient-to-br p-6 md:p-8", borderColor, bgGrad)}
+      style={{ clipPath: "polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px)" }}
+    >
+      <div className={cn("absolute top-0 left-0 w-8 h-[2px]", lineColor)} />
+      <div className="flex items-center gap-3 mb-8 border-b border-foreground/5 pb-4">
+        <span className={cn("w-2 h-2 rounded-none animate-pulse", dotColor)} />
+        <h3 className={cn("font-orbitron tracking-[0.2em] text-sm uppercase flex-1", textColor)}>{title}</h3>
+        {statusText && <span className="font-mono text-[9px] text-muted-foreground tracking-[0.1em]">{statusText}</span>}
+      </div>
+      <div className="space-y-6">{children}</div>
+    </div>
+  );
+}
+
+/* ── CyberInput ── */
+export function CyberInput({ label, className, ...props }: any) {
+  return (
+    <div className="space-y-2 group">
+      <label className="text-[10px] font-mono tracking-[0.2em] text-muted-foreground uppercase group-focus-within:text-primary transition-colors flex items-center gap-2">
+        <span className="text-primary/40">{">"}</span> {label}
+      </label>
+      <div className="relative">
+        <Input
+          className={cn(
+            "bg-foreground/5 border-none border-b-2 border-foreground/10 rounded-none px-4 py-6 font-mono text-sm text-foreground",
+            "focus-visible:ring-0 focus-visible:border-primary focus-visible:bg-primary/5 transition-all disabled:opacity-40",
+            className,
+          )}
+          {...props}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ── CyberSelect ── */
+export function CyberSelect({
+  label,
+  value,
+  onValueChange,
+  children,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onValueChange: (v: string) => void;
+  children: React.ReactNode;
+  placeholder?: string;
+}) {
+  return (
+    <div className="space-y-2">
+      <label className="text-[10px] font-mono tracking-[0.2em] text-muted-foreground uppercase flex items-center gap-2">
+        <span className="text-primary/40">{">"}</span> {label}
+      </label>
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className="bg-foreground/5 border-none border-b-2 border-foreground/10 rounded-none h-[68px] font-mono text-sm focus:ring-0 focus:border-primary text-foreground transition-colors hover:bg-primary/5">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent className="bg-card border-primary/30 rounded-none font-mono">
+          {children}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+/* ── Settings Tab Bar ── */
+export function SettingsTabBar<T extends string>({
+  tabs,
+  activeTab,
+  onChange,
+}: {
+  tabs: readonly T[];
+  activeTab: T;
+  onChange: (tab: T) => void;
+}) {
+  return (
+    <div className="flex w-full mb-8 border-b border-foreground/10 overflow-x-auto no-scrollbar">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab;
+        return (
+          <button
+            key={tab}
+            onClick={() => onChange(tab)}
+            className={cn(
+              "flex-1 min-w-[120px] py-4 text-xs font-orbitron tracking-[0.25em] transition-all relative outline-none",
+              isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-foreground/5",
+            )}
+          >
+            {tab}
+            {isActive && (
+              <motion.div
+                layoutId="activeTabIndicator"
+                className="absolute bottom-0 left-0 w-full h-[2px] bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.6)]"
+              />
+            )}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Sticky Command Bar ── */
+export function StickyCommandBar({
+  latestLog,
+  hasChanges,
+  isSaving,
+  onSave,
+  saveLabel = "COMMIT OVERRIDE",
+  savingLabel = "EXECUTING...",
+}: {
+  latestLog: { text: string; type: "ok" | "warn" | "info" };
+  hasChanges?: boolean;
+  isSaving?: boolean;
+  onSave?: () => void;
+  saveLabel?: string;
+  savingLabel?: string;
+}) {
+  return (
+    <div className="fixed bottom-0 left-0 w-full z-50">
+      <div className="w-full bg-background/95 backdrop-blur-xl border-t border-primary/20 shadow-[0_-10px_40px_rgba(0,0,0,0.8)]">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 overflow-hidden w-full md:w-auto">
+            <div className="relative flex h-3 w-3 shrink-0">
+              <span className={cn(
+                "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                latestLog.type === "warn" ? "bg-amber-500" : latestLog.type === "ok" ? "bg-primary" : "bg-muted-foreground/50",
+              )} />
+              <span className={cn(
+                "relative inline-flex rounded-full h-3 w-3",
+                latestLog.type === "warn" ? "bg-amber-500" : latestLog.type === "ok" ? "bg-primary" : "bg-muted-foreground/50",
+              )} />
+            </div>
+            <p className="font-mono text-[10px] tracking-widest uppercase truncate text-muted-foreground">
+              <span className="text-muted-foreground/50 mr-2">[{new Date().toLocaleTimeString()}]</span>
+              {latestLog.text}
+            </p>
+          </div>
+          <AnimatePresence>
+            {onSave && (hasChanges || isSaving) && (
+              <motion.button
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                onClick={onSave}
+                disabled={isSaving}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "shrink-0 w-full md:w-auto h-12 px-8 font-orbitron text-xs tracking-[0.2em] uppercase font-bold",
+                  "bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-[0_0_20px_hsl(var(--primary)/0.4)]",
+                  "disabled:opacity-50 flex items-center justify-center gap-3",
+                )}
+                style={{ clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)" }}
+              >
+                {isSaving ? <><Loader2 className="h-4 w-4 animate-spin" /> {savingLabel}</> : <><Check className="h-4 w-4" /> {saveLabel}</>}
+              </motion.button>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ── Breadcrumb ── */
 export function SettingsBreadcrumb({ code }: { code: string }) {
@@ -27,7 +264,7 @@ export function CyberSeparator() {
   );
 }
 
-/* ── Data Panel ── */
+/* ── DataPanel (kept for backward compat, now wraps CyberPanel) ── */
 export function DataPanel({
   code,
   title,
@@ -44,33 +281,15 @@ export function DataPanel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative border border-primary/20 bg-gradient-to-br from-[hsl(var(--card)/0.95)] to-[hsl(var(--background)/0.98)] transition-colors hover:border-primary/35 mb-4">
-      {/* Corner brackets */}
-      <div className="absolute -top-px -left-px w-3 h-3 border-t-2 border-l-2 border-primary opacity-60 pointer-events-none" />
-      <div className="absolute -bottom-px -right-px w-3 h-3 border-b-2 border-r-2 border-primary opacity-60 pointer-events-none" />
-
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-3.5 border-b border-primary/20 bg-primary/[0.03]">
-        <span className="font-mono text-[9px] text-primary tracking-[0.15em] opacity-70 min-w-[70px]">{code}</span>
-        <span className="font-orbitron text-[13px] font-bold tracking-[0.12em] text-primary flex-1">{title}</span>
-        {statusText && <span className="font-mono text-[9px] text-muted-foreground tracking-[0.1em]">{statusText}</span>}
-      </div>
-
-      {/* Body */}
-      <div className="px-5">{children}</div>
-
-      {/* Footer */}
+    <CyberPanel title={title} statusText={statusText}>
+      <div>{children}</div>
       {(footerLeft || footerRight) && (
-        <div className="flex items-center justify-between px-5 py-3 border-t border-primary/20 bg-primary/[0.02]">
-          <div className="font-mono text-[9px] text-muted-foreground tracking-[0.1em] flex gap-4">
-            {footerLeft}
-          </div>
-          <div className="font-mono text-[9px] text-muted-foreground tracking-[0.1em] flex items-center gap-1.5">
-            {footerRight}
-          </div>
+        <div className="flex items-center justify-between pt-4 mt-4 border-t border-primary/10">
+          <div className="font-mono text-[9px] text-muted-foreground tracking-[0.1em] flex gap-4">{footerLeft}</div>
+          <div className="font-mono text-[9px] text-muted-foreground tracking-[0.1em] flex items-center gap-1.5">{footerRight}</div>
         </div>
       )}
-    </div>
+    </CyberPanel>
   );
 }
 
@@ -221,7 +440,7 @@ export function TerminalLog({ lines }: { lines: { text: string; type: "ok" | "wa
   return (
     <div
       ref={scrollRef}
-      className="border border-primary/20 bg-black/60 px-4 py-3.5 font-mono text-[10px] text-muted-foreground tracking-wider leading-[1.8] max-h-[100px] overflow-hidden relative"
+      className="border border-primary/20 bg-card/60 px-4 py-3.5 font-mono text-[10px] text-muted-foreground tracking-wider leading-[1.8] max-h-[100px] overflow-hidden relative"
     >
       <div className="text-primary text-[9px] opacity-70 mb-1.5">SYSTEM LOG //</div>
       {lines.map((line, i) => (

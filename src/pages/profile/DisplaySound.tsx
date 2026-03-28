@@ -9,10 +9,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
-import { ProfileSettingsShell } from "@/components/profile/ProfileSettingsShell";
 import { cn } from "@/lib/utils";
 import {
-  SettingsBreadcrumb, CyberSeparator, DataPanel, SettingRow, SettingContentRow, SyncIndicator,
+  SettingsPageShell, CyberPanel, SettingRow, SettingContentRow, SyncIndicator, StickyCommandBar,
 } from "@/components/profile/settings-ui";
 
 const ACCENT_COLORS = [
@@ -26,9 +25,7 @@ const ACCENT_COLORS = [
   { hex: "#f97316", label: "Orange" },
 ];
 
-const SOUND_FILES: Record<string, string> = {
-  ui: "/sounds/ui-click.mp3",
-};
+const SOUND_FILES: Record<string, string> = { ui: "/sounds/ui-click.mp3" };
 
 export default function DisplaySound() {
   const { t } = useTranslation();
@@ -45,6 +42,7 @@ export default function DisplaySound() {
   const [localFontSize, setLocalFontSize] = useState<number | null>(null);
   const [syncingPanel, setSyncingPanel] = useState<number | null>(null);
   const syncTimer = useRef<ReturnType<typeof setTimeout>>();
+  const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "DISPLAY_SOUND.READY // AWAITING INPUT", type: "info" });
 
   const markSync = useCallback((panel: number) => {
     setSyncingPanel(panel);
@@ -75,9 +73,7 @@ export default function DisplaySound() {
       const audio = new Audio(file);
       audio.volume = effective.volume ?? 0.35;
       audio.play();
-    } catch {
-      // silently fail
-    }
+    } catch { /* silently fail */ }
   }, [effective.volume]);
 
   const displayVolume = localVolume ?? (effective.volume ?? 0);
@@ -87,23 +83,21 @@ export default function DisplaySound() {
 
   if (profileLoading && isLoading) {
     return (
-      <ProfileSettingsShell title={t("settings.displaySound.title")} subtitle={t("settings.displaySound.subtitle")} icon={<SlidersHorizontal className="h-7 w-7 text-primary" />} containerClassName="max-w-3xl">
+      <SettingsPageShell title={t("settings.displaySound.title")} subtitle={t("settings.displaySound.subtitle")} icon={<SlidersHorizontal className="h-7 w-7 text-primary" />}>
         <div className="flex items-center justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
-      </ProfileSettingsShell>
+      </SettingsPageShell>
     );
   }
 
   return (
-    <ProfileSettingsShell title={t("settings.displaySound.title")} subtitle={t("settings.displaySound.subtitle")} icon={<SlidersHorizontal className="h-7 w-7 text-primary" />} containerClassName="max-w-3xl">
-      <SettingsBreadcrumb code="DSP.03" />
-      <CyberSeparator />
-
+    <SettingsPageShell
+      title={t("settings.displaySound.title")}
+      subtitle={t("settings.displaySound.subtitle")}
+      icon={<SlidersHorizontal className="h-7 w-7 text-primary" />}
+      stickyBar={<StickyCommandBar latestLog={latestLog} />}
+    >
       {/* ── PANEL 1: Visual ── */}
-      <DataPanel
-        code="MODULE_01" title="PARAMÈTRES VISUELS"
-        footerLeft={<span>THEME: <b className="text-primary">{(profile?.theme_preference ?? "system").toUpperCase()}</b></span>}
-        footerRight={<SyncIndicator syncing={syncingPanel === 1} />}
-      >
+      <CyberPanel title="PARAMÈTRES VISUELS" statusText={<SyncIndicator syncing={syncingPanel === 1} />}>
         <SettingContentRow icon={<Palette className="h-4 w-4 text-primary" />} label={t("settings.displaySound.theme")} description={t("settings.displaySound.themeDesc")}>
           <div className="grid grid-cols-3 gap-2">
             {([
@@ -121,7 +115,7 @@ export default function DisplaySound() {
                     const next = opt.value as ThemePreference;
                     setTheme(next);
                     updateProfile.mutate({ theme_preference: next } as any, {
-                      onSuccess: () => { toast({ title: t("settings.displaySound.toasts.themeUpdated"), description: t("settings.displaySound.toasts.themeUpdatedDesc") }); markSync(1); },
+                      onSuccess: () => { toast({ title: t("settings.displaySound.toasts.themeUpdated"), description: t("settings.displaySound.toasts.themeUpdatedDesc") }); markSync(1); setLatestLog({ text: `THEME: ${next.toUpperCase()}`, type: "ok" }); },
                     });
                   }}
                   disabled={isPending}
@@ -141,10 +135,9 @@ export default function DisplaySound() {
           </div>
         </SettingContentRow>
 
-        <SettingRow icon={<Moon className="h-4 w-4 text-primary" />} label={t("settings.displaySound.reduceMotion")} description={t("settings.displaySound.reduceMotionDesc")} checked={profile?.reduce_motion ?? false} disabled={isPending} onToggle={(v) => updateProfile.mutate({ reduce_motion: v } as any, { onSuccess: () => { toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.motionSaved") }); markSync(1); } })} />
+        <SettingRow icon={<Moon className="h-4 w-4 text-primary" />} label={t("settings.displaySound.reduceMotion")} description={t("settings.displaySound.reduceMotionDesc")} checked={profile?.reduce_motion ?? false} disabled={isPending} onToggle={(v) => updateProfile.mutate({ reduce_motion: v } as any, { onSuccess: () => { toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.motionSaved") }); markSync(1); setLatestLog({ text: `REDUCE_MOTION: ${v ? "ON" : "OFF"}`, type: "ok" }); } })} />
 
-        {/* Font Size */}
-        <SettingContentRow icon={<Type className="h-4 w-4 text-primary" />} label="Taille de police" description="Ajuste la taille de police globale de l'interface (12-24px)">
+        <SettingContentRow icon={<Type className="h-4 w-4 text-primary" />} label={t("settings.displaySound.fontSize") || "Taille de police"} description={t("settings.displaySound.fontSizeDesc") || "Ajuste la taille de police globale (12-24px)"}>
           <div className="flex items-center gap-4">
             <Slider
               value={[displayFontSize]}
@@ -154,7 +147,7 @@ export default function DisplaySound() {
                 const nf = v[0] ?? 16;
                 setLocalFontSize(null);
                 updateProfile.mutate({ font_size: nf } as any, {
-                  onSuccess: () => { toast({ title: "Mis à jour", description: "Taille de police mise à jour." }); markSync(1); },
+                  onSuccess: () => { toast({ title: t("common.updated") }); markSync(1); setLatestLog({ text: `FONT_SIZE: ${nf}px`, type: "ok" }); },
                 });
               }}
               disabled={isPending}
@@ -163,15 +156,11 @@ export default function DisplaySound() {
             <span className="font-mono text-[9px] text-primary tracking-wider min-w-[36px] text-right">{displayFontSize}px</span>
           </div>
         </SettingContentRow>
-      </DataPanel>
+      </CyberPanel>
 
       {/* ── PANEL 2: Sound ── */}
-      <DataPanel
-        code="MODULE_02" title="SYSTÈME AUDIO"
-        footerLeft={<span>MASTER: <b className={cn(effective.masterEnabled ? "text-primary" : "text-muted-foreground")}>{effective.masterEnabled ? "ON" : "OFF"}</b></span>}
-        footerRight={<SyncIndicator syncing={syncingPanel === 2} />}
-      >
-        <SettingRow icon={<Volume2 className="h-4 w-4 text-primary" />} label={t("settings.displaySound.masterSound")} description={t("settings.displaySound.masterSoundDesc")} checked={!!effective.masterEnabled} disabled={false} onToggle={(v) => { persistSound({ ...effective, masterEnabled: v }); markSync(2); }} />
+      <CyberPanel title="SYSTÈME AUDIO" statusText={<SyncIndicator syncing={syncingPanel === 2} />}>
+        <SettingRow icon={<Volume2 className="h-4 w-4 text-primary" />} label={t("settings.displaySound.masterSound")} description={t("settings.displaySound.masterSoundDesc")} checked={!!effective.masterEnabled} disabled={false} onToggle={(v) => { persistSound({ ...effective, masterEnabled: v }); markSync(2); setLatestLog({ text: `MASTER_AUDIO: ${v ? "ON" : "OFF"}`, type: v ? "ok" : "warn" }); }} />
 
         <SettingContentRow icon={<Volume2 className="h-4 w-4 text-primary" />} label={t("settings.displaySound.volume")} description={t("settings.displaySound.volumeDesc")}>
           <div className="flex items-center gap-4">
@@ -187,19 +176,14 @@ export default function DisplaySound() {
           </div>
         </SettingContentRow>
 
-        {/* Sound rows with preview buttons */}
         <SoundRowWithPreview icon={<Volume2 className="h-4 w-4 text-primary" />} label={t("settings.displaySound.uiSounds")} description={t("settings.displaySound.uiSoundsDesc")} checked={!!effective.uiEnabled} disabled={!effective.masterEnabled} onToggle={(v) => { persistSound({ ...effective, uiEnabled: v }); markSync(2); }} onPreview={() => playPreview("ui")} masterEnabled={!!effective.masterEnabled} />
         <SoundRowWithPreview icon={<Volume2 className="h-4 w-4 text-primary" />} label={t("settings.displaySound.successSounds")} description={t("settings.displaySound.successSoundsDesc")} checked={!!effective.successEnabled} disabled={!effective.masterEnabled} onToggle={(v) => { persistSound({ ...effective, successEnabled: v }); markSync(2); }} onPreview={() => playPreview("ui")} masterEnabled={!!effective.masterEnabled} />
         <SoundRowWithPreview icon={<Volume2 className="h-4 w-4 text-primary" />} label={t("settings.displaySound.progressSounds")} description={t("settings.displaySound.progressSoundsDesc")} checked={!!effective.progressEnabled} disabled={!effective.masterEnabled} onToggle={(v) => { persistSound({ ...effective, progressEnabled: v }); markSync(2); }} onPreview={() => playPreview("ui")} masterEnabled={!!effective.masterEnabled} />
-      </DataPanel>
+      </CyberPanel>
 
       {/* ── PANEL 3: Particles ── */}
-      <DataPanel
-        code="MODULE_03" title="EFFETS PARTICULES"
-        footerLeft={<span>PARTICLES: <b className={cn((profile?.particles_enabled ?? true) ? "text-primary" : "text-muted-foreground")}>{(profile?.particles_enabled ?? true) ? "ON" : "OFF"}</b></span>}
-        footerRight={<SyncIndicator syncing={syncingPanel === 3} />}
-      >
-        <SettingRow icon={<Sparkles className="h-4 w-4 text-primary" />} label={t("settings.displaySound.enableParticles")} description={t("settings.displaySound.enableParticlesDesc")} checked={profile?.particles_enabled ?? true} disabled={isPending} onToggle={(v) => updateProfile.mutate({ particles_enabled: v } as any, { onSuccess: () => { toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.particleSaved") }); markSync(3); } })} />
+      <CyberPanel title="EFFETS PARTICULES" statusText={<SyncIndicator syncing={syncingPanel === 3} />}>
+        <SettingRow icon={<Sparkles className="h-4 w-4 text-primary" />} label={t("settings.displaySound.enableParticles")} description={t("settings.displaySound.enableParticlesDesc")} checked={profile?.particles_enabled ?? true} disabled={isPending} onToggle={(v) => updateProfile.mutate({ particles_enabled: v } as any, { onSuccess: () => { toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.particleSaved") }); markSync(3); setLatestLog({ text: `PARTICLES: ${v ? "ON" : "OFF"}`, type: "ok" }); } })} />
 
         <SettingContentRow icon={<Sparkles className="h-4 w-4 text-primary" />} label={t("settings.displaySound.intensity")} description={t("settings.displaySound.intensityDesc")}>
           <div className="flex items-center gap-4">
@@ -214,15 +198,11 @@ export default function DisplaySound() {
             <span className="font-mono text-[9px] text-primary tracking-wider min-w-[36px] text-right">{Math.round(displayParticleIntensity * 100)}%</span>
           </div>
         </SettingContentRow>
-      </DataPanel>
+      </CyberPanel>
 
       {/* ── PANEL 4: Accent Color ── */}
-      <DataPanel
-        code="MODULE_04" title="COULEUR D'ACCENT"
-        footerLeft={<span>ACCENT: <b className="text-primary">{(profile?.accent_color ?? "#5bb4ff").toUpperCase()}</b></span>}
-        footerRight={<SyncIndicator syncing={syncingPanel === 4} />}
-      >
-        <SettingContentRow icon={<Palette className="h-4 w-4 text-primary" />} label="Couleur primaire" description="Personnalise la couleur d'accent de toute l'interface">
+      <CyberPanel title="COULEUR D'ACCENT" statusText={<SyncIndicator syncing={syncingPanel === 4} />}>
+        <SettingContentRow icon={<Palette className="h-4 w-4 text-primary" />} label={t("settings.displaySound.accentColor") || "Couleur primaire"} description={t("settings.displaySound.accentColorDesc") || "Personnalise la couleur d'accent de toute l'interface"}>
           <div className="grid grid-cols-4 gap-2.5">
             {ACCENT_COLORS.map((color) => {
               const selected = (profile?.accent_color ?? "#5bb4ff") === color.hex;
@@ -231,7 +211,7 @@ export default function DisplaySound() {
                   key={color.hex}
                   onClick={() => {
                     updateProfile.mutate({ accent_color: color.hex } as any, {
-                      onSuccess: () => { toast({ title: "Mis à jour", description: `Couleur d'accent: ${color.label}` }); markSync(4); },
+                      onSuccess: () => { toast({ title: t("common.updated"), description: color.label }); markSync(4); setLatestLog({ text: `ACCENT: ${color.label.toUpperCase()}`, type: "ok" }); },
                     });
                   }}
                   disabled={isPending}
@@ -255,14 +235,11 @@ export default function DisplaySound() {
             })}
           </div>
         </SettingContentRow>
-      </DataPanel>
-
-      <div className="h-8" />
-    </ProfileSettingsShell>
+      </CyberPanel>
+    </SettingsPageShell>
   );
 }
 
-// Helper: Sound row with preview button
 function SoundRowWithPreview({
   icon, label, description, checked, disabled, onToggle, onPreview, masterEnabled,
 }: {
@@ -294,7 +271,7 @@ function SoundRowWithPreview({
           "hover:border-primary/40 hover:bg-primary/15 transition-colors",
           "disabled:opacity-20 disabled:cursor-not-allowed shrink-0"
         )}
-        title="Écouter"
+        title={masterEnabled ? "Preview" : ""}
       >
         <Play className="h-3 w-3 text-primary" />
       </button>
