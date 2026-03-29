@@ -35,6 +35,7 @@ import {
   User,
   TerminalSquare,
   Crown,
+  CalendarDays,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -70,6 +71,7 @@ const baseNavigation: Record<NavCategory, NavItem[]> = {
   operations: [
     { to: "/goals", icon: Target, label: "Goals", moduleKey: "goals" },
     { to: "/focus", icon: Timer, label: "Focus", moduleKey: "focus" },
+    { to: "/calendar", icon: CalendarDays, label: "Calendar", moduleKey: "calendar" },
   ],
   lifeSystems: [],
   network: [

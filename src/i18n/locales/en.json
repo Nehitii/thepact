@@ -1691,5 +1691,38 @@
       "uplink": "Uplink :: Secure // Latency 12ms // Protocol",
       "vitals": "Vitals :: Nominal // Neural Sync"
     }
+  },
+  "calendar": {
+    "title": "Calendar",
+    "subtitle": "Plan, organize, conquer.",
+    "today": "Today",
+    "newEvent": "Event",
+    "editEvent": "Edit Event",
+    "eventTitle": "Event title",
+    "allDay": "All day",
+    "startDate": "Start",
+    "startTime": "Time",
+    "endDate": "End",
+    "endTime": "Time",
+    "color": "Color",
+    "location": "Location",
+    "description": "Description",
+    "markBusy": "Mark as busy",
+    "recurrence": "Repeat",
+    "every": "Every",
+    "daily": "Day(s)",
+    "weekly": "Week(s)",
+    "monthly": "Month(s)",
+    "yearly": "Year(s)",
+    "onDays": "On days",
+    "until": "Until (optional)",
+    "reminders": "Reminders",
+    "before": "before",
+    "eventCreated": "Event created",
+    "eventUpdated": "Event updated",
+    "eventDeleted": "Event deleted",
+    "eventMoved": "Event moved",
+    "noEvents": "No events in this period",
+    "searchPlaceholder": "Search events..."
   }
 }

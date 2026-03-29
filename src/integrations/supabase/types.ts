@@ -448,6 +448,83 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_events: {
+        Row: {
+          all_day: boolean | null
+          category: string | null
+          color: string | null
+          created_at: string | null
+          description: string | null
+          end_time: string
+          id: string
+          is_busy: boolean | null
+          linked_goal_id: string | null
+          linked_todo_id: string | null
+          location: string | null
+          recurrence_exception: boolean | null
+          recurrence_parent_id: string | null
+          recurrence_rule: Json | null
+          reminders: Json | null
+          start_time: string
+          tags: string[] | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          all_day?: boolean | null
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_time: string
+          id?: string
+          is_busy?: boolean | null
+          linked_goal_id?: string | null
+          linked_todo_id?: string | null
+          location?: string | null
+          recurrence_exception?: boolean | null
+          recurrence_parent_id?: string | null
+          recurrence_rule?: Json | null
+          reminders?: Json | null
+          start_time: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          all_day?: boolean | null
+          category?: string | null
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          end_time?: string
+          id?: string
+          is_busy?: boolean | null
+          linked_goal_id?: string | null
+          linked_todo_id?: string | null
+          location?: string | null
+          recurrence_exception?: boolean | null
+          recurrence_parent_id?: string | null
+          recurrence_rule?: Json | null
+          reminders?: Json | null
+          start_time?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_recurrence_parent_id_fkey"
+            columns: ["recurrence_parent_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       category_budgets: {
         Row: {
           budget_type: string

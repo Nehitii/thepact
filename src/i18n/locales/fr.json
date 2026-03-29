@@ -1691,5 +1691,38 @@
       "uplink": "Uplink :: Sécurisé // Latence 12ms // Protocole",
       "vitals": "Vitals :: Nominal // Sync neurale"
     }
+  },
+  "calendar": {
+    "title": "Calendrier",
+    "subtitle": "Planifie, organise, conquiers.",
+    "today": "Aujourd'hui",
+    "newEvent": "Événement",
+    "editEvent": "Modifier l'événement",
+    "eventTitle": "Titre de l'événement",
+    "allDay": "Toute la journée",
+    "startDate": "Début",
+    "startTime": "Heure",
+    "endDate": "Fin",
+    "endTime": "Heure",
+    "color": "Couleur",
+    "location": "Lieu",
+    "description": "Description",
+    "markBusy": "Marquer comme occupé",
+    "recurrence": "Répéter",
+    "every": "Chaque",
+    "daily": "Jour(s)",
+    "weekly": "Semaine(s)",
+    "monthly": "Mois",
+    "yearly": "Année(s)",
+    "onDays": "Les jours",
+    "until": "Jusqu'au (optionnel)",
+    "reminders": "Rappels",
+    "before": "avant",
+    "eventCreated": "Événement créé",
+    "eventUpdated": "Événement mis à jour",
+    "eventDeleted": "Événement supprimé",
+    "eventMoved": "Événement déplacé",
+    "noEvents": "Aucun événement sur cette période",
+    "searchPlaceholder": "Rechercher des événements..."
   }
 }
