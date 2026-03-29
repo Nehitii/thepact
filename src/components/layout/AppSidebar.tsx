@@ -35,6 +35,7 @@ import {
   User,
   TerminalSquare,
   Crown,
+  CalendarDays,
 } from "lucide-react";
 import {
   DropdownMenu,
