@@ -3288,18 +3288,21 @@ export type Database = {
       user_2fa_settings_safe: {
         Row: {
           created_at: string | null
+          email_2fa_enabled: boolean | null
           totp_enabled: boolean | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
+          email_2fa_enabled?: boolean | null
           totp_enabled?: boolean | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
+          email_2fa_enabled?: boolean | null
           totp_enabled?: boolean | null
           updated_at?: string | null
           user_id?: string | null
