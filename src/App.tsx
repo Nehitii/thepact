@@ -37,6 +37,7 @@ const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Focus = lazy(() => import("./pages/Focus"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Friends = lazy(() => import("./pages/Friends"));
+const Calendar = lazy(() => import("./pages/Calendar"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminCosmeticsManager = lazy(() => import("./pages/AdminCosmeticsManager"));
