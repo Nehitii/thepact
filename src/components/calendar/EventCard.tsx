@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { format, parseISO } from "date-fns";
-import { Repeat, MapPin } from "lucide-react";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import { Repeat, CheckSquare, Target, Footprints } from "lucide-react";
+import type { CalendarEvent, CalendarSourceType } from "@/hooks/useCalendarEvents";
 import { cn } from "@/lib/utils";
 
 interface EventCardProps {
@@ -10,9 +10,17 @@ interface EventCardProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
+const sourceIcons: Partial<Record<CalendarSourceType, typeof CheckSquare>> = {
+  todo: CheckSquare,
+  goal: Target,
+  step: Footprints,
+};
+
 export const EventCard = memo(({ event, compact, onClick }: EventCardProps) => {
   const start = parseISO(event.start_time);
   const timeStr = event.all_day ? "" : format(start, "HH:mm");
+  const isExternal = event._source && event._source !== "event";
+  const SourceIcon = isExternal ? sourceIcons[event._source!] : undefined;
 
   return (
     <button
@@ -24,12 +32,13 @@ export const EventCard = memo(({ event, compact, onClick }: EventCardProps) => {
       )}
       style={{
         backgroundColor: event.color + "30",
-        borderLeft: `3px solid ${event.color}`,
+        borderLeft: isExternal ? `3px dashed ${event.color}` : `3px solid ${event.color}`,
         color: event.color,
       }}
       title={event.title}
     >
       <span className="flex items-center gap-1 min-w-0">
+        {SourceIcon && <SourceIcon className="w-2.5 h-2.5 shrink-0 opacity-70" />}
         {timeStr && <span className="opacity-70 shrink-0">{timeStr}</span>}
         <span className="truncate">{event.title}</span>
         {event.recurrence_rule && <Repeat className="w-2.5 h-2.5 opacity-50 shrink-0" />}
