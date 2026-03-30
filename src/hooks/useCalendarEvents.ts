@@ -5,7 +5,7 @@ import { useEffect, useMemo } from "react";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addDays, addWeeks, addMonths, addYears,
-  isBefore, isAfter, isSameDay, parseISO,
+  isBefore, isAfter, parseISO,
   startOfDay, endOfDay,
 } from "date-fns";
 
@@ -13,11 +13,13 @@ import {
 export interface RecurrenceRule {
   freq: "daily" | "weekly" | "monthly" | "yearly";
   interval?: number;
-  byDay?: string[]; // MO, TU, WE …
-  bySetPos?: number[]; // e.g. [2] = 2nd occurrence
+  byDay?: string[];
+  bySetPos?: number[];
   count?: number;
-  until?: string; // ISO date
+  until?: string;
 }
+
+export type CalendarSourceType = "event" | "todo" | "goal" | "step";
 
 export interface CalendarEvent {
   id: string;
@@ -40,12 +42,13 @@ export interface CalendarEvent {
   tags: string[];
   created_at: string;
   updated_at: string;
-  // Virtual fields for expanded recurrences
   _virtual?: boolean;
   _originalStart?: string;
+  _source?: CalendarSourceType;
+  _sourceId?: string; // original ID from the source table
 }
 
-export type CalendarEventInsert = Omit<CalendarEvent, "id" | "user_id" | "created_at" | "updated_at" | "_virtual" | "_originalStart">;
+export type CalendarEventInsert = Omit<CalendarEvent, "id" | "user_id" | "created_at" | "updated_at" | "_virtual" | "_originalStart" | "_source" | "_sourceId">;
 
 // ─── Recurrence expansion ───────────────────────────────────
 const DAY_MAP: Record<string, number> = { SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6 };
@@ -75,7 +78,6 @@ function expandRecurrences(event: CalendarEvent, rangeStart: Date, rangeEnd: Dat
 
     const occEnd = new Date(cursor.getTime() + duration);
     if (!isBefore(occEnd, rangeStart)) {
-      // byDay filter for weekly
       if (rule.freq === "weekly" && rule.byDay && rule.byDay.length > 0) {
         const dayOfWeek = cursor.getDay();
         const dayNames = Object.entries(DAY_MAP);
@@ -95,7 +97,7 @@ function expandRecurrences(event: CalendarEvent, rangeStart: Date, rangeEnd: Dat
 }
 
 function makeVirtualOccurrence(event: CalendarEvent, start: Date, end: Date, idx: number): CalendarEvent {
-  if (idx === 0) return event; // first occurrence is the original
+  if (idx === 0) return event;
   return {
     ...event,
     id: `${event.id}_r${idx}`,
@@ -111,7 +113,6 @@ export function useCalendarEvents(viewDate: Date, view: string) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
-  // Compute range based on view
   const { rangeStart, rangeEnd } = useMemo(() => {
     if (view === "year") {
       const y = viewDate.getFullYear();
@@ -124,12 +125,15 @@ export function useCalendarEvents(viewDate: Date, view: string) {
       const ws = startOfWeek(viewDate, { weekStartsOn: 1 });
       return { rangeStart: ws, rangeEnd: endOfWeek(viewDate, { weekStartsOn: 1 }) };
     }
-    // month (default) — include surrounding weeks
+    if (view === "agenda") {
+      return { rangeStart: startOfDay(viewDate), rangeEnd: addDays(viewDate, 30) };
+    }
     const ms = startOfWeek(startOfMonth(viewDate), { weekStartsOn: 1 });
     const me = endOfWeek(endOfMonth(viewDate), { weekStartsOn: 1 });
     return { rangeStart: ms, rangeEnd: me };
   }, [viewDate, view]);
 
+  // Calendar events
   const query = useQuery({
     queryKey: ["calendar-events", user?.id, rangeStart.toISOString(), rangeEnd.toISOString()],
     queryFn: async () => {
@@ -141,12 +145,11 @@ export function useCalendarEvents(viewDate: Date, view: string) {
         .lte("start_time", rangeEnd.toISOString())
         .order("start_time");
       if (error) throw error;
-      return (data ?? []) as unknown as CalendarEvent[];
+      return ((data ?? []) as unknown as CalendarEvent[]).map(e => ({ ...e, _source: "event" as const }));
     },
     enabled: !!user,
   });
 
-  // Also fetch recurring events that started before range but may have occurrences in range
   const recurringQuery = useQuery({
     queryKey: ["calendar-recurring", user?.id],
     queryFn: async () => {
@@ -158,12 +161,137 @@ export function useCalendarEvents(viewDate: Date, view: string) {
         .lt("start_time", rangeStart.toISOString())
         .order("start_time");
       if (error) throw error;
-      return (data ?? []) as unknown as CalendarEvent[];
+      return ((data ?? []) as unknown as CalendarEvent[]).map(e => ({ ...e, _source: "event" as const }));
     },
     enabled: !!user,
   });
 
-  // Expand all events with recurrences
+  // Todo deadlines
+  const todoQuery = useQuery({
+    queryKey: ["calendar-todos", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("todo_tasks")
+        .select("id, name, deadline, category, location")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .not("deadline", "is", null);
+      if (error) throw error;
+      return (data ?? []).map((t: any): CalendarEvent => ({
+        id: `todo_${t.id}`,
+        user_id: user.id,
+        title: t.name,
+        description: null,
+        location: t.location || null,
+        start_time: t.deadline,
+        end_time: t.deadline,
+        all_day: true,
+        color: "#f97316", // orange
+        category: "todo",
+        recurrence_rule: null,
+        recurrence_parent_id: null,
+        recurrence_exception: false,
+        reminders: [],
+        is_busy: false,
+        linked_goal_id: null,
+        linked_todo_id: t.id,
+        tags: t.category ? [t.category] : [],
+        created_at: "",
+        updated_at: "",
+        _virtual: true,
+        _source: "todo",
+        _sourceId: t.id,
+      }));
+    },
+    enabled: !!user,
+  });
+
+  // Goal deadlines
+  const goalQuery = useQuery({
+    queryKey: ["calendar-goals", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("goals")
+        .select("id, name, deadline, pact_id, pacts!inner(user_id)")
+        .not("deadline", "is", null)
+        .not("status", "in", '("completed","archived")');
+      if (error) throw error;
+      return (data ?? [])
+        .filter((g: any) => g.pacts?.user_id === user.id)
+        .map((g: any): CalendarEvent => ({
+          id: `goal_${g.id}`,
+          user_id: user.id,
+          title: `🎯 ${g.name}`,
+          description: null,
+          location: null,
+          start_time: new Date(g.deadline).toISOString(),
+          end_time: new Date(g.deadline).toISOString(),
+          all_day: true,
+          color: "#a855f7", // purple
+          category: "goal-deadline",
+          recurrence_rule: null,
+          recurrence_parent_id: null,
+          recurrence_exception: false,
+          reminders: [],
+          is_busy: false,
+          linked_goal_id: g.id,
+          linked_todo_id: null,
+          tags: [],
+          created_at: "",
+          updated_at: "",
+          _virtual: true,
+          _source: "goal",
+          _sourceId: g.id,
+        }));
+    },
+    enabled: !!user,
+  });
+
+  // Step due dates
+  const stepQuery = useQuery({
+    queryKey: ["calendar-steps", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("steps")
+        .select("id, title, due_date, goal_id, goals!inner(pact_id, name, pacts!inner(user_id))")
+        .not("due_date", "is", null)
+        .neq("status", "completed");
+      if (error) throw error;
+      return (data ?? [])
+        .filter((s: any) => s.goals?.pacts?.user_id === user.id)
+        .map((s: any): CalendarEvent => ({
+          id: `step_${s.id}`,
+          user_id: user.id,
+          title: `📋 ${s.title}`,
+          description: s.goals?.name ? `Goal: ${s.goals.name}` : null,
+          location: null,
+          start_time: new Date(s.due_date).toISOString(),
+          end_time: new Date(s.due_date).toISOString(),
+          all_day: true,
+          color: "#14b8a6", // teal
+          category: "step-due",
+          recurrence_rule: null,
+          recurrence_parent_id: null,
+          recurrence_exception: false,
+          reminders: [],
+          is_busy: false,
+          linked_goal_id: s.goal_id,
+          linked_todo_id: null,
+          tags: [],
+          created_at: "",
+          updated_at: "",
+          _virtual: true,
+          _source: "step",
+          _sourceId: s.id,
+        }));
+    },
+    enabled: !!user,
+  });
+
+  // Expand all events with recurrences + merge external
   const events = useMemo(() => {
     const base = query.data ?? [];
     const recurring = recurringQuery.data ?? [];
@@ -179,8 +307,14 @@ export function useCalendarEvents(viewDate: Date, view: string) {
         expanded.push(ev);
       }
     }
-    return expanded;
-  }, [query.data, recurringQuery.data, rangeStart, rangeEnd]);
+
+    // Merge external deadlines (already filtered to active items)
+    const todos = todoQuery.data ?? [];
+    const goals = goalQuery.data ?? [];
+    const steps = stepQuery.data ?? [];
+
+    return [...expanded, ...todos, ...goals, ...steps];
+  }, [query.data, recurringQuery.data, todoQuery.data, goalQuery.data, stepQuery.data, rangeStart, rangeEnd]);
 
   // Realtime subscription
   useEffect(() => {

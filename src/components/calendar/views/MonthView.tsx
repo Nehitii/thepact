@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, isSameMonth, isSameDay, isToday, format, parseISO,
+  eachDayOfInterval, isSameMonth, isSameDay, isToday, format, parseISO, getISOWeek,
 } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
@@ -10,7 +10,6 @@ import { EventCard } from "../EventCard";
 import { EventQuickAdd } from "../EventQuickAdd";
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 
 interface MonthViewProps {
   viewDate: Date;
@@ -22,7 +21,6 @@ interface MonthViewProps {
 
 const MAX_VISIBLE = 3;
 
-// Draggable event wrapper
 function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: event.id,
@@ -46,7 +44,6 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
   );
 }
 
-// Droppable day cell
 function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
   day: Date;
   viewDate: Date;
@@ -82,6 +79,9 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
           )}>
             {format(day, "d")}
           </span>
+          {today && (
+            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+          )}
         </button>
       </EventQuickAdd>
 
@@ -111,10 +111,18 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
 
   const dayHeaders = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(2024, 0, i + 1); // Mon=1 Jan 2024
+      const d = new Date(2024, 0, i + 1);
       return format(d, "EEE", { locale });
     });
   }, [locale]);
+
+  const weeks = useMemo(() => {
+    const result: Date[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+      result.push(days.slice(i, i + 7));
+    }
+    return result;
+  }, [days]);
 
   const eventsByDay = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
@@ -140,7 +148,8 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="rounded-lg overflow-hidden border border-border/40">
         {/* Header */}
-        <div className="grid grid-cols-7 bg-muted/30">
+        <div className="grid grid-cols-[32px_repeat(7,1fr)] bg-muted/30">
+          <div className="text-center text-[9px] text-muted-foreground py-1.5 uppercase">W</div>
           {dayHeaders.map((h) => (
             <div key={h} className="text-center text-[10px] font-medium text-muted-foreground py-1.5 uppercase tracking-wider">
               {h}
@@ -149,21 +158,26 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-7">
-          {days.map((day) => {
-            const key = format(day, "yyyy-MM-dd");
-            return (
-              <DayCell
-                key={key}
-                day={day}
-                viewDate={viewDate}
-                events={eventsByDay.get(key) ?? []}
-                onEventClick={onEventClick}
-                onQuickAdd={onQuickAdd}
-              />
-            );
-          })}
-        </div>
+        {weeks.map((week, wi) => (
+          <div key={wi} className="grid grid-cols-[32px_repeat(7,1fr)]">
+            <div className="flex items-start justify-center pt-2 text-[9px] text-muted-foreground font-mono border border-border/20">
+              {getISOWeek(week[0])}
+            </div>
+            {week.map((day) => {
+              const key = format(day, "yyyy-MM-dd");
+              return (
+                <DayCell
+                  key={key}
+                  day={day}
+                  viewDate={viewDate}
+                  events={eventsByDay.get(key) ?? []}
+                  onEventClick={onEventClick}
+                  onQuickAdd={onQuickAdd}
+                />
+              );
+            })}
+          </div>
+        ))}
       </div>
     </DndContext>
   );

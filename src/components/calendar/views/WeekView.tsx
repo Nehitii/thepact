@@ -1,11 +1,18 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef, useState } from "react";
 import { startOfWeek, addDays, format, parseISO, isSameDay, isToday, differenceInMinutes, startOfDay } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import { CheckSquare, Target, Footprints } from "lucide-react";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const HOUR_HEIGHT = 48; // px per hour
+const HOUR_HEIGHT = 48;
+
+const sourceIcons: Record<string, typeof CheckSquare> = {
+  todo: CheckSquare,
+  goal: Target,
+  step: Footprints,
+};
 
 interface WeekViewProps {
   viewDate: Date;
@@ -14,10 +21,38 @@ interface WeekViewProps {
   onCellClick: (date: Date) => void;
 }
 
+function CurrentTimeLine() {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const top = (mins / 60) * HOUR_HEIGHT;
+  return (
+    <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top }}>
+      <div className="flex items-center">
+        <div className="w-2 h-2 rounded-full bg-destructive shrink-0" />
+        <div className="flex-1 h-px bg-destructive" />
+      </div>
+    </div>
+  );
+}
+
 export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekViewProps) {
   const locale = useDateFnsLocale();
+  const scrollRef = useRef<HTMLDivElement>(null);
   const weekStart = startOfWeek(viewDate, { weekStartsOn: 1 });
   const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(weekStart, i)), [weekStart]);
+
+  // Auto-scroll to current hour
+  useEffect(() => {
+    if (scrollRef.current) {
+      const now = new Date();
+      const top = Math.max(0, (now.getHours() - 1) * HOUR_HEIGHT);
+      scrollRef.current.scrollTop = top;
+    }
+  }, []);
 
   const getEventsForDay = (day: Date) =>
     events.filter((ev) => !ev.all_day && isSameDay(parseISO(ev.start_time), day));
@@ -48,16 +83,25 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
             const dayAllDay = allDayEvents.filter((ev) => isSameDay(parseISO(ev.start_time), d));
             return (
               <div key={d.toISOString()} className="p-0.5 space-y-0.5">
-                {dayAllDay.map((ev) => (
-                  <button
-                    key={ev.id}
-                    onClick={() => onEventClick(ev)}
-                    className="w-full text-left text-[10px] rounded px-1 py-0.5 truncate"
-                    style={{ backgroundColor: ev.color + "30", color: ev.color }}
-                  >
-                    {ev.title}
-                  </button>
-                ))}
+                {dayAllDay.map((ev) => {
+                  const isExternal = ev._source && ev._source !== "event";
+                  const SourceIcon = isExternal ? sourceIcons[ev._source!] : undefined;
+                  return (
+                    <button
+                      key={ev.id}
+                      onClick={() => onEventClick(ev)}
+                      className="w-full text-left text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-0.5"
+                      style={{
+                        backgroundColor: ev.color + "30",
+                        color: ev.color,
+                        borderLeft: isExternal ? `2px dashed ${ev.color}` : `2px solid ${ev.color}`,
+                      }}
+                    >
+                      {SourceIcon && <SourceIcon className="w-2.5 h-2.5 shrink-0" />}
+                      <span className="truncate">{ev.title}</span>
+                    </button>
+                  );
+                })}
               </div>
             );
           })}
@@ -65,8 +109,7 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
       )}
 
       {/* Time grid */}
-      <div className="grid grid-cols-[50px_repeat(7,1fr)] overflow-y-auto max-h-[600px]">
-        {/* Hour labels */}
+      <div ref={scrollRef} className="grid grid-cols-[50px_repeat(7,1fr)] overflow-y-auto max-h-[600px]">
         <div className="relative">
           {HOURS.map((h) => (
             <div key={h} className="border-b border-border/20" style={{ height: HOUR_HEIGHT }}>
@@ -75,9 +118,9 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
           ))}
         </div>
 
-        {/* Day columns */}
         {days.map((day) => {
           const dayEvents = getEventsForDay(day);
+          const showTimeLine = isToday(day);
           return (
             <div key={day.toISOString()} className="relative border-l border-border/20">
               {HOURS.map((h) => (
@@ -93,7 +136,8 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
                 />
               ))}
 
-              {/* Events positioned absolutely */}
+              {showTimeLine && <CurrentTimeLine />}
+
               {dayEvents.map((ev) => {
                 const start = parseISO(ev.start_time);
                 const end = parseISO(ev.end_time);
@@ -101,6 +145,8 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
                 const durationMin = Math.max(differenceInMinutes(end, start), 15);
                 const top = (startMin / 60) * HOUR_HEIGHT;
                 const height = (durationMin / 60) * HOUR_HEIGHT;
+                const isExternal = ev._source && ev._source !== "event";
+                const SourceIcon = isExternal ? sourceIcons[ev._source!] : undefined;
 
                 return (
                   <button
@@ -110,11 +156,14 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
                     style={{
                       top, height: Math.max(height, 18),
                       backgroundColor: ev.color + "40",
-                      borderLeft: `3px solid ${ev.color}`,
+                      borderLeft: isExternal ? `3px dashed ${ev.color}` : `3px solid ${ev.color}`,
                       color: ev.color,
                     }}
                   >
-                    <p className="font-medium truncate">{ev.title}</p>
+                    <p className="font-medium truncate flex items-center gap-0.5">
+                      {SourceIcon && <SourceIcon className="w-2.5 h-2.5 shrink-0" />}
+                      {ev.title}
+                    </p>
                     <p className="opacity-70">{format(start, "HH:mm")} – {format(end, "HH:mm")}</p>
                   </button>
                 );

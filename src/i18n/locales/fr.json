@@ -1723,6 +1723,16 @@
     "eventDeleted": "Événement supprimé",
     "eventMoved": "Événement déplacé",
     "noEvents": "Aucun événement sur cette période",
-    "searchPlaceholder": "Rechercher des événements..."
+    "searchPlaceholder": "Rechercher des événements...",
+    "upcoming": "À venir",
+    "sourceEvent": "Événements",
+    "sourceTodo": "Tâches",
+    "sourceGoal": "Objectifs",
+    "sourceStep": "Étapes",
+    "viewDay": "Jour",
+    "viewWeek": "Semaine",
+    "viewMonth": "Mois",
+    "viewYear": "Année",
+    "viewAgenda": "Agenda"
   }
 }

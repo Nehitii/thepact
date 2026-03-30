@@ -2,14 +2,21 @@ import { useMemo } from "react";
 import { format, parseISO, isToday, isSameDay } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
-import { MapPin, Clock, Repeat } from "lucide-react";
-import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import { MapPin, Clock, Repeat, CheckSquare, Target, Footprints } from "lucide-react";
+import type { CalendarEvent, CalendarSourceType } from "@/hooks/useCalendarEvents";
 import { useTranslation } from "react-i18next";
 
 interface AgendaViewProps {
   events: CalendarEvent[];
   onEventClick: (ev: CalendarEvent) => void;
 }
+
+const sourceIcons: Record<CalendarSourceType, typeof CheckSquare> = {
+  event: Clock,
+  todo: CheckSquare,
+  goal: Target,
+  step: Footprints,
+};
 
 export function AgendaView({ events, onEventClick }: AgendaViewProps) {
   const locale = useDateFnsLocale();
@@ -62,15 +69,28 @@ export function AgendaView({ events, onEventClick }: AgendaViewProps) {
             {group.events.map((ev) => {
               const start = parseISO(ev.start_time);
               const end = parseISO(ev.end_time);
+              const source = ev._source || "event";
+              const SourceIcon = sourceIcons[source];
+              const isExternal = source !== "event";
+
               return (
                 <button
                   key={ev.id}
                   onClick={() => onEventClick(ev)}
                   className="w-full text-left rounded-lg p-2.5 hover:bg-muted/30 transition-colors flex gap-3 items-start group"
                 >
-                  <div className="w-1 self-stretch rounded-full shrink-0" style={{ backgroundColor: ev.color }} />
+                  <div
+                    className={cn("w-1 self-stretch rounded-full shrink-0", isExternal && "border border-dashed")}
+                    style={{
+                      backgroundColor: isExternal ? "transparent" : ev.color,
+                      borderColor: ev.color,
+                    }}
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{ev.title}</p>
+                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors flex items-center gap-1">
+                      <SourceIcon className="h-3 w-3 shrink-0 opacity-60" style={{ color: ev.color }} />
+                      {ev.title}
+                    </p>
                     <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
                       <span className="flex items-center gap-0.5">
                         <Clock className="h-2.5 w-2.5" />
@@ -83,6 +103,9 @@ export function AgendaView({ events, onEventClick }: AgendaViewProps) {
                         </span>
                       )}
                       {ev.recurrence_rule && <Repeat className="h-2.5 w-2.5" />}
+                      {isExternal && (
+                        <span className="text-[9px] px-1 rounded bg-muted/50 capitalize">{source}</span>
+                      )}
                     </div>
                   </div>
                 </button>
