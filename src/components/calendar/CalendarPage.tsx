@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 const ALL_SOURCES = new Set<CalendarSourceType>(["event", "todo", "goal", "step"]);
 
