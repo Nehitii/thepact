@@ -109,7 +109,7 @@ function makeVirtualOccurrence(event: CalendarEvent, start: Date, end: Date, idx
 }
 
 // ─── Hook ───────────────────────────────────────────────────
-export function useCalendarEvents(viewDate: Date, view: string) {
+export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: Set<string>) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
