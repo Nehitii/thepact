@@ -13,36 +13,12 @@ import { motion } from "framer-motion";
    - Glitch UI & Command Prompt Inputs
 ═══════════════════════════════════════════════════════════ */
 
-/* ── Hexadecimal Background Stream ── */
+/* ── Hexadecimal Background Stream (CSS-only) ── */
 function HexDataStream() {
-  const [data, setData] = useState<string[]>([]);
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
-  useEffect(() => {
-    const chars = "0123456789ABCDEF";
-    const lineLen = isMobile ? 20 : 40;
-    const lineCount = isMobile ? 15 : 30;
-    const interval_ms = isMobile ? 400 : 150;
-    const generateLine = () =>
-      Array.from({ length: lineLen })
-        .map(() => chars[Math.floor(Math.random() * chars.length)])
-        .join(" ");
-
-    setData(Array.from({ length: lineCount }).map(generateLine));
-
-    const interval = setInterval(() => {
-      setData((prev) => [generateLine(), ...prev.slice(0, lineCount - 1)]);
-    }, interval_ms);
-
-    return () => clearInterval(interval);
-  }, [isMobile]);
-
   return (
-    <div className="hex-stream" aria-hidden="true">
-      {data.map((line, i) => (
-        <div key={i} className="hex-line" style={{ opacity: 1 - i * 0.03 }}>
-          {line}
-        </div>
+    <div className="hex-stream hex-stream-css" aria-hidden="true">
+      {Array.from({ length: 20 }, (_, i) => (
+        <div key={i} className="hex-line-css" style={{ animationDelay: `${i * 0.15}s`, opacity: 1 - i * 0.04 }} />
       ))}
     </div>
   );
