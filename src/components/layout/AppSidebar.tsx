@@ -127,6 +127,8 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
               navigate(to);
               closeMobile();
             }}
+            aria-label={label}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
               "flex items-center justify-center h-10 w-10 mx-auto transition-all duration-300 relative group",
               "border-l-2",
