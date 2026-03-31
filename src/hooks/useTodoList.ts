@@ -113,16 +113,11 @@ export function useTodoList() {
       
       if (error) throw error;
       
-      // If no stats exist, create them
+      // If no stats exist, create them via SECURITY DEFINER RPC
       if (!data) {
-        const { data: newStats, error: insertError } = await supabase
-          .from('todo_stats')
-          .insert({ user_id: userId })
-          .select()
-          .single();
-        
-        if (insertError) throw insertError;
-        data = newStats;
+        const { data: rpcResult, error: rpcError } = await supabase.rpc('init_todo_stats' as any);
+        if (rpcError) throw rpcError;
+        data = rpcResult as any;
       }
       
       return data as TodoStats;
