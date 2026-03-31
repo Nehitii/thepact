@@ -96,7 +96,11 @@ export default function Journal() {
   };
   const handleDelete = async () => {
     if (!deletingEntryId || !user) return;
-    await deleteEntry.mutateAsync({ id: deletingEntryId, userId: user.id });
+    try {
+      await deleteEntry.mutateAsync({ id: deletingEntryId, userId: user.id });
+    } catch {
+      // Error handled by React Query onError
+    }
     setDeletingEntryId(null);
   };
   const handleCloseModal = (open: boolean) => {

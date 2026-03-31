@@ -187,18 +187,22 @@ export default function Wishlist() {
       }
     }
 
-    await updateItem.mutateAsync({
-      userId: user.id, id: editId,
-      patch: {
-        name: trimmed, category: editCategory.trim() || null,
-        estimated_cost: Number.isFinite(parsedCost) ? parsedCost : 0,
-        item_type: editType, notes: editNotes.trim() || null,
-        goal_id: nextGoalId, url: editUrl.trim() || null,
-        image_url: editImageUrl.trim() || null,
-        priority: editPriority,
-      },
-    });
-    setEditOpen(false);
+    try {
+      await updateItem.mutateAsync({
+        userId: user.id, id: editId,
+        patch: {
+          name: trimmed, category: editCategory.trim() || null,
+          estimated_cost: Number.isFinite(parsedCost) ? parsedCost : 0,
+          item_type: editType, notes: editNotes.trim() || null,
+          goal_id: nextGoalId, url: editUrl.trim() || null,
+          image_url: editImageUrl.trim() || null,
+          priority: editPriority,
+        },
+      });
+      setEditOpen(false);
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   const financeProjectTotal = useMemo(() => {
@@ -271,16 +275,20 @@ export default function Wishlist() {
       }
     }
 
-    await createItem.mutateAsync({
-      userId: user.id, name: trimmed,
-      estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
-      itemType: newType, category: newCategory.trim() || null,
-      goalId: nextGoalId, url: newUrl.trim() || null,
-      imageUrl: newImageUrl.trim() || null,
-      priority: newPriority,
-    });
-    setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional");
-    setNewUrl(""); setNewImageUrl(""); setNewGoalId("none"); setNewPriority("low"); setNewOpen(false);
+    try {
+      await createItem.mutateAsync({
+        userId: user.id, name: trimmed,
+        estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
+        itemType: newType, category: newCategory.trim() || null,
+        goalId: nextGoalId, url: newUrl.trim() || null,
+        imageUrl: newImageUrl.trim() || null,
+        priority: newPriority,
+      });
+      setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional");
+      setNewUrl(""); setNewImageUrl(""); setNewGoalId("none"); setNewPriority("low"); setNewOpen(false);
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   const handleImportProduct = (product: ScrapedProduct) => {

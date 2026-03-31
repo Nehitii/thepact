@@ -4,6 +4,7 @@ import { AppProviders } from "@/components/AppProviders";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AdminRoute } from "@/components/AdminRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Lazy-loaded pages
 const Auth = lazy(() => import("./pages/Auth"));
@@ -49,11 +50,13 @@ const AdminPromoManager = lazy(() => import("./pages/AdminPromoManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const SuspensePage = ({ children }: { children: React.ReactNode }) => (
-  <Suspense fallback={
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-    </div>
-  }>{children}</Suspense>
+  <ErrorBoundary>
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    }>{children}</Suspense>
+  </ErrorBoundary>
 );
 
 const App = () => (

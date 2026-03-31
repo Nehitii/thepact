@@ -14,10 +14,9 @@ export function AppLayout() {
       <AppSidebar />
 
       <div className="flex-1 min-w-0 overflow-x-hidden overflow-hidden isolate flex flex-col">
-        {/* Main content */}
-        <div className="flex-1 min-w-0 overflow-x-clip overflow-y-auto relative z-0">
+        <main className="flex-1 min-w-0 overflow-x-clip overflow-y-auto relative z-0">
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   );

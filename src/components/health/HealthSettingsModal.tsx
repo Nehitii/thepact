@@ -71,21 +71,25 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
   }, [settings]);
 
   const handleSave = async () => {
-    await upsertSettings.mutateAsync({
-      height_cm: heightCm ? parseFloat(heightCm) : null,
-      weight_kg: weightKg ? parseFloat(weightKg) : null,
-      show_bmi: showBmi,
-      show_sleep: showSleep,
-      show_activity: showActivity,
-      show_stress: showStress,
-      show_hydration: showHydration,
-      show_nutrition: showNutrition,
-      sleep_goal_hours: sleepGoal,
-      hydration_goal_glasses: hydrationGoal,
-      activity_goal_minutes: activityGoal,
-      checkin_mode: checkinMode,
-    });
-    onOpenChange(false);
+    try {
+      await upsertSettings.mutateAsync({
+        height_cm: heightCm ? parseFloat(heightCm) : null,
+        weight_kg: weightKg ? parseFloat(weightKg) : null,
+        show_bmi: showBmi,
+        show_sleep: showSleep,
+        show_activity: showActivity,
+        show_stress: showStress,
+        show_hydration: showHydration,
+        show_nutrition: showNutrition,
+        sleep_goal_hours: sleepGoal,
+        hydration_goal_glasses: hydrationGoal,
+        activity_goal_minutes: activityGoal,
+        checkin_mode: checkinMode,
+      });
+      onOpenChange(false);
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   return (
