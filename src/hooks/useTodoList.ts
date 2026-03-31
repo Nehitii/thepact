@@ -261,19 +261,17 @@ export function useTodoList() {
         
         const newLongestStreak = Math.max(stats.longest_streak, newStreak);
 
-        const { error: statsError } = await supabase
-          .from('todo_stats')
-          .update({
-            score: stats.score + 10,
-            current_streak: newStreak,
-            longest_streak: newLongestStreak,
-            last_completion_date: today,
-            tasks_completed_month: newMonthCount + 1,
-            tasks_completed_year: newYearCount + 1,
-            current_month: currentMonth,
-            current_year: currentYear,
-          })
-          .eq('user_id', userId);
+        // Use SECURITY DEFINER RPC instead of direct update
+        const { error: statsError } = await supabase.rpc('record_todo_completion' as any, {
+          p_score_increment: 10,
+          p_new_streak: newStreak,
+          p_longest_streak: newLongestStreak,
+          p_completion_date: today,
+          p_month_count: newMonthCount + 1,
+          p_year_count: newYearCount + 1,
+          p_current_month: currentMonth,
+          p_current_year: currentYear,
+        });
         
         if (statsError) throw statsError;
       }
