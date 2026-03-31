@@ -49,7 +49,7 @@ function CyberTerminalField({ id, type, placeholder, value, onChange, disabled, 
           type={type}
           placeholder={focused ? "" : placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => onChange(e)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           disabled={disabled}
