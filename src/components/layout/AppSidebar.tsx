@@ -320,6 +320,8 @@ export const AppSidebar = memo(function AppSidebar() {
       )}
 
       <aside
+        role="navigation"
+        aria-label="Main navigation"
         style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
         className={cn(
           "flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
