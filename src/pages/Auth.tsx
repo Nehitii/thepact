@@ -25,13 +25,23 @@ function HexDataStream() {
 }
 
 /* ── Cyber Terminal Input ── */
-function CyberTerminalField({ id, type, placeholder, value, onChange, disabled, label }: any) {
+interface CyberTerminalFieldProps {
+  id: string;
+  type: string;
+  placeholder: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
+  label: string;
+}
+
+function CyberTerminalField({ id, type, placeholder, value, onChange, disabled, label }: CyberTerminalFieldProps) {
   const [focused, setFocused] = useState(false);
 
   return (
     <div className={`cyber-field-container ${focused ? "focused" : ""}`}>
       <div className="cyber-field-label">
-        <span className="blink-arrow">{">"}</span> {label}
+        <span className="blink-arrow" aria-hidden="true">{">"}</span> {label}
       </div>
       <div className="cyber-input-wrapper">
         <input

@@ -57,10 +57,10 @@ type NavCategory = "overview" | "operations" | "lifeSystems" | "network" | "syst
 
 interface NavItem {
   to: string;
-  icon: any;
+  icon: React.ComponentType<{ className?: string }>;
   label: string;
   badgeKey?: "friends" | "messages" | "inbox";
-  moduleKey?: string; // Permet de lier une notification à ce menu via un module_key
+  moduleKey?: string;
 }
 
 const baseNavigation: Record<NavCategory, NavItem[]> = {
