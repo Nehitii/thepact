@@ -31,7 +31,7 @@ export function CalendarPage() {
   const [quickAddDate, setQuickAddDate] = useState<Date | undefined>();
   const [activeFilters, setActiveFilters] = useState<Set<CalendarSourceType>>(new Set(ALL_SOURCES));
 
-  const { events, isLoading, createEvent, updateEvent, deleteEvent } = useCalendarEvents(viewDate, view);
+  const { events, isLoading, createEvent, updateEvent, deleteEvent } = useCalendarEvents(viewDate, view, activeFilters);
 
   // Filter events by active sources
   const filteredEvents = useMemo(() =>

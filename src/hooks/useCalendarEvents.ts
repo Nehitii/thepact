@@ -109,7 +109,7 @@ function makeVirtualOccurrence(event: CalendarEvent, start: Date, end: Date, idx
 }
 
 // ─── Hook ───────────────────────────────────────────────────
-export function useCalendarEvents(viewDate: Date, view: string) {
+export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: Set<string>) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -166,7 +166,8 @@ export function useCalendarEvents(viewDate: Date, view: string) {
     enabled: !!user,
   });
 
-  // Todo deadlines
+  // Todo deadlines — skip if source filter excludes todos
+  const todoEnabled = !!user && (!sourceFilters || sourceFilters.has("todo"));
   const todoQuery = useQuery({
     queryKey: ["calendar-todos", user?.id],
     queryFn: async () => {
@@ -187,7 +188,7 @@ export function useCalendarEvents(viewDate: Date, view: string) {
         start_time: t.deadline,
         end_time: t.deadline,
         all_day: true,
-        color: "#f97316", // orange
+        color: "#f97316",
         category: "todo",
         recurrence_rule: null,
         recurrence_parent_id: null,
@@ -204,10 +205,11 @@ export function useCalendarEvents(viewDate: Date, view: string) {
         _sourceId: t.id,
       }));
     },
-    enabled: !!user,
+    enabled: todoEnabled,
   });
 
-  // Goal deadlines
+  // Goal deadlines — skip if source filter excludes goals
+  const goalEnabled = !!user && (!sourceFilters || sourceFilters.has("goal"));
   const goalQuery = useQuery({
     queryKey: ["calendar-goals", user?.id],
     queryFn: async () => {
@@ -229,7 +231,7 @@ export function useCalendarEvents(viewDate: Date, view: string) {
           start_time: new Date(g.deadline).toISOString(),
           end_time: new Date(g.deadline).toISOString(),
           all_day: true,
-          color: "#a855f7", // purple
+          color: "#a855f7",
           category: "goal-deadline",
           recurrence_rule: null,
           recurrence_parent_id: null,
@@ -246,10 +248,11 @@ export function useCalendarEvents(viewDate: Date, view: string) {
           _sourceId: g.id,
         }));
     },
-    enabled: !!user,
+    enabled: goalEnabled,
   });
 
-  // Step due dates
+  // Step due dates — skip if source filter excludes steps
+  const stepEnabled = !!user && (!sourceFilters || sourceFilters.has("step"));
   const stepQuery = useQuery({
     queryKey: ["calendar-steps", user?.id],
     queryFn: async () => {
@@ -271,7 +274,7 @@ export function useCalendarEvents(viewDate: Date, view: string) {
           start_time: new Date(s.due_date).toISOString(),
           end_time: new Date(s.due_date).toISOString(),
           all_day: true,
-          color: "#14b8a6", // teal
+          color: "#14b8a6",
           category: "step-due",
           recurrence_rule: null,
           recurrence_parent_id: null,
@@ -288,7 +291,7 @@ export function useCalendarEvents(viewDate: Date, view: string) {
           _sourceId: s.id,
         }));
     },
-    enabled: !!user,
+    enabled: stepEnabled,
   });
 
   // Expand all events with recurrences + merge external

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
 import { EventCard } from "../EventCard";
 import { EventQuickAdd } from "../EventQuickAdd";
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, PointerSensor, KeyboardSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 interface MonthViewProps {
@@ -33,6 +33,8 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      role="button"
+      aria-label={`Event: ${event.title}`}
       style={{
         transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
         opacity: isDragging ? 0.5 : 1,
@@ -99,7 +101,9 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
 
 export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventMove }: MonthViewProps) {
   const locale = useDateFnsLocale();
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
+  const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } });
+  const keyboardSensor = useSensor(KeyboardSensor);
+  const sensors = useSensors(pointerSensor, keyboardSensor);
 
   const days = useMemo(() => {
     const monthStart = startOfMonth(viewDate);

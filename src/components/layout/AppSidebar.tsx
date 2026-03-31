@@ -57,10 +57,10 @@ type NavCategory = "overview" | "operations" | "lifeSystems" | "network" | "syst
 
 interface NavItem {
   to: string;
-  icon: any;
+  icon: React.ComponentType<any>;
   label: string;
   badgeKey?: "friends" | "messages" | "inbox";
-  moduleKey?: string; // Permet de lier une notification à ce menu via un module_key
+  moduleKey?: string;
 }
 
 const baseNavigation: Record<NavCategory, NavItem[]> = {
@@ -127,6 +127,8 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
               navigate(to);
               closeMobile();
             }}
+            aria-label={label}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
               "flex items-center justify-center h-10 w-10 mx-auto transition-all duration-300 relative group",
               "border-l-2",
@@ -159,6 +161,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
       to={to}
       end={to === "/"}
       onClick={closeMobile}
+      aria-label={label}
       className={({ isActive }) =>
         cn(
           "group relative flex items-center transition-all duration-300 overflow-hidden px-3 py-2.5 mb-1",
@@ -317,6 +320,8 @@ export const AppSidebar = memo(function AppSidebar() {
       )}
 
       <aside
+        role="navigation"
+        aria-label="Main navigation"
         style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
         className={cn(
           "flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
