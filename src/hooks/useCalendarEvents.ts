@@ -251,7 +251,8 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
     enabled: goalEnabled,
   });
 
-  // Step due dates
+  // Step due dates — skip if source filter excludes steps
+  const stepEnabled = !!user && (!sourceFilters || sourceFilters.has("step"));
   const stepQuery = useQuery({
     queryKey: ["calendar-steps", user?.id],
     queryFn: async () => {
@@ -273,7 +274,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
           start_time: new Date(s.due_date).toISOString(),
           end_time: new Date(s.due_date).toISOString(),
           all_day: true,
-          color: "#14b8a6", // teal
+          color: "#14b8a6",
           category: "step-due",
           recurrence_rule: null,
           recurrence_parent_id: null,
@@ -290,7 +291,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
           _sourceId: s.id,
         }));
     },
-    enabled: !!user,
+    enabled: stepEnabled,
   });
 
   // Expand all events with recurrences + merge external
