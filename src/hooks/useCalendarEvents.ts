@@ -208,7 +208,8 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
     enabled: todoEnabled,
   });
 
-  // Goal deadlines
+  // Goal deadlines — skip if source filter excludes goals
+  const goalEnabled = !!user && (!sourceFilters || sourceFilters.has("goal"));
   const goalQuery = useQuery({
     queryKey: ["calendar-goals", user?.id],
     queryFn: async () => {
@@ -230,7 +231,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
           start_time: new Date(g.deadline).toISOString(),
           end_time: new Date(g.deadline).toISOString(),
           all_day: true,
-          color: "#a855f7", // purple
+          color: "#a855f7",
           category: "goal-deadline",
           recurrence_rule: null,
           recurrence_parent_id: null,
@@ -247,7 +248,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
           _sourceId: g.id,
         }));
     },
-    enabled: !!user,
+    enabled: goalEnabled,
   });
 
   // Step due dates
