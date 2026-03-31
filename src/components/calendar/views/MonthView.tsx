@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
 import { EventCard } from "../EventCard";
 import { EventQuickAdd } from "../EventQuickAdd";
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, DragEndEvent, PointerSensor, KeyboardSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
 interface MonthViewProps {
