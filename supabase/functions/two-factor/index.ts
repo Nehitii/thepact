@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
       const bytes = crypto.getRandomValues(new Uint8Array(20));
       const secret = base32Encode(bytes);
 
-      await supabaseClient
+      await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: false, totp_secret: secret }, { onConflict: "user_id" });
 
@@ -340,7 +340,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Invalid code" }, 400);
       }
 
-      await supabaseClient
+      await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: true, totp_secret: secret }, { onConflict: "user_id" });
 
@@ -448,7 +448,7 @@ Deno.serve(async (req) => {
 
     // ── DISABLE TOTP ──
     if (action === "disable") {
-      await supabaseClient
+      await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: false, totp_secret: null }, { onConflict: "user_id" });
       await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
