@@ -57,7 +57,7 @@ type NavCategory = "overview" | "operations" | "lifeSystems" | "network" | "syst
 
 interface NavItem {
   to: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
   label: string;
   badgeKey?: "friends" | "messages" | "inbox";
   moduleKey?: string;
