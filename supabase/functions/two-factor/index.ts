@@ -448,7 +448,7 @@ Deno.serve(async (req) => {
 
     // ── DISABLE TOTP ──
     if (action === "disable") {
-      await supabaseClient
+      await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: false, totp_secret: null }, { onConflict: "user_id" });
       await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
