@@ -84,9 +84,12 @@ export function HealthSettingsModal({ open, onOpenChange }: HealthSettingsModalP
         sleep_goal_hours: sleepGoal,
         hydration_goal_glasses: hydrationGoal,
         activity_goal_minutes: activityGoal,
-      checkin_mode: checkinMode,
-    });
-    onOpenChange(false);
+        checkin_mode: checkinMode,
+      });
+      onOpenChange(false);
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   return (
