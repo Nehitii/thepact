@@ -9,9 +9,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
   const twoFactor = useTwoFactor();
-  const { data: profile } = useProfile(user?.id);
-  const { data: personalPact } = usePact(user?.id);
-  const { memberships } = useSharedPacts();
+  const { data: profile, isError: profileError } = useProfile(user?.id);
+  const { data: personalPact, isError: pactError } = usePact(user?.id);
+  const { memberships, isError: sharedError } = useSharedPacts();
 
   if (loading) {
     return (
