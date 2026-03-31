@@ -40,6 +40,9 @@ export function PromoCodeRedemption() {
         setLastReward(null);
       }, 3000);
     }
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   return (
