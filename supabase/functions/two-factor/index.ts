@@ -340,7 +340,7 @@ Deno.serve(async (req) => {
         return jsonResponse({ error: "Invalid code" }, 400);
       }
 
-      await supabaseClient
+      await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: true, totp_secret: secret }, { onConflict: "user_id" });
 
