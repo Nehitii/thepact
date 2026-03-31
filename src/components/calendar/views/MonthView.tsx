@@ -33,6 +33,8 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
       ref={setNodeRef}
       {...listeners}
       {...attributes}
+      role="button"
+      aria-label={`Event: ${event.title}`}
       style={{
         transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
         opacity: isDragging ? 0.5 : 1,
