@@ -28,6 +28,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
+  // If critical queries failed, render children anyway instead of bad redirects
+  if (profileError || pactError || sharedError) {
+    return <>{children}</>;
+  }
+
   // Gate the entire app when 2FA is enabled and required.
   if (location.pathname !== "/two-factor" && twoFactor.isRequired) {
     return (

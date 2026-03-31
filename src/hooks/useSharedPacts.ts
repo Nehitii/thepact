@@ -85,6 +85,7 @@ export function useSharedPacts() {
   return {
     memberships: membershipsQuery.data || [],
     loading: membershipsQuery.isLoading,
+    isError: membershipsQuery.isError,
     createSharedPact,
     leaveSharedPact,
   };
