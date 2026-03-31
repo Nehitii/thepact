@@ -4,6 +4,7 @@ import { AppProviders } from "@/components/AppProviders";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { AdminRoute } from "@/components/AdminRoute";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Lazy-loaded pages
 const Auth = lazy(() => import("./pages/Auth"));
