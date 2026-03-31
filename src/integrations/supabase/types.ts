@@ -3362,30 +3362,7 @@ export type Database = {
       }
     }
     Views: {
-      user_2fa_settings_safe: {
-        Row: {
-          created_at: string | null
-          email_2fa_enabled: boolean | null
-          totp_enabled: boolean | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email_2fa_enabled?: boolean | null
-          totp_enabled?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email_2fa_enabled?: boolean | null
-          totp_enabled?: boolean | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       execute_account_transfer: {
@@ -3443,6 +3420,16 @@ export type Database = {
         Args: { _guild_id: string; _user_id: string }
         Returns: string
       }
+      get_own_2fa_status: {
+        Args: never
+        Returns: {
+          created_at: string
+          email_2fa_enabled: boolean
+          totp_enabled: boolean
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_public_leaderboard: {
         Args: { p_limit?: number }
         Returns: {
@@ -3463,6 +3450,10 @@ export type Database = {
           updated_at: string
         }[]
       }
+      grant_achievement: {
+        Args: { p_achievement_key: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -3475,9 +3466,15 @@ export type Database = {
         Args: { p_field: string; p_increment?: number; p_user_id: string }
         Returns: undefined
       }
+      init_achievement_tracking: { Args: never; Returns: undefined }
+      init_todo_stats: { Args: never; Returns: Json }
       is_guild_member: {
         Args: { _guild_id: string; _user_id: string }
         Returns: boolean
+      }
+      mark_achievements_seen: {
+        Args: { p_achievement_keys: string[] }
+        Returns: undefined
       }
       purchase_bundle: { Args: { p_bundle_id: string }; Returns: Json }
       purchase_daily_deal: { Args: { p_deal_id: string }; Returns: Json }
@@ -3485,8 +3482,25 @@ export type Database = {
         Args: { p_item_id: string; p_item_type: string; p_price: number }
         Returns: Json
       }
+      record_todo_completion: {
+        Args: {
+          p_completion_date: string
+          p_current_month: number
+          p_current_year: number
+          p_longest_streak: number
+          p_month_count: number
+          p_new_streak: number
+          p_score_increment: number
+          p_year_count: number
+        }
+        Returns: undefined
+      }
       redeem_promo_code: { Args: { p_code: string }; Returns: Json }
       reset_pact_data: { Args: { p_pact_id: string }; Returns: boolean }
+      update_achievement_tracking: {
+        Args: { p_updates: Json }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "user" | "admin"
