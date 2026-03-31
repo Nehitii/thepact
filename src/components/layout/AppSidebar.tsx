@@ -161,6 +161,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
       to={to}
       end={to === "/"}
       onClick={closeMobile}
+      aria-label={label}
       className={({ isActive }) =>
         cn(
           "group relative flex items-center transition-all duration-300 overflow-hidden px-3 py-2.5 mb-1",
