@@ -44,17 +44,9 @@ export const rarityColors: Record<AchievementRarity, string> = {
   mythic: "hsl(var(--achievement-mythic))",
 };
 
-// Initialize tracking for a new user
-export async function initializeAchievementTracking(userId: string) {
-  const { data: existing } = await supabase
-    .from("achievement_tracking")
-    .select("id")
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (!existing) {
-    await supabase.from("achievement_tracking").insert({ user_id: userId });
-  }
+// Initialize tracking for a new user (via SECURITY DEFINER RPC)
+export async function initializeAchievementTracking(_userId: string) {
+  await supabase.rpc('init_achievement_tracking' as any);
 }
 
 // Track login event
@@ -75,7 +67,7 @@ export async function trackLogin(userId: string) {
     return checkAchievements(userId);
   }
 
-  const updates: any = {};
+  const updates: Record<string, any> = {};
   
   // Check consecutive login days
   const lastLogin = tracking.last_login_date;
@@ -112,10 +104,10 @@ export async function trackLogin(userId: string) {
     updates.midnight_logins_count = (tracking.midnight_logins_count || 0) + 1;
   }
 
-  await supabase
-    .from("achievement_tracking")
-    .update(updates)
-    .eq("user_id", userId);
+  // Use SECURITY DEFINER RPC instead of direct update
+  await supabase.rpc('update_achievement_tracking' as any, {
+    p_updates: updates
+  });
 
   await checkAchievements(userId);
 }
@@ -199,20 +191,20 @@ export async function trackStepCompleted(userId: string) {
 
 // Track pact creation
 export async function trackPactCreated(userId: string) {
-  await supabase
-    .from("achievement_tracking")
-    .update({ has_pact: true })
-    .eq("user_id", userId);
+  // Use SECURITY DEFINER RPC instead of direct update
+  await supabase.rpc('update_achievement_tracking' as any, {
+    p_updates: { has_pact: true }
+  });
 
   await unlockAchievement(userId, 'the_sealed_pact');
 }
 
 // Track pact edit
 export async function trackPactEdited(userId: string) {
-  await supabase
-    .from("achievement_tracking")
-    .update({ has_edited_pact: true })
-    .eq("user_id", userId);
+  // Use SECURITY DEFINER RPC instead of direct update
+  await supabase.rpc('update_achievement_tracking' as any, {
+    p_updates: { has_edited_pact: true }
+  });
 
   await unlockAchievement(userId, 'keeper_of_the_oath');
 }
@@ -300,26 +292,16 @@ async function checkAchievements(userId: string) {
   }
 }
 
-// Unlock an achievement
+// Unlock an achievement via SECURITY DEFINER RPC
 export async function unlockAchievement(
   userId: string, 
   achievementKey: string,
   achievementName?: string,
   rarity?: AchievementRarity
 ) {
-  const { data: existing } = await supabase
-    .from("user_achievements")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("achievement_key", achievementKey)
-    .maybeSingle();
-
-  if (existing) return;
-
-  await supabase.from("user_achievements").insert({
-    user_id: userId,
-    achievement_key: achievementKey,
-    seen: false,
+  // Use SECURITY DEFINER RPC instead of direct insert
+  await supabase.rpc('grant_achievement' as any, {
+    p_achievement_key: achievementKey
   });
 
   // Show notification
