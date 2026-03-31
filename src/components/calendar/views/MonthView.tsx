@@ -100,6 +100,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
 }
 
 export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventMove }: MonthViewProps) {
+  const locale = useDateFnsLocale();
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } });
   const keyboardSensor = useSensor(KeyboardSensor);
   const sensors = useSensors(pointerSensor, keyboardSensor);
