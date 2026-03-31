@@ -318,7 +318,7 @@ Deno.serve(async (req) => {
       const bytes = crypto.getRandomValues(new Uint8Array(20));
       const secret = base32Encode(bytes);
 
-      await supabaseClient
+      await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: false, totp_secret: secret }, { onConflict: "user_id" });
 
