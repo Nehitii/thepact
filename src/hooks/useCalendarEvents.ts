@@ -166,7 +166,8 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
     enabled: !!user,
   });
 
-  // Todo deadlines
+  // Todo deadlines — skip if source filter excludes todos
+  const todoEnabled = !!user && (!sourceFilters || sourceFilters.has("todo"));
   const todoQuery = useQuery({
     queryKey: ["calendar-todos", user?.id],
     queryFn: async () => {
@@ -187,7 +188,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         start_time: t.deadline,
         end_time: t.deadline,
         all_day: true,
-        color: "#f97316", // orange
+        color: "#f97316",
         category: "todo",
         recurrence_rule: null,
         recurrence_parent_id: null,
@@ -204,7 +205,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         _sourceId: t.id,
       }));
     },
-    enabled: !!user,
+    enabled: todoEnabled,
   });
 
   // Goal deadlines
