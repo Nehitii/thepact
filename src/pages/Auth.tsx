@@ -257,14 +257,51 @@ const STYLES = `
     font-size: 10px;
     line-height: 1.5;
     color: rgba(0, 242, 255, 0.15);
-    word-wrap: break-word;
-    white-space: pre-wrap;
     padding: 20px;
     z-index: 1;
     overflow: hidden;
     user-select: none;
     mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
     -webkit-mask-image: radial-gradient(circle at center, black 0%, transparent 80%);
+  }
+
+  /* CSS-only hex data rain */
+  .hex-stream-css {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  @keyframes hexScroll {
+    0% { content: "0A 3F 7B E2 9C D1 04 5A 8E F6 2B 71 C3 A9 6D 1F 4E B0 82 5C 3A D7 9F 0E 63 A1 B5 28 7C E4"; }
+    25% { content: "B7 2E 94 0F C8 53 6A D5 1B 8C A3 7F 42 E9 06 3D 5B 91 C0 74 28 AF 6E D3 15 87 4C F2 A6 39"; }
+    50% { content: "48 CF 71 A5 3B 8D E0 26 5F 93 0C 67 BA D4 18 7E 42 A8 F1 5D 30 C6 89 E3 07 6B 24 9A D8 4F"; }
+    75% { content: "E1 56 2A 8F C4 03 7D B6 49 D2 15 A7 63 F0 38 9E 5C 81 0B C7 4A 2F 96 D9 6E B3 17 A4 58 E8"; }
+    100% { content: "0A 3F 7B E2 9C D1 04 5A 8E F6 2B 71 C3 A9 6D 1F 4E B0 82 5C 3A D7 9F 0E 63 A1 B5 28 7C E4"; }
+  }
+
+  @keyframes hexFade {
+    0%, 100% { opacity: 0.12; }
+    50% { opacity: 0.25; }
+  }
+
+  .hex-line-css {
+    font-family: var(--f-mono, monospace);
+    white-space: nowrap;
+    overflow: hidden;
+    height: 1.5em;
+    animation: hexFade 3s ease-in-out infinite;
+  }
+
+  .hex-line-css::before {
+    content: "0A 3F 7B E2 9C D1 04 5A 8E F6 2B 71 C3 A9 6D 1F 4E B0 82 5C 3A D7 9F 0E 63 A1 B5 28 7C E4";
+    animation: hexScroll 8s linear infinite;
+  }
+
+  .hex-line-css:nth-child(odd)::before {
+    content: "B7 2E 94 0F C8 53 6A D5 1B 8C A3 7F 42 E9 06 3D 5B 91 C0 74 28 AF 6E D3 15 87 4C F2 A6 39";
+    animation-duration: 12s;
+    animation-direction: reverse;
   }
 
   .scanlines {
