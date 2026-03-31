@@ -20,18 +20,19 @@ export function PromoCodeRedemption() {
   const handleRedeem = async () => {
     if (!user || !code.trim()) return;
 
-    const result = await redeemCode.mutateAsync({
-      userId: user.id,
-      code: code.trim(),
-    });
-
-    if (result) {
-      setLastReward({
-        amount: result.rewardAmount,
-        type: result.rewardType,
+    try {
+      const result = await redeemCode.mutateAsync({
+        userId: user.id,
+        code: code.trim(),
       });
-      setShowSuccess(true);
-      setCode("");
+
+      if (result) {
+        setLastReward({
+          amount: result.rewardAmount,
+          type: result.rewardType,
+        });
+        setShowSuccess(true);
+        setCode("");
 
       // Hide success after 3 seconds
       setTimeout(() => {

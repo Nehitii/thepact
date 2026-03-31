@@ -275,16 +275,20 @@ export default function Wishlist() {
       }
     }
 
-    await createItem.mutateAsync({
-      userId: user.id, name: trimmed,
-      estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
-      itemType: newType, category: newCategory.trim() || null,
-      goalId: nextGoalId, url: newUrl.trim() || null,
-      imageUrl: newImageUrl.trim() || null,
-      priority: newPriority,
-    });
-    setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional");
-    setNewUrl(""); setNewImageUrl(""); setNewGoalId("none"); setNewPriority("low"); setNewOpen(false);
+    try {
+      await createItem.mutateAsync({
+        userId: user.id, name: trimmed,
+        estimatedCost: Number.isFinite(parsedCost) ? parsedCost : 0,
+        itemType: newType, category: newCategory.trim() || null,
+        goalId: nextGoalId, url: newUrl.trim() || null,
+        imageUrl: newImageUrl.trim() || null,
+        priority: newPriority,
+      });
+      setNewName(""); setNewCost(""); setNewCategory(""); setNewType("optional");
+      setNewUrl(""); setNewImageUrl(""); setNewGoalId("none"); setNewPriority("low"); setNewOpen(false);
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   const handleImportProduct = (product: ScrapedProduct) => {

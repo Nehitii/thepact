@@ -151,10 +151,14 @@ export function ProfilePactSettings({
 
   const handleReset = async () => {
     if (!pactId) return;
-    await resetPact.mutateAsync(pactId);
-    setConfirmName("");
-    setDialogOpen(false);
-    setLogLines(prev => [...prev.slice(-3), { text: "⚠ PACT RESET EXECUTED", type: "warn" as const }]);
+    try {
+      await resetPact.mutateAsync(pactId);
+      setConfirmName("");
+      setDialogOpen(false);
+      setLogLines(prev => [...prev.slice(-3), { text: "⚠ PACT RESET EXECUTED", type: "warn" as const }]);
+    } catch {
+      // Error handled by mutation onError
+    }
   };
 
   return (
