@@ -148,6 +148,26 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
           )}
         </ScrollArea>
 
+        {!isOwner && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (!confirm(t("friends.leaveGuildConfirm"))) return;
+              try {
+                await leaveGuild.mutateAsync(guild.id);
+                toast.success(t("friends.leftGuild"));
+                onClose();
+              } catch {
+                toast.error(t("friends.leaveFailed"));
+              }
+            }}
+            className="w-full text-xs font-bold uppercase tracking-wider text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+          >
+            <LogOut className="h-3 w-3 mr-1.5" /> {t("friends.leaveGuild")}
+          </Button>
+        )}
+
         {isOwner && (
           <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full text-xs font-bold uppercase tracking-wider">
             <Trash2 className="h-3 w-3 mr-1.5" /> Delete Guild
