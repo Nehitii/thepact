@@ -199,6 +199,22 @@ export function useGuilds() {
     },
   });
 
+  const leaveGuild = useMutation({
+    mutationFn: async (guildId: string) => {
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("guild_members")
+        .delete()
+        .eq("guild_id", guildId)
+        .eq("user_id", user.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["guilds"] });
+      qc.invalidateQueries({ queryKey: ["guild-members"] });
+    },
+  });
+
   const deleteGuild = useMutation({
     mutationFn: async (guildId: string) => {
       const { error } = await supabase.from("guilds").delete().eq("id", guildId);
