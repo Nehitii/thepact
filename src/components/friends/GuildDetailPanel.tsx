@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Crown, UserX, Loader2, Shield, Search, Trash2 } from "lucide-react";
+import { UserPlus, Crown, UserX, Loader2, Shield, Search, Trash2, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGuilds, type Guild, type GuildMember } from "@/hooks/useGuilds";
 import { useFriends } from "@/hooks/useFriends";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface GuildDetailPanelProps {
   open: boolean;
