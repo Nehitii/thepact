@@ -19,9 +19,10 @@ interface GuildDetailPanelProps {
 }
 
 export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPanelProps) {
-  const { useGuildMembers, inviteMember, removeMember, deleteGuild } = useGuilds();
+  const { useGuildMembers, inviteMember, removeMember, deleteGuild, leaveGuild } = useGuilds();
   const { data: members = [], isLoading } = useGuildMembers(guild.id);
   const { friends } = useFriends();
+  const { t } = useTranslation();
   const [showInvite, setShowInvite] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
