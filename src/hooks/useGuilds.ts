@@ -233,6 +233,7 @@ export function useGuilds() {
     inviteMember,
     respondToInvite,
     removeMember,
+    leaveGuild,
     deleteGuild,
   };
 }

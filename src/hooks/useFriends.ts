@@ -153,13 +153,30 @@ export function useFriends() {
     return "none";
   };
 
-  // Search profiles
+  // Search profiles (filtered by blocked users)
   const searchProfiles = async (query: string) => {
     if (!user?.id || !query.trim()) return [];
+
+    // Get blocked user IDs
+    const { data: blocked } = await supabase
+      .from("blocked_users")
+      .select("blocked_user_id")
+      .eq("user_id", user.id);
+    const blockedIds = (blocked ?? []).map((b: any) => b.blocked_user_id);
+
+    // Also get users who blocked me
+    const { data: blockedBy } = await supabase
+      .from("blocked_users")
+      .select("user_id")
+      .eq("blocked_user_id", user.id);
+    const blockedByIds = (blockedBy ?? []).map((b: any) => b.user_id);
+
+    const excludeIds = [...new Set([user.id, ...blockedIds, ...blockedByIds])];
+
     const { data, error } = await supabase
       .from("profiles")
       .select("id, display_name, avatar_url")
-      .neq("id", user.id)
+      .not("id", "in", `(${excludeIds.join(",")})`)
       .ilike("display_name", `%${query}%`)
       .limit(20);
     if (error) throw error;
