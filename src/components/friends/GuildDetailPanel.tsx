@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Crown, UserX, Loader2, Shield, Search, Trash2 } from "lucide-react";
+import { UserPlus, Crown, UserX, Loader2, Shield, Search, Trash2, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGuilds, type Guild, type GuildMember } from "@/hooks/useGuilds";
 import { useFriends } from "@/hooks/useFriends";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface GuildDetailPanelProps {
   open: boolean;
@@ -18,9 +19,10 @@ interface GuildDetailPanelProps {
 }
 
 export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPanelProps) {
-  const { useGuildMembers, inviteMember, removeMember, deleteGuild } = useGuilds();
+  const { useGuildMembers, inviteMember, removeMember, deleteGuild, leaveGuild } = useGuilds();
   const { data: members = [], isLoading } = useGuildMembers(guild.id);
   const { friends } = useFriends();
+  const { t } = useTranslation();
   const [showInvite, setShowInvite] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -145,6 +147,26 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
             </div>
           )}
         </ScrollArea>
+
+        {!isOwner && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              if (!confirm(t("friends.leaveGuildConfirm"))) return;
+              try {
+                await leaveGuild.mutateAsync(guild.id);
+                toast.success(t("friends.leftGuild"));
+                onClose();
+              } catch {
+                toast.error(t("friends.leaveFailed"));
+              }
+            }}
+            className="w-full text-xs font-bold uppercase tracking-wider text-orange-400 hover:text-orange-300 hover:bg-orange-500/10"
+          >
+            <LogOut className="h-3 w-3 mr-1.5" /> {t("friends.leaveGuild")}
+          </Button>
+        )}
 
         {isOwner && (
           <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full text-xs font-bold uppercase tracking-wider">
