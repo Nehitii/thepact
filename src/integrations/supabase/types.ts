@@ -1970,6 +1970,7 @@ export type Database = {
           height: number | null
           id: string
           language: string | null
+          last_seen_at: string | null
           particles_enabled: boolean
           particles_intensity: number
           personal_quote: string | null
@@ -2021,6 +2022,7 @@ export type Database = {
           height?: number | null
           id: string
           language?: string | null
+          last_seen_at?: string | null
           particles_enabled?: boolean
           particles_intensity?: number
           personal_quote?: string | null
@@ -2072,6 +2074,7 @@ export type Database = {
           height?: number | null
           id?: string
           language?: string | null
+          last_seen_at?: string | null
           particles_enabled?: boolean
           particles_intensity?: number
           personal_quote?: string | null
@@ -3419,6 +3422,10 @@ export type Database = {
       get_guild_role: {
         Args: { _guild_id: string; _user_id: string }
         Returns: string
+      }
+      get_mutual_friends_count: {
+        Args: { p_other_id: string; p_user_id: string }
+        Returns: number
       }
       get_own_2fa_status: {
         Args: never

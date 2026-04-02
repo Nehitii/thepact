@@ -12,6 +12,7 @@ import { SoundProvider } from "@/contexts/SoundContext";
 import { SoundSettingsSync } from "@/components/sound/SoundSettingsSync";
 import { ProfilePreferencesSync } from "@/components/profile/ProfilePreferencesSync";
 import { AccentColorSync } from "@/components/profile/AccentColorSync";
+import { OnlineStatusPing } from "@/components/friends/OnlineStatusPing";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,6 +34,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <AuthProvider>
               <ProfilePreferencesSync />
               <AccentColorSync />
+              <OnlineStatusPing />
               <I18nProvider>
                 <SoundProvider>
                   <SoundSettingsSync />

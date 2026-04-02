@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { UserPlus, Crown, UserX, Loader2, Shield, Search, Trash2, LogOut } from "lucide-react";
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { UserPlus, Crown, UserX, Loader2, Shield, Trash2, LogOut, MoreVertical, ArrowUp, ArrowDown, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useGuilds, type Guild, type GuildMember } from "@/hooks/useGuilds";
+import { useGuilds, type Guild } from "@/hooks/useGuilds";
 import { useFriends } from "@/hooks/useFriends";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -19,7 +22,7 @@ interface GuildDetailPanelProps {
 }
 
 export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPanelProps) {
-  const { useGuildMembers, inviteMember, removeMember, deleteGuild, leaveGuild } = useGuilds();
+  const { useGuildMembers, inviteMember, removeMember, deleteGuild, leaveGuild, updateMemberRole, transferOwnership } = useGuilds();
   const { data: members = [], isLoading } = useGuildMembers(guild.id);
   const { friends } = useFriends();
   const { t } = useTranslation();
@@ -28,7 +31,6 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
 
   const isOwner = guild.owner_id === userId;
   const myRole = members.find((m) => m.user_id === userId)?.role || "member";
-  const canManage = myRole === "owner" || myRole === "officer";
 
   const memberIds = new Set(members.map((m) => m.user_id));
   const invitableFriends = friends.filter((f) => !memberIds.has(f.friend_id))
@@ -37,29 +39,57 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
   const handleInvite = async (friendId: string) => {
     try {
       await inviteMember.mutateAsync({ guildId: guild.id, inviteeId: friendId });
-      toast.success("Invite sent!");
+      toast.success(t("friends.inviteSent"));
     } catch {
-      toast.error("Failed to invite");
+      toast.error(t("friends.inviteFailed"));
     }
   };
 
   const handleRemove = async (memberId: string) => {
     try {
       await removeMember.mutateAsync({ memberId });
-      toast.success("Member removed");
+      toast.success(t("friends.memberRemoved"));
     } catch {
-      toast.error("Failed to remove member");
+      toast.error(t("friends.memberRemoveFailed"));
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm("Delete this guild? This cannot be undone.")) return;
+    if (!confirm(t("friends.deleteGuildConfirm"))) return;
     try {
       await deleteGuild.mutateAsync(guild.id);
-      toast.success("Guild deleted");
+      toast.success(t("friends.guildDeleted"));
       onClose();
     } catch {
-      toast.error("Failed to delete guild");
+      toast.error(t("friends.guildDeleteFailed"));
+    }
+  };
+
+  const handlePromote = async (memberId: string) => {
+    try {
+      await updateMemberRole.mutateAsync({ memberId, role: "officer" });
+      toast.success(t("friends.promoted"));
+    } catch {
+      toast.error(t("friends.roleFailed"));
+    }
+  };
+
+  const handleDemote = async (memberId: string) => {
+    try {
+      await updateMemberRole.mutateAsync({ memberId, role: "member" });
+      toast.success(t("friends.demoted"));
+    } catch {
+      toast.error(t("friends.roleFailed"));
+    }
+  };
+
+  const handleTransfer = async (member: { user_id: string; id: string; display_name?: string }) => {
+    if (!confirm(t("friends.transferConfirm", { name: member.display_name || "?" }))) return;
+    try {
+      await transferOwnership.mutateAsync({ guildId: guild.id, newOwnerId: member.user_id });
+      toast.success(t("friends.ownershipTransferred"));
+    } catch {
+      toast.error(t("friends.roleFailed"));
     }
   };
 
@@ -85,11 +115,11 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
 
         <div className="flex items-center gap-2 mb-2">
           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex-1">
-            Members ({members.length})
+            {t("friends.members")} ({members.length})
           </h4>
-          {canManage && (
+          {(isOwner || myRole === "officer") && (
             <Button size="sm" variant="outline" onClick={() => setShowInvite(!showInvite)} className="text-xs h-7">
-              <UserPlus className="h-3 w-3 mr-1" /> Invite
+              <UserPlus className="h-3 w-3 mr-1" /> {t("friends.invite")}
             </Button>
           )}
         </div>
@@ -97,19 +127,19 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
         {showInvite && (
           <div className="border border-border rounded-lg p-3 space-y-2 bg-muted/30">
             <Input
-              placeholder="Search friends..."
+              placeholder={t("friends.searchFriendsInvite")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="h-8 text-xs"
             />
             <ScrollArea className="max-h-32">
               {invitableFriends.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-2">No friends to invite</p>
+                <p className="text-xs text-muted-foreground text-center py-2">{t("friends.noFriendsToInvite")}</p>
               ) : (
                 invitableFriends.map((f) => (
                   <div key={f.friend_id} className="flex items-center justify-between py-1.5">
-                    <span className="text-sm">{f.display_name || "Unknown"}</span>
-                    <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => handleInvite(f.friend_id)}>
+                    <span className="text-sm">{f.display_name || t("friends.unknownAgent")}</span>
+                    <Button size="sm" variant="ghost" className="h-6 text-xs" onClick={() => handleInvite(f.friend_id)} aria-label={t("friends.invite")}>
                       <UserPlus className="h-3 w-3" />
                     </Button>
                   </div>
@@ -138,9 +168,31 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
                     <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{m.role}</span>
                   </div>
                   {isOwner && m.user_id !== userId && (
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => handleRemove(m.id)}>
-                      <UserX className="h-3.5 w-3.5" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground">
+                          <MoreVertical className="h-3.5 w-3.5" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="font-rajdhani">
+                        {m.role === "member" && (
+                          <DropdownMenuItem onClick={() => handlePromote(m.id)}>
+                            <ArrowUp className="h-3.5 w-3.5 mr-2" /> {t("friends.promoteOfficer")}
+                          </DropdownMenuItem>
+                        )}
+                        {m.role === "officer" && (
+                          <DropdownMenuItem onClick={() => handleDemote(m.id)}>
+                            <ArrowDown className="h-3.5 w-3.5 mr-2" /> {t("friends.demoteToMember")}
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={() => handleTransfer(m)}>
+                          <ArrowRightLeft className="h-3.5 w-3.5 mr-2" /> {t("friends.transferOwnership")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleRemove(m.id)} className="text-destructive">
+                          <UserX className="h-3.5 w-3.5 mr-2" /> {t("common.remove")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   )}
                 </div>
               ))}
@@ -170,7 +222,7 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
 
         {isOwner && (
           <Button variant="destructive" size="sm" onClick={handleDelete} className="w-full text-xs font-bold uppercase tracking-wider">
-            <Trash2 className="h-3 w-3 mr-1.5" /> Delete Guild
+            <Trash2 className="h-3 w-3 mr-1.5" /> {t("friends.deleteGuild")}
           </Button>
         )}
       </DialogContent>

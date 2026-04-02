@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, UserCheck, Loader2 } from "lucide-react";
+import { Search, UserPlus, UserCheck, Loader2, Users } from "lucide-react";
 import { FriendAvatar } from "./FriendAvatar";
 import { CyberEmpty } from "@/components/ui/cyber-states";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { useMutualFriends } from "@/hooks/useMutualFriends";
 
 export interface SearchProfile {
   id: string;
@@ -24,9 +25,11 @@ interface SearchTabProps {
 
 export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendshipStatus }: SearchTabProps) {
   const { t } = useTranslation();
+  const { getMutualCount } = useMutualFriends();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchProfile[]>([]);
   const [searching, setSearching] = useState(false);
+  const [mutualCounts, setMutualCounts] = useState<Record<string, number>>({});
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -34,6 +37,14 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
     try {
       const data = await onSearch(query);
       setResults(data);
+      // Load mutual counts in background
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        data.map(async (p) => {
+          counts[p.id] = await getMutualCount(p.id);
+        })
+      );
+      setMutualCounts(counts);
     } catch {
       toast.error(t("friends.searchFailed"));
     } finally {
@@ -86,6 +97,7 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             {results.map((profile, i) => {
               const status = getFriendshipStatus(profile.id);
+              const mc = mutualCounts[profile.id];
               return (
                 <motion.div
                   key={profile.id}
@@ -99,6 +111,12 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
                     <h3 className="text-sm font-bold font-orbitron tracking-wide truncate text-foreground">
                       {profile.display_name || t("friends.unknownAgent")}
                     </h3>
+                    {mc != null && mc > 0 && (
+                      <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {t("friends.mutualFriends", { count: mc })}
+                      </p>
+                    )}
                   </div>
                   {status === "none" && (
                     <Button

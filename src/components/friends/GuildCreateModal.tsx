@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Shield, Crown, Users, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 const iconOptions = [
   { key: "shield", icon: Shield },
@@ -26,6 +27,7 @@ interface GuildCreateModalProps {
 }
 
 export function GuildCreateModal({ open, onClose, onCreate, loading }: GuildCreateModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("shield");
@@ -42,25 +44,25 @@ export function GuildCreateModal({ open, onClose, onCreate, loading }: GuildCrea
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-md font-rajdhani">
         <DialogHeader>
-          <DialogTitle className="font-orbitron tracking-wider text-lg">Create Guild</DialogTitle>
+          <DialogTitle className="font-orbitron tracking-wider text-lg">{t("friends.createGuildTitle")}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <Input
-            placeholder="Guild name"
+            placeholder={t("friends.guildName")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="font-rajdhani"
             maxLength={40}
           />
           <Textarea
-            placeholder="Description (optional)"
+            placeholder={t("friends.guildDescription")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="font-rajdhani resize-none h-20"
             maxLength={200}
           />
           <div>
-            <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Icon</p>
+            <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.icon")}</p>
             <div className="flex gap-2">
               {iconOptions.map((opt) => (
                 <button
@@ -77,7 +79,7 @@ export function GuildCreateModal({ open, onClose, onCreate, loading }: GuildCrea
             </div>
           </div>
           <div>
-            <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">Color</p>
+            <p className="text-xs font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.color")}</p>
             <div className="flex gap-2">
               {colorOptions.map((c) => (
                 <button
@@ -94,7 +96,7 @@ export function GuildCreateModal({ open, onClose, onCreate, loading }: GuildCrea
           </div>
           <Button onClick={handleSubmit} disabled={!name.trim() || loading} className="w-full font-bold uppercase tracking-wider">
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Create Guild
+            {t("common.create")}
           </Button>
         </div>
       </DialogContent>
