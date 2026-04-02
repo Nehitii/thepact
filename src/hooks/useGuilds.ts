@@ -223,6 +223,46 @@ export function useGuilds() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["guilds"] }),
   });
 
+  const updateMemberRole = useMutation({
+    mutationFn: async ({ memberId, role }: { memberId: string; role: string }) => {
+      const { error } = await supabase
+        .from("guild_members")
+        .update({ role } as any)
+        .eq("id", memberId);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["guild-members"] }),
+  });
+
+  const transferOwnership = useMutation({
+    mutationFn: async ({ guildId, newOwnerId }: { guildId: string; newOwnerId: string }) => {
+      if (!user) throw new Error("Not authenticated");
+      // Update guild owner
+      const { error: gErr } = await supabase
+        .from("guilds")
+        .update({ owner_id: newOwnerId } as any)
+        .eq("id", guildId);
+      if (gErr) throw gErr;
+      // Update roles: new owner becomes "owner", old owner becomes "member"
+      const { data: members } = await supabase
+        .from("guild_members")
+        .select("id, user_id, role")
+        .eq("guild_id", guildId);
+      const oldOwnerMember = members?.find((m: any) => m.user_id === user.id);
+      const newOwnerMember = members?.find((m: any) => m.user_id === newOwnerId);
+      if (newOwnerMember) {
+        await supabase.from("guild_members").update({ role: "owner" } as any).eq("id", newOwnerMember.id);
+      }
+      if (oldOwnerMember) {
+        await supabase.from("guild_members").update({ role: "member" } as any).eq("id", oldOwnerMember.id);
+      }
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["guilds"] });
+      qc.invalidateQueries({ queryKey: ["guild-members"] });
+    },
+  });
+
   return {
     guilds: guildsQuery.data || [],
     guildsLoading: guildsQuery.isLoading,
@@ -235,5 +275,7 @@ export function useGuilds() {
     removeMember,
     leaveGuild,
     deleteGuild,
+    updateMemberRole,
+    transferOwnership,
   };
 }
