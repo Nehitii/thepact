@@ -1,7 +1,7 @@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { FriendAvatar } from "./FriendAvatar";
-import { MessageSquare, UserX, Ban } from "lucide-react";
+import { FriendAvatar, getOnlineStatus } from "./FriendAvatar";
+import { MessageSquare, UserX, Ban, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -13,13 +13,17 @@ interface FriendProfileDrawerProps {
   friend: Friend | null;
   onRemove: () => void;
   onBlock: () => void;
+  mutualCount?: number;
+  lastSeenAt?: string | null;
 }
 
-export function FriendProfileDrawer({ open, onClose, friend, onRemove, onBlock }: FriendProfileDrawerProps) {
+export function FriendProfileDrawer({ open, onClose, friend, onRemove, onBlock, mutualCount, lastSeenAt }: FriendProfileDrawerProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   if (!friend) return null;
+
+  const status = getOnlineStatus(lastSeenAt);
 
   return (
     <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
@@ -31,7 +35,13 @@ export function FriendProfileDrawer({ open, onClose, friend, onRemove, onBlock }
         </SheetHeader>
 
         <div className="flex flex-col items-center gap-4 mt-6">
-          <FriendAvatar name={friend.display_name} avatarUrl={friend.avatar_url} size="md" />
+          <FriendAvatar
+            name={friend.display_name}
+            avatarUrl={friend.avatar_url}
+            size="md"
+            lastSeenAt={lastSeenAt}
+            showStatus
+          />
           <div className="text-center">
             <h3 className="text-lg font-bold font-orbitron tracking-wide">
               {friend.display_name || t("friends.unknownAgent")}
@@ -41,6 +51,27 @@ export function FriendProfileDrawer({ open, onClose, friend, onRemove, onBlock }
                 time: formatDistanceToNow(new Date(friend.created_at), { addSuffix: true })
               })}
             </p>
+            {/* Online status */}
+            <p className="text-[10px] font-mono mt-1">
+              {status === "online" ? (
+                <span className="text-emerald-400">{t("friends.online")}</span>
+              ) : lastSeenAt ? (
+                <span className="text-muted-foreground">
+                  {t("friends.lastSeenAgo", {
+                    time: formatDistanceToNow(new Date(lastSeenAt), { addSuffix: true })
+                  })}
+                </span>
+              ) : (
+                <span className="text-muted-foreground">{t("friends.offline")}</span>
+              )}
+            </p>
+            {/* Mutual friends */}
+            {mutualCount != null && mutualCount > 0 && (
+              <p className="text-[10px] text-muted-foreground font-mono mt-1 flex items-center justify-center gap-1">
+                <Users className="h-3 w-3" />
+                {t("friends.mutualFriends", { count: mutualCount })}
+              </p>
+            )}
           </div>
         </div>
 

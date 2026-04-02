@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
+import { useMutualFriends } from "@/hooks/useMutualFriends";
 import type { Friend } from "@/hooks/useFriends";
 import { Users } from "lucide-react";
 
@@ -26,9 +27,27 @@ interface FriendsTabProps {
 export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { getMutualCount } = useMutualFriends();
   const [filter, setFilter] = useState("");
   const [removeTarget, setRemoveTarget] = useState<Friend | null>(null);
   const [profileTarget, setProfileTarget] = useState<Friend | null>(null);
+  const [mutualCounts, setMutualCounts] = useState<Record<string, number>>({});
+  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
+
+  // Fetch last_seen_at for all friends
+  useEffect(() => {
+    if (!friends.length) return;
+    const ids = friends.map((f) => f.friend_id);
+    supabase
+      .from("profiles")
+      .select("id, last_seen_at")
+      .in("id", ids)
+      .then(({ data }) => {
+        const map: Record<string, string | null> = {};
+        data?.forEach((p: any) => { map[p.id] = p.last_seen_at; });
+        setLastSeenMap(map);
+      });
+  }, [friends]);
 
   const filtered = filter
     ? friends.filter((f) => f.display_name?.toLowerCase().includes(filter.toLowerCase()))
@@ -52,6 +71,15 @@ export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabPro
       toast.success(t("friends.userBlocked"));
     } catch {
       toast.error(t("friends.blockFailed"));
+    }
+  };
+
+  // Load mutual count when opening profile drawer
+  const handleOpenProfile = async (friend: Friend) => {
+    setProfileTarget(friend);
+    if (!(friend.friend_id in mutualCounts)) {
+      const count = await getMutualCount(friend.friend_id);
+      setMutualCounts((prev) => ({ ...prev, [friend.friend_id]: count }));
     }
   };
 
@@ -87,13 +115,18 @@ export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabPro
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
                 className="group relative flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:bg-muted/30 hover:border-primary/30 transition-all duration-300 cursor-pointer"
-                onClick={() => setProfileTarget(friend)}
+                onClick={() => handleOpenProfile(friend)}
                 role="button"
                 tabIndex={0}
                 aria-label={t("friends.viewProfile", { name: friend.display_name || t("friends.unknownAgent") })}
-                onKeyDown={(e) => e.key === "Enter" && setProfileTarget(friend)}
+                onKeyDown={(e) => e.key === "Enter" && handleOpenProfile(friend)}
               >
-                <FriendAvatar name={friend.display_name} avatarUrl={friend.avatar_url} />
+                <FriendAvatar
+                  name={friend.display_name}
+                  avatarUrl={friend.avatar_url}
+                  lastSeenAt={lastSeenMap[friend.friend_id]}
+                  showStatus
+                />
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-bold font-orbitron tracking-wide truncate text-foreground">
                     {friend.display_name || t("friends.unknownAgent")}
@@ -143,6 +176,8 @@ export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabPro
         friend={profileTarget}
         onRemove={() => { setRemoveTarget(profileTarget); setProfileTarget(null); }}
         onBlock={() => profileTarget && handleBlock(profileTarget)}
+        mutualCount={profileTarget ? mutualCounts[profileTarget.friend_id] : undefined}
+        lastSeenAt={profileTarget ? lastSeenMap[profileTarget.friend_id] : undefined}
       />
     </ScrollArea>
   );

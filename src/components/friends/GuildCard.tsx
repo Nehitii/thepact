@@ -1,5 +1,6 @@
 import { Shield, Users, Crown, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 import type { Guild } from "@/hooks/useGuilds";
 
 const iconMap: Record<string, any> = { shield: Shield, crown: Crown, users: Users };
@@ -18,6 +19,7 @@ interface GuildCardProps {
 }
 
 export function GuildCard({ guild, isOwner, onClick }: GuildCardProps) {
+  const { t } = useTranslation();
   const Icon = iconMap[guild.icon] || Shield;
   const colorClass = colorMap[guild.color] || colorMap.violet;
 
@@ -42,7 +44,7 @@ export function GuildCard({ guild, isOwner, onClick }: GuildCardProps) {
             {isOwner && <Crown className="h-3 w-3 text-amber-400 shrink-0" />}
           </div>
           <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
-            <Users className="h-3 w-3" /> {guild.member_count || 1} members
+            <Users className="h-3 w-3" /> {t("friends.membersCount", { count: guild.member_count || 1 })}
           </p>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
