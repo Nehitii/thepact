@@ -34,6 +34,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
             <AuthProvider>
               <ProfilePreferencesSync />
               <AccentColorSync />
+              <OnlineStatusPing />
               <I18nProvider>
                 <SoundProvider>
                   <SoundSettingsSync />
