@@ -1,156 +1,103 @@
 
 
-# Audit Complet — Module /friends
+# Guilds Ultra-Deep + Email 2FA sans Resend
 
-## État actuel
+## Partie 1 — Guilds : Diagnostic et Corrections
 
-Le module comprend :
-- **1 page monolithique** (`Friends.tsx`, 457 lignes) avec 4 sous-composants inline (`TabItem`, `UserAvatar`, `SkeletonList`, `EmptyState`) typés `any`
-- **4 composants** dans `src/components/friends/` (GuildCard, GuildCreateModal, GuildDetailPanel, GuildInviteCard)
-- **2 hooks** : `useFriends.ts`, `useGuilds.ts` + `usePendingFriendCount.ts`
-- **Tables DB** : `friendships`, `guilds`, `guild_members`, `guild_invites`, `blocked_users`
-- **RLS** correcte sur friendships (sender/receiver scoped)
+### Pourquoi ça ne fonctionne pas
 
----
+**Bug critique : RLS empêche de rejoindre une guilde.**
+La policy INSERT sur `guild_members` exige que l'utilisateur soit déjà `owner` ou `officer` de la guilde. Quand un invité accepte une invitation, `respondToInvite` essaie d'INSERT dans `guild_members` mais l'invité n'est pas encore membre → RLS bloque silencieusement → l'utilisateur ne rejoint jamais la guilde.
 
-## 🔴 Critical — Fix immédiat
+**Fix** : Créer une fonction `SECURITY DEFINER` `accept_guild_invite(p_invite_id uuid)` qui vérifie l'invite, la met à jour, et insère le membre atomiquement, contournant la RLS de manière sécurisée.
 
-**C1 — Mutations non protégées par try/catch**
-`removeFriend.mutate()` (ligne 174), `acceptRequest.mutate()` (ligne 225), `declineRequest.mutate()` (ligne 233), et `respondToInvite.mutate()` (lignes 350-351) sont appelés directement sans gestion d'erreur. Si le réseau échoue → rejection silencieuse. Passer à `mutateAsync` + `try/catch` + `toast.error`.
+De même, la création de guilde échoue car `createGuild` insère d'abord dans `guilds` (OK, policy owner), puis dans `guild_members` (FAIL — l'utilisateur n'est pas encore member). **Fix** : Créer une fonction `SECURITY DEFINER` `create_guild_with_owner(...)` qui fait les deux en une transaction.
 
-**C2 — Aucune confirmation avant suppression d'ami**
-Le bouton "Remove friend" (ligne 170-176) déclenche directement `removeFriend.mutate` sans dialogue de confirmation. Un clic accidentel supprime définitivement l'amitié.
+### Nouvelles fonctionnalités Guilds
 
-**C3 — Blocked users ignorés dans la recherche et les requêtes**
-`searchProfiles` (useFriends) ne filtre pas les utilisateurs bloqués. Un utilisateur bloqué apparaît dans la recherche et peut envoyer des friend requests. La table `blocked_users` existe mais n'est pas consultée dans `useFriends`.
+1. **Guild Settings / Edit** — Le owner peut modifier nom, description, icône, couleur, max members
+2. **Guild Announcements** — Le owner/officer peut poster des annonces visibles par tous les membres (table `guild_announcements`)
+3. **Guild Activity Feed** — Mini-feed montrant les actions récentes (membre rejoint, promu, annonce postée)
+4. **Guild Goals** — Objectifs communs de guilde avec progression collective (table `guild_goals` + `guild_goal_contributions`)
+5. **Guild Leaderboard** — Classement interne des membres par XP/points
+6. **Guild Badges** — Badges spéciaux débloqués collectivement
+7. **Guild Max Members** — Limite configurable (défaut 25)
+8. **Guild Banner/Image** — Upload d'une image de guilde
+9. **Invite par lien/code** — Générer un code d'invitation partageable (table `guild_invite_codes`)
+10. **Guild Search** — Recherche publique de guildes (guildes marquées `is_public`)
+11. **Guild Stats Dashboard** — Vue d'ensemble : membres actifs, goals complétés, streaks collectifs
+12. **Notification on invite** — Notification push quand on reçoit une invite
 
-**C4 — Pas de protection contre le spam de friend requests**
-Aucun rate limit côté client ni DB trigger pour empêcher un utilisateur d'envoyer des centaines de requests. Ajouter un trigger DB limitant à N requests/heure (comme `enforce_post_rate_limit` pour les posts).
+### Architecture DB
 
----
+```text
+Nouvelles tables :
+- guild_announcements (id, guild_id, author_id, content, pinned, created_at)
+- guild_goals (id, guild_id, title, description, target_value, current_value, deadline, created_by, status, created_at)
+- guild_goal_contributions (id, guild_goal_id, user_id, amount, note, created_at)
+- guild_invite_codes (id, guild_id, code, created_by, max_uses, current_uses, expires_at, is_active)
+- guild_activity_log (id, guild_id, user_id, action_type, metadata, created_at)
 
-## 🟡 Major — Impact UX/maintenabilité
+Modifications existantes :
+- guilds: ajouter max_members (int, default 25), is_public (bool, default false), banner_url (text), total_xp (int, default 0)
+```
 
-**M1 — Page monolithique (457 lignes)**
-`Friends.tsx` contient toute la logique + 4 sous-composants inline typés `any`. Extraire :
-- `FriendsTab.tsx` (liste d'amis)
-- `RequestsTab.tsx` (demandes en attente)
-- `SearchTab.tsx` (recherche de profils)
-- `GuildsTab.tsx` (guildes + invites)
-- Déplacer `TabItem`, `UserAvatar`, `SkeletonList` dans des fichiers partagés
-
-**M2 — Aucune ARIA / accessibilité**
-Zéro `aria-label` sur les boutons d'action (remove friend, accept, decline, search). Les boutons icon-only (MessageSquare, UserX) sont illisibles par les screen readers.
-
-**M3 — Pas d'i18n**
-Tous les textes sont hardcodés en anglais ("No friends yet", "Search members by name...", "Friend request sent!", etc.). Aucune clé dans `en.json`/`fr.json`.
-
-**M4 — searchResults typé `any[]`**
-`useState<any[]>([])` pour les résultats de recherche. Créer une interface `SearchProfile { id: string; display_name: string | null; avatar_url: string | null }`.
-
-**M5 — Sous-composants inline typés `any`**
-`TabItem`, `EmptyState` et `UserAvatar` ont des props typées `any`. Créer des interfaces propres.
-
-**M6 — Pas de profil public cliquable**
-Cliquer sur un ami ne montre rien. Il devrait y avoir un mini-profil (popup ou drawer) affichant les infos publiques, les stats, la possibilité de bloquer/débloquer.
-
-**M7 — Pas de recherche/filtre dans la liste d'amis**
-Avec 50+ amis, impossible de chercher. Ajouter un champ de recherche/filtre dans l'onglet Friends.
-
-**M8 — Guild : pas de quitter une guilde**
-Un membre non-owner ne peut pas quitter une guilde volontairement. Seul l'owner peut retirer des membres. Ajouter un bouton "Leave Guild".
-
-**M9 — Pas d'indication online/offline**
-Aucun statut de présence. Ajouter un indicateur en ligne basé sur `last_seen_at` (champ à ajouter au profil ou via Supabase Presence).
-
----
-
-## 🟢 Minor — Qualité de vie
-
-**m1 — Dynamic Tailwind classes ne fonctionnent pas**
-`TabItem` utilise `border-${color}` et `bg-${color}` (ligne 405/414) qui ne sont pas compilés par Tailwind (classes dynamiques). Passer à un mapping explicite de classes.
-
-**m2 — EmptyState local vs CyberEmpty global**
-Le composant `EmptyState` inline (ligne 445) duplique `CyberEmpty` de `cyber-states.tsx` créé en Phase 2. Utiliser `CyberEmpty` partout.
-
-**m3 — SkeletonList local vs CyberLoader global**
-Même chose : remplacer `SkeletonList` par `CyberLoader`.
-
-**m4 — Pas de compteur de demandes envoyées**
-Les sent requests existent dans le hook mais ne sont affichées nulle part. Ajouter un sous-onglet ou une section "Sent requests" dans l'onglet Requests.
-
-**m5 — Guild colors Tailwind dynamiques**
-`GuildCard` utilise un mapping de couleurs explicite (bon), mais les combinaisons possibles sont limitées à 5. Permettre des couleurs CSS variables pour plus de flexibilité.
-
-**m6 — Pas d'animation/feedback sur accept/decline**
-Quand on accepte une request, la carte disparaît sans feedback visuel. Ajouter une animation de sortie (framer-motion `exit`).
-
----
-
-## Fonctionnalités à ajouter
-
-**F1 — Profil public / mini-profil (drawer)**
-Cliquer sur un ami/membre ouvre un drawer avec : avatar, nom, date d'amitié, goals partagés, pact partagé, boutons Message/Block/Remove.
-
-**F2 — Block user depuis Friends**
-Bouton "Bloquer" dans le mini-profil ou via un menu contextuel (three dots). Insère dans `blocked_users` et supprime automatiquement la friendship.
-
-**F3 — Sent Requests panel**
-Section dans l'onglet Requests montrant les demandes envoyées avec option d'annuler (delete la row).
-
-**F4 — Friend activity feed**
-Mini-feed dans l'onglet Friends : "X completed a goal", "Y started a new pact". Lecture seule, basé sur les événements publics des amis.
-
-**F5 — Guild chat basique**
-Channel de discussion simple dans chaque guilde (réutiliser la structure Inbox/messages). Table `guild_messages` + realtime.
-
-**F6 — Guild roles management**
-Permettre au owner de promouvoir un membre en "officer" ou de transférer l'ownership.
-
-**F7 — Mutual friends indicator**
-Dans la recherche, afficher "X ami(s) en commun" pour aider à identifier les profils.
-
----
-
-## Plan d'implémentation
-
-### Phase 1 — Critiques + Majeurs structurels
-1. Ajouter try/catch + toast sur toutes les mutations (C1)
-2. Ajouter confirmation dialog avant remove friend (C2)
-3. Filtrer blocked users dans searchProfiles (C3)
-4. Ajouter rate limit trigger DB pour friend requests (C4)
-5. Splitter Friends.tsx en sous-composants typés (M1, M4, M5)
-6. Remplacer EmptyState/SkeletonList locaux par CyberEmpty/CyberLoader (m2, m3)
-7. Fixer les classes Tailwind dynamiques dans TabItem (m1)
-8. Ajouter aria-labels sur tous les boutons (M2)
-
-### Phase 2 — Fonctionnalités majeures
-9. Mini-profil drawer (F1, M6)
-10. Block user depuis Friends (F2)
-11. Filtre/recherche dans la liste d'amis (M7)
-12. Leave Guild pour les membres (M8)
-13. Sent requests panel (F3, m4)
-14. Animation exit sur accept/decline (m6)
-
-### Phase 3 — Social avancé
-15. i18n complète du module (M3)
-16. Mutual friends indicator (F7)
-17. Guild role management (F6)
-18. Online status indicator (M9)
-
-### Fichiers impactés
+### Plan de fichiers
 
 | Action | Fichier |
 |--------|---------|
-| **Split** | `src/pages/Friends.tsx` → fichier allégé + tabs extraits |
-| **New** | `src/components/friends/FriendsTab.tsx` |
-| **New** | `src/components/friends/RequestsTab.tsx` |
-| **New** | `src/components/friends/SearchTab.tsx` |
-| **New** | `src/components/friends/GuildsTab.tsx` |
-| **New** | `src/components/friends/FriendProfileDrawer.tsx` |
-| **New** | `src/components/friends/RemoveFriendDialog.tsx` |
-| **Edit** | `src/hooks/useFriends.ts` (filter blocked, types) |
-| **Edit** | `src/hooks/useGuilds.ts` (leave guild mutation) |
-| **Migration** | Rate limit trigger sur friendships |
-| **Edit** | `src/i18n/locales/en.json`, `fr.json` (friends.* keys) |
+| **Migration** | Nouvelles tables + colonnes + RLS + fonctions SECURITY DEFINER |
+| **Edit** | `src/hooks/useGuilds.ts` — refactor mutations pour utiliser les RPC, ajouter hooks pour announcements, goals, invite codes, activity |
+| **Edit** | `src/components/friends/GuildDetailPanel.tsx` — refonte complète en panels : Members, Announcements, Goals, Activity, Settings |
+| **Edit** | `src/components/friends/GuildCreateModal.tsx` — ajouter is_public, max_members |
+| **Edit** | `src/components/friends/GuildCard.tsx` — afficher badge public, progression goal, plus d'icônes |
+| **Edit** | `src/components/friends/GuildsTab.tsx` — ajouter section "Discover Public Guilds" + recherche |
+| **New** | `src/components/friends/GuildSettingsPanel.tsx` |
+| **New** | `src/components/friends/GuildAnnouncementsPanel.tsx` |
+| **New** | `src/components/friends/GuildGoalsPanel.tsx` |
+| **New** | `src/components/friends/GuildActivityFeed.tsx` |
+| **New** | `src/components/friends/GuildLeaderboard.tsx` |
+| **New** | `src/components/friends/GuildInviteCodePanel.tsx` |
+| **Edit** | `src/i18n/locales/en.json`, `fr.json` — clés guild.* |
+
+---
+
+## Partie 2 — Email 2FA sans Resend
+
+### Situation actuelle
+
+L'edge function `two-factor` utilise `sendEmailViaResend()` qui appelle l'API Resend avec une clé API. Le problème est que Resend en mode sandbox ne peut envoyer qu'à l'email du propriétaire du compte.
+
+### Solution : Email natif Lovable
+
+Pour envoyer des emails 2FA sans Resend, il faut d'abord configurer un domaine email via Lovable Cloud. **Sans domaine email configuré, aucun email ne peut être envoyé nativement.**
+
+Je vais te proposer de configurer ton domaine email. Une fois configuré, je remplacerai `sendEmailViaResend` dans l'edge function par l'envoi via l'infrastructure email de Lovable Cloud (queue pgmq + dispatcher).
+
+### Étapes
+
+1. **Configurer le domaine email** — Tu devras ajouter un domaine d'envoi via les paramètres email
+2. **Setup email infrastructure** — Création automatique des queues pgmq, tables de log, cron job
+3. **Modifier `two-factor/index.ts`** — Remplacer `sendEmailViaResend()` par un enqueue dans la queue `auth_emails` via `supabase.rpc('enqueue_email', ...)`
+4. **Redéployer** l'edge function
+
+### Plan de fichiers
+
+| Action | Fichier |
+|--------|---------|
+| **Prerequisite** | Configurer domaine email via Cloud → Emails |
+| **Edit** | `supabase/functions/two-factor/index.ts` — remplacer Resend par enqueue natif |
+| **Deploy** | Redéployer `two-factor` |
+
+**Note** : Cette partie nécessite que tu configures d'abord un domaine email. Je te montrerai le bouton pour le faire après approbation.
+
+---
+
+## Résumé des priorités
+
+1. Fix RLS guilds (SECURITY DEFINER functions) — **critique, la feature est cassée**
+2. Nouvelles tables + RLS pour announcements, goals, invite codes, activity
+3. Refonte UI GuildDetailPanel en panels multiples
+4. Guild public search + invite codes
+5. Setup email domain + migration 2FA vers email natif
 
