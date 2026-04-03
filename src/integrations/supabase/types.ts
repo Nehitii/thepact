@@ -1181,6 +1181,205 @@ export type Database = {
           },
         ]
       }
+      guild_activity_log: {
+        Row: {
+          action_type: string
+          created_at: string
+          guild_id: string
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          guild_id: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          guild_id?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_activity_log_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_announcements: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string
+          guild_id: string
+          id: string
+          pinned: boolean
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string
+          guild_id: string
+          id?: string
+          pinned?: boolean
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string
+          guild_id?: string
+          id?: string
+          pinned?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_announcements_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_goal_contributions: {
+        Row: {
+          amount: number
+          created_at: string
+          guild_goal_id: string
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          guild_goal_id: string
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          guild_goal_id?: string
+          id?: string
+          note?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_goal_contributions_guild_goal_id_fkey"
+            columns: ["guild_goal_id"]
+            isOneToOne: false
+            referencedRelation: "guild_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_goals: {
+        Row: {
+          created_at: string
+          created_by: string
+          current_value: number
+          deadline: string | null
+          description: string | null
+          guild_id: string
+          id: string
+          status: string
+          target_value: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          current_value?: number
+          deadline?: string | null
+          description?: string | null
+          guild_id: string
+          id?: string
+          status?: string
+          target_value?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          current_value?: number
+          deadline?: string | null
+          description?: string | null
+          guild_id?: string
+          id?: string
+          status?: string
+          target_value?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_goals_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          current_uses: number
+          expires_at: string | null
+          guild_id: string
+          id: string
+          is_active: boolean
+          max_uses: number | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          current_uses?: number
+          expires_at?: string | null
+          guild_id: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          current_uses?: number
+          expires_at?: string | null
+          guild_id?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_invite_codes_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guild_invites: {
         Row: {
           created_at: string | null
@@ -1250,33 +1449,45 @@ export type Database = {
       }
       guilds: {
         Row: {
+          banner_url: string | null
           color: string | null
           created_at: string | null
           description: string | null
           icon: string | null
           id: string
+          is_public: boolean
+          max_members: number
           name: string
           owner_id: string
+          total_xp: number
           updated_at: string | null
         }
         Insert: {
+          banner_url?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           icon?: string | null
           id?: string
+          is_public?: boolean
+          max_members?: number
           name: string
           owner_id: string
+          total_xp?: number
           updated_at?: string | null
         }
         Update: {
+          banner_url?: string | null
           color?: string | null
           created_at?: string | null
           description?: string | null
           icon?: string | null
           id?: string
+          is_public?: boolean
+          max_members?: number
           name?: string
           owner_id?: string
+          total_xp?: number
           updated_at?: string | null
         }
         Relationships: []
@@ -3368,6 +3579,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_guild_invite: { Args: { p_invite_id: string }; Returns: Json }
+      create_guild_with_owner: {
+        Args: {
+          p_color?: string
+          p_description?: string
+          p_icon?: string
+          p_is_public?: boolean
+          p_max_members?: number
+          p_name: string
+        }
+        Returns: Json
+      }
       execute_account_transfer: {
         Args: {
           p_amount: number
@@ -3478,6 +3701,16 @@ export type Database = {
       is_guild_member: {
         Args: { _guild_id: string; _user_id: string }
         Returns: boolean
+      }
+      join_guild_via_code: { Args: { p_code: string }; Returns: Json }
+      log_guild_activity: {
+        Args: {
+          p_action: string
+          p_guild_id: string
+          p_metadata?: Json
+          p_user_id: string
+        }
+        Returns: undefined
       }
       mark_achievements_seen: {
         Args: { p_achievement_keys: string[] }
