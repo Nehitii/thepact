@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Shield, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Shield, Plus, Globe, Link, Loader2 } from "lucide-react";
 import { GuildCard } from "./GuildCard";
 import { GuildCreateModal } from "./GuildCreateModal";
 import { GuildDetailPanel } from "./GuildDetailPanel";
@@ -11,6 +12,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import type { Guild, GuildInvite } from "@/hooks/useGuilds";
+import { useGuilds } from "@/hooks/useGuilds";
 
 interface GuildsTabProps {
   guilds: Guild[];
@@ -23,8 +25,12 @@ interface GuildsTabProps {
 
 export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild, respondToInvite }: GuildsTabProps) {
   const { t } = useTranslation();
+  const { publicGuilds, joinViaCode } = useGuilds();
   const [createOpen, setCreateOpen] = useState(false);
   const [selectedGuild, setSelectedGuild] = useState<Guild | null>(null);
+  const [showDiscover, setShowDiscover] = useState(false);
+  const [inviteCode, setInviteCode] = useState("");
+  const [joiningCode, setJoiningCode] = useState(false);
 
   const handleRespondInvite = async (inviteId: string, guildId: string, accept: boolean) => {
     try {
@@ -35,6 +41,24 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
     }
   };
 
+  const handleJoinViaCode = async () => {
+    if (!inviteCode.trim()) return;
+    setJoiningCode(true);
+    try {
+      await joinViaCode.mutateAsync(inviteCode.trim());
+      toast.success(t("friends.guildJoined"));
+      setInviteCode("");
+    } catch (err: any) {
+      toast.error(err?.message || t("common.error"));
+    } finally {
+      setJoiningCode(false);
+    }
+  };
+
+  // Filter out guilds user is already in from public list
+  const myGuildIds = new Set(guilds.map((g) => g.id));
+  const discoverGuilds = publicGuilds.filter((g) => !myGuildIds.has(g.id));
+
   return (
     <ScrollArea className="h-full w-full">
       <div className="p-6 max-w-3xl mx-auto">
@@ -42,13 +66,37 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
           <h3 className="text-xs font-black font-orbitron uppercase tracking-widest text-muted-foreground">
             {t("friends.yourGuilds")}
           </h3>
-          <Button
-            size="sm"
-            onClick={() => setCreateOpen(true)}
-            className="text-xs font-bold uppercase tracking-wider h-8"
-            aria-label={t("friends.createGuild")}
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" /> {t("common.create")}
+          <div className="flex gap-2">
+            <Button
+              size="sm" variant="outline"
+              onClick={() => setShowDiscover(!showDiscover)}
+              className="text-xs font-bold uppercase tracking-wider h-8"
+            >
+              <Globe className="h-3.5 w-3.5 mr-1" /> {t("friends.discover")}
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setCreateOpen(true)}
+              className="text-xs font-bold uppercase tracking-wider h-8"
+              aria-label={t("friends.createGuild")}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" /> {t("common.create")}
+            </Button>
+          </div>
+        </div>
+
+        {/* Join via code */}
+        <div className="flex gap-2 mb-4">
+          <Input
+            placeholder={t("friends.enterInviteCode")}
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+            className="h-8 text-xs font-mono"
+            maxLength={8}
+          />
+          <Button size="sm" className="h-8 text-xs" onClick={handleJoinViaCode} disabled={!inviteCode.trim() || joiningCode}>
+            {joiningCode ? <Loader2 className="h-3 w-3 animate-spin" /> : <Link className="h-3 w-3 mr-1" />}
+            {t("friends.join")}
           </Button>
         </div>
 
@@ -84,6 +132,20 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
               </motion.div>
             ))}
           </motion.div>
+        )}
+
+        {/* Discover Public Guilds */}
+        {showDiscover && discoverGuilds.length > 0 && (
+          <div className="mt-6">
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">
+              {t("friends.discoverGuilds")}
+            </h4>
+            <div className="space-y-3">
+              {discoverGuilds.map((guild) => (
+                <GuildCard key={guild.id} guild={guild} isOwner={false} onClick={() => setSelectedGuild(guild)} />
+              ))}
+            </div>
+          </div>
         )}
       </div>
 

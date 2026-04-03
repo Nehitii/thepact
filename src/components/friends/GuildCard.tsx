@@ -1,4 +1,4 @@
-import { Shield, Users, Crown, ChevronRight } from "lucide-react";
+import { Shield, Users, Crown, ChevronRight, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import type { Guild } from "@/hooks/useGuilds";
@@ -42,9 +42,10 @@ export function GuildCard({ guild, isOwner, onClick }: GuildCardProps) {
               {guild.name}
             </h3>
             {isOwner && <Crown className="h-3 w-3 text-amber-400 shrink-0" />}
+            {guild.is_public && <Globe className="h-3 w-3 text-primary shrink-0" />}
           </div>
           <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
-            <Users className="h-3 w-3" /> {t("friends.membersCount", { count: guild.member_count || 1 })}
+            <Users className="h-3 w-3" /> {t("friends.membersCount", { count: guild.member_count || 1 })}/{guild.max_members || 25}
           </p>
         </div>
         <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
