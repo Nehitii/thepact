@@ -313,7 +313,7 @@ export default function TheCall() {
     : `0 0 ${p * 40}px ${currentColor}`;
 
   return (
-    <div className="min-h-screen bg-background overflow-y-auto overflow-x-hidden flex flex-col relative text-foreground font-sans select-none touch-none perspective-[1000px] scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+    <div className="h-screen bg-background overflow-hidden flex flex-col relative text-foreground font-sans select-none touch-none perspective-[1000px]">
       {/* BACKGROUND FX */}
       <div
         ref={backgroundFxRef}
