@@ -352,7 +352,7 @@ export default function TheCall() {
         </div>
 
         <div
-          className="relative flex flex-col items-center justify-center pb-[50vh]"
+          className="relative flex flex-col items-center justify-center"
           style={{
             paddingTop: (sequenceState === FinalSequenceState.IDLE || sequenceState === FinalSequenceState.LOCKED) && headerHeight > 0
               ? headerHeight + 24
