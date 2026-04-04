@@ -20,6 +20,7 @@ interface MonthViewProps {
 }
 
 const MAX_VISIBLE = 3;
+const GRID_COLS = "grid-cols-[32px_repeat(7,minmax(0,1fr))]";
 
 function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -35,6 +36,7 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
       {...attributes}
       role="button"
       aria-label={`Event: ${event.title}`}
+      className="min-w-0 overflow-hidden"
       style={{
         transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
         opacity: isDragging ? 0.5 : 1,
@@ -64,7 +66,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
     <div
       ref={setNodeRef}
       className={cn(
-        "h-[110px] border border-border/30 p-1 transition-colors relative flex flex-col",
+        "h-[110px] border border-border/30 p-1 transition-colors relative flex flex-col min-w-0 min-h-0 overflow-hidden",
         !inMonth && "opacity-40",
         isOver && "bg-primary/10",
         today && "bg-primary/5 ring-1 ring-inset ring-primary/40"
@@ -72,7 +74,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
     >
       <EventQuickAdd date={day} open={quickAddOpen} onClose={() => setQuickAddOpen(false)} onSave={onQuickAdd}>
         <button
-          className="w-full text-left shrink-0"
+          className="w-full text-left shrink-0 min-w-0"
           onDoubleClick={(e) => { e.stopPropagation(); setQuickAddOpen(true); }}
         >
           <span className={cn(
@@ -87,12 +89,12 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
         </button>
       </EventQuickAdd>
 
-      <div className="flex-1 min-h-0 overflow-y-auto space-y-0.5 scrollbar-thin scrollbar-thumb-border/50">
+      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden space-y-0.5 scrollbar-thin scrollbar-thumb-border/50">
         {visible.map((ev) => (
           <DraggableEvent key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); onEventClick(ev); }} />
         ))}
         {overflow > 0 && (
-          <p className="text-[10px] text-muted-foreground pl-1">+{overflow} more</p>
+          <p className="text-[10px] text-muted-foreground pl-1 truncate">+{overflow} more</p>
         )}
       </div>
     </div>
@@ -152,19 +154,19 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       <div className="rounded-lg overflow-hidden border border-border/40">
         {/* Header */}
-        <div className="grid grid-cols-[32px_repeat(7,1fr)] bg-muted/30">
+        <div className={cn("grid bg-muted/30", GRID_COLS)}>
           <div className="text-center text-[9px] text-muted-foreground py-1.5 uppercase">W</div>
           {dayHeaders.map((h) => (
-            <div key={h} className="text-center text-[10px] font-medium text-muted-foreground py-1.5 uppercase tracking-wider">
+            <div key={h} className="text-center text-[10px] font-medium text-muted-foreground py-1.5 uppercase tracking-wider min-w-0">
               {h}
             </div>
           ))}
         </div>
 
-        {/* Grid */}
+        {/* Body */}
         {weeks.map((week, wi) => (
-        <div key={wi} className="grid grid-cols-[32px_repeat(7,1fr)] h-[110px]">
-            <div className="flex items-start justify-center pt-2 text-[9px] text-muted-foreground font-mono border border-border/20 h-[110px]">
+          <div key={wi} className={cn("grid", GRID_COLS)}>
+            <div className="flex items-start justify-center pt-2 text-[9px] text-muted-foreground font-mono border border-border/20 h-[110px] min-w-0">
               {getISOWeek(week[0])}
             </div>
             {week.map((day) => {
