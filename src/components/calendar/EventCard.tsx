@@ -26,7 +26,7 @@ export const EventCard = memo(({ event, compact, onClick }: EventCardProps) => {
     <button
       onClick={onClick}
       className={cn(
-        "group w-full text-left rounded-md px-1.5 py-0.5 text-xs font-medium truncate transition-all",
+        "group w-full max-w-full text-left rounded-md px-1.5 py-0.5 text-xs font-medium truncate transition-all overflow-hidden",
         "hover:ring-1 hover:ring-white/30 hover:brightness-110 cursor-pointer",
         compact && "text-[10px] leading-tight"
       )}
