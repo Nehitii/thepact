@@ -64,7 +64,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
     <div
       ref={setNodeRef}
       className={cn(
-        "min-h-[100px] border border-border/30 p-1 transition-colors relative",
+        "h-[110px] border border-border/30 p-1 transition-colors relative flex flex-col",
         !inMonth && "opacity-40",
         isOver && "bg-primary/10",
         today && "bg-primary/5 ring-1 ring-inset ring-primary/40"
@@ -72,11 +72,11 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
     >
       <EventQuickAdd date={day} open={quickAddOpen} onClose={() => setQuickAddOpen(false)} onSave={onQuickAdd}>
         <button
-          className="w-full text-left"
+          className="w-full text-left shrink-0"
           onDoubleClick={(e) => { e.stopPropagation(); setQuickAddOpen(true); }}
         >
           <span className={cn(
-            "text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full mb-0.5",
+            "text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full",
             today && "bg-primary text-primary-foreground font-bold"
           )}>
             {format(day, "d")}
@@ -87,7 +87,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
         </button>
       </EventQuickAdd>
 
-      <div className="space-y-0.5">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-0.5 scrollbar-thin scrollbar-thumb-border/50">
         {visible.map((ev) => (
           <DraggableEvent key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); onEventClick(ev); }} />
         ))}
