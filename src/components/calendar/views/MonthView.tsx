@@ -163,8 +163,8 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
 
         {/* Grid */}
         {weeks.map((week, wi) => (
-          <div key={wi} className="grid grid-cols-[32px_repeat(7,1fr)]">
-            <div className="flex items-start justify-center pt-2 text-[9px] text-muted-foreground font-mono border border-border/20">
+        <div key={wi} className="grid grid-cols-[32px_repeat(7,1fr)] h-[110px]">
+            <div className="flex items-start justify-center pt-2 text-[9px] text-muted-foreground font-mono border border-border/20 h-[110px]">
               {getISOWeek(week[0])}
             </div>
             {week.map((day) => {
