@@ -1863,5 +1863,28 @@
     "noCodes": "Aucun code d'invitation",
     "noCodesDesc": "Génère un code partageable pour inviter des membres.",
     "noMembers": "Aucun membre"
+  },
+  "guild": {
+    "overview": "Vue d'ensemble",
+    "members": "Membres",
+    "chat": "Discussion",
+    "goals": "Objectifs",
+    "events": "Événements",
+    "leaderboard": "Classement",
+    "announcements": "Annonces",
+    "recentActivity": "Activité récente",
+    "noChatMessages": "Aucun message. Dis bonjour !",
+    "typeMessage": "Écrire un message…",
+    "createEvent": "Créer un événement",
+    "eventTitle": "Titre de l'événement",
+    "eventDescription": "Description (optionnel)",
+    "eventCreated": "Événement créé !",
+    "noEvents": "Aucun événement prévu",
+    "noEventsDesc": "Les officiers peuvent créer des événements pour la guilde.",
+    "notFound": "Guilde introuvable ou tu n'es pas membre.",
+    "ownerCantLeave": "Transfère la propriété avant de quitter.",
+    "general": "Général",
+    "inviteCodes": "Codes d'invitation",
+    "dangerZone": "Zone Dangereuse"
   }
 }
