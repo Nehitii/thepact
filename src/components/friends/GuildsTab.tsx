@@ -6,7 +6,6 @@ import { Shield, Plus, Globe, Link, Loader2 } from "lucide-react";
 import { GuildCard } from "./GuildCard";
 import { GuildCreateModal } from "./GuildCreateModal";
 import { GuildInviteCard } from "./GuildInviteCard";
-import { GuildInviteCard } from "./GuildInviteCard";
 import { CyberLoader, CyberEmpty } from "@/components/ui/cyber-states";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -154,14 +153,6 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
         onCreate={async (data) => { await createGuild.mutateAsync(data); }}
         loading={createGuild.isPending}
       />
-      {selectedGuild && (
-        <GuildDetailPanel
-          open={!!selectedGuild}
-          onClose={() => setSelectedGuild(null)}
-          guild={selectedGuild}
-          userId={userId}
-        />
-      )}
     </ScrollArea>
   );
 }
