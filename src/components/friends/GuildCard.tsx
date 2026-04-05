@@ -1,6 +1,7 @@
 import { Shield, Users, Crown, ChevronRight, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import type { Guild } from "@/hooks/useGuilds";
 
 const iconMap: Record<string, any> = { shield: Shield, crown: Crown, users: Users };
@@ -15,11 +16,16 @@ const colorMap: Record<string, string> = {
 interface GuildCardProps {
   guild: Guild;
   isOwner: boolean;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export function GuildCard({ guild, isOwner, onClick }: GuildCardProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const handleClick = () => {
+    if (onClick) onClick();
+    else navigate(`/guild/${guild.id}`);
+  };
   const Icon = iconMap[guild.icon] || Shield;
   const colorClass = colorMap[guild.color] || colorMap.violet;
 
