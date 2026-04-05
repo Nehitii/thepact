@@ -72,7 +72,7 @@ export default function GuildPage() {
       case "chat":
         return <GuildChat guildId={guild.id} userId={user.id} />;
       case "goals":
-        return <GuildGoalsPanel guildId={guild.id} isOfficer={isOfficer} />;
+        return <GuildGoalsPanel guildId={guild.id} canManage={isOfficer} />;
       case "events":
         return <GuildEventsPanel guildId={guild.id} userId={user.id} isOfficer={isOfficer} />;
       case "leaderboard":

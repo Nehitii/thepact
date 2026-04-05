@@ -130,7 +130,7 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
       </TabsContent>
 
       <TabsContent value="codes">
-        <GuildInviteCodePanel guildId={guild.id} />
+        <GuildInviteCodePanel guildId={guild.id} canManage={isOwner} />
       </TabsContent>
 
       {isOwner && (
