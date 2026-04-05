@@ -1251,6 +1251,82 @@ export type Database = {
           },
         ]
       }
+      guild_event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "guild_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_events: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string | null
+          duration_minutes: number
+          event_date: string
+          guild_id: string
+          id: string
+          max_participants: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration_minutes?: number
+          event_date: string
+          guild_id: string
+          id?: string
+          max_participants?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration_minutes?: number
+          event_date?: string
+          guild_id?: string
+          id?: string
+          max_participants?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_events_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guild_goal_contributions: {
         Row: {
           amount: number
@@ -1420,6 +1496,7 @@ export type Database = {
           guild_id: string
           id: string
           joined_at: string | null
+          rank_id: string | null
           role: string
           user_id: string
         }
@@ -1427,6 +1504,7 @@ export type Database = {
           guild_id: string
           id?: string
           joined_at?: string | null
+          rank_id?: string | null
           role?: string
           user_id: string
         }
@@ -1434,12 +1512,106 @@ export type Database = {
           guild_id?: string
           id?: string
           joined_at?: string | null
+          rank_id?: string | null
           role?: string
           user_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "guild_members_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_members_rank_id_fkey"
+            columns: ["rank_id"]
+            isOneToOne: false
+            referencedRelation: "guild_ranks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_messages: {
+        Row: {
+          content: string
+          created_at: string
+          guild_id: string
+          id: string
+          reply_to_id: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          guild_id: string
+          id?: string
+          reply_to_id?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          guild_id?: string
+          id?: string
+          reply_to_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_messages_guild_id_fkey"
+            columns: ["guild_id"]
+            isOneToOne: false
+            referencedRelation: "guilds"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guild_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "guild_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guild_ranks: {
+        Row: {
+          color: string
+          created_at: string
+          guild_id: string
+          icon: string
+          id: string
+          is_default: boolean
+          name: string
+          permissions: Json
+          position: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          guild_id: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          permissions?: Json
+          position?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          guild_id?: string
+          icon?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          permissions?: Json
+          position?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guild_ranks_guild_id_fkey"
             columns: ["guild_id"]
             isOneToOne: false
             referencedRelation: "guilds"
@@ -1457,6 +1629,7 @@ export type Database = {
           id: string
           is_public: boolean
           max_members: number
+          motd: string | null
           name: string
           owner_id: string
           total_xp: number
@@ -1471,6 +1644,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           max_members?: number
+          motd?: string | null
           name: string
           owner_id: string
           total_xp?: number
@@ -1485,6 +1659,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           max_members?: number
+          motd?: string | null
           name?: string
           owner_id?: string
           total_xp?: number
@@ -3580,6 +3755,10 @@ export type Database = {
     }
     Functions: {
       accept_guild_invite: { Args: { p_invite_id: string }; Returns: Json }
+      add_guild_xp: {
+        Args: { p_amount: number; p_guild_id: string; p_reason: string }
+        Returns: undefined
+      }
       create_guild_with_owner: {
         Args: {
           p_color?: string

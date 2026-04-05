@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Shield, Plus, Globe, Link, Loader2 } from "lucide-react";
 import { GuildCard } from "./GuildCard";
 import { GuildCreateModal } from "./GuildCreateModal";
-import { GuildDetailPanel } from "./GuildDetailPanel";
 import { GuildInviteCard } from "./GuildInviteCard";
 import { CyberLoader, CyberEmpty } from "@/components/ui/cyber-states";
 import { motion } from "framer-motion";
@@ -27,7 +26,6 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
   const { t } = useTranslation();
   const { publicGuilds, joinViaCode } = useGuilds();
   const [createOpen, setCreateOpen] = useState(false);
-  const [selectedGuild, setSelectedGuild] = useState<Guild | null>(null);
   const [showDiscover, setShowDiscover] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [joiningCode, setJoiningCode] = useState(false);
@@ -128,7 +126,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             {guilds.map((guild, i) => (
               <motion.div key={guild.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                <GuildCard guild={guild} isOwner={guild.owner_id === userId} onClick={() => setSelectedGuild(guild)} />
+                <GuildCard guild={guild} isOwner={guild.owner_id === userId} />
               </motion.div>
             ))}
           </motion.div>
@@ -142,7 +140,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
             </h4>
             <div className="space-y-3">
               {discoverGuilds.map((guild) => (
-                <GuildCard key={guild.id} guild={guild} isOwner={false} onClick={() => setSelectedGuild(guild)} />
+                <GuildCard key={guild.id} guild={guild} isOwner={false} />
               ))}
             </div>
           </div>
@@ -155,14 +153,6 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
         onCreate={async (data) => { await createGuild.mutateAsync(data); }}
         loading={createGuild.isPending}
       />
-      {selectedGuild && (
-        <GuildDetailPanel
-          open={!!selectedGuild}
-          onClose={() => setSelectedGuild(null)}
-          guild={selectedGuild}
-          userId={userId}
-        />
-      )}
     </ScrollArea>
   );
 }

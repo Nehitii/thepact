@@ -1863,5 +1863,28 @@
     "noCodes": "No invite codes",
     "noCodesDesc": "Generate a shareable code to invite members.",
     "noMembers": "No members"
+  },
+  "guild": {
+    "overview": "Overview",
+    "members": "Members",
+    "chat": "Chat",
+    "goals": "Goals",
+    "events": "Events",
+    "leaderboard": "Leaderboard",
+    "announcements": "Announcements",
+    "recentActivity": "Recent Activity",
+    "noChatMessages": "No messages yet. Say hello!",
+    "typeMessage": "Type a message…",
+    "createEvent": "Create Event",
+    "eventTitle": "Event title",
+    "eventDescription": "Description (optional)",
+    "eventCreated": "Event created!",
+    "noEvents": "No events scheduled",
+    "noEventsDesc": "Officers can create events for the guild.",
+    "notFound": "Guild not found or you are not a member.",
+    "ownerCantLeave": "Transfer ownership before leaving.",
+    "general": "General",
+    "inviteCodes": "Invite Codes",
+    "dangerZone": "Danger Zone"
   }
 }
