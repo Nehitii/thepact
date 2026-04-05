@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Shield, Plus, Globe, Link, Loader2 } from "lucide-react";
 import { GuildCard } from "./GuildCard";
 import { GuildCreateModal } from "./GuildCreateModal";
-import { GuildDetailPanel } from "./GuildDetailPanel";
+import { GuildInviteCard } from "./GuildInviteCard";
 import { GuildInviteCard } from "./GuildInviteCard";
 import { CyberLoader, CyberEmpty } from "@/components/ui/cyber-states";
 import { motion } from "framer-motion";
@@ -27,7 +27,6 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
   const { t } = useTranslation();
   const { publicGuilds, joinViaCode } = useGuilds();
   const [createOpen, setCreateOpen] = useState(false);
-  const [selectedGuild, setSelectedGuild] = useState<Guild | null>(null);
   const [showDiscover, setShowDiscover] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [joiningCode, setJoiningCode] = useState(false);
