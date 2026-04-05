@@ -128,7 +128,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             {guilds.map((guild, i) => (
               <motion.div key={guild.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                <GuildCard guild={guild} isOwner={guild.owner_id === userId} onClick={() => setSelectedGuild(guild)} />
+                <GuildCard guild={guild} isOwner={guild.owner_id === userId} />
               </motion.div>
             ))}
           </motion.div>
@@ -142,7 +142,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
             </h4>
             <div className="space-y-3">
               {discoverGuilds.map((guild) => (
-                <GuildCard key={guild.id} guild={guild} isOwner={false} onClick={() => setSelectedGuild(guild)} />
+                <GuildCard key={guild.id} guild={guild} isOwner={false} />
               ))}
             </div>
           </div>

@@ -31,7 +31,7 @@ export function GuildCard({ guild, isOwner, onClick }: GuildCardProps) {
 
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className={cn(
         "group w-full text-left p-4 rounded-xl border bg-gradient-to-br transition-all duration-300",
         "hover:scale-[1.02] hover:shadow-lg",
