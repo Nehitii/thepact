@@ -283,6 +283,9 @@ export function useTodoList() {
       queryClient.invalidateQueries({ queryKey: ['todo-stats', userId] });
       queryClient.invalidateQueries({ queryKey: ['todo-history', userId] });
       toast.success('Task completed! +10 points');
+      if (userId) {
+        import('@/lib/achievements').then(m => m.trackTodoCompleted(userId));
+      }
     },
     onError: () => {
       toast.error('Failed to complete task');

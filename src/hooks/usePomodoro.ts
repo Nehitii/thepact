@@ -184,7 +184,12 @@ export function usePomodoroSessions() {
       });
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["pomodoro-sessions"] }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["pomodoro-sessions"] });
+      if (user?.id && variables.completed) {
+        import('@/lib/achievements').then(m => m.trackPomodoroCompleted(user.id, variables.duration_minutes));
+      }
+    },
   });
 
   const todayStats = (() => {

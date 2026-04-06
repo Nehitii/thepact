@@ -56,6 +56,17 @@ export function useShopTransaction() {
           setTransactionStatus("success");
           setLastPurchased({ name: input.itemName, rarity: input.rarity || "common" });
           setTimeout(() => setTransactionStatus("idle"), 100);
+          // Track achievement
+          if (user?.id) {
+            import('@/lib/achievements').then(m => {
+              if (input.itemType === "module") {
+                m.trackModulePurchased(user!.id);
+              } else {
+                m.trackCosmeticPurchased(user!.id);
+              }
+              m.trackBondsSpent(user!.id, input.price);
+            });
+          }
           resolve(true);
         };
 

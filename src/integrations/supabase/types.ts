@@ -64,6 +64,7 @@ export type Database = {
       }
       achievement_definitions: {
         Row: {
+          bond_reward: number | null
           category: string
           conditions: Json
           created_at: string | null
@@ -74,9 +75,12 @@ export type Database = {
           is_hidden: boolean | null
           key: string
           name: string
+          points: number | null
           rarity: string
+          required_module: string | null
         }
         Insert: {
+          bond_reward?: number | null
           category: string
           conditions: Json
           created_at?: string | null
@@ -87,9 +91,12 @@ export type Database = {
           is_hidden?: boolean | null
           key: string
           name: string
+          points?: number | null
           rarity: string
+          required_module?: string | null
         }
         Update: {
+          bond_reward?: number | null
           category?: string
           conditions?: Json
           created_at?: string | null
@@ -100,14 +107,21 @@ export type Database = {
           is_hidden?: boolean | null
           key?: string
           name?: string
+          points?: number | null
           rarity?: string
+          required_module?: string | null
         }
         Relationships: []
       }
       achievement_tracking: {
         Row: {
+          bonds_earned_total: number | null
+          bonds_spent_total: number | null
+          calendar_events_created: number | null
+          community_posts: number | null
           consecutive_income_growth_months: number | null
           consecutive_login_days: number | null
+          cosmetics_owned: number | null
           created_at: string | null
           current_rank_tier: number | null
           custom_goals_completed: number | null
@@ -116,7 +130,11 @@ export type Database = {
           easy_goals_created: number | null
           extreme_goals_completed: number | null
           extreme_goals_created: number | null
+          finance_months_validated: number | null
+          friends_count: number | null
           goals_completed_total: number | null
+          guild_messages_sent: number | null
+          guilds_joined: number | null
           hard_goals_completed: number | null
           hard_goals_created: number | null
           has_edited_pact: boolean | null
@@ -124,21 +142,35 @@ export type Database = {
           id: string
           impossible_goals_completed: number | null
           impossible_goals_created: number | null
+          journal_entries: number | null
           last_login_date: string | null
           logins_at_same_hour_streak: number | null
           medium_goals_completed: number | null
           medium_goals_created: number | null
           midnight_logins_count: number | null
+          modules_purchased: number | null
           months_without_negative_balance: number | null
+          pomodoro_sessions: number | null
+          pomodoro_total_minutes: number | null
           steps_completed_total: number | null
+          todos_completed: number | null
+          todos_created: number | null
           total_goals_created: number | null
+          transactions_logged: number | null
           updated_at: string | null
           user_id: string
           usual_login_hour: number | null
+          wishlist_items_acquired: number | null
+          wishlist_items_added: number | null
         }
         Insert: {
+          bonds_earned_total?: number | null
+          bonds_spent_total?: number | null
+          calendar_events_created?: number | null
+          community_posts?: number | null
           consecutive_income_growth_months?: number | null
           consecutive_login_days?: number | null
+          cosmetics_owned?: number | null
           created_at?: string | null
           current_rank_tier?: number | null
           custom_goals_completed?: number | null
@@ -147,7 +179,11 @@ export type Database = {
           easy_goals_created?: number | null
           extreme_goals_completed?: number | null
           extreme_goals_created?: number | null
+          finance_months_validated?: number | null
+          friends_count?: number | null
           goals_completed_total?: number | null
+          guild_messages_sent?: number | null
+          guilds_joined?: number | null
           hard_goals_completed?: number | null
           hard_goals_created?: number | null
           has_edited_pact?: boolean | null
@@ -155,21 +191,35 @@ export type Database = {
           id?: string
           impossible_goals_completed?: number | null
           impossible_goals_created?: number | null
+          journal_entries?: number | null
           last_login_date?: string | null
           logins_at_same_hour_streak?: number | null
           medium_goals_completed?: number | null
           medium_goals_created?: number | null
           midnight_logins_count?: number | null
+          modules_purchased?: number | null
           months_without_negative_balance?: number | null
+          pomodoro_sessions?: number | null
+          pomodoro_total_minutes?: number | null
           steps_completed_total?: number | null
+          todos_completed?: number | null
+          todos_created?: number | null
           total_goals_created?: number | null
+          transactions_logged?: number | null
           updated_at?: string | null
           user_id: string
           usual_login_hour?: number | null
+          wishlist_items_acquired?: number | null
+          wishlist_items_added?: number | null
         }
         Update: {
+          bonds_earned_total?: number | null
+          bonds_spent_total?: number | null
+          calendar_events_created?: number | null
+          community_posts?: number | null
           consecutive_income_growth_months?: number | null
           consecutive_login_days?: number | null
+          cosmetics_owned?: number | null
           created_at?: string | null
           current_rank_tier?: number | null
           custom_goals_completed?: number | null
@@ -178,7 +228,11 @@ export type Database = {
           easy_goals_created?: number | null
           extreme_goals_completed?: number | null
           extreme_goals_created?: number | null
+          finance_months_validated?: number | null
+          friends_count?: number | null
           goals_completed_total?: number | null
+          guild_messages_sent?: number | null
+          guilds_joined?: number | null
           hard_goals_completed?: number | null
           hard_goals_created?: number | null
           has_edited_pact?: boolean | null
@@ -186,17 +240,26 @@ export type Database = {
           id?: string
           impossible_goals_completed?: number | null
           impossible_goals_created?: number | null
+          journal_entries?: number | null
           last_login_date?: string | null
           logins_at_same_hour_streak?: number | null
           medium_goals_completed?: number | null
           medium_goals_created?: number | null
           midnight_logins_count?: number | null
+          modules_purchased?: number | null
           months_without_negative_balance?: number | null
+          pomodoro_sessions?: number | null
+          pomodoro_total_minutes?: number | null
           steps_completed_total?: number | null
+          todos_completed?: number | null
+          todos_created?: number | null
           total_goals_created?: number | null
+          transactions_logged?: number | null
           updated_at?: string | null
           user_id?: string
           usual_login_hour?: number | null
+          wishlist_items_acquired?: number | null
+          wishlist_items_added?: number | null
         }
         Relationships: []
       }

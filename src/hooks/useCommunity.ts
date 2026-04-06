@@ -288,6 +288,9 @@ export function useCreatePost() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-posts"] });
+      if (user?.id) {
+        import('@/lib/achievements').then(m => m.trackCommunityPost(user.id));
+      }
     }
   });
 }
