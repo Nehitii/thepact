@@ -1,147 +1,105 @@
 
 
-# Guilds MMO — Page Dedicace et Refonte Profonde
+# Achievements Deep Expansion — Plan
 
-## Diagnostic
+## Current State
+- 31 achievements in DB across 8 categories (Connection, GoalsCreation, Difficulty, Time, Pact, Finance, Hidden, Series, health)
+- Categories covered: login streaks, goal creation/completion, pact, health, time-based, hidden
+- **Not covered**: Todos, Finance, Calendar, Community, Friends/Guilds, Focus/Pomodoro, Journal, Wishlist, Shop/Modules, Cosmetics
+- No category filter in the UI (only rarity + locked/unlocked)
+- No "module-gated" achievements (achievements requiring a purchased module)
+- Achievement tracking table only has fields for logins, goals, steps, pact, finance, health — missing counters for todos, friends, guilds, journal, focus, community, wishlist, shop
 
-Les guildes sont actuellement confinees dans un **Dialog modal** (`GuildDetailPanel`) de 500px de large, avec 6 onglets comprimes en icones minuscules. Tout est fonctionnel mais superficiel : pas de page dediee, pas de chat, pas de XP/niveaux, pas d'evenements, pas de roles granulaires, pas de banniere visuelle, pas de MOTD editable. L'experience ressemble a un panneau d'administration, pas a une guilde MMO.
+## Plan
 
-## Vision
+### 1. Database Migration — Expand tracking + seed ~70 new achievements
 
-Transformer les guildes en une experience de type **WoW/FFXIV Guild Hall** : une page dediee `/guild/:id` avec sidebar de navigation, hall d'entree visuel, systeme de rangs personnalisables, chat en temps reel, evenements planifies, coffre de guilde (XP/Bonds), et tableau de bord d'officier.
+**Expand `achievement_tracking` columns** to track:
+- `todos_completed`, `todos_created`, `pomodoro_sessions`, `pomodoro_total_minutes`
+- `journal_entries`, `friends_count`, `guilds_joined`, `guild_messages_sent`
+- `community_posts`, `wishlist_items_added`, `wishlist_items_acquired`
+- `modules_purchased`, `cosmetics_owned`, `calendar_events_created`
+- `bonds_spent_total`, `bonds_earned_total`
+- `finance_months_validated`, `transactions_logged`
 
----
+**Seed ~70 new `achievement_definitions`** across new categories:
 
-## Phase 1 — Page Dediee et Navigation (Priorite critique)
+| Category | Examples | Count |
+|----------|---------|-------|
+| **Todo** | Complete 1/10/50/100/500 todos, create a recurring todo | ~6 |
+| **Focus** | 1st pomodoro, 10/50/100 sessions, 1000 min total, 5 sessions in a day | ~6 |
+| **Journal** | 1st entry, 7/30/100 entries, write 3 days in a row | ~5 |
+| **Social** | Add 1st friend, 5/10/25 friends, join a guild, send 100 guild messages, create a guild | ~7 |
+| **Community** | 1st post, 10 posts, get 50 reactions, 1st victory reel | ~5 |
+| **Finance** | Log 1st transaction, validate 1/3/6/12 months, positive balance 3 months in a row | ~6 |
+| **Wishlist** | Add 1st item, acquire 5/10 items, complete full wishlist | ~4 |
+| **Calendar** | Create 1st event, 10/50 events, RSVP to a guild event | ~4 |
+| **Shop** | Buy 1st module, own all modules, buy 1st cosmetic, spend 1000/5000/10000 bonds | ~6 |
+| **Module-Gated** | Achievements requiring a specific module to be purchased (e.g. "Health Devotee" requires Track Health module + 30 checkins) | ~8 |
+| **Hidden (new)** | Complete a goal at exactly midnight, have 0 todos for a full day, buy something from every shop category | ~5 |
+| **Legendary/Mythic** | 100% all modules purchased, 365-day login streak, complete 10 impossible goals | ~5 |
 
-### 1.1 Route `/guild/:id`
-- Nouvelle page `src/pages/GuildPage.tsx` avec layout propre
-- Sidebar gauche avec navigation : Overview, Members, Chat, Goals, Events, Leaderboard, Settings
-- Header hero avec banniere, icone, nom, description, XP bar, nombre de membres
-- Le `GuildCard` dans `/friends` devient un lien vers `/guild/:id` au lieu d'ouvrir un Dialog
+Total: ~70 new achievements → ~100 total
 
-### 1.2 Guild Overview (Hall d'entree)
-- Banniere full-width avec gradient selon la couleur de guilde
-- MOTD (Message of the Day) editable par officers/owner
-- Stats rapides : membres en ligne, XP total, rang guilde, objectifs actifs
-- Activite recente (5 dernieres actions)
-- Annonces epinglees en haut
+**Add `required_module` column** to `achievement_definitions` (nullable text, references shop_modules.key). When set, the achievement only appears/can be unlocked if the user owns that module.
 
-### 1.3 Refactoring existant
-- `GuildDetailPanel` (Dialog) → supprime ou reduit a un mini-preview
-- Deplacer toute la logique vers des sous-pages de `/guild/:id`
+### 2. Expand `checkAchievements` logic in `achievements.ts`
 
----
+Add condition handlers for all new types:
+- `todos_completed`, `pomodoro_sessions`, `journal_entries`, `friends_count`, etc.
+- `module_gated` type: check `user_module_purchases` before allowing unlock
+- `bonds_spent_total`, `modules_purchased`, `cosmetics_owned`
 
-## Phase 2 — Systeme de Rangs et Permissions MMO
+Add new tracking functions:
+- `trackTodoCompleted`, `trackPomodoroCompleted`, `trackJournalEntry`, `trackFriendAdded`, `trackModulePurchased`, `trackCosmeticPurchased`, `trackCalendarEventCreated`, `trackWishlistItemAdded`, `trackWishlistItemAcquired`, `trackCommunityPost`, `trackGuildMessageSent`
 
-### 2.1 Migration DB : `guild_ranks` table
-```
-guild_ranks: id, guild_id, name, color, icon, position (int), permissions (jsonb), is_default, created_at
-```
-- Permissions granulaires : `invite_members`, `kick_members`, `manage_announcements`, `manage_goals`, `manage_events`, `manage_ranks`, `manage_settings`, `manage_codes`
-- Rangs par defaut a la creation : Owner (all), Officer (most), Member (basic)
-- `guild_members.role` → `guild_members.rank_id` (FK vers guild_ranks)
+### 3. Wire tracking calls into existing hooks
 
-### 2.2 UI Rank Editor
-- Page Settings > Ranks : drag-and-drop pour reordonner
-- Creer/editer/supprimer des rangs custom (nom, couleur, icone, permissions checkboxes)
-- Assigner un rang a chaque membre depuis la liste Members
+Inject tracking calls at the right places:
+- `useTodoList.ts` → `trackTodoCompleted` on task completion
+- `usePomodoro.ts` → `trackPomodoroCompleted` on session end
+- `useJournal.ts` → `trackJournalEntry` on new entry
+- `useFriends.ts` → `trackFriendAdded` on accept
+- `useShopTransaction.ts` → `trackModulePurchased` / `trackCosmeticPurchased`
+- `useCalendarEvents.ts` → `trackCalendarEventCreated`
+- `useWishlist.ts` → `trackWishlistItemAdded` / `trackWishlistItemAcquired`
+- `useCommunity.ts` → `trackCommunityPost`
+- `useGuilds.ts` → `trackGuildMessageSent`
 
----
+### 4. UI — Add category filter to `/achievements`
 
-## Phase 3 — Chat de Guilde en Temps Reel
+- Add a **category filter** (horizontal scrollable chips or tabs) alongside the existing rarity dropdown
+- Categories: All, Connection, Goals, Difficulty, Time, Pact, Todo, Focus, Journal, Social, Finance, Wishlist, Calendar, Shop, Hidden
+- Module-gated achievements show a lock icon with the module name when the user doesn't own the required module
+- Add category grouping option (toggle between flat grid and grouped-by-category sections)
 
-### 3.1 Migration DB : `guild_messages` table
-```
-guild_messages: id, guild_id, user_id, content, reply_to_id, created_at
-```
-- RLS : membres uniquement (is_guild_member)
-- Realtime via `ALTER PUBLICATION supabase_realtime ADD TABLE guild_messages`
+### 5. Achievement card enhancements
 
-### 3.2 UI Chat
-- `GuildChat.tsx` : feed de messages en temps reel, input en bas
-- Avatar + nom + rang affiche
-- Reply threading basique (reply_to)
-- Auto-scroll, indicateur "X new messages"
-- Limite 200 chars par message
+- Show module requirement badge on module-gated achievements (e.g. "Requires: Track Health")
+- Add Bond reward display on each card (achievements grant bonds on unlock)
+- Achievement points system: each achievement has a point value based on rarity (common=25, uncommon=50, rare=100, epic=250, mythic=500, legendary=1000)
 
----
+### 6. Migration — Add `bond_reward` and `points` to achievement_definitions
 
-## Phase 4 — Evenements de Guilde
+- `bond_reward` integer default 0 — bonds granted on unlock
+- `points` integer default 0 — score points for the leaderboard
+- Update `grant_achievement` RPC to also credit bonds
 
-### 4.1 Migration DB : `guild_events` table
-```
-guild_events: id, guild_id, title, description, event_date, duration_minutes, created_by, max_participants, created_at
-guild_event_rsvps: id, event_id, user_id, status (going/maybe/declined), created_at
-```
+## Files Impacted
 
-### 4.2 UI Events
-- Liste d'evenements a venir avec RSVP (Going/Maybe/Decline)
-- Creation par officers : titre, description, date, duree, max participants
-- Integration auto avec le calendrier (`/calendar`) comme source "guild"
-
----
-
-## Phase 5 — XP et Progression de Guilde
-
-### 5.1 Logique XP
-- Actions qui donnent du XP guilde : membre rejoint (+10), objectif complete (+50), contribution (+amount), evenement organise (+20)
-- Niveaux de guilde : Level = floor(sqrt(total_xp / 100))
-- Affichage XP bar dans le header de guilde
-- Badges de niveau de guilde (bronze/silver/gold/diamond)
-
-### 5.2 Migration
-- Ajouter `guild_level` computed ou trigger sur `guilds.total_xp`
-- Fonction `add_guild_xp(p_guild_id, p_amount, p_reason)` SECURITY DEFINER
-
----
-
-## Phase 6 — Ameliorations Members Panel
-
-### 6.1 Filtres et tri
-- Recherche par nom
-- Filtre par rang
-- Tri : date d'arrivee, rang, nom
-- Badge "en ligne" (reutiliser `useOnlineStatus`)
-
-### 6.2 Profil membre dans la guilde
-- Click sur un membre → mini drawer avec : avatar, rang, date d'arrivee, contributions, actions (promote/demote/kick si permission)
-
----
-
-## Phase 7 — Settings Avances
-
-- Onglets dans Settings : General, Ranks, Moderation, Danger Zone
-- General : nom, description, icone, couleur, banniere upload, MOTD, visibilite
-- Moderation : logs d'audit filtres, bannir un membre (pas juste kick)
-- Danger Zone : transfert ownership, suppression guilde (double confirm)
-
----
-
-## Fichiers impactes
-
-| Action | Fichier |
-|--------|---------|
-| **New** | `src/pages/GuildPage.tsx` — page dediee |
-| **New** | `src/components/guild/GuildOverview.tsx` — hall d'entree |
-| **New** | `src/components/guild/GuildSidebar.tsx` — navigation laterale |
-| **New** | `src/components/guild/GuildHeader.tsx` — hero banniere |
-| **New** | `src/components/guild/GuildMembersPanel.tsx` — liste membres amelioree |
-| **New** | `src/components/guild/GuildChat.tsx` — chat temps reel |
-| **New** | `src/components/guild/GuildEventsPanel.tsx` — evenements + RSVP |
-| **New** | `src/components/guild/GuildRankEditor.tsx` — editeur de rangs |
-| **New** | `src/components/guild/GuildSettingsPage.tsx` — settings avances |
-| **New** | `src/components/guild/GuildXPBar.tsx` — barre XP/niveau |
-| **Edit** | `src/components/friends/GuildCard.tsx` — lien vers `/guild/:id` |
-| **Edit** | `src/components/friends/GuildsTab.tsx` — navigation au lieu de dialog |
-| **Edit** | `src/hooks/useGuilds.ts` — chat mutations, events, ranks |
-| **Edit** | `src/App.tsx` — route `/guild/:id` |
-| **Migration** | `guild_messages` table + realtime |
-| **Migration** | `guild_events` + `guild_event_rsvps` tables |
-| **Migration** | `guild_ranks` table + migration `guild_members.rank_id` |
-| **Migration** | `add_guild_xp` SECURITY DEFINER function |
-| **Edit** | `src/i18n/locales/en.json`, `fr.json` — guild.* keys |
-
-Implementation en 7 phases sequentielles, chaque phase livrant une fonctionnalite utilisable independamment.
+| Action | File |
+|--------|------|
+| **Migration** | New columns on `achievement_tracking`, `achievement_definitions` + seed ~70 achievements |
+| **Edit** | `src/lib/achievements.ts` — new tracking functions, expanded checkAchievements |
+| **Edit** | `src/pages/Achievements.tsx` — category filter, grouped view, points display |
+| **Edit** | `src/components/achievements/AchievementCard.tsx` — module badge, bond reward, points |
+| **Edit** | `src/hooks/useTodoList.ts` — wire trackTodoCompleted |
+| **Edit** | `src/hooks/usePomodoro.ts` — wire trackPomodoroCompleted |
+| **Edit** | `src/hooks/useJournal.ts` — wire trackJournalEntry |
+| **Edit** | `src/hooks/useFriends.ts` — wire trackFriendAdded |
+| **Edit** | `src/hooks/useShopTransaction.ts` — wire trackModulePurchased |
+| **Edit** | `src/hooks/useCalendarEvents.ts` — wire trackCalendarEventCreated |
+| **Edit** | `src/hooks/useWishlist.ts` — wire trackWishlistItemAdded |
+| **Edit** | `src/hooks/useCommunity.ts` — wire trackCommunityPost |
+| **Edit** | `src/i18n/locales/en.json`, `fr.json` — achievement category labels |
 
