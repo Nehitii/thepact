@@ -349,7 +349,12 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
       if (error) throw error;
       return data;
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      invalidate();
+      if (user?.id) {
+        import('@/lib/achievements').then(m => m.trackCalendarEventCreated(user.id));
+      }
+    },
   });
 
   const updateEvent = useMutation({

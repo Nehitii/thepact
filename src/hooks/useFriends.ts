@@ -118,7 +118,12 @@ export function useFriends() {
         .eq("id", friendshipId);
       if (error) throw error;
     },
-    onSuccess: invalidateAll,
+    onSuccess: () => {
+      invalidateAll();
+      if (user?.id) {
+        import('@/lib/achievements').then(m => m.trackFriendAdded(user.id));
+      }
+    },
   });
 
   // Decline friend request

@@ -79,6 +79,7 @@ export function useCreateJournalEntry() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries", data.user_id] });
       toast({ title: "Log recorded", description: "Neural log entry saved" });
+      import('@/lib/achievements').then(m => m.trackJournalEntry(data.user_id));
     },
     onError: (error: Error) => {
       toast({ title: "Failed to save entry", description: error.message, variant: "destructive" });
