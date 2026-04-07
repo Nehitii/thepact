@@ -214,6 +214,7 @@ export default function Finance() {
                   expenseItems={recurringExpenses}
                   categories={EXPENSE_CATEGORIES}
                   currency={currency}
+                  monthTransactions={currentMonthTransactions as any}
                   onUpsert={async (b) => { await upsertBudget.mutateAsync(b); }}
                   onDelete={(id) => deleteBudget.mutate(id)}
                   isPending={upsertBudget.isPending}
