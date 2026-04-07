@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { roundMoney } from '@/lib/financeCategories';
 import type { UserAccount } from '@/types/finance';
 
 interface ComputedBalance {
@@ -9,16 +10,19 @@ interface ComputedBalance {
 }
 
 export function useAccountBalances(accounts: UserAccount[], userId?: string) {
+  const accountIds = accounts.map(a => a.id);
+
   return useQuery({
-    queryKey: ['account-balances', userId, accounts.map(a => a.id).join(',')],
+    queryKey: ['account-balances', userId, accountIds.join(',')],
     queryFn: async () => {
       if (!userId || accounts.length === 0) return new Map<string, ComputedBalance>();
 
+      // Filter server-side by account_id instead of fetching all transactions
       const { data: txs, error } = await supabase
         .from('bank_transactions')
         .select('account_id, amount, transaction_type, transaction_date')
         .eq('user_id', userId)
-        .not('account_id', 'is', null);
+        .in('account_id', accountIds);
 
       if (error) throw error;
 
@@ -43,7 +47,7 @@ export function useAccountBalances(accounts: UserAccount[], userId?: string) {
 
         result.set(account.id, {
           accountId: account.id,
-          computedBalance: initial + delta,
+          computedBalance: roundMoney(initial + delta),
           txCount: accountTxs.length,
         });
       }

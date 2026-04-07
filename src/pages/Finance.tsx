@@ -12,6 +12,7 @@ import { formatCurrency } from "@/lib/currency";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useFinanceSettings, useRecurringExpenses, useRecurringIncome, useMonthlyValidations } from "@/hooks/useFinance";
+import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget, useSavingsGoals, useAddSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal } from "@/hooks/useBudgets";
 import { FinanceDashboard } from "@/components/finance/FinanceDashboard";
@@ -23,7 +24,8 @@ import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/bu
 import { TransactionsTab } from "@/components/finance/transactions";
 import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
 import { exportFullReport } from "@/lib/financeExport";
-import { parseISO } from "date-fns";
+import { roundMoney } from "@/lib/financeCategories";
+import { parseISO, format, startOfMonth } from "date-fns";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -45,6 +47,10 @@ export default function Finance() {
   const { data: accounts = [] } = useAccounts(user?.id);
   const { data: budgets = [] } = useCategoryBudgets(user?.id);
   const { data: savingsGoals = [] } = useSavingsGoals(user?.id);
+
+  // Fetch current month transactions for budget tracking
+  const currentMonthStart = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+  const { data: allTransactions = [] } = useTransactions(user?.id);
 
   const upsertBudget = useUpsertCategoryBudget();
   const deleteBudget = useDeleteCategoryBudget();
@@ -87,8 +93,13 @@ export default function Finance() {
     finance_budget_alert_pct: financeSettings?.finance_budget_alert_pct ?? 80,
   };
 
-  const totalRecurringExpenses = recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0);
-  const totalRecurringIncome = recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+  const totalRecurringExpenses = roundMoney(recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0));
+  const totalRecurringIncome = roundMoney(recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0));
+
+  // Filter current month transactions for budget panel
+  const currentMonthTransactions = useMemo(() => {
+    return allTransactions.filter(tx => tx.transaction_date >= currentMonthStart);
+  }, [allTransactions, currentMonthStart]);
 
   const handleExportAll = () => {
     exportFullReport(recurringExpenses, recurringIncome, validations, accounts, currency);
@@ -203,6 +214,7 @@ export default function Finance() {
                   expenseItems={recurringExpenses}
                   categories={EXPENSE_CATEGORIES}
                   currency={currency}
+                  monthTransactions={currentMonthTransactions as any}
                   onUpsert={async (b) => { await upsertBudget.mutateAsync(b); }}
                   onDelete={(id) => deleteBudget.mutate(id)}
                   isPending={upsertBudget.isPending}

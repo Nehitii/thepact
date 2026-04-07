@@ -172,10 +172,17 @@ export function getItemCategory<T extends { category?: string | null; name: stri
 }
 
 /**
+ * Round to 2 decimal places to avoid floating-point drift
+ */
+export function roundMoney(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+/**
  * Calculate total from active items
  */
 export function calculateActiveTotal<T extends { is_active: boolean; amount: number }>(items: T[]): number {
-  return items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
+  return roundMoney(items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0));
 }
 
 /**
@@ -213,7 +220,7 @@ export function getCategoryTotals<T extends { category?: string | null; name: st
   
   activeItems.forEach(item => {
     const cat = getItemCategory(item, categories);
-    categoryTotals[cat.value] = (categoryTotals[cat.value] || 0) + item.amount;
+    categoryTotals[cat.value] = roundMoney((categoryTotals[cat.value] || 0) + item.amount);
   });
   
   return Object.entries(categoryTotals)

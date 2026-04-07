@@ -34,7 +34,8 @@
     "save": "Save",
     "settings": "Settings",
     "updated": "Updated",
-    "more": "more"
+    "more": "more",
+    "selected": "selected"
   },
   "auth": {
     "brand": "Pact",
@@ -561,7 +562,14 @@
       "deleted": "Transaction deleted",
       "deleteFailed": "Failed to delete transaction",
       "skippedRows": "{{count}} rows skipped (invalid date or amount)",
-      "chooseAnotherFile": "Choose another file"
+      "chooseAnotherFile": "Choose another file",
+      "thisMonth": "This month",
+      "export": "Export"
+    },
+    "alerts": {
+      "negativeNet": "Negative monthly balance: {{amount}} deficit",
+      "budgetExceeded": "Budget exceeded for {{category}}: {{amount}} over limit",
+      "pendingValidation": "Last month's finances haven't been validated yet"
     },
     "accounts": {
       "netWorth": "Net Worth",

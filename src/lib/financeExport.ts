@@ -1,4 +1,4 @@
-import type { FinancialItem, MonthlyValidation, UserAccount, AccountTransfer } from '@/types/finance';
+import type { FinancialItem, MonthlyValidation, UserAccount, AccountTransfer, BankTransaction } from '@/types/finance';
 import { format } from 'date-fns';
 
 function escapeCsv(val: string | number | null | undefined): string {
@@ -62,12 +62,26 @@ export function exportTransfers(transfers: AccountTransfer[], accounts: UserAcco
   downloadCsv(`finance-transfers-${format(new Date(), 'yyyy-MM-dd')}.csv`, header + rows);
 }
 
+export function exportTransactions(transactions: BankTransaction[], accounts: UserAccount[]) {
+  const getAccountName = (id: string | null) => {
+    if (!id) return '';
+    return accounts.find(a => a.id === id)?.name || id;
+  };
+  const header = 'Date,Description,Amount,Type,Category,Account,Note,Source\n';
+  const rows = transactions.map(tx =>
+    `${tx.transaction_date},${escapeCsv(tx.description)},${tx.amount},${tx.transaction_type},${escapeCsv(tx.category)},${escapeCsv(getAccountName(tx.account_id))},${escapeCsv(tx.note)},${tx.source}`
+  ).join('\n');
+
+  downloadCsv(`finance-transactions-${format(new Date(), 'yyyy-MM-dd')}.csv`, header + rows);
+}
+
 export function exportFullReport(
   expenses: FinancialItem[],
   income: FinancialItem[],
   validations: MonthlyValidation[],
   accounts: UserAccount[],
   currency: string,
+  transactions?: BankTransaction[],
 ) {
   let content = '=== RECURRING ITEMS ===\n';
   content += 'Type,Name,Amount,Category,Active\n';
@@ -86,6 +100,14 @@ export function exportFullReport(
   accounts.forEach(a => {
     content += `${escapeCsv(a.name)},${escapeCsv(a.bank_name)},${a.account_type},${a.balance}\n`;
   });
+
+  if (transactions && transactions.length > 0) {
+    content += '\n=== TRANSACTIONS ===\n';
+    content += 'Date,Description,Amount,Type,Category,Note,Source\n';
+    transactions.forEach(tx => {
+      content += `${tx.transaction_date},${escapeCsv(tx.description)},${tx.amount},${tx.transaction_type},${escapeCsv(tx.category)},${escapeCsv(tx.note)},${tx.source}\n`;
+    });
+  }
 
   downloadCsv(`finance-full-report-${format(new Date(), 'yyyy-MM-dd')}.csv`, content);
 }
