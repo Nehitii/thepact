@@ -112,6 +112,7 @@ export function ProjectionsPanel({ projectEndDate, monthlyAllocation, totalRemai
               <XAxis dataKey="monthLabel" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} dy={8} />
               <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(value) => `${value >= 0 ? '' : '-'}${Math.abs(value / 1000)}k`} dx={-8} />
               <Tooltip content={<CustomTooltip />} cursor={false} />
+              <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" strokeOpacity={0.4} label={{ value: '0', position: 'left', fill: 'hsl(var(--muted-foreground))', fontSize: 10 }} />
               {projectEndDate && <ReferenceLine x={format(projectEndDate, 'MMM')} stroke="hsl(var(--primary))" strokeDasharray="5 5" strokeOpacity={0.4} />}
               <Area type="monotone" dataKey="projected" name={t('finance.projections.projected')} stroke="hsl(var(--primary))" strokeWidth={2} fill="url(#projectedGradient)" strokeDasharray="5 5" />
               <Line type="monotone" dataKey="actual" name={t('finance.projections.actual')} stroke="#22c55e" strokeWidth={3} dot={{ fill: '#22c55e', r: 4, strokeWidth: 0 }} connectNulls={false} />
