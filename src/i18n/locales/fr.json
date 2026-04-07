@@ -34,7 +34,8 @@
     "save": "Enregistrer",
     "settings": "Paramètres",
     "updated": "Mis à jour",
-    "more": "de plus"
+    "more": "de plus",
+    "selected": "sélectionné(s)"
   },
   "auth": {
     "brand": "Pact",
