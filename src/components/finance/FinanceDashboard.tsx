@@ -58,7 +58,7 @@ export function FinanceDashboard({
   const { data: accounts = [] } = useAccounts(user?.id);
   const { data: balancesMap } = useAccountBalances(accounts, user?.id);
   const { data: transactions = [] } = useTransactions(user?.id);
-  const { budgets = [] } = useBudgets(user?.id);
+  const { data: budgets = [] } = useCategoryBudgets(user?.id);
 
   const totalExpenses = calculateActiveTotal(expenses);
   const totalIncome = calculateActiveTotal(income);
