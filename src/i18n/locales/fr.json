@@ -561,7 +561,14 @@
       "deleted": "Opération supprimée",
       "deleteFailed": "Échec de la suppression",
       "skippedRows": "{{count}} lignes ignorées (date ou montant invalide)",
-      "chooseAnotherFile": "Choisir un autre fichier"
+      "chooseAnotherFile": "Choisir un autre fichier",
+      "thisMonth": "Ce mois",
+      "export": "Exporter"
+    },
+    "alerts": {
+      "negativeNet": "Solde mensuel négatif : {{amount}} de déficit",
+      "budgetExceeded": "Budget dépassé pour {{category}} : {{amount}} au-dessus de la limite",
+      "pendingValidation": "Les finances du mois dernier n'ont pas encore été validées"
     },
     "accounts": {
       "netWorth": "Patrimoine net",
