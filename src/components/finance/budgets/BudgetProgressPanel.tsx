@@ -6,15 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
-import { type FinanceCategory, getCategoryLabel, getCategoryTotals } from '@/lib/financeCategories';
+import { type FinanceCategory, getCategoryLabel, getCategoryTotals, roundMoney } from '@/lib/financeCategories';
 import type { CategoryBudget } from '@/hooks/useBudgets';
-import type { FinancialItem } from '@/types/finance';
+import type { FinancialItem, BankTransaction } from '@/types/finance';
 
 interface BudgetProgressPanelProps {
   budgets: CategoryBudget[];
   expenseItems: FinancialItem[];
   categories: FinanceCategory[];
   currency: string;
+  /** Real debit transactions for the current month, used for accurate budget tracking */
+  monthTransactions?: BankTransaction[];
   onUpsert: (budget: { category: string; budget_type: string; monthly_limit: number }) => Promise<void>;
   onDelete: (id: string) => void;
   isPending?: boolean;
@@ -25,6 +27,7 @@ export function BudgetProgressPanel({
   expenseItems,
   categories,
   currency,
+  monthTransactions,
   onUpsert,
   onDelete,
   isPending,
@@ -34,9 +37,18 @@ export function BudgetProgressPanel({
   const [newCategory, setNewCategory] = useState('');
   const [newLimit, setNewLimit] = useState('');
 
-  const categoryTotals = getCategoryTotals(expenseItems, categories, t);
+  // Use real transactions if available, fall back to recurring items
   const spendingByCategory: Record<string, number> = {};
-  categoryTotals.forEach(ct => { spendingByCategory[ct.name] = ct.value; });
+  if (monthTransactions && monthTransactions.length > 0) {
+    monthTransactions.forEach(tx => {
+      if (tx.transaction_type === 'debit' && tx.category) {
+        spendingByCategory[tx.category] = roundMoney((spendingByCategory[tx.category] || 0) + Number(tx.amount));
+      }
+    });
+  } else {
+    const categoryTotals = getCategoryTotals(expenseItems, categories, t);
+    categoryTotals.forEach(ct => { spendingByCategory[ct.name] = ct.value; });
+  }
 
   const availableCategories = categories.filter(
     c => !budgets.some(b => b.category === c.value)
