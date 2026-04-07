@@ -13,7 +13,7 @@ import {
 import { useAccounts } from '@/hooks/useAccounts';
 import { useAccountBalances } from '@/hooks/useAccountBalances';
 import { useTransactions } from '@/hooks/useTransactions';
-import { useBudgets } from '@/hooks/useBudgets';
+import { useCategoryBudgets } from '@/hooks/useBudgets';
 import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
