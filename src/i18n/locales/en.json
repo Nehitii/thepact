@@ -34,7 +34,8 @@
     "save": "Save",
     "settings": "Settings",
     "updated": "Updated",
-    "more": "more"
+    "more": "more",
+    "selected": "selected"
   },
   "auth": {
     "brand": "Pact",
