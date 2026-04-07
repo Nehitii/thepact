@@ -1,105 +1,166 @@
 
 
-# Achievements Deep Expansion — Plan
+# Audit Complet du Module Finance — Rapport et Plan de Transformation
 
-## Current State
-- 31 achievements in DB across 8 categories (Connection, GoalsCreation, Difficulty, Time, Pact, Finance, Hidden, Series, health)
-- Categories covered: login streaks, goal creation/completion, pact, health, time-based, hidden
-- **Not covered**: Todos, Finance, Calendar, Community, Friends/Guilds, Focus/Pomodoro, Journal, Wishlist, Shop/Modules, Cosmetics
-- No category filter in the UI (only rarity + locked/unlocked)
-- No "module-gated" achievements (achievements requiring a purchased module)
-- Achievement tracking table only has fields for logins, goals, steps, pact, finance, health — missing counters for todos, friends, guilds, journal, focus, community, wishlist, shop
+## Rapport d'Audit Flash
 
-## Plan
+### Architecture (Score: 7/10)
+**Ce qui fonctionne bien :**
+- Structure modulaire propre : 5 onglets (Dashboard, Budget, Transactions, Accounts, Planner) bien separees
+- Hooks React Query standardises avec invalidation correcte
+- Categories centralisees dans `financeCategories.ts` avec i18n
+- RLS policies completes et correctes sur toutes les tables
+- Auto-detection de categories par mots-cles (FR + EN)
+- CSV import robuste (encoding, delimiteurs, formats de date)
+- Balances de comptes calculees dynamiquement (initial + transactions)
 
-### 1. Database Migration — Expand tracking + seed ~70 new achievements
+**Problemes identifies :**
 
-**Expand `achievement_tracking` columns** to track:
-- `todos_completed`, `todos_created`, `pomodoro_sessions`, `pomodoro_total_minutes`
-- `journal_entries`, `friends_count`, `guilds_joined`, `guild_messages_sent`
-- `community_posts`, `wishlist_items_added`, `wishlist_items_acquired`
-- `modules_purchased`, `cosmetics_owned`, `calendar_events_created`
-- `bonds_spent_total`, `bonds_earned_total`
-- `finance_months_validated`, `transactions_logged`
+### 🔴 Critique
 
-**Seed ~70 new `achievement_definitions`** across new categories:
+1. **Net Worth calcule avec `account.balance` brut au lieu du solde compute**
+   - `FinanceDashboard.tsx` ligne 61 : `accounts.reduce((sum, a) => sum + a.balance, 0)` utilise la balance statique stockee en DB, pas la balance computee via transactions
+   - Le KPI "Net Worth" du dashboard peut etre faux si des transactions existent
+   - Impact : Donnee financiere incorrecte affichee en permanence
 
-| Category | Examples | Count |
-|----------|---------|-------|
-| **Todo** | Complete 1/10/50/100/500 todos, create a recurring todo | ~6 |
-| **Focus** | 1st pomodoro, 10/50/100 sessions, 1000 min total, 5 sessions in a day | ~6 |
-| **Journal** | 1st entry, 7/30/100 entries, write 3 days in a row | ~5 |
-| **Social** | Add 1st friend, 5/10/25 friends, join a guild, send 100 guild messages, create a guild | ~7 |
-| **Community** | 1st post, 10 posts, get 50 reactions, 1st victory reel | ~5 |
-| **Finance** | Log 1st transaction, validate 1/3/6/12 months, positive balance 3 months in a row | ~6 |
-| **Wishlist** | Add 1st item, acquire 5/10 items, complete full wishlist | ~4 |
-| **Calendar** | Create 1st event, 10/50 events, RSVP to a guild event | ~4 |
-| **Shop** | Buy 1st module, own all modules, buy 1st cosmetic, spend 1000/5000/10000 bonds | ~6 |
-| **Module-Gated** | Achievements requiring a specific module to be purchased (e.g. "Health Devotee" requires Track Health module + 30 checkins) | ~8 |
-| **Hidden (new)** | Complete a goal at exactly midnight, have 0 todos for a full day, buy something from every shop category | ~5 |
-| **Legendary/Mythic** | 100% all modules purchased, 365-day login streak, complete 10 impossible goals | ~5 |
+2. **Floating point silencieux dans les calculs monetaires**
+   - Tous les calculs utilisent `+` / `-` directement sur des floats JS
+   - `parseFloat()` sans arrondi = accumulation d'erreurs (ex: 0.1 + 0.2 = 0.30000000000000004)
+   - Les montants affiches sont corrects grace a `formatCurrency`, mais les comparaisons et seuils (budget alerts) peuvent etre faux
 
-Total: ~70 new achievements → ~100 total
+3. **INSERT sans WITH CHECK sur certaines tables**
+   - `bank_transactions` et `monthly_finance_validations` ont une policy INSERT avec `with_check` sur `auth.uid() = user_id`, mais `recurring_expenses` et `recurring_income` INSERT policies n'ont PAS de `with_check` — un utilisateur authentifie pourrait inserer des lignes avec un `user_id` different
+   - Identique pour `category_budgets` et `savings_goals` (policy `*` couvre tout, mais la policy ALL utilise `user_id = auth.uid()` qui agit comme with_check — OK en fait)
 
-**Add `required_module` column** to `achievement_definitions` (nullable text, references shop_modules.key). When set, the achievement only appears/can be unlocked if the user owns that module.
+### 🟡 Majeur
 
-### 2. Expand `checkAchievements` logic in `achievements.ts`
+4. **TransactionsTab utilise `any` pour `editingTx`** (ligne 46, 102, 119) — pas de type safety sur les transactions editees
 
-Add condition handlers for all new types:
-- `todos_completed`, `pomodoro_sessions`, `journal_entries`, `friends_count`, etc.
-- `module_gated` type: check `user_module_purchases` before allowing unlock
-- `bonds_spent_total`, `modules_purchased`, `cosmetics_owned`
+5. **Pas de validation Zod** sur les formulaires : AddTransactionModal, FinanceSettingsModal, BudgetProgressPanel acceptent n'importe quel input textuel converti via `parseFloat` sans validation de bornes
 
-Add new tracking functions:
-- `trackTodoCompleted`, `trackPomodoroCompleted`, `trackJournalEntry`, `trackFriendAdded`, `trackModulePurchased`, `trackCosmeticPurchased`, `trackCalendarEventCreated`, `trackWishlistItemAdded`, `trackWishlistItemAcquired`, `trackCommunityPost`, `trackGuildMessageSent`
+6. **Le `useAccountBalances` re-fetch TOUTES les transactions** a chaque render (pas de filtre par account, pas de pagination) — O(n) sur chaque compte avec n = total transactions
 
-### 3. Wire tracking calls into existing hooks
+7. **Export CSV ignore les transactions** — `exportFullReport` exporte recurring items, validations et accounts mais pas les `bank_transactions`
 
-Inject tracking calls at the right places:
-- `useTodoList.ts` → `trackTodoCompleted` on task completion
-- `usePomodoro.ts` → `trackPomodoroCompleted` on session end
-- `useJournal.ts` → `trackJournalEntry` on new entry
-- `useFriends.ts` → `trackFriendAdded` on accept
-- `useShopTransaction.ts` → `trackModulePurchased` / `trackCosmeticPurchased`
-- `useCalendarEvents.ts` → `trackCalendarEventCreated`
-- `useWishlist.ts` → `trackWishlistItemAdded` / `trackWishlistItemAcquired`
-- `useCommunity.ts` → `trackCommunityPost`
-- `useGuilds.ts` → `trackGuildMessageSent`
+8. **Budget progress compare recurring expenses aux budgets**, pas les transactions reelles — si un utilisateur depense 500€ en "food" via transactions mais n'a que 200€ en recurring expense "food", le budget affiche 200€/300€ au lieu de 500€/300€
 
-### 4. UI — Add category filter to `/achievements`
+9. **Pas de date range filter** sur les transactions — on charge les 500 derniers sans possibilite de filtrer par mois/periode
 
-- Add a **category filter** (horizontal scrollable chips or tabs) alongside the existing rarity dropdown
-- Categories: All, Connection, Goals, Difficulty, Time, Pact, Todo, Focus, Journal, Social, Finance, Wishlist, Calendar, Shop, Hidden
-- Module-gated achievements show a lock icon with the module name when the user doesn't own the required module
-- Add category grouping option (toggle between flat grid and grouped-by-category sections)
+### 🟢 Mineur
 
-### 5. Achievement card enhancements
+10. **Projections chart cumule sans base** — commence a 0 au lieu du solde actuel reel
 
-- Show module requirement badge on module-gated achievements (e.g. "Requires: Track Health")
-- Add Bond reward display on each card (achievements grant bonds on unlock)
-- Achievement points system: each achievement has a point value based on rarity (common=25, uncommon=50, rare=100, epic=250, mythic=500, legendary=1000)
+11. **Donut chart center label tronque** les montants longs avec `replace(/\.00$/, '')` — ne gere pas tous les formats de devise
 
-### 6. Migration — Add `bond_reward` and `points` to achievement_definitions
+12. **SmartFinancingPanel** fait un `updateSettings.mutate` sur `onBlur` de l'input "existing balance" — mutation silencieuse sans feedback, peut persister des valeurs intermediaires
 
-- `bond_reward` integer default 0 — bonds granted on unlock
-- `points` integer default 0 — score points for the leaderboard
-- Update `grant_achievement` RPC to also credit bonds
+13. **MonthlyHistory** non visible dans l'audit (composant manquant dans les fichiers lus) mais reference dans MonthlyDashboard
 
-## Files Impacted
+14. **Pas d'optimistic updates** — chaque mutation attend la reponse serveur avant de rafraichir l'UI
 
-| Action | File |
-|--------|------|
-| **Migration** | New columns on `achievement_tracking`, `achievement_definitions` + seed ~70 achievements |
-| **Edit** | `src/lib/achievements.ts` — new tracking functions, expanded checkAchievements |
-| **Edit** | `src/pages/Achievements.tsx` — category filter, grouped view, points display |
-| **Edit** | `src/components/achievements/AchievementCard.tsx` — module badge, bond reward, points |
-| **Edit** | `src/hooks/useTodoList.ts` — wire trackTodoCompleted |
-| **Edit** | `src/hooks/usePomodoro.ts` — wire trackPomodoroCompleted |
-| **Edit** | `src/hooks/useJournal.ts` — wire trackJournalEntry |
-| **Edit** | `src/hooks/useFriends.ts` — wire trackFriendAdded |
-| **Edit** | `src/hooks/useShopTransaction.ts` — wire trackModulePurchased |
-| **Edit** | `src/hooks/useCalendarEvents.ts` — wire trackCalendarEventCreated |
-| **Edit** | `src/hooks/useWishlist.ts` — wire trackWishlistItemAdded |
-| **Edit** | `src/hooks/useCommunity.ts` — wire trackCommunityPost |
-| **Edit** | `src/i18n/locales/en.json`, `fr.json` — achievement category labels |
+---
+
+## Plan de Transformation — 4 Phases
+
+### Phase 1 — Corrections Critiques de Precision
+
+**1.1 Fix Net Worth computation**
+- `FinanceDashboard.tsx` : utiliser `balancesMap` du hook `useAccountBalances` au lieu de `a.balance` brut
+- Passer `balancesMap` en prop ou l'appeler dans le composant
+
+**1.2 Arrondi monetaire**
+- Creer un helper `roundMoney(n: number): number` → `Math.round(n * 100) / 100`
+- L'appliquer dans : `calculateActiveTotal`, `getCategoryTotals`, running balance, budget comparisons
+- Appliquer dans les mutations : arrondir le montant avant INSERT
+
+**1.3 RLS INSERT hardening**
+- Verifier que les policies INSERT sur `recurring_expenses` et `recurring_income` ont bien un `WITH CHECK (auth.uid() = user_id)` — les corriger si manquant via migration
+
+### Phase 2 — Corrections Majeures (Logique + UX)
+
+**2.1 Type safety transactions**
+- Remplacer les `any` dans TransactionsTab par `BankTransaction` type de `types/finance.ts`
+
+**2.2 Validation Zod sur les formulaires**
+- AddTransactionModal : schema `{ description: z.string().min(1).max(100), amount: z.number().positive().max(999999999), ... }`
+- FinanceSettingsModal : validation bornes salary_day (1-31), budget_alert (1-100)
+- BudgetProgressPanel : monthly_limit > 0
+
+**2.3 Budget vs transactions reelles**
+- BudgetProgressPanel : au lieu de comparer aux `recurring expenses`, fetch les transactions du mois courant groupees par categorie et comparer aux limites de budget
+- Ajouter une prop `transactions` ou un hook `useMonthlyTransactionsByCategory`
+
+**2.4 Date range filter sur transactions**
+- Ajouter un filtre mois/periode dans TransactionsTab (date picker "from" / "to")
+- Modifier `useTransactions` pour accepter une range optionnelle et filtrer cote serveur
+
+**2.5 Export transactions**
+- Ajouter les `bank_transactions` dans `exportFullReport`
+- Option d'export filtree (mois courant, periode custom)
+
+**2.6 Optimiser `useAccountBalances`**
+- Filtrer les transactions par `account_id IN (...)` cote Supabase au lieu de tout charger et filtrer en JS
+
+### Phase 3 — Ameliorations UX/UI
+
+**3.1 Dashboard intelligent — alertes et insights**
+- Ajouter un "Alerts Panel" en haut du dashboard :
+  - Alerte si un budget depasse le seuil configure (`finance_budget_alert_pct`)
+  - Alerte si le solde net du mois est negatif
+  - Alerte si une validation mensuelle est en retard
+- Chaque alerte = card cliquable qui navigue vers l'onglet concerne
+
+**3.2 Transaction auto-categorization**
+- Reutiliser `detectCategoryFromName` dans AddTransactionModal pour pre-remplir la categorie quand l'utilisateur tape la description
+- Ajouter un debounce de 300ms sur le champ description
+
+**3.3 Projections chart avec base reelle**
+- Demarrer la projection depuis le solde Net Worth actuel (compute) au lieu de 0
+- Ajouter une ligne de reference pour le solde nul (break-even)
+
+**3.4 Quick actions**
+- Bouton "Quick expense" en FAB sur mobile dans l'onglet transactions
+- Raccourci clavier `N` pour ouvrir le modal d'ajout
+
+**3.5 Batch delete transactions**
+- Ajouter des checkboxes sur les lignes de transactions
+- Bulk bar en bas pour supprimer les selections
+
+### Phase 4 — Fonctionnalites Avancees
+
+**4.1 Recurring transactions automatiques**
+- Option sur les recurring items : "auto-generate transaction on salary day"
+- A la validation mensuelle, creer automatiquement les transactions correspondantes
+
+**4.2 Budget carryover**
+- Si un budget n'est pas depense entierement, option de reporter le surplus au mois suivant
+
+**4.3 Financial health score**
+- Score 0-100 base sur : savings rate, budget compliance, streak de validations, diversification des revenus
+- Affiche en haut du dashboard avec gauge visuelle
+
+**4.4 Category spending trends mini-chart par budget**
+- Dans BudgetProgressPanel, ajouter un sparkline 3 mois pour chaque categorie budgetee
+
+---
+
+## Fichiers Impactes
+
+| Action | Fichier |
+|--------|---------|
+| **Edit** | `src/components/finance/FinanceDashboard.tsx` — fix Net Worth, alertes |
+| **Edit** | `src/components/finance/transactions/TransactionsTab.tsx` — type safety, date filter, batch |
+| **Edit** | `src/components/finance/transactions/AddTransactionModal.tsx` — Zod, auto-category |
+| **Edit** | `src/components/finance/budgets/BudgetProgressPanel.tsx` — real tx data |
+| **Edit** | `src/components/finance/FinanceSettingsModal.tsx` — Zod validation |
+| **Edit** | `src/components/finance/ProjectionsPanel.tsx` — base reelle |
+| **Edit** | `src/hooks/useAccountBalances.ts` — query optimization |
+| **Edit** | `src/hooks/useTransactions.ts` — date range filter |
+| **Edit** | `src/lib/financeCategories.ts` — roundMoney helper |
+| **Edit** | `src/lib/financeExport.ts` — include transactions |
+| **New** | `src/hooks/useMonthlyTransactionTotals.ts` — aggregation par categorie |
+| **Migration** | RLS INSERT hardening si necessaire |
+| **Edit** | `src/i18n/locales/en.json`, `fr.json` — alertes, nouveaux labels |
+
+Implementation par phase, chaque phase livrant des corrections independantes.
 
