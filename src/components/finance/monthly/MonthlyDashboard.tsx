@@ -24,7 +24,8 @@ import {
   calculateActiveTotal,
 } from '@/lib/financeCategories';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { useMonthlyValidation, useUpsertMonthlyValidation } from '@/hooks/useFinance';
+import { useMonthlyValidation, useUpsertMonthlyValidation, useFinanceSettings } from '@/hooks/useFinance';
+import { AutoGenerateTransactions } from './AutoGenerateTransactions';
 
 interface MonthlyDashboardProps {
   salaryPaymentDay: number;
@@ -34,6 +35,7 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
+  const { data: finSettings } = useFinanceSettings(user?.id);
 
   const { data: expenses = [], isLoading: expensesLoading } = useRecurringExpenses(user?.id);
   const { data: income = [], isLoading: incomeLoading } = useRecurringIncome(user?.id);
@@ -162,6 +164,13 @@ export function MonthlyDashboard({ salaryPaymentDay }: MonthlyDashboardProps) {
           />
         </motion.div>
       </div>
+
+      <AutoGenerateTransactions
+        expenses={expenses}
+        income={income}
+        defaultAccountId={finSettings?.finance_default_account_id}
+        salaryPaymentDay={salaryPaymentDay}
+      />
 
       <MonthlyValidationPanel salaryPaymentDay={salaryPaymentDay} />
       <MonthlyHistory onEditMonth={(month) => setEditingMonth(month)} />
