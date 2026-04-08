@@ -18,6 +18,7 @@ interface BudgetProgressPanelProps {
   currency: string;
   /** Real debit transactions for the current month, used for accurate budget tracking */
   monthTransactions?: BankTransaction[];
+  validations?: MonthlyValidation[];
   onUpsert: (budget: { category: string; budget_type: string; monthly_limit: number }) => Promise<void>;
   onDelete: (id: string) => void;
   isPending?: boolean;
