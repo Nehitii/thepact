@@ -250,10 +250,20 @@ export function FinanceDashboard({
         </motion.div>
       </div>
 
-      {/* Savings Rate + Trend */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Health Score + Savings Rate + Trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-          <div className="neu-inset p-5 rounded-2xl flex items-center gap-4">
+          <FinancialHealthScore
+            totalIncome={totalIncome}
+            totalExpenses={totalExpenses}
+            validations={validations}
+            budgets={budgets}
+            monthTransactionsByCategory={txByCategory}
+            incomeCategories={incomeCategoryCount}
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <div className="neu-inset p-5 rounded-2xl flex items-center gap-4 h-full">
             <SavingsRateRing rate={savingsRate} size={72} />
             <div>
               <p className="text-sm font-semibold text-foreground">{t('finance.projections.savingsRate')}</p>
