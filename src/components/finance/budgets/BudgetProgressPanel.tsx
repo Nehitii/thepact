@@ -172,7 +172,6 @@ export function BudgetProgressPanel({
                       color={cat?.hexColor || '#94a3b8'}
                       currentMonthSpent={spent}
                     />
-                    {!isOver && !isWarning && percentage > 0 && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-xs font-bold tabular-nums ${isOver ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-foreground'}`}>
