@@ -215,6 +215,7 @@ export default function Finance() {
                   categories={EXPENSE_CATEGORIES}
                   currency={currency}
                   monthTransactions={currentMonthTransactions as any}
+                  validations={validations as any}
                   onUpsert={async (b) => { await upsertBudget.mutateAsync(b); }}
                   onDelete={(id) => deleteBudget.mutate(id)}
                   isPending={upsertBudget.isPending}

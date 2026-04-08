@@ -32,7 +32,7 @@ import {
   CategoryTrendsChart,
 } from './widgets';
 import { format, subMonths } from 'date-fns';
-
+import { FinancialHealthScore } from './widgets/FinancialHealthScore';
 interface FinanceDashboardProps {
   totalEstimated: number;
   totalPaid: number;
@@ -82,24 +82,31 @@ export function FinanceDashboard({
   const expensesByCategory = useMemo(() => getCategoryTotals(expenses, EXPENSE_CATEGORIES, t), [expenses, t]);
   const incomeByCategory = useMemo(() => getCategoryTotals(income, INCOME_CATEGORIES, t), [income, t]);
 
+  // Compute month transaction totals by category for health score + alerts
+  const currentMonth = format(new Date(), 'yyyy-MM-01');
+  const { txByCategory, incomeCategoryCount } = useMemo(() => {
+    const currentMonthTxs = transactions.filter(tx => tx.transaction_date >= currentMonth);
+    const map: Record<string, number> = {};
+    const incCats = new Set<string>();
+    currentMonthTxs.forEach(tx => {
+      if (tx.transaction_type === 'debit' && tx.category) {
+        map[tx.category] = roundMoney((map[tx.category] || 0) + Number(tx.amount));
+      }
+      if (tx.transaction_type === 'credit' && tx.category) {
+        incCats.add(tx.category);
+      }
+    });
+    // Also count recurring income categories
+    income.filter(i => i.is_active && i.category).forEach(i => incCats.add(i.category!));
+    return { txByCategory: map, incomeCategoryCount: Math.max(incCats.size, 1) };
+  }, [transactions, currentMonth, income]);
   // Alerts system
   const alerts = useMemo(() => {
     const result: Array<{ type: 'warning' | 'danger' | 'info'; message: string }> = [];
-    const currentMonth = format(new Date(), 'yyyy-MM-01');
 
-    // Alert: negative monthly net
     if (monthlyNet < 0) {
       result.push({ type: 'danger', message: t('finance.alerts.negativeNet', { amount: formatCurrency(Math.abs(monthlyNet), currency) }) });
     }
-
-    // Alert: budget exceeded (using real transactions for current month)
-    const currentMonthTxs = transactions.filter(tx => tx.transaction_date >= currentMonth && tx.transaction_type === 'debit');
-    const txByCategory: Record<string, number> = {};
-    currentMonthTxs.forEach(tx => {
-      if (tx.category) {
-        txByCategory[tx.category] = roundMoney((txByCategory[tx.category] || 0) + Number(tx.amount));
-      }
-    });
 
     budgets.forEach(budget => {
       const spent = txByCategory[budget.category] || 0;
@@ -111,7 +118,6 @@ export function FinanceDashboard({
       }
     });
 
-    // Alert: missing monthly validation for previous month
     const prevMonth = format(subMonths(new Date(), 1), 'yyyy-MM-01');
     const prevValidation = validations.find(v => v.month === prevMonth);
     if (!prevValidation?.validated_at) {
@@ -119,7 +125,7 @@ export function FinanceDashboard({
     }
 
     return result;
-  }, [monthlyNet, transactions, budgets, validations, t, currency]);
+  }, [monthlyNet, txByCategory, budgets, validations, t, currency]);
 
   const balanceTrend = useMemo(() => {
     const now = new Date();
@@ -244,10 +250,20 @@ export function FinanceDashboard({
         </motion.div>
       </div>
 
-      {/* Savings Rate + Trend */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Health Score + Savings Rate + Trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
-          <div className="neu-inset p-5 rounded-2xl flex items-center gap-4">
+          <FinancialHealthScore
+            totalIncome={totalIncome}
+            totalExpenses={totalExpenses}
+            validations={validations}
+            budgets={budgets}
+            monthTransactionsByCategory={txByCategory}
+            incomeCategories={incomeCategoryCount}
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <div className="neu-inset p-5 rounded-2xl flex items-center gap-4 h-full">
             <SavingsRateRing rate={savingsRate} size={72} />
             <div>
               <p className="text-sm font-semibold text-foreground">{t('finance.projections.savingsRate')}</p>

@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
 import { type FinanceCategory, getCategoryLabel, getCategoryTotals, roundMoney } from '@/lib/financeCategories';
 import type { CategoryBudget } from '@/hooks/useBudgets';
-import type { FinancialItem, BankTransaction } from '@/types/finance';
+import type { FinancialItem, BankTransaction, MonthlyValidation } from '@/types/finance';
+import { BudgetCategorySparkline } from '@/components/finance/widgets/BudgetCategorySparkline';
 
 interface BudgetProgressPanelProps {
   budgets: CategoryBudget[];
@@ -17,6 +18,7 @@ interface BudgetProgressPanelProps {
   currency: string;
   /** Real debit transactions for the current month, used for accurate budget tracking */
   monthTransactions?: BankTransaction[];
+  validations?: MonthlyValidation[];
   onUpsert: (budget: { category: string; budget_type: string; monthly_limit: number }) => Promise<void>;
   onDelete: (id: string) => void;
   isPending?: boolean;
@@ -28,6 +30,7 @@ export function BudgetProgressPanel({
   categories,
   currency,
   monthTransactions,
+  validations = [],
   onUpsert,
   onDelete,
   isPending,
@@ -163,6 +166,12 @@ export function BudgetProgressPanel({
                     <span className="text-sm font-semibold text-foreground">{cat ? getCategoryLabel(cat, t) : budget.category}</span>
                     {isOver && <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
                     {!isOver && !isWarning && percentage > 0 && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                    <BudgetCategorySparkline
+                      category={budget.category}
+                      validations={validations}
+                      color={cat?.hexColor || '#94a3b8'}
+                      currentMonthSpent={spent}
+                    />
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`text-xs font-bold tabular-nums ${isOver ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-foreground'}`}>
