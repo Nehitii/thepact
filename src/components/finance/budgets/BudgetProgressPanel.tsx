@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
 import { type FinanceCategory, getCategoryLabel, getCategoryTotals, roundMoney } from '@/lib/financeCategories';
 import type { CategoryBudget } from '@/hooks/useBudgets';
-import type { FinancialItem, BankTransaction } from '@/types/finance';
+import type { FinancialItem, BankTransaction, MonthlyValidation } from '@/types/finance';
+import { BudgetCategorySparkline } from '@/components/finance/widgets/BudgetCategorySparkline';
 
 interface BudgetProgressPanelProps {
   budgets: CategoryBudget[];
@@ -28,6 +29,7 @@ export function BudgetProgressPanel({
   categories,
   currency,
   monthTransactions,
+  validations = [],
   onUpsert,
   onDelete,
   isPending,
@@ -162,6 +164,13 @@ export function BudgetProgressPanel({
                     {Icon && <Icon className="w-4 h-4" style={{ color: cat?.hexColor }} />}
                     <span className="text-sm font-semibold text-foreground">{cat ? getCategoryLabel(cat, t) : budget.category}</span>
                     {isOver && <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
+                    {!isOver && !isWarning && percentage > 0 && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
+                    <BudgetCategorySparkline
+                      category={budget.category}
+                      validations={validations}
+                      color={cat?.hexColor || '#94a3b8'}
+                      currentMonthSpent={spent}
+                    />
                     {!isOver && !isWarning && percentage > 0 && <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />}
                   </div>
                   <div className="flex items-center gap-3">
