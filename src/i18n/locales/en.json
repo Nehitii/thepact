@@ -571,6 +571,26 @@
       "budgetExceeded": "Budget exceeded for {{category}}: {{amount}} over limit",
       "pendingValidation": "Last month's finances haven't been validated yet"
     },
+    "healthScore": {
+      "title": "Financial Health",
+      "subtitle": "Score based on your habits",
+      "savingsRate": "Savings rate",
+      "budgetCompliance": "Budget compliance",
+      "validationStreak": "Validation streak",
+      "diversification": "Income diversity",
+      "excellent": "Excellent",
+      "good": "Good",
+      "average": "Average",
+      "needsWork": "Needs work"
+    },
+    "autoGenerate": {
+      "title": "Auto-generate transactions",
+      "description": "Create {{count}} transactions from recurring items",
+      "generate": "Generate",
+      "autoNote": "Auto-generated from recurring items",
+      "success": "{{count}} transactions created",
+      "error": "Failed to generate transactions"
+    },
     "accounts": {
       "netWorth": "Net Worth",
       "myAccounts": "My Accounts",
