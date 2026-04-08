@@ -35,7 +35,8 @@
     "settings": "Paramètres",
     "updated": "Mis à jour",
     "more": "de plus",
-    "selected": "sélectionné(s)"
+    "selected": "sélectionné(s)",
+    "done": "Fait"
   },
   "auth": {
     "brand": "Pact",
