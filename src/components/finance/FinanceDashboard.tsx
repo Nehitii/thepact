@@ -103,21 +103,10 @@ export function FinanceDashboard({
   // Alerts system
   const alerts = useMemo(() => {
     const result: Array<{ type: 'warning' | 'danger' | 'info'; message: string }> = [];
-    const currentMonth = format(new Date(), 'yyyy-MM-01');
 
-    // Alert: negative monthly net
     if (monthlyNet < 0) {
       result.push({ type: 'danger', message: t('finance.alerts.negativeNet', { amount: formatCurrency(Math.abs(monthlyNet), currency) }) });
     }
-
-    // Alert: budget exceeded (using real transactions for current month)
-    const currentMonthTxs = transactions.filter(tx => tx.transaction_date >= currentMonth && tx.transaction_type === 'debit');
-    const txByCategory: Record<string, number> = {};
-    currentMonthTxs.forEach(tx => {
-      if (tx.category) {
-        txByCategory[tx.category] = roundMoney((txByCategory[tx.category] || 0) + Number(tx.amount));
-      }
-    });
 
     budgets.forEach(budget => {
       const spent = txByCategory[budget.category] || 0;
@@ -129,7 +118,6 @@ export function FinanceDashboard({
       }
     });
 
-    // Alert: missing monthly validation for previous month
     const prevMonth = format(subMonths(new Date(), 1), 'yyyy-MM-01');
     const prevValidation = validations.find(v => v.month === prevMonth);
     if (!prevValidation?.validated_at) {
@@ -137,7 +125,7 @@ export function FinanceDashboard({
     }
 
     return result;
-  }, [monthlyNet, transactions, budgets, validations, t, currency]);
+  }, [monthlyNet, txByCategory, budgets, validations, t, currency]);
 
   const balanceTrend = useMemo(() => {
     const now = new Date();
