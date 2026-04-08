@@ -32,7 +32,7 @@ import {
   CategoryTrendsChart,
 } from './widgets';
 import { format, subMonths } from 'date-fns';
-
+import { FinancialHealthScore } from './widgets/FinancialHealthScore';
 interface FinanceDashboardProps {
   totalEstimated: number;
   totalPaid: number;
@@ -82,6 +82,24 @@ export function FinanceDashboard({
   const expensesByCategory = useMemo(() => getCategoryTotals(expenses, EXPENSE_CATEGORIES, t), [expenses, t]);
   const incomeByCategory = useMemo(() => getCategoryTotals(income, INCOME_CATEGORIES, t), [income, t]);
 
+  // Compute month transaction totals by category for health score + alerts
+  const currentMonth = format(new Date(), 'yyyy-MM-01');
+  const { txByCategory, incomeCategoryCount } = useMemo(() => {
+    const currentMonthTxs = transactions.filter(tx => tx.transaction_date >= currentMonth);
+    const map: Record<string, number> = {};
+    const incCats = new Set<string>();
+    currentMonthTxs.forEach(tx => {
+      if (tx.transaction_type === 'debit' && tx.category) {
+        map[tx.category] = roundMoney((map[tx.category] || 0) + Number(tx.amount));
+      }
+      if (tx.transaction_type === 'credit' && tx.category) {
+        incCats.add(tx.category);
+      }
+    });
+    // Also count recurring income categories
+    income.filter(i => i.is_active && i.category).forEach(i => incCats.add(i.category!));
+    return { txByCategory: map, incomeCategoryCount: Math.max(incCats.size, 1) };
+  }, [transactions, currentMonth, income]);
   // Alerts system
   const alerts = useMemo(() => {
     const result: Array<{ type: 'warning' | 'danger' | 'info'; message: string }> = [];
