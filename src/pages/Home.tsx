@@ -268,19 +268,29 @@ export default function Home() {
           />
         )}
 
-        {/* MONITORING GLOBAL */}
-        <MonitoringGlobalPanel
-          data={dashboardData}
-          projectStartDate={pact.project_start_date}
-          projectEndDate={pact.project_end_date}
-        />
-
-        {/* DIFFICULTY SCALE */}
-        <DifficultyScalePanel
-          difficultyProgress={dashboardData.difficultyProgress}
-          customDifficultyName={customDifficultyName}
-          customDifficultyColor={customDifficultyColor}
-        />
+        {/* ADVANCED PANELS — Collapsible */}
+        <details className="group">
+          <summary className="flex items-center gap-2 cursor-pointer list-none select-none py-2 px-1">
+            <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/60 group-open:text-primary/70 transition-colors">
+              Advanced Monitoring
+            </span>
+            <span className="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent" />
+            <span className="text-[9px] font-mono text-muted-foreground/40 group-open:hidden">▸ EXPAND</span>
+            <span className="text-[9px] font-mono text-primary/50 hidden group-open:inline">▾ COLLAPSE</span>
+          </summary>
+          <div className="space-y-4 pt-2">
+            <MonitoringGlobalPanel
+              data={dashboardData}
+              projectStartDate={pact.project_start_date}
+              projectEndDate={pact.project_end_date}
+            />
+            <DifficultyScalePanel
+              difficultyProgress={dashboardData.difficultyProgress}
+              customDifficultyName={customDifficultyName}
+              customDifficultyColor={customDifficultyColor}
+            />
+          </div>
+        </details>
 
         {/* LOCKED MODULES */}
         {lockedModules.length > 0 && (
