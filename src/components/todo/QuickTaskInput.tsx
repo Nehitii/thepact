@@ -152,6 +152,14 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
 
   return (
     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="relative group">
+      {/* Shortcuts hint tooltip */}
+      <div className="flex items-center justify-end mb-1.5 gap-2 opacity-60 hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
+          <span><span className="text-amber-400 font-bold">!high</span> {t('todo.neuralInput.priorityHint', { defaultValue: 'priority' })}</span>
+          <span><span className="text-emerald-400 font-bold">#work</span> {t('todo.neuralInput.categoryHint', { defaultValue: 'category' })}</span>
+          <span><span className="text-purple-400 font-bold">@today</span> {t('todo.neuralInput.deadlineHint', { defaultValue: 'deadline' })}</span>
+        </div>
+      </div>
       <div
         className={cn(
           "relative flex items-center rounded-xl border transition-all duration-300 overflow-hidden",

@@ -95,7 +95,7 @@ export function TodoFilterSort({
       <div className="h-6 w-px bg-border hidden md:block" />
 
       {/* Task Type Segmented Filter - matching /goals tabs style */}
-      <div className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl overflow-x-auto">
+      <div role="tablist" aria-label={t('todo.filters.taskType', { defaultValue: 'Task type' })} className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl overflow-x-auto">
         {taskTypeFilters.map((type) => {
           const isActive = selectedTaskType === type.id;
           const Icon = type.icon;
@@ -103,9 +103,11 @@ export function TodoFilterSort({
           return (
             <button
               key={type.id ?? 'all'}
+              role="tab"
+              aria-selected={isActive}
               onClick={() => onTaskTypeChange(type.id)}
               className={cn(
-                "relative flex items-center justify-center gap-2 py-2 px-3 sm:px-4 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300 whitespace-nowrap",
+                "relative flex items-center justify-center gap-2 py-2 px-3 sm:px-4 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300 whitespace-nowrap min-w-[44px] min-h-[44px]",
                 isActive 
                   ? "text-primary" 
                   : "text-muted-foreground hover:text-primary/70"

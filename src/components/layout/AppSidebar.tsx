@@ -312,7 +312,8 @@ export const AppSidebar = memo(function AppSidebar() {
       {isMobile && !mobileOpen && (
         <button
           onClick={() => setMobileOpen(true)}
-          className="fixed top-4 left-4 z-50 p-2 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+          aria-label="Open navigation"
+          className="fixed top-14 left-4 z-50 p-2.5 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(var(--primary),0.3)]"
           style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
         >
           <ChevronsRight size={20} />

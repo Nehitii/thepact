@@ -171,10 +171,11 @@ export function CommandPalette() {
             setOpen(true);
           }}
           className="flex items-center gap-2 pr-5 pl-1 py-2 text-[#00F2FF]/80 hover:text-[#00F2FF] transition-all outline-none"
+          aria-label="Search or jump to…"
         >
           <Search className="h-4 w-4" />
           <span className="hidden sm:inline-block text-xs font-mono font-bold tracking-[0.15em] uppercase mt-0.5">
-            TERMINAL
+            SEARCH
           </span>
           <kbd className="hidden sm:inline-flex ml-2 items-center gap-1 px-2 py-0.5 rounded bg-[#00F2FF]/10 border border-[#00F2FF]/20 text-[10px] font-bold text-[#00F2FF]">
             <span className="text-xs">⌘</span>K
