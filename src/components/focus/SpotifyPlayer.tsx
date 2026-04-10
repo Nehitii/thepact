@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const cyberClip = "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)";
+
 interface SpotifyPlayerProps {
   className?: string;
   compact?: boolean;
@@ -78,12 +80,13 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
         animate={{ opacity: 1 }}
         onClick={() => setIsEditing(true)}
         className={cn(
-          "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl",
+          "w-full flex items-center justify-center gap-2 py-3 px-4",
           "bg-[#1DB954]/10 border border-[#1DB954]/30 text-[#1DB954]",
           "hover:bg-[#1DB954]/20 transition-all text-xs font-mono uppercase tracking-wider",
           "focus-visible:ring-2 focus-visible:ring-[#1DB954]",
           className
         )}
+        style={{ clipPath: cyberClip }}
       >
         <Music className="h-4 w-4" />
         {t("focus.spotify.add")}
@@ -96,7 +99,8 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className={cn("w-full p-4 rounded-xl bg-card/60 backdrop-blur border border-border/50 space-y-3", className)}
+        className={cn("w-full p-4 bg-card/60 backdrop-blur border border-border/50 space-y-3", className)}
+        style={{ clipPath: cyberClip }}
       >
         <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
           <Music className="h-3.5 w-3.5 text-[#1DB954]" />
@@ -131,7 +135,8 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className={cn("w-full rounded-xl bg-card/60 backdrop-blur border border-border/50 overflow-hidden", className)}
+      className={cn("w-full bg-card/60 backdrop-blur border border-border/50 overflow-hidden", className)}
+      style={{ clipPath: cyberClip }}
     >
       <div className="flex items-center justify-between px-3 py-2 border-b border-border/30">
         <div className="flex items-center gap-2">
@@ -139,13 +144,13 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
           <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Spotify</span>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={() => setIsEditing(true)} className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary">
+          <button onClick={() => setIsEditing(true)} className="p-1.5 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary" aria-label="Edit Spotify link">
             <Link className="h-3 w-3" />
           </button>
-          <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-1.5 rounded-md hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary">
+          <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-1.5 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary" aria-label={isCollapsed ? "Expand" : "Collapse"}>
             {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
           </button>
-          <button onClick={handleClear} className="p-1.5 rounded-md hover:bg-destructive/20 transition-colors text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-primary">
+          <button onClick={handleClear} className="p-1.5 hover:bg-destructive/20 transition-colors text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove Spotify link">
             <X className="h-3 w-3" />
           </button>
         </div>
@@ -165,7 +170,6 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
               frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy"
-              className="rounded-b-xl"
               title="Spotify Player"
             />
           </motion.div>

@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 
+const cyberClip = "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)";
+
 interface FocusConfigPanelProps {
   workMin: number;
   breakMin: number;
@@ -20,7 +22,7 @@ export function FocusConfigPanel({
   const { t } = useTranslation();
 
   return (
-    <div className="w-full max-w-lg space-y-3 p-4 rounded-xl bg-card/40 backdrop-blur border border-border/50">
+    <div className="w-full max-w-lg space-y-3 p-4 bg-card/40 backdrop-blur border border-border/50" style={{ clipPath: cyberClip }}>
       <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground text-center mb-3" aria-hidden="true">
         {t("focus.config.title")}
       </p>
@@ -63,20 +65,24 @@ function DurationRow({
   color: "primary" | "accent";
 }) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-xl bg-background/50 border border-border/30">
+    <div
+      className="flex items-center justify-between p-3 bg-background/50 border border-border/30"
+      style={{ clipPath: cyberClip }}
+    >
       <span className="text-xs font-mono text-foreground">{label}</span>
       <div className="flex items-center gap-2">
         {options.map((m) => (
           <button
             key={m}
             onClick={() => onChange(m)}
-            className={`px-3 py-1 text-[10px] font-mono rounded-md transition-all focus-visible:ring-2 focus-visible:ring-primary ${
+            className={`px-3 py-1 text-[10px] font-mono transition-all focus-visible:ring-2 focus-visible:ring-primary ${
               value === m
                 ? color === "primary"
                   ? "bg-primary text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.3)]"
                   : "bg-accent text-accent-foreground shadow-[0_0_10px_hsl(var(--accent)/0.3)]"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted"
             }`}
+            style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
           >
             {m}m
           </button>

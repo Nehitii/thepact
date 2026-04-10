@@ -41,29 +41,14 @@ export function FocusTimerRing({
 }: FocusTimerRingProps) {
   const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
-  const [jitter, setJitter] = useState("000");
 
   const isWork = phase === "work";
   const isBreak = phase === "break";
   const isIdle = phase === "idle";
+  // In idle: always show start button. During run: show controls on hover (desktop only)
   const showControls = hovered && !isIdle && !disableHoverControls;
 
   const colorHsl = isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))";
-
-  useEffect(() => {
-    if (isIdle || isPaused) {
-      setJitter("000");
-      return;
-    }
-    const interval = setInterval(() => {
-      setJitter(
-        Math.floor(Math.random() * 999)
-          .toString()
-          .padStart(3, "0"),
-      );
-    }, 200);
-    return () => clearInterval(interval);
-  }, [isIdle, isPaused]);
 
   const radius = 140;
   const circumference = 2 * Math.PI * radius;
@@ -71,7 +56,7 @@ export function FocusTimerRing({
 
   return (
     <div
-      className="relative inline-flex items-center justify-center mb-4 p-4 border border-primary/20 bg-black/40"
+      className="relative inline-flex items-center justify-center mb-2 sm:mb-4 p-4 border border-primary/20 bg-black/40"
       style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
       onMouseMove={(event) => {
         if (disableHoverControls) return;
@@ -106,23 +91,12 @@ export function FocusTimerRing({
         )}
       </AnimatePresence>
 
+      {/* Tactical Brackets */}
       <div className="absolute inset-4 pointer-events-none z-10" aria-hidden="true">
-        {/* Tactical Brackets */}
         <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 transition-colors duration-1000" style={{ borderColor: colorHsl }} />
         <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 transition-colors duration-1000" style={{ borderColor: colorHsl }} />
         <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000" style={{ borderColor: colorHsl }} />
         <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000" style={{ borderColor: colorHsl }} />
-
-        <div className="absolute left-0 top-10 bottom-10 flex items-center justify-center w-6">
-          <span className="text-[7px] font-mono tracking-[0.2em] uppercase whitespace-nowrap -rotate-90" style={{ color: colorHsl }}>
-            UPLINK: SECURE // B-R: {sessionsCompleted % 4}/{4}
-          </span>
-        </div>
-        <div className="absolute right-0 top-10 bottom-10 flex items-center justify-center w-6">
-          <span className="text-[7px] font-mono tracking-[0.2em] uppercase whitespace-nowrap rotate-90" style={{ color: colorHsl }}>
-            VITAL_SYNC: Nominal // N-SYNC {Math.round(progress * 100)}%
-          </span>
-        </div>
       </div>
 
       <svg
@@ -166,7 +140,7 @@ export function FocusTimerRing({
 
       <div className="absolute inset-0 z-20 flex flex-col items-center justify-center">
         <AnimatePresence mode="wait">
-          {isIdle && (hovered || disableHoverControls) && onStart ? (
+          {isIdle && onStart ? (
             <motion.button
               key="start-btn"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -191,6 +165,7 @@ export function FocusTimerRing({
               <div className="flex gap-2">
                 <button
                   onClick={isPaused ? onResume : onPause}
+                  aria-label={isPaused ? t("focus.controls.resume") : t("focus.controls.halt")}
                   className="w-16 h-12 bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/30 hover:border-primary transition-all focus-visible:ring-2 focus-visible:ring-primary"
                   style={{ clipPath: "polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px)" }}
                 >
@@ -198,6 +173,7 @@ export function FocusTimerRing({
                 </button>
                 <button
                   onClick={onSkip}
+                  aria-label={t("focus.skipPhase", "Skip phase")}
                   className="w-16 h-12 bg-muted/20 border border-muted-foreground/40 flex items-center justify-center hover:bg-muted/40 hover:border-muted-foreground transition-all focus-visible:ring-2 focus-visible:ring-primary"
                   style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}
                 >
@@ -206,6 +182,7 @@ export function FocusTimerRing({
               </div>
               <button
                 onClick={onEnd}
+                aria-label={t("focus.terminate")}
                 className="w-[136px] h-8 bg-destructive/20 border border-destructive/50 flex items-center justify-center hover:bg-destructive/40 hover:border-destructive transition-all gap-2 focus-visible:ring-2 focus-visible:ring-primary"
                 style={{ clipPath: "polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%, 0 10px)" }}
               >
@@ -215,7 +192,7 @@ export function FocusTimerRing({
                 </span>
               </button>
             </motion.div>
-          ) : (
+          ) : !isIdle ? (
             <motion.div
               key="timer-data"
               initial={{ opacity: 0 }}
@@ -231,35 +208,26 @@ export function FocusTimerRing({
                 style={{ color: colorHsl, clipPath: "polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px)" }}
               >
                 <span className="text-[9px] font-mono uppercase tracking-[0.2em]">
-                  {isIdle
-                    ? t("focus.ring.standby")
-                    : isPaused
-                      ? t("focus.ring.halted")
-                      : isWork
-                        ? t("focus.ring.focused")
-                        : t("focus.ring.cooling")}
+                  {isPaused
+                    ? t("focus.ring.halted")
+                    : isWork
+                      ? t("focus.ring.focused")
+                      : t("focus.ring.cooling")}
                 </span>
               </motion.div>
 
               <div className="relative flex items-end justify-center">
                 <motion.p
                   className="text-6xl font-orbitron font-black tabular-nums tracking-widest text-foreground"
-                  style={{ textShadow: !isIdle ? `0 0 20px ${colorHsl}` : "none" }}
+                  style={{ textShadow: `0 0 20px ${colorHsl}` }}
                   animate={isPaused ? { opacity: [1, 0.3, 1] } : { opacity: 1 }}
                   transition={isPaused ? { repeat: Infinity, duration: 2 } : {}}
                 >
                   {formatTime(secondsLeft)}
                 </motion.p>
-                <span
-                  className="absolute -right-9 bottom-3 text-lg font-mono font-bold tracking-tighter opacity-70"
-                  style={{ color: colorHsl }}
-                  aria-hidden="true"
-                >
-                  :{jitter}
-                </span>
               </div>
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
     </div>

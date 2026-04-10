@@ -9,6 +9,7 @@ import { usePact } from "@/hooks/usePact";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import {
   AlertDialog,
@@ -162,7 +163,8 @@ export default function Focus() {
   const handleSkip = useCallback(() => {
     play("ui");
     timer.skip();
-  }, [play, timer]);
+    toast(t("focus.phaseSkipped", "Phase skipped"), { duration: 1500 });
+  }, [play, timer, t]);
 
   // ── Terminal Overrides (Keyboard shortcuts) ──
   useEffect(() => {
@@ -205,7 +207,7 @@ export default function Focus() {
 
   return (
     <motion.div
-      className="min-h-screen relative overflow-hidden bg-[#050508]"
+      className="min-h-screen relative overflow-hidden bg-[#050508] flex flex-col"
       animate={{
         backgroundColor: timer.isRunning
           ? isBreak
@@ -243,14 +245,14 @@ export default function Focus() {
         <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
 
         {/* Fullscreen toggle */}
-        <button
-          onClick={toggleFullscreen}
-          className="absolute top-1 right-10 pointer-events-auto w-7 h-7 flex items-center justify-center bg-transparent border border-primary/20 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/40 hover:text-primary z-10 focus-visible:ring-2 focus-visible:ring-primary"
-          style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
-          title={isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen"}
-        >
-          {isFullscreen ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
-        </button>
+          <button
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen"}
+            className="absolute top-1 right-10 pointer-events-auto w-9 h-9 flex items-center justify-center bg-transparent border border-primary/30 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/60 hover:text-primary z-10 focus-visible:ring-2 focus-visible:ring-primary"
+            style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
+          >
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+          </button>
 
         {/* Vertical Data Streams */}
         {!isMobile && (
@@ -269,10 +271,10 @@ export default function Focus() {
         )}
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 pb-20 pt-6">
+      <div className="relative z-10 max-w-2xl mx-auto px-4 pb-6 pt-6 flex-1 flex flex-col">
         <ModuleHeader title={t("focus.title")} titleAccent={t("focus.titleAccent")} systemLabel={t("focus.systemLabel")} badges={[]} />
 
-        <div className="flex flex-col items-center gap-6 mt-8">
+        <div className="flex flex-col items-center gap-4 sm:gap-6 mt-4 sm:mt-8">
           {/* Target badge + session counter */}
           <div className="h-6 flex items-center justify-center gap-3">
             <AnimatePresence>
