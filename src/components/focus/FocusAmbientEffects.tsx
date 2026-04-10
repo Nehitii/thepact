@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 interface FocusAmbientEffectsProps {
@@ -9,9 +9,36 @@ interface FocusAmbientEffectsProps {
 export function FocusAmbientEffects({ progress, isBreak = false }: FocusAmbientEffectsProps) {
   const { profile } = useProfileSettings();
   const particlesEnabled = profile?.particles_enabled ?? true;
+  const reducedMotion = useReducedMotion();
 
   const mainColor = isBreak ? "160, 80%, 55%" : "195, 100%, 50%";
   const mainColorRgb = isBreak ? "60, 180, 130" : "0, 170, 255";
+
+  // If user prefers reduced motion, show only static ambient glow
+  if (reducedMotion) {
+    return (
+      <div
+        className="fixed inset-0 pointer-events-none overflow-hidden"
+        style={{ zIndex: 0 }}
+        aria-hidden="true"
+      >
+        <div
+          className="absolute inset-0"
+          style={{
+            background: isBreak
+              ? "linear-gradient(180deg, hsla(160,40%,5%,0.7) 0%, hsla(160,30%,3%,0.85) 100%)"
+              : "linear-gradient(180deg, hsla(210,50%,4%,0.7) 0%, hsla(220,40%,2%,0.85) 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse 130% 60% at 50% 110%, hsla(${mainColor}, 0.12) 0%, transparent 70%)`,
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -81,10 +108,10 @@ export function FocusAmbientEffects({ progress, isBreak = false }: FocusAmbientE
         transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Floating particles */}
+      {/* Floating particles — reduced to 12 for performance */}
       {particlesEnabled && (
         <div className="absolute inset-0">
-          {Array.from({ length: 20 }).map((_, i) => (
+          {Array.from({ length: 12 }).map((_, i) => (
             <FloatingParticle
               key={i}
               index={i}
@@ -145,9 +172,9 @@ function FloatingParticle({
   intensity: number;
 }) {
   const size = 3 + (index % 4) * 2;
-  const startX = 5 + ((index * 4.8) % 90);
+  const startX = 5 + ((index * 7.5) % 90);
   const duration = 6 + (index % 7) * 1.5;
-  const delay = index * 0.35;
+  const delay = index * 0.5;
 
   return (
     <motion.div

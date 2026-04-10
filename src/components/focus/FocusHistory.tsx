@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { ChevronDown, Check, X, Clock, Target, ListTodo } from "lucide-react";
+import { ChevronDown, Check, X, Clock, Target, ListTodo, History } from "lucide-react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { PomodoroSession } from "@/hooks/usePomodoro";
 import type { Goal } from "@/hooks/useGoals";
 import type { TodoTask } from "@/hooks/useTodoList";
+
+const cyberClip = "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)";
 
 interface FocusHistoryProps {
   sessions: PomodoroSession[];
@@ -18,7 +20,15 @@ export function FocusHistory({ sessions, goals = [], todos = [] }: FocusHistoryP
   const [showAll, setShowAll] = useState(false);
   const displayed = showAll ? sessions : sessions.slice(0, 10);
 
-  if (sessions.length === 0) return null;
+  if (sessions.length === 0) {
+    return (
+      <div className="w-full max-w-lg flex flex-col items-center justify-center py-8 text-center" style={{ clipPath: cyberClip }}>
+        <History className="h-8 w-8 text-muted-foreground/40 mb-3" />
+        <p className="text-sm font-mono text-muted-foreground">{t("focus.history.empty", "No sessions yet")}</p>
+        <p className="text-[10px] font-mono text-muted-foreground/60 mt-1">{t("focus.history.emptyHint", "Start your first focus session!")}</p>
+      </div>
+    );
+  }
 
   const getLinkedName = (s: PomodoroSession) => {
     if (s.linked_goal_id) {
@@ -34,7 +44,10 @@ export function FocusHistory({ sessions, goals = [], todos = [] }: FocusHistoryP
 
   return (
     <Collapsible className="w-full max-w-lg">
-      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-xl bg-card/40 backdrop-blur border border-border/50 hover:bg-card/60 transition-colors group focus-visible:ring-2 focus-visible:ring-primary">
+      <CollapsibleTrigger
+        className="flex items-center justify-between w-full p-3 bg-card/40 backdrop-blur border border-border/50 hover:bg-card/60 transition-colors group focus-visible:ring-2 focus-visible:ring-primary"
+        style={{ clipPath: cyberClip }}
+      >
         <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
           {t("focus.history.recentSessions")} ({sessions.length})
         </span>
@@ -45,7 +58,7 @@ export function FocusHistory({ sessions, goals = [], todos = [] }: FocusHistoryP
         {displayed.map((s) => {
           const linked = getLinkedName(s);
           return (
-            <div key={s.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-card/30 border border-border/30 text-xs">
+            <div key={s.id} className="flex items-center justify-between px-3 py-2 bg-card/30 border border-border/30 text-xs" style={{ clipPath: cyberClip }}>
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 {s.completed ? (
                   <Check className="h-3 w-3 text-emerald-400 shrink-0" />

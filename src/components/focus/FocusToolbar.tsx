@@ -45,8 +45,8 @@ export function FocusToolbar({
               if (v !== "none") onLinkTodo(null);
             }}
           >
-            <SelectTrigger className="bg-card/60 backdrop-blur border-border/50 text-xs h-8">
-              <Target className="h-3 w-3 mr-1 text-primary shrink-0" />
+            <SelectTrigger className="bg-card/60 backdrop-blur border-border/60 text-xs h-10">
+              <Target className="h-3.5 w-3.5 mr-1.5 text-primary shrink-0" />
               <SelectValue placeholder={t("focus.linker.goal")} />
             </SelectTrigger>
             <SelectContent>
@@ -68,8 +68,8 @@ export function FocusToolbar({
               if (v !== "none") onLinkGoal(null);
             }}
           >
-            <SelectTrigger className="bg-card/60 backdrop-blur border-border/50 text-xs h-8">
-              <ListTodo className="h-3 w-3 mr-1 text-accent shrink-0" />
+            <SelectTrigger className="bg-card/60 backdrop-blur border-border/60 text-xs h-10">
+              <ListTodo className="h-3.5 w-3.5 mr-1.5 text-accent shrink-0" />
               <SelectValue placeholder={t("focus.linker.task")} />
             </SelectTrigger>
             <SelectContent>
@@ -116,7 +116,7 @@ function ToolbarIconButton({
       }`}
     >
       <Icon className="h-3.5 w-3.5" />
-      <span className="hidden sm:inline">{label}</span>
+      <span>{label}</span>
     </button>
   );
 }
