@@ -376,7 +376,7 @@ export default function Focus() {
                     </span>
                   </div>
 
-                  <div className="bg-black/40 backdrop-blur-md p-1">
+                  <div className="p-1">
                     {activePanel === "config" && !timer.isRunning && (
                       <FocusConfigPanel
                         workMin={workMin}
