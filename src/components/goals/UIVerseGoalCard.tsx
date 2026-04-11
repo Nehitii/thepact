@@ -151,8 +151,16 @@ export function UIVerseGoalCard({
       whileHover={{ scale: 1.04 }}
       transition={{ duration: 0.25, type: "spring", stiffness: 320 }}
       onClick={() => onNavigate(goal.id)}
-      className="cursor-pointer"
-      style={{ width: "210px", height: "280px" }}
+      data-halo={intensity}
+      className={`cursor-pointer rarity-halo ${intensity >= 4 ? "rarity-halo--animated" : ""}`}
+      style={{ width: "210px", height: "280px", "--accent-rgb": (() => {
+        const hex = difficultyColor.replace("#", "");
+        const full = hex.length === 3 ? hex.split("").map(c => c + c).join("") : hex;
+        const r = parseInt(full.slice(0, 2), 16) || 0;
+        const g = parseInt(full.slice(2, 4), 16) || 0;
+        const b = parseInt(full.slice(4, 6), 16) || 0;
+        return `${r}, ${g}, ${b}`;
+      })(), "--halo-intensity": intensity, borderRadius: "22px" } as React.CSSProperties}
     >
       <div
         className="relative overflow-hidden flex flex-col"

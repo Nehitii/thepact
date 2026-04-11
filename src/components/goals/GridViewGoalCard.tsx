@@ -116,10 +116,12 @@ export function GridViewGoalCard({
     }
   };
 
+  const intensity = getDifficultyIntensity(difficulty);
   const cssVars = {
     "--accent": theme.color,
     "--accent-rgb": theme.rgb,
     "--progress": `${progress}%`,
+    "--halo-intensity": intensity,
   } as React.CSSProperties;
 
   return (
@@ -129,11 +131,14 @@ export function GridViewGoalCard({
       role="button"
       tabIndex={0}
       onKeyDown={handleKeyDown}
+      data-halo={intensity}
       className={cn(
         "group relative w-full max-w-[340px] min-w-[260px] mx-auto cursor-pointer select-none rounded-[20px]",
         "transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
         "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
         "[perspective:1000px]",
+        "rarity-halo",
+        intensity >= 4 && "rarity-halo--animated",
         isCompleted && "grayscale-[0.4] hover:grayscale-0",
         goal.isShared && "ring-1 ring-cyan-500/30",
       )}
