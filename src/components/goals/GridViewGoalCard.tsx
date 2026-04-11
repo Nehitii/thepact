@@ -138,7 +138,6 @@ export function GridViewGoalCard({
         "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
         "[perspective:1000px]",
         "rarity-halo",
-        intensity >= 4 && "rarity-halo--animated",
         isCompleted && "grayscale-[0.4] hover:grayscale-0",
         goal.isShared && "ring-1 ring-cyan-500/30",
       )}

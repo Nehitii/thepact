@@ -152,7 +152,7 @@ export function UIVerseGoalCard({
       transition={{ duration: 0.25, type: "spring", stiffness: 320 }}
       onClick={() => onNavigate(goal.id)}
       data-halo={intensity}
-      className={`cursor-pointer rarity-halo ${intensity >= 4 ? "rarity-halo--animated" : ""}`}
+      className={`cursor-pointer rarity-halo`}
       style={{ width: "210px", height: "280px", "--accent-rgb": (() => {
         const hex = difficultyColor.replace("#", "");
         const full = hex.length === 3 ? hex.split("").map(c => c + c).join("") : hex;
