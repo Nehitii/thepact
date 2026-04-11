@@ -108,8 +108,9 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
 
   return (
     <div
-      className="bar-card-root relative overflow-hidden rounded-xl"
+      className={`bar-card-root relative overflow-hidden rounded-xl rarity-halo ${intensity >= 4 ? "rarity-halo--animated" : ""}`}
       style={cssVars}
+      data-halo={intensity}
       onClick={() => onNavigate(goal.id)}
     >
       {goal.is_locked && <GoalLockOverlay className="z-50" />}

@@ -2416,3 +2416,134 @@ All colors MUST be HSL.
 .bar-card-tracker:hover ~ .bar-card-inner .bar-card-fill {
   opacity: 1;
 }
+
+/* ═══════════════════════════════════════════════════
+   TCG RARITY HALO — Hearthstone-style hover glow
+   ═══════════════════════════════════════════════════ */
+
+@keyframes halo-pulse {
+  0%, 100% { opacity: var(--halo-opacity, 0.5); transform: scale(1); }
+  50% { opacity: calc(var(--halo-opacity, 0.5) * 1.4); transform: scale(1.02); }
+}
+
+@keyframes halo-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes halo-burst {
+  0%, 100% { opacity: 0.4; transform: rotate(0deg) scale(1); }
+  50% { opacity: 0.7; transform: rotate(180deg) scale(1.08); }
+}
+
+.rarity-halo {
+  position: relative;
+  isolation: isolate;
+}
+
+/* Base glow layer */
+.rarity-halo::before {
+  content: '';
+  position: absolute;
+  inset: calc(-6px * var(--halo-intensity, 1));
+  border-radius: inherit;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(var(--accent-rgb), calc(0.12 * var(--halo-intensity, 1))) 0%,
+    rgba(var(--accent-rgb), calc(0.06 * var(--halo-intensity, 1))) 40%,
+    transparent 70%
+  );
+  filter: blur(calc(4px + var(--halo-intensity, 1) * 5px));
+  opacity: 0;
+  transition: opacity 0.35s ease-out;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.rarity-halo:hover::before {
+  opacity: 1;
+}
+
+/* Intensity 1 (easy/common): static glow only — no animation */
+
+/* Intensity 2 (medium/uncommon): slow pulse */
+.rarity-halo[data-halo="2"]:hover::before {
+  animation: halo-pulse 2.5s ease-in-out infinite;
+  --halo-opacity: 0.6;
+}
+
+/* Intensity 3 (hard/rare): faster pulse */
+.rarity-halo[data-halo="3"]:hover::before {
+  animation: halo-pulse 1.8s ease-in-out infinite;
+  --halo-opacity: 0.7;
+}
+
+/* Rotating ring for epic+ */
+.rarity-halo--animated::after {
+  content: '';
+  position: absolute;
+  inset: calc(-4px * var(--halo-intensity, 1));
+  border-radius: inherit;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(var(--accent-rgb), 0.35) 10%,
+    transparent 20%,
+    transparent 45%,
+    rgba(var(--accent-rgb), 0.25) 55%,
+    transparent 65%,
+    transparent 90%,
+    rgba(var(--accent-rgb), 0.3) 100%
+  );
+  filter: blur(calc(2px + var(--halo-intensity, 1) * 2px));
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+  z-index: -1;
+  pointer-events: none;
+  animation: halo-rotate 4s linear infinite paused;
+}
+
+.rarity-halo--animated:hover::after {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+/* Intensity 4 (extreme/epic): faster pulse + ring */
+.rarity-halo[data-halo="4"]:hover::before {
+  animation: halo-pulse 1.4s ease-in-out infinite;
+  --halo-opacity: 0.8;
+}
+
+/* Intensity 5 (impossible/legendary): intense pulse + fast ring */
+.rarity-halo[data-halo="5"]:hover::before {
+  animation: halo-pulse 1s ease-in-out infinite;
+  --halo-opacity: 0.9;
+}
+
+.rarity-halo[data-halo="5"]::after {
+  animation-duration: 2.5s !important;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(var(--accent-rgb), 0.5) 8%,
+    transparent 16%,
+    rgba(var(--accent-rgb), 0.3) 25%,
+    transparent 33%,
+    transparent 42%,
+    rgba(var(--accent-rgb), 0.45) 50%,
+    transparent 58%,
+    rgba(var(--accent-rgb), 0.25) 67%,
+    transparent 75%,
+    transparent 87%,
+    rgba(var(--accent-rgb), 0.4) 95%,
+    transparent 100%
+  ) !important;
+}
+
+/* Reduced motion: static glow only */
+@media (prefers-reduced-motion: reduce) {
+  .rarity-halo::before,
+  .rarity-halo--animated::after {
+    animation: none !important;
+  }
+}
