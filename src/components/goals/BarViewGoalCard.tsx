@@ -103,6 +103,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
     "--accent": theme.color,
     "--accent-rgb": theme.rgb,
     "--intensity": intensity,
+    "--halo-intensity": intensity,
     "--percent": `${progressPercent}%`,
   } as React.CSSProperties;
 
