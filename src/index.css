@@ -2420,6 +2420,25 @@ All colors MUST be HSL.
     0 0 32px 10px rgba(var(--accent-rgb), 0.22);
 }
 
+/* ═══ Global prefers-reduced-motion ═══ */
 @media (prefers-reduced-motion: reduce) {
   .rarity-halo::before { transition: none; }
+
+  /* Disable all decorative animations globally */
+  .animate-float,
+  .animate-glow-pulse,
+  .animate-scan,
+  .animate-hologram,
+  .animate-ping,
+  .animate-pulse,
+  .journal-scanline,
+  .cyber-grid,
+  [class*="animate-spin"] {
+    animation: none !important;
+  }
+
+  /* Hide purely decorative animated elements */
+  .motion-reduce\\:hidden {
+    display: none !important;
+  }
 }
