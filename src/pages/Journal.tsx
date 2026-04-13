@@ -206,6 +206,8 @@ export default function Journal() {
             CHRONO<span className="text-primary" style={{ filter: "drop-shadow(0 0 12px hsl(var(--primary)))" }}>LOG</span>
           </h1>
 
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useJournalEntries(user?.id);
+  const deleteEntry = useDeleteJournalEntry();
 
           {/* Stats hexagons */}
           <div className="flex justify-center gap-6 mt-8 flex-wrap">
