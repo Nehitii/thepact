@@ -5,6 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "react-i18next";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
+import { CyberBackground } from "@/components/CyberBackground";
 
 function RankBadge({ position }: { position: number }) {
   if (position === 1) return <Crown className="h-6 w-6 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" />;
@@ -71,44 +73,40 @@ export default function Leaderboard() {
   const currentUserPosition = entries.findIndex((e) => e.user_id === user?.id) + 1;
 
   return (
-    <div className="min-h-screen p-6 max-w-3xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Trophy className="h-7 w-7 text-amber-400" />
-          <h1 className="text-3xl font-black font-orbitron text-foreground tracking-wide">{t("leaderboard.title")}</h1>
+    <div className="min-h-screen relative overflow-hidden">
+      <CyberBackground />
+      <div className="max-w-3xl mx-auto px-4 md:px-6 relative z-10">
+        <ModuleHeader
+          systemLabel="RANK_ENGINE // SYS.GLOBAL"
+          title="LEADER"
+          titleAccent="BOARD"
+          badges={currentUserPosition > 0 ? [
+            { label: "YOUR RANK", value: `#${currentUserPosition}`, color: "#00ffe0" },
+            { label: "AGENTS", value: entries.length, color: "#bf5af2" },
+          ] : []}
+        />
+
+        <div className="space-y-2 pb-12">
+          {isLoading ? (
+            Array.from({ length: 10 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 rounded-lg" />
+            ))
+          ) : entries.length === 0 ? (
+            <div className="text-center py-16 text-muted-foreground">
+              <Star className="h-12 w-12 mx-auto mb-4 opacity-30" />
+              <p className="font-mono text-sm">{t("leaderboard.noAgents")}</p>
+            </div>
+          ) : (
+            entries.map((entry, i) => (
+              <LeaderboardRow
+                key={entry.user_id}
+                entry={entry}
+                position={i + 1}
+                isCurrentUser={entry.user_id === user?.id}
+              />
+            ))
+          )}
         </div>
-        <p className="text-sm text-muted-foreground font-mono">{t("leaderboard.subtitle")}</p>
-
-        {currentUserPosition > 0 && (
-          <div className="mt-4 flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20">
-            <TrendingUp className="h-4 w-4 text-primary" />
-            <span className="text-sm text-foreground font-rajdhani">
-              {t("leaderboard.yourPosition")} <span className="font-orbitron font-bold text-primary">#{currentUserPosition}</span> {t("leaderboard.of")} {entries.length}
-            </span>
-          </div>
-        )}
-      </motion.div>
-
-      <div className="space-y-2">
-        {isLoading ? (
-          Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-lg" />
-          ))
-        ) : entries.length === 0 ? (
-          <div className="text-center py-16 text-muted-foreground">
-            <Star className="h-12 w-12 mx-auto mb-4 opacity-30" />
-            <p className="font-mono text-sm">{t("leaderboard.noAgents")}</p>
-          </div>
-        ) : (
-          entries.map((entry, i) => (
-            <LeaderboardRow
-              key={entry.user_id}
-              entry={entry}
-              position={i + 1}
-              isCurrentUser={entry.user_id === user?.id}
-            />
-          ))
-        )}
       </div>
     </div>
   );

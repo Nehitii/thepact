@@ -201,9 +201,9 @@ export default function Home() {
         />
       </div>
 
-      {/* Global scanline */}
+      {/* Scanline — scoped to Home only, not global z-9999 */}
       <div
-        className="fixed inset-0 pointer-events-none z-[9999]"
+        className="absolute inset-0 pointer-events-none z-[1]"
         style={{
           background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.022) 2px, rgba(0,0,0,0.022) 4px)",
         }}
