@@ -139,7 +139,7 @@ export default function Analytics() {
           />
 
           {/* Progress Card - Goals & Steps Combined */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <TrendStatCard
               icon={Target}
               label="Goals Completed"
@@ -318,7 +318,7 @@ export default function Analytics() {
         {/* ═══════════════════════════════════════════════════════════════════════ */}
         <TabsContent value="modules" className="space-y-6 mt-0">
           {/* Module Stats with Trends */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <TrendStatCard
               icon={Heart}
               label="Health Avg"

@@ -108,6 +108,8 @@ export const useParticleEffect = () => {
 
   const ParticleEffects = () => {
     if (!enabled) return null;
+    const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return null;
     return (
       <>
         {effects.map((effect) => (
