@@ -48,6 +48,9 @@ export function RotatingRing({
   dasharray?: string;
   opacity?: number;
 }) {
+  // Respect prefers-reduced-motion
+  const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
   return (
     <svg
       width={size}
@@ -69,7 +72,9 @@ export function RotatingRing({
         stroke={color}
         strokeWidth="0.5"
         strokeDasharray={dasharray}
-        style={{
+        style={prefersReducedMotion ? {
+          transformOrigin: `${size / 2}px ${size / 2}px`,
+        } : {
           animation: `${reverse ? "journal-rotate-slow-r" : "journal-rotate-slow"} ${duration}s linear infinite`,
           transformOrigin: `${size / 2}px ${size / 2}px`,
         }}
@@ -77,7 +82,6 @@ export function RotatingRing({
     </svg>
   );
 }
-
 // Sci-fi divider with tick marks
 export function SciFiDivider({
   color = "#00ffe0",

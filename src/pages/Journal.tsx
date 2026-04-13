@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJournalEntries, useDeleteJournalEntry } from "@/hooks/useJournal";
@@ -6,7 +6,8 @@ import type { JournalEntry } from "@/types/journal";
 import { MOOD_OPTIONS, getAccent } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
-import { RotatingRing, HexBadge, SciFiDivider } from "@/components/journal/JournalDecorations";
+import { HexBadge, SciFiDivider } from "@/components/journal/JournalDecorations";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,20 +20,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Journal() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
-  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [filterMood, setFilterMood] = useState<string | null>(null);
+// Isolated clock component to avoid re-rendering the whole page
+const LiveClock = memo(function LiveClock() {
   const [clock, setClock] = useState("");
-
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useJournalEntries(user?.id);
-  const deleteEntry = useDeleteJournalEntry();
-
-  // Live clock
   useEffect(() => {
     const tick = () => {
       const n = new Date();
@@ -44,6 +34,28 @@ export default function Journal() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
+  return (
+    <>
+      {clock.split(":").map((t, i) => (
+        <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" as const }}>
+          {t}
+        </div>
+      ))}
+    </>
+  );
+});
+
+export default function Journal() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterMood, setFilterMood] = useState<string | null>(null);
+
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useJournalEntries(user?.id);
+  const deleteEntry = useDeleteJournalEntry();
 
   const allEntries = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
 
@@ -146,83 +158,38 @@ export default function Journal() {
 
       <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2">
         <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(191,90,242,0.3))" }} />
-        {clock.split(":").map((t, i) => (
-          <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" }}>
-            {t}
-          </div>
-        ))}
+        <LiveClock />
         <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }} />
       </div>
 
       {/* Main content */}
       <div className="relative z-[1] max-w-[680px] mx-auto px-4 sm:px-6">
-        {/* HEADER */}
-        <motion.header
-          initial={{ opacity: 0, y: -24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="pt-14 pb-10 text-center"
+        {/* Standardized ModuleHeader */}
+        <ModuleHeader
+          systemLabel="NEURAL_JOURNAL // SYS.ACTIVE"
+          title="CHRONO"
+          titleAccent="LOG"
+          badges={[
+            { label: "ENTRIES", value: allEntries.length, color: "#00ffe0" },
+            { label: "PINNED", value: pinnedCount, color: "#bf5af2" },
+            { label: "K-WORDS", value: `${(Math.round(totalWords / 100) / 10).toFixed(1)}k`, color: "#ffd60a" },
+          ]}
         >
-          {/* Rotating rings — dark only */}
-          <div className="relative inline-block mb-5">
-            <div className="absolute -inset-10 pointer-events-none hidden dark:block">
-              <RotatingRing size={120} color="#00ffe0" duration={20} dasharray="2 12" opacity={0.25} />
-            </div>
-            <div className="absolute -inset-5 pointer-events-none hidden dark:block">
-              <RotatingRing size={80} color="#bf5af2" duration={14} reverse dasharray="4 6" opacity={0.2} />
-            </div>
-            {/* Central orb */}
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center mx-auto border border-primary/40 bg-primary/10"
-              style={{ boxShadow: "0 0 20px hsl(var(--primary) / 0.2), inset 0 0 10px hsl(var(--primary) / 0.05)" }}
-            >
-              <div
-                className="w-2 h-2 rounded-full bg-primary"
-                style={{ boxShadow: "0 0 10px hsl(var(--primary))", animation: "journal-pulse 2.5s ease-in-out infinite" }}
-              />
-            </div>
-          </div>
-
-          {/* System label */}
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent to-primary/25" />
-            <span className="font-mono text-[9px] text-primary/50 tracking-[0.25em]">
-              NEURAL_JOURNAL // SYS.ACTIVE
-            </span>
-            <div className="flex-1 h-px bg-gradient-to-r from-primary/25 to-transparent" />
-          </div>
-
-          {/* Title */}
-          <h1 className="font-orbitron font-black text-[clamp(30px,5vw,52px)] tracking-[0.08em] leading-none mb-2 text-transparent bg-clip-text bg-gradient-to-b from-foreground/95 to-foreground/50">
-            CHRONO<span className="text-primary" style={{ filter: "drop-shadow(0 0 12px hsl(var(--primary)))" }}>LOG</span>
-          </h1>
-
-
-          {/* Stats hexagons */}
-          <div className="flex justify-center gap-6 mt-8 flex-wrap">
-            <HexBadge label="ENTRIES" value={allEntries.length} color="#00ffe0" />
-            <HexBadge label="PINNED" value={pinnedCount} color="#bf5af2" />
-            <HexBadge label="K-WORDS" value={`${(Math.round(totalWords / 100) / 10).toFixed(1)}k`} color="#ffd60a" />
-          </div>
-
-          {/* New entry button */}
-          <div className="mt-8">
-            <motion.button
-              onClick={() => setIsNewEntryOpen(true)}
-              whileHover={{ scale: 1.04, boxShadow: "0 0 40px hsl(var(--primary) / 0.25), 0 0 80px hsl(var(--primary) / 0.1)" }}
-              whileTap={{ scale: 0.97 }}
-              className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300 border border-primary text-primary rounded-[3px] font-orbitron text-[11px] font-semibold tracking-[0.2em]"
-              style={{
-                padding: "13px 36px",
-                background: "transparent",
-                boxShadow: "0 0 20px hsl(var(--primary) / 0.12), inset 0 0 20px hsl(var(--primary) / 0.03)",
-              }}
-            >
-              <span className="text-[16px] font-light font-mono">+</span>
-              NEW ENTRY
-            </motion.button>
-          </div>
-        </motion.header>
+          <motion.button
+            onClick={() => setIsNewEntryOpen(true)}
+            whileHover={{ scale: 1.04, boxShadow: "0 0 40px hsl(var(--primary) / 0.25), 0 0 80px hsl(var(--primary) / 0.1)" }}
+            whileTap={{ scale: 0.97 }}
+            className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300 border border-primary text-primary rounded-[3px] font-orbitron text-[11px] font-semibold tracking-[0.2em]"
+            style={{
+              padding: "13px 36px",
+              background: "transparent",
+              boxShadow: "0 0 20px hsl(var(--primary) / 0.12), inset 0 0 20px hsl(var(--primary) / 0.03)",
+            }}
+          >
+            <span className="text-[16px] font-light font-mono">+</span>
+            NEW ENTRY
+          </motion.button>
+        </ModuleHeader>
 
         {/* TOOLBAR */}
         <motion.div

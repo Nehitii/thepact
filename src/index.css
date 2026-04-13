@@ -598,25 +598,6 @@ All colors MUST be HSL.
     opacity: 1;
   }
 
-  /* Double Border Frame - Perfect Geometry */
-  .double-border {
-    border: 2px solid hsla(var(--primary) / 0.4);
-    box-shadow: 
-      inset 0 0 0 1px hsla(var(--primary) / 0.2),
-      0 0 20px hsla(var(--primary) / 0.15);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .double-border::after {
-    content: '';
-    position: absolute;
-    inset: 5px;
-    border: 1px solid hsla(var(--primary) / 0.3);
-    border-radius: calc(var(--radius) - 3px);
-    pointer-events: none;
-  }
-
   /* Holographic Corner Brackets - Perfect Alignment */
   .corner-brackets {
     position: relative;
@@ -660,25 +641,6 @@ All colors MUST be HSL.
     box-shadow: 0 0 15px hsla(var(--primary) / 0.6), 0 0 30px hsla(var(--primary) / 0.3);
   }
 
-  /* Beveled Edge Effect */
-  .bevel-edge {
-    position: relative;
-    clip-path: polygon(
-      8px 0, 100% 0, 100% calc(100% - 8px), 
-      calc(100% - 8px) 100%, 0 100%, 0 8px
-    );
-  }
-
-  .bevel-edge::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, 
-      hsla(var(--primary) / 0.1) 0%, 
-      transparent 50%);
-    pointer-events: none;
-  }
-
   /* Holographic Scan Line */
   .scan-line {
     position: relative;
@@ -700,10 +662,7 @@ All colors MUST be HSL.
     animation: scan-line 4s linear infinite;
   }
 
-  @keyframes scan-line {
-    0% { top: -100%; }
-    100% { top: 100%; }
-  }
+  /* scan-line already defined above, removed duplicate */
 
   @keyframes spin {
     from { transform: rotate(0deg); }
@@ -2461,6 +2420,25 @@ All colors MUST be HSL.
     0 0 32px 10px rgba(var(--accent-rgb), 0.22);
 }
 
+/* ═══ Global prefers-reduced-motion ═══ */
 @media (prefers-reduced-motion: reduce) {
   .rarity-halo::before { transition: none; }
+
+  /* Disable all decorative animations globally */
+  .animate-float,
+  .animate-glow-pulse,
+  .animate-scan,
+  .animate-hologram,
+  .animate-ping,
+  .animate-pulse,
+  .journal-scanline,
+  .cyber-grid,
+  [class*="animate-spin"] {
+    animation: none !important;
+  }
+
+  /* Hide purely decorative animated elements */
+  .motion-reduce\\:hidden {
+    display: none !important;
+  }
 }

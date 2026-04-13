@@ -54,7 +54,7 @@ export default function Analytics() {
     return (
       <div className="p-6 max-w-5xl mx-auto space-y-6">
         <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28" />)}
         </div>
         <div className="grid md:grid-cols-2 gap-4">
@@ -139,7 +139,7 @@ export default function Analytics() {
           />
 
           {/* Progress Card - Goals & Steps Combined */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <TrendStatCard
               icon={Target}
               label="Goals Completed"
@@ -318,7 +318,7 @@ export default function Analytics() {
         {/* ═══════════════════════════════════════════════════════════════════════ */}
         <TabsContent value="modules" className="space-y-6 mt-0">
           {/* Module Stats with Trends */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
             <TrendStatCard
               icon={Heart}
               label="Health Avg"
