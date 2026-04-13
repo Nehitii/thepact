@@ -149,8 +149,6 @@ function FriendsTabItem({ value, icon: Icon, label, count, active, color = "prim
     </TabsTrigger>
   );
 }
-// --- Typed TabItem ---
-interface FriendsTabItemProps {
   value: string;
   icon: LucideIcon;
   label: string;
