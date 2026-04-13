@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJournalEntries, useDeleteJournalEntry } from "@/hooks/useJournal";
@@ -6,7 +6,8 @@ import type { JournalEntry } from "@/types/journal";
 import { MOOD_OPTIONS, getAccent } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
-import { RotatingRing, HexBadge, SciFiDivider } from "@/components/journal/JournalDecorations";
+import { SciFiDivider } from "@/components/journal/JournalDecorations";
+import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,20 +20,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function Journal() {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
-  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
-  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
-  const [search, setSearch] = useState("");
-  const [filterMood, setFilterMood] = useState<string | null>(null);
+// Isolated clock component to avoid re-rendering the whole page
+const LiveClock = memo(function LiveClock() {
   const [clock, setClock] = useState("");
-
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useJournalEntries(user?.id);
-  const deleteEntry = useDeleteJournalEntry();
-
-  // Live clock
   useEffect(() => {
     const tick = () => {
       const n = new Date();
@@ -44,6 +34,25 @@ export default function Journal() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, []);
+  return (
+    <>
+      {clock.split(":").map((t, i) => (
+        <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" }}>
+          {t}
+        </div>
+      ))}
+    </>
+  );
+});
+
+export default function Journal() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
+  const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
+  const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterMood, setFilterMood] = useState<string | null>(null);
 
   const allEntries = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
 
