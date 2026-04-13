@@ -149,7 +149,6 @@ function FriendsTabItem({ value, icon: Icon, label, count, active, color = "prim
     </TabsTrigger>
   );
 }
-  label: string;
   count?: number;
   active: boolean;
   color?: "primary" | "violet";
