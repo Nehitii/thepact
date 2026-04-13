@@ -149,37 +149,4 @@ function FriendsTabItem({ value, icon: Icon, label, count, active, color = "prim
     </TabsTrigger>
   );
 }
-  count?: number;
-  active: boolean;
-  color?: "primary" | "violet";
-}
 
-function FriendsTabItem({ value, icon: Icon, label, count, active, color = "primary" }: FriendsTabItemProps) {
-  const colorStyles = {
-    primary: { border: "border-primary", text: "text-primary", bg: "bg-primary", glow: "bg-primary" },
-    violet: { border: "border-violet-500", text: "text-violet-400", bg: "bg-violet-500", glow: "bg-violet-500" },
-  };
-  const c = colorStyles[color];
-
-  return (
-    <TabsTrigger
-      value={value}
-      className={cn(
-        "relative flex items-center gap-3 pb-3 pt-2 px-1 rounded-none border-b-2 border-transparent transition-all duration-300 group data-[state=active]:bg-transparent",
-        active ? `${c.border} ${c.text}` : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      <Icon className={cn("h-4 w-4", active && "animate-pulse")} />
-      <span className={cn("text-sm font-orbitron tracking-wider", active && "font-bold")}>{label}</span>
-      {count != null && count > 0 && (
-        <span className={cn(
-          "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-sm min-w-[20px]",
-          active ? `${c.bg} text-black` : "bg-muted text-muted-foreground",
-        )}>
-          {count}
-        </span>
-      )}
-      {active && <div className={cn("absolute bottom-0 left-0 right-0 h-[2px] blur-[4px]", c.glow)} />}
-    </TabsTrigger>
-  );
-}
