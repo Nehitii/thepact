@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MessageSquare, UserX, Search } from "lucide-react";
+import { MessageSquare, UserX, Search, Users } from "lucide-react";
 import { FriendAvatar } from "./FriendAvatar";
 import { RemoveFriendDialog } from "./RemoveFriendDialog";
+import { BlockConfirmDialog } from "./BlockConfirmDialog";
 import { FriendProfileDrawer } from "./FriendProfileDrawer";
 import { CyberLoader, CyberEmpty } from "@/components/ui/cyber-states";
 import { motion } from "framer-motion";
@@ -15,26 +16,26 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
 import type { Friend } from "@/hooks/useFriends";
-import { Users } from "lucide-react";
 
 interface FriendsTabProps {
   friends: Friend[];
   loading: boolean;
   onRemove: (friendshipId: string) => Promise<void>;
   userId: string;
+  onSwitchToSearch?: () => void;
 }
 
-export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabProps) {
+export function FriendsTab({ friends, loading, onRemove, userId, onSwitchToSearch }: FriendsTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getMutualCount } = useMutualFriends();
   const [filter, setFilter] = useState("");
   const [removeTarget, setRemoveTarget] = useState<Friend | null>(null);
+  const [blockTarget, setBlockTarget] = useState<Friend | null>(null);
   const [profileTarget, setProfileTarget] = useState<Friend | null>(null);
   const [mutualCounts, setMutualCounts] = useState<Record<string, number>>({});
   const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
 
-  // Fetch last_seen_at for all friends
   useEffect(() => {
     if (!friends.length) return;
     const ids = friends.map((f) => f.friend_id);
@@ -64,17 +65,18 @@ export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabPro
     setRemoveTarget(null);
   };
 
-  const handleBlock = async (friend: Friend) => {
+  const handleBlockConfirmed = async () => {
+    if (!blockTarget) return;
     try {
-      await supabase.from("blocked_users").insert({ user_id: userId, blocked_user_id: friend.friend_id });
-      await onRemove(friend.friendship_id);
+      await supabase.from("blocked_users").insert({ user_id: userId, blocked_user_id: blockTarget.friend_id });
+      await onRemove(blockTarget.friendship_id);
       toast.success(t("friends.userBlocked"));
     } catch {
       toast.error(t("friends.blockFailed"));
     }
+    setBlockTarget(null);
   };
 
-  // Load mutual count when opening profile drawer
   const handleOpenProfile = async (friend: Friend) => {
     setProfileTarget(friend);
     if (!(friend.friend_id in mutualCounts)) {
@@ -105,6 +107,7 @@ export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabPro
             icon={Users}
             title={filter ? t("friends.noMatchingFriends") : t("friends.noFriendsTitle")}
             subtitle={filter ? t("friends.tryDifferentSearch") : t("friends.noFriendsDesc")}
+            action={!filter && onSwitchToSearch ? { label: t("friends.tabSearch"), onClick: onSwitchToSearch } : undefined}
           />
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
@@ -170,12 +173,19 @@ export function FriendsTab({ friends, loading, onRemove, userId }: FriendsTabPro
         onCancel={() => setRemoveTarget(null)}
       />
 
+      <BlockConfirmDialog
+        open={!!blockTarget}
+        friendName={blockTarget?.display_name || ""}
+        onConfirm={handleBlockConfirmed}
+        onCancel={() => setBlockTarget(null)}
+      />
+
       <FriendProfileDrawer
         open={!!profileTarget}
         onClose={() => setProfileTarget(null)}
         friend={profileTarget}
         onRemove={() => { setRemoveTarget(profileTarget); setProfileTarget(null); }}
-        onBlock={() => profileTarget && handleBlock(profileTarget)}
+        onBlock={() => { setBlockTarget(profileTarget); setProfileTarget(null); }}
         mutualCount={profileTarget ? mutualCounts[profileTarget.friend_id] : undefined}
         lastSeenAt={profileTarget ? lastSeenMap[profileTarget.friend_id] : undefined}
       />

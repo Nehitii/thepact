@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,14 +30,14 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
   const [results, setResults] = useState<SearchProfile[]>([]);
   const [searching, setSearching] = useState(false);
   const [mutualCounts, setMutualCounts] = useState<Record<string, number>>({});
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!query.trim()) return;
     setSearching(true);
     try {
       const data = await onSearch(query);
       setResults(data);
-      // Load mutual counts in background
       const counts: Record<string, number> = {};
       await Promise.all(
         data.map(async (p) => {
@@ -50,6 +50,14 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
     } finally {
       setSearching(false);
     }
+  }, [query, onSearch, getMutualCount, t]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key !== "Enter") return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      handleSearch();
+    }, 300);
   };
 
   const handleSend = async (id: string) => {
@@ -72,7 +80,7 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
               placeholder={t("friends.searchPlaceholder")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              onKeyDown={handleKeyDown}
               className="pl-10 bg-muted/50 border-border font-rajdhani"
               aria-label={t("friends.searchMembers")}
             />
