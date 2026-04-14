@@ -107,18 +107,8 @@ export function FriendsTab({ friends, loading, onRemove, userId, onSwitchToSearc
             icon={Users}
             title={filter ? t("friends.noMatchingFriends") : t("friends.noFriendsTitle")}
             subtitle={filter ? t("friends.tryDifferentSearch") : t("friends.noFriendsDesc")}
-          >
-            {!filter && onSwitchToSearch && (
-              <Button
-                size="sm"
-                onClick={onSwitchToSearch}
-                className="mt-3 text-xs font-bold uppercase tracking-wider"
-              >
-                <Search className="h-3.5 w-3.5 mr-1.5" />
-                {t("friends.tabSearch")}
-              </Button>
-            )}
-          </CyberEmpty>
+            action={!filter && onSwitchToSearch ? { label: t("friends.tabSearch"), onClick: onSwitchToSearch } : undefined}
+          />
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
             {filtered.map((friend, i) => (
