@@ -7,10 +7,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { DataPanel } from "@/components/profile/settings-ui";
+import { useTranslation } from "react-i18next";
 
 export function BlockedUsersPanel() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
 
@@ -25,7 +27,6 @@ export function BlockedUsersPanel() {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Fetch display names for blocked users
       if (!data || data.length === 0) return [];
       const blockedIds = data.map((b: any) => b.blocked_user_id);
       const { data: profiles } = await supabase
@@ -37,7 +38,7 @@ export function BlockedUsersPanel() {
         const profile = profiles?.find((p: any) => p.id === b.blocked_user_id);
         return {
           ...b,
-          display_name: profile?.display_name || "Utilisateur inconnu",
+          display_name: profile?.display_name || t("friends.unknownAgent"),
           avatar_url: profile?.avatar_url,
         };
       });
@@ -56,7 +57,7 @@ export function BlockedUsersPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blocked-users"] });
-      toast({ title: "Utilisateur débloqué", description: "L'utilisateur a été retiré de ta liste de blocage." });
+      toast({ title: t("friends.userUnblocked"), description: t("friends.userUnblockedDesc") });
     },
   });
 
@@ -65,14 +66,14 @@ export function BlockedUsersPanel() {
   );
 
   return (
-    <DataPanel code="MODULE_04" title="UTILISATEURS BLOQUÉS" footerLeft={<span>TOTAL: <b className="text-primary">{blockedUsers?.length || 0}</b></span>}>
+    <DataPanel code="MODULE_04" title={t("friends.blockedUsersTitle")} footerLeft={<span>TOTAL: <b className="text-primary">{blockedUsers?.length || 0}</b></span>}>
       <div className="py-4 space-y-3">
         {isLoading ? (
           <div className="flex justify-center py-6"><Loader2 className="h-5 w-5 animate-spin text-primary" /></div>
         ) : !blockedUsers || blockedUsers.length === 0 ? (
           <div className="text-center py-6">
             <UserX className="h-8 w-8 text-primary/20 mx-auto mb-2" />
-            <p className="text-[11px] text-muted-foreground font-mono tracking-wider">AUCUN UTILISATEUR BLOQUÉ</p>
+            <p className="text-[11px] text-muted-foreground font-mono tracking-wider">{t("friends.noBlockedUsers")}</p>
           </div>
         ) : (
           <>
@@ -82,7 +83,7 @@ export function BlockedUsersPanel() {
                 <Input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Rechercher..."
+                  placeholder={t("common.search")}
                   className="pl-9 h-9 bg-primary/5 border-primary/20 font-mono text-xs rounded-none"
                 />
               </div>
@@ -114,7 +115,7 @@ export function BlockedUsersPanel() {
                       "transition-colors disabled:opacity-30"
                     )}
                   >
-                    {unblock.isPending ? "..." : "DÉBLOQUER"}
+                    {unblock.isPending ? "..." : t("friends.unblock")}
                   </button>
                 </div>
               ))}

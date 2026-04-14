@@ -22,7 +22,7 @@ export default function Friends() {
   const {
     friends, pendingRequests, sentRequests, friendsLoading, requestsLoading,
     pendingCount, sendRequest, acceptRequest, declineRequest, removeFriend,
-    getFriendshipStatus, searchProfiles,
+    cancelSentRequest, getFriendshipStatus, searchProfiles,
   } = useFriends();
 
   const { guilds, guildsLoading, invites, createGuild, respondToInvite } = useGuilds();
@@ -38,7 +38,6 @@ export default function Friends() {
       </div>
 
       <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto px-4 md:px-8 relative z-10">
-        {/* Standardized ModuleHeader */}
         <ModuleHeader
           systemLabel="SOCIAL_NET // SYS.ACTIVE"
           title="FRIEN"
@@ -54,8 +53,8 @@ export default function Friends() {
           <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" aria-hidden="true" />
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-              <TabsList className="bg-transparent p-0 gap-6 h-auto">
+            <div className="flex items-center justify-between px-3 sm:px-6 py-4 border-b border-border bg-muted/30 overflow-x-auto scrollbar-none">
+              <TabsList className="bg-transparent p-0 gap-2 sm:gap-6 h-auto flex-nowrap">
                 <FriendsTabItem value="friends" icon={UserCheck} label={t("friends.tabFriends")} count={friends.length} active={activeTab === "friends"} />
                 <FriendsTabItem value="requests" icon={Clock} label={t("friends.tabRequests")} count={pendingCount} active={activeTab === "requests"} color="violet" />
                 <FriendsTabItem value="guilds" icon={Shield} label={t("friends.tabGuilds")} count={guilds.length} active={activeTab === "guilds"} />
@@ -70,6 +69,7 @@ export default function Friends() {
                   loading={friendsLoading}
                   onRemove={async (id) => { await removeFriend.mutateAsync(id); }}
                   userId={user.id}
+                  onSwitchToSearch={() => setActiveTab("search")}
                 />
               </TabsContent>
 
@@ -80,6 +80,7 @@ export default function Friends() {
                   loading={requestsLoading}
                   onAccept={async (id) => { await acceptRequest.mutateAsync(id); }}
                   onDecline={async (id) => { await declineRequest.mutateAsync(id); }}
+                  onCancelSent={async (id) => { await cancelSentRequest.mutateAsync(id); }}
                 />
               </TabsContent>
 
@@ -131,15 +132,15 @@ function FriendsTabItem({ value, icon: Icon, label, count, active, color = "prim
     <TabsTrigger
       value={value}
       className={cn(
-        "relative flex items-center gap-3 pb-3 pt-2 px-1 rounded-none border-b-2 border-transparent transition-all duration-300 group data-[state=active]:bg-transparent",
+        "relative flex items-center gap-1.5 sm:gap-3 pb-3 pt-2 px-1 rounded-none border-b-2 border-transparent transition-all duration-300 group data-[state=active]:bg-transparent whitespace-nowrap",
         active ? `${c.border} ${c.text}` : "text-muted-foreground hover:text-foreground",
       )}
     >
       <Icon className={cn("h-4 w-4", active && "animate-pulse")} />
-      <span className={cn("text-sm font-orbitron tracking-wider", active && "font-bold")}>{label}</span>
+      <span className={cn("text-xs sm:text-sm font-orbitron tracking-wider hidden sm:inline", active && "font-bold")}>{label}</span>
       {count != null && count > 0 && (
         <span className={cn(
-          "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-sm min-w-[20px]",
+          "ml-0.5 sm:ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-sm min-w-[20px]",
           active ? `${c.bg} text-black` : "bg-muted text-muted-foreground",
         )}>
           {count}
@@ -149,4 +150,3 @@ function FriendsTabItem({ value, icon: Icon, label, count, active, color = "prim
     </TabsTrigger>
   );
 }
-
