@@ -16,5 +16,4 @@ export { HealthChallengesPanel } from "./HealthChallengesPanel";
 export { HealthInsightsPanel } from "./HealthInsightsPanel";
 export { HealthBreathingExercise } from "./HealthBreathingExercise";
 export { HealthEnergyCurve } from "./HealthEnergyCurve";
-export { HealthDataExport } from "./HealthDataExport";
 export { HUDFrame } from "./HUDFrame";
