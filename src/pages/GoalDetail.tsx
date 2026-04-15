@@ -190,7 +190,7 @@ export default function GoalDetail() {
     if (!goal || saving) return;
     setSaving(true);
     try {
-      const { handleUpdateGoal } = await import("./GoalDetail_handlers");
+      const { handleUpdateGoal } = await import("@/lib/goalDetailHandlers");
       const updates: Record<string, unknown> = {};
       if (editName !== goal.name) updates.name = editName;
       if (editSteps !== goal.total_steps) updates.total_steps = editSteps;

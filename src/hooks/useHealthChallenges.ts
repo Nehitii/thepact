@@ -206,12 +206,67 @@ export function useUpdateChallengeProgress(userId: string | undefined) {
       if (error) throw error;
       return data as HealthChallenge;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       queryClient.invalidateQueries({ queryKey: ["health-challenges", userId] });
       
-      if (data.completed) {
+      if (data.completed && userId) {
+        // Credit bonds to user
+        try {
+          const { data: balanceExists } = await supabase
+            .from("bond_balance")
+            .select("id")
+            .eq("user_id", userId)
+            .maybeSingle();
+
+          if (balanceExists) {
+            await supabase
+              .from("bond_balance")
+              .update({
+                balance: undefined, // handled by RPC-style increment below
+              })
+              .eq("user_id", userId);
+            
+            // Use direct SQL increment via rpc-style update
+            await supabase.rpc("increment_tracking_counter", {
+              p_user_id: userId,
+              p_field: "bonds_earned_total",
+              p_increment: data.bond_reward,
+            });
+
+            // Update balance directly
+            const { data: currentBalance } = await supabase
+              .from("bond_balance")
+              .select("balance, total_earned")
+              .eq("user_id", userId)
+              .single();
+
+            if (currentBalance) {
+              await supabase
+                .from("bond_balance")
+                .update({
+                  balance: currentBalance.balance + data.bond_reward,
+                  total_earned: currentBalance.total_earned + data.bond_reward,
+                })
+                .eq("user_id", userId);
+            }
+
+            // Log transaction
+            await supabase.from("bond_transactions").insert({
+              user_id: userId,
+              amount: data.bond_reward,
+              transaction_type: "health_challenge",
+              description: `Challenge completed: ${data.title}`,
+              reference_id: data.id,
+              reference_type: "health_challenge",
+            });
+
+            queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
+          }
+        } catch (err) {
+          console.error("Failed to award bonds:", err);
+        }
+
         toast.success(`🎉 Challenge completed! +${data.bond_reward} Bonds`);
-        // TODO: Award bonds to user
       }
     },
     onError: (error) => {

@@ -1907,5 +1907,13 @@
     "general": "General",
     "inviteCodes": "Invite Codes",
     "dangerZone": "Danger Zone"
+  },
+  "analytics": {
+    "period": {
+      "30d": "Last 30 days",
+      "90d": "Last 3 months",
+      "6m": "Last 6 months",
+      "all": "All time"
+    }
   }
 }
