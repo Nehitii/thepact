@@ -1,15 +1,12 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Moon, Activity, Brain, Droplets, Apple, Settings, Calendar,
-  Sparkles, Wind, BarChart3, Crosshair, Cpu,
+import { motion } from "framer-motion";
+import {
+  Moon, Activity, Brain, Droplets, Apple,
+  Sparkles, BarChart3, Crosshair, Cpu,
 } from "lucide-react";
-import { ModuleHeader } from "@/components/layout/ModuleHeader";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { 
+import {
   useHealthSettings, useHealthScore, calculateBMI, getBMICategory,
 } from "@/hooks/useHealth";
 import { useTodayHealth } from "@/hooks/useHealth";
@@ -19,35 +16,28 @@ import { HealthDailyCheckin } from "@/components/health/HealthDailyCheckin";
 import { HealthSettingsModal } from "@/components/health/HealthSettingsModal";
 import { HealthWeeklyChart } from "@/components/health/HealthWeeklyChart";
 import { HealthBMIIndicator } from "@/components/health/HealthBMIIndicator";
-import { HealthStreakBadge } from "@/components/health/HealthStreakBadge";
 import { HealthHistoryChart } from "@/components/health/HealthHistoryChart";
 import { HealthChallengesPanel } from "@/components/health/HealthChallengesPanel";
 import { HealthInsightsPanel } from "@/components/health/HealthInsightsPanel";
 import { HealthBreathingExercise } from "@/components/health/HealthBreathingExercise";
 import { HealthEnergyCurve } from "@/components/health/HealthEnergyCurve";
+import { HealthVitalCoreHero } from "@/components/health/HealthVitalCoreHero";
+import { HealthTacticalReadout } from "@/components/health/HealthTacticalReadout";
+import { HealthBioMesh } from "@/components/health/HealthBioMesh";
 
-import { HUDFrame } from "@/components/health/HUDFrame";
 import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 const staggerContainer = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.08 } },
+  show: { transition: { staggerChildren: 0.06 } },
 };
 
 const staggerItem = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
 };
-
-/* Score-reactive background glow color */
-function getAmbientColor(score: number): string {
-  if (score >= 80) return "hsl(var(--hud-phosphor) / 0.06)";
-  if (score >= 50) return "hsl(212, 90%, 60% / 0.05)";
-  return "hsl(var(--hud-amber) / 0.05)";
-}
 
 export default function Health() {
   const { t } = useTranslation();
@@ -56,11 +46,11 @@ export default function Health() {
   const [showCheckin, setShowCheckin] = useState(false);
   const [showBreathing, setShowBreathing] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  
+
   const { data: settings, isLoading: settingsLoading } = useHealthSettings(user?.id);
   const healthScore = useHealthScore(user?.id);
   const { data: todayData } = useTodayHealth(user?.id);
-  
+
   const bmi = calculateBMI(settings?.height_cm ?? null, settings?.weight_kg ?? null);
   const bmiCategory = getBMICategory(bmi);
 
@@ -71,107 +61,37 @@ export default function Health() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-hud-phosphor border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground font-mono uppercase tracking-wider text-xs">{t("health.loading")}</p>
+          <p className="text-muted-foreground font-mono uppercase tracking-wider text-xs">
+            {t("health.loading")}
+          </p>
         </div>
       </div>
     );
   }
 
-  const ambientColor = getAmbientColor(healthScore.score);
   const lastSync = todayData?.created_at
     ? format(new Date(todayData.created_at), "HH:mm")
     : "—";
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Score-reactive ambient background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <motion.div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full blur-[120px]"
-          animate={{ background: `radial-gradient(circle, ${ambientColor} 0%, transparent 70%)` }}
-          transition={{ duration: 2 }}
-        />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full blur-[100px]"
-          style={{ background: "radial-gradient(circle, hsl(var(--hud-amber) / 0.03) 0%, transparent 70%)" }}
-        />
-      </div>
-      
-      {/* Subtle grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.02] dark:opacity-[0.04]">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(hsl(var(--hud-phosphor) / 0.4) 1px, transparent 1px),
-            linear-gradient(90deg, hsl(var(--hud-phosphor) / 0.4) 1px, transparent 1px)
-          `,
-          backgroundSize: '48px 48px',
-        }} />
-      </div>
+      {/* Score-reactive bio-mesh background */}
+      <HealthBioMesh score={healthScore.score} />
 
-      <div className="max-w-6xl mx-auto p-6 space-y-6 relative z-10">
-        <ModuleHeader
-          systemLabel="HEALTH_MONITOR // SYS.ACTIVE"
-          title="VITA "
-          titleAccent="SCAN"
-      badges={[]}
+      <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-5 relative z-10">
+        {/* === SIGNATURE HERO === */}
+        <HealthVitalCoreHero score={healthScore.score} />
+
+        {/* === TACTICAL READOUT (replaces command bar) === */}
+        <HealthTacticalReadout
+          onBreathing={() => setShowBreathing(true)}
+          onCheckin={() => setShowCheckin(true)}
+          onSettings={() => setShowSettings(true)}
+          lastSync={lastSync}
+          score={healthScore.score}
         />
 
-        {/* Command Bar — toolbar variant */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <HUDFrame className="px-4 py-3" variant="toolbar">
-            <div className="flex items-center justify-center gap-4 flex-wrap">
-              <HealthStreakBadge size="md" />
-              <div className="w-[1px] h-8 bg-hud-phosphor/20 hidden sm:block" />
-              <TooltipProvider delayDuration={200}>
-                <div className="flex flex-col items-center gap-0.5">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => setShowBreathing(true)}
-                        className="text-hud-phosphor hover:bg-hud-phosphor/10 rounded-xl transition-all">
-                        <Wind className="w-5 h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><span className="font-mono text-xs">{t("health.breathing.title").toUpperCase()}</span></TooltipContent>
-                  </Tooltip>
-                  <span className="text-[8px] font-mono text-muted-foreground/60 uppercase tracking-widest">Breathe</span>
-                </div>
-                <div className="flex flex-col items-center gap-0.5">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => setShowCheckin(true)}
-                        className="text-hud-phosphor hover:bg-hud-phosphor/10 rounded-xl transition-all">
-                        <Calendar className="w-5 h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><span className="font-mono text-xs">{t("health.dailyCheckin").toUpperCase()}</span></TooltipContent>
-                  </Tooltip>
-                  <span className="text-[8px] font-mono text-muted-foreground/60 uppercase tracking-widest">Check-in</span>
-                </div>
-                <div className="flex flex-col items-center gap-0.5">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => setShowSettings(true)}
-                        className="text-muted-foreground hover:text-hud-phosphor rounded-xl transition-all">
-                        <Settings className="w-5 h-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom"><span className="font-mono text-xs">{t("health.settings.title").toUpperCase()}</span></TooltipContent>
-                  </Tooltip>
-                  <span className="text-[8px] font-mono text-muted-foreground/60 uppercase tracking-widest">Config</span>
-                </div>
-              </TooltipProvider>
-              <div className="w-[1px] h-8 bg-hud-phosphor/20 hidden sm:block" />
-              <span className="text-[9px] font-mono text-muted-foreground/40 uppercase tracking-widest">
-                Last sync: {lastSync}
-              </span>
-            </div>
-          </HUDFrame>
-        </motion.div>
-
-        {/* Tabbed Content */}
+        {/* === TABBED CONTENT === */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full bg-hud-surface/60 border border-hud-phosphor/15 p-1 font-mono rounded-xl relative">
             {[
@@ -199,62 +119,81 @@ export default function Health() {
           </TabsList>
 
           {/* OVERVIEW TAB */}
-          <TabsContent value="overview" className="mt-6 space-y-6">
+          <TabsContent value="overview" className="mt-5 space-y-5">
             <motion.div
               key="overview"
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
+              transition={{ duration: 0.35 }}
+              className="space-y-5"
             >
-              {/* Vitals Summary Strip */}
-              <VitalsSummaryStrip userId={user?.id} />
-
-              {/* Health Score Hero */}
-              <div className="mt-4">
-                <HealthScoreCard 
-                  score={healthScore.score} 
-                  trend={healthScore.trend}
-                  factors={healthScore.factors}
-                />
-              </div>
+              {/* Health Score Hero (radar disk) */}
+              <HealthScoreCard
+                score={healthScore.score}
+                trend={healthScore.trend}
+                factors={healthScore.factors}
+              />
 
               {/* BMI Indicator */}
               {settings?.show_bmi && (
-                <div className="mt-4">
-                  <HealthBMIIndicator bmi={bmi} category={bmiCategory} />
-                </div>
+                <HealthBMIIndicator bmi={bmi} category={bmiCategory} />
               )}
 
-              {/* Metric Cards Grid */}
+              {/* Bio-Sensor Modules — horizontal cards */}
               <motion.div
                 variants={staggerContainer}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-4"
+                className="grid grid-cols-1 lg:grid-cols-2 gap-3"
               >
                 {settings?.show_sleep !== false && (
                   <motion.div variants={staggerItem}>
-                    <HealthMetricCard icon={Moon} title={t("health.metrics.sleep")} color="blue" metricKey="sleep" />
+                    <HealthMetricCard
+                      icon={Moon}
+                      title={t("health.metrics.sleep")}
+                      color="blue"
+                      metricKey="sleep"
+                    />
                   </motion.div>
                 )}
                 {settings?.show_activity !== false && (
                   <motion.div variants={staggerItem}>
-                    <HealthMetricCard icon={Activity} title={t("health.metrics.activity")} color="cyan" metricKey="activity" />
+                    <HealthMetricCard
+                      icon={Activity}
+                      title={t("health.metrics.activity")}
+                      color="cyan"
+                      metricKey="activity"
+                    />
                   </motion.div>
                 )}
                 {settings?.show_stress !== false && (
                   <motion.div variants={staggerItem}>
-                    <HealthMetricCard icon={Brain} title={t("health.metrics.stress")} color="amber" metricKey="stress" />
+                    <HealthMetricCard
+                      icon={Brain}
+                      title={t("health.metrics.stress")}
+                      color="amber"
+                      metricKey="stress"
+                    />
                   </motion.div>
                 )}
                 {settings?.show_hydration !== false && (
                   <motion.div variants={staggerItem}>
-                    <HealthMetricCard icon={Droplets} title={t("health.metrics.hydration")} color="cyan" metricKey="hydration" />
+                    <HealthMetricCard
+                      icon={Droplets}
+                      title={t("health.metrics.hydration")}
+                      color="cyan"
+                      metricKey="hydration"
+                    />
                   </motion.div>
                 )}
                 {settings?.show_nutrition && (
                   <motion.div variants={staggerItem}>
-                    <HealthMetricCard icon={Apple} title={t("health.metrics.nutrition")} color="orange" metricKey="nutrition" />
+                    <HealthMetricCard
+                      icon={Apple}
+                      title={t("health.metrics.nutrition")}
+                      color="orange"
+                      metricKey="nutrition"
+                    />
                   </motion.div>
                 )}
               </motion.div>
@@ -262,13 +201,13 @@ export default function Health() {
           </TabsContent>
 
           {/* ANALYTICS TAB */}
-          <TabsContent value="analytics" className="mt-6 space-y-6">
+          <TabsContent value="analytics" className="mt-5 space-y-5">
             <motion.div
               key="analytics"
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="space-y-6"
+              transition={{ duration: 0.35 }}
+              className="space-y-5"
             >
               <HealthWeeklyChart />
               <HealthEnergyCurve />
@@ -277,13 +216,13 @@ export default function Health() {
           </TabsContent>
 
           {/* INTEL TAB */}
-          <TabsContent value="intel" className="mt-6 space-y-6">
+          <TabsContent value="intel" className="mt-5 space-y-5">
             <motion.div
               key="intel"
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="space-y-6"
+              transition={{ duration: 0.35 }}
+              className="space-y-5"
             >
               <HealthInsightsPanel />
               <HealthChallengesPanel />
@@ -308,39 +247,5 @@ export default function Health() {
       <HealthDailyCheckin open={showCheckin} onOpenChange={setShowCheckin} />
       <HealthBreathingExercise open={showBreathing} onOpenChange={setShowBreathing} />
     </div>
-  );
-}
-
-/* ── Vitals Summary Strip ── */
-function VitalsSummaryStrip({ userId }: { userId?: string }) {
-  const { t } = useTranslation();
-  const { data: todayData } = useTodayHealth(userId);
-
-  const metrics = [
-    { key: "Sleep", value: todayData?.sleep_quality, max: 5 },
-    { key: "Activity", value: todayData?.activity_level, max: 5 },
-    { key: "Stress", value: todayData?.stress_level, max: 5, invert: true },
-    { key: "Hydration", value: todayData?.hydration_glasses, max: 8 },
-  ];
-
-  const getLedClass = (val: number | null | undefined, invert?: boolean) => {
-    if (val == null) return "bg-muted-foreground/30";
-    const v = invert ? 6 - val : val;
-    if (v >= 4) return "bg-emerald-400 shadow-[0_0_4px_hsl(142,70%,50%)]";
-    if (v >= 3) return "bg-hud-amber shadow-[0_0_4px_hsl(43,100%,50%)]";
-    return "bg-destructive shadow-[0_0_4px_hsl(0,85%,60%)]";
-  };
-
-  return (
-    <HUDFrame className="px-4 py-2" variant="toolbar">
-      <div className="flex gap-4 overflow-x-auto justify-center font-mono text-[10px] uppercase tracking-wider">
-        {metrics.map(({ key, value, max, invert }) => (
-          <span key={key} className="flex items-center gap-1.5 text-muted-foreground/80 whitespace-nowrap">
-            <span className={cn("w-1.5 h-1.5 rounded-full", getLedClass(value, invert))} />
-            {key}: {value != null ? `${value}/${max}` : "—"}
-          </span>
-        ))}
-      </div>
-    </HUDFrame>
   );
 }
