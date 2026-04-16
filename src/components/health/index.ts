@@ -17,3 +17,7 @@ export { HealthInsightsPanel } from "./HealthInsightsPanel";
 export { HealthBreathingExercise } from "./HealthBreathingExercise";
 export { HealthEnergyCurve } from "./HealthEnergyCurve";
 export { HUDFrame } from "./HUDFrame";
+export { HealthECGLine } from "./HealthECGLine";
+export { HealthBioMesh } from "./HealthBioMesh";
+export { HealthVitalCoreHero } from "./HealthVitalCoreHero";
+export { HealthTacticalReadout } from "./HealthTacticalReadout";
