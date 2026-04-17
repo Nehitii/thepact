@@ -1,98 +1,94 @@
 
+# /finance V3 — "VAULT OS" Bio-Banking HUD (révisé)
 
-# Audit Code Global — VowPact
+Refonte complète du module finance combinant esthétique bancaire premium (Revolut/N26 dark) et HUD cyberpunk tactique, **avec vocabulaire clair et compréhensible**.
 
-## 1. FICHIERS ORPHELINS (jamais importes)
+## Changement clé vs plan précédent
 
-| Fichier | Statut |
-|---------|--------|
-| `src/components/home/ProgressByDifficultyModule.tsx` | Jamais importe nulle part — composant mort |
-| `src/components/PactTimeline.tsx` | Jamais importe dans aucune page — composant mort |
-| `src/components/health/HealthDataExport.tsx` | Exporte dans le barrel `health/index.ts` mais jamais importe par `Health.tsx` — mort |
-| `tmp/ref.html` | Fichier de reference HTML de 1457 lignes — vestige de design, ne fait pas partie de l'app |
-| `src/lib/index.ts` | Barrel export jamais utilise — aucun fichier n'importe `from "@/lib"` |
-| `src/contexts/index.ts` | Barrel export jamais utilise — aucun fichier n'importe `from "@/contexts"` |
+Les noms d'onglets et catégories restent **explicites et bancaires standards**, sans jargon cyber forcé. La couche "tactique" se joue sur le visuel (LED, sparklines, typo monospace, ticker), pas sur le renommage.
 
-## 2. CLES i18n MANQUANTES (erreurs console)
+### Onglets — noms conservés
+- `Dashboard` (au lieu de "01 OVERVIEW")
+- `Budget` (au lieu de "02 BUDGET")
+- `Transactions` (au lieu de "03 LEDGER")
+- `Accounts` (au lieu de "04 VAULTS")
+- `Planner` (au lieu de "05 FORECAST")
 
-Les cles suivantes sont utilisees dans `PeriodSelector.tsx` mais absentes de `en.json` et `fr.json` :
-- `analytics.period.30d`
-- `analytics.period.90d`
-- `analytics.period.6m`
-- `analytics.period.all`
+Numérotation discrète `01–05` possible en préfixe muted optionnel, mais le nom principal reste lisible.
 
-Les fallbacks fonctionnent (ex: "Last 30 days") mais genere des warnings console a chaque visite de `/analytics`.
+---
 
-## 3. TODO NON RESOLU
+## 5 Piliers
 
-`src/hooks/useHealthChallenges.ts` ligne 214 :
+### 1. `FinanceVaultHero` — signature module
+Hero pleine largeur avec :
+- Net Worth en grand (Orbitron + AnimatedNumber)
+- Sparkline cash flow 30 jours intégrée
+- Delta vs mois précédent (flèche colorée + %)
+- Bottom strip : Liquidity months • Burn rate • Health score (LED tactical)
+- Header tactique discret : `FINANCE` • compte ID • statut LIVE • horloge
+
+### 2. `FinanceTickerBar` — bandeau live
+Sticky sous le hero, style ticker bancaire :
 ```
-// TODO: Award bonds to user
+EUR ●LIVE  │  ▲ Income +€3,200  ▼ Expenses -€1,840  ● Net +€1,360  │  Budget 67%  │  ⚠ 1 alert
 ```
-Le toast affiche "+X Bonds" mais les bonds ne sont jamais reellement credites. Bug fonctionnel silencieux.
 
-## 4. ERREUR RUNTIME — Edge Function `two-factor`
+### 3. Tabs en barre tactique (noms clairs)
+Pills minces avec underline animé sur l'onglet actif. Numéro `01`–`05` en muted très subtil à gauche du label, label principal lisible (`Dashboard`, `Budget`, `Transactions`, `Accounts`, `Planner`).
 
-L'erreur `401: Invalid or expired token` dans les logs indique que l'edge function `two-factor` rejette des tokens expires lors du refresh de session. C'est un probleme connu de timing Supabase — le token expire entre le moment ou le client le lit et ou l'edge function le valide. Pas un bug de code a proprement parler mais merite un guard cote client pour retry avec un token frais.
+### 4. `BankCellCard` — KPI premium
+Remplace les 4 KPI plats actuels :
+- LED status (vert/ambre/rouge) selon santé
+- Grosse valeur tabulaire monospace
+- Delta MoM (Month-over-Month) avec flèche
+- Micro-sparkline 6 mois en bas
 
-## 5. BARREL EXPORTS INUTILES
+4 cards : Savings Rate • Monthly Net • Net Worth • Months to Goal
 
-Les barrels suivants sont declares mais jamais utilises via leur index :
-- `src/components/goals/index.ts` — 0 import via `from "@/components/goals"`
-- `src/components/finance/index.ts` — 0 import via `from "@/components/finance"`
-- `src/components/health/index.ts` — 0 import (Health.tsx importe chaque composant directement)
-- `src/components/layout/index.ts` — 1 seul import (Calendar.tsx), tous les autres importent directement
+### 5. `VaultMeshBackground` — atmosphère
+- Grille fine 80px (gardée)
+- Lignes diagonales très subtiles style ledger papier
+- Pulse radial bleu-cyan raffiné
+- 3-4 particules "data flow" verticales lentes (motion-reduce safe)
 
-Ces barrels ne cassent rien mais ajoutent du code mort et de la confusion.
+---
 
-## 6. ORGANISATION LOGIQUE
+## Restructure par onglet
 
-### Correct
-- Pages dans `src/pages/` — bien organise, 1 fichier par route
-- Hooks dans `src/hooks/` — 1 hook par feature, nommage coherent
-- Composants groupes par module (`friends/`, `goals/`, `health/`, etc.)
-- Edge functions dans `supabase/functions/` — bien separees
+| Onglet | Changement |
+|--------|------------|
+| Dashboard | Hero + Ticker + 4 BankCells + widgets existants conservés |
+| Budget | MonthlyBalanceHero upgradé avec barre ratio in/out, blocks gardés |
+| Transactions | Header table type "transaction log" : DATE • DESC • CAT • AMOUNT • BALANCE, hover row highlight, filtres en chips compacts |
+| Accounts | Hero "Total Assets" centré, cards comptes avec mini-trend par compte, transfer simulator gardé |
+| Planner | Polish typographique tabulaire, header "Projection Horizon" discret |
 
-### A reorganiser
-- `src/components/PactTimeline.tsx`, `src/components/PactVisual.tsx`, `src/components/WeeklyReviewModal.tsx`, `src/components/GoalImageUpload.tsx`, `src/components/ParticleEffect.tsx`, `src/components/CyberBackground.tsx` — composants "loose" a la racine de `components/`. Devraient etre dans des sous-dossiers logiques (`pact/`, `shared/`, `effects/`).
-- `src/pages/GoalDetail_handlers.tsx` — pattern inhabituel (fichier `_handlers` dans pages). Devrait etre dans `src/hooks/` ou `src/lib/`.
+---
 
-## 7. CONSOLE.LOG RESTANTS
+## Détails techniques
 
-Un seul `console.log` conditionnel dans `TheCall.tsx` (gate par `import.meta.env.DEV`) — acceptable, pas de fuite en production.
+### Fichiers à créer
+- `src/components/finance/FinanceVaultHero.tsx`
+- `src/components/finance/FinanceTickerBar.tsx`
+- `src/components/finance/widgets/BankCellCard.tsx`
+- `src/components/finance/VaultMeshBackground.tsx`
 
-## PLAN D'IMPLEMENTATION
+### Fichiers à éditer
+- `src/pages/Finance.tsx` — hero + tabs + bg
+- `src/components/finance/FinanceDashboard.tsx` — intégrer Hero + BankCells (remplacer KPI row actuel)
+- `src/components/finance/monthly/MonthlyBalanceHero.tsx` — barre ratio in/out
+- `src/index.css` — keyframes ticker scroll, vault pulse, bank cell glow (tous wrappés `motion-reduce:animate-none`)
+- `src/i18n/locales/{en,fr}.json` — clés pour Liquidity months, Burn rate, MoM, ticker labels
 
-### Phase 1 — Nettoyage code mort
-1. Supprimer `src/components/home/ProgressByDifficultyModule.tsx`
-2. Supprimer `src/components/PactTimeline.tsx`
-3. Supprimer `tmp/ref.html`
-4. Supprimer `src/lib/index.ts` et `src/contexts/index.ts`
-5. Retirer `HealthDataExport` du barrel `health/index.ts` (garder le composant pour usage futur ou le supprimer)
+### Logique calculs ajoutés
+- **Liquidity months** = netWorth / monthlyExpenses (si expenses > 0)
+- **Burn rate** = totalExpenses
+- **Delta MoM par KPI** = (current − prev) / prev × 100, source `validations`
+- **Cash flow 30j sparkline** = somme journalière des transactions du mois courant
 
-### Phase 2 — i18n manquant
-6. Ajouter les cles `analytics.period.*` dans `en.json` et `fr.json`
+### Conservé intact
+Tous les hooks (useFinance, useTransactions, useAccounts, useBudgets), tous les widgets (CategoryDonut, SavingsRateRing, FinancialHealthScore, MonthComparisonWidget, TopCategoriesBar, CategoryTrendsChart), toute la logique de validation mensuelle.
 
-### Phase 3 — Bug fonctionnel
-7. Implementer le credit de bonds dans `useHealthChallenges.ts` (appeler le RPC `award_bonds` ou equivalent) et retirer le TODO
-
-### Phase 4 — Organisation
-8. Deplacer `GoalDetail_handlers.tsx` vers `src/lib/goalDetailHandlers.ts`
-9. Optionnel : reorganiser les composants loose dans des sous-dossiers
-
-## Fichiers impactes
-
-| Fichier | Action |
-|---------|--------|
-| `src/components/home/ProgressByDifficultyModule.tsx` | Supprimer |
-| `src/components/PactTimeline.tsx` | Supprimer |
-| `tmp/ref.html` | Supprimer |
-| `src/lib/index.ts` | Supprimer |
-| `src/contexts/index.ts` | Supprimer |
-| `src/components/health/index.ts` | Retirer export HealthDataExport |
-| `src/i18n/locales/en.json` | Ajouter cles `analytics.period.*` |
-| `src/i18n/locales/fr.json` | Ajouter cles `analytics.period.*` |
-| `src/hooks/useHealthChallenges.ts` | Implementer bond reward |
-| `src/pages/GoalDetail_handlers.tsx` | Deplacer vers `src/lib/` |
-| `src/pages/GoalDetail.tsx` | Mettre a jour l'import |
-
+### Palette tactique
+Vert `emerald-400` (positif) • Rouge `rose-400` (négatif) • Ambre `amber-400` (warning) • Cyan `primary` (data neutre) • `font-mono tabular-nums` partout sur les chiffres
