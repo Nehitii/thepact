@@ -225,7 +225,7 @@ export function FinanceDashboard({
         totalExpenses={totalExpenses}
         monthlyNet={monthlyNet}
         budgetPct={budgetPct}
-        alertCount={0}
+        alertCount={alerts.length}
       />
 
       {/* Alerts Panel */}
