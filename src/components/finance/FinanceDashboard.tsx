@@ -149,35 +149,85 @@ export function FinanceDashboard({
     });
   }, [validations, monthlyNet]);
 
-  const kpis = [
-    {
-      icon: TrendingUp,
-      label: t('finance.projections.savingsRate'),
-      value: `${savingsRate}%`,
-      color: savingsRate >= 0 ? 'text-emerald-400' : 'text-rose-400',
-    },
-    {
-      icon: BarChart3,
-      label: t('finance.projections.monthlyNet'),
-      value: `${monthlyNet >= 0 ? '+' : ''}${formatCurrency(monthlyNet, currency)}`,
-      color: monthlyNet >= 0 ? 'text-emerald-400' : 'text-rose-400',
-    },
-    {
-      icon: Wallet,
-      label: t('finance.accounts.netWorth'),
-      value: formatCurrency(netWorth, currency),
-      color: netWorth >= 0 ? 'text-foreground' : 'text-rose-400',
-    },
-    {
-      icon: Target,
-      label: t('finance.projections.toGoal'),
-      value: monthsToGoal !== null ? `${monthsToGoal} mo` : '—',
-      color: 'text-foreground',
-    },
-  ];
+  // Previous-month net (from validations) for MoM deltas
+  const prevMonthKey = format(subMonths(new Date(), 1), 'yyyy-MM-01');
+  const prevValidation = validations.find(v => v.month === prevMonthKey);
+  const prevMonthIncome = prevValidation?.actual_total_income ?? null;
+  const prevMonthExpenses = prevValidation?.actual_total_expenses ?? null;
+  const prevMonthNet = prevValidation?.validated_at
+    ? roundMoney((prevMonthIncome || 0) - (prevMonthExpenses || 0))
+    : null;
+  const prevSavingsRate = prevMonthIncome && prevMonthIncome > 0
+    ? Math.round(((prevMonthNet || 0) / prevMonthIncome) * 100)
+    : null;
+
+  // 6-month sparkline series for KPIs (from balanceTrend)
+  const netSeries = balanceTrend.map(b => b.balance);
+  const savingsSeries = balanceTrend.map(b => {
+    const v = validations.find(x => x.month === b.month);
+    if (v?.validated_at && (v.actual_total_income || 0) > 0) {
+      return Math.round((((v.actual_total_income || 0) - (v.actual_total_expenses || 0)) / (v.actual_total_income || 1)) * 100);
+    }
+    return b.month === format(new Date(), 'yyyy-MM-01') ? savingsRate : 0;
+  });
+
+  // Inline health score (0-100): savings (30) + budget compliance (25) + validation streak (25) + diversification (20)
+  const healthScore = useMemo(() => {
+    const sScore = Math.min(30, Math.max(0, Math.round(savingsRate * 1.5)));
+    let bScore = 25;
+    if (budgets.length > 0) {
+      const over = budgets.filter(b => (txByCategory[b.category] || 0) > b.monthly_limit).length;
+      bScore = Math.round((1 - over / budgets.length) * 25);
+    }
+    const streak = validations.filter(v => v.validated_at).length;
+    const vScore = Math.min(25, streak * 4);
+    const dScore = Math.min(20, incomeCategoryCount * 5);
+    return Math.max(0, Math.min(100, sScore + bScore + vScore + dScore));
+  }, [savingsRate, budgets, txByCategory, validations, incomeCategoryCount]);
+
+  // Budget consumption %
+  const budgetPct = useMemo(() => {
+    if (budgets.length === 0) return null;
+    const totalLimit = budgets.reduce((s, b) => s + b.monthly_limit, 0);
+    const totalSpent = budgets.reduce((s, b) => s + (txByCategory[b.category] || 0), 0);
+    return totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : null;
+  }, [budgets, txByCategory]);
+
+  // MoM deltas helpers
+  const mom = (curr: number, prev: number | null) => {
+    if (prev === null || prev === 0) return { label: null as string | null, positive: null as boolean | null };
+    const diff = ((curr - prev) / Math.abs(prev)) * 100;
+    return {
+      label: `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}% ${t('finance.vault.mom', 'MoM')}`,
+      positive: diff >= 0,
+    };
+  };
+
+  const savingsMoM = mom(savingsRate, prevSavingsRate);
+  const netMoM = mom(monthlyNet, prevMonthNet);
 
   return (
     <div className="space-y-6">
+      {/* VAULT HERO */}
+      <FinanceVaultHero
+        netWorth={netWorth}
+        monthlyNet={monthlyNet}
+        totalExpenses={totalExpenses}
+        prevMonthNet={prevMonthNet}
+        healthScore={healthScore}
+        transactions={transactions}
+        accountsCount={accounts.filter(a => a.is_active).length}
+      />
+
+      {/* TICKER */}
+      <FinanceTickerBar
+        totalIncome={totalIncome}
+        totalExpenses={totalExpenses}
+        monthlyNet={monthlyNet}
+        budgetPct={budgetPct}
+        alertCount={0}
+      />
+
       {/* Alerts Panel */}
       {alerts.length > 0 && (
         <div className="space-y-2">
@@ -208,23 +258,46 @@ export function FinanceDashboard({
         </div>
       )}
 
-      {/* KPI Row */}
+      {/* BANK CELLS — KPI premium */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpis.map((kpi, i) => (
-          <motion.div
-            key={kpi.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="neu-card p-5"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <kpi.icon className="h-4 w-4 text-primary" />
-              <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{kpi.label}</span>
-            </div>
-            <p className={`text-2xl sm:text-3xl font-bold tabular-nums break-all ${kpi.color}`}>{kpi.value}</p>
-          </motion.div>
-        ))}
+        <BankCellCard
+          icon={TrendingUp}
+          label={t('finance.projections.savingsRate')}
+          value={`${savingsRate}%`}
+          status={savingsRate >= 20 ? 'positive' : savingsRate >= 0 ? 'neutral' : 'negative'}
+          deltaLabel={savingsMoM.label}
+          deltaPositive={savingsMoM.positive}
+          sparkline={savingsSeries}
+          delay={0}
+        />
+        <BankCellCard
+          icon={BarChart3}
+          label={t('finance.projections.monthlyNet')}
+          value={`${monthlyNet >= 0 ? '+' : ''}${formatCurrency(monthlyNet, currency)}`}
+          status={monthlyNet >= 0 ? 'positive' : 'negative'}
+          deltaLabel={netMoM.label}
+          deltaPositive={netMoM.positive}
+          sparkline={netSeries}
+          delay={0.05}
+        />
+        <BankCellCard
+          icon={Wallet}
+          label={t('finance.accounts.netWorth')}
+          value={formatCurrency(netWorth, currency)}
+          status={netWorth >= 0 ? 'neutral' : 'negative'}
+          deltaLabel={null}
+          deltaPositive={null}
+          delay={0.1}
+        />
+        <BankCellCard
+          icon={Target}
+          label={t('finance.projections.toGoal')}
+          value={monthsToGoal !== null ? `${monthsToGoal} ${t('finance.vault.mo', 'mo')}` : '—'}
+          status={monthsToGoal !== null && monthsToGoal <= 24 ? 'positive' : 'warning'}
+          deltaLabel={null}
+          deltaPositive={null}
+          delay={0.15}
+        />
       </div>
 
       {/* Project Funding */}
