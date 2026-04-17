@@ -67,10 +67,45 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
             transition={{ delay: 0.2, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <div className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight">
+            <div className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight font-mono tabular-nums">
               <AnimatedNumber value={netBalance} currency={currency} isPositive={isPositive} />
             </div>
           </motion.div>
+
+          {/* In/Out ratio bar */}
+          {(totalIncome > 0 || totalExpenses > 0) && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
+              className="mt-8 max-w-2xl mx-auto"
+            >
+              <div className="flex items-center justify-between mb-2 font-mono text-[10px] uppercase tracking-[0.18em]">
+                <span className="text-emerald-400 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_currentColor]" />
+                  {t('finance.monthly.income')} · {Math.round((totalIncome / Math.max(totalIncome + totalExpenses, 1)) * 100)}%
+                </span>
+                <span className="text-rose-400 flex items-center gap-1.5">
+                  {t('finance.monthly.expenses')} · {Math.round((totalExpenses / Math.max(totalIncome + totalExpenses, 1)) * 100)}%
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_6px_currentColor]" />
+                </span>
+              </div>
+              <div className="h-2 rounded-full overflow-hidden bg-muted/40 flex">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(totalIncome / Math.max(totalIncome + totalExpenses, 1)) * 100}%` }}
+                  transition={{ delay: 0.6, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400"
+                />
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(totalExpenses / Math.max(totalIncome + totalExpenses, 1)) * 100}%` }}
+                  transition={{ delay: 0.6, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full bg-gradient-to-r from-rose-500 to-rose-400"
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </motion.div>
