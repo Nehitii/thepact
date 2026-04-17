@@ -20,6 +20,7 @@ import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard"
 import { ProjectionsPanel } from "@/components/finance/ProjectionsPanel";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
 import { AccountsOverview } from "@/components/finance/accounts";
+import { VaultMeshBackground } from "@/components/finance/VaultMeshBackground";
 import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
 import { TransactionsTab } from "@/components/finance/transactions";
 import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
@@ -106,30 +107,19 @@ export default function Finance() {
     toast.success(t('finance.export.success'));
   };
 
-  const tabTriggerClass = "flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4";
+  const tabTriggerClass = "flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4 group";
+
+  const TabNum = ({ n }: { n: string }) => (
+    <span className="hidden md:inline font-mono text-[10px] text-muted-foreground/40 group-data-[state=active]:text-primary/70 mr-1.5 tracking-wider">{n}</span>
+  );
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      <div className="fixed inset-0 bg-background dark:bg-gradient-to-b dark:from-[#070a10] dark:via-[#0c1018] dark:to-[#080c14]" />
-      <div className="fixed inset-0 mesh-gradient-bg opacity-60 dark:opacity-60 opacity-20" />
-      <div className="noise-overlay" />
-      <motion.div
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[1400px] h-[800px] pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at center, hsla(200,100%,60%,0.04) 0%, transparent 60%)' }}
-        animate={{ opacity: [0.5, 0.7, 0.5] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-      />
-      <div
-        className="fixed inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: `linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)`,
-          backgroundSize: '80px 80px'
-        }}
-      />
+      <VaultMeshBackground />
 
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <ModuleHeader
-          systemLabel="NEURAL_FINANCE // SYS.ACTIVE"
+          systemLabel="VAULT_OS // SECURE_LINK ●"
           title="FUND "
           titleAccent="FLOW"
         />
@@ -139,19 +129,19 @@ export default function Finance() {
             <div className="w-full max-w-3xl flex items-center gap-2">
               <TabsList className="flex-1 neu-card p-2 border-0 overflow-x-auto scrollbar-hide">
                 <TabsTrigger value="dashboard" className={tabTriggerClass}>
-                  <LayoutDashboard className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.dashboard')}</span>
+                  <LayoutDashboard className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="01" /><span className="hidden sm:inline">{t('finance.tabs.dashboard')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="budget" className={tabTriggerClass}>
-                  <FileText className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.budget')}</span>
+                  <FileText className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="02" /><span className="hidden sm:inline">{t('finance.tabs.budget')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="transactions" className={tabTriggerClass}>
-                  <ArrowLeftRight className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.transactions')}</span>
+                  <ArrowLeftRight className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="03" /><span className="hidden sm:inline">{t('finance.tabs.transactions')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="accounts" className={tabTriggerClass}>
-                  <Landmark className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.accounts')}</span>
+                  <Landmark className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="04" /><span className="hidden sm:inline">{t('finance.tabs.accounts')}</span>
                 </TabsTrigger>
                 <TabsTrigger value="planner" className={tabTriggerClass}>
-                  <TrendingUp className="h-4 w-4 sm:mr-2 shrink-0" /><span className="hidden sm:inline">{t('finance.tabs.planner')}</span>
+                  <TrendingUp className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="05" /><span className="hidden sm:inline">{t('finance.tabs.planner')}</span>
                 </TabsTrigger>
               </TabsList>
               <div className="flex items-center gap-1 shrink-0">
