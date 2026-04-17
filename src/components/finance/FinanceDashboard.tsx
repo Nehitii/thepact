@@ -36,7 +36,6 @@ import {
 } from './widgets';
 import { format, subMonths } from 'date-fns';
 import { FinancialHealthScore } from './widgets/FinancialHealthScore';
-import { computeHealthScore } from '@/lib/financeHealthScore';
 interface FinanceDashboardProps {
   totalEstimated: number;
   totalPaid: number;
