@@ -534,6 +534,17 @@
       "accounts": "Comptes",
       "transactions": "Opérations"
     },
+    "vault": {
+      "heroAria": "Vue d'ensemble du coffre",
+      "tickerAria": "Résumé financier en direct",
+      "cashFlow30d": "Flux · 30j",
+      "vsLastMonth": "vs mois dernier",
+      "liquidity": "Liquidité",
+      "burnRate": "Brûlage",
+      "mo": "mois",
+      "moShort": "mois",
+      "mom": "M/M"
+    },
     "export": {
       "title": "Exporter",
       "success": "Rapport exporté",

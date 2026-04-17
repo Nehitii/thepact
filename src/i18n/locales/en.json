@@ -534,6 +534,17 @@
       "accounts": "Accounts",
       "transactions": "Transactions"
     },
+    "vault": {
+      "heroAria": "Vault overview",
+      "tickerAria": "Live financial summary",
+      "cashFlow30d": "Cash flow · 30d",
+      "vsLastMonth": "vs last month",
+      "liquidity": "Liquidity",
+      "burnRate": "Burn rate",
+      "mo": "mo",
+      "moShort": "mo",
+      "mom": "MoM"
+    },
     "export": {
       "title": "Export",
       "success": "Report exported",
