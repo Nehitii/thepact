@@ -1,94 +1,139 @@
 
-# /finance V3 — "VAULT OS" Bio-Banking HUD (révisé)
+# /finance V4 — "AURA" Neo-Banking Glassmorphism
 
-Refonte complète du module finance combinant esthétique bancaire premium (Revolut/N26 dark) et HUD cyberpunk tactique, **avec vocabulaire clair et compréhensible**.
+Refonte radicale de `/finance` vers une esthétique **Neo-Bank premium** (Revolut / Mercury / Apple Card) avec glassmorphism, néons subtils et hiérarchie aérée. On casse la structure actuelle (5 onglets + hero VAULT) pour repartir sur un dashboard widget-driven.
 
-## Changement clé vs plan précédent
+## Diagnostic actuel
 
-Les noms d'onglets et catégories restent **explicites et bancaires standards**, sans jargon cyber forcé. La couche "tactique" se joue sur le visuel (LED, sparklines, typo monospace, ticker), pas sur le renommage.
+- VAULT OS = trop tactique/cyber-militaire, pas assez "premium banking"
+- Hero dense (sparkline + ratios + ticker) → manque d'air
+- Tabs nombreuses (Dashboard/Budget/Transactions/Accounts/Planner) = friction
+- KPI cards bordurées, pas de glassmorphism vrai
+- Background mesh chargé
 
-### Onglets — noms conservés
-- `Dashboard` (au lieu de "01 OVERVIEW")
-- `Budget` (au lieu de "02 BUDGET")
-- `Transactions` (au lieu de "03 LEDGER")
-- `Accounts` (au lieu de "04 VAULTS")
-- `Planner` (au lieu de "05 FORECAST")
+## Vision AURA
 
-Numérotation discrète `01–05` possible en préfixe muted optionnel, mais le nom principal reste lisible.
-
----
-
-## 5 Piliers
-
-### 1. `FinanceVaultHero` — signature module
-Hero pleine largeur avec :
-- Net Worth en grand (Orbitron + AnimatedNumber)
-- Sparkline cash flow 30 jours intégrée
-- Delta vs mois précédent (flèche colorée + %)
-- Bottom strip : Liquidity months • Burn rate • Health score (LED tactical)
-- Header tactique discret : `FINANCE` • compte ID • statut LIVE • horloge
-
-### 2. `FinanceTickerBar` — bandeau live
-Sticky sous le hero, style ticker bancaire :
-```
-EUR ●LIVE  │  ▲ Income +€3,200  ▼ Expenses -€1,840  ● Net +€1,360  │  Budget 67%  │  ⚠ 1 alert
-```
-
-### 3. Tabs en barre tactique (noms clairs)
-Pills minces avec underline animé sur l'onglet actif. Numéro `01`–`05` en muted très subtil à gauche du label, label principal lisible (`Dashboard`, `Budget`, `Transactions`, `Accounts`, `Planner`).
-
-### 4. `BankCellCard` — KPI premium
-Remplace les 4 KPI plats actuels :
-- LED status (vert/ambre/rouge) selon santé
-- Grosse valeur tabulaire monospace
-- Delta MoM (Month-over-Month) avec flèche
-- Micro-sparkline 6 mois en bas
-
-4 cards : Savings Rate • Monthly Net • Net Worth • Months to Goal
-
-### 5. `VaultMeshBackground` — atmosphère
-- Grille fine 80px (gardée)
-- Lignes diagonales très subtiles style ledger papier
-- Pulse radial bleu-cyan raffiné
-- 3-4 particules "data flow" verticales lentes (motion-reduce safe)
+Mode sombre profond `Midnight #0A0E1A` + accents `Electric Blue #00D1FF` et `Mint #00F5A0`. Cartes en verre dépoli avec bordures lumineuses 1px, radius cohérent **20px** partout, espaces négatifs généreux, typographie Inter pour la lisibilité (chiffres tabulaires en `Geist Mono`).
 
 ---
 
-## Restructure par onglet
+## Nouvelle architecture
 
-| Onglet | Changement |
-|--------|------------|
-| Dashboard | Hero + Ticker + 4 BankCells + widgets existants conservés |
-| Budget | MonthlyBalanceHero upgradé avec barre ratio in/out, blocks gardés |
-| Transactions | Header table type "transaction log" : DATE • DESC • CAT • AMOUNT • BALANCE, hover row highlight, filtres en chips compacts |
-| Accounts | Hero "Total Assets" centré, cards comptes avec mini-trend par compte, transfer simulator gardé |
-| Planner | Polish typographique tabulaire, header "Projection Horizon" discret |
+### Layout principal
+```
+┌─ AuraBackground (orbes radiaux flous + grille très subtile) ─────────────┐
+│                                                                          │
+│  ┌─────────────── HERO BALANCE (centré, aéré) ──────────────────┐       │
+│  │  Total Balance                                                │       │
+│  │  €12,847.32                          [VirtualCard 3D rotatif] │       │
+│  │  ▲ +2.7% this month                                           │       │
+│  │  ╱╲╱╲╱╲ Cash flow curve (Bezier animée 30j)                  │       │
+│  └───────────────────────────────────────────────────────────────┘       │
+│                                                                          │
+│  ┌─ Income ─┐  ┌─ Expenses ─┐  ┌─ Savings ─┐  ┌─ Net ─┐                │
+│  │ glass    │  │ glass      │  │ glass     │  │ glass │  (widgets)     │
+│  └──────────┘  └────────────┘  └───────────┘  └───────┘                │
+│                                                                          │
+│  ┌─ Floating bottom tab bar (4 sections) ────────────────────────┐      │
+│  │  ◉ Overview   Budget   Transactions   Accounts                │      │
+│  └───────────────────────────────────────────────────────────────┘      │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### Onglets — réduit de 5 à 4
+Fusionne **Planner** dans **Overview** (section "Forecast" en bas). Garde les noms clairs : **Overview · Budget · Transactions · Accounts**.
+
+Navigation : barre d'onglets flottante en bas du hero (sticky), pills ultra-fines en glass, indicateur actif lumineux mint.
+
+---
+
+## 5 piliers de la refonte
+
+### 1. `AuraBackground`
+- Fond `#0A0E1A` profond
+- 2-3 orbes radiaux flous (blur-3xl) bleu électrique + mint, animation très lente (>20s)
+- Grille fine 120px à 3% d'opacité
+- Aucune particule (on retire le côté tactique militaire)
+
+### 2. `AuraBalanceHero`
+- Solde total en **64px Inter Display semi-bold**, animé (AnimatedNumber existant)
+- Sous-titre delta MoM avec flèche colorée
+- **VirtualCard 3D** à droite : carte bancaire CSS pure, gradient dynamique selon devise, légère rotation au hover (transform-style: preserve-3d)
+- Courbe Bezier SVG fluide 30 jours sous le solde (path animé au mount, gradient stroke)
+- Glassmorphism : `bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08]`, radius 24px
+
+### 3. `AuraWidget` (KPI glass)
+4 widgets en grille (Income / Expenses / Savings / Net Monthly) :
+- Glass card radius 20px
+- Icône néon en haut-gauche (cercle glow)
+- Valeur Geist Mono tabulaire
+- Mini-sparkline 7 jours sous-jacente très discrète
+- Hover : élévation + glow néon de la couleur sémantique
+- Aucune bordure dure, juste 1px white/[0.06]
+
+### 4. Floating Tab Bar
+- Sticky en bas du hero, glass `backdrop-blur-xl`
+- Pills sans fond, label uniquement
+- Indicateur actif : pastille mint à gauche du label + glow subtil
+- Settings/Export en kebab à droite, intégrés à la barre
+
+### 5. Refonte interne onglets
+| Onglet | Refonte |
+|--------|---------|
+| Overview | Hero + 4 widgets + Forecast section (ex-Planner) en bas, glass cards |
+| Budget | MonthlyBalanceHero gardé mais reskin glass, blocks income/expenses en grid aéré 2 col |
+| Transactions | Liste épurée groupée par jour, icônes minimalistes catégorie, hover row → highlight glass + slide-in détails |
+| Accounts | Grid de cards "Virtual Card" mini, total assets centré en hero secondaire |
 
 ---
 
 ## Détails techniques
 
 ### Fichiers à créer
-- `src/components/finance/FinanceVaultHero.tsx`
-- `src/components/finance/FinanceTickerBar.tsx`
-- `src/components/finance/widgets/BankCellCard.tsx`
-- `src/components/finance/VaultMeshBackground.tsx`
+- `src/components/finance/aura/AuraBackground.tsx`
+- `src/components/finance/aura/AuraBalanceHero.tsx`
+- `src/components/finance/aura/AuraWidget.tsx`
+- `src/components/finance/aura/VirtualCard.tsx` — carte bancaire 3D
+- `src/components/finance/aura/CashFlowCurve.tsx` — SVG Bezier animée
+- `src/components/finance/aura/FloatingTabBar.tsx`
+- `src/components/finance/aura/index.ts`
 
 ### Fichiers à éditer
-- `src/pages/Finance.tsx` — hero + tabs + bg
-- `src/components/finance/FinanceDashboard.tsx` — intégrer Hero + BankCells (remplacer KPI row actuel)
-- `src/components/finance/monthly/MonthlyBalanceHero.tsx` — barre ratio in/out
-- `src/index.css` — keyframes ticker scroll, vault pulse, bank cell glow (tous wrappés `motion-reduce:animate-none`)
-- `src/i18n/locales/{en,fr}.json` — clés pour Liquidity months, Burn rate, MoM, ticker labels
+- `src/pages/Finance.tsx` — remplace Hero + Ticker + Tabs par nouveau layout
+- `src/components/finance/FinanceDashboard.tsx` — réorganise en widgets glass
+- `src/components/finance/transactions/TransactionsTab.tsx` — liste groupée par jour, hover glass
+- `src/components/finance/accounts/AccountCard.tsx` — reskin VirtualCard mini
+- `src/components/finance/monthly/MonthlyBalanceHero.tsx` — reskin glass aéré
+- `src/index.css` — keyframes `aura-orb-drift`, `aura-curve-draw`, `virtual-card-tilt`, classe `.aura-glass`
+- `src/i18n/locales/{en,fr}.json` — clés AURA (Total Balance, Cash flow, etc.)
 
-### Logique calculs ajoutés
-- **Liquidity months** = netWorth / monthlyExpenses (si expenses > 0)
-- **Burn rate** = totalExpenses
-- **Delta MoM par KPI** = (current − prev) / prev × 100, source `validations`
-- **Cash flow 30j sparkline** = somme journalière des transactions du mois courant
+### Fichiers à retirer (cycle V3 obsolète)
+- `FinanceVaultHero.tsx`, `FinanceTickerBar.tsx`, `VaultMeshBackground.tsx`, `widgets/BankCellCard.tsx` → supprimés et exports nettoyés dans `index.ts`
+
+### Tokens design (CSS vars dans `index.css`)
+```css
+--aura-bg: 220 30% 6%;
+--aura-glass-bg: 0 0% 100% / 0.03;
+--aura-glass-border: 0 0% 100% / 0.08;
+--aura-electric: 192 100% 50%;
+--aura-mint: 158 100% 48%;
+--aura-radius: 20px;
+```
+
+### Animations clés
+- `aura-orb-drift` : translate + scale très lent (25s)
+- `aura-curve-draw` : `stroke-dashoffset` 0 au mount (1.2s ease-out)
+- `virtual-card-tilt` : transform 3D au hover (perspective + rotateY)
+- Tous wrappés `motion-reduce:animate-none`
+
+### Typographie
+- Headers / labels : **Inter** (déjà dispo via Tailwind)
+- Chiffres importants : **Geist Mono** ou fallback `font-mono tabular-nums`
+- Garde Orbitron uniquement pour ModuleHeader si conservé, sinon retiré sur `/finance`
 
 ### Conservé intact
-Tous les hooks (useFinance, useTransactions, useAccounts, useBudgets), tous les widgets (CategoryDonut, SavingsRateRing, FinancialHealthScore, MonthComparisonWidget, TopCategoriesBar, CategoryTrendsChart), toute la logique de validation mensuelle.
+Tous les hooks (useFinance, useTransactions, useAccounts, useBudgets, useFinanceSettings), tous les widgets analytiques (CategoryDonut, SavingsRateRing, FinancialHealthScore, MonthComparisonWidget, CategoryTrendsChart, TopCategoriesBar), `AnimatedNumber`, logique validation mensuelle, ProjectionsPanel (intégré dans Overview/Forecast), Settings modal.
 
-### Palette tactique
-Vert `emerald-400` (positif) • Rouge `rose-400` (négatif) • Ambre `amber-400` (warning) • Cyan `primary` (data neutre) • `font-mono tabular-nums` partout sur les chiffres
+### Responsive
+- Mobile : Hero stack vertical (Solde au-dessus, VirtualCard dessous), widgets en grid 2x2, FloatingTabBar pleine largeur en bas
+- Desktop : Hero 2 colonnes, widgets 4 colonnes
