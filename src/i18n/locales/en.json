@@ -545,6 +545,18 @@
       "moShort": "mo",
       "mom": "MoM"
     },
+    "aura": {
+      "heroAria": "Total balance overview",
+      "totalBalance": "Total Balance",
+      "thisMonth": "this month",
+      "noComparison": "No previous data",
+      "accounts": "accounts",
+      "cashFlow30d": "Cash flow · 30 days",
+      "recurring": "Recurring monthly",
+      "netCashflow": "Net cash flow",
+      "forecast": "Forecast",
+      "forecastSubtitle": "Long-term financial projections"
+    },
     "export": {
       "title": "Export",
       "success": "Report exported",

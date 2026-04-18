@@ -2465,3 +2465,68 @@ All colors MUST be HSL.
     display: none !important;
   }
 }
+
+/* ════════════════════════════════════════════════════════════
+   AURA Neo-Banking Design System
+   ════════════════════════════════════════════════════════════ */
+
+:root {
+  --aura-bg: 220 30% 6%;
+  --aura-glass-bg: 0 0% 100%;
+  --aura-glass-border: 0 0% 100%;
+  --aura-electric: 192 100% 50%;
+  --aura-mint: 158 100% 48%;
+  --aura-radius: 20px;
+}
+
+.dark {
+  --aura-bg: 222 35% 5%;
+}
+
+@layer components {
+  .aura-glass {
+    position: relative;
+    background: hsl(var(--aura-glass-bg) / 0.035);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border-radius: var(--aura-radius);
+    box-shadow:
+      0 0 0 1px hsl(var(--aura-glass-border) / 0.07) inset,
+      0 1px 0 0 hsl(var(--aura-glass-border) / 0.05) inset,
+      0 20px 50px -25px hsl(220 60% 2% / 0.7);
+  }
+
+  .aura-glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      135deg,
+      hsl(var(--aura-electric) / 0.18),
+      transparent 30%,
+      transparent 70%,
+      hsl(var(--aura-mint) / 0.14)
+    );
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0.85;
+  }
+}
+
+@keyframes aura-orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(40px, -30px) scale(1.08); }
+}
+
+@keyframes aura-curve-draw {
+  from { stroke-dashoffset: 2000; }
+  to   { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-glass::before { background: hsl(var(--aura-glass-border) / 0.1); }
+}
