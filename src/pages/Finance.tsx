@@ -140,7 +140,7 @@ export default function Finance() {
           netWorth={netWorth}
           prevMonthNet={prevMonthNet}
           monthlyNet={monthlyNet}
-          transactions={allTransactions}
+          transactions={allTransactions as any}
           accountsCount={accounts.filter(a => a.is_active).length}
         />
 
