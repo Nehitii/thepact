@@ -75,7 +75,12 @@ export function AuraBalanceHero({
           </div>
 
           <div className="mt-3 text-5xl sm:text-6xl lg:text-7xl font-semibold tracking-tight text-foreground tabular-nums leading-none">
-            <AnimatedNumber value={netWorth} currency={currency} />
+            <AnimatedNumber
+              value={netWorth}
+              currency={currency}
+              isPositive={netWorth >= 0}
+              className="text-foreground"
+            />
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
