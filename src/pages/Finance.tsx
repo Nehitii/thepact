@@ -2,31 +2,29 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LayoutDashboard, FileText, TrendingUp, Settings, Landmark, ArrowLeftRight, Download } from "lucide-react";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { LayoutDashboard, FileText, Settings, Landmark, ArrowLeftRight, Download } from "lucide-react";
 import { motion } from "framer-motion";
-import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useCurrency } from "@/contexts/CurrencyContext";
-import { formatCurrency } from "@/lib/currency";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useFinanceSettings, useRecurringExpenses, useRecurringIncome, useMonthlyValidations } from "@/hooks/useFinance";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useAccounts } from "@/hooks/useAccounts";
+import { useAccountBalances } from "@/hooks/useAccountBalances";
 import { useCategoryBudgets, useUpsertCategoryBudget, useDeleteCategoryBudget, useSavingsGoals, useAddSavingsGoal, useUpdateSavingsGoal, useDeleteSavingsGoal } from "@/hooks/useBudgets";
 import { FinanceDashboard } from "@/components/finance/FinanceDashboard";
 import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard";
 import { ProjectionsPanel } from "@/components/finance/ProjectionsPanel";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
 import { AccountsOverview } from "@/components/finance/accounts";
-import { VaultMeshBackground } from "@/components/finance/VaultMeshBackground";
 import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
 import { TransactionsTab } from "@/components/finance/transactions";
+import { AuraBackground, AuraBalanceHero, FloatingTabBar } from "@/components/finance/aura";
 import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
 import { exportFullReport } from "@/lib/financeExport";
 import { roundMoney } from "@/lib/financeCategories";
-import { parseISO, format, startOfMonth } from "date-fns";
+import { parseISO, format, startOfMonth, subMonths } from "date-fns";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -35,7 +33,7 @@ export default function Finance() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { currency } = useCurrency();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("overview");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
 
@@ -46,10 +44,10 @@ export default function Finance() {
   const { data: recurringIncome = [] } = useRecurringIncome(user?.id);
   const { data: validations = [] } = useMonthlyValidations(user?.id);
   const { data: accounts = [] } = useAccounts(user?.id);
+  const { data: balancesMap } = useAccountBalances(accounts, user?.id);
   const { data: budgets = [] } = useCategoryBudgets(user?.id);
   const { data: savingsGoals = [] } = useSavingsGoals(user?.id);
 
-  // Fetch current month transactions for budget tracking
   const currentMonthStart = format(startOfMonth(new Date()), 'yyyy-MM-dd');
   const { data: allTransactions = [] } = useTransactions(user?.id);
 
@@ -96,58 +94,71 @@ export default function Finance() {
 
   const totalRecurringExpenses = roundMoney(recurringExpenses.filter(e => e.is_active).reduce((sum, e) => sum + e.amount, 0));
   const totalRecurringIncome = roundMoney(recurringIncome.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0));
+  const monthlyNet = roundMoney(totalRecurringIncome - totalRecurringExpenses);
 
-  // Filter current month transactions for budget panel
   const currentMonthTransactions = useMemo(() => {
     return allTransactions.filter(tx => tx.transaction_date >= currentMonthStart);
   }, [allTransactions, currentMonthStart]);
+
+  // Net worth from accounts (computed)
+  const netWorth = useMemo(() => {
+    const active = accounts.filter(a => a.is_active);
+    if (!balancesMap || balancesMap.size === 0) {
+      return roundMoney(active.reduce((s, a) => s + a.balance, 0));
+    }
+    return roundMoney(active.reduce((s, a) => {
+      const c = balancesMap.get(a.id);
+      return s + (c ? c.computedBalance : a.balance);
+    }, 0));
+  }, [accounts, balancesMap]);
+
+  const prevMonthKey = format(subMonths(new Date(), 1), 'yyyy-MM-01');
+  const prevValidation = validations.find(v => v.month === prevMonthKey);
+  const prevMonthNet = prevValidation?.validated_at
+    ? roundMoney((prevValidation.actual_total_income || 0) - (prevValidation.actual_total_expenses || 0))
+    : null;
 
   const handleExportAll = () => {
     exportFullReport(recurringExpenses, recurringIncome, validations, accounts, currency);
     toast.success(t('finance.export.success'));
   };
 
-  const tabTriggerClass = "flex-1 min-w-0 data-[state=active]:bg-primary/10 dark:data-[state=active]:bg-white/[0.08] data-[state=active]:text-foreground data-[state=active]:shadow-[0_0_20px_hsla(200,100%,60%,0.15)] text-muted-foreground font-semibold text-xs sm:text-sm rounded-xl transition-all duration-300 py-3 px-2 sm:px-4 group";
-
-  const TabNum = ({ n }: { n: string }) => (
-    <span className="hidden md:inline font-mono text-[10px] text-muted-foreground/40 group-data-[state=active]:text-primary/70 mr-1.5 tracking-wider">{n}</span>
-  );
+  const tabs = [
+    { value: 'overview', label: t('finance.tabs.overview', 'Overview'), icon: LayoutDashboard },
+    { value: 'budget', label: t('finance.tabs.budget'), icon: FileText },
+    { value: 'transactions', label: t('finance.tabs.transactions'), icon: ArrowLeftRight },
+    { value: 'accounts', label: t('finance.tabs.accounts'), icon: Landmark },
+  ];
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <VaultMeshBackground />
+    <div className="min-h-screen relative">
+      <AuraBackground />
 
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <ModuleHeader
-          systemLabel="VAULT_OS // SECURE_LINK ●"
-          title="FUND "
-          titleAccent="FLOW"
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10 space-y-6">
+        {/* AURA Hero */}
+        <AuraBalanceHero
+          netWorth={netWorth}
+          prevMonthNet={prevMonthNet}
+          monthlyNet={monthlyNet}
+          transactions={allTransactions as any}
+          accountsCount={accounts.filter(a => a.is_active).length}
         />
 
+        {/* Floating Tab Bar */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.1 }} className="flex justify-center mb-10">
-            <div className="w-full max-w-3xl flex items-center gap-2">
-              <TabsList className="flex-1 neu-card p-2 border-0 overflow-x-auto scrollbar-hide">
-                <TabsTrigger value="dashboard" className={tabTriggerClass}>
-                  <LayoutDashboard className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="01" /><span className="hidden sm:inline">{t('finance.tabs.dashboard')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="budget" className={tabTriggerClass}>
-                  <FileText className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="02" /><span className="hidden sm:inline">{t('finance.tabs.budget')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="transactions" className={tabTriggerClass}>
-                  <ArrowLeftRight className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="03" /><span className="hidden sm:inline">{t('finance.tabs.transactions')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="accounts" className={tabTriggerClass}>
-                  <Landmark className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="04" /><span className="hidden sm:inline">{t('finance.tabs.accounts')}</span>
-                </TabsTrigger>
-                <TabsTrigger value="planner" className={tabTriggerClass}>
-                  <TrendingUp className="h-4 w-4 sm:mr-2 shrink-0" /><TabNum n="05" /><span className="hidden sm:inline">{t('finance.tabs.planner')}</span>
-                </TabsTrigger>
-              </TabsList>
-              <div className="flex items-center gap-1 shrink-0">
+          <FloatingTabBar
+            items={tabs}
+            active={activeTab}
+            onChange={setActiveTab}
+            rightSlot={
+              <>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200" title={t('finance.export.title')}>
+                    <button
+                      className="p-2 rounded-[12px] text-muted-foreground/70 hover:text-foreground hover:bg-white/[0.04] transition-colors"
+                      title={t('finance.export.title')}
+                      aria-label={t('finance.export.title')}
+                    >
                       <Download className="h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
@@ -159,17 +170,18 @@ export default function Finance() {
                 </DropdownMenu>
                 <button
                   onClick={() => setSettingsOpen(true)}
-                  className="p-2.5 rounded-xl text-muted-foreground/50 hover:text-primary hover:bg-primary/10 transition-all duration-200"
+                  className="p-2 rounded-[12px] text-muted-foreground/70 hover:text-foreground hover:bg-white/[0.04] transition-colors"
                   title={t('common.settings')}
+                  aria-label={t('common.settings')}
                 >
                   <Settings className="h-4 w-4" />
                 </button>
-              </div>
-            </div>
-          </motion.div>
+              </>
+            }
+          />
 
-          <TabsContent value="dashboard" className="mt-0 pb-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <TabsContent value="overview" className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-8">
               <FinanceDashboard
                 totalEstimated={totalEstimated}
                 totalPaid={financed}
@@ -177,60 +189,62 @@ export default function Finance() {
                 isCustomMode={isCustomMode}
                 monthlyAllocation={settings.project_monthly_allocation}
               />
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="budget" className="mt-0 pb-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <MonthlyDashboard salaryPaymentDay={settings.salary_payment_day} />
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="transactions" className="mt-0 pb-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <TransactionsTab accountFilter={accountFilter} onClearAccountFilter={() => setAccountFilter(null)} financeSettings={settings} />
-            </motion.div>
-          </TabsContent>
-
-          <TabsContent value="accounts" className="mt-0 pb-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <div className="space-y-8">
-                <AccountsOverview onSelectAccount={(account) => {
-                  setAccountFilter(account.id);
-                  setActiveTab('transactions');
-                }} />
-                <BudgetProgressPanel
-                  budgets={budgets}
-                  expenseItems={recurringExpenses}
-                  categories={EXPENSE_CATEGORIES}
-                  currency={currency}
-                  monthTransactions={currentMonthTransactions as any}
-                  validations={validations as any}
-                  onUpsert={async (b) => { await upsertBudget.mutateAsync(b); }}
-                  onDelete={(id) => deleteBudget.mutate(id)}
-                  isPending={upsertBudget.isPending}
-                />
-                <SavingsGoalTracker
-                  goals={savingsGoals}
-                  accounts={accounts}
-                  currency={currency}
-                  onAdd={async (g) => { await addSavingsGoal.mutateAsync(g); }}
-                  onUpdate={async (g) => { await updateSavingsGoal.mutateAsync(g); }}
-                  onDelete={(id) => deleteSavingsGoal.mutate(id)}
-                  isPending={addSavingsGoal.isPending}
+              {/* Forecast (ex-Planner) integrated */}
+              <div className="aura-glass p-6 sm:p-8">
+                <h2 className="text-sm font-mono uppercase tracking-[0.2em] text-muted-foreground/80 mb-1">
+                  {t('finance.aura.forecast', 'Forecast')}
+                </h2>
+                <p className="text-xs text-muted-foreground/60 mb-6">
+                  {t('finance.aura.forecastSubtitle', 'Long-term financial projections')}
+                </p>
+                <ProjectionsPanel
+                  projectEndDate={projectEndDate}
+                  monthlyAllocation={settings.project_monthly_allocation}
+                  totalRemaining={remaining}
+                  totalRecurringExpenses={totalRecurringExpenses}
+                  totalRecurringIncome={totalRecurringIncome}
                 />
               </div>
             </motion.div>
           </TabsContent>
 
-          <TabsContent value="planner" className="mt-0 pb-12">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <ProjectionsPanel
-                projectEndDate={projectEndDate}
-                monthlyAllocation={settings.project_monthly_allocation}
-                totalRemaining={remaining}
-                totalRecurringExpenses={totalRecurringExpenses}
-                totalRecurringIncome={totalRecurringIncome}
+          <TabsContent value="budget" className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+              <MonthlyDashboard salaryPaymentDay={settings.salary_payment_day} />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="transactions" className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="aura-glass p-6">
+              <TransactionsTab accountFilter={accountFilter} onClearAccountFilter={() => setAccountFilter(null)} financeSettings={settings} />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="accounts" className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-8">
+              <AccountsOverview onSelectAccount={(account) => {
+                setAccountFilter(account.id);
+                setActiveTab('transactions');
+              }} />
+              <BudgetProgressPanel
+                budgets={budgets}
+                expenseItems={recurringExpenses}
+                categories={EXPENSE_CATEGORIES}
+                currency={currency}
+                monthTransactions={currentMonthTransactions as any}
+                validations={validations as any}
+                onUpsert={async (b) => { await upsertBudget.mutateAsync(b); }}
+                onDelete={(id) => deleteBudget.mutate(id)}
+                isPending={upsertBudget.isPending}
+              />
+              <SavingsGoalTracker
+                goals={savingsGoals}
+                accounts={accounts}
+                currency={currency}
+                onAdd={async (g) => { await addSavingsGoal.mutateAsync(g); }}
+                onUpdate={async (g) => { await updateSavingsGoal.mutateAsync(g); }}
+                onDelete={(id) => deleteSavingsGoal.mutate(id)}
+                isPending={addSavingsGoal.isPending}
               />
             </motion.div>
           </TabsContent>

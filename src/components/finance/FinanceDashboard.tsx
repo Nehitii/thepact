@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { TrendingUp, BarChart3, Target, Wallet, AlertTriangle, CheckCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency } from '@/lib/currency';
@@ -23,9 +23,7 @@ import {
   getCategoryLabel,
 } from '@/lib/financeCategories';
 import { FinanceOverviewCard } from './FinanceOverviewCard';
-import { FinanceVaultHero } from './FinanceVaultHero';
-import { FinanceTickerBar } from './FinanceTickerBar';
-import { BankCellCard } from './widgets/BankCellCard';
+import { AuraWidget } from './aura';
 import {
   BalanceTrendSparkline,
   CategoryDonut,
@@ -34,8 +32,9 @@ import {
   TopCategoriesBar,
   CategoryTrendsChart,
 } from './widgets';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, subDays } from 'date-fns';
 import { FinancialHealthScore } from './widgets/FinancialHealthScore';
+
 interface FinanceDashboardProps {
   totalEstimated: number;
   totalPaid: number;
@@ -68,9 +67,7 @@ export function FinanceDashboard({
   const monthlyNet = roundMoney(totalIncome - totalExpenses);
   const savingsRate = totalIncome > 0 ? Math.round((monthlyNet / totalIncome) * 100) : 0;
   const yearlyProjection = roundMoney(monthlyNet * 12);
-  const monthsToGoal = monthlyAllocation > 0 ? Math.ceil(totalRemaining / monthlyAllocation) : null;
 
-  // Use computed balances (initial + transactions) instead of static DB balance
   const netWorth = useMemo(() => {
     const activeAccounts = accounts.filter(a => a.is_active);
     if (!balancesMap || balancesMap.size === 0) {
@@ -85,7 +82,6 @@ export function FinanceDashboard({
   const expensesByCategory = useMemo(() => getCategoryTotals(expenses, EXPENSE_CATEGORIES, t), [expenses, t]);
   const incomeByCategory = useMemo(() => getCategoryTotals(income, INCOME_CATEGORIES, t), [income, t]);
 
-  // Compute month transaction totals by category for health score + alerts
   const currentMonth = format(new Date(), 'yyyy-MM-01');
   const { txByCategory, incomeCategoryCount } = useMemo(() => {
     const currentMonthTxs = transactions.filter(tx => tx.transaction_date >= currentMonth);
@@ -99,11 +95,10 @@ export function FinanceDashboard({
         incCats.add(tx.category);
       }
     });
-    // Also count recurring income categories
     income.filter(i => i.is_active && i.category).forEach(i => incCats.add(i.category!));
     return { txByCategory: map, incomeCategoryCount: Math.max(incCats.size, 1) };
   }, [transactions, currentMonth, income]);
-  // Alerts system
+
   const alerts = useMemo(() => {
     const result: Array<{ type: 'warning' | 'danger' | 'info'; message: string }> = [];
 
@@ -149,108 +144,48 @@ export function FinanceDashboard({
     });
   }, [validations, monthlyNet]);
 
-  // Previous-month net (from validations) for MoM deltas
-  const prevMonthKey = format(subMonths(new Date(), 1), 'yyyy-MM-01');
-  const prevValidation = validations.find(v => v.month === prevMonthKey);
-  const prevMonthIncome = prevValidation?.actual_total_income ?? null;
-  const prevMonthExpenses = prevValidation?.actual_total_expenses ?? null;
-  const prevMonthNet = prevValidation?.validated_at
-    ? roundMoney((prevMonthIncome || 0) - (prevMonthExpenses || 0))
-    : null;
-  const prevSavingsRate = prevMonthIncome && prevMonthIncome > 0
-    ? Math.round(((prevMonthNet || 0) / prevMonthIncome) * 100)
-    : null;
-
-  // 6-month sparkline series for KPIs (from balanceTrend)
-  const netSeries = balanceTrend.map(b => b.balance);
-  const savingsSeries = balanceTrend.map(b => {
-    const v = validations.find(x => x.month === b.month);
-    if (v?.validated_at && (v.actual_total_income || 0) > 0) {
-      return Math.round((((v.actual_total_income || 0) - (v.actual_total_expenses || 0)) / (v.actual_total_income || 1)) * 100);
-    }
-    return b.month === format(new Date(), 'yyyy-MM-01') ? savingsRate : 0;
-  });
-
-  // Inline health score (0-100): savings (30) + budget compliance (25) + validation streak (25) + diversification (20)
-  const healthScore = useMemo(() => {
-    const sScore = Math.min(30, Math.max(0, Math.round(savingsRate * 1.5)));
-    let bScore = 25;
-    if (budgets.length > 0) {
-      const over = budgets.filter(b => (txByCategory[b.category] || 0) > b.monthly_limit).length;
-      bScore = Math.round((1 - over / budgets.length) * 25);
-    }
-    const streak = validations.filter(v => v.validated_at).length;
-    const vScore = Math.min(25, streak * 4);
-    const dScore = Math.min(20, incomeCategoryCount * 5);
-    return Math.max(0, Math.min(100, sScore + bScore + vScore + dScore));
-  }, [savingsRate, budgets, txByCategory, validations, incomeCategoryCount]);
-
-  // Budget consumption %
-  const budgetPct = useMemo(() => {
-    if (budgets.length === 0) return null;
-    const totalLimit = budgets.reduce((s, b) => s + b.monthly_limit, 0);
-    const totalSpent = budgets.reduce((s, b) => s + (txByCategory[b.category] || 0), 0);
-    return totalLimit > 0 ? Math.round((totalSpent / totalLimit) * 100) : null;
-  }, [budgets, txByCategory]);
-
-  // MoM deltas helpers
-  const mom = (curr: number, prev: number | null) => {
-    if (prev === null || prev === 0) return { label: null as string | null, positive: null as boolean | null };
-    const diff = ((curr - prev) / Math.abs(prev)) * 100;
-    return {
-      label: `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}% ${t('finance.vault.mom', 'MoM')}`,
-      positive: diff >= 0,
-    };
-  };
-
-  const savingsMoM = mom(savingsRate, prevSavingsRate);
-  const netMoM = mom(monthlyNet, prevMonthNet);
+  // 7-day mini sparklines per widget (income/expenses/savings/net)
+  const last7 = useMemo(() => {
+    const days = 7;
+    const today = new Date();
+    const inc: number[] = new Array(days).fill(0);
+    const exp: number[] = new Array(days).fill(0);
+    const fromKey = format(subDays(today, days - 1), 'yyyy-MM-dd');
+    transactions.forEach(tx => {
+      if (tx.transaction_date < fromKey) return;
+      const idx = days - 1 - Math.floor((today.getTime() - new Date(tx.transaction_date).getTime()) / 86400000);
+      if (idx < 0 || idx >= days) return;
+      if (tx.transaction_type === 'credit') inc[idx] += Number(tx.amount);
+      else exp[idx] += Number(tx.amount);
+    });
+    const net = inc.map((v, i) => v - exp[i]);
+    const sav = inc.map((v, i) => (v > 0 ? Math.round(((v - exp[i]) / v) * 100) : 0));
+    return { inc, exp, net, sav };
+  }, [transactions]);
 
   return (
-    <div className="space-y-6">
-      {/* VAULT HERO */}
-      <FinanceVaultHero
-        netWorth={netWorth}
-        monthlyNet={monthlyNet}
-        totalExpenses={totalExpenses}
-        prevMonthNet={prevMonthNet}
-        healthScore={healthScore}
-        transactions={transactions}
-        accountsCount={accounts.filter(a => a.is_active).length}
-      />
-
-      {/* TICKER */}
-      <FinanceTickerBar
-        totalIncome={totalIncome}
-        totalExpenses={totalExpenses}
-        monthlyNet={monthlyNet}
-        budgetPct={budgetPct}
-        alertCount={alerts.length}
-      />
-
+    <div className="space-y-8">
       {/* Alerts Panel */}
       {alerts.length > 0 && (
         <div className="space-y-2">
           {alerts.map((alert, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -16 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-[14px] backdrop-blur-xl ${
                 alert.type === 'danger'
-                  ? 'bg-rose-500/[0.06] border-rose-500/20 text-rose-400'
+                  ? 'bg-rose-500/[0.06] ring-1 ring-rose-500/20 text-rose-300'
                   : alert.type === 'warning'
-                  ? 'bg-amber-500/[0.06] border-amber-500/20 text-amber-400'
-                  : 'bg-primary/[0.06] border-primary/20 text-primary'
+                  ? 'bg-amber-500/[0.06] ring-1 ring-amber-500/20 text-amber-300'
+                  : 'bg-[hsl(var(--aura-electric)/0.06)] ring-1 ring-[hsl(var(--aura-electric)/0.2)] text-[hsl(var(--aura-electric))]'
               }`}
             >
-              {alert.type === 'danger' ? (
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-              ) : alert.type === 'warning' ? (
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-              ) : (
+              {alert.type === 'info' ? (
                 <CheckCircle className="w-4 h-4 shrink-0" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 shrink-0" />
               )}
               <span className="text-sm font-medium">{alert.message}</span>
             </motion.div>
@@ -258,50 +193,48 @@ export function FinanceDashboard({
         </div>
       )}
 
-      {/* BANK CELLS — KPI premium */}
+      {/* AURA Widgets — KPI grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <BankCellCard
+        <AuraWidget
           icon={TrendingUp}
-          label={t('finance.projections.savingsRate')}
-          value={`${savingsRate}%`}
-          status={savingsRate >= 20 ? 'positive' : savingsRate >= 0 ? 'neutral' : 'negative'}
-          deltaLabel={savingsMoM.label}
-          deltaPositive={savingsMoM.positive}
-          sparkline={savingsSeries}
+          label={t('finance.monthly.income')}
+          value={formatCurrency(totalIncome, currency)}
+          sublabel={t('finance.aura.recurring', 'Recurring monthly')}
+          sparkline={last7.inc}
+          tone="mint"
           delay={0}
         />
-        <BankCellCard
-          icon={BarChart3}
-          label={t('finance.projections.monthlyNet')}
-          value={`${monthlyNet >= 0 ? '+' : ''}${formatCurrency(monthlyNet, currency)}`}
-          status={monthlyNet >= 0 ? 'positive' : 'negative'}
-          deltaLabel={netMoM.label}
-          deltaPositive={netMoM.positive}
-          sparkline={netSeries}
+        <AuraWidget
+          icon={TrendingDown}
+          label={t('finance.monthly.expenses')}
+          value={formatCurrency(totalExpenses, currency)}
+          sublabel={t('finance.aura.recurring', 'Recurring monthly')}
+          sparkline={last7.exp}
+          tone="rose"
           delay={0.05}
         />
-        <BankCellCard
-          icon={Wallet}
-          label={t('finance.accounts.netWorth')}
-          value={formatCurrency(netWorth, currency)}
-          status={netWorth >= 0 ? 'neutral' : 'negative'}
-          deltaLabel={null}
-          deltaPositive={null}
+        <AuraWidget
+          icon={PiggyBank}
+          label={t('finance.projections.savingsRate')}
+          value={`${savingsRate}%`}
+          sublabel={`${formatCurrency(yearlyProjection, currency)} / ${t('finance.analytics.perYear')}`}
+          sparkline={last7.sav}
+          tone={savingsRate >= 20 ? 'mint' : savingsRate >= 0 ? 'electric' : 'rose'}
           delay={0.1}
         />
-        <BankCellCard
-          icon={Target}
-          label={t('finance.projections.toGoal')}
-          value={monthsToGoal !== null ? `${monthsToGoal} ${t('finance.vault.mo', 'mo')}` : '—'}
-          status={monthsToGoal !== null && monthsToGoal <= 24 ? 'positive' : 'warning'}
-          deltaLabel={null}
-          deltaPositive={null}
+        <AuraWidget
+          icon={Wallet}
+          label={t('finance.projections.monthlyNet')}
+          value={`${monthlyNet >= 0 ? '+' : ''}${formatCurrency(monthlyNet, currency)}`}
+          sublabel={t('finance.aura.netCashflow', 'Net cash flow')}
+          sparkline={last7.net}
+          tone={monthlyNet >= 0 ? 'mint' : 'rose'}
           delay={0.15}
         />
       </div>
 
       {/* Project Funding */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+      <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <FinanceOverviewCard
           totalEstimated={totalEstimated}
           totalPaid={totalPaid}
@@ -312,23 +245,23 @@ export function FinanceDashboard({
 
       {/* Analytics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
           <CategoryDonut data={incomeByCategory} currency={currency} title={t('finance.monthly.income')} total={totalIncome} colorAccent="emerald" />
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
           <CategoryDonut data={expensesByCategory} currency={currency} title={t('finance.monthly.expenses')} total={totalExpenses} colorAccent="rose" />
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
           <MonthComparisonWidget validations={validations} currentIncome={totalIncome} currentExpenses={totalExpenses} currency={currency} />
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}>
           <TopCategoriesBar data={expensesByCategory} currency={currency} />
         </motion.div>
       </div>
 
-      {/* Health Score + Savings Rate + Trend */}
+      {/* Health + Savings + Trend */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45 }}>
           <FinancialHealthScore
             totalIncome={totalIncome}
             totalExpenses={totalExpenses}
@@ -338,8 +271,8 @@ export function FinanceDashboard({
             incomeCategories={incomeCategoryCount}
           />
         </motion.div>
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-          <div className="neu-inset p-5 rounded-2xl flex items-center gap-4 h-full">
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
+          <div className="aura-glass p-5 flex items-center gap-4 h-full">
             <SavingsRateRing rate={savingsRate} size={72} />
             <div>
               <p className="text-sm font-semibold text-foreground">{t('finance.projections.savingsRate')}</p>

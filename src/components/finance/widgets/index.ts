@@ -7,4 +7,3 @@ export { TopCategoriesBar } from './TopCategoriesBar';
 export { CategoryTrendsChart } from './CategoryTrendsChart';
 export { FinancialHealthScore } from './FinancialHealthScore';
 export { BudgetCategorySparkline } from './BudgetCategorySparkline';
-export { BankCellCard } from './BankCellCard';
