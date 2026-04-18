@@ -545,6 +545,18 @@
       "moShort": "mois",
       "mom": "M/M"
     },
+    "aura": {
+      "heroAria": "Vue d'ensemble du solde",
+      "totalBalance": "Solde Total",
+      "thisMonth": "ce mois-ci",
+      "noComparison": "Aucune donnée précédente",
+      "accounts": "comptes",
+      "cashFlow30d": "Flux de trésorerie · 30 jours",
+      "recurring": "Récurrent mensuel",
+      "netCashflow": "Flux net",
+      "forecast": "Prévisions",
+      "forecastSubtitle": "Projections financières à long terme"
+    },
     "export": {
       "title": "Exporter",
       "success": "Rapport exporté",
