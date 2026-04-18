@@ -28,13 +28,17 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       className="relative"
     >
-      <div className="neu-card p-8 md:p-10 relative overflow-hidden">
+      <div className="aura-glass p-8 md:p-10 relative overflow-hidden">
         <div
-          className={`absolute inset-0 opacity-40 blur-[100px] transition-colors duration-1000 ${
-            isPositive ? 'bg-emerald-500/20' : 'bg-rose-500/20'
+          className={`absolute -top-32 -right-32 w-96 h-96 rounded-full blur-3xl pointer-events-none ${
+            isPositive ? 'opacity-25' : 'opacity-20'
           }`}
+          style={{
+            background: isPositive
+              ? 'radial-gradient(circle, hsl(var(--aura-mint) / 0.55), transparent 70%)'
+              : 'radial-gradient(circle, hsl(350 80% 65% / 0.5), transparent 70%)',
+          }}
         />
-        <div className="absolute inset-0 mesh-gradient-bg opacity-50" />
 
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
