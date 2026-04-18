@@ -58,7 +58,14 @@ export function FinancialBlock({
 
   const handleSaveEdit = async () => {
     if (!editingId || !editingData.name.trim() || !editingData.amount) return;
-    await onUpdate(editingId, editingData.name.trim(), parseFloat(editingData.amount), editingData.category || undefined);
+    await onUpdate(
+      editingId,
+      editingData.name.trim(),
+      parseFloat(editingData.amount),
+      editingData.category || undefined,
+      undefined,
+      editingData.iconUrl || undefined,
+    );
     setEditingId(null);
   };
 
@@ -69,6 +76,7 @@ export function FinancialBlock({
       name: item.name,
       amount: item.amount.toString(),
       category: item.category || itemCategory.value,
+      iconUrl: item.icon_url || '',
     });
   };
 
