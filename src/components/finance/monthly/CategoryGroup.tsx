@@ -8,6 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { formatCurrency } from '@/lib/currency';
 import { type FinanceCategory, getCategoryLabel } from '@/lib/financeCategories';
 import type { FinancialItem } from '@/types/finance';
+import { FinanceImageUpload } from '@/components/finance/FinanceImageUpload';
+
+export interface CategoryGroupEditingData {
+  name: string;
+  amount: string;
+  category: string;
+  iconUrl: string;
+}
 
 export interface CategoryGroupProps {
   category: FinanceCategory;
@@ -16,11 +24,11 @@ export interface CategoryGroupProps {
   isExpense: boolean;
   currency: string;
   editingId: string | null;
-  editingData: { name: string; amount: string; category: string };
+  editingData: CategoryGroupEditingData;
   onStartEdit: (item: FinancialItem) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
-  onEditDataChange: (data: { name: string; amount: string; category: string }) => void;
+  onEditDataChange: (data: CategoryGroupEditingData) => void;
   onDelete: (id: string) => void;
   onToggleActive?: (id: string, isActive: boolean) => void;
 }
