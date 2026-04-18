@@ -106,6 +106,12 @@ export function CategoryGroup({
                   {editingId === item.id ? (
                     <div className="flex-1 flex flex-col gap-3">
                       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <FinanceImageUpload
+                          size="sm"
+                          currentUrl={editingData.iconUrl || null}
+                          onUpload={(url) => onEditDataChange({ ...editingData, iconUrl: url })}
+                          onClear={() => onEditDataChange({ ...editingData, iconUrl: '' })}
+                        />
                         <Select
                           value={editingData.category}
                           onValueChange={(val) => onEditDataChange({ ...editingData, category: val })}
