@@ -41,7 +41,7 @@ export function FinancialBlock({
   const { t } = useTranslation();
   const { currency } = useCurrency();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingData, setEditingData] = useState({ name: '', amount: '', category: '' });
+  const [editingData, setEditingData] = useState({ name: '', amount: '', category: '', iconUrl: '' });
   const [isExpanded, setIsExpanded] = useState(true);
 
   const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
@@ -58,7 +58,14 @@ export function FinancialBlock({
 
   const handleSaveEdit = async () => {
     if (!editingId || !editingData.name.trim() || !editingData.amount) return;
-    await onUpdate(editingId, editingData.name.trim(), parseFloat(editingData.amount), editingData.category || undefined);
+    await onUpdate(
+      editingId,
+      editingData.name.trim(),
+      parseFloat(editingData.amount),
+      editingData.category || undefined,
+      undefined,
+      editingData.iconUrl || undefined,
+    );
     setEditingId(null);
   };
 
@@ -69,6 +76,7 @@ export function FinancialBlock({
       name: item.name,
       amount: item.amount.toString(),
       category: item.category || itemCategory.value,
+      iconUrl: item.icon_url || '',
     });
   };
 
