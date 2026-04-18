@@ -94,7 +94,7 @@ export function AccountCard({ account, currency, onEdit, onDelete, onSelect, com
       </div>
 
       {!account.is_active && (
-        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center rounded-2xl">
+        <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center rounded-[20px]">
           <span className="text-xs text-muted-foreground font-medium">{t('finance.accounts.inactive')}</span>
         </div>
       )}
