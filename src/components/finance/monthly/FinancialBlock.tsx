@@ -41,7 +41,7 @@ export function FinancialBlock({
   const { t } = useTranslation();
   const { currency } = useCurrency();
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editingData, setEditingData] = useState({ name: '', amount: '', category: '' });
+  const [editingData, setEditingData] = useState({ name: '', amount: '', category: '', iconUrl: '' });
   const [isExpanded, setIsExpanded] = useState(true);
 
   const totalAmount = items.filter(i => i.is_active).reduce((sum, i) => sum + i.amount, 0);
