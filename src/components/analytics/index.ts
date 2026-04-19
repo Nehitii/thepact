@@ -1,4 +1,10 @@
 export { PeriodSelector, type AnalyticsPeriod } from "./PeriodSelector";
-export { TrendStatCard } from "./TrendStatCard";
-export { AnalyticsHero } from "./AnalyticsHero";
-export { ChartCard } from "./ChartCard";
+export { PrismBackground } from "./PrismBackground";
+export { PrismHeadline } from "./PrismHeadline";
+export { PrismRail, type PrismSection } from "./PrismRail";
+export { PrismPanel } from "./PrismPanel";
+export { InsightStrip, type VitalSign } from "./InsightStrip";
+export { OrbitDistribution } from "./charts/OrbitDistribution";
+export { TagConstellation } from "./charts/TagConstellation";
+export { VelocityRiver } from "./charts/VelocityRiver";
+export { HealthRadar } from "./charts/HealthRadar";
