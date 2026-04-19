@@ -173,20 +173,6 @@ export default function Analytics() {
     .sort((a, b) => b.count - a.count)
     .slice(0, 8);
 
-  // Health radar (averaged metrics)
-  const healthRadarData = useMemo(() => {
-    if (healthTrend.length === 0) return [];
-    // We don't have raw breakdowns here; derive a synthetic distribution from score
-    const avg = healthTrend.reduce((a, h) => a + h.score, 0) / healthTrend.length / 20;
-    return [
-      { axis: "Sleep", value: Math.min(5, avg * 1.05), full: 5 },
-      { axis: "Mood", value: Math.min(5, avg * 1.0), full: 5 },
-      { axis: "Activity", value: Math.min(5, avg * 0.95), full: 5 },
-      { axis: "Hydration", value: Math.min(5, avg * 0.9), full: 5 },
-      { axis: "Meals", value: Math.min(5, avg * 1.1), full: 5 },
-      { axis: "Calm", value: Math.min(5, avg * 1.0), full: 5 },
-    ];
-  }, [healthTrend]);
 
   const showTrend = period !== "all";
 
