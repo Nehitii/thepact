@@ -2530,3 +2530,121 @@ All colors MUST be HSL.
 @media (prefers-reduced-motion: reduce) {
   .aura-glass::before { background: hsl(var(--aura-glass-border) / 0.1); }
 }
+
+/* ════════════════════════════════════════════════════════════
+   PRISM Data Observatory — Analytics V2
+   ════════════════════════════════════════════════════════════ */
+
+:root {
+  --prism-bg: 220 50% 4%;
+  --prism-cyan: 188 100% 50%;
+  --prism-magenta: 320 100% 55%;
+  --prism-lime: 75 100% 50%;
+  --prism-violet: 265 100% 70%;
+  --prism-amber: 38 100% 55%;
+  --prism-panel-bg: 220 30% 6%;
+  --prism-panel-border: 188 100% 50%;
+}
+
+.dark {
+  --prism-bg: 222 60% 3%;
+}
+
+@layer components {
+  .prism-panel {
+    position: relative;
+    background: hsl(var(--prism-panel-bg) / 0.55);
+    backdrop-filter: blur(18px) saturate(135%);
+    -webkit-backdrop-filter: blur(18px) saturate(135%);
+    border: 1px solid hsl(var(--prism-panel-border) / 0.15);
+    border-radius: 4px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+  }
+  .prism-panel:hover {
+    border-color: hsl(var(--prism-panel-border) / 0.4);
+    box-shadow:
+      0 0 0 1px hsl(var(--prism-cyan) / 0.15),
+      0 0 30px -10px hsl(var(--prism-cyan) / 0.3);
+    transform: translateY(-2px);
+  }
+  .prism-corner-bracket {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: hsl(var(--prism-cyan) / 0.65);
+    border-style: solid;
+    border-width: 0;
+    pointer-events: none;
+  }
+  .prism-corner-bracket.tl { top: -1px; left: -1px; border-top-width: 1px; border-left-width: 1px; }
+  .prism-corner-bracket.tr { top: -1px; right: -1px; border-top-width: 1px; border-right-width: 1px; }
+  .prism-corner-bracket.bl { bottom: -1px; left: -1px; border-bottom-width: 1px; border-left-width: 1px; }
+  .prism-corner-bracket.br { bottom: -1px; right: -1px; border-bottom-width: 1px; border-right-width: 1px; }
+
+  .prism-scanline {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+  .prism-scanline::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, hsl(var(--prism-cyan) / 0.45), transparent);
+    animation: prism-scanline 5s linear infinite;
+  }
+
+  .prism-rail-active::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 10%; bottom: 10%;
+    width: 2px;
+    background: hsl(var(--prism-cyan));
+    box-shadow: 0 0 8px hsl(var(--prism-cyan) / 0.7), 0 0 18px hsl(var(--prism-cyan) / 0.4);
+  }
+
+  .prism-text-cyan { color: hsl(var(--prism-cyan)); }
+  .prism-text-magenta { color: hsl(var(--prism-magenta)); }
+  .prism-text-lime { color: hsl(var(--prism-lime)); }
+  .prism-text-violet { color: hsl(var(--prism-violet)); }
+  .prism-text-amber { color: hsl(var(--prism-amber)); }
+}
+
+@keyframes prism-scanline {
+  0%   { top: -2%; opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { top: 102%; opacity: 0; }
+}
+
+@keyframes prism-orbit-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes prism-pulse-cyan {
+  0%, 100% { opacity: 0.6; box-shadow: 0 0 6px hsl(var(--prism-cyan) / 0.4); }
+  50%      { opacity: 1;   box-shadow: 0 0 14px hsl(var(--prism-cyan) / 0.8); }
+}
+
+@keyframes prism-scan-ray {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 0.5; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes prism-pulse-magenta {
+  0%, 100% { opacity: 0.6; box-shadow: 0 0 6px hsl(var(--prism-magenta) / 0.4); }
+  50%      { opacity: 1;   box-shadow: 0 0 14px hsl(var(--prism-magenta) / 0.8); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prism-scanline::after,
+  [class*="animate-prism"] {
+    animation: none !important;
+  }
+}

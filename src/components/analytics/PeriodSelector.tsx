@@ -27,13 +27,13 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
 
   return (
     <Select value={value} onValueChange={(v) => onChange(v as AnalyticsPeriod)}>
-      <SelectTrigger className="w-[180px] h-9 bg-card/60 backdrop-blur border-border/50 text-xs font-mono">
-        <CalendarDays className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+      <SelectTrigger className="w-[180px] h-9 bg-[hsl(var(--prism-cyan))]/[0.05] border-[hsl(var(--prism-cyan))]/25 text-[11px] font-mono uppercase tracking-wider text-[hsl(var(--prism-cyan))] hover:bg-[hsl(var(--prism-cyan))]/[0.08] transition-colors rounded-sm">
+        <CalendarDays className="h-3.5 w-3.5 mr-2" />
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent className="bg-[hsl(var(--prism-panel-bg))] border-[hsl(var(--prism-cyan))]/25">
         {options.map((opt) => (
-          <SelectItem key={opt.value} value={opt.value} className="text-xs font-mono">
+          <SelectItem key={opt.value} value={opt.value} className="text-[11px] font-mono uppercase tracking-wider">
             {opt.label}
           </SelectItem>
         ))}
