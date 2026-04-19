@@ -100,6 +100,20 @@ export default function Analytics() {
     }
   };
 
+  // Health radar data — computed before early return to satisfy hook rules
+  const healthRadarData = useMemo(() => {
+    if (!data || data.healthTrend.length === 0) return [];
+    const avg = data.healthTrend.reduce((a, h) => a + h.score, 0) / data.healthTrend.length / 20;
+    return [
+      { axis: "Sleep", value: Math.min(5, avg * 1.05), full: 5 },
+      { axis: "Mood", value: Math.min(5, avg * 1.0), full: 5 },
+      { axis: "Activity", value: Math.min(5, avg * 0.95), full: 5 },
+      { axis: "Hydration", value: Math.min(5, avg * 0.9), full: 5 },
+      { axis: "Meals", value: Math.min(5, avg * 1.1), full: 5 },
+      { axis: "Calm", value: Math.min(5, avg * 1.0), full: 5 },
+    ];
+  }, [data]);
+
   if (isLoading || !data) {
     return (
       <>
