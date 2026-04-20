@@ -402,7 +402,7 @@ export default function Analytics() {
 
         {/* Layout: Rail + Canvas */}
         <div className="flex gap-8">
-          <PrismRail active={section} onChange={setSection} />
+          <PrismRail active={section} onChange={handleSectionChange} />
 
           <main className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
