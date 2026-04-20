@@ -53,13 +53,27 @@ export function PrismHeadline({ insight, period, onPeriodChange, sessionId }: Pr
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="prism-panel relative px-5 py-4 mb-6"
+      className="prism-panel prism-panel--primary relative pl-7 pr-5 py-4 mb-6"
     >
       <span className="prism-corner-bracket tl" />
       <span className="prism-corner-bracket tr" />
       <span className="prism-corner-bracket bl" />
       <span className="prism-corner-bracket br" />
-      <div className="prism-scanline motion-reduce:hidden" />
+
+      {/* Lateral neon accent */}
+      <div
+        className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
+        style={{
+          background:
+            "linear-gradient(180deg, hsl(var(--prism-cyan) / 0.85), hsl(var(--prism-cyan) / 0.25))",
+          boxShadow: "0 0 10px hsl(var(--prism-cyan) / 0.5)",
+        }}
+      >
+        <span
+          className="absolute -top-0.5 left-1/2 -translate-x-1/2 h-1.5 w-1.5 rounded-full bg-[hsl(var(--prism-cyan))] motion-reduce:animate-none"
+          style={{ animation: "prism-pulse-cyan 2s ease-in-out infinite" }}
+        />
+      </div>
 
       <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div className="flex-1 min-w-0">
