@@ -86,7 +86,7 @@ export default function Analytics() {
   const handleSectionChange = useCallback(
     (s: PrismSection) => {
       if (s !== section) {
-        play("click");
+        play("ui");
         setSection(s);
       }
     },
