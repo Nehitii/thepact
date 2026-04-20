@@ -35,6 +35,9 @@ import {
   PrismRail,
   PrismPanel,
   PrismTooltip,
+  PrismFrame,
+  PrismDivider,
+  PrismDataNoise,
   InsightStrip,
   OrbitDistribution,
   TagConstellation,
@@ -394,11 +397,14 @@ export default function Analytics() {
           sessionId={sessionId}
         />
 
-        {/* Layout: Rail + Canvas */}
-        <div className="flex gap-8">
+        {/* Layout: Rail + Divider + Canvas */}
+        <div className="flex gap-6 lg:gap-8">
           <PrismRail active={section} onChange={handleSectionChange} />
+          <PrismDivider />
 
-          <main className="flex-1 min-w-0">
+          <main className="relative flex-1 min-w-0">
+            <PrismFrame />
+            <PrismDataNoise count={10} />
             <AnimatePresence mode="wait">
               <motion.div
                 key={section}
