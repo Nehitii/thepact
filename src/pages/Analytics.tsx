@@ -81,6 +81,17 @@ export default function Analytics() {
   const { data, isLoading } = useAnalytics(period);
   const { currency } = useCurrency();
   const locale = useDateFnsLocale();
+  const { play } = useSound();
+
+  const handleSectionChange = useCallback(
+    (s: PrismSection) => {
+      if (s !== section) {
+        play("click");
+        setSection(s);
+      }
+    },
+    [section, play],
+  );
 
   const sessionId = useMemo(
     () => Math.random().toString(36).slice(2, 8).toUpperCase(),
