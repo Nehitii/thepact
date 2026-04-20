@@ -1,15 +1,15 @@
 import { useMemo } from "react";
 
 export function PrismBackground() {
-  // Static constellation — generated once
+  // Static constellation — generated once (reduced count, larger stars)
   const stars = useMemo(
     () =>
-      Array.from({ length: 36 }, (_, i) => ({
+      Array.from({ length: 24 }, (_, i) => ({
         id: i,
         x: Math.random() * 100,
         y: Math.random() * 100,
-        size: Math.random() * 1.6 + 0.6,
-        opacity: Math.random() * 0.5 + 0.2,
+        size: Math.random() * 1.8 + 1,
+        opacity: Math.random() * 0.5 + 0.25,
       })),
     [],
   );
@@ -17,18 +17,31 @@ export function PrismBackground() {
   return (
     <div
       className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
-      style={{ background: "hsl(var(--prism-bg))" }}
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 0%, hsl(220 50% 6%) 0%, hsl(220 60% 2%) 75%)",
+      }}
       aria-hidden
     >
-      {/* Hexagonal grid */}
+      {/* Hex grid — wider, slightly brighter */}
       <div
-        className="absolute inset-0 opacity-[0.04]"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
             "linear-gradient(hsl(var(--prism-cyan)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--prism-cyan)) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
+          backgroundSize: "100px 100px",
         }}
       />
+
+      {/* Subtle X scope lines */}
+      <svg
+        className="absolute inset-0 w-full h-full"
+        preserveAspectRatio="none"
+        viewBox="0 0 100 100"
+      >
+        <line x1="0" y1="0" x2="100" y2="100" stroke="hsl(var(--prism-cyan) / 0.05)" strokeWidth="0.05" />
+        <line x1="100" y1="0" x2="0" y2="100" stroke="hsl(var(--prism-cyan) / 0.05)" strokeWidth="0.05" />
+      </svg>
 
       {/* Radial glow center */}
       <div
@@ -62,16 +75,6 @@ export function PrismBackground() {
           }}
         />
       ))}
-
-      {/* Vertical scan ray */}
-      <div
-        className="absolute left-0 right-0 h-[200px] motion-reduce:hidden"
-        style={{
-          background:
-            "linear-gradient(180deg, transparent, hsl(var(--prism-cyan) / 0.04), transparent)",
-          animation: "prism-scan-ray 18s linear infinite",
-        }}
-      />
     </div>
   );
 }

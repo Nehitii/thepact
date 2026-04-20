@@ -35,6 +35,9 @@ import {
   PrismRail,
   PrismPanel,
   PrismTooltip,
+  PrismFrame,
+  PrismDivider,
+  PrismDataNoise,
   InsightStrip,
   OrbitDistribution,
   TagConstellation,
@@ -394,11 +397,14 @@ export default function Analytics() {
           sessionId={sessionId}
         />
 
-        {/* Layout: Rail + Canvas */}
-        <div className="flex gap-8">
+        {/* Layout: Rail + Divider + Canvas */}
+        <div className="flex gap-6 lg:gap-8">
           <PrismRail active={section} onChange={handleSectionChange} />
+          <PrismDivider />
 
-          <main className="flex-1 min-w-0">
+          <main className="relative flex-1 min-w-0">
+            <PrismFrame />
+            <PrismDataNoise count={10} />
             <AnimatePresence mode="wait">
               <motion.div
                 key={section}
@@ -418,6 +424,8 @@ export default function Analytics() {
                         unit="created ↑ / completed ↓"
                         accent="cyan"
                         height="lg"
+                        tier="primary"
+                        flicker
                         isEmpty={goalsOverTime.length === 0}
                       >
                         <VelocityRiver data={goalsOverTime} formatMonth={formatMonth} />
@@ -462,6 +470,7 @@ export default function Analytics() {
                         unit="goals"
                         accent="amber"
                         height="lg"
+                        tier="primary"
                         isEmpty={orbitItems.length === 0}
                       >
                         <OrbitDistribution items={orbitItems} />
@@ -473,6 +482,7 @@ export default function Analytics() {
                         unit="top 8"
                         accent="violet"
                         height="lg"
+                        tier="primary"
                         isEmpty={tagItems.length === 0}
                       >
                         <TagConstellation tags={tagItems} />
@@ -485,6 +495,7 @@ export default function Analytics() {
                       unit="goals / month"
                       accent="lime"
                       height="lg"
+                      tier="primary"
                       className="mb-4"
                       isEmpty={goalsOverTime.length === 0}
                     >
@@ -581,6 +592,8 @@ export default function Analytics() {
                         unit="6-axis"
                         accent="cyan"
                         height="xl"
+                        tier="primary"
+                        flicker
                         isEmpty={healthRadarData.length === 0}
                       >
                         <HealthRadar data={healthRadarData} />

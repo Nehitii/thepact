@@ -4,6 +4,7 @@ import { PrismBadge } from "./PrismBadge";
 import { PrismSkeleton } from "./PrismSkeleton";
 
 export type PrismPanelStatus = "live" | "stale" | "empty" | "offline";
+export type PrismPanelTier = "primary" | "secondary" | "muted";
 
 interface PrismPanelProps {
   id?: string;
@@ -20,6 +21,8 @@ interface PrismPanelProps {
   accent?: "cyan" | "magenta" | "lime" | "violet" | "amber";
   status?: PrismPanelStatus;
   showStatus?: boolean;
+  tier?: PrismPanelTier;
+  flicker?: boolean;
 }
 
 const HEIGHT_CLASS = {
@@ -53,20 +56,39 @@ export function PrismPanel({
   accent = "cyan",
   status,
   showStatus = true,
+  tier = "secondary",
+  flicker = false,
 }: PrismPanelProps) {
   const resolvedStatus: PrismPanelStatus =
     status ?? (isLoading ? "stale" : isEmpty ? "empty" : "live");
 
+  const tierClass =
+    tier === "primary"
+      ? "prism-panel--primary p-5"
+      : tier === "muted"
+        ? "prism-panel--muted p-3"
+        : "p-5";
+
+  const showBrackets = tier !== "muted";
+
   return (
     <div
-      className={cn("prism-panel relative p-5", className)}
+      className={cn(
+        "prism-panel relative",
+        tierClass,
+        flicker && "prism-flicker",
+        className,
+      )}
       style={{ ["--prism-panel-border" as any]: ACCENT_VAR[accent] }}
     >
-      <span className="prism-corner-bracket tl" />
-      <span className="prism-corner-bracket tr" />
-      <span className="prism-corner-bracket bl" />
-      <span className="prism-corner-bracket br" />
-      <div className="prism-scanline motion-reduce:hidden opacity-60" />
+      {showBrackets && (
+        <>
+          <span className="prism-corner-bracket tl" />
+          <span className="prism-corner-bracket tr" />
+          <span className="prism-corner-bracket bl" />
+          <span className="prism-corner-bracket br" />
+        </>
+      )}
 
       <header className="relative flex items-center justify-between mb-4 gap-2">
         <div className="flex items-center gap-2 min-w-0">
