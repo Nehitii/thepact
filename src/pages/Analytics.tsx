@@ -66,13 +66,7 @@ const AXIS_TICK = {
 };
 const AXIS_STROKE = "hsl(var(--prism-cyan) / 0.2)";
 const GRID_STROKE = "hsl(var(--prism-cyan) / 0.08)";
-const TOOLTIP_STYLE = {
-  background: "hsl(var(--prism-panel-bg) / 0.95)",
-  border: "1px solid hsl(var(--prism-cyan) / 0.3)",
-  borderRadius: 4,
-  fontSize: 11,
-  fontFamily: "monospace",
-};
+// (PrismTooltip is used as Recharts content prop instead of inline contentStyle)
 
 export default function Analytics() {
   const { t } = useTranslation();
