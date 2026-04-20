@@ -2642,6 +2642,16 @@ All colors MUST be HSL.
   50%      { opacity: 1;   box-shadow: 0 0 14px hsl(var(--prism-magenta) / 0.8); }
 }
 
+@keyframes prism-skeleton-sweep {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+@keyframes prism-badge-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.25); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .prism-scanline::after,
   [class*="animate-prism"] {

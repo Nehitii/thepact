@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSound } from "@/contexts/SoundContext";
 import {
   Target,
   Heart,
@@ -33,6 +34,7 @@ import {
   PrismHeadline,
   PrismRail,
   PrismPanel,
+  PrismTooltip,
   InsightStrip,
   OrbitDistribution,
   TagConstellation,
