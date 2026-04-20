@@ -1,122 +1,108 @@
 
-# /analytics V2.1 — Polish & Asset Layer
+# /analytics V2.2 — Cyber Decoration & Visual Hierarchy
 
-Le squelette PRISM est en place. Cette itération ajoute la **couche d'identité visuelle propriétaire** : assets SVG signature, micro-interactions raffinées, et cohérence des détails. Pas de refonte structurelle — on enrichit ce qui existe.
+Itération de polish ciblée : ajouter une couche décorative cyberpunk discrète mais signature, atténuer les scanlines envahissantes, et renforcer le contraste entre panels pour mieux hiérarchiser l'information.
 
-## Diagnostic actuel (post-PRISM)
+## Diagnostic
 
-En lisant `Analytics.tsx`, `PrismPanel`, `PrismRail`, `PrismHeadline` :
-- Rail vertical fonctionnel mais **icônes Lucide génériques** (BarChart3, Target, Timer…) → manque d'identité
-- Panels HUD propres mais **fond uniforme** → pas de hiérarchie visuelle entre panels critiques vs secondaires
-- HeadlineInsight textuelle mais **pas d'élément visuel d'amorce** (pas de badge, pas de spectre)
-- InsightStrip = cards plates, **sparklines absentes** alors que prévues au plan
-- Charts Recharts restylés mais **tooltip générique** Recharts (pas d'identité PRISM)
-- Aucun **état "no data"** custom par chart (fallback EmptyState générique)
-- Period chip discret, **pas de feedback de chargement** (skeleton trop neutre)
-- Transitions entre sections du rail = changement instantané, **pas de respiration**
+- **Scanlines trop présentes** : `prism-scanline` sur chaque panel + `prism-scan-ray` plein écran = fatigue visuelle, sensation de "bruit"
+- **Manque de contraste** : tous les panels ont le même fond `bg-black/40` → impossible de distinguer un panel critique d'un secondaire
+- **Décoration pauvre** : fond uniforme avec juste constellation + grille hex, sans éléments graphiques signature (pas de "framing" cyber autour du canvas)
+- **Headline plat** : zone narrative sans accent visuel latéral, tout au même niveau
+- **Rail nu** : barre verticale entre rail et canvas inexistante, transition sèche
 
 ---
 
-## 7 axes d'amélioration concrets
+## 4 axes d'amélioration
 
-### 1. Pictogrammes signature PRISM (assets propriétaires)
-Remplacer les 6 icônes Lucide du rail par un set SVG inline custom : style "instrument scientifique" filaire, 1.5px stroke, 24×24, cohérence géométrique.
+### 1. Atténuer les scanlines (sobriété)
+- **Supprimer** `prism-scanline` sur les `PrismPanel` standards (garder uniquement sur le panel actif au hover)
+- **Supprimer** le `prism-scan-ray` plein écran de `PrismBackground` (trop envahissant)
+- **Conserver** uniquement la sweep line dans `PrismSkeleton` (sémantiquement justifiée = chargement)
+- **Remplacer** par un *flicker* très ponctuel (3-4s entre flicks) sur 1-2 panels random max → effet "écran CRT vivant" sans saturer
 
-- **Overview** → cercle + 4 traits cardinaux (radar sweep)
-- **Goals** → cible concentrique 3 anneaux + croix
-- **Focus** → sablier hexagonal stylisé
-- **Health** → ECG mini-courbe
-- **Finance** → courbe ascendante + barre seuil
-- **Habits** → grille 3×3 partiellement remplie
+### 2. Système de hiérarchie visuelle (contraste)
+Introduire 3 niveaux de panel via prop `tier`:
+- **`primary`** (visualisation signature) : fond `bg-black/60`, bordure cyan/30 (au lieu de /15), corner brackets plus longs (16px), légère lueur intérieure cyan
+- **`secondary`** (chart standard) : fond `bg-black/40`, bordure cyan/15, corner brackets standards (10px)
+- **`muted`** (info/metadata) : fond `bg-black/20`, bordure white/8, pas de corner brackets, padding réduit
 
-Fichier : `src/components/analytics/PrismIcons.tsx` exportant `<OverviewIcon />`, etc. Hover = trait passe de cyan/60 à cyan/100 + léger glow.
+Application : OrbitDistribution / TagConstellation / VelocityRiver / HealthRadar = `primary` ; charts Recharts restylés = `secondary` ; footers stats = `muted`.
 
-### 2. PrismTooltip custom (charts)
-Recharts accepte un composant custom via `<Tooltip content={<PrismTooltip />} />`. Crée un tooltip HUD :
-- Fond `bg-black/80 backdrop-blur-md`
-- Bordure 1px cyan/30 + corner brackets micro
-- Header mono uppercase `[ DATAPOINT ]`
-- Valeur grosse mono · label muted
-- Petit accent latéral coloré selon série
+### 3. Décor cyber signature (assets nouveaux)
 
-Appliqué à VelocityRiver, HealthRadar, et tous les Recharts restylés.
+**a. `PrismFrame` — encadrement holographique du canvas**
+Quatre éléments fixes en position absolue dans `Analytics.tsx` :
+- Coin haut-gauche : "L bracket" 60×60 cyan/40 avec point lumineux pulse
+- Coin haut-droit : barre horizontale 120px + tag mono `[ OBSERVATORY // ACTIVE ]`
+- Coin bas-gauche : graduation verticale (5 ticks) avec labels mono `00 · 25 · 50 · 75 · 100`
+- Coin bas-droit : "L bracket" inversé + chevron animé (slow blink 2s)
 
-### 3. InsightStrip enrichie
-Le plan prévoyait sparkline 7 points par card mais semble absent. Ajouter :
-- Mini-sparkline SVG 60×16 pure (pas Recharts, trop lourd)
-- Trend arrow inline avec couleur sémantique
-- Hover : élévation 2px + glow accent + tooltip détail
-- État "first datapoint" : afficher pulse au lieu de sparkline si <2 points
+**b. `PrismDivider` — séparateur entre rail et canvas (desktop only)**
+Ligne verticale 1px avec :
+- Gradient cyan/0 → cyan/40 → cyan/0 (vertical)
+- 3 nœuds lumineux espacés (top/middle/bottom) avec micro-pulse desync
+- Cache sur mobile
 
-### 4. PrismBadge & ID tags système
-Convention HUD partout :
-- Chaque PrismPanel reçoit un ID 3-lettres (`OVR.01`, `GLS.03`, `FCS.02`) en mono
-- Badge statut latéral : `LIVE` (pulse vert), `STALE` (ambre), `OFFLINE` (rouge)
-- Composant `<PrismBadge variant="live|stale|empty" />` réutilisable
+**c. `PrismDataNoise` — bruit data ambiant (canvas background)**
+Élément optionnel : 8-12 mini "data fragments" textuels mono très opacity-faible (`opacity-[0.04]`) flottants en background du canvas :
+- Strings courtes : `0xFA42`, `SEQ.7B3`, `>EXEC`, `RDY`, `02:14:09`, `LOG.OK`
+- Position aléatoire au mount, tailles variées (10-14px)
+- Aucune animation (statiques pour ne pas distraire)
+- Composant `<PrismDataNoise count={10} />` dans le canvas main
 
-### 5. PrismSkeleton (loader signature)
-Remplacer le `<Skeleton />` shadcn par un loader PRISM :
-- Fond panel identique
-- Ligne scan horizontale animée (sweep 1.2s)
-- Texte mono `[ ACQUIRING SIGNAL... ]` au centre, opacity pulse
-- Corner brackets visibles dès le loading (continuité visuelle)
+**d. `PrismHeadline` — accent latéral**
+Ajouter à gauche du headline une barre verticale néon cyan (4px de large, hauteur du bloc) avec :
+- Gradient vertical cyan/80 → cyan/30
+- Petit indicateur point lumineux en haut (signal "live")
+- Label vertical `OBS.MAIN` rotation -90deg en mono ultra-petit (8px) si espace
 
-Fichier : `src/components/analytics/PrismSkeleton.tsx`.
-
-### 6. Empty states par chart
-Chaque chart signature doit avoir son empty state custom (pas le générique) :
-- **OrbitDistribution vide** : un seul anneau pulse + "AWAITING TARGETS"
-- **TagConstellation vide** : 3 nœuds gris fantômes connectés + "NO TAGS DETECTED"
-- **VelocityRiver vide** : ligne plate cyan/20 + "FLOW INACTIVE"
-- **HealthRadar vide** : hexagone vide + "BIOMETRICS OFFLINE"
-
-### 7. Transitions inter-sections du rail
-Quand on switch Overview → Goals, actuellement instantané. Ajouter :
-- Fade-out 120ms du contenu actuel
-- Fade-in + slide-up 8px du nouveau contenu (200ms)
-- Indicateur rail : barre néon glisse verticalement entre items (Framer Motion `layoutId`)
-- Subtle scan ray traverse le canvas une fois au switch
+### 4. Background plus contrasté
+Dans `PrismBackground` :
+- **Fond** : passer de `hsl(var(--prism-bg))` (220 50% 4%) à un gradient subtil **radial** depuis le centre haut : centre `220 50% 6%` → bords `220 60% 2%` (vignette inversée légère, focalise l'œil)
+- **Grille hex** : passer opacité de `0.04` à `0.06` mais grille plus large (100px au lieu de 80px) → moins dense, plus lisible
+- **Constellation** : conserver mais réduire de 36 à 24 étoiles, augmenter taille moyenne pour celles restantes
+- **Ajout** : 2 lignes diagonales fines cyan/[0.05] partant des coins opposés, créant un X très subtil derrière tout (sensation de "scope")
 
 ---
 
-## Bonus polish (si temps)
+## Détails techniques
 
-**Period chip → Time scrubber**
-Le PeriodSelector reste une dropdown. Le transformer en pill segmentée horizontale avec underline glissant (layoutId) entre 7D / 30D / 90D / ALL.
+### Fichiers à créer
+- `src/components/analytics/PrismFrame.tsx` — encadrement 4 coins du canvas
+- `src/components/analytics/PrismDivider.tsx` — séparateur vertical rail/canvas
+- `src/components/analytics/PrismDataNoise.tsx` — fragments data ambiants
 
-**Live timestamp réel**
-Dans PrismHeadline, le timestamp doit ticker chaque seconde (pas figé au mount). Petit `useEffect` setInterval 1000ms.
+### Fichiers à éditer
+- `src/components/analytics/PrismPanel.tsx` — ajout prop `tier: 'primary' | 'secondary' | 'muted'` (default `secondary`), retrait `prism-scanline` permanent, ajout flicker conditionnel via prop `flicker?: boolean`
+- `src/components/analytics/PrismBackground.tsx` — retrait `prism-scan-ray`, gradient radial, grille élargie, lignes diagonales X, constellation réduite
+- `src/components/analytics/PrismHeadline.tsx` — accent latéral barre néon + indicateur live
+- `src/pages/Analytics.tsx` — intégration `PrismFrame` (autour du canvas), `PrismDivider` (entre rail et canvas), `PrismDataNoise` (background canvas), application `tier="primary"` sur charts signatures
+- `src/index.css` — keyframes `prism-flicker` (flash très court), retrait usage `prism-scan-ray`
 
-**Session ID**
-Generate stable hash `SID-A8F2-C3D1` basé sur user.id (slice md5 ou simple `user.id.slice(0,4)+'-'+user.id.slice(-4)`) — ajoute crédibilité tactique.
+### Tier mapping (application)
+| Panel | Tier |
+|-------|------|
+| OrbitDistribution, TagConstellation, VelocityRiver, HealthRadar | `primary` |
+| Tous Recharts restylés (Focus AreaChart, Health Score, Income/Expenses, etc.) | `secondary` |
+| Footer stats panels, info légère | `muted` |
 
-**Sound feedback**
-Sur switch de section du rail, jouer le `ui-click` sound existant (déjà dispo via `useSoundContext`).
+### CSS — flicker discret
+```css
+@keyframes prism-flicker {
+  0%, 96%, 100% { opacity: 1; }
+  97% { opacity: 0.85; }
+  98% { opacity: 1; }
+  99% { opacity: 0.92; }
+}
+```
+Appliqué via classe `.prism-flicker` (animation `8s infinite`, désynchronisée avec `animation-delay` random par panel ciblé).
 
----
+### Conservé intact
+Hook `useAnalytics`, `analyticsInsights.ts`, structure rail (6 sections), tous les charts existants, `PrismRail`, `PrismIcons`, `PrismTooltip`, `PrismBadge`, `PrismSkeleton`, `PrismSparkline`, `InsightStrip`, `PeriodSelector`.
 
-## Fichiers à créer
-- `src/components/analytics/PrismIcons.tsx` — 6 icônes SVG signature
-- `src/components/analytics/PrismTooltip.tsx` — tooltip HUD pour Recharts
-- `src/components/analytics/PrismBadge.tsx` — badges LIVE/STALE/OFFLINE
-- `src/components/analytics/PrismSkeleton.tsx` — loader signature
-- `src/components/analytics/PrismSparkline.tsx` — mini-SVG 60×16
-
-## Fichiers à éditer
-- `src/components/analytics/PrismRail.tsx` — remplace Lucide par PrismIcons + indicateur Framer layoutId
-- `src/components/analytics/PrismPanel.tsx` — accepte `idTag`, `status`, intègre PrismBadge + PrismSkeleton
-- `src/components/analytics/PrismHeadline.tsx` — live timestamp ticker + session ID
-- `src/components/analytics/InsightStrip.tsx` — intègre PrismSparkline + hover lift
-- `src/components/analytics/PeriodSelector.tsx` — segmented pill avec layoutId
-- `src/components/analytics/charts/*.tsx` (4 fichiers) — empty states custom + PrismTooltip
-- `src/pages/Analytics.tsx` — wrapper `motion.div` AnimatePresence pour transitions sections
-- `src/index.css` — keyframe `prism-skeleton-sweep`, `prism-badge-pulse`
-
-## Conservé intact
-Hook `useAnalytics`, `analyticsInsights.ts`, structure du rail (6 sections), tous les calculs, AppLayout, navigation globale.
-
-## Hors scope (volontairement)
-- Pas de nouvelles métriques (couche data inchangée)
-- Pas de refonte du layout principal
-- Pas de nouveaux charts (juste enrichissement des 4 signatures + 8 Recharts existants)
-- Pas de modif i18n (textes HUD restent EN, technique)
+### Hors scope
+- Pas de modif data layer
+- Pas de nouvelles métriques
+- Pas de refonte responsive (juste cacher PrismDivider sur mobile)
+- Pas de modif i18n
