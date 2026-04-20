@@ -8,6 +8,7 @@ import {
   ResponsiveContainer,
   ReferenceLine,
 } from "recharts";
+import { PrismTooltip } from "../PrismTooltip";
 
 interface VelocityRiverProps {
   data: { month: string; created: number; completed: number }[];
@@ -15,7 +16,8 @@ interface VelocityRiverProps {
 }
 
 export function VelocityRiver({ data, formatMonth }: VelocityRiverProps) {
-  // Mirror completed to negative for bidirectional river effect
+  if (!data || data.length === 0) return <VelocityRiverEmpty />;
+
   const mirrored = data.map((d) => ({
     month: d.month,
     created: d.created,
@@ -49,34 +51,35 @@ export function VelocityRiver({ data, formatMonth }: VelocityRiverProps) {
         />
         <ReferenceLine y={0} stroke="hsl(var(--prism-cyan) / 0.4)" strokeWidth={1} />
         <Tooltip
-          contentStyle={{
-            background: "hsl(var(--prism-panel-bg) / 0.95)",
-            border: "1px solid hsl(var(--prism-cyan) / 0.3)",
-            borderRadius: 4,
-            fontSize: 11,
-            fontFamily: "monospace",
-          }}
-          labelFormatter={formatMonth}
-          formatter={(value: number, name) => [
-            `${Math.abs(value)} goals`,
-            name === "created" ? "Created" : "Completed",
-          ]}
+          content={
+            <PrismTooltip
+              labelFormatter={formatMonth}
+              valueFormatter={(v) => `${v} goals`}
+            />
+          }
         />
-        <Area
-          type="monotone"
-          dataKey="created"
-          stroke="hsl(var(--prism-cyan))"
-          strokeWidth={1.5}
-          fill="url(#riverCreated)"
-        />
-        <Area
-          type="monotone"
-          dataKey="completed"
-          stroke="hsl(var(--prism-lime))"
-          strokeWidth={1.5}
-          fill="url(#riverCompleted)"
-        />
+        <Area type="monotone" dataKey="created" stroke="hsl(var(--prism-cyan))" strokeWidth={1.5} fill="url(#riverCreated)" />
+        <Area type="monotone" dataKey="completed" stroke="hsl(var(--prism-lime))" strokeWidth={1.5} fill="url(#riverCompleted)" />
       </AreaChart>
     </ResponsiveContainer>
+  );
+}
+
+function VelocityRiverEmpty() {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+      <svg width="180" height="60" viewBox="0 0 180 60" className="opacity-60">
+        <line
+          x1="0" y1="30" x2="180" y2="30"
+          stroke="hsl(var(--prism-cyan) / 0.4)"
+          strokeWidth="1"
+          strokeDasharray="3 4"
+        />
+        <line x1="0" y1="30" x2="180" y2="30" stroke="hsl(var(--prism-cyan))" strokeWidth="0.5" opacity="0.3" />
+      </svg>
+      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+        FLOW INACTIVE
+      </span>
+    </div>
   );
 }
