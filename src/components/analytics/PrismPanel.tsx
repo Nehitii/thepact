@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
-import { BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PrismBadge } from "./PrismBadge";
+import { PrismSkeleton } from "./PrismSkeleton";
+
+export type PrismPanelStatus = "live" | "stale" | "empty" | "offline";
 
 interface PrismPanelProps {
   id?: string;
@@ -13,9 +14,12 @@ interface PrismPanelProps {
   height?: "sm" | "md" | "lg" | "xl" | "auto";
   isLoading?: boolean;
   isEmpty?: boolean;
+  emptyContent?: ReactNode;
   emptyMessage?: string;
   footer?: ReactNode;
   accent?: "cyan" | "magenta" | "lime" | "violet" | "amber";
+  status?: PrismPanelStatus;
+  showStatus?: boolean;
 }
 
 const HEIGHT_CLASS = {
@@ -43,10 +47,16 @@ export function PrismPanel({
   height = "md",
   isLoading,
   isEmpty,
-  emptyMessage = "No data available",
+  emptyContent,
+  emptyMessage = "NO SIGNAL DETECTED",
   footer,
   accent = "cyan",
+  status,
+  showStatus = true,
 }: PrismPanelProps) {
+  const resolvedStatus: PrismPanelStatus =
+    status ?? (isLoading ? "stale" : isEmpty ? "empty" : "live");
+
   return (
     <div
       className={cn("prism-panel relative p-5", className)}
@@ -68,25 +78,20 @@ export function PrismPanel({
           <h3 className="font-orbitron text-[11px] uppercase tracking-[0.2em] text-foreground/90 truncate">
             {title}
           </h3>
+          {unit && (
+            <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 flex-shrink-0">
+              · {unit}
+            </span>
+          )}
         </div>
-        {unit && (
-          <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/60 flex-shrink-0">
-            · {unit}
-          </span>
-        )}
+        {showStatus && <PrismBadge variant={resolvedStatus} />}
       </header>
 
       <div className={cn("relative", HEIGHT_CLASS[height])}>
         {isLoading ? (
-          <div className="w-full h-full flex items-center justify-center">
-            <Skeleton className="w-full h-full rounded-sm" />
-          </div>
+          <PrismSkeleton />
         ) : isEmpty ? (
-          <EmptyState
-            icon={BarChart3}
-            title={emptyMessage}
-            description="Start tracking to see this signal"
-          />
+          emptyContent ?? <DefaultEmpty message={emptyMessage} />
         ) : (
           children
         )}
@@ -97,6 +102,22 @@ export function PrismPanel({
           {footer}
         </footer>
       )}
+    </div>
+  );
+}
+
+function DefaultEmpty({ message }: { message: string }) {
+  return (
+    <div className="w-full h-full flex flex-col items-center justify-center gap-3">
+      <div
+        className="h-12 w-12 rounded-full border border-[hsl(var(--prism-cyan)/0.3)] flex items-center justify-center"
+        style={{ animation: "prism-pulse-cyan 2.4s ease-in-out infinite" }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--prism-cyan))]" />
+      </div>
+      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+        {message}
+      </span>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { LucideIcon, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PrismSparkline } from "./PrismSparkline";
 
 export interface VitalSign {
   id?: string;
@@ -54,8 +55,10 @@ export function InsightStrip({ signs }: InsightStripProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.04 }}
-            className="prism-panel relative p-3.5 group"
+            whileHover={{ y: -2 }}
+            className="prism-panel relative p-3.5 group cursor-default"
             style={{ ["--prism-panel-border" as any]: ACCENT_VAR[accent] }}
+            title={s.label}
           >
             <span className="prism-corner-bracket tl" />
             <span className="prism-corner-bracket br" />
@@ -88,26 +91,13 @@ export function InsightStrip({ signs }: InsightStripProps) {
                 {s.value}
               </p>
 
-              {s.sparkline && s.sparkline.length > 1 && (
-                <div className="flex items-end gap-[1.5px] h-6 flex-shrink-0">
-                  {s.sparkline.slice(-10).map((v, i, arr) => {
-                    const max = Math.max(...arr, 1);
-                    const h = Math.max((v / max) * 100, 6);
-                    return (
-                      <div
-                        key={i}
-                        className="w-[2px] rounded-full"
-                        style={{
-                          height: `${h}%`,
-                          background:
-                            i === arr.length - 1
-                              ? `hsl(${ACCENT_VAR[accent]})`
-                              : `hsl(${ACCENT_VAR[accent]} / 0.35)`,
-                        }}
-                      />
-                    );
-                  })}
-                </div>
+              {s.sparkline && (
+                <PrismSparkline
+                  values={s.sparkline.slice(-10)}
+                  color={ACCENT_VAR[accent]}
+                  width={64}
+                  height={20}
+                />
               )}
             </div>
           </motion.div>

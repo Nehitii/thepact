@@ -1,23 +1,33 @@
 import { motion } from "framer-motion";
-import { LucideIcon, LayoutDashboard, Target, Timer, Heart, Wallet, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  OverviewIcon,
+  GoalsIcon,
+  FocusIcon,
+  HealthIcon,
+  FinanceIcon,
+  HabitsIcon,
+} from "./PrismIcons";
+import type { ComponentType, SVGProps } from "react";
 
 export type PrismSection = "overview" | "goals" | "focus" | "health" | "finance" | "habits";
+
+type IconCmp = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>;
 
 interface RailItem {
   id: PrismSection;
   label: string;
-  icon: LucideIcon;
+  icon: IconCmp;
   num: string;
 }
 
 const ITEMS: RailItem[] = [
-  { id: "overview", label: "Overview", icon: LayoutDashboard, num: "01" },
-  { id: "goals",    label: "Goals",    icon: Target,          num: "02" },
-  { id: "focus",    label: "Focus",    icon: Timer,           num: "03" },
-  { id: "health",   label: "Health",   icon: Heart,           num: "04" },
-  { id: "finance",  label: "Finance",  icon: Wallet,          num: "05" },
-  { id: "habits",   label: "Habits",   icon: Repeat,          num: "06" },
+  { id: "overview", label: "Overview", icon: OverviewIcon, num: "01" },
+  { id: "goals",    label: "Goals",    icon: GoalsIcon,    num: "02" },
+  { id: "focus",    label: "Focus",    icon: FocusIcon,    num: "03" },
+  { id: "health",   label: "Health",   icon: HealthIcon,   num: "04" },
+  { id: "finance",  label: "Finance",  icon: FinanceIcon,  num: "05" },
+  { id: "habits",   label: "Habits",   icon: HabitsIcon,   num: "06" },
 ];
 
 interface PrismRailProps {
@@ -45,15 +55,38 @@ export function PrismRail({ active, onChange }: PrismRailProps) {
               onClick={() => onChange(it.id)}
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "relative flex items-center gap-3 px-3 py-2.5 rounded-sm font-mono text-xs uppercase tracking-wider transition-all group",
+                "relative flex items-center gap-3 px-3 py-2.5 rounded-sm font-mono text-xs uppercase tracking-wider transition-colors group",
                 isActive
-                  ? "prism-rail-active text-[hsl(var(--prism-cyan))] bg-[hsl(var(--prism-cyan))]/[0.06]"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/[0.02]",
+                  ? "text-[hsl(var(--prism-cyan))]"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className="text-[9px] opacity-50 tabular-nums">{it.num}</span>
-              <Icon className="h-3.5 w-3.5" />
-              <span>{it.label}</span>
+              {isActive && (
+                <motion.span
+                  layoutId="prism-rail-active"
+                  className="absolute inset-0 rounded-sm bg-[hsl(var(--prism-cyan))]/[0.08] border border-[hsl(var(--prism-cyan))]/25"
+                  style={{
+                    boxShadow:
+                      "0 0 0 1px hsl(var(--prism-cyan) / 0.1), 0 0 18px -4px hsl(var(--prism-cyan) / 0.45), inset 2px 0 0 hsl(var(--prism-cyan))",
+                  }}
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <span className="relative text-[9px] opacity-50 tabular-nums">{it.num}</span>
+              <Icon
+                className={cn(
+                  "relative h-4 w-4 transition-all",
+                  isActive
+                    ? "opacity-100"
+                    : "opacity-60 group-hover:opacity-90",
+                )}
+                style={
+                  isActive
+                    ? { filter: "drop-shadow(0 0 4px hsl(var(--prism-cyan) / 0.8))" }
+                    : undefined
+                }
+              />
+              <span className="relative">{it.label}</span>
             </button>
           );
         })}
@@ -74,14 +107,30 @@ export function PrismRail({ active, onChange }: PrismRailProps) {
                 onClick={() => onChange(it.id)}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-sm font-mono text-[11px] uppercase tracking-wider whitespace-nowrap transition-all border",
-                  isActive
-                    ? "border-[hsl(var(--prism-cyan))]/40 text-[hsl(var(--prism-cyan))] bg-[hsl(var(--prism-cyan))]/[0.08]"
-                    : "border-transparent text-muted-foreground hover:text-foreground",
+                  "relative flex items-center gap-2 px-3 py-2 rounded-sm font-mono text-[11px] uppercase tracking-wider whitespace-nowrap transition-colors",
                 )}
               >
-                <Icon className="h-3 w-3" />
-                {it.label}
+                {isActive && (
+                  <motion.span
+                    layoutId="prism-rail-active-mobile"
+                    className="absolute inset-0 rounded-sm bg-[hsl(var(--prism-cyan))]/[0.1] border border-[hsl(var(--prism-cyan))]/40"
+                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                  />
+                )}
+                <Icon
+                  className={cn(
+                    "relative h-3.5 w-3.5",
+                    isActive ? "text-[hsl(var(--prism-cyan))]" : "text-muted-foreground",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "relative",
+                    isActive ? "text-[hsl(var(--prism-cyan))]" : "text-muted-foreground",
+                  )}
+                >
+                  {it.label}
+                </span>
               </button>
             );
           })}

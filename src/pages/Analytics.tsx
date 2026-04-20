@@ -1,6 +1,7 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSound } from "@/contexts/SoundContext";
 import {
   Target,
   Heart,
@@ -33,6 +34,7 @@ import {
   PrismHeadline,
   PrismRail,
   PrismPanel,
+  PrismTooltip,
   InsightStrip,
   OrbitDistribution,
   TagConstellation,
@@ -64,13 +66,7 @@ const AXIS_TICK = {
 };
 const AXIS_STROKE = "hsl(var(--prism-cyan) / 0.2)";
 const GRID_STROKE = "hsl(var(--prism-cyan) / 0.08)";
-const TOOLTIP_STYLE = {
-  background: "hsl(var(--prism-panel-bg) / 0.95)",
-  border: "1px solid hsl(var(--prism-cyan) / 0.3)",
-  borderRadius: 4,
-  fontSize: 11,
-  fontFamily: "monospace",
-};
+// (PrismTooltip is used as Recharts content prop instead of inline contentStyle)
 
 export default function Analytics() {
   const { t } = useTranslation();
@@ -79,6 +75,17 @@ export default function Analytics() {
   const { data, isLoading } = useAnalytics(period);
   const { currency } = useCurrency();
   const locale = useDateFnsLocale();
+  const { play } = useSound();
+
+  const handleSectionChange = useCallback(
+    (s: PrismSection) => {
+      if (s !== section) {
+        play("ui");
+        setSection(s);
+      }
+    },
+    [section, play],
+  );
 
   const sessionId = useMemo(
     () => Math.random().toString(36).slice(2, 8).toUpperCase(),
@@ -389,7 +396,7 @@ export default function Analytics() {
 
         {/* Layout: Rail + Canvas */}
         <div className="flex gap-8">
-          <PrismRail active={section} onChange={setSection} />
+          <PrismRail active={section} onChange={handleSectionChange} />
 
           <main className="flex-1 min-w-0">
             <AnimatePresence mode="wait">
@@ -435,7 +442,7 @@ export default function Analytics() {
                             <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                             <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                             <YAxis domain={[0, 100]} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                            <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatDate} />
+                            <Tooltip content={<PrismTooltip labelFormatter={formatDate} valueFormatter={(v) => `${v}%`} />} />
                             <Area type="monotone" dataKey="score" stroke="hsl(var(--prism-cyan))" strokeWidth={1.5} fill="url(#ovHealth)" />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -497,7 +504,7 @@ export default function Analytics() {
                             <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                             <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                             <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                            <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatMonth} />
+                            <Tooltip content={<PrismTooltip labelFormatter={formatMonth} valueFormatter={(v) => `${v} d`} />} />
                             <Line type="monotone" dataKey="avgDays" stroke="hsl(var(--prism-cyan))" strokeWidth={1.5} dot={{ fill: "hsl(var(--prism-cyan))", r: 2 }} />
                           </LineChart>
                         </ResponsiveContainer>
@@ -529,7 +536,7 @@ export default function Analytics() {
                           <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                           <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                           <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                          <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatDate} formatter={(v: number) => [`${v} min`, "Focus"]} />
+                          <Tooltip content={<PrismTooltip labelFormatter={formatDate} valueFormatter={(v) => `${v} min`} />} />
                           <Area type="monotone" dataKey="minutes" stroke="hsl(var(--prism-violet))" strokeWidth={1.5} fill="url(#focusG)" />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -562,7 +569,7 @@ export default function Analytics() {
                             <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                             <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                             <YAxis domain={[0, 100]} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                            <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatDate} />
+                            <Tooltip content={<PrismTooltip labelFormatter={formatDate} valueFormatter={(v) => `${v}%`} />} />
                             <Area type="monotone" dataKey="score" stroke="hsl(var(--prism-cyan))" strokeWidth={1.5} fill="url(#hG)" />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -600,7 +607,7 @@ export default function Analytics() {
                             <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                             <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                             <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                            <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatMonth} formatter={(v: number) => [formatCurrency(v, currency), ""]} />
+                            <Tooltip content={<PrismTooltip labelFormatter={formatMonth} valueFormatter={(v) => formatCurrency(v, currency)} />} />
                             <Legend wrapperStyle={{ fontSize: 10, fontFamily: "monospace" }} />
                             <Line type="monotone" dataKey="income" stroke="hsl(var(--prism-lime))" strokeWidth={1.5} dot={false} name="Income" />
                             <Line type="monotone" dataKey="expenses" stroke="hsl(var(--prism-magenta))" strokeWidth={1.5} dot={false} name="Expenses" />
@@ -634,7 +641,7 @@ export default function Analytics() {
                             <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                             <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                             <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                            <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatMonth} formatter={(v: number) => [formatCurrency(v, currency), "Cumul."]} />
+                            <Tooltip content={<PrismTooltip labelFormatter={formatMonth} valueFormatter={(v) => formatCurrency(v, currency)} />} />
                             <Area type="monotone" dataKey="total" stroke="hsl(var(--prism-cyan))" strokeWidth={1.5} fill="url(#savG)" />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -661,7 +668,7 @@ export default function Analytics() {
                           <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                           <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                           <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                          <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatDate} />
+                          <Tooltip content={<PrismTooltip labelFormatter={formatDate} />} />
                           <Bar dataKey="completed" fill="hsl(var(--prism-lime))" radius={[2, 2, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
@@ -680,7 +687,7 @@ export default function Analytics() {
                           <CartesianGrid strokeDasharray="2 4" stroke={GRID_STROKE} />
                           <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                           <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                          <Tooltip contentStyle={TOOLTIP_STYLE} labelFormatter={formatMonth} />
+                          <Tooltip content={<PrismTooltip labelFormatter={formatMonth} />} />
                           <Bar dataKey="completed" fill="hsl(var(--prism-amber))" radius={[2, 2, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>

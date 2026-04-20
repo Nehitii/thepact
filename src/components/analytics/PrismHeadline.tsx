@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { Activity, Radio } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PeriodSelector, AnalyticsPeriod } from "./PeriodSelector";
 import type { HeadlineInsight } from "@/lib/analyticsInsights";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 interface PrismHeadlineProps {
@@ -30,11 +31,20 @@ const TONE_PULSE: Record<string, string> = {
 
 export function PrismHeadline({ insight, period, onPeriodChange, sessionId }: PrismHeadlineProps) {
   const [now, setNow] = useState(() => new Date());
+  const { user } = useAuth();
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  const stableSid = useMemo(() => {
+    if (!user?.id) return sessionId;
+    const id = user.id.replace(/-/g, "");
+    const a = id.slice(0, 4).toUpperCase();
+    const b = id.slice(-4).toUpperCase();
+    return `${a}-${b}`;
+  }, [user?.id, sessionId]);
 
   const ts = now.toISOString().slice(11, 19);
 
@@ -59,7 +69,7 @@ export function PrismHeadline({ insight, period, onPeriodChange, sessionId }: Pr
               PRISM // OBSERVATORY
             </span>
             <span className="hidden sm:inline text-[10px] font-mono text-muted-foreground/60">
-              · v2.0
+              · v2.1
             </span>
           </div>
 
@@ -87,14 +97,14 @@ export function PrismHeadline({ insight, period, onPeriodChange, sessionId }: Pr
           </div>
 
           <div className="flex items-center gap-3 mt-3 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1 text-[hsl(var(--prism-lime))]">
               <Activity className="h-2.5 w-2.5" />
               LIVE
             </span>
             <span className="text-muted-foreground/40">·</span>
-            <span>T+{ts}</span>
+            <span className="tabular-nums">T+{ts}</span>
             <span className="text-muted-foreground/40">·</span>
-            <span className="hidden sm:inline">SESSION {sessionId}</span>
+            <span className="hidden sm:inline">SID-{stableSid}</span>
           </div>
         </div>
 
