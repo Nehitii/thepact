@@ -67,6 +67,21 @@ export default {
           impossible: "hsl(var(--difficulty-impossible))",
           custom: "hsl(var(--difficulty-custom))",
         },
+        ds: {
+          "bg-base":     "hsl(var(--ds-bg-base))",
+          "bg-canvas":   "hsl(var(--ds-bg-canvas))",
+          "surface-1":   "hsl(var(--ds-surface-1))",
+          "surface-2":   "hsl(var(--ds-surface-2))",
+          "surface-3":   "hsl(var(--ds-surface-3))",
+          "text-primary":   "hsl(var(--ds-text-primary))",
+          "text-secondary": "hsl(var(--ds-text-secondary))",
+          "text-muted":     "hsl(var(--ds-text-muted))",
+          "accent-primary":  "hsl(var(--ds-accent-primary))",
+          "accent-success":  "hsl(var(--ds-accent-success))",
+          "accent-warning":  "hsl(var(--ds-accent-warning))",
+          "accent-critical": "hsl(var(--ds-accent-critical))",
+          "accent-special":  "hsl(var(--ds-accent-special))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -76,6 +91,7 @@ export default {
       fontFamily: {
         orbitron: ["Orbitron", "sans-serif"],
         rajdhani: ["Rajdhani", "sans-serif"],
+        mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
       keyframes: {
         "accordion-down": {
