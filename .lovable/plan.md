@@ -1,108 +1,240 @@
 
-# /analytics V2.2 — Cyber Decoration & Visual Hierarchy
+# Pacte OS — Plan d'Uniformisation Graphique
 
-Itération de polish ciblée : ajouter une couche décorative cyberpunk discrète mais signature, atténuer les scanlines envahissantes, et renforcer le contraste entre panels pour mieux hiérarchiser l'information.
+Audit constaté : l'application possède déjà des fondations cyber solides (Orbitron + Rajdhani, cyan néon `#5BB4FF`, 6 modules signature : Nexus / PRISM / Aura / HUD-Health / Journal / Shop) **mais ces systèmes coexistent en silos** avec leurs propres tokens, surfaces et conventions. Résultat : incohérence d'une page à l'autre, redondance de variables CSS (~200+), poids visuel inégal.
 
-## Diagnostic
-
-- **Scanlines trop présentes** : `prism-scanline` sur chaque panel + `prism-scan-ray` plein écran = fatigue visuelle, sensation de "bruit"
-- **Manque de contraste** : tous les panels ont le même fond `bg-black/40` → impossible de distinguer un panel critique d'un secondaire
-- **Décoration pauvre** : fond uniforme avec juste constellation + grille hex, sans éléments graphiques signature (pas de "framing" cyber autour du canvas)
-- **Headline plat** : zone narrative sans accent visuel latéral, tout au même niveau
-- **Rail nu** : barre verticale entre rail et canvas inexistante, transition sèche
+Le plan ci-dessous **consolide ces dialectes en un Design System canonique unique : "Pacte OS"** — épuré par défaut, cyber par accent.
 
 ---
 
-## 4 axes d'amélioration
+## 1. Direction Artistique — "Calm Tech, Loud Signal"
 
-### 1. Atténuer les scanlines (sobriété)
-- **Supprimer** `prism-scanline` sur les `PrismPanel` standards (garder uniquement sur le panel actif au hover)
-- **Supprimer** le `prism-scan-ray` plein écran de `PrismBackground` (trop envahissant)
-- **Conserver** uniquement la sweep line dans `PrismSkeleton` (sémantiquement justifiée = chargement)
-- **Remplacer** par un *flicker* très ponctuel (3-4s entre flicks) sur 1-2 panels random max → effet "écran CRT vivant" sans saturer
+**Principe directeur** : 80% surface neutre, 20% signal cyber. Le néon n'est jamais décoratif — il signale toujours **un état actif, une donnée live ou une action critique**.
 
-### 2. Système de hiérarchie visuelle (contraste)
-Introduire 3 niveaux de panel via prop `tier`:
-- **`primary`** (visualisation signature) : fond `bg-black/60`, bordure cyan/30 (au lieu de /15), corner brackets plus longs (16px), légère lueur intérieure cyan
-- **`secondary`** (chart standard) : fond `bg-black/40`, bordure cyan/15, corner brackets standards (10px)
-- **`muted`** (info/metadata) : fond `bg-black/20`, bordure white/8, pas de corner brackets, padding réduit
+| Règle | Application |
+|---|---|
+| **Décor < Donnée** | Pas plus de 2 effets animés simultanés par viewport (scanline, pulse, glow). Tout reste optionnel via `prefers-reduced-motion`. |
+| **Brackets > Bordures pleines** | Les coins en L (10-16px) remplacent les bordures continues lourdes — économie visuelle, lecture HUD instantanée. |
+| **Mono pour la métadonnée** | IDs (`OVR.01`), timestamps, deltas → `font-mono`. Le reste reste Rajdhani. Crée une hiérarchie sans alourdir. |
+| **Glassmorphism contrôlé** | `backdrop-blur-md` réservé aux overlays (modals, popovers, headlines sticky). Jamais sur les cards en grille (perf + lisibilité). |
+| **Vide = Information** | Empty states custom par module avec micro-animation et phrase HUD (`AWAITING SIGNAL`). |
 
-Application : OrbitDistribution / TagConstellation / VelocityRiver / HealthRadar = `primary` ; charts Recharts restylés = `secondary` ; footers stats = `muted`.
-
-### 3. Décor cyber signature (assets nouveaux)
-
-**a. `PrismFrame` — encadrement holographique du canvas**
-Quatre éléments fixes en position absolue dans `Analytics.tsx` :
-- Coin haut-gauche : "L bracket" 60×60 cyan/40 avec point lumineux pulse
-- Coin haut-droit : barre horizontale 120px + tag mono `[ OBSERVATORY // ACTIVE ]`
-- Coin bas-gauche : graduation verticale (5 ticks) avec labels mono `00 · 25 · 50 · 75 · 100`
-- Coin bas-droit : "L bracket" inversé + chevron animé (slow blink 2s)
-
-**b. `PrismDivider` — séparateur entre rail et canvas (desktop only)**
-Ligne verticale 1px avec :
-- Gradient cyan/0 → cyan/40 → cyan/0 (vertical)
-- 3 nœuds lumineux espacés (top/middle/bottom) avec micro-pulse desync
-- Cache sur mobile
-
-**c. `PrismDataNoise` — bruit data ambiant (canvas background)**
-Élément optionnel : 8-12 mini "data fragments" textuels mono très opacity-faible (`opacity-[0.04]`) flottants en background du canvas :
-- Strings courtes : `0xFA42`, `SEQ.7B3`, `>EXEC`, `RDY`, `02:14:09`, `LOG.OK`
-- Position aléatoire au mount, tailles variées (10-14px)
-- Aucune animation (statiques pour ne pas distraire)
-- Composant `<PrismDataNoise count={10} />` dans le canvas main
-
-**d. `PrismHeadline` — accent latéral**
-Ajouter à gauche du headline une barre verticale néon cyan (4px de large, hauteur du bloc) avec :
-- Gradient vertical cyan/80 → cyan/30
-- Petit indicateur point lumineux en haut (signal "live")
-- Label vertical `OBS.MAIN` rotation -90deg en mono ultra-petit (8px) si espace
-
-### 4. Background plus contrasté
-Dans `PrismBackground` :
-- **Fond** : passer de `hsl(var(--prism-bg))` (220 50% 4%) à un gradient subtil **radial** depuis le centre haut : centre `220 50% 6%` → bords `220 60% 2%` (vignette inversée légère, focalise l'œil)
-- **Grille hex** : passer opacité de `0.04` à `0.06` mais grille plus large (100px au lieu de 80px) → moins dense, plus lisible
-- **Constellation** : conserver mais réduire de 36 à 24 étoiles, augmenter taille moyenne pour celles restantes
-- **Ajout** : 2 lignes diagonales fines cyan/[0.05] partant des coins opposés, créant un X très subtil derrière tout (sensation de "scope")
+Anti-cliché : on bannit les hexagones décoratifs gratuits, les particules denses, les gradients arc-en-ciel cyberpunk.
 
 ---
 
-## Détails techniques
+## 2. Palette Chromatique Canonique
 
-### Fichiers à créer
-- `src/components/analytics/PrismFrame.tsx` — encadrement 4 coins du canvas
-- `src/components/analytics/PrismDivider.tsx` — séparateur vertical rail/canvas
-- `src/components/analytics/PrismDataNoise.tsx` — fragments data ambiants
+Renommage des tokens redondants (`--prism-*`, `--nexus-*`, `--journal-*`, `--hud-*`) vers une convention unique `--ds-*` (Design System) :
 
-### Fichiers à éditer
-- `src/components/analytics/PrismPanel.tsx` — ajout prop `tier: 'primary' | 'secondary' | 'muted'` (default `secondary`), retrait `prism-scanline` permanent, ajout flicker conditionnel via prop `flicker?: boolean`
-- `src/components/analytics/PrismBackground.tsx` — retrait `prism-scan-ray`, gradient radial, grille élargie, lignes diagonales X, constellation réduite
-- `src/components/analytics/PrismHeadline.tsx` — accent latéral barre néon + indicateur live
-- `src/pages/Analytics.tsx` — intégration `PrismFrame` (autour du canvas), `PrismDivider` (entre rail et canvas), `PrismDataNoise` (background canvas), application `tier="primary"` sur charts signatures
-- `src/index.css` — keyframes `prism-flicker` (flash très court), retrait usage `prism-scan-ray`
-
-### Tier mapping (application)
-| Panel | Tier |
-|-------|------|
-| OrbitDistribution, TagConstellation, VelocityRiver, HealthRadar | `primary` |
-| Tous Recharts restylés (Focus AreaChart, Health Score, Income/Expenses, etc.) | `secondary` |
-| Footer stats panels, info légère | `muted` |
-
-### CSS — flicker discret
+### Surfaces (dark mode signature)
 ```css
-@keyframes prism-flicker {
-  0%, 96%, 100% { opacity: 1; }
-  97% { opacity: 0.85; }
-  98% { opacity: 1; }
-  99% { opacity: 0.92; }
-}
+--ds-bg-base:      220 50% 4%;    /* Fond app */
+--ds-bg-canvas:    220 40% 6%;    /* Zone contenu */
+--ds-surface-1:    220 30% 8%;    /* Card secondaire */
+--ds-surface-2:    220 25% 11%;   /* Card primaire / élevée */
+--ds-surface-3:    220 20% 14%;   /* Modal, popover */
+--ds-overlay:      220 30% 4% / 0.85; /* Backdrop */
 ```
-Appliqué via classe `.prism-flicker` (animation `8s infinite`, désynchronisée avec `animation-delay` random par panel ciblé).
 
-### Conservé intact
-Hook `useAnalytics`, `analyticsInsights.ts`, structure rail (6 sections), tous les charts existants, `PrismRail`, `PrismIcons`, `PrismTooltip`, `PrismBadge`, `PrismSkeleton`, `PrismSparkline`, `InsightStrip`, `PeriodSelector`.
+### Bordures (3 niveaux)
+```css
+--ds-border-subtle:  200 50% 75% / 0.08;  /* Séparateur */
+--ds-border-default: 200 50% 75% / 0.18;  /* Card standard */
+--ds-border-strong:  200 50% 75% / 0.35;  /* Card primaire / focus */
+```
 
-### Hors scope
-- Pas de modif data layer
-- Pas de nouvelles métriques
-- Pas de refonte responsive (juste cacher PrismDivider sur mobile)
-- Pas de modif i18n
+### Accents néon (5 sémantiques fixes)
+| Token | Hex | Usage exclusif |
+|---|---|---|
+| `--ds-accent-primary` (cyan) | `#5BB4FF` | Navigation active, données neutres, focus |
+| `--ds-accent-success` (lime) | `#B6FF6A` | Progression, complétion, gains |
+| `--ds-accent-warning` (amber) | `#FFB454` | Attention, deadlines proches |
+| `--ds-accent-critical` (magenta) | `#FF4D8F` | Erreur, perte, destruction |
+| `--ds-accent-special` (violet) | `#9D5BFF` | Premium, focus mode, AI |
+
+### Texte (échelle lisibilité AAA-grade)
+```css
+--ds-text-primary:   210 30% 96%;  /* contrast 16.4:1 sur surface-1 */
+--ds-text-secondary: 210 20% 75%;  /* 9.2:1 */
+--ds-text-muted:     210 15% 55%;  /* 5.1:1 — minimum AA */
+--ds-text-disabled:  210 10% 35%;  /* décoratif uniquement */
+```
+
+**Light mode** : conservé comme miroir tonal (220 50% 96% base), **mais le contrat néon reste identique** (mêmes 5 accents, même rôle sémantique).
+
+---
+
+## 3. Typographie
+
+Conservation de l'existant + clarification des rôles :
+
+| Famille | Rôle | Tailles & casing |
+|---|---|---|
+| **Orbitron** (700, 800) | Titres HUD, labels système, tags de section | 11-14px UPPERCASE tracking-[0.2em] |
+| **Rajdhani** (400, 500, 600) | Body, paragraphes, formulaires, narration | 14-16px sentence case |
+| **JetBrains Mono** (à ajouter, 400/500) | IDs, timestamps, deltas, valeurs numériques tabulaires | 9-12px — `tabular-nums` obligatoire |
+
+Bénéfice : Mono = signal "donnée machine", Orbitron = signal "système", Rajdhani = signal "humain". Le cerveau distingue les 3 rôles sans effort.
+
+Échelle modulaire (ratio 1.25) :
+```
+xs 11 · sm 13 · base 16 · lg 20 · xl 25 · 2xl 32 · 3xl 40
+```
+
+---
+
+## 4. UI Kit Canonique
+
+### Card (3 tiers, le standard du module Analytics V2.2 généralisé)
+```
+┌─ tier="primary"   ─ surface-2 + border-strong  + corner-brackets 16px + inner glow
+├─ tier="secondary" ─ surface-1 + border-default + corner-brackets 10px
+└─ tier="muted"     ─ surface-1 + border-subtle  + sans brackets, padding réduit
+```
+Composant unique `<DSPanel tier="...">` — remplace `PrismPanel`, `Card`, `NexusPanel`, `JournalCard`, `AuraWidget`.
+
+### Button (5 variants, 3 sizes)
+- **default** : cyan plein, glow 15px (CTA primaire)
+- **hud** (existant) : transparent + bordure cyan/40 (action HUD)
+- **outline** : bordure cyan/30 + bg transparent
+- **ghost** : aucun fond, hover bg accent/10
+- **destructive** : magenta plein, glow magenta
+
+Toutes intègrent déjà le sound feedback (`useSound`) — comportement conservé.
+
+### Input / Textarea
+- Fond `surface-1`, bordure `border-default`
+- Focus : bordure `accent-primary/60` + ring 1px externe + glow 8px
+- Label flottant Orbitron 11px UPPERCASE
+- Erreur : bordure magenta + texte mono 11px en bas
+
+### Modal / Sheet / Drawer
+- Backdrop : `overlay` + `backdrop-blur-sm`
+- Contenu : `surface-3` + corner brackets 16px sur les 4 coins
+- Header sticky : Orbitron 14px + bouton close hud
+- Animation : `scale-in 200ms` + fade backdrop 150ms
+- Tous les overlays utilisent `isolate` + `[contain:paint]` (règle existante respectée)
+
+### Tooltip / Popover
+- Style PRISM tooltip généralisé : `surface-3 + border-strong + brackets micro 6px`
+- Header mono 9px `[ DATAPOINT ]`, valeur Orbitron 14px
+
+### Badge (statut système universel)
+- `LIVE` (lime pulse) · `STALE` (amber) · `OFFLINE` (magenta) · `LOCKED` (gris) · `NEW` (cyan)
+- Format mono 9px UPPERCASE + dot 6px latéral
+
+### Skeleton / Loader
+- `DSSkeleton` (basé sur `PrismSkeleton`) : surface-1 + scan sweep 1.2s + texte `[ ACQUIRING SIGNAL... ]`
+- `CyberLoader` (existant, plein écran) conservé pour route transitions
+
+### Sparkline / Mini-chart
+- `DSSparkline` (basé sur `PrismSparkline`) : SVG pur 60×16, gradient accent + endpoint glow
+- Standard pour toutes les micro-stats partout dans l'app
+
+---
+
+## 5. Iconographie & Éléments Graphiques
+
+### Système 3-couches
+1. **Lucide React** (existant) — actions universelles (Save, Edit, Trash, Search). Stroke 1.5px, 16-24px.
+2. **PrismIcons** (existant, à étendre) — pictogrammes de section/module signature. Style "instrument scientifique" filaire 1.5px.
+3. **PactVisual** (existant) — symboles narratifs (rangs, pacts, achievements). Réservé aux moments rituels.
+
+**Règle** : ne jamais mélanger les 3 layers dans un même composant. Lucide pour les actions, PrismIcons pour les sections, PactVisual pour les hero/identity.
+
+### Éléments graphiques signature (réutilisables)
+- **Corner brackets** (`.ds-corner-bracket`) — déjà dans PRISM, à promouvoir au niveau global
+- **DSDivider** (vertical/horizontal) — gradient transparent → accent → transparent + 3 nœuds pulse desync
+- **DSDataNoise** (background ambiant) — fragments mono opacity-[0.04] (existant PRISM, à généraliser sur Home/Profile)
+- **DSScanRay** (optionnel par page) — UN scan vertical lent par page max, désactivable
+
+### À supprimer (cliché ou redondant)
+- Hexagones de fond gratuits (sauf grille hex Analytics)
+- Particules denses non justifiées (CyberBackground à audit)
+- Gradients arc-en-ciel
+- Animations `glow-pulse` superposées (max 1 par card)
+
+---
+
+## 6. Hiérarchie & Layout
+
+### Grille canonique (12 colonnes desktop)
+- Container : `max-w-7xl` centré, padding `px-6 lg:px-8`
+- Gap standard : `gap-4` (16px) intra-section, `gap-8` (32px) inter-section
+- Mobile : stack vertical, padding `px-4`, gap réduit `gap-3`
+
+### Anatomie de page standard
+```
+┌─ ModuleHeader (sticky 64px) ─────────────────────────┐
+│  [Icon] MODULE.ID · Title             [actions HUD] │
+├─ InsightStrip (4 vital signs ≈ 80px)────────────────┤
+│  [stat 1]  [stat 2]  [stat 3]  [stat 4]             │
+├─ Main canvas (grid 12 cols) ────────────────────────┤
+│  ┌─ tier=primary 8col ─┐ ┌─ tier=secondary 4col ─┐ │
+│  │                     │ │                        │ │
+│  └─────────────────────┘ └────────────────────────┘ │
+│  ┌─ tier=secondary 6col┐ ┌─ tier=secondary 6col ─┐ │
+│  └─────────────────────┘ └────────────────────────┘ │
+└──────────────────────────────────────────────────────┘
+```
+
+### Densité (rule of thirds)
+- **1/3 espace négatif minimum** par viewport (anti-cliché "trop chargé")
+- Padding interne card : `p-5` (primary), `p-4` (secondary), `p-3` (muted)
+- Line-height body : `1.6` minimum
+- Pas plus de **6 cards visibles simultanément** sans scroll
+
+### Sticky strategy
+- ModuleHeader : `top-0`
+- InsightStrip : `top-16` (sous header)
+- Section nav (rail/tabs) : `top-32`
+- Backdrop blur uniquement sur sticky elements (pas sur cards inline)
+
+---
+
+## Plan d'exécution (3 phases)
+
+### Phase 1 — Tokens canoniques (foundation)
+- Créer `src/styles/design-tokens.css` avec les variables `--ds-*`
+- Mapper les anciens tokens (`--prism-*`, `--nexus-*`, `--journal-*`, `--hud-*`) en alias vers `--ds-*` (zéro breaking change initial)
+- Étendre `tailwind.config.ts` avec les nouvelles couleurs sémantiques (`accent-success`, `accent-critical`, etc.) et la famille `mono`
+- Charger JetBrains Mono via Google Fonts
+
+### Phase 2 — Composants canoniques (UI Kit)
+Créer `src/components/ds/` :
+- `DSPanel.tsx` (généralisation de PrismPanel)
+- `DSBadge.tsx` (généralisation de PrismBadge)
+- `DSSkeleton.tsx`, `DSSparkline.tsx`, `DSTooltip.tsx`, `DSDivider.tsx`, `DSDataNoise.tsx`
+- `DSCornerBrackets.tsx` (utilitaire absolu)
+- Documenter chaque composant avec props + tier mapping
+
+### Phase 3 — Migration progressive (page par page)
+Ordre de priorité (impact visuel décroissant) :
+1. **Home** (NeuralBar + panels) → DSPanel tier system
+2. **Profile / Settings** → unifier sur DSPanel
+3. **Goals listing + detail** → cards en tier=secondary, hero en tier=primary
+4. **Finance Aura** → mapper Aura tokens vers ds-*
+5. **Health HUD** → mapper hud-* vers ds-*
+6. **Journal Chronolog** → mapper journal-* vers ds-*
+7. **Friends / Guilds / Community / Shop / Calendar / Todo / Focus / Wishlist** → audit + remplacement Card par DSPanel
+
+À chaque étape : suppression des tokens dupliqués, conservation des couleurs spécifiques (difficulty, achievement rarity — non-touchés).
+
+---
+
+## Hors scope (volontaire)
+
+- Refonte fonctionnelle (zéro changement métier)
+- Modification des couleurs Difficulty / Achievement / Rank (chartes narratives sacrées)
+- Suppression du light mode
+- Refonte de la sidebar (NEXUS OS) — déjà canonique
+- Modification du système de sons, du système de frames d'avatar, du PactVisual
+
+## Bénéfices mesurables attendus
+
+- **−60% de tokens CSS** (de ~200 à ~80)
+- **Cohérence visuelle 1:1** entre les 12 modules principaux
+- **Temps de création d'une nouvelle page divisé par 3** (composants prêts à l'emploi)
+- **Réduction du payload CSS** de ~25KB (deduplication)
+- **A11y AA garantie** (contrastes documentés et testés sur les 4 niveaux de texte)
