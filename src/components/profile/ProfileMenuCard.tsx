@@ -2,6 +2,7 @@ import { useState, ReactNode } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DSCornerBrackets } from "@/components/ds";
 
 interface ProfileMenuCardProps {
   icon: ReactNode;
@@ -81,6 +82,8 @@ export function ProfileMenuCard({
         styles.border,
         styles.bg
       )}>
+        {/* Pacte OS — DS signature corner brackets */}
+        <DSCornerBrackets size={12} />
         {/* Inner border frame */}
         <div className="absolute inset-0 pointer-events-none">
           <div className={cn(

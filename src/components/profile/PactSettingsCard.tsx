@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { DSCornerBrackets } from "@/components/ds";
 
 interface PactSettingsCardProps {
   icon: ReactNode;
@@ -28,6 +29,7 @@ export function PactSettingsCard({
   return (
     <div className="relative" id={sectionId}>
       <Card variant="clean" className={cn("shop-card bg-card/70 border-primary/20 overflow-hidden")}>
+        <DSCornerBrackets size={12} />
         <button
           type="button"
           onClick={() => setIsOpen((v) => !v)}
