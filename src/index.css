@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Pacte OS canonical design tokens — must load before all module-specific tokens */
-@import "./styles/design-tokens.css";
-
 /* Shimmer animation for loading states */
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
