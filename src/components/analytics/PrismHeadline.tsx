@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { Activity, Radio } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { PeriodSelector, AnalyticsPeriod } from "./PeriodSelector";
 import type { HeadlineInsight } from "@/lib/analyticsInsights";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 
 interface PrismHeadlineProps {
   insight: HeadlineInsight;
@@ -33,10 +34,7 @@ export function PrismHeadline({ insight, period, onPeriodChange, sessionId }: Pr
   const [now, setNow] = useState(() => new Date());
   const { user } = useAuth();
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  useVisibleInterval(() => setNow(new Date()), 1000);
 
   const stableSid = useMemo(() => {
     if (!user?.id) return sessionId;

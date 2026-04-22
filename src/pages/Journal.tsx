@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useCallback, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJournalEntries, useDeleteJournalEntry } from "@/hooks/useJournal";
+import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import type { JournalEntry } from "@/types/journal";
 import { MOOD_OPTIONS, getAccent } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
@@ -23,17 +24,14 @@ import { motion, AnimatePresence } from "framer-motion";
 // Isolated clock component to avoid re-rendering the whole page
 const LiveClock = memo(function LiveClock() {
   const [clock, setClock] = useState("");
-  useEffect(() => {
-    const tick = () => {
-      const n = new Date();
-      setClock(
-        `${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}:${String(n.getSeconds()).padStart(2, "0")}`,
-      );
-    };
-    tick();
-    const id = setInterval(tick, 1000);
-    return () => clearInterval(id);
+  const tick = useCallback(() => {
+    const n = new Date();
+    setClock(
+      `${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}:${String(n.getSeconds()).padStart(2, "0")}`,
+    );
   }, []);
+  useEffect(() => { tick(); }, [tick]);
+  useVisibleInterval(tick, 1000);
   return (
     <>
       {clock.split(":").map((t, i) => (

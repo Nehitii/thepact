@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -7,6 +7,7 @@ import { RankXPData } from "@/hooks/useRankXP";
 import { BondIcon } from "@/components/ui/bond-icon";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBondBalance } from "@/hooks/useShop";
+import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 
 interface NeuralBarProps {
   pact: Pact;
@@ -21,10 +22,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   const { data: bondBalanceData } = useBondBalance(user?.id);
   const bondBalance = bondBalanceData?.balance ?? 0;
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  useVisibleInterval(() => setNow(new Date()), 1000);
 
   const { currentRank, nextRank, currentXP } = rankData;
   const currentRankMin = currentRank?.min_points || 0;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,6 +6,7 @@ import { useTodayHealth } from "@/hooks/useHealth";
 import { format } from "date-fns";
 import { Activity } from "lucide-react";
 import { HealthECGLine } from "./HealthECGLine";
+import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 
 interface HealthVitalCoreHeroProps {
   score: number;
@@ -22,10 +23,7 @@ export function HealthVitalCoreHero({ score }: HealthVitalCoreHeroProps) {
 
   // Live clock for "LAST_PULSE"
   const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const interval = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(interval);
-  }, []);
+  useVisibleInterval(() => setNow(new Date()), 1000);
 
   // Subject ID from user (deterministic short hash)
   const subjectId = user?.id ? user.id.slice(0, 8).toUpperCase() : "ANON-0000";
