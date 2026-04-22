@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Clock, AlertTriangle, Check, Flag, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ActiveMission } from '@/hooks/useActiveMission';
 import { useNavigate } from 'react-router-dom';
+import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -26,24 +27,21 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
   const [isAbandoning, setIsAbandoning] = useState(false);
   const [isCompleting, setIsCompleting] = useState(false);
 
-  useEffect(() => {
-    const updateCountdown = () => {
-      const now = new Date().getTime();
-      const expires = new Date(mission.expires_at).getTime();
-      const diff = expires - now;
-      if (diff <= 0) { setIsExpired(true); setTimeRemaining('EXPIRED'); return; }
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      if (days > 0) setTimeRemaining(`${days}d ${hours}h ${minutes}m`);
-      else if (hours > 0) setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
-      else setTimeRemaining(`${minutes}m ${seconds}s`);
-    };
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-    return () => clearInterval(interval);
+  const updateCountdown = useCallback(() => {
+    const now = new Date().getTime();
+    const expires = new Date(mission.expires_at).getTime();
+    const diff = expires - now;
+    if (diff <= 0) { setIsExpired(true); setTimeRemaining('EXPIRED'); return; }
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    if (days > 0) setTimeRemaining(`${days}d ${hours}h ${minutes}m`);
+    else if (hours > 0) setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
+    else setTimeRemaining(`${minutes}m ${seconds}s`);
   }, [mission.expires_at]);
+  useEffect(() => { updateCountdown(); }, [updateCountdown]);
+  useVisibleInterval(updateCountdown, 1000);
 
   const urgencyLevel = useMemo(() => {
     const now = new Date().getTime();

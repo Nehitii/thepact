@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { CornerBrackets } from "./CornerBrackets";
+import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 
 interface CountdownPanelProps {
   projectStartDate?: string | null;
@@ -89,10 +90,7 @@ function TriangleIcon({ color }: { color: string }) {
 export function CountdownPanel({ projectStartDate, projectEndDate, goalsCompleted, totalGoals, pactName = "OPERATION ASCENSION" }: CountdownPanelProps) {
   const [now, setNow] = useState(Date.now());
 
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, []);
+  useVisibleInterval(() => setNow(Date.now()), 1000);
 
   const calc = useMemo(() => {
     if (!projectEndDate) return null;

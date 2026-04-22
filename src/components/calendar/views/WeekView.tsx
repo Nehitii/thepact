@@ -4,6 +4,7 @@ import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
 import { CheckSquare, Target, Footprints } from "lucide-react";
+import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const HOUR_HEIGHT = 48;
@@ -23,10 +24,7 @@ interface WeekViewProps {
 
 function CurrentTimeLine() {
   const [now, setNow] = useState(new Date());
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
-  }, []);
+  useVisibleInterval(() => setNow(new Date()), 60_000);
   const mins = now.getHours() * 60 + now.getMinutes();
   const top = (mins / 60) * HOUR_HEIGHT;
   return (
