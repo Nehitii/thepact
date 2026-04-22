@@ -2,11 +2,12 @@ import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Shield, Plus, Globe, Link, Loader2 } from "lucide-react";
-import { GuildCard } from "./GuildCard";
+import { Shield, Plus, Globe, Loader2, Zap } from "lucide-react";
+import { GuildNodeCard } from "./GuildNodeCard";
 import { GuildCreateModal } from "./GuildCreateModal";
 import { GuildInviteCard } from "./GuildInviteCard";
 import { CyberLoader, CyberEmpty } from "@/components/ui/cyber-states";
+import { DSPanel, DSDivider } from "@/components/ds";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -53,29 +54,42 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
     }
   };
 
-  // Filter out guilds user is already in from public list
   const myGuildIds = new Set(guilds.map((g) => g.id));
   const discoverGuilds = publicGuilds.filter((g) => !myGuildIds.has(g.id));
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="p-6 max-w-3xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-black font-orbitron uppercase tracking-widest text-muted-foreground">
-            {t("friends.yourGuilds")}
-          </h3>
-          <div className="flex gap-2">
+      <div className="p-4 sm:p-6 max-w-3xl mx-auto">
+        {/* Action bar */}
+        <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <h3 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-warning))] shrink-0">
+              [ ACTIVE FACTIONS ]
+            </h3>
+            <DSDivider accent="warning" />
+          </div>
+          <div className="flex gap-2 shrink-0">
             <Button
-              size="sm" variant="outline"
+              size="sm"
               onClick={() => setShowDiscover(!showDiscover)}
-              className="text-xs font-bold uppercase tracking-wider h-8"
+              className="h-8 text-xs font-orbitron tracking-wider uppercase border"
+              style={{
+                color: "hsl(var(--ds-accent-primary))",
+                background: showDiscover ? "hsl(var(--ds-accent-primary) / 0.15)" : "hsl(var(--ds-accent-primary) / 0.05)",
+                borderColor: "hsl(var(--ds-accent-primary) / 0.5)",
+              }}
             >
               <Globe className="h-3.5 w-3.5 mr-1" /> {t("friends.discover")}
             </Button>
             <Button
               size="sm"
               onClick={() => setCreateOpen(true)}
-              className="text-xs font-bold uppercase tracking-wider h-8"
+              className="h-8 text-xs font-orbitron tracking-wider uppercase border"
+              style={{
+                color: "hsl(var(--ds-accent-success))",
+                background: "hsl(var(--ds-accent-success) / 0.1)",
+                borderColor: "hsl(var(--ds-accent-success) / 0.5)",
+              }}
               aria-label={t("friends.createGuild")}
             >
               <Plus className="h-3.5 w-3.5 mr-1" /> {t("common.create")}
@@ -84,25 +98,42 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
         </div>
 
         {/* Join via code */}
-        <div className="flex gap-2 mb-4">
-          <Input
-            placeholder={t("friends.enterInviteCode")}
-            value={inviteCode}
-            onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-            className="h-8 text-xs font-mono"
-            maxLength={8}
-          />
-          <Button size="sm" className="h-8 text-xs" onClick={handleJoinViaCode} disabled={!inviteCode.trim() || joiningCode}>
-            {joiningCode ? <Loader2 className="h-3 w-3 animate-spin" /> : <Link className="h-3 w-3 mr-1" />}
-            {t("friends.join")}
-          </Button>
-        </div>
+        <DSPanel tier="muted" className="mb-5">
+          <span className="absolute -top-2 left-3 px-1.5 font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] bg-[hsl(var(--ds-surface-1))]">
+            [ JACK_IN VIA CODE ]
+          </span>
+          <div className="flex gap-2">
+            <Input
+              placeholder={t("friends.enterInviteCode")}
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+              className="h-9 text-xs font-mono uppercase tracking-[0.2em] bg-[hsl(var(--ds-surface-2)/0.5)] border-[hsl(var(--ds-border-default)/0.3)]"
+              maxLength={8}
+            />
+            <Button
+              size="sm"
+              onClick={handleJoinViaCode}
+              disabled={!inviteCode.trim() || joiningCode}
+              className="h-9 text-xs font-orbitron tracking-wider uppercase border"
+              style={{
+                color: "hsl(var(--ds-accent-primary))",
+                background: "hsl(var(--ds-accent-primary) / 0.1)",
+                borderColor: "hsl(var(--ds-accent-primary) / 0.5)",
+              }}
+            >
+              {joiningCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Zap className="h-3.5 w-3.5 mr-1" />JACK_IN</>}
+            </Button>
+          </div>
+        </DSPanel>
 
         {invites.length > 0 && (
           <div className="space-y-2 mb-6">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-violet-400 mb-2">
-              {t("friends.pendingInvites")}
-            </h4>
+            <div className="flex items-center gap-3 mb-2">
+              <h4 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-special))] shrink-0">
+                [ PENDING INVITES ]
+              </h4>
+              <DSDivider accent="special" />
+            </div>
             {invites.map((inv) => (
               <GuildInviteCard
                 key={inv.id}
@@ -123,24 +154,31 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
             subtitle={t("friends.noGuildsDesc")}
           />
         ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2.5">
             {guilds.map((guild, i) => (
-              <motion.div key={guild.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                <GuildCard guild={guild} isOwner={guild.owner_id === userId} />
+              <motion.div
+                key={guild.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.04, 0.3) }}
+              >
+                <GuildNodeCard guild={guild} isOwner={guild.owner_id === userId} />
               </motion.div>
             ))}
           </motion.div>
         )}
 
-        {/* Discover Public Guilds */}
         {showDiscover && discoverGuilds.length > 0 && (
-          <div className="mt-6">
-            <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">
-              {t("friends.discoverGuilds")}
-            </h4>
-            <div className="space-y-3">
+          <div className="mt-8">
+            <div className="flex items-center gap-3 mb-3">
+              <h4 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] shrink-0">
+                [ PUBLIC NETWORK ]
+              </h4>
+              <DSDivider accent="primary" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {discoverGuilds.map((guild) => (
-                <GuildCard key={guild.id} guild={guild} isOwner={false} />
+                <GuildNodeCard key={guild.id} guild={guild} isOwner={false} />
               ))}
             </div>
           </div>
