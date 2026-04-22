@@ -452,6 +452,11 @@ All colors MUST be HSL.
     animation: float 4s ease-in-out infinite;
   }
 
+  /* Performance: hide expensive blurred orbs when tab is hidden */
+  html.tab-hidden .cyber-orb {
+    display: none !important;
+  }
+
   .animate-scan {
     animation: scan-line 3s linear infinite;
   }
