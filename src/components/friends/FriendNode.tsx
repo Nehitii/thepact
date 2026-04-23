@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { DSPanel } from "@/components/ds";
 import { AvatarPing, getPingState, type PingState } from "./AvatarPing";
 import { MessageSquare, UserX } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -18,9 +17,9 @@ interface FriendNodeProps {
 }
 
 const PING_LABEL: Record<PingState, string> = {
-  online: "● LIVE",
-  idle: "◐ IDLE",
-  offline: "○ OFFLINE",
+  online: "LIVE",
+  idle: "IDLE",
+  offline: "OFFLINE",
 };
 
 const PING_COLOR_VAR: Record<PingState, string> = {
@@ -41,77 +40,74 @@ export function FriendNode({
 }: FriendNodeProps) {
   const { t } = useTranslation();
   const ping = getPingState(lastSeenAt);
-  const id = `AGT.${String(index + 1).padStart(3, "0")}`;
   const since = formatDistanceToNow(new Date(createdAt), { addSuffix: false });
 
   return (
-    <DSPanel
-      tier="secondary"
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={t("friends.viewProfile", { name: displayName || t("friends.unknownAgent") })}
+      onClick={onOpen}
+      onKeyDown={(e) => e.key === "Enter" && onOpen()}
       className={cn(
-        "!p-0 group cursor-pointer transition-transform duration-200",
-        "hover:-translate-y-px hover:border-[hsl(var(--ds-accent-primary)/0.45)]",
+        "group relative flex items-center gap-4 px-3 py-3.5 cursor-pointer",
+        "border-b border-[hsl(var(--ds-border-default)/0.1)] last:border-b-0",
+        "transition-colors duration-200 hover:bg-[hsl(var(--ds-surface-2)/0.4)]",
       )}
     >
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label={t("friends.viewProfile", { name: displayName || t("friends.unknownAgent") })}
-        onClick={onOpen}
-        onKeyDown={(e) => e.key === "Enter" && onOpen()}
-        className="relative flex items-center gap-3 p-3 sm:p-4"
-      >
-        {/* Top-right ID */}
-        <span className="absolute top-1.5 right-3 font-mono text-[8px] tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.6)]">
-          [{id}]
-        </span>
+      <AvatarPing
+        name={displayName}
+        avatarUrl={avatarUrl}
+        state={ping}
+        size="md"
+        showRing={ping === "online"}
+      />
 
-        <AvatarPing
-          name={displayName}
-          avatarUrl={avatarUrl}
-          state={ping}
-          size="md"
-          showRing
-        />
-
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-bold font-orbitron tracking-wide truncate text-[hsl(var(--ds-text-primary))]">
-            {displayName || t("friends.unknownAgent")}
-          </h3>
-          <div className="flex items-center gap-2 mt-1 flex-wrap">
+      <div className="flex-1 min-w-0">
+        <h3 className="text-[15px] font-medium font-orbitron tracking-wide truncate text-[hsl(var(--ds-text-primary))]">
+          {displayName || t("friends.unknownAgent")}
+        </h3>
+        <div className="flex items-center gap-2 mt-1">
+          <span
+            className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.22em]"
+            style={{ color: `hsl(${PING_COLOR_VAR[ping]})` }}
+          >
             <span
-              className="font-mono text-[9px] uppercase tracking-[0.18em]"
-              style={{ color: `hsl(${PING_COLOR_VAR[ping]})` }}
-            >
-              {PING_LABEL[ping]}
-            </span>
-            <span className="font-mono text-[9px] text-[hsl(var(--ds-text-muted)/0.6)]">·</span>
-            <span className="font-mono text-[9px] uppercase tracking-wider text-[hsl(var(--ds-text-muted))]">
-              {t("friends.allyFor", { defaultValue: "ally for" })} {since}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-special))] hover:bg-[hsl(var(--ds-accent-special)/0.1)]"
-            onClick={onMessage}
-            aria-label={t("friends.sendMessage")}
-          >
-            <MessageSquare className="h-4 w-4" />
-          </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            className="h-8 w-8 text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-critical))] hover:bg-[hsl(var(--ds-accent-critical)/0.1)]"
-            onClick={onRemove}
-            aria-label={t("friends.removeFriend")}
-          >
-            <UserX className="h-4 w-4" />
-          </Button>
+              className="h-1 w-1 rounded-full"
+              style={{ background: `hsl(${PING_COLOR_VAR[ping]})` }}
+            />
+            {PING_LABEL[ping]}
+          </span>
+          <span className="font-mono text-[9px] text-[hsl(var(--ds-text-muted)/0.4)]">/</span>
+          <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.7)]">
+            {since}
+          </span>
         </div>
       </div>
-    </DSPanel>
+
+      <div
+        className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-8 w-8 text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-special))] hover:bg-transparent"
+          onClick={onMessage}
+          aria-label={t("friends.sendMessage")}
+        >
+          <MessageSquare className="h-4 w-4" />
+        </Button>
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-8 w-8 text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-critical))] hover:bg-transparent"
+          onClick={onRemove}
+          aria-label={t("friends.removeFriend")}
+        >
+          <UserX className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 }

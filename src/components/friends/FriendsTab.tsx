@@ -108,7 +108,7 @@ export function FriendsTab({ friends, loading, onRemove, userId, onSwitchToSearc
             action={!filter && onSwitchToSearch ? { label: t("friends.tabSearch"), onClick: onSwitchToSearch } : undefined}
           />
         ) : (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-2.5">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border border-[hsl(var(--ds-border-default)/0.15)] rounded-sm overflow-hidden">
             {filtered.map((friend, i) => (
               <motion.div
                 key={friend.friendship_id}

@@ -5,7 +5,7 @@ import { useGuilds } from "@/hooks/useGuilds";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { UserCheck, Clock, Search, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { DSCornerBrackets, DSDataNoise } from "@/components/ds";
+import { DSDataNoise } from "@/components/ds";
 import { supabase } from "@/integrations/supabase/client";
 
 import { FriendsTab } from "@/components/friends/FriendsTab";
@@ -58,31 +58,17 @@ export default function Friends() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden font-rajdhani">
-      {/* Ambient data noise — replaces heavy blur orbs */}
-      <DSDataNoise count={12} />
+      {/* Ambient data noise — minimal */}
+      <DSDataNoise count={6} />
 
       <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto px-4 md:px-8 relative z-10">
         <AllianceModuleHeader
           title="FRIEN"
           titleAccent="DS"
-          chips={[
-            { label: "ALLIES", value: friends.length, accent: "primary" },
-            { label: "ONLINE", value: onlineCount, accent: "success" },
-            ...(pendingCount > 0 ? [{ label: "SIGNALS", value: pendingCount, accent: "critical" } as const] : []),
-          ]}
         />
 
-        {/* Main Shell — DS canonical */}
-        <div className="flex-1 flex flex-col min-h-0 relative bg-[hsl(var(--ds-surface-1)/0.55)] border border-[hsl(var(--ds-border-default)/0.25)] rounded-sm overflow-hidden shadow-2xl">
-          <DSCornerBrackets size={16} color="hsl(var(--ds-accent-primary) / 0.6)" />
-
-          {/* Top hairline */}
-          <div
-            className="absolute top-0 left-0 right-0 h-px pointer-events-none"
-            style={{ background: "linear-gradient(to right, transparent, hsl(var(--ds-accent-primary) / 0.5), transparent)" }}
-            aria-hidden="true"
-          />
-
+        {/* Main Shell — minimal, no border, breathes */}
+        <div className="flex-1 flex flex-col min-h-0 relative">
           <AllianceInsightStrip
             alliesCount={friends.length}
             onlineCount={onlineCount}
