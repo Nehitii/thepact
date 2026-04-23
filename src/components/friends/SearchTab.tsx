@@ -71,10 +71,11 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
     <ScrollArea className="h-full w-full">
       <div className="p-4 sm:p-6 max-w-3xl mx-auto">
         {/* Network Scanner Input */}
-        <DSPanel tier="muted" className="mb-6">
-          <span className="absolute -top-2 left-3 px-1.5 font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] bg-[hsl(var(--ds-surface-1))]">
+        <div className="mb-6 flex flex-col gap-2">
+          <span className="font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
             [ TARGET QUERY ]
           </span>
+          <DSPanel tier="muted" hideBrackets className="!p-3">
           <div className="flex items-center gap-2">
             <div className="flex-1 relative">
               <Radar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(var(--ds-accent-primary))]" />
@@ -101,7 +102,8 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "SCAN"}
             </Button>
           </div>
-        </DSPanel>
+          </DSPanel>
+        </div>
 
         {searching ? (
           <div className="space-y-2">

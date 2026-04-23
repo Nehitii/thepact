@@ -98,10 +98,11 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
         </div>
 
         {/* Join via code */}
-        <DSPanel tier="muted" className="mb-5">
-          <span className="absolute -top-2 left-3 px-1.5 font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] bg-[hsl(var(--ds-surface-1))]">
+        <div className="mb-5 flex flex-col gap-2">
+          <span className="font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
             [ JACK_IN VIA CODE ]
           </span>
+          <DSPanel tier="muted" hideBrackets className="!p-3">
           <div className="flex gap-2">
             <Input
               placeholder={t("friends.enterInviteCode")}
@@ -124,7 +125,8 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
               {joiningCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Zap className="h-3.5 w-3.5 mr-1" />JACK_IN</>}
             </Button>
           </div>
-        </DSPanel>
+          </DSPanel>
+        </div>
 
         {invites.length > 0 && (
           <div className="space-y-2 mb-6">
