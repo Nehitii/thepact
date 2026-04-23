@@ -5,7 +5,6 @@ import { useGuilds } from "@/hooks/useGuilds";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { UserCheck, Clock, Search, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { DSCornerBrackets, DSDataNoise } from "@/components/ds";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,6 +14,7 @@ import { SearchTab } from "@/components/friends/SearchTab";
 import { GuildsTab } from "@/components/friends/GuildsTab";
 import { AllianceInsightStrip } from "@/components/friends/AllianceInsightStrip";
 import { AllianceTabs } from "@/components/friends/AllianceTabs";
+import { AllianceModuleHeader } from "@/components/friends/AllianceModuleHeader";
 
 export default function Friends() {
   const { user } = useAuth();
@@ -62,13 +62,13 @@ export default function Friends() {
       <DSDataNoise count={12} />
 
       <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto px-4 md:px-8 relative z-10">
-        <ModuleHeader
-          systemLabel="ALLIANCE_GRID // SYS.ACTIVE"
+        <AllianceModuleHeader
           title="FRIEN"
           titleAccent="DS"
-          badges={[
-            { label: "ALLIES", value: friends.length, color: "#5BB4FF" },
-            ...(pendingCount > 0 ? [{ label: "PENDING", value: pendingCount, color: "#9D5BFF" }] : []),
+          chips={[
+            { label: "ALLIES", value: friends.length, accent: "primary" },
+            { label: "ONLINE", value: onlineCount, accent: "success" },
+            ...(pendingCount > 0 ? [{ label: "SIGNALS", value: pendingCount, accent: "critical" } as const] : []),
           ]}
         />
 
