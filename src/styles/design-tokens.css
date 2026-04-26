@@ -28,8 +28,8 @@
   /* ─── Text (AAA-grade contrast on surface-1) ─── */
   --ds-text-primary:   210 30% 96%;
   --ds-text-secondary: 210 20% 75%;
-  --ds-text-muted:     210 15% 55%;
-  --ds-text-disabled:  210 10% 35%;
+  --ds-text-muted:     210 18% 68%;
+  --ds-text-disabled:  210 12% 50%;
 
   /* ─── Radius scale ─── */
   --ds-radius-xs: 2px;

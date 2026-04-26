@@ -5,7 +5,6 @@ import { useGuilds } from "@/hooks/useGuilds";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { UserCheck, Clock, Search, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { DSDataNoise } from "@/components/ds";
 import { supabase } from "@/integrations/supabase/client";
 
 import { FriendsTab } from "@/components/friends/FriendsTab";
@@ -58,9 +57,6 @@ export default function Friends() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden font-rajdhani">
-      {/* Ambient data noise — minimal */}
-      <DSDataNoise count={6} />
-
       <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto px-4 md:px-8 relative z-10">
         <AllianceModuleHeader
           title="FRIEN"

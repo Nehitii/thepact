@@ -91,12 +91,8 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
             <Button
               onClick={handleSearch}
               disabled={searching || !query.trim()}
-              className="h-9 px-4 font-orbitron text-[11px] tracking-[0.2em] uppercase border"
-              style={{
-                color: "hsl(var(--ds-accent-primary))",
-                background: "hsl(var(--ds-accent-primary) / 0.1)",
-                borderColor: "hsl(var(--ds-accent-primary) / 0.5)",
-              }}
+              variant="hud-primary"
+              className="h-9 px-4"
               aria-label={t("common.search")}
             >
               {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : "SCAN"}
@@ -165,12 +161,8 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
                           size="sm"
                           onClick={() => handleSend(profile.id)}
                           disabled={sendingRequest}
-                          className="h-8 text-xs font-bold uppercase tracking-wider border"
-                          style={{
-                            color: "hsl(var(--ds-accent-primary))",
-                            background: "hsl(var(--ds-accent-primary) / 0.1)",
-                            borderColor: "hsl(var(--ds-accent-primary) / 0.5)",
-                          }}
+                          variant="hud-primary"
+                          className="h-8"
                           aria-label={t("friends.addFriend")}
                         >
                           <UserPlus className="h-3.5 w-3.5 mr-1.5" />

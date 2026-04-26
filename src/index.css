@@ -17,6 +17,16 @@
   80% { transform: translateX(6px); }
 }
 
+/* ────── Pacte OS — Global focus-visible (a11y AA) ────── */
+@layer base {
+  *:focus-visible {
+    outline: 1px solid hsl(var(--ds-accent-primary));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px hsl(var(--ds-accent-primary) / 0.18);
+    border-radius: 2px;
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
