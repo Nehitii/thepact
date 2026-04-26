@@ -22,6 +22,8 @@ interface DSPanelProps {
   flicker?: boolean;
   /** Disable corner brackets even on primary/secondary tiers. */
   hideBrackets?: boolean;
+  /** Render a vertical accent rail on the left edge (uses `accent` color). */
+  accentRail?: boolean;
   /** Optional title rendered as Orbitron HUD label */
   title?: string;
   /** Optional ID rendered as mono prefix (e.g., "OVR.01") */
@@ -49,6 +51,7 @@ export function DSPanel({
   className,
   flicker = false,
   hideBrackets = false,
+  accentRail = false,
   title,
   id,
   unit,
@@ -67,6 +70,8 @@ export function DSPanel({
         ["--ds-current-accent" as any]: ACCENT_VAR[accent],
       }}
     >
+      {accentRail && <span className="ds-accent-rail" aria-hidden="true" />}
+
       {showBrackets && (
         <DSCornerBrackets color={`hsl(${ACCENT_VAR[accent]} / 0.55)`} size={tier === "primary" ? 16 : 10} />
       )}

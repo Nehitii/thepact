@@ -138,3 +138,102 @@
 }
 
 .ds-flicker { animation: ds-flicker 8s infinite; }
+
+/* ════════════════════════════════════════════════════════════
+   Pacte OS — Typographic 4-role system (Sprint 2)
+   Use these classes instead of ad-hoc font/size combos.
+   ──────────────────────────────────────────────────────────── */
+
+/* DISPLAY — module heroes (page-level title, 1 per view) */
+.ds-text-display {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 300;
+  font-size: clamp(1.875rem, 2.5vw, 2.5rem); /* 30→40px */
+  letter-spacing: 0.16em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: hsl(var(--ds-text-primary));
+}
+
+/* METRIC — KPI numbers, counters, signature values */
+.ds-text-metric {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 300;
+  font-size: 1.75rem; /* 28px */
+  letter-spacing: 0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* LABEL — mono uppercase HUD tags, IDs, panel headers */
+.ds-text-label {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-weight: 500;
+  font-size: 0.625rem; /* 10px */
+  letter-spacing: 0.22em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: hsl(var(--ds-text-muted));
+}
+
+/* BODY — paragraphs, descriptions, list rows */
+.ds-text-body {
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 400;
+  font-size: 0.875rem; /* 14px */
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  color: hsl(var(--ds-text-secondary));
+}
+
+/* ────── Accent rail (formalized for DSPanel) ────── */
+.ds-accent-rail {
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: -1px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.65) 20%,
+    hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.85) 50%,
+    hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.65) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px hsl(var(--ds-current-accent, var(--ds-accent-primary)) / 0.35);
+  pointer-events: none;
+}
+
+/* ────── Skip link (a11y) ────── */
+.ds-skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  padding: 0.5rem 1rem;
+  background: hsl(var(--ds-surface-3));
+  color: hsl(var(--ds-accent-primary));
+  border: 1px solid hsl(var(--ds-accent-primary) / 0.5);
+  border-radius: var(--ds-radius-sm);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: top 0.2s ease;
+}
+.ds-skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Strengthen reduced-motion contract: also kill pulse-dot, ring rotation */
+@media (prefers-reduced-motion: reduce) {
+  .ds-flicker,
+  .ds-pulse,
+  .ds-skeleton-sweep,
+  [style*="ds-pulse-dot"],
+  [style*="ds-ring-rotate"] {
+    animation: none !important;
+  }
+}
