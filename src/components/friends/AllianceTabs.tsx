@@ -22,7 +22,7 @@ const ACCENT_VAR = {
 
 export function AllianceTabs({ activeTab, items }: AllianceTabsProps) {
   return (
-    <div className="border-b border-[hsl(var(--ds-border-default)/0.15)] px-1 overflow-x-auto scrollbar-none">
+    <div className="border-b border-[hsl(var(--ds-border-default)/0.15)] px-1 overflow-x-auto overflow-y-hidden scrollbar-none">
       <TabsList className="bg-transparent p-0 gap-1 h-auto flex-nowrap">
         {items.map((it) => {
           const active = activeTab === it.value;
@@ -64,14 +64,6 @@ export function AllianceTabs({ activeTab, items }: AllianceTabsProps) {
               >
                 {it.label}
               </span>
-              {it.count != null && it.count > 0 && (
-                <span
-                  className="ml-1 font-mono text-[9px] tabular-nums opacity-70"
-                  style={active ? { color: `hsl(${colorVar})` } : undefined}
-                >
-                  {String(it.count).padStart(2, "0")}
-                </span>
-              )}
             </TabsTrigger>
           );
         })}

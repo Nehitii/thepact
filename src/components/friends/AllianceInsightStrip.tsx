@@ -23,8 +23,14 @@ function VitalSign({ id, label, value, sublabel, accent = "primary", pulse = fal
     : accent === "warning" ? "var(--ds-accent-warning)"
     : "var(--ds-accent-primary)";
 
+  const isEmpty = value === 0;
+
   return (
-    <div className="flex flex-col gap-2 py-1">
+    <div
+      className="flex flex-col gap-2 py-1"
+      role="group"
+      aria-label={`${label}: ${value} ${sublabel}`}
+    >
       <span className="font-mono text-[9px] uppercase tracking-[0.28em] text-[hsl(var(--ds-text-muted)/0.6)]">
         {label}
       </span>
@@ -41,9 +47,12 @@ function VitalSign({ id, label, value, sublabel, accent = "primary", pulse = fal
         )}
         <span
           className="font-orbitron text-[28px] font-light leading-none tabular-nums tracking-wider"
-          style={{ color: `hsl(${colorVar})` }}
+          style={{
+            color: isEmpty ? "hsl(var(--ds-text-disabled))" : `hsl(${colorVar})`,
+          }}
+          aria-hidden="true"
         >
-          {String(value).padStart(2, "0")}
+          {isEmpty ? "—" : String(value).padStart(2, "0")}
         </span>
       </div>
       <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.5)]">
