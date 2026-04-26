@@ -21,6 +21,12 @@ const buttonVariants = cva(
         ghost: "hover:bg-accent/50 hover:text-accent-foreground backdrop-blur-sm rounded-sm",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary-glow hover:drop-shadow-[0_0_8px_rgba(91,180,255,0.6)]",
         hud: "rounded-lg bg-transparent border border-primary/40 text-primary backdrop-blur-md shadow-[0_0_12px_rgba(91,180,255,0.15),inset_0_1px_0_rgba(91,180,255,0.1)] hover:border-primary/70 hover:shadow-[0_0_20px_rgba(91,180,255,0.3),inset_0_1px_0_rgba(91,180,255,0.2)] hover:text-primary-glow active:scale-[0.98] before:absolute before:inset-0 before:rounded-lg before:bg-gradient-to-b before:from-primary/5 before:to-transparent before:pointer-events-none",
+        "hud-primary":
+          "rounded-sm bg-[hsl(var(--ds-accent-primary)/0.08)] border border-[hsl(var(--ds-accent-primary)/0.5)] text-[hsl(var(--ds-accent-primary))] hover:bg-[hsl(var(--ds-accent-primary)/0.15)] hover:border-[hsl(var(--ds-accent-primary)/0.75)] active:scale-[0.98] tracking-[0.2em] text-[11px]",
+        "hud-success":
+          "rounded-sm bg-[hsl(var(--ds-accent-success)/0.08)] border border-[hsl(var(--ds-accent-success)/0.5)] text-[hsl(var(--ds-accent-success))] hover:bg-[hsl(var(--ds-accent-success)/0.15)] hover:border-[hsl(var(--ds-accent-success)/0.75)] active:scale-[0.98] tracking-[0.2em] text-[11px]",
+        "hud-critical":
+          "rounded-sm bg-[hsl(var(--ds-accent-critical)/0.08)] border border-[hsl(var(--ds-accent-critical)/0.5)] text-[hsl(var(--ds-accent-critical))] hover:bg-[hsl(var(--ds-accent-critical)/0.15)] hover:border-[hsl(var(--ds-accent-critical)/0.75)] active:scale-[0.98] tracking-[0.2em] text-[11px]",
       },
       size: {
         default: "h-10 px-6 py-2",
