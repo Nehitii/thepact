@@ -57,6 +57,11 @@ export default function Friends() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative overflow-hidden font-rajdhani">
+      {/* A11y: skip link to bypass header + tabs and jump to active panel */}
+      <a href="#alliance-main" className="ds-skip-link">
+        Skip to alliance content
+      </a>
+
       <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto px-4 md:px-8 relative z-10">
         <AllianceModuleHeader
           title="FRIEN"
@@ -83,7 +88,13 @@ export default function Friends() {
               ]}
             />
 
-            <div className="flex-1 relative overflow-hidden">
+            <div
+              id="alliance-main"
+              className="flex-1 relative overflow-hidden"
+              role="region"
+              aria-live="polite"
+              aria-label={`Alliance ${activeTab} panel`}
+            >
               <TabsContent value="friends" className="h-full m-0 data-[state=inactive]:hidden">
                 <FriendsTab
                   friends={friends}
