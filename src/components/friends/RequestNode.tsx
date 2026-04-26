@@ -82,12 +82,8 @@ export function RequestNode({
                 size="sm"
                 onClick={onAccept}
                 disabled={loading}
-                className="h-8 text-xs font-bold uppercase tracking-wider border"
-                style={{
-                  color: "hsl(var(--ds-accent-success))",
-                  background: "hsl(var(--ds-accent-success) / 0.1)",
-                  borderColor: "hsl(var(--ds-accent-success) / 0.5)",
-                }}
+                variant="hud-success"
+                className="h-8"
                 aria-label={t("friends.acceptRequest")}
               >
                 {loading ? (
@@ -101,11 +97,10 @@ export function RequestNode({
               </Button>
               <Button
                 size="sm"
-                variant="ghost"
+                variant="hud-critical"
                 onClick={onDecline}
                 disabled={loading}
-                className="h-8 text-xs font-bold uppercase tracking-wider"
-                style={{ color: "hsl(var(--ds-accent-critical))" }}
+                className="h-8"
                 aria-label={t("friends.declineRequest")}
               >
                 <X className="h-3.5 w-3.5 mr-1" />

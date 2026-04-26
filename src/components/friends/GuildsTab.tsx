@@ -72,24 +72,16 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
             <Button
               size="sm"
               onClick={() => setShowDiscover(!showDiscover)}
-              className="h-8 text-xs font-orbitron tracking-wider uppercase border"
-              style={{
-                color: "hsl(var(--ds-accent-primary))",
-                background: showDiscover ? "hsl(var(--ds-accent-primary) / 0.15)" : "hsl(var(--ds-accent-primary) / 0.05)",
-                borderColor: "hsl(var(--ds-accent-primary) / 0.5)",
-              }}
+              variant="hud-primary"
+              className={`h-8 ${showDiscover ? "bg-[hsl(var(--ds-accent-primary)/0.18)]" : ""}`}
             >
               <Globe className="h-3.5 w-3.5 mr-1" /> {t("friends.discover")}
             </Button>
             <Button
               size="sm"
               onClick={() => setCreateOpen(true)}
-              className="h-8 text-xs font-orbitron tracking-wider uppercase border"
-              style={{
-                color: "hsl(var(--ds-accent-success))",
-                background: "hsl(var(--ds-accent-success) / 0.1)",
-                borderColor: "hsl(var(--ds-accent-success) / 0.5)",
-              }}
+              variant="hud-success"
+              className="h-8"
               aria-label={t("friends.createGuild")}
             >
               <Plus className="h-3.5 w-3.5 mr-1" /> {t("common.create")}
@@ -115,12 +107,8 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
               size="sm"
               onClick={handleJoinViaCode}
               disabled={!inviteCode.trim() || joiningCode}
-              className="h-9 text-xs font-orbitron tracking-wider uppercase border"
-              style={{
-                color: "hsl(var(--ds-accent-primary))",
-                background: "hsl(var(--ds-accent-primary) / 0.1)",
-                borderColor: "hsl(var(--ds-accent-primary) / 0.5)",
-              }}
+              variant="hud-primary"
+              className="h-9"
             >
               {joiningCode ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <><Zap className="h-3.5 w-3.5 mr-1" />JACK_IN</>}
             </Button>
