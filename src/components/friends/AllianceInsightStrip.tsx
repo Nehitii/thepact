@@ -31,7 +31,7 @@ function VitalSign({ id, label, value, sublabel, accent = "primary", pulse = fal
       role="group"
       aria-label={`${label}: ${value} ${sublabel}`}
     >
-      <span className="font-mono text-[9px] uppercase tracking-[0.28em] text-[hsl(var(--ds-text-muted)/0.6)]">
+      <span className="ds-text-label text-[9px] tracking-[0.28em]">
         {label}
       </span>
       <div className="flex items-baseline gap-2">
@@ -46,7 +46,7 @@ function VitalSign({ id, label, value, sublabel, accent = "primary", pulse = fal
           />
         )}
         <span
-          className="font-orbitron text-[28px] font-light leading-none tabular-nums tracking-wider"
+          className="ds-text-metric"
           style={{
             color: isEmpty ? "hsl(var(--ds-text-disabled))" : `hsl(${colorVar})`,
           }}
@@ -55,7 +55,7 @@ function VitalSign({ id, label, value, sublabel, accent = "primary", pulse = fal
           {isEmpty ? "—" : String(value).padStart(2, "0")}
         </span>
       </div>
-      <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.5)]">
+      <span className="ds-text-label text-[9px] tracking-[0.18em] opacity-70">
         {sublabel}
       </span>
     </div>

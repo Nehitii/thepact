@@ -43,14 +43,14 @@ export function AllianceModuleHeader({
           }}
           aria-hidden="true"
         />
-        <span className="font-mono text-[9px] uppercase tracking-[0.3em] text-[hsl(var(--ds-text-muted)/0.55)] truncate">
+        <span className="ds-text-label text-[9px] tracking-[0.3em] opacity-75 truncate">
           {systemLabel}
         </span>
       </div>
 
       {/* Hero title + chips on the right, single line */}
       <div className="flex items-end justify-between gap-6 flex-wrap">
-        <h1 className="font-orbitron text-3xl sm:text-4xl font-light tracking-[0.16em] uppercase text-[hsl(var(--ds-text-primary))] leading-none flex items-baseline">
+        <h1 className="ds-text-display flex items-baseline">
           <span>{title}</span>
           {titleAccent && (
             <span className="font-black" style={{ color: "hsl(var(--ds-accent-primary))" }}>
@@ -71,7 +71,7 @@ export function AllianceModuleHeader({
                   >
                     {String(c.value).padStart(2, "0")}
                   </span>
-                  <span className="font-mono text-[8px] uppercase tracking-[0.24em] text-[hsl(var(--ds-text-muted)/0.6)] mt-1">
+                  <span className="ds-text-label text-[8px] tracking-[0.24em] mt-1">
                     {c.label}
                   </span>
                 </div>
@@ -82,7 +82,7 @@ export function AllianceModuleHeader({
       </div>
 
       {subtitle && (
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted)/0.6)]">
+        <p className="ds-text-label text-[10px] tracking-[0.2em] mt-3">
           {subtitle}
         </p>
       )}
