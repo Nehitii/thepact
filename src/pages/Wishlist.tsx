@@ -531,14 +531,14 @@ export default function Wishlist() {
         </DialogContent>
       </Dialog>
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 space-y-6">
+      <div className="relative z-10 max-w-6xl mx-auto page-px py-6 md:py-8 space-y-6">
         <ModuleHeader
           systemLabel="ACQUISITION_PLAN // SYS.ACTIVE"
           title="WISH "
           titleAccent="LIST"
           badges={[]}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Button
               variant="outline"
               onClick={() => { setBulkMode(!bulkMode); setBulkSelected(new Set()); }}

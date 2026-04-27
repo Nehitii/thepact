@@ -105,29 +105,29 @@ export default function Achievements() {
       <div className="celestial-light" />
       <div className="ground-grid" />
 
-      <div className="max-w-6xl mx-auto px-6 py-16 relative z-10 font-rajdhani">
-        <header className="relative mb-24 text-center">
-          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="inline-block relative mb-8">
+      <div className="max-w-6xl mx-auto page-px py-8 md:py-16 relative z-10 font-rajdhani">
+        <header className="relative mb-12 md:mb-24 text-center">
+          <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="inline-block relative mb-4 md:mb-8">
             <div className="absolute inset-0 bg-primary/30 blur-[80px] rounded-full" />
-            <Trophy className="w-20 h-20 text-primary relative z-10 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
+            <Trophy className="w-12 h-12 md:w-20 md:h-20 text-primary relative z-10 drop-shadow-[0_0_20px_rgba(59,130,246,0.6)]" />
           </motion.div>
 
-          <motion.h1 initial={{ letterSpacing: "0.1em", opacity: 0 }} animate={{ letterSpacing: "0.5em", opacity: 1 }} className="text-4xl md:text-7xl font-black uppercase font-orbitron mb-4 text-white">
+          <motion.h1 initial={{ letterSpacing: "0.1em", opacity: 0 }} animate={{ letterSpacing: "0.3em", opacity: 1 }} className="text-2xl sm:text-4xl md:text-7xl font-black uppercase font-orbitron mb-4 text-white break-words">
             {t("achievements.hallTitle")} <span className="text-primary">{t("achievements.eternity")}</span>
           </motion.h1>
-          <p className="text-primary/60 tracking-[0.4em] uppercase text-[10px] font-bold mb-14 italic">
+          <p className="text-primary/60 tracking-[0.25em] md:tracking-[0.4em] uppercase text-[9px] md:text-[10px] font-bold mb-8 md:mb-14 italic">
             "{t("achievements.tagline")}"
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10 max-w-4xl mx-auto">
             {[
               { label: t("achievements.completion"), val: `${percentage}%`, sub: `${unlockedCount} / ${achievements.length}` },
               { label: t("achievements.legacyRank"), val: t("achievements.elite"), sub: t("achievements.globalStatus") },
               { label: t("achievements.expedition"), val: totalPoints.toLocaleString(), sub: t("achievements.totalScore") },
             ].map((s, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="stat-monument p-8 rounded-t-2xl transition-transform hover:-translate-y-1 duration-500">
-                <div className="text-[10px] text-primary font-black uppercase tracking-[0.4em] mb-3">{s.label}</div>
-                <div className="text-5xl font-black font-orbitron text-white mb-2">{s.val}</div>
+              <motion.div key={i} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="stat-monument p-4 md:p-8 rounded-t-2xl transition-transform hover:-translate-y-1 duration-500">
+                <div className="text-[10px] text-primary font-black uppercase tracking-[0.25em] md:tracking-[0.4em] mb-2 md:mb-3">{s.label}</div>
+                <div className="text-3xl md:text-5xl font-black font-orbitron text-white mb-2">{s.val}</div>
                 <div className="text-[11px] text-muted-foreground font-mono border-l-2 border-primary/40 pl-3 text-left opacity-70">{s.sub}</div>
               </motion.div>
             ))}
@@ -168,13 +168,13 @@ export default function Achievements() {
         </div>
 
         {/* Filters bar */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-16 border-y border-white/10 py-8 bg-black/20 backdrop-blur-xl px-8 rounded-3xl shadow-2xl">
-          <div className="flex items-center gap-6">
-            <Crown className="w-6 h-6 text-primary animate-pulse" />
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-10 md:mb-16 border-y border-white/10 py-4 md:py-8 bg-black/20 backdrop-blur-xl px-4 md:px-8 rounded-2xl md:rounded-3xl shadow-2xl">
+          <div className="flex items-center gap-3 md:gap-6 flex-wrap">
+            <Crown className="w-5 h-5 md:w-6 md:h-6 text-primary animate-pulse shrink-0" />
             <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
               <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl">
                 {(["all", "unlocked", "locked"] as const).map((v) => (
-                  <TabsTrigger key={v} value={v} className="font-orbitron text-[10px] uppercase px-8 py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-lg">
+                  <TabsTrigger key={v} value={v} className="font-orbitron text-[10px] uppercase px-4 md:px-8 py-2 md:py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-lg">
                     {t(`achievements.${v}`)}
                   </TabsTrigger>
                 ))}
@@ -183,9 +183,9 @@ export default function Achievements() {
           </div>
 
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-4 bg-white/5 border border-white/10 px-8 py-3 rounded-full hover:bg-white/10 transition-all outline-none">
+            <DropdownMenuTrigger className="flex items-center gap-3 md:gap-4 bg-white/5 border border-white/10 px-4 md:px-8 py-2.5 md:py-3 rounded-full hover:bg-white/10 transition-all outline-none touch-target self-start md:self-auto">
               <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor]" style={{ backgroundColor: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity], color: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity] }} />
-              <span className="font-orbitron text-xs uppercase tracking-[0.2em] text-white font-bold">
+              <span className="font-orbitron text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.2em] text-white font-bold">
                 {selectedRarity === "all" ? t("achievements.allRarities") : rarityLabels[selectedRarity]}
               </span>
               <ChevronDown size={16} className="text-muted-foreground" />
@@ -209,11 +209,11 @@ export default function Achievements() {
         </div>
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 animate-pulse">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10 animate-pulse">
             {[...Array(6)].map((_, i) => <div key={i} className="h-40 bg-white/5 rounded-3xl" />)}
           </div>
         ) : (
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10">
             <AnimatePresence mode="popLayout">
               {filteredAchievements.map((achievement, idx) => (
                 <motion.div key={achievement.id} layout initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, delay: idx * 0.05 }}>

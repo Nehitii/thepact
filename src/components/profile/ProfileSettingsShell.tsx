@@ -26,7 +26,7 @@ export function ProfileSettingsShell({
     <div className="min-h-screen bg-[#03060A] relative overflow-hidden selection:bg-[#00F2FF]/30">
       <CyberBackground />
 
-      <div className={cn("relative z-10 px-4 pt-12 pb-6 max-w-5xl mx-auto", containerClassName)}>
+      <div className={cn("relative z-10 page-px pt-8 md:pt-12 pb-6 max-w-5xl mx-auto", containerClassName)}>
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -55,21 +55,21 @@ export default function Inbox() {
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
       </div>
 
-      <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto p-4 md:p-8 relative z-10 h-full">
+      <div className="flex-1 flex flex-col max-w-5xl w-full mx-auto page-px py-4 md:py-8 relative z-10 h-full">
         {/* --- HEADER --- */}
-        <div className="flex items-center justify-between mb-6 shrink-0">
-          <div className="flex items-center gap-5">
+        <div className="flex items-center justify-between gap-3 mb-4 md:mb-6 shrink-0">
+          <div className="flex items-center gap-3 md:gap-5 min-w-0">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary to-violet-500 rounded-xl blur opacity-25 group-hover:opacity-60 transition duration-500" />
-              <div className="relative w-14 h-14 rounded-xl bg-card border border-border flex items-center justify-center shadow-2xl">
-                <InboxIcon className="h-7 w-7 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+              <div className="relative w-11 h-11 md:w-14 md:h-14 rounded-xl bg-card border border-border flex items-center justify-center shadow-2xl">
+                <InboxIcon className="h-5 w-5 md:h-7 md:w-7 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
               </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-black font-orbitron text-foreground tracking-widest uppercase">
+            <div className="min-w-0">
+              <h1 className="text-xl md:text-3xl font-black font-orbitron text-foreground tracking-wider md:tracking-widest uppercase truncate">
                 {t("inbox.title")}
               </h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
+              <div className="hidden sm:flex items-center gap-2 text-muted-foreground">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <p className="text-xs font-mono tracking-widest uppercase opacity-70">Secure Connection Established</p>
               </div>
@@ -80,10 +80,10 @@ export default function Inbox() {
             variant="outline"
             size="sm"
             onClick={() => navigate("/profile/notifications")}
-            className="border-border bg-muted/50 hover:bg-muted hover:border-primary/50 transition-all text-xs uppercase tracking-wider font-bold"
+            className="border-border bg-muted/50 hover:bg-muted hover:border-primary/50 transition-all text-xs uppercase tracking-wider font-bold shrink-0 touch-target"
           >
-            <Settings className="h-3.5 w-3.5 mr-2" />
-            {t("common.settings")}
+            <Settings className="h-3.5 w-3.5 sm:mr-2" />
+            <span className="hidden sm:inline">{t("common.settings")}</span>
           </Button>
         </div>
 
@@ -94,8 +94,8 @@ export default function Inbox() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full">
             {/* --- TABS HEADER --- */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
-              <TabsList className="bg-transparent p-0 gap-6 h-auto">
+            <div className="flex items-center justify-between gap-2 px-3 md:px-6 py-3 md:py-4 border-b border-border bg-muted/30 flex-wrap">
+              <TabsList className="bg-transparent p-0 gap-3 md:gap-6 h-auto">
                 <TabItem
                   value="notifications"
                   icon={Bell}
@@ -114,7 +114,7 @@ export default function Inbox() {
               </TabsList>
 
               {/* Toolbar Actions */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 md:gap-2 flex-wrap justify-end">
                 {activeTab === "notifications" && unreadCount > 0 && (
                   <ActionButton
                     onClick={() => markAllAsRead.mutate()}
@@ -147,7 +147,7 @@ export default function Inbox() {
                 {/* NOTIFICATIONS PANEL */}
                 <TabsContent value="notifications" className="h-full m-0 data-[state=inactive]:hidden">
                   <ScrollArea className="h-full w-full">
-                    <div className="p-6 max-w-3xl mx-auto">
+                    <div className="p-3 md:p-6 max-w-3xl mx-auto">
                       {isLoading ? (
                         <InboxSkeleton />
                       ) : notifications.length === 0 ? (
@@ -181,7 +181,7 @@ export default function Inbox() {
                 {/* MESSAGES PANEL */}
                 <TabsContent value="messages" className="h-full m-0 data-[state=inactive]:hidden">
                   <ScrollArea className="h-full w-full">
-                    <div className="p-6 max-w-3xl mx-auto">
+                    <div className="p-3 md:p-6 max-w-3xl mx-auto">
                       {messagesLoading ? (
                         <InboxSkeleton />
                       ) : conversations.length === 0 ? (
