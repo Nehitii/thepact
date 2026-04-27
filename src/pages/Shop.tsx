@@ -83,27 +83,27 @@ export default function Shop() {
         }}
       />
 
-      <div className="relative z-10 px-4 pt-6 pb-6 max-w-6xl mx-auto">
+      <div className="relative z-10 page-px pt-4 md:pt-6 pb-6 max-w-6xl mx-auto">
         {/* ─── HEADER ─── */}
         <motion.div
-          className="relative mb-8"
+          className="relative mb-6 md:mb-8"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 md:gap-4 min-w-0">
               <div
-                className="flex items-center justify-center w-12 h-12 rounded-2xl"
+                className="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-2xl shrink-0"
                 style={{
                   background: "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(270 80% 60% / 0.1))",
                   border: "1px solid hsl(var(--primary) / 0.2)",
                 }}
               >
-                <Store className="w-6 h-6 text-primary" />
+                <Store className="w-5 h-5 md:w-6 md:h-6 text-primary" />
               </div>
-              <div>
-                <h1 className="font-orbitron text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+              <div className="min-w-0">
+                <h1 className="font-orbitron text-xl sm:text-3xl font-black tracking-tight text-foreground truncate">
                   {t("shop.title")}
                 </h1>
                 <p className="text-xs text-muted-foreground font-rajdhani tracking-wider mt-0.5">
