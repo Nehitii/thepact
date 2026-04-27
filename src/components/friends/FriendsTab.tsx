@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 import { Search, Users } from "lucide-react";
@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutualFriends } from "@/hooks/useMutualFriends";
 import type { Friend } from "@/hooks/useFriends";
+import type { AllianceDensity } from "@/hooks/useAllianceDensity";
 
 interface FriendsTabProps {
   friends: Friend[];
@@ -21,9 +22,19 @@ interface FriendsTabProps {
   onRemove: (friendshipId: string) => Promise<void>;
   userId: string;
   onSwitchToSearch?: () => void;
+  density?: AllianceDensity;
+  lastSeenMap?: Record<string, string | null>;
 }
 
-export function FriendsTab({ friends, loading, onRemove, userId, onSwitchToSearch }: FriendsTabProps) {
+export function FriendsTab({
+  friends,
+  loading,
+  onRemove,
+  userId,
+  onSwitchToSearch,
+  density = "comfortable",
+  lastSeenMap = {},
+}: FriendsTabProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { getMutualCount } = useMutualFriends();
@@ -32,21 +43,6 @@ export function FriendsTab({ friends, loading, onRemove, userId, onSwitchToSearc
   const [blockTarget, setBlockTarget] = useState<Friend | null>(null);
   const [profileTarget, setProfileTarget] = useState<Friend | null>(null);
   const [mutualCounts, setMutualCounts] = useState<Record<string, number>>({});
-  const [lastSeenMap, setLastSeenMap] = useState<Record<string, string | null>>({});
-
-  useEffect(() => {
-    if (!friends.length) return;
-    const ids = friends.map((f) => f.friend_id);
-    supabase
-      .from("profiles")
-      .select("id, last_seen_at")
-      .in("id", ids)
-      .then(({ data }) => {
-        const map: Record<string, string | null> = {};
-        data?.forEach((p: any) => { map[p.id] = p.last_seen_at; });
-        setLastSeenMap(map);
-      });
-  }, [friends]);
 
   const filtered = filter
     ? friends.filter((f) => f.display_name?.toLowerCase().includes(filter.toLowerCase()))
@@ -125,6 +121,7 @@ export function FriendsTab({ friends, loading, onRemove, userId, onSwitchToSearc
                   onOpen={() => handleOpenProfile(friend)}
                   onMessage={() => navigate(`/inbox/thread/${friend.friend_id}`)}
                   onRemove={() => setRemoveTarget(friend)}
+                  density={density}
                 />
               </motion.div>
             ))}

@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFriends } from "@/hooks/useFriends";
 import { useGuilds } from "@/hooks/useGuilds";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { UserCheck, Clock, Search, Shield } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { supabase } from "@/integrations/supabase/client";
+import { useFriendsPresence } from "@/hooks/useFriendsPresence";
+import { useAllianceDensity } from "@/hooks/useAllianceDensity";
 
 import { FriendsTab } from "@/components/friends/FriendsTab";
 import { RequestsTab } from "@/components/friends/RequestsTab";
@@ -14,12 +15,13 @@ import { GuildsTab } from "@/components/friends/GuildsTab";
 import { AllianceInsightStrip } from "@/components/friends/AllianceInsightStrip";
 import { AllianceTabs } from "@/components/friends/AllianceTabs";
 import { AllianceModuleHeader } from "@/components/friends/AllianceModuleHeader";
+import { AllianceDensityToggle } from "@/components/friends/AllianceDensityToggle";
 
 export default function Friends() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState("friends");
-  const [onlineCount, setOnlineCount] = useState(0);
+  const { density, toggle: toggleDensity } = useAllianceDensity();
 
   const {
     friends, pendingRequests, sentRequests, friendsLoading, requestsLoading,
@@ -29,29 +31,9 @@ export default function Friends() {
 
   const { guilds, guildsLoading, invites, createGuild, respondToInvite } = useGuilds();
 
-  // Compute online allies count for the InsightStrip
-  useEffect(() => {
-    if (!friends.length) {
-      setOnlineCount(0);
-      return;
-    }
-    const ids = friends.map((f) => f.friend_id);
-    let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("id, last_seen_at")
-      .in("id", ids)
-      .then(({ data }) => {
-        if (cancelled) return;
-        const now = Date.now();
-        const c = (data ?? []).filter((p: any) => {
-          if (!p.last_seen_at) return false;
-          return now - new Date(p.last_seen_at).getTime() < 5 * 60 * 1000;
-        }).length;
-        setOnlineCount(c);
-      });
-    return () => { cancelled = true; };
-  }, [friends]);
+  // Living Network — realtime presence map for friends
+  const friendIds = friends.map((f) => f.friend_id);
+  const { lastSeenMap, onlineCount } = useFriendsPresence(friendIds);
 
   if (!user) return null;
 
@@ -66,6 +48,9 @@ export default function Friends() {
         <AllianceModuleHeader
           title="FRIEN"
           titleAccent="DS"
+          toolbar={
+            <AllianceDensityToggle density={density} onToggle={toggleDensity} />
+          }
         />
 
         {/* Main Shell — minimal, no border, breathes */}
@@ -102,6 +87,8 @@ export default function Friends() {
                   onRemove={async (id) => { await removeFriend.mutateAsync(id); }}
                   userId={user.id}
                   onSwitchToSearch={() => setActiveTab("search")}
+                  density={density}
+                  lastSeenMap={lastSeenMap}
                 />
               </TabsContent>
 
