@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 interface Chip {
   label: string;
   value: number | string;
@@ -10,6 +12,8 @@ interface AllianceModuleHeaderProps {
   titleAccent?: string;
   subtitle?: string;
   chips?: Chip[];
+  /** Slot rendered on the right of the system tag row (e.g. density toggle) */
+  toolbar?: ReactNode;
 }
 
 const ACCENT_VAR: Record<NonNullable<Chip["accent"]>, string> = {
@@ -30,9 +34,22 @@ export function AllianceModuleHeader({
   titleAccent,
   subtitle,
   chips = [],
+  toolbar,
 }: AllianceModuleHeaderProps) {
   return (
-    <header className="relative pt-8 pb-6 px-1">
+    <header className="relative pt-8 pb-6 px-1 isolate">
+      {/* Alliance Identity backdrop — subtle radial wash tinted by user accent */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -top-12 h-56 -z-10 opacity-[0.55]"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 80% at 18% 30%, hsl(var(--primary) / 0.18) 0%, transparent 60%), radial-gradient(ellipse 40% 60% at 90% 10%, hsl(var(--ds-accent-primary) / 0.10) 0%, transparent 65%)",
+          maskImage: "linear-gradient(180deg, black 0%, black 60%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(180deg, black 0%, black 60%, transparent 100%)",
+        }}
+      />
+
       {/* Top: system tag, very muted */}
       <div className="flex items-center gap-2 mb-3">
         <span
@@ -43,9 +60,10 @@ export function AllianceModuleHeader({
           }}
           aria-hidden="true"
         />
-        <span className="ds-text-label text-[9px] tracking-[0.3em] opacity-75 truncate">
+        <span className="ds-text-label text-[9px] tracking-[0.3em] opacity-75 truncate flex-1">
           {systemLabel}
         </span>
+        {toolbar && <div className="flex items-center gap-2 shrink-0">{toolbar}</div>}
       </div>
 
       {/* Hero title + chips on the right, single line */}
