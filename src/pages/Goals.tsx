@@ -78,7 +78,7 @@ export default function Goals() {
     return (
       <div className="min-h-screen bg-background relative overflow-hidden">
         <CyberBackground />
-        <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 pt-8 pb-24 space-y-6">
+        <div className="relative z-10 max-w-6xl mx-auto page-px pt-6 md:pt-8 pb-12 md:pb-24 space-y-6">
           <ModuleHeader systemLabel="SYS::GOALS" title="GOAL" titleAccent="S">
             <button
               onClick={() => navigate("/goals/new")}
@@ -103,7 +103,7 @@ export default function Goals() {
         initial="hidden"
         animate="visible"
         variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05, delayChildren: 0.1 } } }}
-        className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 pt-8 pb-24 space-y-6"
+        className="relative z-10 max-w-6xl mx-auto page-px pt-6 md:pt-8 pb-12 md:pb-24 space-y-6"
       >
         {/* Header */}
         <motion.div variants={itemVariants}>
