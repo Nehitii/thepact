@@ -27,6 +27,64 @@
   }
 }
 
+/* ────── Pacte OS — Mobile responsive utilities ────── */
+@layer utilities {
+  /* Standard page padding — applied to top-level page wrappers */
+  .page-px {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  @media (min-width: 640px) {
+    .page-px { padding-left: 1.5rem; padding-right: 1.5rem; }
+  }
+  @media (min-width: 768px) {
+    .page-px { padding-left: 2rem; padding-right: 2rem; }
+  }
+
+  .page-py {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  @media (min-width: 640px) {
+    .page-py { padding-top: 2rem; padding-bottom: 2rem; }
+  }
+
+  /* Touch target — minimum 44x44 for icon-only interactive elements */
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  @media (min-width: 768px) {
+    .touch-target { min-width: 0; min-height: 0; }
+  }
+
+  /* Safe-area aware bottom padding for mobile bottom-nav */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mobile-nav-spacer {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0));
+  }
+  @media (min-width: 768px) {
+    .mobile-nav-spacer { padding-bottom: 0; }
+  }
+
+  /* Fluid title truncation: stays single-line, ellipses on overflow */
+  .truncate-fluid {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  /* Hide horizontal overflow scrollbar visually but keep scrollable */
+  .scrollbar-thin-x::-webkit-scrollbar { height: 4px; }
+  .scrollbar-thin-x::-webkit-scrollbar-thumb {
+    background: hsl(var(--ds-border-default) / 0.3);
+    border-radius: 2px;
+  }
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */

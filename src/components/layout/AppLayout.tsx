@@ -1,5 +1,6 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
+import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette } from "@/components/CommandPalette";
 import { Suspense } from "react";
 
@@ -16,12 +17,14 @@ export function AppLayout() {
       <AppSidebar />
 
       <div className="flex-1 min-w-0 overflow-x-hidden overflow-hidden isolate flex flex-col">
-        <main className="flex-1 min-w-0 overflow-x-clip overflow-y-auto relative z-0">
+        <main className="flex-1 min-w-0 overflow-x-clip overflow-y-auto relative z-0 mobile-nav-spacer">
           <Suspense fallback={<PageFallback />}>
             <Outlet />
           </Suspense>
         </main>
       </div>
+
+      <MobileBottomNav />
     </div>
   );
 }
