@@ -14,6 +14,19 @@ export function PrismBackground() {
     [],
   );
 
+  // Ambient drifting particles (very subtle)
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 10 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        delay: Math.random() * 14,
+        duration: 12 + Math.random() * 10,
+      })),
+    [],
+  );
+
   return (
     <div
       className="fixed inset-0 -z-10 overflow-hidden pointer-events-none"
@@ -72,6 +85,20 @@ export function PrismBackground() {
             background: "hsl(var(--prism-cyan))",
             opacity: s.opacity,
             boxShadow: `0 0 ${s.size * 3}px hsl(var(--prism-cyan) / 0.5)`,
+          }}
+        />
+      ))}
+
+      {/* Drifting particles */}
+      {particles.map((p) => (
+        <span
+          key={p.id}
+          className="prism-particle motion-reduce:hidden"
+          style={{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            animationDelay: `${p.delay}s`,
+            animationDuration: `${p.duration}s`,
           }}
         />
       ))}
