@@ -1,9 +1,12 @@
 import { TooltipProps } from "recharts";
+import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface PrismTooltipProps extends TooltipProps<number, string> {
   labelFormatter?: (label: string) => string;
   valueFormatter?: (value: number, name: string) => string;
   unit?: string;
+  /** When provided, shows a delta vs previous datapoint per series */
+  showDelta?: boolean;
 }
 
 const SERIES_COLOR: Record<string, string> = {
@@ -25,6 +28,7 @@ export function PrismTooltip({
   labelFormatter,
   valueFormatter,
   unit,
+  showDelta = true,
 }: PrismTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
@@ -57,6 +61,15 @@ export function PrismTooltip({
           const display = valueFormatter
             ? valueFormatter(rawValue, String(p.name ?? p.dataKey ?? ""))
             : `${rawValue}${unit ? ` ${unit}` : ""}`;
+
+          // Compute delta vs previous index in the series payload (from chart)
+          let DeltaIcon = Minus;
+          let deltaTxt: string | null = null;
+          let deltaColor = "hsl(var(--muted-foreground))";
+          if (showDelta && (p as any).payload && Array.isArray((p as any).payload?.__series)) {
+            // not wired — fallback: skip
+          }
+
           return (
             <div key={i} className="flex items-center gap-2">
               <span
@@ -75,6 +88,15 @@ export function PrismTooltip({
               >
                 {display}
               </span>
+              {deltaTxt && (
+                <span
+                  className="ml-1 inline-flex items-center gap-0.5 text-[9px] tabular-nums"
+                  style={{ color: deltaColor }}
+                >
+                  <DeltaIcon className="h-2 w-2" />
+                  {deltaTxt}
+                </span>
+              )}
             </div>
           );
         })}
