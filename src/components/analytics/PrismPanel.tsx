@@ -1,7 +1,10 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
 import { PrismBadge } from "./PrismBadge";
 import { PrismSkeleton } from "./PrismSkeleton";
+import { PrismShimmer } from "./PrismShimmer";
+import { PrismPanelToolbar } from "./PrismPanelToolbar";
+import { PrismFullscreenPanel } from "./PrismFullscreenPanel";
 
 export type PrismPanelStatus = "live" | "stale" | "empty" | "offline";
 export type PrismPanelTier = "primary" | "secondary" | "muted";
@@ -23,6 +26,12 @@ interface PrismPanelProps {
   showStatus?: boolean;
   tier?: PrismPanelTier;
   flicker?: boolean;
+  /** info text shown via the (i) icon in the toolbar */
+  info?: string;
+  /** when true, renders an expand-to-fullscreen toolbar button */
+  expandable?: boolean;
+  /** loading shimmer variant matching the chart silhouette */
+  shimmer?: "area" | "bar" | "line" | "radar" | "block";
 }
 
 const HEIGHT_CLASS = {
@@ -58,7 +67,11 @@ export function PrismPanel({
   showStatus = true,
   tier = "secondary",
   flicker = false,
+  info,
+  expandable = false,
+  shimmer,
 }: PrismPanelProps) {
+  const [fullscreen, setFullscreen] = useState(false);
   const resolvedStatus: PrismPanelStatus =
     status ?? (isLoading ? "stale" : isEmpty ? "empty" : "live");
 
@@ -72,9 +85,10 @@ export function PrismPanel({
   const showBrackets = tier !== "muted";
 
   return (
+    <>
     <div
       className={cn(
-        "prism-panel relative",
+        "prism-panel relative group",
         tierClass,
         flicker && "prism-flicker",
         className,
@@ -88,6 +102,13 @@ export function PrismPanel({
           <span className="prism-corner-bracket bl" />
           <span className="prism-corner-bracket br" />
         </>
+      )}
+
+      {(info || expandable) && (
+        <PrismPanelToolbar
+          info={info}
+          onExpand={expandable ? () => setFullscreen(true) : undefined}
+        />
       )}
 
       <header className="relative flex items-center justify-between mb-4 gap-2">
@@ -111,7 +132,7 @@ export function PrismPanel({
 
       <div className={cn("relative", HEIGHT_CLASS[height])}>
         {isLoading ? (
-          <PrismSkeleton />
+          shimmer ? <PrismShimmer variant={shimmer} /> : <PrismSkeleton />
         ) : isEmpty ? (
           emptyContent ?? <DefaultEmpty message={emptyMessage} />
         ) : (
@@ -125,6 +146,20 @@ export function PrismPanel({
         </footer>
       )}
     </div>
+
+    {expandable && (
+      <PrismFullscreenPanel
+        open={fullscreen}
+        onClose={() => setFullscreen(false)}
+        title={title}
+        unit={unit}
+        id={id}
+        accent={accent}
+      >
+        {children}
+      </PrismFullscreenPanel>
+    )}
+    </>
   );
 }
 

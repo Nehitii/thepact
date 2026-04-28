@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSound } from "@/contexts/SoundContext";
@@ -27,11 +27,12 @@ import { formatCurrency } from "@/lib/currency";
 import { getDifficultyLabel, getTagLabel } from "@/lib/goalConstants";
 import { format, parseISO } from "date-fns";
 import { generateHeadlineInsight } from "@/lib/analyticsInsights";
+import { useAnalyticsState } from "@/hooks/useAnalyticsState";
 import {
   PeriodSelector,
   AnalyticsPeriod,
   PrismBackground,
-  PrismHeadline,
+  PrismHero,
   PrismRail,
   PrismPanel,
   PrismTooltip,
@@ -39,6 +40,9 @@ import {
   PrismDivider,
   PrismDataNoise,
   InsightStrip,
+  PrismMicroDrawer,
+  PrismHUDFooter,
+  PrismEmptyCTA,
   OrbitDistribution,
   TagConstellation,
   VelocityRiver,
@@ -73,12 +77,15 @@ const GRID_STROKE = "hsl(var(--prism-cyan) / 0.08)";
 
 export default function Analytics() {
   const { t } = useTranslation();
-  const [section, setSection] = useState<PrismSection>("overview");
-  const [period, setPeriod] = useState<AnalyticsPeriod>("all");
+  const { section, period, setSection, setPeriod, cyclePeriod } = useAnalyticsState({
+    section: "overview",
+    period: "all",
+  });
   const { data, isLoading } = useAnalytics(period);
   const { currency } = useCurrency();
   const locale = useDateFnsLocale();
   const { play } = useSound();
+  const [drawerSign, setDrawerSign] = useState<VitalSign | null>(null);
 
   const handleSectionChange = useCallback(
     (s: PrismSection) => {
@@ -87,8 +94,29 @@ export default function Analytics() {
         setSection(s);
       }
     },
-    [section, play],
+    [section, play, setSection],
   );
+
+  // Keyboard shortcuts: 1-6 sections, ←/→ period, Esc closes drawer (drawer handles itself)
+  useEffect(() => {
+    const SECT: PrismSection[] = ["overview", "goals", "focus", "health", "finance", "habits"];
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const num = Number(e.key);
+      if (num >= 1 && num <= 6) {
+        e.preventDefault();
+        handleSectionChange(SECT[num - 1]);
+      } else if (e.key === "ArrowLeft") {
+        cyclePeriod(-1);
+      } else if (e.key === "ArrowRight") {
+        cyclePeriod(1);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [handleSectionChange, cyclePeriod]);
 
   const sessionId = useMemo(
     () => Math.random().toString(36).slice(2, 8).toUpperCase(),
@@ -160,6 +188,63 @@ export default function Analytics() {
   } = data;
 
   const insight = generateHeadlineInsight(data, period);
+  // Density + live modules for hero/footer
+  const moduleSignals = [
+    goalsOverTime.length > 0,
+    healthTrend.length > 0,
+    financeTrend.length > 0,
+    pomodoroTrend.length > 0,
+    habitStreak.length > 0,
+    todoStats.length > 0,
+  ];
+  const liveModules = moduleSignals.filter(Boolean).length;
+  const density = liveModules / moduleSignals.length;
+
+  // Rail badges = number of populated panels per section
+  const railBadges: Partial<Record<PrismSection, number>> = {
+    overview: (goalsOverTime.length > 0 ? 1 : 0) + (healthTrend.length > 0 ? 1 : 0),
+    goals:
+      (goalsByDifficulty.length > 0 ? 1 : 0) +
+      (goalsByTag.length > 0 ? 1 : 0) +
+      (goalsOverTime.length > 0 ? 1 : 0) +
+      (goalVelocity.length > 0 ? 1 : 0),
+    focus: pomodoroTrend.length > 0 ? 1 : 0,
+    health: (healthTrend.length > 0 ? 1 : 0) + (healthRadarData.length > 0 ? 1 : 0),
+    finance: financeTrend.length > 0 ? 2 : 0,
+    habits: (habitStreak.length > 0 ? 1 : 0) + (todoStats.length > 0 ? 1 : 0),
+  };
+
+  // Map a clicked KPI to the section to jump to
+  const SIGN_TO_SECTION: Record<string, PrismSection> = {
+    Completion: "goals",
+    "Total XP": "goals",
+    Focus: "focus",
+    Health: "health",
+    Active: "goals",
+    Completed: "goals",
+    "Steps Done": "goals",
+    Remaining: "finance",
+    "Total Hours": "focus",
+    Sessions: "focus",
+    "Avg / Day": "focus",
+    "Best Day": "focus",
+    "Avg Score": "health",
+    "Worst Day": "health",
+    Logs: "health",
+    "Total Saved": "finance",
+    "Burn / Month": "finance",
+    "Avg Income": "finance",
+    "Avg Expenses": "finance",
+    "Total Logs": "habits",
+    "Days Tracked": "habits",
+    "Tasks Done": "habits",
+  };
+
+  const handleSignClick = (sign: VitalSign) => {
+    play("ui");
+    setDrawerSign(sign);
+  };
+
 
   // Derived data
   const completionRate =
@@ -390,16 +475,19 @@ export default function Analytics() {
 
       <div className="relative max-w-7xl mx-auto px-4 pb-16 pt-4">
         {/* Headline */}
-        <PrismHeadline
+        <PrismHero
           insight={insight}
           period={period}
           onPeriodChange={setPeriod}
           sessionId={sessionId}
+          density={density}
+          liveModules={liveModules}
+          totalModules={moduleSignals.length}
         />
 
         {/* Layout: Rail + Divider + Canvas */}
         <div className="flex gap-6 lg:gap-8">
-          <PrismRail active={section} onChange={handleSectionChange} />
+          <PrismRail active={section} onChange={handleSectionChange} badges={railBadges} />
           <PrismDivider />
 
           <main className="relative flex-1 min-w-0">
@@ -412,11 +500,12 @@ export default function Analytics() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -4 }}
                 transition={{ duration: 0.25 }}
+                className="prism-section-enter"
               >
                 {/* ═══════ OVERVIEW ═══════ */}
                 {section === "overview" && (
                   <>
-                    <InsightStrip signs={overviewVitals} />
+                    <InsightStrip signs={overviewVitals} onSignClick={handleSignClick} />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                       <PrismPanel
                         id="01.A"
@@ -427,6 +516,17 @@ export default function Analytics() {
                         tier="primary"
                         flicker
                         isEmpty={goalsOverTime.length === 0}
+                        info="Goals created vs completed per month, derived from your goal lifecycle."
+                        expandable
+                        shimmer="area"
+                        emptyContent={
+                          <PrismEmptyCTA
+                            message="No goal activity yet"
+                            ctaLabel="Create a goal"
+                            to="/goals/new"
+                            visual="scope"
+                          />
+                        }
                       >
                         <VelocityRiver data={goalsOverTime} formatMonth={formatMonth} />
                       </PrismPanel>
@@ -438,6 +538,17 @@ export default function Analytics() {
                         accent="cyan"
                         height="lg"
                         isEmpty={healthTrend.length === 0}
+                        info="Aggregated daily wellness score from sleep, mood, activity, hydration, meals."
+                        expandable
+                        shimmer="area"
+                        emptyContent={
+                          <PrismEmptyCTA
+                            message="No biometrics logged"
+                            ctaLabel="Log today"
+                            to="/health"
+                            visual="wave"
+                          />
+                        }
                       >
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={healthTrend.slice(-60)}>
@@ -462,7 +573,7 @@ export default function Analytics() {
                 {/* ═══════ GOALS ═══════ */}
                 {section === "goals" && (
                   <>
-                    <InsightStrip signs={goalsVitals} />
+                    <InsightStrip signs={goalsVitals} onSignClick={handleSignClick} />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                       <PrismPanel
                         id="02.A"
@@ -472,6 +583,11 @@ export default function Analytics() {
                         height="lg"
                         tier="primary"
                         isEmpty={orbitItems.length === 0}
+                        info="Distribution of your goals across difficulty tiers."
+                        expandable
+                        emptyContent={
+                          <PrismEmptyCTA message="No goals to classify" ctaLabel="Create one" to="/goals/new" />
+                        }
                       >
                         <OrbitDistribution items={orbitItems} />
                       </PrismPanel>
@@ -484,6 +600,8 @@ export default function Analytics() {
                         height="lg"
                         tier="primary"
                         isEmpty={tagItems.length === 0}
+                        info="Most-used tags across your active mission portfolio."
+                        expandable
                       >
                         <TagConstellation tags={tagItems} />
                       </PrismPanel>
@@ -498,6 +616,9 @@ export default function Analytics() {
                       tier="primary"
                       className="mb-4"
                       isEmpty={goalsOverTime.length === 0}
+                      info="Created vs completed goals over time."
+                      expandable
+                      shimmer="area"
                     >
                       <VelocityRiver data={goalsOverTime} formatMonth={formatMonth} />
                     </PrismPanel>
@@ -509,6 +630,9 @@ export default function Analytics() {
                         unit="days"
                         accent="cyan"
                         height="md"
+                        info="Average days between goal creation and completion, per month."
+                        expandable
+                        shimmer="line"
                       >
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={goalVelocity}>
@@ -527,7 +651,7 @@ export default function Analytics() {
                 {/* ═══════ FOCUS ═══════ */}
                 {section === "focus" && (
                   <>
-                    <InsightStrip signs={focusVitals} />
+                    <InsightStrip signs={focusVitals} onSignClick={handleSignClick} />
                     <PrismPanel
                       id="03.A"
                       title="Focus Time Stream"
@@ -535,6 +659,12 @@ export default function Analytics() {
                       accent="violet"
                       height="xl"
                       isEmpty={pomodoroTrend.length === 0}
+                      info="Pomodoro minutes completed per day."
+                      expandable
+                      shimmer="area"
+                      emptyContent={
+                        <PrismEmptyCTA message="No focus sessions yet" ctaLabel="Start a session" to="/focus" visual="radar" />
+                      }
                     >
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={pomodoroTrend.slice(-60)}>
@@ -558,7 +688,7 @@ export default function Analytics() {
                 {/* ═══════ HEALTH ═══════ */}
                 {section === "health" && (
                   <>
-                    <InsightStrip signs={healthVitals} />
+                    <InsightStrip signs={healthVitals} onSignClick={handleSignClick} />
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                       <PrismPanel
                         id="04.A"
@@ -568,6 +698,12 @@ export default function Analytics() {
                         height="xl"
                         className="lg:col-span-2"
                         isEmpty={healthTrend.length === 0}
+                        info="90-day trend of aggregated health score."
+                        expandable
+                        shimmer="area"
+                        emptyContent={
+                          <PrismEmptyCTA message="No biometrics logged" ctaLabel="Log today" to="/health" visual="wave" />
+                        }
                       >
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={healthTrend.slice(-90)}>
@@ -595,6 +731,9 @@ export default function Analytics() {
                         tier="primary"
                         flicker
                         isEmpty={healthRadarData.length === 0}
+                        info="6-axis biometric breakdown derived from your health logs."
+                        expandable
+                        shimmer="radar"
                       >
                         <HealthRadar data={healthRadarData} />
                       </PrismPanel>
@@ -605,7 +744,7 @@ export default function Analytics() {
                 {/* ═══════ FINANCE ═══════ */}
                 {section === "finance" && (
                   <>
-                    <InsightStrip signs={financeVitals} />
+                    <InsightStrip signs={financeVitals} onSignClick={handleSignClick} />
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                       <PrismPanel
                         id="05.A"
@@ -614,6 +753,12 @@ export default function Analytics() {
                         accent="lime"
                         height="lg"
                         isEmpty={financeTrend.length === 0}
+                        info="Monthly income, expenses, and net savings."
+                        expandable
+                        shimmer="line"
+                        emptyContent={
+                          <PrismEmptyCTA message="No finance data yet" ctaLabel="Add a month" to="/finance" />
+                        }
                       >
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={financeTrend}>
@@ -636,6 +781,9 @@ export default function Analytics() {
                         accent="cyan"
                         height="lg"
                         isEmpty={financeTrend.length === 0}
+                        info="Cumulative savings over time."
+                        expandable
+                        shimmer="area"
                       >
                         <ResponsiveContainer width="100%" height="100%">
                           <AreaChart
@@ -666,7 +814,7 @@ export default function Analytics() {
                 {/* ═══════ HABITS ═══════ */}
                 {section === "habits" && (
                   <>
-                    <InsightStrip signs={habitsVitals} />
+                    <InsightStrip signs={habitsVitals} onSignClick={handleSignClick} />
                     <PrismPanel
                       id="06.A"
                       title="Habit Logs Over Time"
@@ -675,6 +823,12 @@ export default function Analytics() {
                       height="lg"
                       className="mb-4"
                       isEmpty={habitStreak.length === 0}
+                      info="Daily habit log completions across the last 60 days."
+                      expandable
+                      shimmer="bar"
+                      emptyContent={
+                        <PrismEmptyCTA message="No habits tracked" ctaLabel="Open habits" to="/habits" />
+                      }
                     >
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={habitStreak.slice(-60)}>
@@ -694,6 +848,9 @@ export default function Analytics() {
                       accent="amber"
                       height="md"
                       isEmpty={todoStats.length === 0}
+                      info="Todos completed per month."
+                      expandable
+                      shimmer="bar"
                     >
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={todoStats}>
@@ -709,9 +866,30 @@ export default function Analytics() {
                 )}
               </motion.div>
             </AnimatePresence>
+
+            {/* HUD footer */}
+            <PrismHUDFooter
+              period={period}
+              section={section}
+              liveModules={liveModules}
+              totalModules={moduleSignals.length}
+            />
           </main>
         </div>
       </div>
+
+      {/* KPI inspector drawer */}
+      <PrismMicroDrawer
+        open={!!drawerSign}
+        sign={drawerSign}
+        onClose={() => setDrawerSign(null)}
+        onJumpToSection={
+          drawerSign && SIGN_TO_SECTION[drawerSign.label]
+            ? () => handleSectionChange(SIGN_TO_SECTION[drawerSign.label])
+            : undefined
+        }
+        jumpLabel={drawerSign ? SIGN_TO_SECTION[drawerSign.label] : undefined}
+      />
     </>
   );
 }

@@ -2768,3 +2768,128 @@ All colors MUST be HSL.
     animation: none !important;
   }
 }
+
+/* ────────── PRISM v3 — extras for Observatory ────────── */
+@keyframes prism-breath {
+  0%, 100% { opacity: 0.55; transform: scaleY(1); }
+  50%      { opacity: 1;    transform: scaleY(1.04); }
+}
+@keyframes prism-density-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+@keyframes prism-shimmer-sweep {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+@keyframes prism-particle-drift {
+  0%   { transform: translate(0, 0); opacity: 0; }
+  10%  { opacity: 0.18; }
+  90%  { opacity: 0.18; }
+  100% { transform: translate(20px, -40px); opacity: 0; }
+}
+@keyframes prism-refract-in {
+  0%   { opacity: 0; transform: translateX(8px); filter: blur(4px); }
+  100% { opacity: 1; transform: translateX(0);   filter: blur(0); }
+}
+@keyframes prism-glow-trail {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 0.75; }
+}
+
+@layer components {
+  /* Hero ticker character reveal */
+  .prism-ticker-char {
+    display: inline-block;
+    opacity: 0;
+    animation: prism-refract-in 0.45s cubic-bezier(.2,.8,.2,1) forwards;
+  }
+
+  /* Shimmer skeleton overlay (cinetic loading) */
+  .prism-shimmer {
+    position: relative;
+    overflow: hidden;
+    background: hsl(var(--prism-cyan) / 0.04);
+    border: 1px dashed hsl(var(--prism-cyan) / 0.18);
+    border-radius: 3px;
+  }
+  .prism-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--prism-cyan) / 0.18),
+      transparent
+    );
+    animation: prism-shimmer-sweep 1.6s ease-in-out infinite;
+  }
+
+  /* KPI tilt container — uses CSS vars set via inline style */
+  .prism-kpi-tilt {
+    transform-style: preserve-3d;
+    transition: transform 0.25s cubic-bezier(.2,.8,.2,1), box-shadow 0.25s ease;
+    will-change: transform;
+  }
+  .prism-kpi-tilt:hover {
+    box-shadow:
+      0 0 0 1px hsl(var(--prism-panel-border) / 0.45),
+      0 12px 40px -16px hsl(var(--prism-panel-border) / 0.5);
+  }
+
+  /* Density bar segments */
+  .prism-density-seg {
+    width: 8px;
+    height: 10px;
+    border-radius: 1px;
+    background: hsl(var(--prism-cyan) / 0.12);
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+  }
+  .prism-density-seg.is-on {
+    background: hsl(var(--prism-cyan));
+    box-shadow: 0 0 6px hsl(var(--prism-cyan) / 0.7);
+    animation: prism-density-pulse 2.4s ease-in-out infinite;
+  }
+
+  /* Section refract transition */
+  .prism-section-enter {
+    animation: prism-refract-in 0.35s cubic-bezier(.2,.8,.2,1);
+  }
+
+  /* HUD footer */
+  .prism-hud-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 25;
+    background: hsl(var(--prism-panel-bg) / 0.85);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+    border-top: 1px solid hsl(var(--prism-cyan) / 0.18);
+  }
+
+  /* Particle */
+  .prism-particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: hsl(var(--prism-cyan));
+    box-shadow: 0 0 6px hsl(var(--prism-cyan) / 0.6);
+    animation: prism-particle-drift 14s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prism-ticker-char,
+  .prism-shimmer::after,
+  .prism-density-seg.is-on,
+  .prism-section-enter,
+  .prism-particle {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+  .prism-kpi-tilt {
+    transition: none !important;
+  }
+}
