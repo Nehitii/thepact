@@ -1,69 +1,131 @@
-# Audit Mobile Complet — Vowpact
 
-Viewport cible : **360–414px** (iPhone SE → 14 Pro Max). Étape de référence : 390×701 (viewport actuel).
+# /analytics → PRISM Observatory v3
 
-## Diagnostic global
+Refonte premium de l'expérience Analytics. On garde le langage PRISM existant (HSL néon cyan/magenta/lime/violet/amber, corner brackets, font Orbitron + mono), mais on monte la barre sur **densité visuelle, interactivité, micro-animations et ergonomie**.
 
-L'app a déjà des fondations correctes : `AppLayout` gère `overflow-x-hidden`, `AppSidebar` détecte `useIsMobile` et bascule en off-canvas, `ModuleHeader` adapte ses paddings, et `useIsMobile` est largement disponible. **Mais** la majorité des pages ont été pensées desktop-first et présentent des problèmes récurrents :
+L'objectif n'est pas de reconstruire — c'est de transformer une page "tableau de bord" en **observatoire vivant** où chaque KPI respire, chaque chart répond au curseur, et chaque transition raconte quelque chose.
 
-### Problèmes structurels identifiés
+---
 
-1. **Paddings & marges trop généreux** — `px-6`, `py-8`, `py-16`, `mb-24`, `gap-10`, `p-8` sans variantes responsive (Achievements, TodoList, Wishlist, NewGoal, StepDetail, Inbox, Admin*).
-2. **Typographies hero trop grosses** — `text-3xl`/`text-4xl` + `tracking-widest`/`tracking-[0.5em]` débordent en 360px (Inbox, Achievements, Onboarding, Legal).
-3. **Toolbars de page non-collapsibles** — Boutons "BULK / IMPORT / ADD ITEM" alignés en flex-row sans `flex-wrap` dans Wishlist, Goals, Shop. Idem chips et filtres dans Achievements.
-4. **Dialogs au bord de l'écran** — `DialogContent` n'a pas de `w-[calc(100%-2rem)]`, donc les modales touchent les bords sur mobile, et `p-6` interne est trop dense pour les formulaires longs.
-5. **Pas de navigation mobile rapide** — Le seul accès aux modules sur mobile passe par le burger top-left. Aucune bottom nav ni rail rapide pour les 3-4 modules les plus fréquents.
-6. **Grilles 2-col forcées sur petit écran** — `grid-cols-2 gap-4` dans Profile/Notifications, Profile/DataPortability, Admin* devient illisible <360px.
-7. **Headers de page trop riches** — Inbox, Goals, Wishlist combinent orb + titre + sous-titre + actions sur la même ligne, ce qui force des wraps disgracieux ou écrase le titre.
-8. **Tap targets sub-44px** — Plusieurs boutons icon-only à `h-7 w-7` ou `h-8 w-8` (FriendNode compact, AllianceTabs, Goals filtres) sont sous le minimum tactile recommandé (44×44 iOS / 48×48 Android).
+## 1. Hero "Cockpit" (remplace PrismHeadline)
 
-## Plan de remédiation — 4 vagues
+```text
+┌─[PRISM // OBSERVATORY v3]─────────────── T+14:32:08 · LIVE ●──┐
+│  ▌                                                            │
+│  ▌  ↑ +127% Goals completed                  [7D][30D][90D]   │
+│  ▌  exceptional momentum                     [ALL]            │
+│  ▌                                                            │
+│  ▌  ▁▂▃▅▇█ data density 87%   ◐ 4 modules actifs              │
+└────────────────────────────────────────────────────────────────┘
+```
 
-Plutôt que tout casser en une seule passe, je propose un découpage incrémental où chaque vague est livrable indépendamment, avec une amélioration mesurable du UX mobile.
+- Ticker animé (lettres qui se révèlent, à la "Mission Impossible") sur le titre d'insight au changement de période.
+- **Compteur AnimatedNumber** sur le delta (interpolation 0 → valeur, 600ms easeOut).
+- Mini barre de **data density** (8 segments qui s'allument séquentiellement).
+- Indicateur "modules actifs" (orbes lumineux, un par module ayant des données).
+- Background du hero : **scanline lente** (CSS keyframe, 4s loop) + **breath glow** sur le rail néon latéral.
+- `prefers-reduced-motion` → désactive ticker, scanline, glow pulse ; conserve le contenu statique.
 
-### Vague 1 — Fondations globales (impact maximal, risque minimal)
+## 2. KPI Cards interactives (refonte InsightStrip)
 
-Objectif : corriger ce qui touche **toutes les pages** d'un coup via des composants partagés et tokens.
+Chaque carte VitalSign devient un **mini-écran tactique** :
 
-**Actions :**
-- `DialogContent` : ajouter `w-[calc(100%-2rem)] sm:w-full`, `p-4 sm:p-6`, `max-h-[calc(100vh-2rem)]` pour respirer sur mobile.
-- Créer un utilitaire Tailwind pour padding de page : `.page-px` = `px-4 sm:px-6 md:px-8`, `.page-py` = `py-6 sm:py-8`.
-- Forcer `min-w-0` sur tous les `flex-1` enfants critiques (déjà partiellement fait dans `AppLayout`).
-- Audit `tap-target` : créer une classe `touch-target` (`min-h-[44px] min-w-[44px]`) et l'appliquer aux boutons icon-only critiques.
-- Classe utilitaire `truncate-fluid` pour les titres orbitron longs.
+- **Hover** → tilt 3D léger (`rotateX/Y` 4°), corner brackets s'étirent, sparkline s'épaissit, gradient s'intensifie.
+- **Click** → ouvre un **PrismMicroDrawer** (slide-in depuis la droite, 320px) avec : valeur exacte, 30 derniers points, comparaison période précédente, bouton "voir plus" qui change la section du rail.
+- AnimatedNumber sur les valeurs (interpolation à l'apparition + au changement de période).
+- Sparkline : ajout d'un **dot tracker** qui suit le curseur sur hover avec tooltip flottant (X/Y).
+- Ajout d'un **mini ring de progress** discret derrière l'icône pour les KPI avec target (Health %, Completion %).
 
-### Vague 2 — Navigation mobile (UX gain énorme)
+## 3. Rail latéral magnétique (PrismRail v2)
 
-**Actions :**
-- **Bottom Tab Bar mobile** (`md:hidden`, position `fixed bottom-0`) avec les 5 destinations critiques : Home, Goals, Friends, Inbox, Profile (configurable). Gère `safe-area-inset-bottom` pour iPhone X+.
-- Le burger reste pour accéder à la liste complète (admin, settings profonds, etc.).
-- Ajout d'un padding-bottom global mobile (`pb-20 md:pb-0`) sur `<main>` pour ne pas masquer le contenu.
-- Indicateur actif synchronisé avec `useLocation`.
+- Indicateur actif déjà animé (`layoutId`) — **on ajoute** :
+  - **Glow trail** qui suit le déplacement (gradient cyan qui fade derrière).
+  - **Sound subtil** au survol (déjà câblé via `useSound("ui")` au click — ajout d'un "tick" très léger au hover, opt-in via SoundContext).
+  - **Badge numérique** par section indiquant le nombre de panels avec données (ex: "Goals · 4").
+  - **Section progress** : petit segment vertical à côté du label montrant le ratio de panels "live" vs "empty".
+- **Keyboard nav** : flèches haut/bas pour naviguer, Enter pour activer, accessible.
+- Mobile : chips horizontales conservent layoutId, on ajoute snap-scroll et auto-scroll vers actif.
 
-### Vague 3 — Pages prioritaires (refonte responsive ciblée)
+## 4. Panels v3 (PrismPanel enrichi)
 
-Refonte mobile des 8 pages les plus utilisées, dans cet ordre :
+- **Header interactif** : icône ⓘ → tooltip avec définition du panel + source des données.
+- **Toolbar discrète au hover** (en haut à droite, fade-in) :
+  - Toggle "compare period" (overlay de la période précédente en pointillé sur les charts temporels).
+  - Bouton "expand" → ouvre le panel en **modal pleine largeur** (Radix Dialog) avec chart agrandi + breakdown détaillé.
+  - Bouton "export" → CSV/PNG.
+- **Empty state amélioré** : au lieu du seul "NO SIGNAL DETECTED", proposer un **CTA contextuel** ("Logger ta première humeur" → /health) avec micro-illustration animée (radar qui scanne).
+- **Loading state** : remplace le Skeleton plat par un **shimmer scanline** sur la silhouette du chart attendu (area / bar / radar).
+- **Flicker** existant : on garde, mais respecte `prefers-reduced-motion`.
 
-1. **Home** — réduire `gap-4` → `gap-3`, empiler `md:grid-cols-12` proprement, alléger `NexusHeroBanner` sur mobile.
-2. **Goals** — `GoalsToolbar` en `flex-wrap gap-2`, filtres collapsibles dans un Sheet sur mobile, cards goals déjà OK.
-3. **Friends** — déjà fait en Sprints 1-3, juste vérifier le `AllianceInsightStrip` qui passe à 2-col sur xs (déjà géré).
-4. **Inbox** — header mobile compact (orb 40px, `text-xl`, action settings dans menu), retirer `tracking-widest` sur xs.
-5. **Wishlist** — toolbar BULK/IMPORT/ADD : grouper IMPORT+BULK dans un menu kebab, garder ADD ITEM visible. Cards en 1-col strict <640px.
-6. **Achievements** — `px-6 py-16` → `px-4 py-8 sm:py-16`, `mb-24` → `mb-12 sm:mb-24`, stats `gap-10` → `gap-4 sm:gap-10`, hero `text-4xl` → `text-3xl`, filter bar verticale sur mobile.
-7. **Shop** — vérifier ShopCategoryView `grid-cols-2 gap-4` qui peut rester (cards conçues pour ça), mais alléger headers.
-8. **Profile (settings)** — déjà refait en CyberPanel, mais `grid-cols-2 gap-4` dans NotificationSettings/DataPortability passer à `grid-cols-1 sm:grid-cols-2`.
+## 5. Charts plus vivants
 
-### Vague 4 — Pages secondaires + polish final
+- **Crosshair partagé** : sur les charts temporels d'une même section, le hover sur un X aligne tous les autres charts au même X (via un petit context React).
+- **Animations d'entrée** : Recharts `isAnimationActive` à `true`, durée 800ms, `animationEasing="ease-out"`. Stagger entre charts (50ms par index).
+- **Gradient fills** : on enrichit avec un **noise overlay** subtil (déjà via `PrismDataNoise`) sur les zones d'aire pour éviter l'aplat.
+- **Tooltip** : repensé en card flottante avec icône, valeur, delta vs jour précédent, mini-trend 5 derniers points.
+- **Annotations automatiques** : un point exceptionnel (>2σ) reçoit un marker pulsant + label discret ("PEAK" / "DIP").
 
-- TodoList : `p-6` → `p-4 sm:p-6`, dialogs `max-w-4xl` n'a pas d'effet sur mobile mais `p-6` interne à ajuster.
-- Calendar : revue des vues Day/Week/Month sur 360px (scroll horizontal contrôlé).
-- Focus : déjà compact, vérifier le timer ring qui ne dépasse pas.
-- Legal, Onboarding, NewGoal, StepDetail : titres et paddings.
-- Admin* : `grid-cols-2 gap-4` → `grid-cols-1 sm:grid-cols-2`.
-- Audit tap-targets final + screenshots de validation à 360, 390, 414px.
+## 6. Nouveaux composants visuels
 
-## Ce qu'il faut décider maintenant
+- **PRISM HUD Footer** (sticky bas) : barre fine 32px de haut affichant en temps réel — date, période active, nb signaux live, raccourcis clavier visibles (`?` pour palette).
+- **Cinematic transitions entre sections** : au lieu d'un simple fade, on fait un effet **"prism refract"** : l'ancien contenu se décale légèrement + blur 4px → fade out, le nouveau entre avec une scanline qui balaie. Durée 350ms total.
+- **Particules ambiantes** très discrètes dans le PrismBackground (8-12 particules dérivantes, opacity 0.15) — désactivables via reduced motion.
 
-Cette refonte représente ~30–40 fichiers touchés au total. Je propose d'**enchaîner uniquement les Vagues 1 + 2** dans cette session (fondations + bottom nav mobile) car elles donnent ~70% du gain UX perçu pour ~20% du travail. Les Vagues 3 et 4 seront livrables en sessions dédiées (1 vague = 1 message).
+## 7. Ergonomie & raccourcis
 
-**Confirme** : j'attaque Vagues 1 + 2 maintenant ?
+- **Command Palette dédiée** (extension de la palette globale) : `1-6` pour switcher de section, `←/→` pour changer de période, `e` pour exporter, `f` pour fullscreen le panel actif.
+- **Deep linking** : `/analytics?section=goals&period=30d` — état synchronisé avec l'URL (search params).
+- **Persistance** : dernière section + période vues stockées en localStorage (clé `pacte:analytics:state`).
+- **Tap targets mobiles** ≥ 44px sur tous les chips/boutons (déjà `.touch-target` dispo).
+
+## 8. Mode "Focus single panel"
+
+Bouton dans la toolbar du panel → **mode plein écran** qui :
+- Cache rail + hero, étend le panel à 100% du viewport.
+- Affiche un mini-controlbar en haut (close, period, export).
+- Animation : panel zoom-in 0.94 → 1.0, autres éléments fade out 200ms.
+- Échap pour sortir.
+
+---
+
+## Fichiers impactés
+
+**Nouveaux :**
+- `src/components/analytics/PrismHero.tsx` (remplace PrismHeadline avec ticker, density bar, modules actifs)
+- `src/components/analytics/PrismMicroDrawer.tsx` (drawer KPI)
+- `src/components/analytics/PrismHUDFooter.tsx` (footer sticky)
+- `src/components/analytics/PrismCrosshairContext.tsx` (sync hover X entre charts)
+- `src/components/analytics/PrismPanelToolbar.tsx` (toolbar hover)
+- `src/components/analytics/PrismFullscreenPanel.tsx` (mode focus)
+- `src/components/analytics/PrismShimmer.tsx` (loading shimmer cinétique)
+- `src/components/analytics/PrismEmptyCTA.tsx` (empty states avec CTA)
+- `src/hooks/useAnalyticsState.ts` (URL + localStorage sync)
+- `src/hooks/useReducedMotion.ts` (si pas déjà présent)
+
+**Modifiés :**
+- `src/pages/Analytics.tsx` — câblage des nouveaux composants, deep-link, raccourcis clavier.
+- `src/components/analytics/InsightStrip.tsx` — tilt 3D, AnimatedNumber, click → drawer.
+- `src/components/analytics/PrismRail.tsx` — badges, glow trail, keyboard nav.
+- `src/components/analytics/PrismPanel.tsx` — toolbar hover, slot empty CTA, intégration shimmer.
+- `src/components/analytics/PrismBackground.tsx` — particules ambiantes.
+- `src/components/analytics/PrismTooltip.tsx` — refonte avec delta + mini-trend.
+- `src/styles/design-tokens.css` ou `src/index.css` — keyframes `prism-scanline`, `prism-refract`, `prism-tilt`.
+
+---
+
+## Ce qu'on ne touche pas
+
+- Architecture data (`useAnalytics` hook reste tel quel).
+- Recharts (on l'enrichit, pas de remplacement).
+- Système de tokens HSL `--prism-*` (on les réutilise, on n'invente pas de couleur).
+- Sound design (on utilise `useSound` existant).
+
+---
+
+## Approche — 3 vagues
+
+1. **Vague A — Hero + KPI Cards interactives + Rail v2** (impact visuel maximal, ~6 fichiers)
+2. **Vague B — Panels v3 + Charts vivants + Crosshair** (interactivité chart, ~5 fichiers)
+3. **Vague C — Fullscreen mode + HUD Footer + Shortcuts + Deep-link + Empty CTAs** (polish & ergonomie)
+
+Confirme l'approche (et si tu veux les 3 vagues d'un coup ou séquentiellement) et je démarre par la Vague A.
