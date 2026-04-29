@@ -32,6 +32,24 @@ export interface AnalyticsData {
   goalsByTag: GoalsByTag[];
   pomodoroTrend: { date: string; minutes: number }[];
   goalVelocity: { month: string; avgDays: number }[];
+  goalShowcase: {
+    id: string;
+    name: string;
+    image_url: string | null;
+    status: string;
+    difficulty: string;
+    potential_score: number;
+    completion_date: string | null;
+    progress: number;
+  }[];
+  topGoals: {
+    id: string;
+    name: string;
+    image_url: string | null;
+    difficulty: string;
+    potential_score: number;
+    completion_date: string | null;
+  }[];
   summary: {
     totalGoals: number;
     completedGoals: number;
@@ -161,6 +179,17 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         : allGoals.filter((g: any) => new Date(g.created_at) >= start);
       const goalIds = goals.map((g: any) => g.id);
       const allGoalIds = allGoals.map((g: any) => g.id);
+
+      // Showcase goals (with images, names) for visual gallery
+      const showcaseRes = pactId
+        ? await supabase
+            .from("goals")
+            .select("id, name, image_url, status, difficulty, potential_score, completion_date, total_steps, validated_steps")
+            .eq("pact_id", pactId)
+            .order("created_at", { ascending: false })
+            .limit(60)
+        : { data: [] as any[] };
+      const showcaseGoals = (showcaseRes.data || []) as any[];
 
       // Fetch steps, tags, cost items only for user's goals
       const [stepsRes, tagsRes, costItemsRes] = allGoalIds.length > 0
@@ -398,6 +427,28 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           healthScore: computeTrend(Math.round(avgHealth), Math.round(prevAvgHealth)),
           focusMinutes: computeTrend(pomodoroMinutes, prevPomodoroMinutes),
         },
+        goalShowcase: showcaseGoals.map((g: any) => ({
+          id: g.id,
+          name: g.name || "Sans nom",
+          image_url: g.image_url || null,
+          status: g.status || "not_started",
+          difficulty: g.difficulty || "easy",
+          potential_score: g.potential_score || 0,
+          completion_date: g.completion_date || null,
+          progress: g.total_steps > 0 ? Math.round(((g.validated_steps || 0) / g.total_steps) * 100) : 0,
+        })),
+        topGoals: showcaseGoals
+          .filter((g: any) => ["fully_completed", "validated"].includes(g.status))
+          .sort((a: any, b: any) => (b.potential_score || 0) - (a.potential_score || 0))
+          .slice(0, 5)
+          .map((g: any) => ({
+            id: g.id,
+            name: g.name || "Sans nom",
+            image_url: g.image_url || null,
+            difficulty: g.difficulty || "easy",
+            potential_score: g.potential_score || 0,
+            completion_date: g.completion_date || null,
+          })),
       };
     },
     enabled: !!user?.id,
