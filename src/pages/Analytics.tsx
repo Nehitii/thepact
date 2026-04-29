@@ -34,6 +34,9 @@ import { CleanKPIGrid, type KPIItem } from "@/components/analytics/clean/CleanKP
 import { CleanCard } from "@/components/analytics/clean/CleanCard";
 import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
 import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
+import { AnalyticsDecor } from "@/components/analytics/clean/AnalyticsDecor";
+import { GoalShowcase } from "@/components/analytics/clean/GoalShowcase";
+import { GoalPodium } from "@/components/analytics/clean/GoalPodium";
 import {
   AreaChart,
   Area,
@@ -156,6 +159,8 @@ export default function Analytics() {
     goalVelocity,
     habitStreak,
     trends,
+    goalShowcase,
+    topGoals,
   } = data;
 
   const completionRate =
@@ -325,7 +330,8 @@ export default function Analytics() {
 
   // ───── Render ─────
   return (
-    <div className="max-w-6xl mx-auto px-4 md:px-6 pt-6 pb-16">
+    <div className="relative max-w-6xl mx-auto px-4 md:px-6 pt-6 pb-16">
+      <AnalyticsDecor />
       {/* Header */}
       <header className="mb-6">
         <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -368,6 +374,7 @@ export default function Analytics() {
           {section === "overview" && (
             <>
               <CleanKPIGrid items={overviewKPIs} />
+              <GoalShowcase goals={goalShowcase} />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <CleanCard
                   title="Évolution des objectifs"
