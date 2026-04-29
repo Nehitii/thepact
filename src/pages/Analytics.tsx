@@ -424,6 +424,8 @@ export default function Analytics() {
           {section === "goals" && (
             <>
               <CleanKPIGrid items={goalsKPIs} />
+              <GoalPodium goals={topGoals} />
+              <GoalShowcase goals={goalShowcase} />
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <CleanCard
                   title="Répartition par difficulté"
