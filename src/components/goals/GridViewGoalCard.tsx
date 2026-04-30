@@ -185,11 +185,11 @@ export function GridViewGoalCard({
         )}
 
         {/* Top Bar */}
-        <div className="absolute top-0 left-0 right-0 p-3 sm:p-3.5 flex justify-between items-start z-10 gap-2">
+        <div className="absolute top-0 left-0 right-0 p-2 sm:p-3.5 flex justify-between items-start z-10 gap-1.5 sm:gap-2">
           {/* Difficulty Hex Gem + label */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <div
-              className="tcg-gem shrink-0"
+              className="tcg-gem tcg-gem--sm sm:tcg-gem--md shrink-0"
               role="img"
               aria-label={`Difficulty: ${getDifficultyLabel(difficulty, customDifficultyName)}`}
               title={getDifficultyLabel(difficulty, customDifficultyName)}
@@ -199,7 +199,7 @@ export function GridViewGoalCard({
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Progress mini gem (desktop) */}
             <div
               className="tcg-gem-mini hidden sm:flex items-center justify-center text-[10px] font-bold text-white tabular-nums shrink-0"
@@ -212,7 +212,7 @@ export function GridViewGoalCard({
             {/* Focus Button */}
             <button
               className={cn(
-                "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 border shrink-0",
+                "w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 border shrink-0",
                 "backdrop-blur-sm cursor-pointer",
                 goal.is_focus
                   ? "bg-[rgba(var(--accent-rgb),0.2)] border-[var(--accent)] text-[var(--accent)] shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]"
@@ -225,7 +225,7 @@ export function GridViewGoalCard({
               aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
             >
               <Star
-                className="w-4 h-4"
+                className="w-4 h-4 sm:w-4 sm:h-4"
                 fill={goal.is_focus ? "currentColor" : "none"}
                 strokeWidth={goal.is_focus ? 0 : 2}
               />
@@ -236,10 +236,10 @@ export function GridViewGoalCard({
         {/* Glass Panel Content */}
         <div
           className={cn(
-            "absolute bottom-3 left-3 right-3 p-3.5 sm:p-4 rounded-2xl z-10",
+            "absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl z-10",
             "bg-[rgba(20,20,25,0.75)] backdrop-blur-xl border border-white/[0.08]",
             "shadow-[0_4px_20px_rgba(0,0,0,0.4)]",
-            "flex flex-col gap-3 transition-all duration-300",
+            "flex flex-col gap-1.5 sm:gap-3 transition-all duration-300",
             "group-hover:bg-[rgba(20,20,25,0.85)] group-hover:border-white/[0.15]",
           )}
         >
@@ -248,7 +248,7 @@ export function GridViewGoalCard({
           <span className="tcg-ornament right-1" aria-hidden />
 
           {/* Header Row */}
-          <div className="flex justify-between items-center mb-1.5">
+          <div className="hidden sm:flex justify-between items-center mb-1.5">
             <span className="text-[var(--accent)] drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.4)]">
               {isCompleted ? <CheckCircle size={14} /> : isHabitGoal ? <Zap size={14} /> : <Target size={14} />}
             </span>
@@ -271,15 +271,15 @@ export function GridViewGoalCard({
           </div>
 
           {/* Title */}
-          <h3 className="text-base sm:text-[17px] font-bold leading-tight text-white line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.9)] font-orbitron tracking-wide">
+          <h3 className="text-[13px] sm:text-[17px] font-bold leading-tight text-white line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.9)] font-orbitron tracking-wide">
             {goal.name}
           </h3>
           {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1" />}
 
           {/* Progress */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between items-center text-[11px] font-semibold">
-              <span className={cn("uppercase tracking-wider", isCompleted ? "text-[var(--accent)]" : "text-gray-400")}>
+          <div className="flex flex-col gap-1 sm:gap-1.5">
+            <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-semibold">
+              <span className={cn("uppercase tracking-wider truncate", isCompleted ? "text-[var(--accent)]" : "text-gray-400")}>
                 {statusLabel}
               </span>
               <span className="text-gray-100 tabular-nums">{progress}%</span>
@@ -288,7 +288,7 @@ export function GridViewGoalCard({
               <div className="tcg-progress-fill" />
               <div className="tcg-progress-ticks" />
             </div>
-            <div className="flex justify-end">
+            <div className="hidden sm:flex justify-end">
               <span className="text-[10px] text-gray-500">
                 {completedSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"}
               </span>
