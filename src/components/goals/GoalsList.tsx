@@ -50,7 +50,11 @@ const tabs: { id: GoalTab; label: string; icon: typeof List }[] = [
 ];
 
 function getGridClass(displayMode: DisplayMode) {
-  if (displayMode === "grid" || displayMode === "bookmark") return "flex flex-wrap justify-center gap-6";
+  if (displayMode === "grid") {
+    // True responsive CSS grid: 1 / 2 / 3 / 4 columns, equal cells
+    return "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 w-full";
+  }
+  if (displayMode === "bookmark") return "flex flex-wrap justify-center gap-6";
   return "grid grid-cols-1 gap-4 w-full max-w-4xl mx-auto";
 }
 
