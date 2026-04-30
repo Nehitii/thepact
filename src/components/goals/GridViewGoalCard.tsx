@@ -133,7 +133,7 @@ export function GridViewGoalCard({
       onKeyDown={handleKeyDown}
       data-halo={intensity}
       className={cn(
-        "group relative w-full max-w-[340px] min-w-[260px] mx-auto cursor-pointer select-none rounded-[20px]",
+        "group relative w-full mx-auto cursor-pointer select-none rounded-[22px]",
         "transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
         "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
         "[perspective:1000px]",
@@ -145,7 +145,7 @@ export function GridViewGoalCard({
       {/* Card Inner */}
       <div
         className={cn(
-          "relative w-full rounded-[20px] overflow-hidden",
+          "relative w-full rounded-[22px] overflow-hidden tcg-frame",
           "bg-[var(--goal-card-bg)] border border-[var(--goal-card-border)]",
           "shadow-sm transition-all duration-400 ease-[cubic-bezier(0.25,0.8,0.25,1)]",
           "group-hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.6),0_0_0_1px_rgba(var(--accent-rgb),0.3)]",
@@ -174,53 +174,79 @@ export function GridViewGoalCard({
           <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
         </div>
 
-        {/* Shine Effect */}
+        {/* Shine Effect (all rarities) */}
         <div className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-[shimmer_1s_forwards]" />
 
+        {/* Holographic foil — only legendary tiers (halos 4-5) */}
+        {intensity >= 4 && (
+          <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none rounded-[22px]">
+            <div className="tcg-foil" />
+          </div>
+        )}
+
         {/* Top Bar */}
-        <div className="absolute top-0 left-0 right-0 p-3.5 flex justify-between items-start z-10">
-          {/* Difficulty Pill */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black/60 backdrop-blur-lg border border-white/10 rounded-full text-[10px] font-bold tracking-wider text-gray-100 uppercase">
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
+        <div className="absolute top-0 left-0 right-0 p-3 sm:p-3.5 flex justify-between items-start z-10 gap-2">
+          {/* Difficulty Hex Gem + label */}
+          <div className="flex items-center gap-2">
+            <div
+              className="tcg-gem shrink-0"
+              role="img"
+              aria-label={`Difficulty: ${getDifficultyLabel(difficulty, customDifficultyName)}`}
+              title={getDifficultyLabel(difficulty, customDifficultyName)}
             />
-            {getDifficultyLabel(difficulty, customDifficultyName)}
+            <span className="hidden sm:inline-flex items-center px-2 py-1 bg-black/55 backdrop-blur-md border border-white/10 rounded-md text-[10px] font-bold tracking-[0.12em] text-white/90 uppercase font-orbitron">
+              {getDifficultyLabel(difficulty, customDifficultyName)}
+            </span>
           </div>
 
-          {/* Focus Button */}
-          <button
-            className={cn(
-              "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 border",
-              "backdrop-blur-sm cursor-pointer",
-              goal.is_focus
-                ? "bg-[rgba(var(--accent-rgb),0.2)] border-[var(--accent)] text-[var(--accent)] shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]"
-                : "bg-black/40 border-white/10 text-white/60 hover:bg-white/20 hover:scale-110 hover:text-white",
-            )}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleFocus(goal.id, !!goal.is_focus, e);
-            }}
-            aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
-          >
-            <Star
-              className="w-4 h-4"
-              fill={goal.is_focus ? "currentColor" : "none"}
-              strokeWidth={goal.is_focus ? 0 : 2}
-            />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Progress mini gem (desktop) */}
+            <div
+              className="tcg-gem-mini hidden sm:flex items-center justify-center text-[10px] font-bold text-white tabular-nums shrink-0"
+              aria-label={`Progress ${progress}%`}
+              title={`${progress}%`}
+            >
+              {progress}
+            </div>
+
+            {/* Focus Button */}
+            <button
+              className={cn(
+                "w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 border shrink-0",
+                "backdrop-blur-sm cursor-pointer",
+                goal.is_focus
+                  ? "bg-[rgba(var(--accent-rgb),0.2)] border-[var(--accent)] text-[var(--accent)] shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]"
+                  : "bg-black/40 border-white/10 text-white/60 hover:bg-white/20 hover:scale-110 hover:text-white",
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFocus(goal.id, !!goal.is_focus, e);
+              }}
+              aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
+            >
+              <Star
+                className="w-4 h-4"
+                fill={goal.is_focus ? "currentColor" : "none"}
+                strokeWidth={goal.is_focus ? 0 : 2}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Glass Panel Content */}
         <div
           className={cn(
-            "absolute bottom-3 left-3 right-3 p-4 rounded-2xl z-10",
+            "absolute bottom-3 left-3 right-3 p-3.5 sm:p-4 rounded-2xl z-10",
             "bg-[rgba(20,20,25,0.75)] backdrop-blur-xl border border-white/[0.08]",
             "shadow-[0_4px_20px_rgba(0,0,0,0.4)]",
             "flex flex-col gap-3 transition-all duration-300",
             "group-hover:bg-[rgba(20,20,25,0.85)] group-hover:border-white/[0.15]",
           )}
         >
+          {/* Side ornaments */}
+          <span className="tcg-ornament left-1" aria-hidden />
+          <span className="tcg-ornament right-1" aria-hidden />
+
           {/* Header Row */}
           <div className="flex justify-between items-center mb-1.5">
             <span className="text-[var(--accent)] drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.4)]">
@@ -230,7 +256,7 @@ export function GridViewGoalCard({
               {displayTags.map((tag, i) => (
                 <span
                   key={i}
-                  className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border bg-black/40 uppercase"
+                  className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border bg-black/40 uppercase tracking-wider font-orbitron"
                   style={{ borderColor: getTagColor(tag), color: getTagColor(tag) }}
                 >
                   {getTagLabel(tag)}
@@ -245,7 +271,7 @@ export function GridViewGoalCard({
           </div>
 
           {/* Title */}
-          <h3 className="text-base font-bold leading-tight text-white line-clamp-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
+          <h3 className="text-base sm:text-[17px] font-bold leading-tight text-white line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.9)] font-orbitron tracking-wide">
             {goal.name}
           </h3>
           {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1" />}
@@ -258,15 +284,9 @@ export function GridViewGoalCard({
               </span>
               <span className="text-gray-100 tabular-nums">{progress}%</span>
             </div>
-            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-[width] duration-1000 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
-                style={{
-                  width: `${progress}%`,
-                  background: "var(--accent)",
-                  boxShadow: "0 0 8px var(--accent)",
-                }}
-              />
+            <div className="tcg-progress-track">
+              <div className="tcg-progress-fill" />
+              <div className="tcg-progress-ticks" />
             </div>
             <div className="flex justify-end">
               <span className="text-[10px] text-gray-500">
@@ -279,7 +299,7 @@ export function GridViewGoalCard({
         {/* Border Glow */}
         <div
           className={cn(
-            "absolute inset-0 rounded-[20px] border border-transparent pointer-events-none z-20",
+            "absolute inset-0 rounded-[22px] border border-transparent pointer-events-none z-20",
             "transition-all duration-300",
             "group-hover:border-[rgba(var(--accent-rgb),0.4)] group-hover:shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]",
           )}
