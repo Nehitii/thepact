@@ -166,7 +166,7 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
       });
     } catch (error) {
       console.error("Failed to claim reward:", error);
-      toast({
+      toast.error({
         title: "Failed to claim",
         description: "Please try again later",
         variant: "destructive",

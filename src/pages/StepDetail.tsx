@@ -62,7 +62,7 @@ export default function StepDetail() {
       setExcludeFromSpin(stepData.exclude_from_spin ?? false);
     } catch (error: any) {
       console.error("Error loading step:", error);
-      toast({ title: "Error", description: "Failed to load step details", variant: "destructive" });
+      toast.error({ title: "Error", description: "Failed to load step details", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -98,7 +98,7 @@ export default function StepDetail() {
       navigate(`/goals/${step.goal_id}`);
     } catch (error: any) {
       console.error("Error saving step:", error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setSaving(false);
     }

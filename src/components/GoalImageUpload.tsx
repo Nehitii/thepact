@@ -72,7 +72,7 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
       });
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast({
+      toast.error({
         title: "Upload failed",
         description: error.message || "Failed to upload image",
         variant: "destructive",

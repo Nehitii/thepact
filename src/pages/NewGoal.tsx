@@ -297,9 +297,9 @@ export default function NewGoal() {
       navigate(`/goals/${goalData.id}`);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        toast({ title: "Validation Error", description: error.errors[0].message, variant: "destructive" });
+        toast.error({ title: "Validation Error", description: error.errors[0].message, variant: "destructive" });
       } else {
-        toast({ title: "Error", description: error.message || "Failed to create goal", variant: "destructive" });
+        toast.error({ title: "Error", description: error.message || "Failed to create goal", variant: "destructive" });
       }
     } finally {
       setLoading(false);

@@ -101,7 +101,7 @@ export default function Auth() {
         setIsLogin(true);
       }
     } catch (err: any) {
-      toast({ title: "ACCESS DENIED", description: err.message, variant: "destructive" });
+      toast.error({ title: "ACCESS DENIED", description: err.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
