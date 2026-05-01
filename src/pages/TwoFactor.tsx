@@ -124,7 +124,7 @@ export default function TwoFactor() {
       setCooldown(60);
       toast({ title: t("twoFactor.emailSentTitle"), description: t("twoFactor.emailSentDesc") });
     } catch (e: any) {
-      toast.error({ title: t("common.error"), description: e?.message || "Failed to send code", variant: "destructive" });
+      toast({ title: t("common.error"), description: e?.message || "Failed to send code", variant: "destructive" });
     } finally {
       setSendingEmail(false);
     }
@@ -155,7 +155,7 @@ export default function TwoFactor() {
       toast({ title: t("twoFactor.verifiedTitle"), description: t("twoFactor.verifiedDesc") });
       navigate(from, { replace: true });
     } catch (e: any) {
-      toast.error({
+      toast({
         title: t("twoFactor.failedTitle"),
         description: e?.message || t("twoFactor.failedDesc"),
         variant: "destructive",

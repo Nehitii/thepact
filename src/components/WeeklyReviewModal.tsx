@@ -49,7 +49,7 @@ export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
       await generateReview.mutateAsync();
       toast({ title: "Weekly review generated!", description: "Your week has been analyzed." });
     } catch (e: any) {
-      toast.error({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: "Error", description: e.message, variant: "destructive" });
     }
   };
 
@@ -63,7 +63,7 @@ export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
       });
       toast({ title: "Reflection saved" });
     } catch (e: any) {
-      toast.error({ title: "Error", description: e.message, variant: "destructive" });
+      toast({ title: "Error", description: e.message, variant: "destructive" });
     }
   };
 

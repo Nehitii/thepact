@@ -60,7 +60,7 @@ export default function Onboarding() {
       toast({ title: t("onboarding.welcomeToast"), description: t("onboarding.pactSealed") });
       navigate("/");
     } catch (error: any) {
-      toast.error({ title: t("common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }

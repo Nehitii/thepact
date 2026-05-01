@@ -143,7 +143,7 @@ export default function DataPortability() {
       setLatestLog({ text: "IMPORT COMPLETE", type: "ok" });
       setImportFile(null); setImportPreview(null);
     } catch (e: any) {
-      toast.error({ title: "Erreur d'import", description: e.message, variant: "destructive" });
+      toast({ title: "Erreur d'import", description: e.message, variant: "destructive" });
       setLatestLog({ text: "IMPORT FAILED", type: "warn" });
     } finally { setIsImporting(false); }
   };
@@ -160,7 +160,7 @@ export default function DataPortability() {
       setLatestLog({ text: "ALL DATA PURGED", type: "ok" });
       setShowResetModal(false); setResetConfirm("");
     } catch (e: any) {
-      toast.error({ title: "Erreur", description: e.message, variant: "destructive" });
+      toast({ title: "Erreur", description: e.message, variant: "destructive" });
       setLatestLog({ text: "RESET FAILED", type: "warn" });
     } finally { setIsResetting(false); }
   };

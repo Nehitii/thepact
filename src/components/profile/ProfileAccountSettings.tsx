@@ -133,7 +133,7 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
       toast({ title: t("profile.updatedTitle"), description: t("profile.updatedDesc") });
     } catch (error: any) {
       addLog(`COMMIT ERROR: ${error.message.toUpperCase()}`, "warn");
-      toast.error({ title: t("common.error"), description: error.message, variant: "destructive" });
+      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
     } finally { setIsSaving(false); }
   };
 
@@ -219,7 +219,7 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
       toast({ title: "SUCCESS", description: "Password updated successfully." });
     } catch (error: any) {
       onLog("KEY UPDATE FAILED", "warn");
-      toast.error({ title: "ERROR", description: error.message, variant: "destructive" });
+      toast({ title: "ERROR", description: error.message, variant: "destructive" });
     } finally { setIsSaving(false); }
   };
 

@@ -278,7 +278,7 @@ export function ProfileBoundedProfile({
         toast({ title: "Avatar uploaded", description: "Identity updated successfully." });
       }
     } catch (error: any) {
-      toast.error({ title: "Upload failed", description: error.message, variant: "destructive" });
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
     } finally {
       setUploading(false);
       setShowAvatarDialog(false);

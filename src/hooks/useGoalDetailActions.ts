@@ -196,7 +196,7 @@ export function useGoalDetailActions({
       invalidateGoals();
       toast({ title: "Goal Completed! 🎉", description: "All steps have been marked as complete" });
     } catch (error: any) {
-      toast.error({ title: "Error", description: error.message || "Failed to complete goal", variant: "destructive" });
+      toast({ title: "Error", description: error.message || "Failed to complete goal", variant: "destructive" });
     }
   }, [goal, userId, setGoal, setSteps, invalidateGoals, toast]);
 
@@ -294,7 +294,7 @@ export function useGoalDetailActions({
         toast({ title: "Goal Duplicated", description: "A copy of this goal has been created." });
         navigate(`/goals/${newGoal.id}`);
       } catch (error: any) {
-        toast.error({ title: "Error", description: error.message || "Failed to duplicate goal", variant: "destructive" });
+        toast({ title: "Error", description: error.message || "Failed to duplicate goal", variant: "destructive" });
       }
     },
     [goal, steps, costItems, userId, invalidateGoals, navigate, toast],
