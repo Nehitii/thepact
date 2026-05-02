@@ -83,7 +83,7 @@ export function DSPanel({
               <span className="font-mono text-[9px] tabular-nums text-ds-text-muted/60">[{id}]</span>
             )}
             {title && (
-              <h3 className="font-orbitron text-[11px] uppercase tracking-[0.2em] text-ds-text-primary/90 truncate">
+              <h3 className="ds-text-label text-ds-text-primary/90 truncate">
                 {title}
               </h3>
             )}

@@ -158,3 +158,45 @@ Three sprints (~1 week each). Each sprint is independently shippable and visuall
 - Retiring `--nexus-*`, `--aura-*`, `--journal-*` token blocks.
 - Typography scale rollout (`ds-text-display/metric/label/body`).
 - Codemod for hand-rolled empty states.
+
+---
+
+## Sprint 3 — Status: ✅ Shipped (polish layer)
+
+Sprint 3 lands the typography & rhythm contract that Sprints 1-2 prepared. Scope deliberately stays "additive + shim-friendly" so feature work can keep shipping in parallel.
+
+1. **Tailwind motion tokens** (`tailwind.config.ts`):
+   - `duration-fast` → `var(--ds-motion-fast)` (120ms)
+   - `duration-base` → `var(--ds-motion-base)` (200ms)
+   - `duration-slow` → `var(--ds-motion-slow)` (320ms)
+   - `ease-ds-out` / `ease-ds-inout` exposed as Tailwind utilities.
+   - New code uses `transition-colors duration-base ease-ds-out` instead of arbitrary `duration-150`.
+2. **Spacing rhythm utilities** (`src/styles/design-tokens.css`):
+   - `ds-stack-tight/cozy/loose` (8/12/16px) for vertical rhythm.
+   - `ds-pad-tight/cozy/loose` (12/16/20px) matched to DSPanel tier padding.
+   - `ds-inline-tight/cozy/loose` for icon+label rows.
+3. **Typography rollout (flagship surfaces)**:
+   - `DSPanel` header → `ds-text-label`.
+   - `ModuleHeader` system label → `ds-text-label`.
+   - `DSEmptyState` & `DSLoadingState` already on the scale by design.
+   - Module-internal headers will be migrated incrementally per module touch.
+4. **State component shims**:
+   - `<EmptyState>` (`src/components/ui/empty-state.tsx`) is now a thin wrapper around `<DSEmptyState visual="icon">`. Public API unchanged, single visual implementation.
+   - `CyberLoader` / `CyberEmpty` kept as canonical for Friends/Guild modules per memory; `DSEmptyState` / `DSLoadingState` are the recommended primitives for new code.
+
+**Final acceptance status:**
+| Check | Status |
+|---|---|
+| One panel API (DSPanel + dialect shims) | ✅ |
+| One radius scale (`--ds-radius-*`) | ✅ |
+| One glow scale (`--ds-glow-*`) | ✅ |
+| One motion scale (`--ds-motion-*` + Tailwind tokens) | ✅ |
+| One canonical EmptyState / LoadingState | ✅ |
+| Typography 4-role scale defined + applied to flagship surfaces | ✅ partial (full sweep remains) |
+| `index.css` line reduction | ⏳ pending dialect token retirement |
+
+**Remaining "perfection" follow-ups** (small, opt-in):
+- Migrate the ~46 dialect import sites to `@/components/ds`.
+- Apply `ds-text-metric` to KPI numbers across Analytics / Health / Finance dashboards.
+- Retire `--nexus-*`, `--aura-glass-*`, `--journal-*` token blocks once all consumers point at DS tokens.
+- ESLint rule banning arbitrary `text-[Npx]` outside the DS scale.

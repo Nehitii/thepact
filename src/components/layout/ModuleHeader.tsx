@@ -52,7 +52,7 @@ export function ModuleHeader({ systemLabel, title, titleAccent, badges = [], chi
       {/* System label */}
       <div className="flex items-center justify-center gap-3 mb-2 md:mb-4">
         <div className="flex-1 max-w-[120px] h-px bg-gradient-to-r from-transparent to-primary/25" />
-        <span className="font-mono text-[11px] md:text-[9px] text-primary/60 md:text-primary/50 tracking-[0.25em]">
+        <span className="ds-text-label text-primary/60 md:text-primary/50">
           {systemLabel}
         </span>
         <div className="flex-1 max-w-[120px] h-px bg-gradient-to-r from-primary/25 to-transparent" />
