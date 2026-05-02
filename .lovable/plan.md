@@ -139,3 +139,22 @@ Three sprints (~1 week each). Each sprint is independently shippable and visuall
 - The light theme exists but is severely under-tested (most module dialects only define dark). Convergence to DS automatically fixes this since DS has explicit `.light` mirror.
 - No backend / Supabase changes required — this is purely a front-end / CSS / primitive-refactor effort.
 - Risk mitigation: each retired dialect keeps a thin re-export shim for one sprint so feature components can migrate gradually without breaking.
+
+---
+
+## Sprint 2 — Status: ✅ Shipped
+
+**Convergence achieved without breaking any module identity:**
+
+1. **CSS token convergence** — `.prism-panel` now consumes `--ds-radius-sm`, `--ds-motion-base`, `--ds-ease-out`, `--ds-glow-md` (hover). Aura keeps its signature 20px radius (intentional brand differentiator). HUD/Health surfaces unchanged for now (heavy custom shadow API; deferred to Sprint 3 codemod).
+2. **State primitives created**:
+   - `DSEmptyState` (`src/components/ds/DSEmptyState.tsx`) — variants `radar | scope | wave | icon`, accent-aware via `--ds-current-accent`. Replaces `PrismEmptyCTA` / `EmptyState` / `CyberEmpty` for new code.
+   - `DSLoadingState` (`src/components/ds/DSLoadingState.tsx`) — single canonical spinner with `compact` mode, `role="status"` + `aria-live="polite"`. Replaces `CyberLoader` / ad-hoc spinners.
+3. **Dialect shim re-exports** added to `src/components/ds/index.ts`: `PrismPanel`, `PrismEmptyCTA`, `AuraWidget`, `HUDFrame`, `ModuleHeader` are now importable from the canonical barrel `@/components/ds`. Existing direct imports keep working unchanged. **All new code MUST import from `@/components/ds`**.
+4. **Memory updated** — `mem://design/pacte-os-design-system` reflects the new contract.
+
+**Deferred to Sprint 3** (per execution choice "shims first, delete later"):
+- Migrating ~46 import sites away from `@/components/analytics/PrismPanel` etc. to `@/components/ds`.
+- Retiring `--nexus-*`, `--aura-*`, `--journal-*` token blocks.
+- Typography scale rollout (`ds-text-display/metric/label/body`).
+- Codemod for hand-rolled empty states.

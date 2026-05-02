@@ -23,3 +23,21 @@ export { DSDivider } from "./DSDivider";
 export { DSDataNoise } from "./DSDataNoise";
 export { DSTooltip } from "./DSTooltip";
 export { DSCornerBrackets } from "./DSCornerBrackets";
+
+/* ─── Sprint 2 — Canonical state primitives ─────────────────── */
+export { DSEmptyState } from "./DSEmptyState";
+export { DSLoadingState } from "./DSLoadingState";
+
+/* ─── Sprint 2 — Dialect re-export shims ─────────────────────────
+ * Module dialects (Prism / Aura / HUD) keep their distinctive
+ * personalities and rich APIs, but new code should import them from
+ * the canonical DS barrel so the migration to a single API surface
+ * can complete in Sprint 3. Existing imports keep working unchanged.
+ * ───────────────────────────────────────────────────────────── */
+export { PrismPanel } from "@/components/analytics/PrismPanel";
+export type { PrismPanelStatus, PrismPanelTier } from "@/components/analytics/PrismPanel";
+export { PrismEmptyCTA } from "@/components/analytics/PrismEmptyCTA";
+export { AuraWidget } from "@/components/finance/aura/AuraWidget";
+export { HUDFrame } from "@/components/health/HUDFrame";
+export { ModuleHeader } from "@/components/layout/ModuleHeader";
+export type { ModuleHeaderBadge } from "@/components/layout/ModuleHeader";

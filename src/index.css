@@ -2760,14 +2760,17 @@ All colors MUST be HSL.
     backdrop-filter: blur(18px) saturate(135%);
     -webkit-backdrop-filter: blur(18px) saturate(135%);
     border: 1px solid hsl(var(--prism-panel-border) / 0.15);
-    border-radius: 4px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    border-radius: var(--ds-radius-sm);
+    transition:
+      border-color var(--ds-motion-base) var(--ds-ease-out),
+      box-shadow   var(--ds-motion-base) var(--ds-ease-out),
+      transform    var(--ds-motion-base) var(--ds-ease-out);
   }
   .prism-panel:hover {
     border-color: hsl(var(--prism-panel-border) / 0.4);
     box-shadow:
       0 0 0 1px hsl(var(--prism-cyan) / 0.15),
-      0 0 30px -10px hsl(var(--prism-cyan) / 0.3);
+      var(--ds-glow-md);
     transform: translateY(-2px);
   }
   /* Tier: primary — signature visualizations, heightened presence */
