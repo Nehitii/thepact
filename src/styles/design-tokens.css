@@ -244,6 +244,27 @@
   top: 0.5rem;
 }
 
+/* ════════════════════════════════════════════════════════════
+   Pacte OS — Spacing rhythm utilities (Sprint 3)
+   Use these instead of ad-hoc `space-y-*` / `p-*` combos so
+   vertical rhythm and inner padding stay synchronized.
+   ──────────────────────────────────────────────────────────── */
+
+/* Vertical stack spacing (children separated by gap) */
+.ds-stack-tight > * + * { margin-top: 0.5rem; }   /*  8px */
+.ds-stack-cozy  > * + * { margin-top: 0.75rem; }  /* 12px */
+.ds-stack-loose > * + * { margin-top: 1rem; }     /* 16px */
+
+/* Inner padding scale (matches DSPanel tier system) */
+.ds-pad-tight { padding: var(--ds-pad-tight); }   /* 12px */
+.ds-pad-cozy  { padding: var(--ds-pad-cozy); }    /* 16px */
+.ds-pad-loose { padding: var(--ds-pad-loose); }   /* 20px */
+
+/* Horizontal inline spacing (icon + text rows) */
+.ds-inline-tight { display: inline-flex; align-items: center; gap: 0.375rem; }
+.ds-inline-cozy  { display: inline-flex; align-items: center; gap: 0.5rem; }
+.ds-inline-loose { display: inline-flex; align-items: center; gap: 0.75rem; }
+
 /* Strengthen reduced-motion contract: also kill pulse-dot, ring rotation */
 @media (prefers-reduced-motion: reduce) {
   .ds-flicker,
