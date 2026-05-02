@@ -93,6 +93,15 @@ export default {
         rajdhani: ["Rajdhani", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
       },
+      transitionDuration: {
+        fast: "var(--ds-motion-fast)",
+        base: "var(--ds-motion-base)",
+        slow: "var(--ds-motion-slow)",
+      },
+      transitionTimingFunction: {
+        "ds-out":   "var(--ds-ease-out)",
+        "ds-inout": "var(--ds-ease-inout)",
+      },
       keyframes: {
         "accordion-down": {
           from: {
