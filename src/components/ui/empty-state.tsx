@@ -1,5 +1,5 @@
 import { LucideIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { DSEmptyState } from "@/components/ds/DSEmptyState";
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -11,22 +11,21 @@ interface EmptyStateProps {
   };
 }
 
+/**
+ * @deprecated — Use `<DSEmptyState>` from `@/components/ds` directly.
+ * This is now a thin compatibility shim so existing call sites keep working
+ * while the migration to the canonical DS empty state completes in the next pass.
+ */
 export function EmptyState({ icon: Icon, title, description, action }: EmptyStateProps) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center text-center py-8">
-      <div className="relative inline-block mb-4">
-        <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-        <Icon className="w-12 h-12 text-primary/50 relative z-10" />
-      </div>
-      <h3 className="font-orbitron text-lg text-primary/80">{title}</h3>
-      {description && (
-        <p className="text-sm text-muted-foreground mt-2 font-rajdhani max-w-sm">{description}</p>
-      )}
-      {action && (
-        <Button onClick={action.onClick} className="mt-4" variant="outline">
-          {action.label}
-        </Button>
-      )}
-    </div>
+    <DSEmptyState
+      visual="icon"
+      icon={Icon}
+      message={title}
+      description={description}
+      ctaLabel={action?.label}
+      onClick={action?.onClick}
+      className="flex-1 py-8"
+    />
   );
 }
