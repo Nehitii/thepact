@@ -98,6 +98,7 @@ const moduleConfig: Record<string, NavItem & { category: NavCategory }> = {
 const settingsItems = [
   { to: "/profile", icon: UserCircle, label: "Account" },
   { to: "/profile/bounded", icon: User, label: "Bounded" },
+  { to: "/profile/life-areas", icon: Compass, label: "Life Areas" },
   { to: "/profile/pact-settings", icon: Settings, label: "Pact Rules" },
   { to: "/profile/display-sound", icon: Volume2, label: "A/V Config" },
   { to: "/profile/notifications", icon: Bell, label: "Alerts" },
