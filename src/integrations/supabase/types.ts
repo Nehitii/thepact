@@ -349,6 +349,7 @@ export type Database = {
           created_at: string
           description: string
           id: string
+          life_area_id: string | null
           note: string | null
           source: string
           transaction_date: string
@@ -362,6 +363,7 @@ export type Database = {
           created_at?: string
           description: string
           id?: string
+          life_area_id?: string | null
           note?: string | null
           source?: string
           transaction_date?: string
@@ -375,6 +377,7 @@ export type Database = {
           created_at?: string
           description?: string
           id?: string
+          life_area_id?: string | null
           note?: string | null
           source?: string
           transaction_date?: string
@@ -387,6 +390,13 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_transactions_life_area_id_fkey"
+            columns: ["life_area_id"]
+            isOneToOne: false
+            referencedRelation: "life_areas"
             referencedColumns: ["id"]
           },
         ]
@@ -1168,6 +1178,7 @@ export type Database = {
           is_dynamic_super: boolean | null
           is_focus: boolean | null
           is_locked: boolean
+          life_area_id: string | null
           name: string
           notes: string | null
           pact_id: string
@@ -1195,6 +1206,7 @@ export type Database = {
           is_dynamic_super?: boolean | null
           is_focus?: boolean | null
           is_locked?: boolean
+          life_area_id?: string | null
           name: string
           notes?: string | null
           pact_id: string
@@ -1222,6 +1234,7 @@ export type Database = {
           is_dynamic_super?: boolean | null
           is_focus?: boolean | null
           is_locked?: boolean
+          life_area_id?: string | null
           name?: string
           notes?: string | null
           pact_id?: string
@@ -1235,6 +1248,13 @@ export type Database = {
           validated_steps?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "goals_life_area_id_fkey"
+            columns: ["life_area_id"]
+            isOneToOne: false
+            referencedRelation: "life_areas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "goals_pact_id_fkey"
             columns: ["pact_id"]
@@ -1737,6 +1757,7 @@ export type Database = {
           created_at: string | null
           goal_id: string
           id: string
+          life_area_id: string | null
           log_date: string
           streak_count: number | null
           user_id: string
@@ -1747,6 +1768,7 @@ export type Database = {
           created_at?: string | null
           goal_id: string
           id?: string
+          life_area_id?: string | null
           log_date: string
           streak_count?: number | null
           user_id: string
@@ -1757,6 +1779,7 @@ export type Database = {
           created_at?: string | null
           goal_id?: string
           id?: string
+          life_area_id?: string | null
           log_date?: string
           streak_count?: number | null
           user_id?: string
@@ -1767,6 +1790,13 @@ export type Database = {
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "habit_logs_life_area_id_fkey"
+            columns: ["life_area_id"]
+            isOneToOne: false
+            referencedRelation: "life_areas"
             referencedColumns: ["id"]
           },
         ]
@@ -2054,6 +2084,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      life_areas: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string
+          id: string
+          name: string
+          sort_order: number
+          updated_at: string
+          user_id: string
+          weight: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          name: string
+          sort_order?: number
+          updated_at?: string
+          user_id: string
+          weight?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          user_id?: string
+          weight?: number
+        }
+        Relationships: []
       }
       monthly_finance_validations: {
         Row: {
@@ -3624,6 +3690,36 @@ export type Database = {
           id?: string
           last_used_at?: string | null
           token_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_values: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          rank: number
+          statement: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label: string
+          rank?: number
+          statement?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          rank?: number
+          statement?: string | null
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
