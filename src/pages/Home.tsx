@@ -14,6 +14,7 @@ import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
 import { MonitoringGlobalPanel } from "@/components/home/MonitoringGlobalPanel";
 import { DifficultyScalePanel } from "@/components/home/DifficultyScalePanel";
+import { LifeAreasBalancePanel } from "@/components/home/LifeAreasBalancePanel";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 
 // Hooks
@@ -289,6 +290,7 @@ export default function Home() {
               customDifficultyName={customDifficultyName}
               customDifficultyColor={customDifficultyColor}
             />
+            <LifeAreasBalancePanel />
           </div>
         </details>
 
