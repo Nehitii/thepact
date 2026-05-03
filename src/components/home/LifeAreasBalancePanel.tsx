@@ -1,8 +1,9 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Compass, Plus } from "lucide-react";
+import { Compass } from "lucide-react";
 import { useLifeAreas } from "@/hooks/useLifeAreas";
 import { useGoals } from "@/hooks/useGoals";
+import { useActivePact } from "@/hooks/useActivePact";
 import { DSPanel, DSEmptyState } from "@/components/ds";
 
 /**
@@ -12,7 +13,8 @@ import { DSPanel, DSEmptyState } from "@/components/ds";
  */
 export function LifeAreasBalancePanel() {
   const { areas, isLoading } = useLifeAreas();
-  const { goals } = useGoals();
+  const { pact } = useActivePact();
+  const { data: goals = [] } = useGoals(pact?.id);
   const navigate = useNavigate();
 
   const distribution = useMemo(() => {
@@ -30,14 +32,14 @@ export function LifeAreasBalancePanel() {
 
   if (areas.length === 0) {
     return (
-      <DSPanel tier="secondary" title="Équilibre des domaines" icon={<Compass className="h-4 w-4" />}>
+      <DSPanel tier="secondary" title="Équilibre des domaines">
         <DSEmptyState
-          motif="scope"
+          visual="scope"
           accent="primary"
-          headline="Définis tes domaines de vie"
-          body="Pivot d'alignement pour goals, habits et finance."
+          message="DOMAINES NON DÉFINIS"
+          description="Pivot d'alignement pour goals, habits et finance."
           ctaLabel="Configurer"
-          onCta={() => navigate("/profile/life-areas")}
+          onClick={() => navigate("/profile/life-areas")}
         />
       </DSPanel>
     );
@@ -47,7 +49,6 @@ export function LifeAreasBalancePanel() {
     <DSPanel
       tier="secondary"
       title="Équilibre des domaines"
-      icon={<Compass className="h-4 w-4" />}
       headerAction={
         <button
           onClick={() => navigate("/profile/life-areas")}
