@@ -36,6 +36,7 @@ import {
   TerminalSquare,
   Crown,
   CalendarDays,
+  Compass,
 } from "lucide-react";
 import {
   DropdownMenu,
