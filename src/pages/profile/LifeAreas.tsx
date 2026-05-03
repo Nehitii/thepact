@@ -51,7 +51,7 @@ export default function LifeAreas() {
       subtitle="ALIGNMENT CORE"
     >
       {/* ─── Life Areas ───────────────────────────── */}
-      <CyberPanel title="Domaines de vie" subtitle="Pivot d'attribution pour Goals, Habits & Finance">
+      <CyberPanel title="Domaines de vie" statusText="Pivot d'attribution Goals · Habits · Finance">
         <div className="space-y-4">
           {isLoading ? (
             <div className="flex justify-center py-8">
@@ -98,7 +98,7 @@ export default function LifeAreas() {
       </CyberPanel>
 
       {/* ─── User Values ──────────────────────────── */}
-      <CyberPanel title="Tes valeurs" subtitle="Boussole personnelle (3 à 5 recommandées)">
+      <CyberPanel title="Tes valeurs" statusText="Boussole personnelle · 3 à 5 recommandées">
         <div className="space-y-4">
           {valuesLoading ? (
             <div className="flex justify-center py-8">
