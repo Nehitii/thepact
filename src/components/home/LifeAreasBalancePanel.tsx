@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Compass } from "lucide-react";
 import { useLifeAreas } from "@/hooks/useLifeAreas";
 import { useGoals } from "@/hooks/useGoals";
-import { useActivePact } from "@/hooks/useActivePact";
+import { usePact } from "@/hooks/usePact";
+import { useAuth } from "@/contexts/AuthContext";
 import { DSPanel, DSEmptyState } from "@/components/ds";
 
 /**
@@ -13,7 +14,8 @@ import { DSPanel, DSEmptyState } from "@/components/ds";
  */
 export function LifeAreasBalancePanel() {
   const { areas, isLoading } = useLifeAreas();
-  const { pact } = useActivePact();
+  const { user } = useAuth();
+  const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
   const navigate = useNavigate();
 
