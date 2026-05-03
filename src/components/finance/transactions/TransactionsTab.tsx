@@ -64,7 +64,7 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
   }, [accountFilter]);
 
   const filtered = useMemo(() => {
-    return transactions.filter((tx: BankTransaction) => {
+    return (transactions as BankTransaction[]).filter((tx) => {
       if (typeFilter !== 'all' && tx.transaction_type !== typeFilter) return false;
       if (selectedAccountId !== 'all' && tx.account_id !== selectedAccountId) return false;
       if (search && !tx.description.toLowerCase().includes(search.toLowerCase())) return false;
