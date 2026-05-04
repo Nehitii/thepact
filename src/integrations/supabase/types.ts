@@ -957,6 +957,100 @@ export type Database = {
         }
         Relationships: []
       }
+      decisions: {
+        Row: {
+          actual_outcome: string | null
+          confidence: number | null
+          context: string | null
+          created_at: string
+          decided_at: string
+          decision_text: string
+          expected_outcome: string | null
+          hypothesis: string | null
+          id: string
+          lesson: string | null
+          life_area_id: string | null
+          related_goal_id: string | null
+          related_review_id: string | null
+          reversibility: string | null
+          review_at: string | null
+          reviewed_at: string | null
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          actual_outcome?: string | null
+          confidence?: number | null
+          context?: string | null
+          created_at?: string
+          decided_at?: string
+          decision_text: string
+          expected_outcome?: string | null
+          hypothesis?: string | null
+          id?: string
+          lesson?: string | null
+          life_area_id?: string | null
+          related_goal_id?: string | null
+          related_review_id?: string | null
+          reversibility?: string | null
+          review_at?: string | null
+          reviewed_at?: string | null
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          actual_outcome?: string | null
+          confidence?: number | null
+          context?: string | null
+          created_at?: string
+          decided_at?: string
+          decision_text?: string
+          expected_outcome?: string | null
+          hypothesis?: string | null
+          id?: string
+          lesson?: string | null
+          life_area_id?: string | null
+          related_goal_id?: string | null
+          related_review_id?: string | null
+          reversibility?: string | null
+          review_at?: string | null
+          reviewed_at?: string | null
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "decisions_life_area_id_fkey"
+            columns: ["life_area_id"]
+            isOneToOne: false
+            referencedRelation: "life_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_related_goal_id_fkey"
+            columns: ["related_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "decisions_related_review_id_fkey"
+            columns: ["related_review_id"]
+            isOneToOne: false
+            referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       finance: {
         Row: {
           created_at: string | null
@@ -2819,6 +2913,69 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          alignment_score: number | null
+          answers: Json
+          completed_at: string | null
+          created_at: string
+          highlights: string | null
+          id: string
+          life_area_scores: Json
+          lowlights: string | null
+          mood: number | null
+          next_focus: string | null
+          period_end: string
+          period_start: string
+          prompts: Json
+          started_at: string
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          alignment_score?: number | null
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          highlights?: string | null
+          id?: string
+          life_area_scores?: Json
+          lowlights?: string | null
+          mood?: number | null
+          next_focus?: string | null
+          period_end: string
+          period_start: string
+          prompts?: Json
+          started_at?: string
+          status?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          alignment_score?: number | null
+          answers?: Json
+          completed_at?: string | null
+          created_at?: string
+          highlights?: string | null
+          id?: string
+          life_area_scores?: Json
+          lowlights?: string | null
+          mood?: number | null
+          next_focus?: string | null
+          period_end?: string
+          period_start?: string
+          prompts?: Json
+          started_at?: string
+          status?: string
+          type?: string
           updated_at?: string
           user_id?: string
         }
