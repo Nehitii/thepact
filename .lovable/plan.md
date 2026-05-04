@@ -18,11 +18,19 @@ Prérequis pour tout le reste : sans Life Areas + Values, l'IA et les analytics 
 - Settings → Domaines & Valeurs (CRUD).
 
 ### 1.2 Subscription tiers (1 sprint)
-- Tables `subscription_plans` (free / pro / sovereign) et `user_subscriptions`.
-- Hook `useEntitlements()` avec gates fonctionnels (IA coach, intégrations, exports, slots illimités).
-- UI paywall premium (DSPanel + CTA Shop).
-- Activation Stripe via `payments--enable_stripe_payments`.
+### 1.2 Subscription tiers — **DIFFÉRÉE** (décision user)
+Décisions verrouillées (à appliquer quand on reprend) :
+- **Provider :** Paddle (Seamless, MoR, 5%+0,50€) — éligibilité validée.
+- **Matrice :**
+  - **Free (généreux)** : Goals, Habits, Health, Finance manuel, Community, Achievements core.
+  - **Pro (~7€/mois)** : AI Coach, connecteurs banque + santé, exports PDF, calendrier 2-way.
+  - **Sovereign (~19€/mois)** : tout Pro + sessions humaines 1:1 + early access.
+- Tables `subscription_plans`, `user_subscriptions`, `feature_entitlements` + RPC `has_entitlement`.
+- Hook `useEntitlements()`, composant `<PaywallGate />`, page `/pricing`.
+- Webhook edge function Paddle (`subscription.created/updated/canceled`).
 - Mode admin contourne tous les gates.
+
+> Voir `mem://monetization/subscription-tiers-deferred` pour le détail figé.
 
 ### 1.3 Observabilité & feature flags (transverse, 0.5 sprint)
 - Sentry (front + edge functions).
