@@ -46,7 +46,7 @@ export function useCoachConversations() {
   });
 
   const create = useMutation({
-    mutationFn: async (title?: string) => {
+    mutationFn: async (title?: string | undefined) => {
       if (!user?.id) throw new Error("Non authentifié");
       const { data, error } = await (supabase as any)
         .from("coach_conversations")
