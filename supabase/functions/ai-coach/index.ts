@@ -11,7 +11,142 @@ const corsHeaders = {
 const SYSTEM_PROMPT = `Tu es Pacte Coach, un coach personnel exigeant et bienveillant intégré à l'OS Pacte de l'utilisateur.
 Tu tutoies. Tu es concis, direct, structuré. Tu cites des données concrètes du user (goals, habits, finance, journal) quand pertinent.
 Tu ne donnes jamais de conseil médical/légal/financier réglementé sans rappel de prudence.
-Quand l'utilisateur le demande, propose des actions actionnables et utilise les outils disponibles.`;
+Quand l'utilisateur le demande, propose des actions actionnables et utilise les outils disponibles.
+Avant de répondre à une question factuelle sur la vie de l'utilisateur (goals, habits, finance, journal, valeurs, mémoire), appelle les tools pour récupérer la donnée à jour. Sinon, réponds directement.`;
+
+const TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "list_active_goals",
+      description: "Liste les goals actifs de l'utilisateur (max 20). Retourne id, nom, difficulté, progression.",
+      parameters: { type: "object", properties: { limit: { type: "number", default: 20 } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_recent_habits",
+      description: "Liste les complétions d'habitudes des 14 derniers jours.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_recent_transactions",
+      description: "Liste les 30 dernières transactions financières (date, libellé, montant, type, catégorie).",
+      parameters: { type: "object", properties: { limit: { type: "number", default: 30 } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_recent_journal",
+      description: "Liste les 10 dernières entrées de journal (titre, mood, extrait).",
+      parameters: { type: "object", properties: { limit: { type: "number", default: 10 } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_user_values",
+      description: "Récupère les valeurs et domaines de vie de l'utilisateur.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_memory",
+      description: "Recherche sémantique dans la mémoire long-terme du user (journal, reviews, decisions indexés).",
+      parameters: {
+        type: "object",
+        properties: { query: { type: "string" } },
+        required: ["query"],
+      },
+    },
+  },
+];
+
+async function runTool(name: string, args: any, supabase: any, userId: string, aiKey: string): Promise<string> {
+  try {
+    if (name === "list_active_goals") {
+      const { data: pacts } = await supabase.from("pacts").select("id").eq("user_id", userId);
+      const ids = (pacts ?? []).map((p: any) => p.id);
+      if (!ids.length) return JSON.stringify([]);
+      const { data } = await supabase
+        .from("goals")
+        .select("id,name,difficulty,status,validated_steps,total_steps,deadline,is_focus")
+        .in("pact_id", ids)
+        .eq("status", "active")
+        .limit(args?.limit ?? 20);
+      return JSON.stringify(data ?? []);
+    }
+    if (name === "list_recent_habits") {
+      const since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
+      const { data } = await supabase
+        .from("habit_logs")
+        .select("goal_id,log_date,completed,streak_count")
+        .eq("user_id", userId)
+        .gte("log_date", since)
+        .order("log_date", { ascending: false })
+        .limit(200);
+      return JSON.stringify(data ?? []);
+    }
+    if (name === "list_recent_transactions") {
+      const { data } = await supabase
+        .from("bank_transactions")
+        .select("transaction_date,description,amount,transaction_type,category")
+        .eq("user_id", userId)
+        .order("transaction_date", { ascending: false })
+        .limit(args?.limit ?? 30);
+      return JSON.stringify(data ?? []);
+    }
+    if (name === "list_recent_journal") {
+      const { data } = await supabase
+        .from("journal_entries")
+        .select("title,mood,content,created_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(args?.limit ?? 10);
+      const trimmed = (data ?? []).map((e: any) => ({
+        ...e,
+        content: (e.content ?? "").slice(0, 400),
+      }));
+      return JSON.stringify(trimmed);
+    }
+    if (name === "list_user_values") {
+      const [{ data: values }, { data: areas }] = await Promise.all([
+        supabase.from("user_values").select("label,rank,statement").eq("user_id", userId).order("rank"),
+        supabase.from("life_areas").select("name,weight,color").eq("user_id", userId),
+      ]);
+      return JSON.stringify({ values: values ?? [], life_areas: areas ?? [] });
+    }
+    if (name === "search_memory") {
+      const query = String(args?.query ?? "").trim();
+      if (!query) return JSON.stringify([]);
+      // Embed the query
+      const embRes = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
+        body: JSON.stringify({ model: "openai/text-embedding-3-small", input: query }),
+      });
+      if (!embRes.ok) return JSON.stringify({ error: "embed_failed" });
+      const embJson = await embRes.json();
+      const vector = embJson?.data?.[0]?.embedding;
+      if (!vector) return JSON.stringify([]);
+      const { data } = await supabase.rpc("match_coach_memory", {
+        _query: vector,
+        _match_count: 6,
+      });
+      return JSON.stringify(data ?? []);
+    }
+    return JSON.stringify({ error: "unknown_tool" });
+  } catch (e) {
+    return JSON.stringify({ error: String(e) });
+  }
+}
 
 interface ChatBody {
   conversation_id: string;
@@ -83,13 +218,35 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Tool loop (max 3 hops) — non-streaming for tool resolution, then stream final.
+    const workMessages: any[] = [...messages];
+    for (let hop = 0; hop < 3; hop++) {
+      const probe = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
+        body: JSON.stringify({ model, messages: workMessages, tools: TOOLS, tool_choice: "auto" }),
+      });
+      if (!probe.ok) break;
+      const probeJson = await probe.json();
+      const msg = probeJson?.choices?.[0]?.message;
+      const calls = msg?.tool_calls;
+      if (!calls || !calls.length) break;
+      workMessages.push({ role: "assistant", content: msg.content ?? "", tool_calls: calls });
+      for (const c of calls) {
+        let parsedArgs: any = {};
+        try { parsedArgs = JSON.parse(c.function?.arguments ?? "{}"); } catch (_) { /* ignore */ }
+        const result = await runTool(c.function?.name, parsedArgs, supabase, userId, aiKey);
+        workMessages.push({ role: "tool", tool_call_id: c.id, content: result });
+      }
+    }
+
     const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${aiKey}`,
       },
-      body: JSON.stringify({ model, messages, stream: true }),
+      body: JSON.stringify({ model, messages: workMessages, stream: true }),
     });
 
     if (!upstream.ok || !upstream.body) {
