@@ -5,12 +5,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { Bot, Send, Plus, X, MessageSquare, Loader2 } from "lucide-react";
+import { Bot, Send, Plus, X, MessageSquare, Loader2, Brain } from "lucide-react";
 import {
   useCoachConversations,
   useCoachMessages,
   useCoachStream,
 } from "@/hooks/useCoach";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -44,6 +46,22 @@ export function CoachPanel({ open, onClose }: Props) {
   const handleNew = async () => {
     const conv = await create("Nouvelle conversation");
     setActiveId(conv.id);
+  };
+
+  const [indexing, setIndexing] = useState(false);
+  const handleIndex = async () => {
+    if (indexing) return;
+    setIndexing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("coach-index-memory", { body: {} });
+      if (error) throw error;
+      const n = (data as any)?.indexed ?? 0;
+      toast.success(n ? `${n} souvenirs indexés.` : "Mémoire déjà à jour.");
+    } catch (e: any) {
+      toast.error(e?.message ?? "Erreur indexation");
+    } finally {
+      setIndexing(false);
+    }
   };
 
   const handleSend = async () => {
@@ -100,6 +118,9 @@ export function CoachPanel({ open, onClose }: Props) {
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <Button size="icon" variant="ghost" onClick={handleIndex} disabled={indexing} aria-label="Indexer la mémoire">
+                  {indexing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Brain className="h-4 w-4" />}
+                </Button>
                 <Button size="icon" variant="ghost" onClick={handleNew} aria-label="Nouvelle conversation">
                   <Plus className="h-4 w-4" />
                 </Button>
