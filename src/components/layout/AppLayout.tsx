@@ -2,7 +2,9 @@ import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette } from "@/components/CommandPalette";
-import { Suspense } from "react";
+import { CoachPanel } from "@/components/coach/CoachPanel";
+import { Suspense, useEffect, useState } from "react";
+import { Bot } from "lucide-react";
 
 const PageFallback = () => (
   <div className="flex min-h-screen items-center justify-center bg-background">
@@ -11,6 +13,19 @@ const PageFallback = () => (
 );
 
 export function AppLayout() {
+  const [coachOpen, setCoachOpen] = useState(false);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        setCoachOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <div className="flex min-h-screen w-full relative">
       <CommandPalette />
@@ -25,6 +40,18 @@ export function AppLayout() {
       </div>
 
       <MobileBottomNav />
+
+      {/* Floating Coach trigger */}
+      <button
+        type="button"
+        onClick={() => setCoachOpen(true)}
+        aria-label="Ouvrir le Coach IA (Cmd+J)"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[80] h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:scale-105 transition-transform flex items-center justify-center"
+      >
+        <Bot className="h-5 w-5" />
+      </button>
+
+      <CoachPanel open={coachOpen} onClose={() => setCoachOpen(false)} />
     </div>
   );
 }

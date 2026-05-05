@@ -48,14 +48,14 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - Archive consultable filtrée par type + recherche.
 - Decision log dédié (table `decisions` : hypothèse, contexte, résultat, leçon, date révision).
 
-### 2.2 AI Coach conversationnel (2 sprints)
-- Edge function `ai-coach` streaming (lovable-ai gateway, gpt-5/gemini-2.5-pro).
-- Table `coach_conversations` + `coach_messages` (full history sent à chaque tour).
-- Tool-calling : lecture goals/habits/transactions/journal, création de tâches, planification.
-- Mémoire vectorielle (embeddings via lovable-ai, pgvector) sur journal + reviews.
-- UI : panneau latéral persistant (slide-in droite), accessible depuis n'importe quelle page (Cmd+J).
-- Pattern detection nightly cron (insights pushés en notifications).
-- Goal decomposition assistée (bouton dans NewGoal → suggestion steps + habits).
+### 2.2 AI Coach conversationnel — **EN COURS**
+- ✅ Edge function `ai-coach` streaming (lovable-ai gateway, Gemini 2.5 Flash par défaut).
+- ✅ Tables `coach_conversations`, `coach_messages`, `coach_embeddings` (pgvector + RPC `match_coach_memory`).
+- ✅ UI : panneau latéral global Cmd+J + bouton flottant.
+- ⏳ Tool-calling : lecture goals/habits/transactions/journal, création de tâches.
+- ⏳ Mémoire vectorielle : indexation cron sur journal + reviews + decisions.
+- ⏳ Pattern detection nightly cron (insights pushés en notifications).
+- ⏳ Goal decomposition assistée (bouton dans NewGoal → suggestion steps + habits).
 
 ---
 
