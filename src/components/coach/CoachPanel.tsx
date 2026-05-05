@@ -42,7 +42,7 @@ export function CoachPanel({ open, onClose }: Props) {
   }, [messages.length, streamText]);
 
   const handleNew = async () => {
-    const conv = await create(undefined as any);
+    const conv = await create("Nouvelle conversation");
     setActiveId(conv.id);
   };
 
