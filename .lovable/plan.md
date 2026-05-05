@@ -52,8 +52,10 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - ✅ Edge function `ai-coach` streaming (lovable-ai gateway, Gemini 2.5 Flash par défaut).
 - ✅ Tables `coach_conversations`, `coach_messages`, `coach_embeddings` (pgvector + RPC `match_coach_memory`).
 - ✅ UI : panneau latéral global Cmd+J + bouton flottant.
-- ⏳ Tool-calling : lecture goals/habits/transactions/journal, création de tâches.
-- ⏳ Mémoire vectorielle : indexation cron sur journal + reviews + decisions.
+- ✅ Tool-calling lecture : `list_active_goals`, `list_recent_habits`, `list_recent_transactions`, `list_recent_journal`, `list_user_values`, `search_memory` (loop max 3 hops, puis stream final).
+- ✅ Mémoire vectorielle : edge function `coach-index-memory` (per-user via JWT, ou cron via `CRON_SECRET`) — embeds `openai/text-embedding-3-small`, sources : journal, reviews, decisions. Bouton 🧠 dans le panneau Coach.
+- ⏳ Cron horaire `coach-index-memory` (à brancher via `pg_cron` quand le secret CRON_SECRET sera défini).
+- ⏳ Tool-calling write : création de goals/steps/todos depuis la conversation.
 - ⏳ Pattern detection nightly cron (insights pushés en notifications).
 - ⏳ Goal decomposition assistée (bouton dans NewGoal → suggestion steps + habits).
 
