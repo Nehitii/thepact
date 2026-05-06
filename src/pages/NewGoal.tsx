@@ -722,10 +722,29 @@ export default function NewGoal() {
                   <div className="space-y-6">
                     {goalType === "normal" ? (
                       <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                          <ListOrdered className="h-4 w-4" />
-                          Steps ({stepItems.length}/20)
-                        </Label>
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                            <ListOrdered className="h-4 w-4" />
+                            Steps ({stepItems.length}/20)
+                          </Label>
+                          {aiDecomposeEnabled && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={handleAiDecompose}
+                              disabled={aiDecomposing || !name.trim()}
+                              className="gap-1.5"
+                            >
+                              {aiDecomposing ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <SparklesIcon className="h-3.5 w-3.5" />
+                              )}
+                              AI Decompose
+                            </Button>
+                          )}
+                        </div>
                         <EditStepsList
                           items={stepItems}
                           onItemsChange={(items) => {
