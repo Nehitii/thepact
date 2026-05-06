@@ -43,6 +43,8 @@ import { TemplateBrowser } from "@/components/goals/TemplateBrowser";
 import { GoalTemplate } from "@/hooks/useGoalTemplates";
 import { z } from "zod";
 import { motion } from "framer-motion";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
+import { Sparkles as SparklesIcon, Loader2 } from "lucide-react";
 
 // ... (Le schéma Zod reste inchangé)
 const goalSchema = z.object({
@@ -106,6 +108,39 @@ export default function NewGoal() {
 
   // Template browser state
   const [templateBrowserOpen, setTemplateBrowserOpen] = useState(false);
+  const { enabled: aiDecomposeEnabled } = useFeatureFlag("goal_decompose_ai");
+  const [aiDecomposing, setAiDecomposing] = useState(false);
+
+  const handleAiDecompose = async () => {
+    if (!name.trim()) {
+      toast({ title: "Renseigne d'abord un nom", variant: "destructive" });
+      return;
+    }
+    setAiDecomposing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("goal-decompose", {
+        body: { name, description: notes, deadline, difficulty },
+      });
+      if (error) throw error;
+      const steps = (data?.steps ?? []) as Array<{ title: string }>;
+      if (!steps.length) throw new Error("Aucune étape suggérée");
+      const items: EditStepItem[] = steps.slice(0, 20).map((s, i) => ({
+        key: `ai-${Date.now()}-${i}`,
+        name: s.title,
+      }));
+      setStepItems(items);
+      setStepCount(items.length);
+      if (data?.rationale) {
+        toast({ title: "Décomposition IA appliquée", description: data.rationale });
+      } else {
+        toast({ title: "Décomposition IA appliquée" });
+      }
+    } catch (e: any) {
+      toast({ title: "Échec décomposition IA", description: e?.message ?? String(e), variant: "destructive" });
+    } finally {
+      setAiDecomposing(false);
+    }
+  };
 
   const handleTemplateSelect = (template: GoalTemplate) => {
     setName(template.name);
@@ -687,10 +722,29 @@ export default function NewGoal() {
                   <div className="space-y-6">
                     {goalType === "normal" ? (
                       <div className="space-y-3">
-                        <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
-                          <ListOrdered className="h-4 w-4" />
-                          Steps ({stepItems.length}/20)
-                        </Label>
+                        <div className="flex items-center justify-between gap-2">
+                          <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                            <ListOrdered className="h-4 w-4" />
+                            Steps ({stepItems.length}/20)
+                          </Label>
+                          {aiDecomposeEnabled && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              onClick={handleAiDecompose}
+                              disabled={aiDecomposing || !name.trim()}
+                              className="gap-1.5"
+                            >
+                              {aiDecomposing ? (
+                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              ) : (
+                                <SparklesIcon className="h-3.5 w-3.5" />
+                              )}
+                              AI Decompose
+                            </Button>
+                          )}
+                        </div>
                         <EditStepsList
                           items={stepItems}
                           onItemsChange={(items) => {

@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.coach-index-memory]
 verify_jwt = false
+
+[functions.goal-decompose]
+verify_jwt = false

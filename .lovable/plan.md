@@ -32,10 +32,12 @@ Décisions verrouillées (à appliquer quand on reprend) :
 
 > Voir `mem://monetization/subscription-tiers-deferred` pour le détail figé.
 
-### 1.3 Observabilité & feature flags (transverse, 0.5 sprint)
-- Sentry (front + edge functions).
-- Table `feature_flags` simple + hook `useFlag(key)`.
-- PostHog ou équivalent self-hosted pour analytics produit.
+### 1.3 Observabilité & feature flags — **PARTIEL**
+- ✅ Tables `feature_flags` + `user_feature_overrides` (RLS lecture publique, écriture admin).
+- ✅ Hook `useFeatureFlag(key)` avec override per-user.
+- ✅ 3 flags seedés : `coach_write_tools`, `goal_contracts`, `goal_decompose_ai`.
+- ⏳ Sentry (front + edge functions).
+- ⏳ PostHog ou équivalent self-hosted.
 
 ---
 
@@ -48,26 +50,27 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - Archive consultable filtrée par type + recherche.
 - Decision log dédié (table `decisions` : hypothèse, contexte, résultat, leçon, date révision).
 
-### 2.2 AI Coach conversationnel — **EN COURS**
+### 2.2 AI Coach conversationnel — **QUASI BOUCLÉE**
 - ✅ Edge function `ai-coach` streaming (lovable-ai gateway, Gemini 2.5 Flash par défaut).
 - ✅ Tables `coach_conversations`, `coach_messages`, `coach_embeddings` (pgvector + RPC `match_coach_memory`).
 - ✅ UI : panneau latéral global Cmd+J + bouton flottant.
 - ✅ Tool-calling lecture : `list_active_goals`, `list_recent_habits`, `list_recent_transactions`, `list_recent_journal`, `list_user_values`, `search_memory` (loop max 3 hops, puis stream final).
 - ✅ Mémoire vectorielle : edge function `coach-index-memory` (per-user via JWT, ou cron via `CRON_SECRET`) — embeds `openai/text-embedding-3-small`, sources : journal, reviews, decisions. Bouton 🧠 dans le panneau Coach.
+- ✅ Tool-calling write : `create_todo`, `create_journal_entry`, `create_decision` (gated derrière flag `coach_write_tools`).
+- ✅ Goal decomposition assistée (`goal-decompose` edge fn + bouton "AI Decompose" dans NewGoal, gated `goal_decompose_ai`).
 - ⏳ Cron horaire `coach-index-memory` (à brancher via `pg_cron` quand le secret CRON_SECRET sera défini).
-- ⏳ Tool-calling write : création de goals/steps/todos depuis la conversation.
 - ⏳ Pattern detection nightly cron (insights pushés en notifications).
-- ⏳ Goal decomposition assistée (bouton dans NewGoal → suggestion steps + habits).
 
 ---
 
 ## Vague 3 — Engagement & Social profond (2 sprints)
 
-### 3.1 Goal contracts sociaux (1 sprint)
-- Table `goal_contracts` (goal_id, witnesses[], stake_bonds, deadline, status).
-- RPC `accept_contract`, `settle_contract` (atomic, redistribue les Bonds).
-- UI : depuis GoalDetail, "Engager un témoin" → recherche Friend, négociation stake.
-- Notification cascade aux témoins, signature digitale (modal HUD).
+### 3.1 Goal contracts sociaux — **EN COURS**
+- ✅ Table `goal_contracts` (witnesses[], stake_bonds, deadline, status, signed_at, settled_at) + RLS owner+witnesses.
+- ✅ Hooks `useGoalContracts`, `useCreateGoalContract`, `useUpdateContractStatus` (gated `goal_contracts`).
+- ⏳ RPC atomique `settle_contract` (redistribue les Bonds aux témoins en cas d'échec).
+- ⏳ UI : depuis GoalDetail, "Engager un témoin" → recherche Friend, négociation stake.
+- ⏳ Notification cascade aux témoins, signature digitale (modal HUD).
 
 ### 3.2 Quêtes dynamiques & Seasons (1 sprint)
 - Table `seasons` (id, start, end, theme, leaderboard_snapshot).
