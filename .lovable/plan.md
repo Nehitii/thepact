@@ -32,10 +32,12 @@ Décisions verrouillées (à appliquer quand on reprend) :
 
 > Voir `mem://monetization/subscription-tiers-deferred` pour le détail figé.
 
-### 1.3 Observabilité & feature flags (transverse, 0.5 sprint)
-- Sentry (front + edge functions).
-- Table `feature_flags` simple + hook `useFlag(key)`.
-- PostHog ou équivalent self-hosted pour analytics produit.
+### 1.3 Observabilité & feature flags — **PARTIEL**
+- ✅ Tables `feature_flags` + `user_feature_overrides` (RLS lecture publique, écriture admin).
+- ✅ Hook `useFeatureFlag(key)` avec override per-user.
+- ✅ 3 flags seedés : `coach_write_tools`, `goal_contracts`, `goal_decompose_ai`.
+- ⏳ Sentry (front + edge functions).
+- ⏳ PostHog ou équivalent self-hosted.
 
 ---
 
@@ -63,11 +65,12 @@ Décisions verrouillées (à appliquer quand on reprend) :
 
 ## Vague 3 — Engagement & Social profond (2 sprints)
 
-### 3.1 Goal contracts sociaux (1 sprint)
-- Table `goal_contracts` (goal_id, witnesses[], stake_bonds, deadline, status).
-- RPC `accept_contract`, `settle_contract` (atomic, redistribue les Bonds).
-- UI : depuis GoalDetail, "Engager un témoin" → recherche Friend, négociation stake.
-- Notification cascade aux témoins, signature digitale (modal HUD).
+### 3.1 Goal contracts sociaux — **EN COURS**
+- ✅ Table `goal_contracts` (witnesses[], stake_bonds, deadline, status, signed_at, settled_at) + RLS owner+witnesses.
+- ✅ Hooks `useGoalContracts`, `useCreateGoalContract`, `useUpdateContractStatus` (gated `goal_contracts`).
+- ⏳ RPC atomique `settle_contract` (redistribue les Bonds aux témoins en cas d'échec).
+- ⏳ UI : depuis GoalDetail, "Engager un témoin" → recherche Friend, négociation stake.
+- ⏳ Notification cascade aux témoins, signature digitale (modal HUD).
 
 ### 3.2 Quêtes dynamiques & Seasons (1 sprint)
 - Table `seasons` (id, start, end, theme, leaderboard_snapshot).
