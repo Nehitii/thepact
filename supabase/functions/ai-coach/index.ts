@@ -112,11 +112,13 @@ const TOOLS = [
           title: { type: "string" },
           context: { type: "string" },
           hypothesis: { type: "string" },
-          confidence: { type: "number", description: "0-100" },
+          decision_text: { type: "string", description: "La décision prise" },
+          expected_outcome: { type: "string" },
+          confidence: { type: "number", description: "1-5" },
           review_at: { type: "string", description: "Date ISO de revue future" },
-          reversibility: { type: "string", enum: ["reversible", "irreversible", "partial"] },
+          reversibility: { type: "string", enum: ["reversible", "hard_to_reverse", "irreversible"] },
         },
-        required: ["title"],
+        required: ["title", "decision_text"],
       },
     },
   },
@@ -222,12 +224,15 @@ async function runTool(name: string, args: any, supabase: any, userId: string, a
     }
     if (name === "create_decision") {
       const title = String(args?.title ?? "").trim().slice(0, 200);
-      if (!title) return JSON.stringify({ error: "title_required" });
+      const decision_text = String(args?.decision_text ?? "").trim();
+      if (!title || !decision_text) return JSON.stringify({ error: "title_and_decision_required" });
       const payload: any = {
         user_id: userId,
         title,
+        decision_text,
         context: args?.context ?? null,
         hypothesis: args?.hypothesis ?? null,
+        expected_outcome: args?.expected_outcome ?? null,
         confidence: typeof args?.confidence === "number" ? args.confidence : null,
         review_at: args?.review_at ?? null,
         reversibility: args?.reversibility ?? null,
