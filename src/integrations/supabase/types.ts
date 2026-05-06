@@ -1164,6 +1164,30 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          description: string | null
+          enabled: boolean
+          key: string
+          rollout_percent: number
+          updated_at: string
+        }
+        Insert: {
+          description?: string | null
+          enabled?: boolean
+          key: string
+          rollout_percent?: number
+          updated_at?: string
+        }
+        Update: {
+          description?: string | null
+          enabled?: boolean
+          key?: string
+          rollout_percent?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       finance: {
         Row: {
           created_at: string | null
@@ -1226,6 +1250,59 @@ export type Database = {
           status?: Database["public"]["Enums"]["friendship_status"]
         }
         Relationships: []
+      }
+      goal_contracts: {
+        Row: {
+          created_at: string
+          deadline: string | null
+          goal_id: string
+          id: string
+          notes: string | null
+          owner_id: string
+          settled_at: string | null
+          signed_at: string | null
+          stake_bonds: number
+          status: string
+          updated_at: string
+          witnesses: string[]
+        }
+        Insert: {
+          created_at?: string
+          deadline?: string | null
+          goal_id: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          settled_at?: string | null
+          signed_at?: string | null
+          stake_bonds?: number
+          status?: string
+          updated_at?: string
+          witnesses?: string[]
+        }
+        Update: {
+          created_at?: string
+          deadline?: string | null
+          goal_id?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          settled_at?: string | null
+          signed_at?: string | null
+          stake_bonds?: number
+          status?: string
+          updated_at?: string
+          witnesses?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_contracts_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       goal_cost_items: {
         Row: {
@@ -3859,6 +3936,32 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_feature_overrides: {
+        Row: {
+          enabled: boolean
+          key: string
+          user_id: string
+        }
+        Insert: {
+          enabled: boolean
+          key: string
+          user_id: string
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feature_overrides_key_fkey"
+            columns: ["key"]
+            isOneToOne: false
+            referencedRelation: "feature_flags"
+            referencedColumns: ["key"]
+          },
+        ]
       }
       user_module_purchases: {
         Row: {
