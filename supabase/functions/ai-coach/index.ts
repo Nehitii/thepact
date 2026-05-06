@@ -95,7 +95,7 @@ const TOOLS = [
         properties: {
           title: { type: "string" },
           content: { type: "string" },
-          mood: { type: "number", description: "1-5 optionnel" },
+          mood: { type: "string", description: "ex: reflective, joyful, anxious, focused" },
         },
         required: ["title", "content"],
       },
@@ -217,7 +217,7 @@ async function runTool(name: string, args: any, supabase: any, userId: string, a
       const content = String(args?.content ?? "").trim();
       if (!title || !content) return JSON.stringify({ error: "title_and_content_required" });
       const payload: any = { user_id: userId, title, content };
-      if (typeof args?.mood === "number") payload.mood = args.mood;
+      if (typeof args?.mood === "string" && args.mood.trim()) payload.mood = args.mood.trim();
       const { data, error } = await supabase.from("journal_entries").insert(payload).select("id,title").single();
       if (error) return JSON.stringify({ error: error.message });
       return JSON.stringify({ ok: true, entry: data });
