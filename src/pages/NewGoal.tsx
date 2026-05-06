@@ -125,9 +125,8 @@ export default function NewGoal() {
       const steps = (data?.steps ?? []) as Array<{ title: string }>;
       if (!steps.length) throw new Error("Aucune étape suggérée");
       const items: EditStepItem[] = steps.slice(0, 20).map((s, i) => ({
-        id: `ai-${Date.now()}-${i}`,
-        title: s.title,
-        order: i,
+        key: `ai-${Date.now()}-${i}`,
+        name: s.title,
       }));
       setStepItems(items);
       setStepCount(items.length);
