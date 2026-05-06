@@ -67,6 +67,59 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "create_todo",
+      description: "Crée une tâche todo pour l'utilisateur. Utiliser uniquement si le user demande explicitement d'ajouter une tâche.",
+      parameters: {
+        type: "object",
+        properties: {
+          name: { type: "string", description: "Intitulé de la tâche (max 200 chars)" },
+          deadline: { type: "string", description: "Date ISO (YYYY-MM-DD) optionnelle" },
+          priority: { type: "string", enum: ["low", "medium", "high"], default: "medium" },
+          is_urgent: { type: "boolean", default: false },
+          category: { type: "string", default: "general" },
+        },
+        required: ["name"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_journal_entry",
+      description: "Ajoute une entrée de journal. Réservé aux moments où le user demande explicitement de noter une réflexion.",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          content: { type: "string" },
+          mood: { type: "number", description: "1-5 optionnel" },
+        },
+        required: ["title", "content"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_decision",
+      description: "Enregistre une décision dans le Decision Log (contexte + hypothèse + confiance).",
+      parameters: {
+        type: "object",
+        properties: {
+          title: { type: "string" },
+          context: { type: "string" },
+          hypothesis: { type: "string" },
+          confidence: { type: "number", description: "0-100" },
+          review_at: { type: "string", description: "Date ISO de revue future" },
+          reversibility: { type: "string", enum: ["reversible", "irreversible", "partial"] },
+        },
+        required: ["title"],
+      },
+    },
+  },
 ];
 
 async function runTool(name: string, args: any, supabase: any, userId: string, aiKey: string): Promise<string> {
@@ -141,6 +194,47 @@ async function runTool(name: string, args: any, supabase: any, userId: string, a
         _match_count: 6,
       });
       return JSON.stringify(data ?? []);
+    }
+    if (name === "create_todo") {
+      const nm = String(args?.name ?? "").trim().slice(0, 200);
+      if (!nm) return JSON.stringify({ error: "name_required" });
+      const { data, error } = await supabase.from("todo_tasks").insert({
+        user_id: userId,
+        name: nm,
+        deadline: args?.deadline ?? null,
+        priority: args?.priority ?? "medium",
+        is_urgent: !!args?.is_urgent,
+        category: args?.category ?? "general",
+        task_type: "flexible",
+      }).select("id,name").single();
+      if (error) return JSON.stringify({ error: error.message });
+      return JSON.stringify({ ok: true, todo: data });
+    }
+    if (name === "create_journal_entry") {
+      const title = String(args?.title ?? "").trim().slice(0, 200);
+      const content = String(args?.content ?? "").trim();
+      if (!title || !content) return JSON.stringify({ error: "title_and_content_required" });
+      const payload: any = { user_id: userId, title, content };
+      if (typeof args?.mood === "number") payload.mood = args.mood;
+      const { data, error } = await supabase.from("journal_entries").insert(payload).select("id,title").single();
+      if (error) return JSON.stringify({ error: error.message });
+      return JSON.stringify({ ok: true, entry: data });
+    }
+    if (name === "create_decision") {
+      const title = String(args?.title ?? "").trim().slice(0, 200);
+      if (!title) return JSON.stringify({ error: "title_required" });
+      const payload: any = {
+        user_id: userId,
+        title,
+        context: args?.context ?? null,
+        hypothesis: args?.hypothesis ?? null,
+        confidence: typeof args?.confidence === "number" ? args.confidence : null,
+        review_at: args?.review_at ?? null,
+        reversibility: args?.reversibility ?? null,
+      };
+      const { data, error } = await supabase.from("decisions").insert(payload).select("id,title").single();
+      if (error) return JSON.stringify({ error: error.message });
+      return JSON.stringify({ ok: true, decision: data });
     }
     return JSON.stringify({ error: "unknown_tool" });
   } catch (e) {
