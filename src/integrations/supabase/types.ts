@@ -1070,6 +1070,65 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_quests: {
+        Row: {
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          kind: string
+          metadata: Json | null
+          progress: number
+          reward_bonds: number
+          season_id: string | null
+          status: string
+          target: number
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          kind: string
+          metadata?: Json | null
+          progress?: number
+          reward_bonds?: number
+          season_id?: string | null
+          status?: string
+          target?: number
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          metadata?: Json | null
+          progress?: number
+          reward_bonds?: number
+          season_id?: string | null
+          status?: string
+          target?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_quests_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       decisions: {
         Row: {
           actual_outcome: string | null
@@ -3227,6 +3286,39 @@ export type Database = {
           },
         ]
       }
+      seasons: {
+        Row: {
+          created_at: string
+          ends_at: string
+          id: string
+          leaderboard_snapshot: Json | null
+          name: string
+          slug: string
+          starts_at: string
+          theme: string | null
+        }
+        Insert: {
+          created_at?: string
+          ends_at: string
+          id?: string
+          leaderboard_snapshot?: Json | null
+          name: string
+          slug: string
+          starts_at: string
+          theme?: string | null
+        }
+        Update: {
+          created_at?: string
+          ends_at?: string
+          id?: string
+          leaderboard_snapshot?: Json | null
+          name?: string
+          slug?: string
+          starts_at?: string
+          theme?: string | null
+        }
+        Relationships: []
+      }
       security_events: {
         Row: {
           created_at: string
@@ -4291,6 +4383,7 @@ export type Database = {
         Args: { p_amount: number; p_guild_id: string; p_reason: string }
         Returns: undefined
       }
+      claim_quest: { Args: { _quest_id: string }; Returns: Json }
       create_guild_with_owner: {
         Args: {
           p_color?: string
