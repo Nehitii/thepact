@@ -60,9 +60,10 @@ async function processUser(supabase: any, userId: string, aiKey: string) {
     await supabase.from("notifications").insert({
       user_id: userId,
       title: String(ins.title).slice(0, 80),
-      message: String(ins.body ?? "").slice(0, 240),
-      type: "ai_insight",
-      category: ins.category ?? "goal",
+      description: String(ins.body ?? "").slice(0, 240),
+      category: "progress",
+      priority: "informational",
+      icon_key: "sparkles",
     });
   }
   return { count: insights.length };
