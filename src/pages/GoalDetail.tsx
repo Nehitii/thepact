@@ -17,6 +17,7 @@ import { CyberBackground } from "@/components/CyberBackground";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
 import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
+import { GoalContractsPanel } from "@/components/goals/GoalContractsPanel";
 import { Link2 } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
@@ -382,6 +383,8 @@ export default function GoalDetail() {
           difficultyColor={difficultyColor}
           currency={currency}
         />
+
+        {goal && <GoalContractsPanel goalId={goal.id} goalName={goal.name} />}
       </div>
 
       <GoalDetailEditOverlay

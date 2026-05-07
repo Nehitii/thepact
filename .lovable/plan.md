@@ -59,18 +59,18 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - ✅ Tool-calling write : `create_todo`, `create_journal_entry`, `create_decision` (gated derrière flag `coach_write_tools`).
 - ✅ Goal decomposition assistée (`goal-decompose` edge fn + bouton "AI Decompose" dans NewGoal, gated `goal_decompose_ai`).
 - ⏳ Cron horaire `coach-index-memory` (à brancher via `pg_cron` quand le secret CRON_SECRET sera défini).
-- ⏳ Pattern detection nightly cron (insights pushés en notifications).
+- ✅ Pattern detection edge fn `coach-pattern-detect` (Gemini 2.5 Flash, JSON insights → table `notifications`, mode cron via `CRON_SECRET`). Reste à brancher `pg_cron` nocturne.
 
 ---
 
 ## Vague 3 — Engagement & Social profond (2 sprints)
 
-### 3.1 Goal contracts sociaux — **EN COURS**
+### 3.1 Goal contracts sociaux — **BOUCLÉE (MVP)**
 - ✅ Table `goal_contracts` (witnesses[], stake_bonds, deadline, status, signed_at, settled_at) + RLS owner+witnesses.
 - ✅ Hooks `useGoalContracts`, `useCreateGoalContract`, `useUpdateContractStatus` (gated `goal_contracts`).
-- ⏳ RPC atomique `settle_contract` (redistribue les Bonds aux témoins en cas d'échec).
-- ⏳ UI : depuis GoalDetail, "Engager un témoin" → recherche Friend, négociation stake.
-- ⏳ Notification cascade aux témoins, signature digitale (modal HUD).
+- ✅ RPC atomique `settle_contract` (succès → refund owner ; échec → split equal aux témoins, reste au 1er).
+- ✅ UI `GoalContractsPanel` dans `GoalDetail` : sélection des témoins (amis), mise en Bonds, échéance, notes, settle ✓/✗.
+- ⏳ Notification cascade aux témoins + modal de signature digitale HUD (V2).
 
 ### 3.2 Quêtes dynamiques & Seasons (1 sprint)
 - Table `seasons` (id, start, end, theme, leaderboard_snapshot).
