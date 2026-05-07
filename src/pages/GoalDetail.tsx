@@ -383,6 +383,8 @@ export default function GoalDetail() {
           difficultyColor={difficultyColor}
           currency={currency}
         />
+
+        {goal && <GoalContractsPanel goalId={goal.id} goalName={goal.name} />}
       </div>
 
       <GoalDetailEditOverlay
