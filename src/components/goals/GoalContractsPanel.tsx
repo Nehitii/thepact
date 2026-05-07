@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useGoalContracts, useCreateGoalContract, type GoalContract } from "@/hooks/useGoalContracts";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useFriends } from "@/hooks/useFriends";
