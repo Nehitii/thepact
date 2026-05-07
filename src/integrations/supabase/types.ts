@@ -4463,6 +4463,10 @@ export type Database = {
       }
       redeem_promo_code: { Args: { p_code: string }; Returns: Json }
       reset_pact_data: { Args: { p_pact_id: string }; Returns: boolean }
+      settle_contract: {
+        Args: { _contract_id: string; _outcome: string }
+        Returns: Json
+      }
       update_achievement_tracking: {
         Args: { p_updates: Json }
         Returns: undefined
