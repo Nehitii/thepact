@@ -15,6 +15,7 @@ import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
 import { MonitoringGlobalPanel } from "@/components/home/MonitoringGlobalPanel";
 import { DifficultyScalePanel } from "@/components/home/DifficultyScalePanel";
 import { LifeAreasBalancePanel } from "@/components/home/LifeAreasBalancePanel";
+import { DailyQuestsPanel } from "@/components/quests/DailyQuestsPanel";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 
 // Hooks
@@ -291,6 +292,7 @@ export default function Home() {
               customDifficultyColor={customDifficultyColor}
             />
             <LifeAreasBalancePanel />
+            <DailyQuestsPanel />
           </div>
         </details>
 

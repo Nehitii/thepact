@@ -72,12 +72,14 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - ✅ UI `GoalContractsPanel` dans `GoalDetail` : sélection des témoins (amis), mise en Bonds, échéance, notes, settle ✓/✗.
 - ⏳ Notification cascade aux témoins + modal de signature digitale HUD (V2).
 
-### 3.2 Quêtes dynamiques & Seasons (1 sprint)
-- Table `seasons` (id, start, end, theme, leaderboard_snapshot).
-- Table `daily_quests` générées par cron (basées sur goals/habits actifs).
-- Récompenses cosmétiques saisonnières (drop limité dans Shop).
-- Reset trimestriel avec hall of fame archivé.
-- Prestige post-rank max (boucle de rejouabilité).
+### 3.2 Quêtes dynamiques & Seasons — **EN COURS**
+- ✅ Tables `seasons` (slug, theme, starts_at/ends_at, leaderboard_snapshot) et `daily_quests` (kind, target, progress, reward, status) + RLS user-scoped.
+- ✅ RPC atomique `claim_quest` (vérifie progress ≥ target, crédite Bonds, marque claimed).
+- ✅ Edge fn `generate-daily-quests` (3 quêtes basées sur goals/habits actifs, cron-ready).
+- ✅ Hooks `useDailyQuests`, `useGenerateDailyQuests`, `useClaimQuest` + panneau `DailyQuestsPanel` accroché au Home.
+- ⏳ Auto-incrément `progress` (triggers sur step completion / habit_log / journal_entries / focus_sessions).
+- ⏳ Récompenses cosmétiques saisonnières + drop Shop limité.
+- ⏳ Reset trimestriel automatique + hall of fame archivé + prestige post-rank.
 
 ---
 
