@@ -31,10 +31,7 @@ export function GoalContractsPanel({ goalId, goalName }: Props) {
   const [selectedWitnesses, setSelectedWitnesses] = useState<string[]>([]);
   const [settling, setSettling] = useState<string | null>(null);
 
-  const friendList = useMemo(
-    () => (friends || []).filter((f: any) => f.status === "accepted"),
-    [friends]
-  );
+  const friendList = friends || [];
 
   if (flagLoading) return null;
   if (!enabled) return null;
@@ -159,8 +156,8 @@ export function GoalContractsPanel({ goalId, goalName }: Props) {
                   <p className="text-xs text-muted-foreground">Aucun ami pour le moment.</p>
                 ) : (
                   friendList.map((f: any) => {
-                    const fid = f.friend_id || f.user_id;
-                    const name = f.friend_profile?.username || f.friend_profile?.display_name || "Ami";
+                    const fid = f.friend_id;
+                    const name = f.display_name || "Ami";
                     const checked = selectedWitnesses.includes(fid);
                     return (
                       <button
