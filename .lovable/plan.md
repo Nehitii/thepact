@@ -77,7 +77,8 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - ✅ RPC atomique `claim_quest` (vérifie progress ≥ target, crédite Bonds, marque claimed).
 - ✅ Edge fn `generate-daily-quests` (3 quêtes basées sur goals/habits actifs, cron-ready).
 - ✅ Hooks `useDailyQuests`, `useGenerateDailyQuests`, `useClaimQuest` + panneau `DailyQuestsPanel` accroché au Home.
-- ✅ Auto-incrément `progress` via triggers DB (`steps` validated, `habit_logs` completed, `journal_entries` insert) — kind `focus_minutes` reste manuel (pas de table `focus_sessions`).
+- ✅ Auto-incrément `progress` via triggers DB (`steps` validated, `habit_logs` completed, `journal_entries` insert, `focus_sessions` insert).
+- ✅ Table `focus_sessions` + hooks `useFocusSessions` / `useLogFocusSession` (auto-bump quest `focus_minutes`).
 - ⏳ Récompenses cosmétiques saisonnières + drop Shop limité.
 - ⏳ Reset trimestriel automatique + hall of fame archivé + prestige post-rank.
 
@@ -87,7 +88,9 @@ Décisions verrouillées (à appliquer quand on reprend) :
 
 ### 4.1 PWA + push web (0.5 sprint)
 - ✅ Service worker (vite-plugin-pwa, autoUpdate) + manifest Vowpact (theme `#0b1018`, standalone, runtime cache fonts Google).
-- Push notifications web (VAPID), table `push_subscriptions`.
+- ✅ Table `push_subscriptions` (RLS owner-only) + hook `usePushNotifications`.
+- ✅ Edge fn `push-send` (web-push + VAPID, user-scoped ou cron via `CRON_SECRET`, prune 404/410).
+- ⏳ Configurer secrets `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` + `VITE_VAPID_PUBLIC_KEY` côté front.
 - Offline-first sur Todo / Habits / Journal (cache + sync queue).
 
 ### 4.2 Calendar 2-way sync (1 sprint)
