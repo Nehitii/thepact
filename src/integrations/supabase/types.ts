@@ -4378,6 +4378,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _bump_quest_progress: {
+        Args: { _delta?: number; _kind: string; _user_id: string }
+        Returns: undefined
+      }
       accept_guild_invite: { Args: { p_invite_id: string }; Returns: Json }
       add_guild_xp: {
         Args: { p_amount: number; p_guild_id: string; p_reason: string }
