@@ -77,7 +77,7 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - ✅ RPC atomique `claim_quest` (vérifie progress ≥ target, crédite Bonds, marque claimed).
 - ✅ Edge fn `generate-daily-quests` (3 quêtes basées sur goals/habits actifs, cron-ready).
 - ✅ Hooks `useDailyQuests`, `useGenerateDailyQuests`, `useClaimQuest` + panneau `DailyQuestsPanel` accroché au Home.
-- ⏳ Auto-incrément `progress` (triggers sur step completion / habit_log / journal_entries / focus_sessions).
+- ✅ Auto-incrément `progress` via triggers DB (`steps` validated, `habit_logs` completed, `journal_entries` insert) — kind `focus_minutes` reste manuel (pas de table `focus_sessions`).
 - ⏳ Récompenses cosmétiques saisonnières + drop Shop limité.
 - ⏳ Reset trimestriel automatique + hall of fame archivé + prestige post-rank.
 
@@ -86,7 +86,7 @@ Décisions verrouillées (à appliquer quand on reprend) :
 ## Vague 4 — Capteurs & Intégrations (3 sprints)
 
 ### 4.1 PWA + push web (0.5 sprint)
-- Service worker (vite-plugin-pwa), manifest, install prompt.
+- ✅ Service worker (vite-plugin-pwa, autoUpdate) + manifest Vowpact (theme `#0b1018`, standalone, runtime cache fonts Google).
 - Push notifications web (VAPID), table `push_subscriptions`.
 - Offline-first sur Todo / Habits / Journal (cache + sync queue).
 
