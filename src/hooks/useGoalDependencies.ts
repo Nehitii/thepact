@@ -39,10 +39,12 @@ export function useGoalDependencies(goalId?: string) {
 
       const all = [...(out ?? []), ...(incoming ?? [])] as unknown as GoalDependency[];
       const ids = Array.from(new Set(all.flatMap(d => [d.goal_id, d.depends_on_goal_id])));
-      const { data: goals } = ids.length
-        ? await supabase.from("goals").select("id,name,status").in("id", ids)
-        : { data: [] as any };
-      const map = new Map((goals ?? []).map((g: any) => [g.id, g]));
+      let goals: Array<{ id: string; name: string; status: string }> = [];
+      if (ids.length) {
+        const { data } = await supabase.from("goals").select("id,name,status").in("id", ids);
+        goals = (data ?? []) as any;
+      }
+      const map = new Map(goals.map((g) => [g.id, g]));
       return {
         outgoing: ((out ?? []) as unknown as GoalDependency[]).map(d => ({
           ...d,
