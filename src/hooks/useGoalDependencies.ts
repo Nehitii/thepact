@@ -23,7 +23,7 @@ export function useGoalDependencies(goalId?: string) {
   return useQuery({
     queryKey: ["goal-dependencies", goalId, user?.id],
     queryFn: async () => {
-      if (!goalId) return [];
+      if (!goalId) return { outgoing: [] as GoalDependencyWithName[], incoming: [] as GoalDependencyWithName[] };
       // Outgoing (this goal depends on others)
       const { data: out, error: e1 } = await supabase
         .from("goal_dependencies" as any)
