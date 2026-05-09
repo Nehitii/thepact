@@ -114,7 +114,10 @@ Décisions verrouillées (à appliquer quand on reprend) :
 ## Vague 5 — Profondeur par module (3 sprints)
 
 ### 5.1 Goals & Habits (1 sprint)
-- DAG dépendances goals (table `goal_dependencies`, vue topologique).
+- ✅ DAG dépendances goals : table `goal_dependencies` (kind blocks/related) + trigger anti-cycle + RLS owner-only.
+- ✅ Hooks `useGoalDependencies` / `useCreateGoalDependency` / `useDeleteGoalDependency`.
+- ✅ Panneau `GoalDependenciesPanel` dans `GoalDetail` (ajout, suppression, vue outgoing/incoming, lien navigable).
+- ⏳ Vue topologique globale (graphe d'objectifs).
 - Marketplace templates (publication communautaire, ratings).
 - Habit stacking (`prerequisite_habit_id`), conditional habits (skip rules), negative habits.
 - Streak freezes monétisés en Bonds.
