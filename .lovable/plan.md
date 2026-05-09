@@ -125,7 +125,7 @@ Décisions verrouillées (à appliquer quand on reprend) :
 ### 5.2 Finance avancé (1 sprint)
 - Cashflow projeté 3/6/12 mois (algo récurrents + budgets).
 - Sinking funds (goals d'épargne avec virements simulés auto).
-- Net worth historique (snapshot mensuel).
+- ✅ Net worth historique : table `net_worth_snapshots` + RPC `snapshot_net_worth` (SECURITY DEFINER, agrège accounts + bank_transactions). Hooks `useNetWorthSnapshots` / `useTakeNetWorthSnapshot` + panneau `NetWorthHistoryPanel` (sparkline + delta) dans l'onglet Accounts. ⏳ Cron mensuel via `pg_cron`.
 - Dette tracker (loans, échéanciers, intérêts composés).
 - Import OFX/CSV manuel.
 

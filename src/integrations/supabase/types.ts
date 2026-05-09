@@ -2595,6 +2595,42 @@ export type Database = {
         }
         Relationships: []
       }
+      net_worth_snapshots: {
+        Row: {
+          account_count: number
+          created_at: string
+          currency: string | null
+          details: Json | null
+          id: string
+          snapshot_date: string
+          source: string
+          total_balance: number
+          user_id: string
+        }
+        Insert: {
+          account_count?: number
+          created_at?: string
+          currency?: string | null
+          details?: Json | null
+          id?: string
+          snapshot_date: string
+          source?: string
+          total_balance?: number
+          user_id: string
+        }
+        Update: {
+          account_count?: number
+          created_at?: string
+          currency?: string | null
+          details?: Json | null
+          id?: string
+          snapshot_date?: string
+          source?: string
+          total_balance?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       notification_settings: {
         Row: {
           created_at: string
@@ -4682,6 +4718,26 @@ export type Database = {
       settle_contract: {
         Args: { _contract_id: string; _outcome: string }
         Returns: Json
+      }
+      snapshot_net_worth: {
+        Args: { _date?: string }
+        Returns: {
+          account_count: number
+          created_at: string
+          currency: string | null
+          details: Json | null
+          id: string
+          snapshot_date: string
+          source: string
+          total_balance: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "net_worth_snapshots"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       update_achievement_tracking: {
         Args: { p_updates: Json }
