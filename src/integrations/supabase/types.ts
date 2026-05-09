@@ -1452,6 +1452,51 @@ export type Database = {
           },
         ]
       }
+      goal_dependencies: {
+        Row: {
+          created_at: string
+          depends_on_goal_id: string
+          goal_id: string
+          id: string
+          kind: string
+          notes: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          depends_on_goal_id: string
+          goal_id: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          depends_on_goal_id?: string
+          goal_id?: string
+          id?: string
+          kind?: string
+          notes?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_dependencies_depends_on_goal_id_fkey"
+            columns: ["depends_on_goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_dependencies_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_tags: {
         Row: {
           created_at: string
