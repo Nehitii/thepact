@@ -18,6 +18,7 @@ import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard"
 import { ProjectionsPanel } from "@/components/finance/ProjectionsPanel";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
 import { AccountsOverview } from "@/components/finance/accounts";
+import { NetWorthHistoryPanel } from "@/components/finance/NetWorthHistoryPanel";
 import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
 import { TransactionsTab } from "@/components/finance/transactions";
 import { AuraBackground, AuraBalanceHero, FloatingTabBar } from "@/components/finance/aura";
@@ -226,6 +227,7 @@ export default function Finance() {
                 setAccountFilter(account.id);
                 setActiveTab('transactions');
               }} />
+              <NetWorthHistoryPanel />
               <BudgetProgressPanel
                 budgets={budgets}
                 expenseItems={recurringExpenses}
