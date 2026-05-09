@@ -4,6 +4,7 @@ import { Link2, X, GitBranch, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useGoals } from "@/hooks/useGoals";
+import { useActivePact } from "@/hooks/useActivePact";
 import {
   useGoalDependencies,
   useCreateGoalDependency,
@@ -15,7 +16,8 @@ interface Props {
 }
 
 export function GoalDependenciesPanel({ goalId }: Props) {
-  const { data: goals = [] } = useGoals();
+  const { activePactId } = useActivePact();
+  const { data: goals = [] } = useGoals(activePactId ?? undefined);
   const { data, isLoading } = useGoalDependencies(goalId);
   const create = useCreateGoalDependency();
   const remove = useDeleteGoalDependency();
