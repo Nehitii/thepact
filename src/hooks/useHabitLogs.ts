@@ -11,6 +11,8 @@ export interface HabitLog {
   streak_count: number;
   bond_reward: number;
   created_at: string;
+  is_freeze?: boolean;
+  freeze_cost?: number;
 }
 
 export function useHabitLogs(goalId?: string) {
@@ -143,7 +145,7 @@ export function computeHeatmapData(logs: HabitLog[]) {
 export function computeCurrentStreak(logs: HabitLog[]): number {
   const today = new Date().toISOString().split("T")[0];
   const completedDates = new Set(
-    logs.filter((l) => l.completed).map((l) => l.log_date)
+    logs.filter((l) => l.completed || l.is_freeze).map((l) => l.log_date)
   );
 
   let streak = 0;
@@ -161,4 +163,31 @@ export function computeCurrentStreak(logs: HabitLog[]): number {
   }
 
   return streak;
+}
+
+const STREAK_FREEZE_PRICE = 50;
+
+export function useStreakFreezePrice() {
+  return STREAK_FREEZE_PRICE;
+}
+
+export function useUseStreakFreeze() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ goalId, date }: { goalId: string; date: string }) => {
+      const { data, error } = await (supabase as any).rpc("use_streak_freeze", {
+        _goal_id: goalId,
+        _date: date,
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "Freeze failed");
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["habit-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["habit-logs-all"] });
+      queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+  });
 }

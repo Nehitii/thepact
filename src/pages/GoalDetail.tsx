@@ -19,6 +19,7 @@ import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
 import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
 import { GoalContractsPanel } from "@/components/goals/GoalContractsPanel";
 import { GoalDependenciesPanel } from "@/components/goals/GoalDependenciesPanel";
+import { StreakFreezePanel } from "@/components/habits/StreakFreezePanel";
 import { Link2 } from "lucide-react";
 import type { CostItemData } from "@/components/goals/CostItemsEditor";
 import type { EditStepItem } from "@/components/goals/EditStepsList";
@@ -387,6 +388,7 @@ export default function GoalDetail() {
 
         {goal && <GoalContractsPanel goalId={goal.id} goalName={goal.name} />}
         {goal && <GoalDependenciesPanel goalId={goal.id} />}
+        {goal && isHabitGoal && <StreakFreezePanel goalId={goal.id} />}
       </div>
 
       <GoalDetailEditOverlay

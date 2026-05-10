@@ -2184,8 +2184,10 @@ export type Database = {
           bond_reward: number | null
           completed: boolean | null
           created_at: string | null
+          freeze_cost: number
           goal_id: string
           id: string
+          is_freeze: boolean
           life_area_id: string | null
           log_date: string
           streak_count: number | null
@@ -2195,8 +2197,10 @@ export type Database = {
           bond_reward?: number | null
           completed?: boolean | null
           created_at?: string | null
+          freeze_cost?: number
           goal_id: string
           id?: string
+          is_freeze?: boolean
           life_area_id?: string | null
           log_date: string
           streak_count?: number | null
@@ -2206,8 +2210,10 @@ export type Database = {
           bond_reward?: number | null
           completed?: boolean | null
           created_at?: string | null
+          freeze_cost?: number
           goal_id?: string
           id?: string
+          is_freeze?: boolean
           life_area_id?: string | null
           log_date?: string
           streak_count?: number | null
@@ -4634,6 +4640,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_streak_freeze_price: { Args: never; Returns: number }
       get_user_2fa_status: {
         Args: { p_user_id: string }
         Returns: {
@@ -4742,6 +4749,10 @@ export type Database = {
       update_achievement_tracking: {
         Args: { p_updates: Json }
         Returns: undefined
+      }
+      use_streak_freeze: {
+        Args: { _date: string; _goal_id: string }
+        Returns: Json
       }
     }
     Enums: {

@@ -120,7 +120,7 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - ⏳ Vue topologique globale (graphe d'objectifs).
 - Marketplace templates (publication communautaire, ratings).
 - Habit stacking (`prerequisite_habit_id`), conditional habits (skip rules), negative habits.
-- Streak freezes monétisés en Bonds.
+- ✅ Streak freezes monétisés en Bonds : colonnes `is_freeze`/`freeze_cost` sur `habit_logs` + RPC atomique `use_streak_freeze` (vérifie balance, déduit, insert log, anti double-freeze, fenêtre 7j). Hook `useUseStreakFreeze` + panneau `StreakFreezePanel` (grille 7 jours, snowflake, balance live) accroché au `GoalDetail` des habit goals.
 
 ### 5.2 Finance avancé (1 sprint)
 - Cashflow projeté 3/6/12 mois (algo récurrents + budgets).
