@@ -119,7 +119,7 @@ Décisions verrouillées (à appliquer quand on reprend) :
 - ✅ Panneau `GoalDependenciesPanel` dans `GoalDetail` (ajout, suppression, vue outgoing/incoming, lien navigable).
 - ⏳ Vue topologique globale (graphe d'objectifs).
 - Marketplace templates (publication communautaire, ratings).
-- Habit stacking (`prerequisite_habit_id`), conditional habits (skip rules), negative habits.
+- ✅ Habit stacking : colonne `prerequisite_habit_id` sur `goals` + guard côté `useToggleHabitLog` (refuse si trigger non complété/frozen le même jour) + panneau `HabitStackPanel` (Select des autres habits du pact) dans `GoalDetail`. ⏳ Conditional habits (skip rules) et negative habits restent à faire.
 - ✅ Streak freezes monétisés en Bonds : colonnes `is_freeze`/`freeze_cost` sur `habit_logs` + RPC atomique `use_streak_freeze` (vérifie balance, déduit, insert log, anti double-freeze, fenêtre 7j). Hook `useUseStreakFreeze` + panneau `StreakFreezePanel` (grille 7 jours, snowflake, balance live) accroché au `GoalDetail` des habit goals.
 
 ### 5.2 Finance avancé (1 sprint)
