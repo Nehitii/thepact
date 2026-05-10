@@ -89,6 +89,27 @@ export function useToggleHabitLog() {
         if (error) throw error;
         return !existing.completed;
       } else {
+        // Habit stacking: enforce prerequisite habit completion today
+        const { data: goalRow } = await (supabase as any)
+          .from("goals")
+          .select("prerequisite_habit_id")
+          .eq("id", goalId)
+          .maybeSingle();
+        const prereq = goalRow?.prerequisite_habit_id as string | null | undefined;
+        if (prereq) {
+          const { data: prereqLog } = await (supabase as any)
+            .from("habit_logs")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("goal_id", prereq)
+            .eq("log_date", date)
+            .or("completed.eq.true,is_freeze.eq.true")
+            .maybeSingle();
+          if (!prereqLog) {
+            throw new Error("Complete the prerequisite habit first");
+          }
+        }
+
         // Calculate streak
         const yesterday = new Date(date);
         yesterday.setDate(yesterday.getDate() - 1);

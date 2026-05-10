@@ -1612,6 +1612,7 @@ export type Database = {
           notes: string | null
           pact_id: string
           potential_score: number | null
+          prerequisite_habit_id: string | null
           start_date: string | null
           status: Database["public"]["Enums"]["goal_status"] | null
           super_goal_rule: Json | null
@@ -1640,6 +1641,7 @@ export type Database = {
           notes?: string | null
           pact_id: string
           potential_score?: number | null
+          prerequisite_habit_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"] | null
           super_goal_rule?: Json | null
@@ -1668,6 +1670,7 @@ export type Database = {
           notes?: string | null
           pact_id?: string
           potential_score?: number | null
+          prerequisite_habit_id?: string | null
           start_date?: string | null
           status?: Database["public"]["Enums"]["goal_status"] | null
           super_goal_rule?: Json | null
@@ -1689,6 +1692,13 @@ export type Database = {
             columns: ["pact_id"]
             isOneToOne: false
             referencedRelation: "pacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goals_prerequisite_habit_id_fkey"
+            columns: ["prerequisite_habit_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
             referencedColumns: ["id"]
           },
         ]
