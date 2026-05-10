@@ -10,7 +10,7 @@ import {
   useStreakFreezePrice,
   useUseStreakFreeze,
 } from "@/hooks/useHabitLogs";
-import { useProfile } from "@/hooks/useProfile";
+import { useBondBalance } from "@/hooks/useShop";
 import { cn } from "@/lib/utils";
 
 interface StreakFreezePanelProps {
@@ -23,14 +23,14 @@ interface StreakFreezePanelProps {
  */
 export function StreakFreezePanel({ goalId }: StreakFreezePanelProps) {
   const { user } = useAuth();
-  const { data: profile } = useProfile(user?.id);
+  const { data: bondBalance } = useBondBalance(user?.id);
   const { data: logs = [] } = useHabitLogs(goalId);
   const price = useStreakFreezePrice();
   const freeze = useUseStreakFreeze();
   const { toast } = useToast();
   const [pendingDate, setPendingDate] = useState<string | null>(null);
 
-  const balance = (profile as any)?.bond_balance ?? 0;
+  const balance = bondBalance?.balance ?? 0;
 
   const days = useMemo(() => {
     const today = new Date();
