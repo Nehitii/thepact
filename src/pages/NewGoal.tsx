@@ -7,6 +7,7 @@ import { trackGoalCreated } from "@/lib/achievements";
 import { insertGoalTags } from "@/hooks/useGoalTags";
 import { useGoals } from "@/hooks/useGoals";
 import { usePact } from "@/hooks/usePact";
+import { useLifeAreas } from "@/hooks/useLifeAreas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,6 +33,7 @@ import {
   Filter,
   HandIcon,
   BookTemplate,
+  Compass,
 } from "lucide-react";
 import { EditStepsList, EditStepItem } from "@/components/goals/EditStepsList";
 import { useToast } from "@/hooks/use-toast";
@@ -78,6 +80,7 @@ export default function NewGoal() {
   const { toast } = useToast();
   const { data: pactData } = usePact(user?.id);
   const { data: existingGoals = [] } = useGoals(pactData?.id, { includeStepCounts: true, includeTags: true });
+  const { areas: lifeAreas } = useLifeAreas();
 
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
@@ -93,6 +96,7 @@ export default function NewGoal() {
   const [costItems, setCostItems] = useState<CostItemData[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [deadline, setDeadline] = useState("");
+  const [lifeAreaId, setLifeAreaId] = useState<string>("none");
   const [stepItems, setStepItems] = useState<EditStepItem[]>(
     Array.from({ length: 5 }, (_, i) => ({ name: `Step ${i + 1}`, key: `init-${i}` })),
   );
@@ -278,6 +282,7 @@ export default function NewGoal() {
           image_url: imageUrl || null,
           ...superGoalData,
           deadline: deadline || null,
+          life_area_id: lifeAreaId && lifeAreaId !== "none" ? lifeAreaId : null,
         } as any)
         .select()
         .single();
