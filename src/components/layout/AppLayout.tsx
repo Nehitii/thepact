@@ -3,6 +3,8 @@ import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette } from "@/components/CommandPalette";
 import { CoachPanel } from "@/components/coach/CoachPanel";
+import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
+import type { ReviewType } from "@/hooks/useReviews";
 import { Suspense, useEffect, useState } from "react";
 import { Bot } from "lucide-react";
 
@@ -14,12 +16,27 @@ const PageFallback = () => (
 
 export function AppLayout() {
   const [coachOpen, setCoachOpen] = useState(false);
+  const [ritualType, setRitualType] = useState<ReviewType | null>(null);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setCoachOpen((v) => !v);
+        return;
+      }
+      // Avoid stealing keys while typing
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      if (e.key === "F7") {
+        e.preventDefault();
+        setRitualType("daily");
+      } else if (e.key === "F8") {
+        e.preventDefault();
+        setRitualType("monthly");
+      } else if (e.key === "F9") {
+        e.preventDefault();
+        setRitualType("quarterly");
       }
     };
     window.addEventListener("keydown", onKey);
@@ -52,6 +69,14 @@ export function AppLayout() {
       </button>
 
       <CoachPanel open={coachOpen} onClose={() => setCoachOpen(false)} />
+
+      {ritualType && (
+        <ReviewRitualModal
+          open={!!ritualType}
+          onClose={() => setRitualType(null)}
+          type={ritualType}
+        />
+      )}
     </div>
   );
 }

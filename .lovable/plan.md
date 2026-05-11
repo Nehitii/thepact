@@ -1,205 +1,164 @@
 
-# Roadmap Pacte OS — Intégration progressive des manques
+# Plan d'achèvement Pacte OS — Tout sauf les abonnements payants
 
-Plan structuré en **6 vagues** ordonnées par dépendances et ROI. Chaque vague est livrable indépendamment et débloque la suivante. Estimation indicative en sprints (1 sprint = ~1 semaine de focus).
+Objectif : compléter intégralement le roadmap `.lovable/plan.md` en livrant les items restants. **Exclus** : Vague 1.2 (subscription tiers Paddle/paywall/pricing). Tout le reste est traité — y compris Finance avancée, connecteurs bancaires, intégrations OAuth, polish plateforme.
 
----
-
-## Vague 1 — Fondations & couche "Sens" (2 sprints)
-
-Prérequis pour tout le reste : sans Life Areas + Values, l'IA et les analytics futurs n'ont pas de pivot.
-
-### 1.1 Life Areas + Values (1 sprint)
-- Table `life_areas` (id, user_id, name, icon, color, weight 0-100, parent_pact_id).
-- Table `user_values` (id, user_id, label, rank, statement).
-- Onboarding step "Workshop des Valeurs" (5 questions guidées + sélection 3-5 valeurs).
-- Champs `life_area_id` ajoutés à `goals`, `habits`, `transactions` (nullable, migration douce).
-- Widget Home "Équilibre des domaines" (radar chart par area).
-- Settings → Domaines & Valeurs (CRUD).
-
-### 1.2 Subscription tiers (1 sprint)
-### 1.2 Subscription tiers — **DIFFÉRÉE** (décision user)
-Décisions verrouillées (à appliquer quand on reprend) :
-- **Provider :** Paddle (Seamless, MoR, 5%+0,50€) — éligibilité validée.
-- **Matrice :**
-  - **Free (généreux)** : Goals, Habits, Health, Finance manuel, Community, Achievements core.
-  - **Pro (~7€/mois)** : AI Coach, connecteurs banque + santé, exports PDF, calendrier 2-way.
-  - **Sovereign (~19€/mois)** : tout Pro + sessions humaines 1:1 + early access.
-- Tables `subscription_plans`, `user_subscriptions`, `feature_entitlements` + RPC `has_entitlement`.
-- Hook `useEntitlements()`, composant `<PaywallGate />`, page `/pricing`.
-- Webhook edge function Paddle (`subscription.created/updated/canceled`).
-- Mode admin contourne tous les gates.
-
-> Voir `mem://monetization/subscription-tiers-deferred` pour le détail figé.
-
-### 1.3 Observabilité & feature flags — **PARTIEL**
-- ✅ Tables `feature_flags` + `user_feature_overrides` (RLS lecture publique, écriture admin).
-- ✅ Hook `useFeatureFlag(key)` avec override per-user.
-- ✅ 3 flags seedés : `coach_write_tools`, `goal_contracts`, `goal_decompose_ai`.
-- ⏳ Sentry (front + edge functions).
-- ⏳ PostHog ou équivalent self-hosted.
+L'ordre suit les dépendances : V1 fondations → V2 réflexion/AI → V3 social → V4 capteurs → V5 profondeur → V6 polish.
 
 ---
 
-## Vague 2 — Boucle Réflexion & IA Coach (3 sprints)
+## Vague 1 — Fondations restantes
 
-### 2.1 Rituels de revue structurés (1 sprint)
-- Table `reviews` (type: daily/weekly/monthly/quarterly/annual, prompts, answers, score, mood).
-- Modaux séquentiels (Daily Shutdown 5min, Monthly Review 15min, Quarterly Reset).
-- Mapping hotkeys F7/F8/F9.
-- Archive consultable filtrée par type + recherche.
-- Decision log dédié (table `decisions` : hypothèse, contexte, résultat, leçon, date révision).
+### 1.1 Life Areas + Values
+- ✅ Tables `life_areas` + `user_values` (RLS owner-only, FKs vers goals/habit_logs/bank_transactions/decisions).
+- ✅ Hooks `useLifeAreas` + `useUserValues` opérationnels.
+- ✅ Page Settings → Domaines & Valeurs (`/profile/life-areas`) avec presets + CRUD + slider weight.
+- ✅ Widget Home `LifeAreasBalancePanel` accroché.
+- ✅ Onboarding : step 4 "Workshop des Valeurs" (12 suggestions + custom, 3-5 max, optionnel).
+- ✅ NewGoal : sélecteur `life_area_id` optionnel inséré entre Image et Notes.
+- ⏳ Backfill optionnel sur transactions/habits historiques (non bloquant).
 
-### 2.2 AI Coach conversationnel — **QUASI BOUCLÉE**
-- ✅ Edge function `ai-coach` streaming (lovable-ai gateway, Gemini 2.5 Flash par défaut).
-- ✅ Tables `coach_conversations`, `coach_messages`, `coach_embeddings` (pgvector + RPC `match_coach_memory`).
-- ✅ UI : panneau latéral global Cmd+J + bouton flottant.
-- ✅ Tool-calling lecture : `list_active_goals`, `list_recent_habits`, `list_recent_transactions`, `list_recent_journal`, `list_user_values`, `search_memory` (loop max 3 hops, puis stream final).
-- ✅ Mémoire vectorielle : edge function `coach-index-memory` (per-user via JWT, ou cron via `CRON_SECRET`) — embeds `openai/text-embedding-3-small`, sources : journal, reviews, decisions. Bouton 🧠 dans le panneau Coach.
-- ✅ Tool-calling write : `create_todo`, `create_journal_entry`, `create_decision` (gated derrière flag `coach_write_tools`).
-- ✅ Goal decomposition assistée (`goal-decompose` edge fn + bouton "AI Decompose" dans NewGoal, gated `goal_decompose_ai`).
-- ⏳ Cron horaire `coach-index-memory` (à brancher via `pg_cron` quand le secret CRON_SECRET sera défini).
-- ✅ Pattern detection edge fn `coach-pattern-detect` (Gemini 2.5 Flash, JSON insights → table `notifications`, mode cron via `CRON_SECRET`). Reste à brancher `pg_cron` nocturne.
+### 1.2 Observabilité (compléter le partiel)
+- Sentry front (`@sentry/react`) + edge functions (`@sentry/deno`).
+- PostHog cloud auto-hébergé : `posthog-js` côté front, capture page-view + events clés (goal create, habit log, shop purchase, ritual complete).
+- Secrets requis : `SENTRY_DSN`, `VITE_SENTRY_DSN`, `VITE_POSTHOG_KEY`, `VITE_POSTHOG_HOST`.
 
 ---
 
-## Vague 3 — Engagement & Social profond (2 sprints)
+## Vague 2 — Réflexion & AI Coach
 
-### 3.1 Goal contracts sociaux — **BOUCLÉE (MVP)**
-- ✅ Table `goal_contracts` (witnesses[], stake_bonds, deadline, status, signed_at, settled_at) + RLS owner+witnesses.
-- ✅ Hooks `useGoalContracts`, `useCreateGoalContract`, `useUpdateContractStatus` (gated `goal_contracts`).
-- ✅ RPC atomique `settle_contract` (succès → refund owner ; échec → split equal aux témoins, reste au 1er).
-- ✅ UI `GoalContractsPanel` dans `GoalDetail` : sélection des témoins (amis), mise en Bonds, échéance, notes, settle ✓/✗.
-- ⏳ Notification cascade aux témoins + modal de signature digitale HUD (V2).
+### 2.1 Rituels de revue structurés
+- ✅ Table `reviews` (5 types + RLS + prompts/answers JSONB + life_area_scores).
+- ✅ Hook `useReviews` + `REVIEW_PROMPTS` (daily/weekly/monthly/quarterly/annual).
+- ✅ `ReviewRitualModal` générique (steps progressifs, mood + alignment + highlights).
+- ✅ Hotkeys globaux F7 (daily), F8 (monthly), F9 (quarterly) wirés dans `AppLayout`, ignorés dans inputs.
+- ✅ Page archive `/reviews` (filtre par type + search full-text + déclencheurs nouveaux rituels).
+- ✅ Table `decisions` + `DecisionLogModal`.
+- ⏳ Lien sidebar/CommandPalette vers `/reviews` (V2.1 b).
 
-### 3.2 Quêtes dynamiques & Seasons — **EN COURS**
-- ✅ Tables `seasons` (slug, theme, starts_at/ends_at, leaderboard_snapshot) et `daily_quests` (kind, target, progress, reward, status) + RLS user-scoped.
-- ✅ RPC atomique `claim_quest` (vérifie progress ≥ target, crédite Bonds, marque claimed).
-- ✅ Edge fn `generate-daily-quests` (3 quêtes basées sur goals/habits actifs, cron-ready).
-- ✅ Hooks `useDailyQuests`, `useGenerateDailyQuests`, `useClaimQuest` + panneau `DailyQuestsPanel` accroché au Home.
-- ✅ Auto-incrément `progress` via triggers DB (`steps` validated, `habit_logs` completed, `journal_entries` insert, `focus_sessions` insert).
-- ✅ Table `focus_sessions` + hooks `useFocusSessions` / `useLogFocusSession` (auto-bump quest `focus_minutes`).
-- ⏳ Récompenses cosmétiques saisonnières + drop Shop limité.
-- ⏳ Reset trimestriel automatique + hall of fame archivé + prestige post-rank.
+### 2.2 Cron AI Coach
+- Activer `pg_cron` + secret `CRON_SECRET`.
+- Job horaire `coach-index-memory` (réindex mémoire vectorielle).
+- Job nocturne `coach-pattern-detect` (détection patterns → notifications).
 
 ---
 
-## Vague 4 — Capteurs & Intégrations (3 sprints)
+## Vague 3 — Engagement social V2
 
-### 4.1 PWA + push web (0.5 sprint)
-- ✅ Service worker (vite-plugin-pwa, autoUpdate) + manifest Vowpact (theme `#0b1018`, standalone, runtime cache fonts Google).
-- ✅ Table `push_subscriptions` (RLS owner-only) + hook `usePushNotifications`.
-- ✅ Edge fn `push-send` (web-push + VAPID, user-scoped ou cron via `CRON_SECRET`, prune 404/410).
-- ⏳ Configurer secrets `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` / `VAPID_SUBJECT` + `VITE_VAPID_PUBLIC_KEY` côté front.
-- Offline-first sur Todo / Habits / Journal (cache + sync queue).
+### 3.1 Goal contracts V2
+- Notification cascade : trigger Postgres sur `goal_contracts.insert` → insert `notifications` pour chaque témoin.
+- Modal signature digitale HUD (témoin signe avec son nom + timestamp, animation hold-to-sign).
+- Statut `pending_signatures` jusqu'à signature de tous les témoins, puis `active`.
 
-### 4.2 Calendar 2-way sync (1 sprint)
-- Connector Google Calendar (workspace-level OAuth = limité au dev) → bascule vers per-user OAuth (table `oauth_tokens`).
-- Sync delta (webhooks Google channels), conflict resolution.
-- Time-blocking : drag d'un step vers Calendar → event créé bilatéral.
-
-### 4.3 Wearables Health (1 sprint)
-- Apple Health / Google Fit via per-user OAuth + Health Connect API.
-- Edge function `sync-health-data` cron horaire.
-- Mapping vers HUD biométrique existant (steps, HR, sleep, HRV).
-- Mode manuel conservé en fallback.
-
-### 4.4 Bank aggregation (0.5 sprint MVP)
-- Connecteur Bridge API ou GoCardless (Europe) — clé propre via `add_secret`.
-- Table `bank_connections` + `synced_transactions`.
-- Auto-catégorisation par règles (table `categorization_rules`) + apprentissage simple.
+### 3.2 Quêtes & Seasons
+- Table `season_rewards` (cosmetic_id, season_id, unlock_rank).
+- Drop Shop limité saisonnier (filtre `available_until`).
+- Edge fn `season-reset` (cron trimestriel) : snapshot leaderboard → table `hall_of_fame`, attribue prestige (champ `prestige` sur profile), reset Seasons.
+- Page `/hall-of-fame` consultable.
 
 ---
 
-## Vague 5 — Profondeur par module (3 sprints)
+## Vague 4 — Capteurs & Intégrations
 
-### 5.1 Goals & Habits (1 sprint)
-- ✅ DAG dépendances goals : table `goal_dependencies` (kind blocks/related) + trigger anti-cycle + RLS owner-only.
-- ✅ Hooks `useGoalDependencies` / `useCreateGoalDependency` / `useDeleteGoalDependency`.
-- ✅ Panneau `GoalDependenciesPanel` dans `GoalDetail` (ajout, suppression, vue outgoing/incoming, lien navigable).
-- ⏳ Vue topologique globale (graphe d'objectifs).
-- Marketplace templates (publication communautaire, ratings).
-- ✅ Habit stacking : colonne `prerequisite_habit_id` sur `goals` + guard côté `useToggleHabitLog` (refuse si trigger non complété/frozen le même jour) + panneau `HabitStackPanel` (Select des autres habits du pact) dans `GoalDetail`. ⏳ Conditional habits (skip rules) et negative habits restent à faire.
-- ✅ Streak freezes monétisés en Bonds : colonnes `is_freeze`/`freeze_cost` sur `habit_logs` + RPC atomique `use_streak_freeze` (vérifie balance, déduit, insert log, anti double-freeze, fenêtre 7j). Hook `useUseStreakFreeze` + panneau `StreakFreezePanel` (grille 7 jours, snowflake, balance live) accroché au `GoalDetail` des habit goals.
+### 4.1 PWA finalisation
+- Configurer secrets VAPID (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`, `VITE_VAPID_PUBLIC_KEY`).
+- Offline-first : Workbox runtime cache `NetworkFirst` sur queries Supabase `goals`, `habits`, `journal`, `todos`. Sync queue IndexedDB pour mutations (replay au retour online).
+- ⚠️ Respect strict des contraintes PWA Lovable (pas d'iframe register, NetworkFirst sur HTML).
 
-### 5.2 Finance avancé (1 sprint)
-- Cashflow projeté 3/6/12 mois (algo récurrents + budgets).
-- Sinking funds (goals d'épargne avec virements simulés auto).
-- ✅ Net worth historique : table `net_worth_snapshots` + RPC `snapshot_net_worth` (SECURITY DEFINER, agrège accounts + bank_transactions). Hooks `useNetWorthSnapshots` / `useTakeNetWorthSnapshot` + panneau `NetWorthHistoryPanel` (sparkline + delta) dans l'onglet Accounts. ⏳ Cron mensuel via `pg_cron`.
-- Dette tracker (loans, échéanciers, intérêts composés).
-- Import OFX/CSV manuel.
+### 4.2 Calendar 2-way sync (Google)
+- Table `oauth_tokens` (user_id, provider, access_token chiffré, refresh_token, scope, expires_at) + RLS.
+- Edge fn `oauth-google-init` + `oauth-google-callback` (per-user OAuth, scope `calendar.events`).
+- Edge fn `calendar-sync` (delta via Google channels webhooks → table `calendar_events` étendue avec `external_id`/`source`).
+- UI Calendar : bouton "Connect Google", chips de filtre par source, drag step → event Google bilatéral, conflict resolution simple (last-write-wins + log).
 
-### 5.3 Focus, Journal, Calendar (1 sprint)
-- Deep work sessions sans timer + capture distractions.
-- Focus → attribution Goal (heures par mission dans Analytics).
-- Journal : prompts quotidiens rotatifs (Stoïques/CBT/gratitude), search sémantique (vecteurs), voice-to-entry (Whisper via lovable-ai).
-- Calendar : auto-scheduler IA des habits/steps dans les trous, conflict + travel time.
+### 4.3 Wearables Health
+- OAuth per-user Google Fit (scope fitness.activity.read, heart_rate, sleep).
+- Apple Health via fichier export manuel (upload XML → parser edge fn) en MVP, vu que Health Connect natif requiert Capacitor.
+- Edge fn `sync-health-data` cron horaire (Google Fit) + `import-apple-health` (one-shot).
+- Mapping vers tables Health existantes (steps, heart_rate, sleep, hrv).
+
+### 4.4 Bank aggregation
+- Connecteur GoCardless Bank Account Data (gratuit Europe, alternative Bridge).
+- Secrets : `GOCARDLESS_SECRET_ID`, `GOCARDLESS_SECRET_KEY`.
+- Tables `bank_connections` (institution_id, requisition_id, status, expires_at), enrichissement `bank_transactions` (external_id, raw JSONB).
+- Edge fn `bank-link-init` (génère agreement + requisition + redirect URL), `bank-callback` (échange contre accounts), `bank-sync` (cron quotidien : pull transactions delta).
+- Table `categorization_rules` (user_id, pattern, category) + auto-apply au sync, fallback IA via lovable-ai sur transactions inconnues.
 
 ---
 
-## Vague 6 — Polish & Plateforme (2 sprints)
+## Vague 5 — Profondeur par module
 
-### 6.1 Sortie & preuve (1 sprint)
-- Export PDF "Rapport Pacte" mensuel/annuel (pdfkit edge function).
-- Public goal pages `/u/:handle/g/:slug` (RLS public read sur opt-in).
-- Badges signés exportables LinkedIn (image + open graph).
+### 5.1 Goals & Habits
+- Vue topologique globale `/goals/graph` : graphe DAG via `react-flow` (nœuds = goals, edges = `goal_dependencies`), zoom/pan, click → GoalDetail.
+- Marketplace templates : extension table `goal_templates` (champs `is_public`, `author_id`, `rating_avg`, `usage_count`). Page `/templates/marketplace` avec filtres + page de détail + bouton "Use".
+- Conditional habits : table `habit_skip_rules` (goal_id, condition_json) — ex. skip si jour de repos déclaré.
+- Negative habits : flag `is_negative` sur goals — succès = ne PAS logger ce jour-là (inverse les rewards/streaks dans `useToggleHabitLog`).
 
-### 6.2 Plateforme (1 sprint)
-- Tests : Vitest + Playwright sur flux critiques (auth, goal CRUD, shop purchase, RPC bonds).
-- Storybook DS Pacte OS (vitrine primitives + dialectes).
-- Mobile native wrapper Capacitor (iOS/Android) + widgets (today's mission, habit check).
-- I18n : ajout ES/DE/PT/IT (fichiers `locales/`).
-- Notifications : quiet hours par catégorie, digest mode matinal.
+### 5.2 Finance avancée
+- Cashflow projeté 3/6/12 mois : RPC `compute_cashflow_projection(_months)` (récurrents `recurring_transactions` + budgets actifs + sinking funds). Composant `CashflowProjectionPanel` avec line chart + scenarios (worst/realistic/best).
+- Sinking funds : table `sinking_funds` (goal_id facultatif, target_amount, target_date, monthly_contribution, current_balance) + virement simulé auto mensuel (cron). Vue dédiée onglet Finance.
+- Cron mensuel `snapshot_net_worth` via `pg_cron`.
+- Dette tracker : table `debts` (name, principal, interest_rate, monthly_payment, start_date, end_date) + RPC `compute_debt_schedule` (intérêts composés, échéancier). Onglet "Dettes" Finance.
+- Import OFX/CSV : composant upload, parser côté front (lib `node-ofx-parser` + `papaparse`), preview + dédup par hash transaction.
+
+### 5.3 Focus, Journal, Calendar
+- Deep work sessions sans timer : variante de `focus_sessions` (mode `deep_work`, pas de durée fixe), capture distractions (table `focus_distractions` log timestamp + note rapide).
+- Focus → attribution Goal : champ `goal_id` sur `focus_sessions` (déjà présent partiellement) + section Analytics "Heures par mission".
+- Journal :
+  - Prompts quotidiens rotatifs : table `journal_prompts` seedée (Stoïques/CBT/gratitude/visualisation), rotation par hash(date, user_id).
+  - Search sémantique : extension `coach_embeddings` aux entries journal (déjà fait), UI search bar dans Journal.
+  - Voice-to-entry : enregistrement Web Audio → upload Storage → edge fn `transcribe-journal` via lovable-ai Whisper proxy → insert entry.
+- Calendar auto-scheduler IA : edge fn `calendar-autoschedule` (analyse trous + habits/steps non planifiés + travel time → propose blocs). Modal preview + confirm.
+
+---
+
+## Vague 6 — Polish & Plateforme
+
+### 6.1 Sortie & preuve
+- Edge fn `export-pdf-report` (pdfkit, période mensuelle/annuelle) : KPIs, graphes, valeurs, missions, rituels. Bouton "Exporter PDF" dans Profile.
+- Public goal pages : table `public_goal_shares` (goal_id, slug, is_public, theme), route `/u/:handle/g/:slug` avec RLS public read sur opt-in. Toggle dans GoalDetail "Partager publiquement".
+- Badges signés LinkedIn : edge fn `generate-badge` (canvas → PNG + Open Graph meta), page `/badges/:achievement_id`, bouton "Share to LinkedIn".
+
+### 6.2 Plateforme
+- Tests : Vitest sur hooks critiques (`useGoals`, `useShop`, `useHabitLogs`, RPCs Bonds). Playwright sur 4 flows (auth, goal CRUD, shop purchase, ritual complete).
+- Storybook : setup `@storybook/react-vite`, vitrine DS Pacte OS (DSPanel/DSBadge/DSEmptyState/DSLoadingState + dialectes Nexus/PRISM/Aura).
+- Mobile native Capacitor : config iOS/Android, splash, icons, widget "today's mission" (iOS WidgetKit / Android RemoteViews — code natif Swift/Kotlin minimal).
+- I18n : ajout `locales/es.json`, `de.json`, `pt.json`, `it.json` (traduction des clés existantes via lovable-ai batch).
+- Notifications avancées : table `notification_preferences` (user_id, category, quiet_hours_start, quiet_hours_end, digest_mode bool). Respect dans edge fn `push-send` + `smart-notifications`.
 
 ---
 
 ## Détails techniques transverses
 
-### Architecture
-- Toute nouvelle mutation passe par RPC `SECURITY DEFINER` (mémoire Core).
-- Tous nouveaux composants utilisent DS Pacte OS (DSPanel/DSBadge/DSEmptyState/DSLoadingState).
-- Hooks data via `useQuery` exclusivement (mémoire React Query Standard).
-- Edge functions : Zod validation, CORS, rate limiting (table `rate_limits` partagée).
+### Secrets requis (à demander en cours de route)
+- `CRON_SECRET` (V2.2, V5.2 cron)
+- `VAPID_*` ×4 (V4.1)
+- Google OAuth client (V4.2, V4.3) — secrets côté projet
+- `GOCARDLESS_SECRET_ID` / `SECRET_KEY` (V4.4)
+- `SENTRY_DSN` / `VITE_SENTRY_DSN` (V1.2)
+- `VITE_POSTHOG_KEY` / `VITE_POSTHOG_HOST` (V1.2)
 
-### Schéma BDD nouveau (résumé)
+### Architecture (rappels mémoire)
+- Toute mutation Bonds/Shop/Stats via RPC `SECURITY DEFINER`.
+- Composants en DS Pacte OS (DSPanel/DSBadge/DSEmptyState/DSLoadingState).
+- Data fetching exclusivement via `useQuery`.
+- Edge functions : Zod validation + CORS + rate limiting.
+- Type safety : extension manuelle des types Supabase, pas de `as any`.
+
+### Ordre d'exécution recommandé
 ```text
-life_areas, user_values
-subscription_plans, user_subscriptions, feature_flags
-reviews, decisions
-coach_conversations, coach_messages, coach_embeddings (pgvector)
-goal_contracts, seasons, daily_quests
-push_subscriptions, oauth_tokens, bank_connections, synced_transactions, categorization_rules
-goal_dependencies, public_goal_shares
+V1.1 → V1.2 → V2.1 → V2.2 →
+V3.1 ║ V3.2 ║ V4.1 (parallélisables)
+→ V4.2 → V4.3 → V4.4
+→ V5.1 → V5.2 → V5.3
+→ V6.1 → V6.2
 ```
 
-### Connectors à activer (au moment de chaque vague)
-- Vague 4.2 : per-user OAuth Google (pas le connector workspace).
-- Vague 4.4 : secret manuel Bridge/GoCardless (`add_secret`).
-- Vague 6.1 : aucun (pdfkit local).
+### Hors périmètre (confirmé par l'utilisateur)
+- Vague 1.2 originelle : abonnements payants Paddle, page `/pricing`, paywall, `<PaywallGate />`, webhook Paddle. **Reste différé.**
 
-### Risques & mitigations
-- **OAuth per-user** complexe → commencer par 1 provider (Google Calendar) comme proof of concept.
-- **AI Coach coût** → cache embeddings, limiter contexte (last 20 msgs + RAG), throttle Free tier.
-- **Migrations lourdes** (life_area_id sur 3 tables) → faire en nullable + backfill async.
-- **Subscription gates** : ne jamais bloquer rétroactivement les data existantes des users free.
-
----
-
-## Ordre & dépendances
-
-```text
-V1 Foundations ──┬── V2 IA Coach ──┐
-                 ├── V3 Engagement ─┤
-                 │                  ├── V5 Profondeur module ── V6 Polish
-                 └── V4 Intégrations┘
-```
-
-V2/V3/V4 peuvent être parallélisés après V1. V5 dépend de V1 (life_areas) et bénéficie de V2 (IA). V6 ferme la boucle.
-
----
-
-## Première action recommandée
-
-Démarrer par **Vague 1.1 (Life Areas + Values)** : c'est le pivot conceptuel qui donne du sens à toutes les vagues suivantes, faible risque technique, livrable en ~5 jours.
-
-Souhaites-tu que j'attaque directement la Vague 1.1, ou préfères-tu ajuster l'ordre/le périmètre avant ?
+### Risques principaux
+- OAuth per-user Google : complexité, démarrer par Calendar comme proof of concept avant Health.
+- GoCardless : limité Europe + sandbox requis pour tests.
+- Capacitor + widgets natifs : nécessite tooling iOS/Android local — peut être livré en dernier ou scoped à la web app + manifest only si l'utilisateur préfère.
+- Volume : ~12 sprints au total. Suggestion = livrer vague par vague avec validation entre chaque.
