@@ -4,7 +4,7 @@
  * nouveau rituel (relié aux hotkeys F7/F8/F9).
  */
 import { useMemo, useState } from "react";
-import { ScrollText, Search, Plus, Calendar, Sparkles, Star } from "lucide-react";
+import { Search, Plus, Calendar, Sparkles, Star } from "lucide-react";
 import { useReviews, type ReviewType, type Review } from "@/hooks/useReviews";
 import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
 import { Input } from "@/components/ui/input";
@@ -47,9 +47,9 @@ export default function Reviews() {
   return (
     <div className="page-px page-py space-y-6 max-w-5xl mx-auto">
       <ModuleHeader
-        icon={<ScrollText className="h-7 w-7 text-primary" />}
-        title="Reflect Archive"
-        subtitle="RITUEL · ALIGNEMENT · MÉMOIRE"
+        systemLabel="REFLECT · ARCHIVE"
+        title="Reflect"
+        titleAccent="Archive"
       />
 
       <div className="flex flex-wrap gap-2 items-center">
