@@ -10,12 +10,13 @@ L'ordre suit les dépendances : V1 fondations → V2 réflexion/AI → V3 social
 ## Vague 1 — Fondations restantes
 
 ### 1.1 Life Areas + Values
-- Tables `life_areas` (user_id, name, icon, color, weight, parent_pact_id) et `user_values` (label, rank, statement) avec RLS owner-only.
-- Migration douce : ajout `life_area_id` (nullable) sur `goals`, `habits`/`habit_logs`, `bank_transactions`.
-- Onboarding : nouveau step "Workshop des Valeurs" (5 questions guidées + sélection 3-5 valeurs).
-- Page Settings → Domaines & Valeurs (CRUD complet).
-- Widget Home "Équilibre des domaines" (radar par area, pondéré par activité 30j).
-- Hooks `useLifeAreas`, `useUserValues` (déjà partiellement présents — étendre).
+- ✅ Tables `life_areas` + `user_values` (RLS owner-only, FKs vers goals/habit_logs/bank_transactions/decisions).
+- ✅ Hooks `useLifeAreas` + `useUserValues` opérationnels.
+- ✅ Page Settings → Domaines & Valeurs (`/profile/life-areas`) avec presets + CRUD + slider weight.
+- ✅ Widget Home `LifeAreasBalancePanel` accroché.
+- ✅ Onboarding : step 4 "Workshop des Valeurs" (12 suggestions + custom, 3-5 max, optionnel).
+- ✅ NewGoal : sélecteur `life_area_id` optionnel inséré entre Image et Notes.
+- ⏳ Backfill optionnel sur transactions/habits historiques (non bloquant).
 
 ### 1.2 Observabilité (compléter le partiel)
 - Sentry front (`@sentry/react`) + edge functions (`@sentry/deno`).
@@ -27,15 +28,13 @@ L'ordre suit les dépendances : V1 fondations → V2 réflexion/AI → V3 social
 ## Vague 2 — Réflexion & AI Coach
 
 ### 2.1 Rituels de revue structurés
-- Table `reviews` (type daily/weekly/monthly/quarterly/annual, prompts JSONB, answers JSONB, score, mood, created_at) + RLS.
-- Modaux séquentiels :
-  - Daily Shutdown (5 min, 4 prompts).
-  - Monthly Review (15 min, 8 prompts).
-  - Quarterly Reset (alignement valeurs + life areas).
-  - Annual Review.
-- Hotkeys F7 (daily), F8 (monthly), F9 (quarterly).
-- Page Archive `/reviews` filtrable par type + recherche full-text.
-- Decision log dédié : table `decisions` (hypothèse, contexte, résultat, leçon, review_at) + modal réutilisable `DecisionLogModal` (déjà ébauché).
+- ✅ Table `reviews` (5 types + RLS + prompts/answers JSONB + life_area_scores).
+- ✅ Hook `useReviews` + `REVIEW_PROMPTS` (daily/weekly/monthly/quarterly/annual).
+- ✅ `ReviewRitualModal` générique (steps progressifs, mood + alignment + highlights).
+- ✅ Hotkeys globaux F7 (daily), F8 (monthly), F9 (quarterly) wirés dans `AppLayout`, ignorés dans inputs.
+- ✅ Page archive `/reviews` (filtre par type + search full-text + déclencheurs nouveaux rituels).
+- ✅ Table `decisions` + `DecisionLogModal`.
+- ⏳ Lien sidebar/CommandPalette vers `/reviews` (V2.1 b).
 
 ### 2.2 Cron AI Coach
 - Activer `pg_cron` + secret `CRON_SECRET`.
