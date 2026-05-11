@@ -861,6 +861,35 @@ export default function NewGoal() {
               {/* Image Upload */}
               {user && <GoalImageUpload value={imageUrl} onChange={setImageUrl} userId={user.id} />}
 
+              {/* Life Area attribution */}
+              {lifeAreas.length > 0 && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-rajdhani tracking-wide uppercase text-foreground/80 flex items-center gap-2">
+                    <Compass className="h-4 w-4" />
+                    Domaine de vie (optionnel)
+                  </Label>
+                  <Select value={lifeAreaId} onValueChange={setLifeAreaId}>
+                    <SelectTrigger className="rounded-xl bg-background/50 border-white/10 text-foreground">
+                      <SelectValue placeholder="Aucun" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Aucun</SelectItem>
+                      {lifeAreas.map((a) => (
+                        <SelectItem key={a.id} value={a.id}>
+                          <span className="inline-flex items-center gap-2">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full"
+                              style={{ background: a.color }}
+                            />
+                            {a.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {/* Notes */}
               <div className="space-y-3">
                 <Label
