@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLeft, User, Palette } from "lucide-react";
+import { Compass } from "lucide-react";
 import { createPact } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,7 +28,22 @@ const colors = [
   { name: "Cyan", value: "cyan", class: "bg-cyan-500" },
 ];
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
+
+const VALUE_SUGGESTIONS = [
+  "Liberté",
+  "Excellence",
+  "Famille",
+  "Croissance",
+  "Discipline",
+  "Honnêteté",
+  "Aventure",
+  "Impact",
+  "Sagesse",
+  "Santé",
+  "Création",
+  "Sérénité",
+];
 
 export default function Onboarding() {
   const { t } = useTranslation();
@@ -37,6 +53,8 @@ export default function Onboarding() {
   const [mantra, setMantra] = useState("");
   const [symbol, setSymbol] = useState("flame");
   const [color, setColor] = useState("amber");
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
+  const [customValue, setCustomValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -46,7 +64,21 @@ export default function Onboarding() {
     if (step === 0) return true;
     if (step === 1) return displayName.trim().length > 0;
     if (step === 2) return name.trim().length > 0 && mantra.trim().length > 0;
+    if (step === 3) return true; // Values step is optional
     return true;
+  };
+
+  const toggleValue = (label: string) => {
+    setSelectedValues((prev) =>
+      prev.includes(label) ? prev.filter((v) => v !== label) : prev.length < 5 ? [...prev, label] : prev,
+    );
+  };
+
+  const addCustomValue = () => {
+    const v = customValue.trim();
+    if (!v || selectedValues.includes(v) || selectedValues.length >= 5) return;
+    setSelectedValues((prev) => [...prev, v]);
+    setCustomValue("");
   };
 
   const handleFinish = async () => {
@@ -57,6 +89,11 @@ export default function Onboarding() {
         await supabase.from("profiles").update({ display_name: displayName.trim() }).eq("id", user.id);
       }
       await createPact({ user_id: user.id, name, mantra, symbol, color });
+      if (selectedValues.length > 0) {
+        await (supabase as any).from("user_values").insert(
+          selectedValues.map((label, i) => ({ user_id: user.id, label, rank: i })),
+        );
+      }
       toast({ title: t("onboarding.welcomeToast"), description: t("onboarding.pactSealed") });
       navigate("/");
     } catch (error: any) {
@@ -148,6 +185,59 @@ export default function Onboarding() {
           )}
 
           {step === 3 && (
+            <motion.div key="values" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="space-y-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-card border border-border/50 rounded-full flex items-center justify-center">
+                  <Compass className="h-7 w-7 text-primary" />
+                </div>
+                <h2 className="text-2xl font-black font-orbitron text-foreground mb-2">Workshop des valeurs</h2>
+                <p className="text-sm text-muted-foreground">
+                  Choisis 3 à 5 valeurs qui guideront ton Pacte. (Optionnel — modifiable plus tard)
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2 justify-center">
+                {VALUE_SUGGESTIONS.map((v) => {
+                  const active = selectedValues.includes(v);
+                  const disabled = !active && selectedValues.length >= 5;
+                  return (
+                    <button
+                      key={v}
+                      type="button"
+                      onClick={() => toggleValue(v)}
+                      disabled={disabled}
+                      className={`px-3 py-1.5 rounded-full text-sm font-rajdhani border transition-all ${
+                        active
+                          ? "bg-primary text-primary-foreground border-primary shadow-[0_0_12px_-2px_hsl(var(--primary)/0.6)]"
+                          : disabled
+                            ? "border-border/30 text-muted-foreground/40 cursor-not-allowed"
+                            : "border-border/50 text-foreground/80 hover:border-primary/50 hover:text-primary"
+                      }`}
+                    >
+                      {v}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  value={customValue}
+                  onChange={(e) => setCustomValue(e.target.value)}
+                  placeholder="Ta propre valeur…"
+                  maxLength={30}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCustomValue())}
+                  disabled={selectedValues.length >= 5}
+                />
+                <Button type="button" variant="outline" onClick={addCustomValue} disabled={selectedValues.length >= 5 || !customValue.trim()}>
+                  Ajouter
+                </Button>
+              </div>
+              <p className="text-xs text-center text-muted-foreground font-mono">
+                {selectedValues.length} / 5 sélectionnée{selectedValues.length > 1 ? "s" : ""}
+              </p>
+            </motion.div>
+          )}
+
+          {step === 4 && (
             <motion.div key="customize" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="space-y-6">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 mx-auto mb-4 bg-card border border-border/50 rounded-full flex items-center justify-center">
