@@ -598,6 +598,42 @@ export type Database = {
           },
         ]
       }
+      categorization_rules: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          match_type: string
+          pattern: string
+          priority: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          match_type?: string
+          pattern: string
+          priority?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          match_type?: string
+          pattern?: string
+          priority?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       category_budgets: {
         Row: {
           budget_type: string
@@ -1125,6 +1161,68 @@ export type Database = {
             columns: ["season_id"]
             isOneToOne: false
             referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      debts: {
+        Row: {
+          account_id: string | null
+          created_at: string
+          current_balance: number
+          debt_type: string
+          end_date: string | null
+          id: string
+          interest_rate: number
+          is_active: boolean
+          monthly_payment: number
+          name: string
+          notes: string | null
+          principal: number
+          start_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          created_at?: string
+          current_balance?: number
+          debt_type?: string
+          end_date?: string | null
+          id?: string
+          interest_rate?: number
+          is_active?: boolean
+          monthly_payment?: number
+          name: string
+          notes?: string | null
+          principal?: number
+          start_date?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          created_at?: string
+          current_balance?: number
+          debt_type?: string
+          end_date?: string | null
+          id?: string
+          interest_rate?: number
+          is_active?: boolean
+          monthly_payment?: number
+          name?: string
+          notes?: string | null
+          principal?: number
+          start_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debts_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -3737,6 +3835,116 @@ export type Database = {
         }
         Relationships: []
       }
+      sinking_fund_contributions: {
+        Row: {
+          amount: number
+          contribution_date: string
+          created_at: string
+          fund_id: string
+          id: string
+          note: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          contribution_date?: string
+          created_at?: string
+          fund_id: string
+          id?: string
+          note?: string | null
+          source?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          contribution_date?: string
+          created_at?: string
+          fund_id?: string
+          id?: string
+          note?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sinking_fund_contributions_fund_id_fkey"
+            columns: ["fund_id"]
+            isOneToOne: false
+            referencedRelation: "sinking_funds"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sinking_funds: {
+        Row: {
+          account_id: string | null
+          auto_contribute: boolean
+          created_at: string
+          current_balance: number
+          goal_id: string | null
+          icon_emoji: string | null
+          id: string
+          is_active: boolean
+          monthly_contribution: number
+          name: string
+          notes: string | null
+          target_amount: number
+          target_date: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id?: string | null
+          auto_contribute?: boolean
+          created_at?: string
+          current_balance?: number
+          goal_id?: string | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_contribution?: number
+          name: string
+          notes?: string | null
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string | null
+          auto_contribute?: boolean
+          created_at?: string
+          current_balance?: number
+          goal_id?: string | null
+          icon_emoji?: string | null
+          id?: string
+          is_active?: boolean
+          monthly_contribution?: number
+          name?: string
+          notes?: string | null
+          target_amount?: number
+          target_date?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sinking_funds_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sinking_funds_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       special_offers: {
         Row: {
           created_at: string
@@ -4570,11 +4778,46 @@ export type Database = {
         Args: { p_cosmetic_id: string; p_user_id: string }
         Returns: Json
       }
+      apply_categorization_rules: { Args: { _limit?: number }; Returns: Json }
+      apply_sinking_contribution: {
+        Args: {
+          _amount: number
+          _fund_id: string
+          _note?: string
+          _source?: string
+        }
+        Returns: Json
+      }
       claim_notification_reward: {
         Args: { p_notification_id: string }
         Returns: Json
       }
       claim_quest: { Args: { _quest_id: string }; Returns: Json }
+      compute_cashflow_projection: {
+        Args: { _months?: number }
+        Returns: {
+          cumulative_best: number
+          cumulative_realistic: number
+          cumulative_worst: number
+          debt_payments: number
+          expenses: number
+          income: number
+          month_start: string
+          net: number
+          sinking: number
+        }[]
+      }
+      compute_debt_schedule: {
+        Args: { _debt_id: string }
+        Returns: {
+          due_date: string
+          installment: number
+          interest: number
+          payment: number
+          principal_paid: number
+          remaining_balance: number
+        }[]
+      }
       create_guild_with_owner: {
         Args: {
           p_color?: string

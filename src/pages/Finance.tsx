@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { LayoutDashboard, FileText, Settings, Landmark, ArrowLeftRight, Download } from "lucide-react";
+import { LayoutDashboard, FileText, Settings, Landmark, ArrowLeftRight, Download, TrendingUp, Upload, CreditCard } from "lucide-react";
 import { motion } from "framer-motion";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { usePact } from "@/hooks/usePact";
@@ -22,6 +22,7 @@ import { NetWorthHistoryPanel } from "@/components/finance/NetWorthHistoryPanel"
 import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
 import { TransactionsTab } from "@/components/finance/transactions";
 import { AuraBackground, AuraBalanceHero, FloatingTabBar } from "@/components/finance/aura";
+import { CashflowProjectionPanel, SinkingFundsPanel, DebtsPanel, ImportTransactionsModal } from "@/components/finance/advanced";
 import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
 import { exportFullReport } from "@/lib/financeExport";
 import { roundMoney } from "@/lib/financeCategories";
@@ -36,6 +37,7 @@ export default function Finance() {
   const { currency } = useCurrency();
   const [activeTab, setActiveTab] = useState("overview");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [accountFilter, setAccountFilter] = useState<string | null>(null);
 
   const { data: pact } = usePact(user?.id);
@@ -129,6 +131,8 @@ export default function Finance() {
     { value: 'budget', label: t('finance.tabs.budget'), icon: FileText },
     { value: 'transactions', label: t('finance.tabs.transactions'), icon: ArrowLeftRight },
     { value: 'accounts', label: t('finance.tabs.accounts'), icon: Landmark },
+    { value: 'forecast', label: 'Forecast', icon: TrendingUp },
+    { value: 'debts', label: 'Dettes', icon: CreditCard },
   ];
 
   return (
@@ -166,6 +170,9 @@ export default function Finance() {
                   <DropdownMenuContent align="end" className="bg-popover border-border rounded-xl">
                     <DropdownMenuItem onClick={handleExportAll} className="text-foreground">
                       <Download className="w-3.5 h-3.5 mr-2" />{t('finance.export.fullReport')}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setImportOpen(true)} className="text-foreground">
+                      <Upload className="w-3.5 h-3.5 mr-2" />Importer CSV
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -250,10 +257,24 @@ export default function Finance() {
               />
             </motion.div>
           </TabsContent>
+
+          <TabsContent value="forecast" className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-6">
+              <CashflowProjectionPanel />
+              <SinkingFundsPanel />
+            </motion.div>
+          </TabsContent>
+
+          <TabsContent value="debts" className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+              <DebtsPanel />
+            </motion.div>
+          </TabsContent>
         </Tabs>
       </div>
 
       <FinanceSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} currentSettings={settings} />
+      <ImportTransactionsModal open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }
