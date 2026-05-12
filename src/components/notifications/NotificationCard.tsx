@@ -92,66 +92,14 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
 
     setClaiming(true);
     try {
-      if (notification.reward_type === "bonds" && notification.reward_amount) {
-        // Add bonds to user balance
-        const { data: balance } = await supabase
-          .from("bond_balance")
-          .select("id, balance, total_earned")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (balance) {
-          await supabase
-            .from("bond_balance")
-            .update({
-              balance: balance.balance + notification.reward_amount,
-              total_earned: balance.total_earned + notification.reward_amount,
-            })
-            .eq("id", balance.id);
-        } else {
-          await supabase.from("bond_balance").insert({
-            user_id: user.id,
-            balance: notification.reward_amount,
-            total_earned: notification.reward_amount,
-          });
-        }
-
-        // Log transaction
-        await supabase.from("bond_transactions").insert({
-          user_id: user.id,
-          amount: notification.reward_amount,
-          transaction_type: "earn",
-          description: `Claimed reward: ${notification.title}`,
-          reference_id: notification.id,
-          reference_type: "notification",
-        });
-      } else if ((notification as any).reward_cosmetic_id && (notification as any).reward_cosmetic_type) {
-        // Add cosmetic to user's collection
-        const cosmeticId = (notification as any).reward_cosmetic_id;
-        const cosmeticType = (notification as any).reward_cosmetic_type;
-
-        // Check if already owned
-        const { data: existing } = await supabase
-          .from("user_cosmetics")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("cosmetic_id", cosmeticId)
-          .maybeSingle();
-
-        if (!existing) {
-          await supabase.from("user_cosmetics").insert({
-            user_id: user.id,
-            cosmetic_id: cosmeticId,
-            cosmetic_type: cosmeticType,
-          });
-        }
+      // Atomic, server-validated claim (validates ownership, prevents double-claim,
+      // credits bonds, grants cosmetic, marks notification claimed).
+      const { data: claimResult, error: claimError } = await (supabase as any)
+        .rpc("claim_notification_reward", { p_notification_id: notification.id });
+      if (claimError) throw claimError;
+      if (claimResult && claimResult.success === false) {
+        throw new Error(claimResult.error || "Claim failed");
       }
-
-      // Mark as claimed
-      await supabase
-        .from("notifications")
-        .update({ reward_claimed: true })
-        .eq("id", notification.id);
 
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["notifications"] });

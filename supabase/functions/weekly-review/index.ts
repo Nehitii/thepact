@@ -12,11 +12,35 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { user_id } = await req.json();
-    if (!user_id) throw new Error("user_id required");
+    // Require authenticated user — derive user_id from the JWT, never trust the body.
+    const authHeader = req.headers.get("Authorization") ?? "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const user_id: string = claimsData.claims.sub;
+
+    // Discard any user_id from the request body.
+    try { await req.json(); } catch { /* body optional */ }
+
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const now = new Date();

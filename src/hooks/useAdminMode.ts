@@ -43,39 +43,13 @@ export function useAdminForcePurchaseCosmetic() {
       cosmeticId: string; 
       cosmeticType: "frame" | "banner" | "title"; 
     }) => {
-      // Check if already owned
-      const { data: existing } = await supabase
-        .from("user_cosmetics")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("cosmetic_id", cosmeticId)
-        .maybeSingle();
-      
-      if (existing) {
-        throw new Error("Already owned");
-      }
-      
-      // Add cosmetic ownership (no balance deduction)
-      const { error: cosmeticError } = await supabase
-        .from("user_cosmetics")
-        .insert({
-          user_id: userId,
-          cosmetic_id: cosmeticId,
-          cosmetic_type: cosmeticType,
-        });
-      
-      if (cosmeticError) throw cosmeticError;
-      
-      // Log admin transaction
-      await supabase.from("bond_transactions").insert({
-        user_id: userId,
-        amount: 0,
-        transaction_type: "admin_grant",
-        description: `[ADMIN] Granted ${cosmeticType}`,
-        reference_id: cosmeticId,
-        reference_type: "cosmetic",
+      const { data, error } = await (supabase as any).rpc("admin_grant_cosmetic", {
+        p_user_id: userId,
+        p_cosmetic_id: cosmeticId,
+        p_cosmetic_type: cosmeticType,
       });
-      
+      if (error) throw error;
+      if (data && data.success === false) throw new Error(data.error || "Grant failed");
       return true;
     },
     onSuccess: () => {
@@ -105,14 +79,12 @@ export function useAdminResetCosmetic() {
       userId: string; 
       cosmeticId: string; 
     }) => {
-      const { error } = await supabase
-        .from("user_cosmetics")
-        .delete()
-        .eq("user_id", userId)
-        .eq("cosmetic_id", cosmeticId);
-      
+      const { data, error } = await (supabase as any).rpc("admin_reset_cosmetic", {
+        p_user_id: userId,
+        p_cosmetic_id: cosmeticId,
+      });
       if (error) throw error;
-      
+      if (data && data.success === false) throw new Error(data.error || "Reset failed");
       return true;
     },
     onSuccess: () => {
