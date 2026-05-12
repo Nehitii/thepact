@@ -92,43 +92,6 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
 
     setClaiming(true);
     try {
-      if (notification.reward_type === "bonds" && notification.reward_amount) {
-        // Add bonds to user balance
-        const { data: balance } = await supabase
-          .from("bond_balance")
-          .select("id, balance, total_earned")
-          .eq("user_id", user.id)
-          .maybeSingle();
-
-        if (balance) {
-          await supabase
-            .from("bond_balance")
-            .update({
-              balance: balance.balance + notification.reward_amount,
-              total_earned: balance.total_earned + notification.reward_amount,
-            })
-            .eq("id", balance.id);
-        } else {
-          await supabase.from("bond_balance").insert({
-            user_id: user.id,
-            balance: notification.reward_amount,
-            total_earned: notification.reward_amount,
-          });
-        }
-
-        // Log transaction
-        await supabase.from("bond_transactions").insert({
-          user_id: user.id,
-          amount: notification.reward_amount,
-          transaction_type: "earn",
-          description: `Claimed reward: ${notification.title}`,
-          reference_id: notification.id,
-          reference_type: "notification",
-        });
-      } else if ((notification as any).reward_cosmetic_id && (notification as any).reward_cosmetic_type) {
-        // Cosmetic rewards are now atomically claimed via secure RPC below.
-      }
-
       // Atomic, server-validated claim (validates ownership, prevents double-claim,
       // credits bonds, grants cosmetic, marks notification claimed).
       const { data: claimResult, error: claimError } = await (supabase as any)
