@@ -4558,6 +4558,22 @@ export type Database = {
         Args: { p_amount: number; p_guild_id: string; p_reason: string }
         Returns: undefined
       }
+      admin_grant_cosmetic: {
+        Args: {
+          p_cosmetic_id: string
+          p_cosmetic_type: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
+      admin_reset_cosmetic: {
+        Args: { p_cosmetic_id: string; p_user_id: string }
+        Returns: Json
+      }
+      claim_notification_reward: {
+        Args: { p_notification_id: string }
+        Returns: Json
+      }
       claim_quest: { Args: { _quest_id: string }; Returns: Json }
       create_guild_with_owner: {
         Args: {
