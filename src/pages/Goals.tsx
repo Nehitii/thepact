@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus } from "lucide-react";
+import { Plus, Network, Sparkles } from "lucide-react";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { CyberBackground } from "@/components/CyberBackground";
@@ -80,6 +80,21 @@ export default function Goals() {
         <CyberBackground />
         <div className="relative z-10 max-w-6xl mx-auto page-px pt-6 md:pt-8 pb-12 md:pb-24 space-y-6">
           <ModuleHeader systemLabel="SYS::GOALS" title="GOAL" titleAccent="S">
+            <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => navigate("/templates/marketplace")}
+              className="px-3 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-white/[0.08] text-muted-foreground hover:text-primary hover:border-primary/40 transition flex items-center gap-1.5 text-xs"
+              aria-label="Marketplace de modèles"
+            >
+              <Sparkles className="h-3.5 w-3.5" /> <span className="hidden md:inline">Templates</span>
+            </button>
+            <button
+              onClick={() => navigate("/goals/graph")}
+              className="px-3 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-white/[0.08] text-muted-foreground hover:text-primary hover:border-primary/40 transition flex items-center gap-1.5 text-xs"
+              aria-label="Vue topologique"
+            >
+              <Network className="h-3.5 w-3.5" /> <span className="hidden md:inline">Graph</span>
+            </button>
             <button
               onClick={() => navigate("/goals/new")}
               className="relative overflow-hidden group px-5 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-rajdhani font-medium tracking-wider transition-all duration-300 hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] flex items-center gap-2"
@@ -87,6 +102,7 @@ export default function Goals() {
               <Plus className="h-4 w-4" />
               <span>Add Goal</span>
             </button>
+            </div>
           </ModuleHeader>
           <GoalsSkeleton mode={filters.displayMode} count={4} />
         </div>
