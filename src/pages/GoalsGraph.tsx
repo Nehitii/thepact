@@ -139,7 +139,7 @@ export default function GoalsGraph() {
         </div>
       </div>
 
-      <DSPanel className="flex-1 p-0 overflow-hidden" style={{ minHeight: 480 }}>
+      <DSPanel className="flex-1 p-0 overflow-hidden min-h-[480px]">
         {nodes.length === 0 ? (
           <DSEmptyState
             message="NO GOALS"
