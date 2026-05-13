@@ -273,8 +273,8 @@ export function useDeleteCategorizationRule() {
 export function useApplyCategorizationRules() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (limit = 500) => {
-      const { data, error } = await (supabase as any).rpc("apply_categorization_rules", { _limit: limit });
+    mutationFn: async (limit?: number) => {
+      const { data, error } = await (supabase as any).rpc("apply_categorization_rules", { _limit: limit ?? 500 });
       if (error) throw error;
       return data as { success: boolean; updated: number };
     },

@@ -962,6 +962,38 @@ export type Database = {
           },
         ]
       }
+      contract_signatures: {
+        Row: {
+          contract_id: string
+          id: string
+          signature_name: string
+          signed_at: string
+          witness_id: string
+        }
+        Insert: {
+          contract_id: string
+          id?: string
+          signature_name: string
+          signed_at?: string
+          witness_id: string
+        }
+        Update: {
+          contract_id?: string
+          id?: string
+          signature_name?: string
+          signed_at?: string
+          witness_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_signatures_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "goal_contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cosmetic_banners: {
         Row: {
           banner_url: string | null
@@ -4993,6 +5025,10 @@ export type Database = {
       reset_pact_data: { Args: { p_pact_id: string }; Returns: boolean }
       settle_contract: {
         Args: { _contract_id: string; _outcome: string }
+        Returns: Json
+      }
+      sign_goal_contract: {
+        Args: { _contract_id: string; _signature_name: string }
         Returns: Json
       }
       snapshot_net_worth: {

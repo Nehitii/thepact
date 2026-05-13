@@ -41,6 +41,7 @@ const Analytics = lazy(() => import("./pages/Analytics"));
 const Friends = lazy(() => import("./pages/Friends"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const Reviews = lazy(() => import("./pages/Reviews"));
+const ContractSign = lazy(() => import("./pages/ContractSign"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -107,6 +108,7 @@ const App = () => (
         <Route path="guild/:id" element={<SuspensePage><GuildPage /></SuspensePage>} />
         <Route path="calendar" element={<SuspensePage><Calendar /></SuspensePage>} />
         <Route path="reviews" element={<SuspensePage><Reviews /></SuspensePage>} />
+        <Route path="contracts/sign/:contractId" element={<SuspensePage><ContractSign /></SuspensePage>} />
       </Route>
 
       {/* Admin */}
