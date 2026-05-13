@@ -181,7 +181,7 @@ export function GoalContractsPanel({ goalId, goalName }: Props) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Annuler</Button>
-            <Button onClick={handleCreate} disabled={createContract.isPending}>Signer</Button>
+            <Button onClick={handleCreate} disabled={createContract.isPending}>Envoyer aux témoins</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
