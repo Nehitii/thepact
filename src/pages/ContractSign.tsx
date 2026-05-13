@@ -22,7 +22,7 @@ export default function ContractSign() {
   const { contractId } = useParams<{ contractId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { profile } = useProfile(user?.id);
+  const { data: profile } = useProfile(user?.id);
 
   const { data: contract, isLoading } = useGoalContractById(contractId);
   const { data: signatures = [] } = useContractSignatures(contractId);
@@ -90,26 +90,27 @@ export default function ContractSign() {
     setProgress(0);
   };
 
-  if (isLoading) return <div className="p-6"><DSLoadingState label="Chargement du pacte" /></div>;
+  if (isLoading) return <div className="p-6"><DSLoadingState message="LOADING PACT" /></div>;
 
   if (!contract) {
     return (
       <div className="p-6">
         <DSEmptyState
-          title="Contrat introuvable"
+          message="CONTRACT NOT FOUND"
           description="Ce pacte a peut-être été annulé ou ne t'est pas accessible."
-          action={<Link to="/" className="text-primary text-sm underline">Retour</Link>}
+          ctaLabel="Retour à l'accueil"
+          to="/"
         />
       </div>
     );
   }
 
-  const statusVariant: Record<string, any> = {
-    pending: "warning",
-    active: "success",
-    succeeded: "success",
-    failed: "critical",
-    canceled: "muted",
+  const statusVariant: Record<string, "live" | "stale" | "offline" | "locked" | "new" | "standby"> = {
+    pending: "standby",
+    active: "live",
+    succeeded: "live",
+    failed: "offline",
+    canceled: "stale",
   };
 
   return (
@@ -133,7 +134,7 @@ export default function ContractSign() {
               Engagé par <span className="text-foreground font-medium">{owner?.display_name || "—"}</span>
             </p>
           </div>
-          <DSBadge variant={statusVariant[contract.status] || "muted"}>{contract.status}</DSBadge>
+          <DSBadge variant={statusVariant[contract.status] || "stale"} label={contract.status} />
         </div>
 
         <div className="grid grid-cols-3 gap-3 text-center">
