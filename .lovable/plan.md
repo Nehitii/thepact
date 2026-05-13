@@ -89,10 +89,11 @@ L'ordre suit les dépendances : V1 fondations → V2 réflexion/AI → V3 social
 ## Vague 5 — Profondeur par module
 
 ### 5.1 Goals & Habits
-- Vue topologique globale `/goals/graph` : graphe DAG via `react-flow` (nœuds = goals, edges = `goal_dependencies`), zoom/pan, click → GoalDetail.
-- Marketplace templates : extension table `goal_templates` (champs `is_public`, `author_id`, `rating_avg`, `usage_count`). Page `/templates/marketplace` avec filtres + page de détail + bouton "Use".
-- Conditional habits : table `habit_skip_rules` (goal_id, condition_json) — ex. skip si jour de repos déclaré.
-- Negative habits : flag `is_negative` sur goals — succès = ne PAS logger ce jour-là (inverse les rewards/streaks dans `useToggleHabitLog`).
+- ✅ Vue topologique `/goals/graph` : reactflow + layout en couches, navigation au clic, mini-map + contrôles.
+- ✅ Marketplace templates : table étendue (`is_public`, `rating_avg`, `rating_count`) + table `template_ratings` + RPC `rate_template`. Page `/templates/marketplace` avec filtres (catégorie, recherche, tri), modal détail, notation 1-5.
+- ✅ Table `habit_skip_rules` (jours de la semaine + dates spécifiques) avec RLS owner-only.
+- ✅ Champ `is_negative` ajouté sur `goals` (UI de bascule + logique inverse à câbler dans une itération suivante).
+- ⏳ UI Skip rules dans GoalDetail + inversion semantics dans `useToggleHabitLog` (à faire prochainement).
 
 ### 5.2 Finance avancée
 - Cashflow projeté 3/6/12 mois : RPC `compute_cashflow_projection(_months)` (récurrents `recurring_transactions` + budgets actifs + sinking funds). Composant `CashflowProjectionPanel` avec line chart + scenarios (worst/realistic/best).

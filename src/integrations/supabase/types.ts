@@ -1668,7 +1668,10 @@ export type Database = {
           habit_duration_days: number | null
           id: string
           is_featured: boolean | null
+          is_public: boolean
           name: string
+          rating_avg: number
+          rating_count: number
           source_goal_id: string | null
           steps: Json
           tags: string[]
@@ -1686,7 +1689,10 @@ export type Database = {
           habit_duration_days?: number | null
           id?: string
           is_featured?: boolean | null
+          is_public?: boolean
           name: string
+          rating_avg?: number
+          rating_count?: number
           source_goal_id?: string | null
           steps?: Json
           tags?: string[]
@@ -1704,7 +1710,10 @@ export type Database = {
           habit_duration_days?: number | null
           id?: string
           is_featured?: boolean | null
+          is_public?: boolean
           name?: string
+          rating_avg?: number
+          rating_count?: number
           source_goal_id?: string | null
           steps?: Json
           tags?: string[]
@@ -1737,6 +1746,7 @@ export type Database = {
           is_dynamic_super: boolean | null
           is_focus: boolean | null
           is_locked: boolean
+          is_negative: boolean
           life_area_id: string | null
           name: string
           notes: string | null
@@ -1766,6 +1776,7 @@ export type Database = {
           is_dynamic_super?: boolean | null
           is_focus?: boolean | null
           is_locked?: boolean
+          is_negative?: boolean
           life_area_id?: string | null
           name: string
           notes?: string | null
@@ -1795,6 +1806,7 @@ export type Database = {
           is_dynamic_super?: boolean | null
           is_focus?: boolean | null
           is_locked?: boolean
+          is_negative?: boolean
           life_area_id?: string | null
           name?: string
           notes?: string | null
@@ -2372,6 +2384,50 @@ export type Database = {
             columns: ["life_area_id"]
             isOneToOne: false
             referencedRelation: "life_areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      habit_skip_rules: {
+        Row: {
+          created_at: string
+          goal_id: string
+          id: string
+          is_active: boolean
+          reason: string | null
+          skip_dates: string[] | null
+          updated_at: string
+          user_id: string
+          weekdays: number[] | null
+        }
+        Insert: {
+          created_at?: string
+          goal_id: string
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          skip_dates?: string[] | null
+          updated_at?: string
+          user_id: string
+          weekdays?: number[] | null
+        }
+        Update: {
+          created_at?: string
+          goal_id?: string
+          id?: string
+          is_active?: boolean
+          reason?: string | null
+          skip_dates?: string[] | null
+          updated_at?: string
+          user_id?: string
+          weekdays?: number[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "habit_skip_rules_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: true
+            referencedRelation: "goals"
             referencedColumns: ["id"]
           },
         ]
@@ -4122,6 +4178,44 @@ export type Database = {
           },
         ]
       }
+      template_ratings: {
+        Row: {
+          created_at: string
+          id: string
+          rating: number
+          review: string | null
+          template_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          rating: number
+          review?: string | null
+          template_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          rating?: number
+          review?: string | null
+          template_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_ratings_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "goal_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todo_history: {
         Row: {
           category: string | null
@@ -5006,6 +5100,10 @@ export type Database = {
       purchase_daily_deal: { Args: { p_deal_id: string }; Returns: Json }
       purchase_shop_item: {
         Args: { p_item_id: string; p_item_type: string; p_price: number }
+        Returns: Json
+      }
+      rate_template: {
+        Args: { _rating: number; _review?: string; _template_id: string }
         Returns: Json
       }
       record_todo_completion: {

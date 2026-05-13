@@ -42,6 +42,8 @@ const Friends = lazy(() => import("./pages/Friends"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const Reviews = lazy(() => import("./pages/Reviews"));
 const ContractSign = lazy(() => import("./pages/ContractSign"));
+const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
+const TemplatesMarketplace = lazy(() => import("./pages/TemplatesMarketplace"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -79,6 +81,8 @@ const App = () => (
         <Route index element={<SuspensePage><Home /></SuspensePage>} />
         <Route path="the-call" element={<SuspensePage><TheCall /></SuspensePage>} />
         <Route path="goals" element={<SuspensePage><Goals /></SuspensePage>} />
+        <Route path="goals/graph" element={<SuspensePage><GoalsGraph /></SuspensePage>} />
+        <Route path="templates/marketplace" element={<SuspensePage><TemplatesMarketplace /></SuspensePage>} />
         <Route path="goals/new" element={<SuspensePage><NewGoal /></SuspensePage>} />
         <Route path="goals/:id" element={<SuspensePage><GoalDetail /></SuspensePage>} />
         <Route path="step/:stepId" element={<SuspensePage><StepDetail /></SuspensePage>} />
