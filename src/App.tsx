@@ -44,6 +44,7 @@ const Reviews = lazy(() => import("./pages/Reviews"));
 const ContractSign = lazy(() => import("./pages/ContractSign"));
 const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
 const TemplatesMarketplace = lazy(() => import("./pages/TemplatesMarketplace"));
+const HallOfFame = lazy(() => import("./pages/HallOfFame"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -106,6 +107,7 @@ const App = () => (
         <Route path="health" element={<SuspensePage><Health /></SuspensePage>} />
         <Route path="wishlist" element={<SuspensePage><Wishlist /></SuspensePage>} />
         <Route path="leaderboard" element={<SuspensePage><Leaderboard /></SuspensePage>} />
+        <Route path="hall-of-fame" element={<SuspensePage><HallOfFame /></SuspensePage>} />
         <Route path="focus" element={<SuspensePage><Focus /></SuspensePage>} />
         <Route path="analytics" element={<SuspensePage><Analytics /></SuspensePage>} />
         <Route path="friends" element={<SuspensePage><Friends /></SuspensePage>} />
