@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Trophy, Medal, Crown, Star, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useLeaderboard, LeaderboardEntry } from "@/hooks/useLeaderboard";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -85,6 +86,16 @@ export default function Leaderboard() {
             { label: "AGENTS", value: entries.length, color: "#bf5af2" },
           ] : []}
         />
+
+        <div className="flex justify-end mb-4">
+          <Link
+            to="/hall-of-fame"
+            className="inline-flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-muted-foreground transition hover:border-primary hover:text-primary"
+          >
+            <Trophy className="h-3.5 w-3.5" />
+            Hall of Fame
+          </Link>
+        </div>
 
         <div className="space-y-2 pb-12">
           {isLoading ? (

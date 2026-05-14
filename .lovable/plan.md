@@ -51,10 +51,12 @@ L'ordre suit les dépendances : V1 fondations → V2 réflexion/AI → V3 social
 - Statut `pending_signatures` jusqu'à signature de tous les témoins, puis `active`.
 
 ### 3.2 Quêtes & Seasons
-- Table `season_rewards` (cosmetic_id, season_id, unlock_rank).
-- Drop Shop limité saisonnier (filtre `available_until`).
-- Edge fn `season-reset` (cron trimestriel) : snapshot leaderboard → table `hall_of_fame`, attribue prestige (champ `prestige` sur profile), reset Seasons.
-- Page `/hall-of-fame` consultable.
+- ✅ Tables `season_rewards`, `hall_of_fame` + colonne `prestige` sur profiles.
+- ✅ Colonnes `season_id` + `available_until` sur `cosmetic_frames/banners/titles` (drops saisonniers).
+- ✅ RPC `current_season()` + `snapshot_season_leaderboard(season_id, top)` (idempotent, prestige top10, auto-grant cosmetics).
+- ✅ Edge fn `season-reset` (cron quotidien 03:30 UTC, snapshot des saisons clôturées non encore archivées).
+- ✅ Page `/hall-of-fame` accessible depuis Leaderboard.
+- ⏳ Cosmétiques saisonniers : filtrage UI dans Shop (badge "limited") restera à câbler dans une itération polish.
 
 ---
 

@@ -996,6 +996,7 @@ export type Database = {
       }
       cosmetic_banners: {
         Row: {
+          available_until: string | null
           banner_url: string | null
           created_at: string
           gradient_end: string | null
@@ -1007,9 +1008,11 @@ export type Database = {
           preview_url: string | null
           price: number
           rarity: string
+          season_id: string | null
           updated_at: string
         }
         Insert: {
+          available_until?: string | null
           banner_url?: string | null
           created_at?: string
           gradient_end?: string | null
@@ -1021,9 +1024,11 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          season_id?: string | null
           updated_at?: string
         }
         Update: {
+          available_until?: string | null
           banner_url?: string | null
           created_at?: string
           gradient_end?: string | null
@@ -1035,12 +1040,22 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          season_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cosmetic_banners_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cosmetic_frames: {
         Row: {
+          available_until: string | null
           avatar_border_color: string | null
           border_color: string
           created_at: string
@@ -1055,11 +1070,13 @@ export type Database = {
           preview_url: string | null
           price: number
           rarity: string
+          season_id: string | null
           show_border: boolean | null
           transform_version: number | null
           updated_at: string
         }
         Insert: {
+          available_until?: string | null
           avatar_border_color?: string | null
           border_color?: string
           created_at?: string
@@ -1074,11 +1091,13 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          season_id?: string | null
           show_border?: boolean | null
           transform_version?: number | null
           updated_at?: string
         }
         Update: {
+          available_until?: string | null
           avatar_border_color?: string | null
           border_color?: string
           created_at?: string
@@ -1093,14 +1112,24 @@ export type Database = {
           preview_url?: string | null
           price?: number
           rarity?: string
+          season_id?: string | null
           show_border?: boolean | null
           transform_version?: number | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cosmetic_frames_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cosmetic_titles: {
         Row: {
+          available_until: string | null
           created_at: string
           glow_color: string | null
           id: string
@@ -1108,11 +1137,13 @@ export type Database = {
           is_default: boolean
           price: number
           rarity: string
+          season_id: string | null
           text_color: string | null
           title_text: string
           updated_at: string
         }
         Insert: {
+          available_until?: string | null
           created_at?: string
           glow_color?: string | null
           id?: string
@@ -1120,11 +1151,13 @@ export type Database = {
           is_default?: boolean
           price?: number
           rarity?: string
+          season_id?: string | null
           text_color?: string | null
           title_text: string
           updated_at?: string
         }
         Update: {
+          available_until?: string | null
           created_at?: string
           glow_color?: string | null
           id?: string
@@ -1132,11 +1165,20 @@ export type Database = {
           is_default?: boolean
           price?: number
           rarity?: string
+          season_id?: string | null
           text_color?: string | null
           title_text?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cosmetic_titles_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       daily_quests: {
         Row: {
@@ -2432,6 +2474,56 @@ export type Database = {
           },
         ]
       }
+      hall_of_fame: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          goals_completed: number
+          id: string
+          points: number
+          prestige_awarded: number
+          rank: number
+          season_id: string
+          snapshot_data: Json
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          goals_completed?: number
+          id?: string
+          points?: number
+          prestige_awarded?: number
+          rank: number
+          season_id: string
+          snapshot_data?: Json
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          goals_completed?: number
+          id?: string
+          points?: number
+          prestige_awarded?: number
+          rank?: number
+          season_id?: string
+          snapshot_data?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hall_of_fame_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_challenges: {
         Row: {
           bond_reward: number
@@ -3156,6 +3248,7 @@ export type Database = {
           particles_enabled: boolean
           particles_intensity: number
           personal_quote: string | null
+          prestige: number
           project_funding_target: number | null
           project_monthly_allocation: number | null
           reduce_motion: boolean
@@ -3208,6 +3301,7 @@ export type Database = {
           particles_enabled?: boolean
           particles_intensity?: number
           personal_quote?: string | null
+          prestige?: number
           project_funding_target?: number | null
           project_monthly_allocation?: number | null
           reduce_motion?: boolean
@@ -3260,6 +3354,7 @@ export type Database = {
           particles_enabled?: boolean
           particles_intensity?: number
           personal_quote?: string | null
+          prestige?: number
           project_funding_target?: number | null
           project_monthly_allocation?: number | null
           reduce_motion?: boolean
@@ -3639,6 +3734,41 @@ export type Database = {
             columns: ["linked_account_id"]
             isOneToOne: false
             referencedRelation: "user_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      season_rewards: {
+        Row: {
+          cosmetic_id: string
+          cosmetic_type: string
+          created_at: string
+          id: string
+          season_id: string
+          unlock_rank: number
+        }
+        Insert: {
+          cosmetic_id: string
+          cosmetic_type: string
+          created_at?: string
+          id?: string
+          season_id: string
+          unlock_rank: number
+        }
+        Update: {
+          cosmetic_id?: string
+          cosmetic_type?: string
+          created_at?: string
+          id?: string
+          season_id?: string
+          unlock_rank?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_rewards_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
@@ -4955,6 +5085,25 @@ export type Database = {
         }
         Returns: Json
       }
+      current_season: {
+        Args: never
+        Returns: {
+          created_at: string
+          ends_at: string
+          id: string
+          leaderboard_snapshot: Json | null
+          name: string
+          slug: string
+          starts_at: string
+          theme: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "seasons"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       execute_account_transfer: {
         Args: {
           p_amount: number
@@ -5148,6 +5297,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      snapshot_season_leaderboard: {
+        Args: { _season_id: string; _top?: number }
+        Returns: number
       }
       update_achievement_tracking: {
         Args: { p_updates: Json }
