@@ -84,11 +84,12 @@ export default function HallOfFame() {
       </div>
 
       {loadingSeasons ? (
-        <DSLoadingState label="Chargement des saisons" />
+        <DSLoadingState message="LOADING SEASONS" />
       ) : endedSeasons.length === 0 ? (
         <DSEmptyState
+          visual="icon"
           icon={Sparkles}
-          title="Aucune saison clôturée"
+          message="NO SEASON ARCHIVED"
           description="La première saison sera archivée ici à sa fin."
         />
       ) : (
@@ -111,12 +112,13 @@ export default function HallOfFame() {
 
           <DSPanel className="p-0 overflow-hidden">
             {loadingHof ? (
-              <div className="p-6"><DSLoadingState label="Chargement du classement" /></div>
+              <div className="p-6"><DSLoadingState message="LOADING LEADERBOARD" /></div>
             ) : !leaderboard || leaderboard.length === 0 ? (
               <div className="p-6">
                 <DSEmptyState
+                  visual="icon"
                   icon={Trophy}
-                  title="Snapshot non disponible"
+                  message="SNAPSHOT UNAVAILABLE"
                   description="Cette saison n'a pas encore été archivée."
                 />
               </div>
@@ -148,9 +150,7 @@ export default function HallOfFame() {
                       </div>
                     </div>
                     {row.prestige_awarded > 0 && (
-                      <DSBadge variant="warning" size="sm">
-                        +{row.prestige_awarded} prestige
-                      </DSBadge>
+                      <DSBadge variant="new" label={`+${row.prestige_awarded} PRESTIGE`} />
                     )}
                     <div className="font-mono text-sm tabular-nums text-primary">
                       {row.points.toLocaleString()} pts
