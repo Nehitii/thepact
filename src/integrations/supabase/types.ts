@@ -1458,6 +1458,33 @@ export type Database = {
         }
         Relationships: []
       }
+      focus_distractions: {
+        Row: {
+          category: string | null
+          id: string
+          logged_at: string
+          note: string
+          session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          id?: string
+          logged_at?: string
+          note: string
+          session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          id?: string
+          logged_at?: string
+          note?: string
+          session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       focus_sessions: {
         Row: {
           created_at: string
@@ -2807,6 +2834,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      journal_prompts: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          language: string
+          prompt: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          prompt: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          language?: string
+          prompt?: string
+        }
+        Relationships: []
       }
       life_areas: {
         Row: {
