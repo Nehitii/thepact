@@ -8,6 +8,7 @@ import { MOOD_OPTIONS, getAccent } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
 import { HexBadge, SciFiDivider } from "@/components/journal/JournalDecorations";
+import { DailyPromptBanner } from "@/components/journal/DailyPromptBanner";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
 import {
   AlertDialog,
@@ -188,6 +189,8 @@ export default function Journal() {
             NEW ENTRY
           </motion.button>
         </ModuleHeader>
+
+        <DailyPromptBanner onUse={() => setIsNewEntryOpen(true)} />
 
         {/* TOOLBAR */}
         <motion.div

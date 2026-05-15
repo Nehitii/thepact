@@ -105,13 +105,12 @@ L'ordre suit les dépendances : V1 fondations → V2 réflexion/AI → V3 social
 - Import OFX/CSV : composant upload, parser côté front (lib `node-ofx-parser` + `papaparse`), preview + dédup par hash transaction.
 
 ### 5.3 Focus, Journal, Calendar
-- Deep work sessions sans timer : variante de `focus_sessions` (mode `deep_work`, pas de durée fixe), capture distractions (table `focus_distractions` log timestamp + note rapide).
-- Focus → attribution Goal : champ `goal_id` sur `focus_sessions` (déjà présent partiellement) + section Analytics "Heures par mission".
-- Journal :
-  - Prompts quotidiens rotatifs : table `journal_prompts` seedée (Stoïques/CBT/gratitude/visualisation), rotation par hash(date, user_id).
-  - Search sémantique : extension `coach_embeddings` aux entries journal (déjà fait), UI search bar dans Journal.
-  - Voice-to-entry : enregistrement Web Audio → upload Storage → edge fn `transcribe-journal` via lovable-ai Whisper proxy → insert entry.
-- Calendar auto-scheduler IA : edge fn `calendar-autoschedule` (analyse trous + habits/steps non planifiés + travel time → propose blocs). Modal preview + confirm.
+- ✅ Distractions log : table `focus_distractions` (RLS owner-only) + bouton flottant `FocusDistractionButton` durant une session.
+- ✅ Journal prompts quotidiens : table `journal_prompts` seedée FR/EN (stoic/CBT/gratitude/visualization/reflection), rotation déterministe `hash(date, user_id)` via `useDailyJournalPrompt`, banner `DailyPromptBanner` dans Journal.
+- ✅ Search Journal : déjà actif (filtre client par titre/contenu).
+- ⏳ Deep work mode sans timer + attribution Goal Analytics (à câbler dans une itération polish).
+- ⏳ Voice-to-entry (Whisper proxy) — nécessite secret `LOVABLE_API_KEY` côté edge fn.
+- ⏳ Calendar auto-scheduler IA (V5.3 bis).
 
 ---
 
