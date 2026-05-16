@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock } from "lucide-react";
+import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain } from "lucide-react";
 import { useNotificationSettings } from "@/hooks/useNotifications";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
@@ -86,6 +86,14 @@ export default function NotificationSettings() {
       <CyberPanel title="CONTRÔLES SYSTÈME" statusText={<SyncIndicator syncing={syncingPanel === 2} />}>
         <SettingRow icon={<Bell className="h-4 w-4 text-[hsl(195,100%,50%)]" />} label={t("settings.notifications.pushEnabled")} description={t("settings.notifications.pushEnabledDesc")} checked={settings?.push_enabled ?? true} disabled={isPending} variant="cyan" onToggle={(v) => handleToggle("push_enabled", v, 2)} />
         <SettingRow icon={<AlertCircle className="h-4 w-4 text-[hsl(40,100%,50%)]" />} label={t("settings.notifications.focusMode")} description={t("settings.notifications.focusModeDesc")} checked={settings?.focus_mode ?? false} disabled={isPending} variant="amber" onToggle={(v) => handleToggle("focus_mode", v, 2)} />
+        <SettingRow
+          icon={<Brain className="h-4 w-4 text-primary" />}
+          label="Coach proactif"
+          description="Le Coach IA analyse tes données en arrière-plan toutes les 4h pour générer des insights et patterns."
+          checked={(settings as any)?.coach_proactive_enabled ?? true}
+          disabled={isPending}
+          onToggle={(v) => handleToggle("coach_proactive_enabled", v, 2)}
+        />
         <AnimatePresence>
           {settings?.focus_mode && (
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden -mx-5">

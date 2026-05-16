@@ -694,6 +694,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coach_cron_runs: {
+        Row: {
+          duration_ms: number | null
+          errors: Json
+          finished_at: string | null
+          id: string
+          insights_created: number
+          job: string
+          started_at: string
+          users_processed: number
+        }
+        Insert: {
+          duration_ms?: number | null
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          insights_created?: number
+          job: string
+          started_at?: string
+          users_processed?: number
+        }
+        Update: {
+          duration_ms?: number | null
+          errors?: Json
+          finished_at?: string | null
+          id?: string
+          insights_created?: number
+          job?: string
+          started_at?: string
+          users_processed?: number
+        }
+        Relationships: []
+      }
       coach_embeddings: {
         Row: {
           content: string
@@ -723,6 +756,48 @@ export type Database = {
           metadata?: Json
           source_id?: string | null
           source_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      coach_insights: {
+        Row: {
+          body: string
+          category: string | null
+          created_at: string
+          dismissed_at: string | null
+          expires_at: string | null
+          id: string
+          severity: string
+          source: Json
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          category?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          severity?: string
+          source?: Json
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          category?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          severity?: string
+          source?: Json
+          title?: string
+          type?: string
           user_id?: string
         }
         Relationships: []
@@ -2981,6 +3056,7 @@ export type Database = {
       }
       notification_settings: {
         Row: {
+          coach_proactive_enabled: boolean
           created_at: string
           focus_mode: boolean
           id: string
@@ -2995,6 +3071,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          coach_proactive_enabled?: boolean
           created_at?: string
           focus_mode?: boolean
           id?: string
@@ -3009,6 +3086,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          coach_proactive_enabled?: boolean
           created_at?: string
           focus_mode?: boolean
           id?: string

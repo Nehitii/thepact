@@ -33,6 +33,7 @@ export interface NotificationSettings {
   marketing_enabled: boolean;
   push_enabled: boolean;
   focus_mode: boolean;
+  coach_proactive_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
