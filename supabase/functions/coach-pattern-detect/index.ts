@@ -38,6 +38,14 @@ async function snapshot(supabase: any, userId: string) {
 }
 
 async function processUser(supabase: any, userId: string, aiKey: string) {
+  // Respect user opt-out
+  const { data: prefs } = await supabase
+    .from("notification_settings")
+    .select("coach_proactive_enabled")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (prefs && prefs.coach_proactive_enabled === false) return { skipped: true, reason: "opted_out" };
+
   const snap = await snapshot(supabase, userId);
   if (
     snap.habits.length === 0 &&
@@ -57,6 +65,18 @@ async function processUser(supabase: any, userId: string, aiKey: string) {
 
   for (const ins of insights) {
     if (!ins?.title) continue;
+    const category = String(ins.category ?? "pattern");
+    const severity = ["habit", "mood"].includes(category) ? "warning" : "info";
+    await supabase.from("coach_insights").insert({
+      user_id: userId,
+      type: "pattern",
+      severity,
+      category,
+      title: String(ins.title).slice(0, 80),
+      body: String(ins.body ?? "").slice(0, 280),
+      source: { module: category },
+      expires_at: new Date(Date.now() + 14 * 24 * 3600 * 1000).toISOString(),
+    });
     await supabase.from("notifications").insert({
       user_id: userId,
       title: String(ins.title).slice(0, 80),
