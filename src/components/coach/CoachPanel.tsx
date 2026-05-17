@@ -5,11 +5,17 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { Bot, Send, Plus, X, MessageSquare, Loader2, Brain } from "lucide-react";
+import { Bot, Send, Plus, X, MessageSquare, Loader2, Brain, CheckCircle2, AlertCircle, BookOpen, Target, Repeat, FileText, ListTodo, Flag } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { useNavigate } from "react-router-dom";
 import {
   useCoachConversations,
   useCoachMessages,
   useCoachStream,
+  type CoachMessageMetadata,
+  type CoachAction,
+  type CoachCitation,
 } from "@/hooks/useCoach";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -168,7 +174,7 @@ export function CoachPanel({ open, onClose }: Props) {
                 </div>
               )}
               {messages.map((m) => (
-                <MessageBubble key={m.id} role={m.role} content={m.content} />
+        <MessageBubble key={m.id} role={m.role} content={m.content} metadata={m.metadata ?? null} />
               ))}
               {streaming && streamText && (
                 <MessageBubble role="assistant" content={streamText} streaming />
@@ -214,25 +220,121 @@ function MessageBubble({
   role,
   content,
   streaming = false,
+  metadata = null,
 }: {
   role: string;
   content: string;
   streaming?: boolean;
+  metadata?: CoachMessageMetadata | null;
 }) {
   const isUser = role === "user";
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "max-w-[85%] px-3 py-2 rounded-lg text-sm whitespace-pre-wrap break-words",
+          "max-w-[85%] px-3 py-2 rounded-lg text-sm break-words space-y-2",
           isUser
             ? "bg-primary text-primary-foreground"
             : "bg-muted/60 text-foreground border border-border/40",
           streaming && "animate-pulse",
         )}
       >
-        {content}
+        {isUser ? (
+          <p className="whitespace-pre-wrap">{content}</p>
+        ) : (
+          <div className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_h2]:text-sm [&_h2]:font-display [&_h2]:uppercase [&_h2]:tracking-wider [&_h3]:text-sm [&_code]:text-xs [&_code]:bg-background/40 [&_code]:px-1 [&_code]:rounded">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || " "}</ReactMarkdown>
+          </div>
+        )}
+        {!isUser && metadata?.actions && metadata.actions.length > 0 && (
+          <ActionChips actions={metadata.actions} />
+        )}
+        {!isUser && metadata?.citations && metadata.citations.length > 0 && (
+          <CitationStrip citations={metadata.citations} />
+        )}
       </div>
+    </div>
+  );
+}
+
+const SOURCE_LABELS: Record<string, string> = {
+  journal_entry: "Journal",
+  decision: "Décision",
+  weekly_review: "Revue hebdo",
+  goal: "Goal",
+};
+
+function CitationStrip({ citations }: { citations: CoachCitation[] }) {
+  const navigate = useNavigate();
+  const goTo = (c: CoachCitation) => {
+    if (c.source_type === "journal_entry") navigate("/journal");
+    else if (c.source_type === "decision") navigate("/reviews");
+    else if (c.source_type === "weekly_review") navigate("/reviews");
+    else if (c.source_type === "goal") navigate(`/goals/${c.source_id}`);
+  };
+  return (
+    <div className="pt-2 border-t border-border/30">
+      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+        <BookOpen className="h-2.5 w-2.5" />
+        Sources
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {citations.slice(0, 6).map((c, i) => (
+          <button
+            key={`${c.source_type}-${c.source_id}-${i}`}
+            type="button"
+            onClick={() => goTo(c)}
+            title={c.snippet}
+            className="text-[10px] px-1.5 py-0.5 rounded border border-border/40 bg-background/40 hover:bg-background/70 transition-colors text-muted-foreground hover:text-foreground"
+          >
+            {SOURCE_LABELS[c.source_type] ?? c.source_type} · {Math.round((c.similarity ?? 0) * 100)}%
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const ACTION_META: Record<string, { label: string; icon: typeof Target; route?: (id?: string) => string }> = {
+  create_goal: { label: "Goal créé", icon: Target, route: (id) => `/goals/${id}` },
+  create_habit_goal: { label: "Habitude créée", icon: Repeat, route: (id) => `/goals/${id}` },
+  create_todo: { label: "Tâche ajoutée", icon: ListTodo, route: () => "/todo" },
+  create_journal_entry: { label: "Entrée journal", icon: FileText, route: () => "/journal" },
+  create_decision: { label: "Décision loggée", icon: Flag, route: () => "/reviews" },
+};
+
+function ActionChips({ actions }: { actions: CoachAction[] }) {
+  const navigate = useNavigate();
+  return (
+    <div className="flex flex-wrap gap-1.5 pt-1">
+      {actions.map((a, i) => {
+        const meta = ACTION_META[a.tool] ?? { label: a.tool, icon: CheckCircle2 };
+        const Icon = a.status === "ok" ? meta.icon : AlertCircle;
+        const clickable = a.status === "ok" && !!meta.route;
+        const onClick = () => {
+          if (!clickable || !meta.route) return;
+          navigate(meta.route(a.ref_id));
+        };
+        return (
+          <button
+            key={`${a.tool}-${i}`}
+            type="button"
+            onClick={onClick}
+            disabled={!clickable}
+            className={cn(
+              "text-[10px] px-2 py-0.5 rounded-full border flex items-center gap-1 transition-colors",
+              a.status === "ok"
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
+                : "border-destructive/40 bg-destructive/10 text-destructive",
+              clickable && "cursor-pointer",
+            )}
+            title={a.error ?? a.label}
+          >
+            <Icon className="h-2.5 w-2.5" />
+            {meta.label}: {a.label.slice(0, 32)}
+          </button>
+        );
+      })}
     </div>
   );
 }
