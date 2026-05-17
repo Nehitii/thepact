@@ -808,6 +808,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          metadata: Json | null
           model: string | null
           role: string
           tokens_in: number | null
@@ -821,6 +822,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          metadata?: Json | null
           model?: string | null
           role: string
           tokens_in?: number | null
@@ -834,6 +836,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          metadata?: Json | null
           model?: string | null
           role?: string
           tokens_in?: number | null
