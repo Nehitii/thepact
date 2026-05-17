@@ -12,7 +12,9 @@ const SYSTEM_PROMPT = `Tu es Pacte Coach, un coach personnel exigeant et bienvei
 Tu tutoies. Tu es concis, direct, structuré. Tu cites des données concrètes du user (goals, habits, finance, journal) quand pertinent.
 Tu ne donnes jamais de conseil médical/légal/financier réglementé sans rappel de prudence.
 Quand l'utilisateur le demande, propose des actions actionnables et utilise les outils disponibles.
-Avant de répondre à une question factuelle sur la vie de l'utilisateur (goals, habits, finance, journal, valeurs, mémoire), appelle les tools pour récupérer la donnée à jour. Sinon, réponds directement.`;
+Avant de répondre à une question factuelle sur la vie de l'utilisateur (goals, habits, finance, journal, valeurs, mémoire), appelle les tools pour récupérer la donnée à jour. Sinon, réponds directement.
+Format: markdown léger autorisé (titres ##, listes, gras). Quand tu cites un souvenir issu de la mémoire long-terme, mentionne la source en fin de phrase entre parenthèses.
+Pour créer un goal/habit, demande d'abord à quel pacte le rattacher si l'utilisateur n'a pas précisé (utilise list_pacts).`;
 
 const TOOLS = [
   {
@@ -122,9 +124,75 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "list_pacts",
+      description: "Liste les pactes du user (id, nom, mantra, couleur). Utile avant create_goal pour choisir le pact_id.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "list_life_areas",
+      description: "Liste les domaines de vie du user (id, nom, poids, couleur). Utile avant create_goal pour rattacher un domaine.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_goal",
+      description: "Crée un nouveau goal (mission classique, pas une habitude). Demande pact_id (via list_pacts si inconnu).",
+      parameters: {
+        type: "object",
+        properties: {
+          pact_id: { type: "string", description: "UUID du pacte parent" },
+          name: { type: "string", description: "Nom du goal (max 200 chars)" },
+          difficulty: { type: "string", enum: ["easy", "medium", "hard", "extreme", "epic", "ultimate"], default: "medium" },
+          total_steps: { type: "number", description: "Nombre d'étapes prévues (>= 1)", default: 1 },
+          deadline: { type: "string", description: "Date ISO YYYY-MM-DD optionnelle" },
+          notes: { type: "string", description: "Description / contexte optionnel" },
+          life_area_id: { type: "string", description: "UUID du domaine de vie optionnel" },
+        },
+        required: ["pact_id", "name"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_habit_goal",
+      description: "Crée une habitude (goal de type 'habit') avec une durée en jours. Demande pact_id (via list_pacts).",
+      parameters: {
+        type: "object",
+        properties: {
+          pact_id: { type: "string" },
+          name: { type: "string" },
+          habit_duration_days: { type: "number", description: "Durée en jours (7-365)", default: 21 },
+          difficulty: { type: "string", enum: ["easy", "medium", "hard", "extreme", "epic", "ultimate"], default: "medium" },
+          life_area_id: { type: "string" },
+        },
+        required: ["pact_id", "name"],
+      },
+    },
+  },
 ];
 
-async function runTool(name: string, args: any, supabase: any, userId: string, aiKey: string): Promise<string> {
+interface ToolReceipt {
+  citations?: Array<{ source_type: string; source_id: string; snippet: string; similarity?: number }>;
+  action?: { tool: string; status: "ok" | "error"; label: string; ref_id?: string; ref_type?: string; error?: string };
+}
+
+async function runTool(
+  name: string,
+  args: any,
+  supabase: any,
+  userId: string,
+  aiKey: string,
+  receipts: ToolReceipt,
+): Promise<string> {
   try {
     if (name === "list_active_goals") {
       const { data: pacts } = await supabase.from("pacts").select("id").eq("user_id", userId);
@@ -195,7 +263,83 @@ async function runTool(name: string, args: any, supabase: any, userId: string, a
         _query: vector,
         _match_count: 6,
       });
+      const rows = (data ?? []) as Array<any>;
+      receipts.citations = (receipts.citations ?? []).concat(
+        rows.map((r) => ({
+          source_type: r.source_type,
+          source_id: r.source_id,
+          snippet: String(r.content ?? "").slice(0, 220),
+          similarity: typeof r.similarity === "number" ? r.similarity : undefined,
+        })),
+      );
+      return JSON.stringify(rows);
+    }
+    if (name === "list_pacts") {
+      const { data } = await supabase
+        .from("pacts")
+        .select("id,name,mantra,color,symbol")
+        .eq("user_id", userId)
+        .order("created_at");
       return JSON.stringify(data ?? []);
+    }
+    if (name === "list_life_areas") {
+      const { data } = await supabase
+        .from("life_areas")
+        .select("id,name,weight,color,icon")
+        .eq("user_id", userId)
+        .order("sort_order");
+      return JSON.stringify(data ?? []);
+    }
+    if (name === "create_goal") {
+      const pact_id = String(args?.pact_id ?? "").trim();
+      const nm = String(args?.name ?? "").trim().slice(0, 200);
+      if (!pact_id || !nm) return JSON.stringify({ error: "pact_id_and_name_required" });
+      // Verify pact belongs to user
+      const { data: pact } = await supabase.from("pacts").select("id").eq("id", pact_id).eq("user_id", userId).maybeSingle();
+      if (!pact) return JSON.stringify({ error: "pact_not_found" });
+      const totalSteps = Math.max(1, Math.min(50, Number(args?.total_steps ?? 1)));
+      const payload: any = {
+        pact_id,
+        name: nm,
+        difficulty: args?.difficulty ?? "medium",
+        goal_type: "normal",
+        total_steps: totalSteps,
+        notes: args?.notes ?? null,
+        deadline: args?.deadline ?? null,
+        life_area_id: args?.life_area_id ?? null,
+      };
+      const { data, error } = await supabase.from("goals").insert(payload).select("id,name").single();
+      if (error) {
+        receipts.action = { tool: "create_goal", status: "error", label: nm, error: error.message };
+        return JSON.stringify({ error: error.message });
+      }
+      receipts.action = { tool: "create_goal", status: "ok", label: data.name, ref_id: data.id, ref_type: "goal" };
+      return JSON.stringify({ ok: true, goal: data });
+    }
+    if (name === "create_habit_goal") {
+      const pact_id = String(args?.pact_id ?? "").trim();
+      const nm = String(args?.name ?? "").trim().slice(0, 200);
+      if (!pact_id || !nm) return JSON.stringify({ error: "pact_id_and_name_required" });
+      const { data: pact } = await supabase.from("pacts").select("id").eq("id", pact_id).eq("user_id", userId).maybeSingle();
+      if (!pact) return JSON.stringify({ error: "pact_not_found" });
+      const days = Math.max(7, Math.min(365, Number(args?.habit_duration_days ?? 21)));
+      const payload: any = {
+        pact_id,
+        name: nm,
+        goal_type: "habit",
+        difficulty: args?.difficulty ?? "medium",
+        habit_duration_days: days,
+        habit_checks: Array(days).fill(false),
+        total_steps: days,
+        life_area_id: args?.life_area_id ?? null,
+      };
+      const { data, error } = await supabase.from("goals").insert(payload).select("id,name").single();
+      if (error) {
+        receipts.action = { tool: "create_habit_goal", status: "error", label: nm, error: error.message };
+        return JSON.stringify({ error: error.message });
+      }
+      receipts.action = { tool: "create_habit_goal", status: "ok", label: data.name, ref_id: data.id, ref_type: "goal" };
+      return JSON.stringify({ ok: true, habit: data });
     }
     if (name === "create_todo") {
       const nm = String(args?.name ?? "").trim().slice(0, 200);
@@ -209,7 +353,11 @@ async function runTool(name: string, args: any, supabase: any, userId: string, a
         category: args?.category ?? "general",
         task_type: "flexible",
       }).select("id,name").single();
-      if (error) return JSON.stringify({ error: error.message });
+      if (error) {
+        receipts.action = { tool: "create_todo", status: "error", label: nm, error: error.message };
+        return JSON.stringify({ error: error.message });
+      }
+      receipts.action = { tool: "create_todo", status: "ok", label: data.name, ref_id: data.id, ref_type: "todo" };
       return JSON.stringify({ ok: true, todo: data });
     }
     if (name === "create_journal_entry") {
@@ -219,7 +367,11 @@ async function runTool(name: string, args: any, supabase: any, userId: string, a
       const payload: any = { user_id: userId, title, content };
       if (typeof args?.mood === "string" && args.mood.trim()) payload.mood = args.mood.trim();
       const { data, error } = await supabase.from("journal_entries").insert(payload).select("id,title").single();
-      if (error) return JSON.stringify({ error: error.message });
+      if (error) {
+        receipts.action = { tool: "create_journal_entry", status: "error", label: title, error: error.message };
+        return JSON.stringify({ error: error.message });
+      }
+      receipts.action = { tool: "create_journal_entry", status: "ok", label: data.title, ref_id: data.id, ref_type: "journal" };
       return JSON.stringify({ ok: true, entry: data });
     }
     if (name === "create_decision") {
@@ -238,7 +390,11 @@ async function runTool(name: string, args: any, supabase: any, userId: string, a
         reversibility: args?.reversibility ?? null,
       };
       const { data, error } = await supabase.from("decisions").insert(payload).select("id,title").single();
-      if (error) return JSON.stringify({ error: error.message });
+      if (error) {
+        receipts.action = { tool: "create_decision", status: "error", label: title, error: error.message };
+        return JSON.stringify({ error: error.message });
+      }
+      receipts.action = { tool: "create_decision", status: "ok", label: data.title, ref_id: data.id, ref_type: "decision" };
       return JSON.stringify({ ok: true, decision: data });
     }
     return JSON.stringify({ error: "unknown_tool" });
@@ -317,9 +473,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Tool loop (max 3 hops) — non-streaming for tool resolution, then stream final.
+    // Tool loop (max 4 hops) — non-streaming for tool resolution, then stream final.
     const workMessages: any[] = [...messages];
-    for (let hop = 0; hop < 3; hop++) {
+    const aggregatedCitations: ToolReceipt["citations"] = [];
+    const aggregatedActions: NonNullable<ToolReceipt["action"]>[] = [];
+    for (let hop = 0; hop < 4; hop++) {
       const probe = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
@@ -334,7 +492,10 @@ Deno.serve(async (req) => {
       for (const c of calls) {
         let parsedArgs: any = {};
         try { parsedArgs = JSON.parse(c.function?.arguments ?? "{}"); } catch (_) { /* ignore */ }
-        const result = await runTool(c.function?.name, parsedArgs, supabase, userId, aiKey);
+        const receipts: ToolReceipt = {};
+        const result = await runTool(c.function?.name, parsedArgs, supabase, userId, aiKey, receipts);
+        if (receipts.citations?.length) aggregatedCitations.push(...receipts.citations);
+        if (receipts.action) aggregatedActions.push(receipts.action);
         workMessages.push({ role: "tool", tool_call_id: c.id, content: result });
       }
     }
@@ -396,6 +557,18 @@ Deno.serve(async (req) => {
             controller.enqueue(encoder.encode(chunk));
           }
           controller.close();
+          // Build metadata payload (dedupe citations by source_id)
+          const seen = new Set<string>();
+          const citations = aggregatedCitations.filter((c) => {
+            const key = `${c.source_type}:${c.source_id}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+          const metadata =
+            citations.length || aggregatedActions.length
+              ? { citations, actions: aggregatedActions }
+              : null;
           // Persist assistant final
           await supabase.from("coach_messages").insert({
             conversation_id: body.conversation_id,
@@ -403,6 +576,7 @@ Deno.serve(async (req) => {
             role: "assistant",
             content: fullText,
             model,
+            metadata,
           });
           await supabase
             .from("coach_conversations")
