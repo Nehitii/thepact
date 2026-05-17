@@ -76,3 +76,46 @@ pg_cron (4h)
 - Pas d'envoi de push notifications (ça reste V4.1 / VAPID).
 - Pas de génération IA "lourde" type weekly review (déjà couvert par V2.x précédent).
 - Pas de digest email (peut venir dans V4.2 si désiré).
+
+---
+
+# V3.1 — Coach IA conversationnel++
+
+Objectif : transformer le chat Coach en agent capable de citer ses sources (mémoire long-terme) et d'exécuter des actions concrètes (créer goal/habit) sans quitter la conversation.
+
+## Ce qui a été livré
+
+### 1. Nouveaux tools serveur (`supabase/functions/ai-coach/index.ts`)
+- `list_pacts` — énumère les pactes du user pour permettre au modèle de choisir un `pact_id`.
+- `list_life_areas` — domaines de vie disponibles pour rattacher un goal.
+- `create_goal` — crée un goal "normal" sous le pacte choisi (vérifie l'ownership).
+- `create_habit_goal` — crée une habitude avec `habit_duration_days` et `habit_checks` initialisés.
+
+### 2. Traçabilité des sources & actions
+- Le tool loop agrège, pour chaque hop :
+  - les **citations** issues de `search_memory` (source_type, source_id, snippet, similarité)
+  - les **actions** exécutées par les tools `create_*` (label, ref_id, ref_type, ok/error)
+- Après stream final, persistés dans `coach_messages.metadata` (jsonb, dédupliqué par source).
+
+### 3. Schéma DB
+- Ajout `coach_messages.metadata jsonb` (migration `20260517...`).
+
+### 4. UI — rendu enrichi du chat
+- `react-markdown` + `remark-gfm` : assistant rendu en markdown (titres, listes, code, gras).
+- `CitationStrip` : sous chaque réponse, chips cliquables vers la source (Journal, Décisions, Goal…).
+- `ActionChips` : confirmation visuelle des actions exécutées (emerald si ok, rouge si erreur), cliquables vers la ressource créée.
+
+## Sécurité
+- `create_goal` / `create_habit_goal` vérifient que le `pact_id` appartient au user avant insertion.
+- Pas de SQL libre — chaque outil mappe sur une insertion typée.
+- Tools `create_*` réservés aux demandes explicites du user (mentionné dans le system prompt).
+
+## Fichiers impactés
+- **Modifié** : `supabase/functions/ai-coach/index.ts`, `src/hooks/useCoach.ts`, `src/components/coach/CoachPanel.tsx`, `.lovable/plan.md`
+- **Migration** : `coach_messages.metadata jsonb`
+- **Dépendances** : `react-markdown`, `remark-gfm`
+
+## Hors scope (volontaire)
+- Pas d'édition/suppression de goals depuis le chat (lecture + création seulement, plus sûr).
+- Pas de génération d'image dans la réponse (V3.2 si besoin).
+- Pas de file upload côté composer (reste V4.x).
