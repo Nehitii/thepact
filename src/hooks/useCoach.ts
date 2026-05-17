@@ -23,6 +23,28 @@ export interface CoachMessage {
   role: "system" | "user" | "assistant" | "tool";
   content: string;
   created_at: string;
+  metadata?: CoachMessageMetadata | null;
+}
+
+export interface CoachCitation {
+  source_type: string;
+  source_id: string;
+  snippet: string;
+  similarity?: number;
+}
+
+export interface CoachAction {
+  tool: string;
+  status: "ok" | "error";
+  label: string;
+  ref_id?: string;
+  ref_type?: string;
+  error?: string;
+}
+
+export interface CoachMessageMetadata {
+  citations?: CoachCitation[];
+  actions?: CoachAction[];
 }
 
 export function useCoachConversations() {
