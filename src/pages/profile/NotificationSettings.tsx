@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef } from "react";
-import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain } from "lucide-react";
+import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain, Send, BellOff } from "lucide-react";
 import { useNotificationSettings } from "@/hooks/useNotifications";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -17,7 +21,9 @@ const HOURS = Array.from({ length: 24 }, (_, i) => ({
 
 export default function NotificationSettings() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { settings, isLoading, updateSettings } = useNotificationSettings();
+  const push = usePushNotifications();
   const [syncingPanel, setSyncingPanel] = useState<number | null>(null);
   const syncTimer = useRef<ReturnType<typeof setTimeout>>();
   const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "NOTIFICATION SETTINGS LOADED", type: "info" });
@@ -136,6 +142,47 @@ export default function NotificationSettings() {
             </div>
           </div>
         </SettingContentRow>
+      </CyberPanel>
+
+      {/* ── PANEL 4: Web Push (PWA) ── */}
+      <CyberPanel title="WEB PUSH (PWA)" statusText={<span className={cn(push.subscribed ? "text-emerald-400" : "text-muted-foreground")}>{push.subscribed ? "ABONNÉ" : "INACTIF"}</span>}>
+        <div className="px-1 py-2 space-y-3">
+          {!push.supported && (
+            <p className="text-xs text-muted-foreground">Le navigateur ne supporte pas les notifications push, ou tu es dans l'aperçu Lovable (les push fonctionnent en production seulement).</p>
+          )}
+          {push.supported && !push.hasVapid && (
+            <p className="text-xs text-amber-400">Les clés VAPID ne sont pas configurées. Demande à l'admin d'ajouter VITE_VAPID_PUBLIC_KEY puis VAPID_PRIVATE_KEY côté serveur.</p>
+          )}
+          {push.supported && push.hasVapid && (
+            <div className="flex flex-wrap gap-2">
+              {!push.subscribed ? (
+                <Button size="sm" className="gap-2" onClick={async () => {
+                  const r = await push.subscribe();
+                  if (r.ok) toast({ title: "Push activé" });
+                  else toast({ title: "Push refusé", description: r.reason, variant: "destructive" });
+                }}>
+                  <Bell className="h-3.5 w-3.5" /> Activer les push
+                </Button>
+              ) : (
+                <>
+                  <Button size="sm" variant="outline" className="gap-2" onClick={async () => {
+                    if (!user?.id) return;
+                    const { error } = await supabase.functions.invoke("push-send", {
+                      body: { user_id: user.id, title: "Test Pacte", body: "Push fonctionnel ✨", url: "/" },
+                    });
+                    if (error) toast({ title: "Erreur push", description: error.message, variant: "destructive" });
+                    else toast({ title: "Push de test envoyé" });
+                  }}>
+                    <Send className="h-3.5 w-3.5" /> Envoyer un test
+                  </Button>
+                  <Button size="sm" variant="ghost" className="gap-2" onClick={async () => { await push.unsubscribe(); toast({ title: "Push désactivé" }); }}>
+                    <BellOff className="h-3.5 w-3.5" /> Se désabonner
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </CyberPanel>
     </SettingsPageShell>
   );

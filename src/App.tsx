@@ -26,6 +26,7 @@ const PrivacyControl = lazy(() => import("./pages/profile/PrivacyControl"));
 const NotificationSettings = lazy(() => import("./pages/profile/NotificationSettings"));
 const DataPortability = lazy(() => import("./pages/profile/DataPortability"));
 const LifeAreas = lazy(() => import("./pages/profile/LifeAreas"));
+const Automations = lazy(() => import("./pages/profile/Automations"));
 const Achievements = lazy(() => import("./pages/Achievements"));
 const Shop = lazy(() => import("./pages/Shop"));
 const Community = lazy(() => import("./pages/Community"));
@@ -97,6 +98,7 @@ const App = () => (
         <Route path="profile/notifications" element={<SuspensePage><NotificationSettings /></SuspensePage>} />
         <Route path="profile/data" element={<SuspensePage><DataPortability /></SuspensePage>} />
         <Route path="profile/life-areas" element={<SuspensePage><LifeAreas /></SuspensePage>} />
+        <Route path="profile/automations" element={<SuspensePage><Automations /></SuspensePage>} />
         <Route path="achievements" element={<SuspensePage><Achievements /></SuspensePage>} />
         <Route path="shop" element={<SuspensePage><Shop /></SuspensePage>} />
         <Route path="community" element={<SuspensePage><Community /></SuspensePage>} />
