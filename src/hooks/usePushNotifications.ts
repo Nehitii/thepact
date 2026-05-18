@@ -27,7 +27,11 @@ export function usePushNotifications() {
     "serviceWorker" in navigator &&
     "PushManager" in window &&
     "Notification" in window;
-  const vapidKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined) ?? "";
+  // VAPID public key is, by design, public. Hardcoded for the deployed app;
+  // overridable via VITE_VAPID_PUBLIC_KEY if rotated.
+  const vapidKey =
+    (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined) ??
+    "BBTweesjGV_pGdvCrWbdXWNcemxMNf-IFP56tKs67CK03Ae5MhdJv5KUCPxIshBi5IJTtXdqYQXphGcTvVZXj1c";
 
   useEffect(() => {
     if (!supported) return;
