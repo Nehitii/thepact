@@ -1,121 +1,34 @@
-# V2.2 — Cron AI Coach
+# Fix : le Coach ne détecte pas les goals actifs
 
-Objectif : faire tourner le coach IA en arrière-plan pour générer des insights proactifs (patterns détectés, mémoire indexée, nudge contextuel) sans attendre que l'utilisateur ouvre la page Coach.
+## Diagnostic
 
-## Ce qu'on construit
+Dans `supabase/functions/ai-coach/index.ts` (tool `list_active_goals`, ligne ~205), le filtre est :
 
-### 1. Nouvelle edge function `coach-cron-runner`
-Point d'entrée unique appelé par `pg_cron`. Elle :
-- Vérifie l'en-tête `x-cron-secret` contre `CRON_SECRET`. Sinon → 401.
-- Itère sur les utilisateurs actifs (ceux ayant une activité dans les 14 derniers jours via `goals`, `habit_logs`, ou `journal_entries`).
-- Pour chaque user, déclenche en parallèle (avec un cap de concurrence ~5) :
-  - `coach-index-memory` → indexe les nouveaux contenus dans `coach_memory`.
-  - `coach-pattern-detect` → détecte patterns (procrastination, momentum, rupture de streak, etc.).
-- Écrit un log d'exécution dans `coach_cron_runs` (durée, users traités, erreurs).
-- Sortie JSON : `{ users_processed, duration_ms, errors }`.
-
-### 2. Schéma DB (migration)
-- **`coach_insights`** : insights générés (user_id, type, title, body, severity, source, dismissed_at, expires_at). RLS owner-only read + dismiss.
-- **`coach_cron_runs`** : journal d'exécution (started_at, finished_at, users_processed, errors jsonb). RLS admin-only.
-- **`coach_user_prefs`** (étend si absent) : `coach_cron_enabled boolean default true` pour permettre l'opt-out.
-
-### 3. Planification (pg_cron + pg_net)
-SQL inséré via `supabase--insert` (pas migration, car contient clés) :
-- `coach-cron-runner` toutes les **4h** (`0 */4 * * *`).
-- Header `x-cron-secret: <CRON_SECRET>` via `net.http_post`.
-
-### 4. UI — Panneau insights proactifs
-- Étend `src/components/coach/CoachPanel.tsx` avec une section "Insights" en haut listant les `coach_insights` non dismiss.
-- Chaque insight = carte DSPanel avec icône severity, titre, body, bouton "Dismiss" + lien vers la ressource concernée (goal, habit, journal).
-- Hook `useCoachInsights()` avec `useQuery` sur `coach_insights` filtré `dismissed_at IS NULL AND (expires_at IS NULL OR expires_at > now())`.
-- Realtime optionnel sur la table.
-
-### 5. Paramètre utilisateur
-Toggle dans `src/pages/profile/NotificationSettings.tsx` → "Coach proactif" (active/désactive le cron pour ce user via `coach_user_prefs.coach_cron_enabled`).
-
-## Sécurité
-- `CRON_SECRET` jamais exposé client-side (utilisé uniquement dans le SQL cron + edge function).
-- Edge function rejette tout appel sans le bon header → 401.
-- RLS strict : un user ne voit que ses insights, jamais ceux des autres.
-- `coach-cron-runner` utilise `SERVICE_ROLE_KEY` côté serveur uniquement pour invoquer les sous-fonctions.
-
-## Détails techniques
-
-### Structure `coach_insights`
-```text
-id uuid pk
-user_id uuid (RLS auth.uid())
-type text       — 'pattern' | 'momentum' | 'risk' | 'celebration'
-severity text   — 'info' | 'warning' | 'critical'
-title text
-body text
-source jsonb    — { module: 'goals', ref_id: 'uuid' }
-created_at, dismissed_at, expires_at timestamptz
+```ts
+.eq("status", "active")
 ```
 
-### Flow d'une exécution cron
-```text
-pg_cron (4h)
-  └─> net.http_post → coach-cron-runner (header secret)
-        ├─ list_active_users()
-        └─ for each user (parallel, cap 5):
-              ├─ invoke coach-index-memory
-              └─ invoke coach-pattern-detect
-                    └─ writes rows in coach_insights
-        └─ log run in coach_cron_runs
-```
+Or les vrais statuts en base sont `not_started`, `in_progress`, `fully_completed`, `paused`, `archived` (cf. `src/lib/goalConstants.ts` et données DB confirmées : 9 `in_progress`, 17 `not_started`, 13 `fully_completed`). Aucun goal n'a `status = 'active'` → le tool retourne toujours `[]`, donc le Coach affirme qu'il n'y a aucun goal actif.
 
-### Fichiers impactés
-- **Nouveau** : `supabase/functions/coach-cron-runner/index.ts`
-- **Nouveau** : `src/hooks/useCoachInsights.ts`
-- **Nouveau** : migration `coach_insights` + `coach_cron_runs` + extension `coach_user_prefs`
-- **Modifié** : `src/components/coach/CoachPanel.tsx`, `src/pages/profile/NotificationSettings.tsx`, `.lovable/plan.md`
-- **SQL d'insertion** (via `supabase--insert`) : planification cron toutes les 4h
+## Correction
 
-## Hors scope (volontaire)
-- Pas d'envoi de push notifications (ça reste V4.1 / VAPID).
-- Pas de génération IA "lourde" type weekly review (déjà couvert par V2.x précédent).
-- Pas de digest email (peut venir dans V4.2 si désiré).
+### 1. `list_active_goals` — élargir le filtre
+Remplacer `.eq("status", "active")` par `.in("status", ["in_progress", "not_started"])`. Trier `in_progress` en premier (les goals "en cours" sont plus pertinents que ceux jamais démarrés).
 
----
+### 2. Enrichir le payload retourné
+Ajouter `pact_id` au select, et marquer chaque goal avec `is_active_pact: boolean` (comparaison avec `profiles.active_pact_id` du user) pour que le Coach puisse prioriser le pacte courant dans ses réponses.
 
-# V3.1 — Coach IA conversationnel++
+### 3. Description du tool
+Mettre à jour la description : « Liste les goals en cours et à démarrer du user (max 20, triés par statut puis focus). »
 
-Objectif : transformer le chat Coach en agent capable de citer ses sources (mémoire long-terme) et d'exécuter des actions concrètes (créer goal/habit) sans quitter la conversation.
+### 4. System prompt
+Préciser dans le prompt système qu'un goal "actif" englobe `in_progress` + `not_started`, et que le Coach doit prioriser ceux du pacte actif quand pertinent.
 
-## Ce qui a été livré
+## Vérification
 
-### 1. Nouveaux tools serveur (`supabase/functions/ai-coach/index.ts`)
-- `list_pacts` — énumère les pactes du user pour permettre au modèle de choisir un `pact_id`.
-- `list_life_areas` — domaines de vie disponibles pour rattacher un goal.
-- `create_goal` — crée un goal "normal" sous le pacte choisi (vérifie l'ownership).
-- `create_habit_goal` — crée une habitude avec `habit_duration_days` et `habit_checks` initialisés.
+- Tester via le Coach : « Quels sont mes goals actifs ? » → doit lister les 26 goals (9+17) au lieu de « aucun ».
+- Tester « Crée-moi un goal X » → toujours fonctionnel (utilise `list_pacts`, pas affecté).
 
-### 2. Traçabilité des sources & actions
-- Le tool loop agrège, pour chaque hop :
-  - les **citations** issues de `search_memory` (source_type, source_id, snippet, similarité)
-  - les **actions** exécutées par les tools `create_*` (label, ref_id, ref_type, ok/error)
-- Après stream final, persistés dans `coach_messages.metadata` (jsonb, dédupliqué par source).
+## Fichiers touchés
 
-### 3. Schéma DB
-- Ajout `coach_messages.metadata jsonb` (migration `20260517...`).
-
-### 4. UI — rendu enrichi du chat
-- `react-markdown` + `remark-gfm` : assistant rendu en markdown (titres, listes, code, gras).
-- `CitationStrip` : sous chaque réponse, chips cliquables vers la source (Journal, Décisions, Goal…).
-- `ActionChips` : confirmation visuelle des actions exécutées (emerald si ok, rouge si erreur), cliquables vers la ressource créée.
-
-## Sécurité
-- `create_goal` / `create_habit_goal` vérifient que le `pact_id` appartient au user avant insertion.
-- Pas de SQL libre — chaque outil mappe sur une insertion typée.
-- Tools `create_*` réservés aux demandes explicites du user (mentionné dans le system prompt).
-
-## Fichiers impactés
-- **Modifié** : `supabase/functions/ai-coach/index.ts`, `src/hooks/useCoach.ts`, `src/components/coach/CoachPanel.tsx`, `.lovable/plan.md`
-- **Migration** : `coach_messages.metadata jsonb`
-- **Dépendances** : `react-markdown`, `remark-gfm`
-
-## Hors scope (volontaire)
-- Pas d'édition/suppression de goals depuis le chat (lecture + création seulement, plus sûr).
-- Pas de génération d'image dans la réponse (V3.2 si besoin).
-- Pas de file upload côté composer (reste V4.x).
+- `supabase/functions/ai-coach/index.ts` (tool definition + handler + prompt)

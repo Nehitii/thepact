@@ -14,14 +14,15 @@ Tu ne donnes jamais de conseil médical/légal/financier réglementé sans rappe
 Quand l'utilisateur le demande, propose des actions actionnables et utilise les outils disponibles.
 Avant de répondre à une question factuelle sur la vie de l'utilisateur (goals, habits, finance, journal, valeurs, mémoire), appelle les tools pour récupérer la donnée à jour. Sinon, réponds directement.
 Format: markdown léger autorisé (titres ##, listes, gras). Quand tu cites un souvenir issu de la mémoire long-terme, mentionne la source en fin de phrase entre parenthèses.
-Pour créer un goal/habit, demande d'abord à quel pacte le rattacher si l'utilisateur n'a pas précisé (utilise list_pacts).`;
+Pour créer un goal/habit, demande d'abord à quel pacte le rattacher si l'utilisateur n'a pas précisé (utilise list_pacts).
+Un goal "actif" = statut "in_progress" ou "not_started". Priorise toujours ceux du pacte actif (is_active_pact=true) quand pertinent.`;
 
 const TOOLS = [
   {
     type: "function",
     function: {
       name: "list_active_goals",
-      description: "Liste les goals actifs de l'utilisateur (max 20). Retourne id, nom, difficulté, progression.",
+      description: "Liste les goals en cours et à démarrer du user (max 20, triés in_progress puis not_started, focus en tête). Retourne id, nom, difficulté, progression, pact_id, is_active_pact.",
       parameters: { type: "object", properties: { limit: { type: "number", default: 20 } } },
     },
   },
@@ -198,13 +199,27 @@ async function runTool(
       const { data: pacts } = await supabase.from("pacts").select("id").eq("user_id", userId);
       const ids = (pacts ?? []).map((p: any) => p.id);
       if (!ids.length) return JSON.stringify([]);
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("active_pact_id")
+        .eq("id", userId)
+        .maybeSingle();
+      const activePactId = profile?.active_pact_id ?? null;
       const { data } = await supabase
         .from("goals")
-        .select("id,name,difficulty,status,validated_steps,total_steps,deadline,is_focus")
+        .select("id,name,difficulty,status,validated_steps,total_steps,deadline,is_focus,pact_id")
         .in("pact_id", ids)
-        .eq("status", "active")
+        .in("status", ["in_progress", "not_started"])
         .limit(args?.limit ?? 20);
-      return JSON.stringify(data ?? []);
+      const enriched = (data ?? [])
+        .map((g: any) => ({ ...g, is_active_pact: g.pact_id === activePactId }))
+        .sort((a: any, b: any) => {
+          if (a.is_active_pact !== b.is_active_pact) return a.is_active_pact ? -1 : 1;
+          if (a.is_focus !== b.is_focus) return a.is_focus ? -1 : 1;
+          if (a.status !== b.status) return a.status === "in_progress" ? -1 : 1;
+          return 0;
+        });
+      return JSON.stringify(enriched);
     }
     if (name === "list_recent_habits") {
       const since = new Date(Date.now() - 14 * 86400000).toISOString().slice(0, 10);
