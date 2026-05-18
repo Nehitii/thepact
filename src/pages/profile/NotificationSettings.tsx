@@ -1,6 +1,10 @@
 import { useState, useCallback, useRef } from "react";
-import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain } from "lucide-react";
+import { Bell, Zap, Volume2, MessageSquare, Gift, AlertCircle, Loader2, Clock, Brain, Send, BellOff } from "lucide-react";
 import { useNotificationSettings } from "@/hooks/useNotifications";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -17,7 +21,9 @@ const HOURS = Array.from({ length: 24 }, (_, i) => ({
 
 export default function NotificationSettings() {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { settings, isLoading, updateSettings } = useNotificationSettings();
+  const push = usePushNotifications();
   const [syncingPanel, setSyncingPanel] = useState<number | null>(null);
   const syncTimer = useRef<ReturnType<typeof setTimeout>>();
   const [latestLog, setLatestLog] = useState<{ text: string; type: "ok" | "warn" | "info" }>({ text: "NOTIFICATION SETTINGS LOADED", type: "info" });
