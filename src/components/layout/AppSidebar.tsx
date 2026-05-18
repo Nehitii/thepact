@@ -103,6 +103,7 @@ const settingsItems = [
   { to: "/profile/pact-settings", icon: Settings, label: "Pact Rules" },
   { to: "/profile/display-sound", icon: Volume2, label: "A/V Config" },
   { to: "/profile/notifications", icon: Bell, label: "Alerts" },
+  { to: "/profile/automations", icon: Zap, label: "Automations" },
   { to: "/profile/privacy", icon: Shield, label: "Privacy" },
   { to: "/profile/data", icon: Database, label: "Data Core" },
 ];
