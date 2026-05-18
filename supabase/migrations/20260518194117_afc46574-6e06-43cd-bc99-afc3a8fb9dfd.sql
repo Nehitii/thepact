@@ -1,0 +1,7 @@
+CREATE TABLE public.user_automation_rules (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE, name text NOT NULL, description text, trigger_type text NOT NULL, trigger_config jsonb NOT NULL DEFAULT '{}'::jsonb, action_type text NOT NULL, action_config jsonb NOT NULL DEFAULT '{}'::jsonb, is_active boolean NOT NULL DEFAULT true, last_run_at timestamptz, last_status text, run_count integer NOT NULL DEFAULT 0, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX idx_user_automation_rules_active ON public.user_automation_rules(user_id, is_active) WHERE is_active = true;
+ALTER TABLE public.user_automation_rules ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users view own rules" ON public.user_automation_rules FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users insert own rules" ON public.user_automation_rules FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users update own rules" ON public.user_automation_rules FOR UPDATE USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users delete own rules" ON public.user_automation_rules FOR DELETE USING (auth.uid() = user_id);
