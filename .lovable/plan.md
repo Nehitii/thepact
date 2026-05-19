@@ -1,4 +1,26 @@
-# Fix : le Coach ne détecte pas les goals actifs
+# Vagues V3.2 + V4.1 + V4.2 livrées
+
+## V3.2 — Digest hebdo & insights enrichis
+- Edge function `coach-weekly-digest` : compare semaine N vs N-1 (étapes, habitudes, journal, todo), génère un insight Gemini 2.5 Flash, upsert `weekly_reviews`, insère un `coach_insight` (type='digest') + `notification` + push best-effort.
+- Cron pg_cron : tous les dimanches 18:00 UTC, via `x-cron-secret`.
+- Appelable aussi manuellement par un utilisateur authentifié pour son propre digest.
+
+## V4.1 — Push notifications (Web Push / VAPID)
+- Service worker `public/sw.js` (push + notificationclick), enregistré uniquement hors preview/iframe.
+- Hook `usePushNotifications` : subscribe/unsubscribe + persistance dans `push_subscriptions` (clé publique VAPID hardcodée, surcharge possible via VITE_VAPID_PUBLIC_KEY).
+- Panneau "WEB PUSH (PWA)" dans `/profile/notifications` : activer/désactiver + envoyer un push test (`supabase.functions.invoke('push-send')`).
+- Secrets serveur ajoutés : VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT.
+
+## V4.2 — Moteur d'automatisations & règles
+- Table `user_automation_rules` (trigger_type/config + action_type/config + is_active + cooldown via last_run_at).
+- Edge function `automation-evaluator` (cron toutes les 30 min, header `x-cron-secret`).
+- Triggers : `streak_broken`, `goal_overdue`, `budget_exceeded`, `low_focus_week`, `daily_schedule`.
+- Actions : `send_notification`, `coach_insight`, `grant_bonds` (≤500/jour).
+- Page `/profile/automations` (liste, toggle, JSON config, supprimer) + entrée sidebar "Automations".
+
+## Crons actifs
+- `coach-weekly-digest` : `0 18 * * 0`
+- `automation-evaluator` : `*/30 * * * *`
 
 ## Diagnostic
 
