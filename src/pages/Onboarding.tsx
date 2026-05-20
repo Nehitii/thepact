@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLeft, User, Palette } from "lucide-react";
 import { Compass } from "lucide-react";
-import { createPact } from "@/lib/supabase";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -88,7 +87,7 @@ export default function Onboarding() {
       if (displayName.trim()) {
         await supabase.from("profiles").update({ display_name: displayName.trim() }).eq("id", user.id);
       }
-      await createPact({ user_id: user.id, name, mantra, symbol, color });
+      await supabase.from("pacts").insert({ user_id: user.id, name, mantra, symbol, color });
       if (selectedValues.length > 0) {
         await (supabase as any).from("user_values").insert(
           selectedValues.map((label, i) => ({ user_id: user.id, label, rank: i })),
