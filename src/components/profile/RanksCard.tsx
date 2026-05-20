@@ -11,7 +11,7 @@ import { RankEditor } from "@/components/ranks/RankEditor";
 import type { Rank } from "@/types/ranks";
 import { useRankXP } from "@/hooks/useRankXP";
 import { usePact } from "@/hooks/usePact";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Trophy, Plus, Trash2, Edit2, Sparkles, Target, MoreVertical, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -75,7 +75,6 @@ function XPTimeline({ ranks, currentXP, totalMaxXP }: { ranks: Rank[]; currentXP
 }
 
 export function RanksCard({ userId }: RanksCardProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: pact } = usePact(userId);
   const { data: rankData, isLoading } = useRankXP(userId, pact?.id);
@@ -100,23 +99,23 @@ export function RanksCard({ userId }: RanksCardProps) {
   const handleEditRank = (rank: Rank) => { setSelectedRank(rank); setIsNewRank(false); setShowEditor(true); };
 
   const handleSaveRank = async (rank: Rank) => {
-    if (!rank.name.trim()) { toast({ title: "Validation Error", description: "Please enter a rank name", variant: "destructive" }); throw new Error("Validation failed"); }
+    if (!rank.name.trim()) { toast.error("Validation Error", { description: "Please enter a rank name" }); throw new Error("Validation failed"); }
     
     // Overlap validation: check for duplicate min_points
     const conflicting = ranks.find(r => r.min_points === rank.min_points && r.id !== rank.id);
     if (conflicting) {
-      toast({ title: "Conflict", description: `Another rank ("${conflicting.name}") already uses ${rank.min_points.toLocaleString()} XP as threshold.`, variant: "destructive" });
+      toast.error("Conflict", { description: `Another rank ("${conflicting.name}") already uses ${rank.min_points.toLocaleString()} XP as threshold.` });
       throw new Error("Conflict");
     }
 
     if (isNewRank) {
       const { error } = await supabase.from("ranks").insert({ user_id: userId, min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote });
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); throw error; }
-      toast({ title: "Rank Created", description: `${rank.name} has been added to your progression` });
+      if (error) { toast.error("Error", { description: error.message }); throw error; }
+      toast.success("Rank Created", { description: `${rank.name} has been added to your progression` });
     } else {
       const { error } = await supabase.from("ranks").update({ min_points: rank.min_points, max_points: rank.max_points || null, name: rank.name.trim(), logo_url: rank.logo_url, background_url: rank.background_url, background_opacity: rank.background_opacity, frame_color: rank.frame_color, glow_color: rank.glow_color, quote: rank.quote }).eq("id", rank.id);
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); throw error; }
-      toast({ title: "Rank Updated", description: `${rank.name} has been updated` });
+      if (error) { toast.error("Error", { description: error.message }); throw error; }
+      toast.success("Rank Updated", { description: `${rank.name} has been updated` });
     }
     queryClient.invalidateQueries({ queryKey: ["rank-xp"] });
   };
@@ -128,8 +127,8 @@ export function RanksCard({ userId }: RanksCardProps) {
   const confirmDeleteRank = async () => {
     if (!rankToDelete) return;
     const { error } = await supabase.from("ranks").delete().eq("id", rankToDelete.id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); }
-    else { toast({ title: "Rank Deleted", description: `${rankToDelete.name} has been removed` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
+    if (error) { toast.error("Error", { description: error.message }); }
+    else { toast.success("Rank Deleted", { description: `${rankToDelete.name} has been removed` }); queryClient.invalidateQueries({ queryKey: ["rank-xp"] }); }
     setRankToDelete(null);
   };
 

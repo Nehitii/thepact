@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Shield, Infinity, Palette, Puzzle, RefreshCw, Zap, X, Check, AlertTriangle, ChevronDown } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { useShopModules, useUserModulePurchases, useShopFrames, useShopBanners, useUserCosmetics } from "@/hooks/useShop";
 import { useAdminForcePurchaseCosmetic, useAdminResetCosmetic, useAdminForcePurchaseModule, useAdminResetModule, useAdminResetAll } from "@/hooks/useAdminMode";
@@ -14,7 +14,6 @@ import { useState } from "react";
 
 export default function AdminMode() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const [debugOpen, setDebugOpen] = useState(false);
 
   const { data: modules = [] } = useShopModules();

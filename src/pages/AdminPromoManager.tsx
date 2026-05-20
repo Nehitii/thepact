@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Ticket, Plus, Copy, Sparkles, Calendar, Users, Search } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
 import { logAdminAction } from "@/hooks/useAdminAudit";
@@ -17,7 +17,6 @@ import { usePromoCodes, useCreatePromoCode, useUpdatePromoCode, useDeletePromoCo
 import { format } from "date-fns";
 
 export default function AdminPromoManager() {
-  const { toast } = useToast();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -42,7 +41,7 @@ export default function AdminPromoManager() {
 
   const handleCreate = async () => {
     if (!newCode || !rewardAmount) {
-      toast({ title: "Missing fields", description: "Please fill in the code and reward amount", variant: "destructive" });
+      toast.error("Missing fields", { description: "Please fill in the code and reward amount" });
       return;
     }
     await createPromoCode.mutateAsync({ code: newCode, description: description || undefined, reward_type: rewardType, reward_amount: parseInt(rewardAmount), max_uses: maxUses ? parseInt(maxUses) : null, expires_at: expiresAt || null });
@@ -61,7 +60,7 @@ export default function AdminPromoManager() {
 
   const copyToClipboard = (code: string) => {
     navigator.clipboard.writeText(code);
-    toast({ title: "Copied!", description: `Code "${code}" copied to clipboard` });
+    toast.success("Copied!", { description: `Code "${code}" copied to clipboard` });
   };
 
   const filtered = promoCodes.filter(c => !searchQuery || c.code.toLowerCase().includes(searchQuery.toLowerCase()) || c.description?.toLowerCase().includes(searchQuery.toLowerCase()));

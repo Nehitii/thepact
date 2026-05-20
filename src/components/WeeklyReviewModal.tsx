@@ -24,8 +24,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 interface WeeklyReviewModalProps {
   open: boolean;
   onClose: () => void;
@@ -33,7 +32,6 @@ interface WeeklyReviewModalProps {
 
 export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
   const { t } = useTranslation();
-  const { toast } = useToast();
   const { currency } = useCurrency();
   const { data: currentReview } = useCurrentWeekReview();
   const { data: pastReviews = [] } = useWeeklyReviews();
@@ -47,9 +45,9 @@ export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
   const handleGenerate = async () => {
     try {
       await generateReview.mutateAsync();
-      toast({ title: "Weekly review generated!", description: "Your week has been analyzed." });
+      toast.success("Weekly review generated!", { description: "Your week has been analyzed." });
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast.error("Error", { description: e.message });
     }
   };
 
@@ -61,9 +59,9 @@ export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
         reflection_note: reflectionNote,
         week_rating: weekRating,
       });
-      toast({ title: "Reflection saved" });
+      toast.success("Reflection saved");
     } catch (e: any) {
-      toast({ title: "Error", description: e.message, variant: "destructive" });
+      toast.error("Error", { description: e.message });
     }
   };
 

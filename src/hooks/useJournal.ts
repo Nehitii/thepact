@@ -5,7 +5,7 @@
  */
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { JournalEntry } from "@/types/journal";
 
 // Re-export types from the central file so existing imports keep working
@@ -47,8 +47,6 @@ export function useJournalEntries(userId: string | undefined) {
 
 export function useCreateJournalEntry() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (entry: {
       user_id: string;
@@ -78,19 +76,17 @@ export function useCreateJournalEntry() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries", data.user_id] });
-      toast({ title: "Log recorded", description: "Neural log entry saved" });
+      toast.success("Log recorded", { description: "Neural log entry saved" });
       import('@/lib/achievements').then(m => m.trackJournalEntry(data.user_id));
     },
     onError: (error: Error) => {
-      toast({ title: "Failed to save entry", description: error.message, variant: "destructive" });
+      toast.error("Failed to save entry", { description: error.message });
     },
   });
 }
 
 export function useUpdateJournalEntry() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({
       id,
@@ -118,18 +114,16 @@ export function useUpdateJournalEntry() {
     },
     onSuccess: ({ userId }) => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries", userId] });
-      toast({ title: "Log updated" });
+      toast.success("Log updated");
     },
     onError: (error: Error) => {
-      toast({ title: "Failed to update entry", description: error.message, variant: "destructive" });
+      toast.error("Failed to update entry", { description: error.message });
     },
   });
 }
 
 export function useDeleteJournalEntry() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ id, userId }: { id: string; userId: string }) => {
       const { error } = await supabase.from("journal_entries").delete().eq("id", id);
@@ -138,10 +132,10 @@ export function useDeleteJournalEntry() {
     },
     onSuccess: ({ userId }) => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries", userId] });
-      toast({ title: "Log purged" });
+      toast.success("Log purged");
     },
     onError: (error: Error) => {
-      toast({ title: "Failed to delete entry", description: error.message, variant: "destructive" });
+      toast.error("Failed to delete entry", { description: error.message });
     },
   });
 }

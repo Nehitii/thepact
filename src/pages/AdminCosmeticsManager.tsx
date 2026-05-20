@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { FramePreview as InlineFramePreview } from "@/components/ui/avatar-frame";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
@@ -78,8 +78,6 @@ type CreationMode = "classic" | "image";
 
 export default function AdminCosmeticsManager() {
   const { user } = useAuth();
-  const { toast } = useToast();
-  
   const [frames, setFrames] = useState<CosmeticFrame[]>([]);
   const [banners, setBanners] = useState<CosmeticBanner[]>([]);
   const [titles, setTitles] = useState<CosmeticTitle[]>([]);
@@ -133,7 +131,7 @@ export default function AdminCosmeticsManager() {
       await supabase.from("cosmetic_frames").insert(frameData);
       await logAdminAction("create", "frame", undefined, { name: editingFrame.name });
     }
-    toast({ title: "Frame saved!" });
+    toast.success("Frame saved!");
     setEditingFrame(null);
     loadAllCosmetics();
   };
@@ -141,7 +139,7 @@ export default function AdminCosmeticsManager() {
   const deleteFrame = async (id: string, name: string) => {
     await supabase.from("cosmetic_frames").delete().eq("id", id);
     await logAdminAction("delete", "frame", id, { name });
-    toast({ title: "Frame deleted" });
+    toast.success("Frame deleted");
     loadAllCosmetics();
   };
 
@@ -149,7 +147,7 @@ export default function AdminCosmeticsManager() {
     const { id, ...rest } = frame;
     await supabase.from("cosmetic_frames").insert({ ...rest, name: `${rest.name} (copy)` });
     await logAdminAction("duplicate", "frame", id, { name: frame.name });
-    toast({ title: "Frame duplicated!" });
+    toast.success("Frame duplicated!");
     loadAllCosmetics();
   };
 
@@ -174,7 +172,7 @@ export default function AdminCosmeticsManager() {
       await supabase.from("cosmetic_banners").insert(bannerData);
       await logAdminAction("create", "banner", undefined, { name: editingBanner.name });
     }
-    toast({ title: "Banner saved!" });
+    toast.success("Banner saved!");
     setEditingBanner(null);
     loadAllCosmetics();
   };
@@ -182,7 +180,7 @@ export default function AdminCosmeticsManager() {
   const deleteBanner = async (id: string, name: string) => {
     await supabase.from("cosmetic_banners").delete().eq("id", id);
     await logAdminAction("delete", "banner", id, { name });
-    toast({ title: "Banner deleted" });
+    toast.success("Banner deleted");
     loadAllCosmetics();
   };
 
@@ -190,7 +188,7 @@ export default function AdminCosmeticsManager() {
     const { id, ...rest } = banner;
     await supabase.from("cosmetic_banners").insert({ ...rest, name: `${rest.name} (copy)` });
     await logAdminAction("duplicate", "banner", id, { name: banner.name });
-    toast({ title: "Banner duplicated!" });
+    toast.success("Banner duplicated!");
     loadAllCosmetics();
   };
 
@@ -213,7 +211,7 @@ export default function AdminCosmeticsManager() {
       await supabase.from("cosmetic_titles").insert(titleData);
       await logAdminAction("create", "title", undefined, { name: editingTitle.title_text });
     }
-    toast({ title: "Title saved!" });
+    toast.success("Title saved!");
     setEditingTitle(null);
     loadAllCosmetics();
   };
@@ -221,7 +219,7 @@ export default function AdminCosmeticsManager() {
   const deleteTitle = async (id: string, name: string) => {
     await supabase.from("cosmetic_titles").delete().eq("id", id);
     await logAdminAction("delete", "title", id, { name });
-    toast({ title: "Title deleted" });
+    toast.success("Title deleted");
     loadAllCosmetics();
   };
 
@@ -229,7 +227,7 @@ export default function AdminCosmeticsManager() {
     const { id, ...rest } = title;
     await supabase.from("cosmetic_titles").insert({ ...rest, title_text: `${rest.title_text} (copy)` });
     await logAdminAction("duplicate", "title", id, { name: title.title_text });
-    toast({ title: "Title duplicated!" });
+    toast.success("Title duplicated!");
     loadAllCosmetics();
   };
 

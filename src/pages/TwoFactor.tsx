@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { setTrustedDeviceToken, useTwoFactor } from "@/hooks/useTwoFactor";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,7 +31,6 @@ function guessDeviceLabel() {
 export default function TwoFactor() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const { t } = useTranslation();
   const twoFactor = useTwoFactor();
   const { session } = useAuth();
@@ -122,9 +121,9 @@ export default function TwoFactor() {
       await invokeWithRetry({ action: "send_email_code" });
       setEmailSent(true);
       setCooldown(60);
-      toast({ title: t("twoFactor.emailSentTitle"), description: t("twoFactor.emailSentDesc") });
+      toast.success(t("twoFactor.emailSentTitle"), { description: t("twoFactor.emailSentDesc") });
     } catch (e: any) {
-      toast({ title: t("common.error"), description: e?.message || "Failed to send code", variant: "destructive" });
+      toast.error(t("common.error"), { description: e?.message || "Failed to send code" });
     } finally {
       setSendingEmail(false);
     }
@@ -152,14 +151,10 @@ export default function TwoFactor() {
       }
 
       twoFactor.setSessionVerified(true);
-      toast({ title: t("twoFactor.verifiedTitle"), description: t("twoFactor.verifiedDesc") });
+      toast.success(t("twoFactor.verifiedTitle"), { description: t("twoFactor.verifiedDesc") });
       navigate(from, { replace: true });
     } catch (e: any) {
-      toast({
-        title: t("twoFactor.failedTitle"),
-        description: e?.message || t("twoFactor.failedDesc"),
-        variant: "destructive",
-      });
+      toast.error(t("twoFactor.failedTitle"), { description: e?.message || t("twoFactor.failedDesc") });
     } finally {
       setLoading(false);
     }

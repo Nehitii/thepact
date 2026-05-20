@@ -7,18 +7,16 @@ import { BondIcon } from "@/components/ui/bond-icon";
 import { PromoCodeRedemption } from "./PromoCodeRedemption";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export function BondsShop() {
   const { user } = useAuth();
   const { data: packs = [], isLoading: loadingPacks } = useBondPacks();
   const { data: balance, isLoading: loadingBalance } = useBondBalance(user?.id);
   const { data: offers = [], isLoading: loadingOffers } = useSpecialOffers();
-  const { toast } = useToast();
   const isLoading = loadingPacks || loadingOffers;
 
   const handlePackPurchase = () => {
-    toast({ title: "Coming Soon", description: "Payment integration is under development. Stay tuned!" });
+    toast.success("Coming Soon", { description: "Payment integration is under development. Stay tuned!" });
   };
 
   return (

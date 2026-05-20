@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export interface DailyDeal {
   id: string;
   item_id: string;
@@ -98,8 +97,6 @@ export function useDailyDeals() {
  */
 export function usePurchaseDailyDeal() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ dealId }: { dealId: string }) => {
       const { data, error } = await supabase.rpc("purchase_daily_deal", {
@@ -118,14 +115,10 @@ export function usePurchaseDailyDeal() {
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
       queryClient.invalidateQueries({ queryKey: ["daily-deals"] });
-      toast({ title: "Deal secured!" });
+      toast.success("Deal secured!");
     },
     onError: (error: Error) => {
-      toast({
-        title: "Purchase failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Purchase failed", { description: error.message });
     },
   });
 }

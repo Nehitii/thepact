@@ -16,7 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTwoFactor } from "@/hooks/useTwoFactor";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
@@ -97,7 +97,6 @@ function CyberBirthdayPicker({ value, onChange, label }: { value: Date | undefin
 // ─── Main Component ───
 export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSettingsProps) {
   const { t, i18n } = useTranslation();
-  const { toast } = useToast();
   const { setCurrency: updateGlobalCurrency, refreshCurrency } = useCurrency();
 
   const [activeTab, setActiveTab] = useState<"IDENTITY" | "SECURITY" | "SYSTEM">("IDENTITY");
@@ -130,10 +129,10 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
       await refreshCurrency();
       setHasChanges(false);
       addLog("UPDATE SUCCESSFUL. DATA SYNCED.", "ok");
-      toast({ title: t("profile.updatedTitle"), description: t("profile.updatedDesc") });
+      toast.success(t("profile.updatedTitle"), { description: t("profile.updatedDesc") });
     } catch (error: any) {
       addLog(`COMMIT ERROR: ${error.message.toUpperCase()}`, "warn");
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      toast.error(t("common.error"), { description: error.message });
     } finally { setIsSaving(false); }
   };
 
@@ -200,7 +199,6 @@ export function ProfileAccountSettings({ userId, initialData }: ProfileAccountSe
 
 // ─── Sub-Components ──────────────────────────
 function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
-  const { toast } = useToast();
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -208,18 +206,18 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
   const mismatch = !!confirmPassword && newPassword !== confirmPassword;
 
   const handleChangePassword = async () => {
-    if (newPassword.length < 6) return toast({ title: "ERROR", description: "MIN 6 CHARACTERS REQUIRED", variant: "destructive" });
-    if (mismatch) return toast({ title: "ERROR", description: "PASSWORDS DO NOT MATCH", variant: "destructive" });
+    if (newPassword.length < 6) return toast.error("ERROR", { description: "MIN 6 CHARACTERS REQUIRED" });
+    if (mismatch) return toast.error("ERROR", { description: "PASSWORDS DO NOT MATCH" });
     setIsSaving(true);
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       setNewPassword(""); setConfirmPassword("");
       onLog("ENCRYPTION KEY UPDATED", "ok");
-      toast({ title: "SUCCESS", description: "Password updated successfully." });
+      toast.success("SUCCESS", { description: "Password updated successfully." });
     } catch (error: any) {
       onLog("KEY UPDATE FAILED", "warn");
-      toast({ title: "ERROR", description: error.message, variant: "destructive" });
+      toast.error("ERROR", { description: error.message });
     } finally { setIsSaving(false); }
   };
 
@@ -276,7 +274,6 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
 }
 
 function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
-  const { toast } = useToast();
   const [signingOut, setSigningOut] = useState(false);
 
   const { data: loginHistory } = useQuery({
@@ -293,7 +290,7 @@ function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: stri
     try {
       await supabase.auth.signOut({ scope: "others" as any });
       onLog("SESSIONS TERMINATED", "ok");
-      toast({ title: "Terminated", description: "All other sessions disconnected." });
+      toast.success("Terminated", { description: "All other sessions disconnected." });
     } finally { setSigningOut(false); }
   };
 

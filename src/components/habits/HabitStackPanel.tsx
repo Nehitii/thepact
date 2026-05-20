@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface HabitStackPanelProps {
@@ -26,8 +26,6 @@ interface HabitStackPanelProps {
 export function HabitStackPanel({ goalId, pactId, prerequisiteHabitId }: HabitStackPanelProps) {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { toast } = useToast();
-
   const { data: candidates = [] } = useQuery({
     queryKey: ["habit-stack-candidates", user?.id, pactId],
     queryFn: async () => {
@@ -57,10 +55,10 @@ export function HabitStackPanel({ goalId, pactId, prerequisiteHabitId }: HabitSt
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["goal-detail", goalId] });
       qc.invalidateQueries({ queryKey: ["goals"] });
-      toast({ title: "Habit stack updated" });
+      toast.success("Habit stack updated");
     },
     onError: (e: any) =>
-      toast({ title: "Update failed", description: e.message, variant: "destructive" }),
+      toast.error("Update failed", { description: e.message }),
   });
 
   const value = prerequisiteHabitId || "none";

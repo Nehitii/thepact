@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bell, Send, Users, Gift, Loader2, MessageSquare, Star, Trophy, Zap, Heart, Info, AlertTriangle, History } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { logAdminAction } from "@/hooks/useAdminAudit";
@@ -27,7 +27,6 @@ const iconComponents: Record<string, React.ComponentType<{ className?: string }>
 
 export default function AdminNotifications() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const [mode, setMode] = useState<"notification" | "message">("notification");
@@ -117,13 +116,13 @@ export default function AdminNotifications() {
       }
     },
     onSuccess: (count) => {
-      toast({ title: "Sent!", description: `Sent to ${count} user${count > 1 ? "s" : ""}` });
+      toast.success("Sent!", { description: `Sent to ${count} user${count > 1 ? "s" : ""}` });
       logAdminAction("send_notification", "notification", undefined, { title, targetAll, count });
       setTitle(""); setDescription(""); setCtaLabel(""); setCtaUrl(""); setAttachReward(false); setRewardAmount(0); setRewardCosmeticId("");
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
       queryClient.invalidateQueries({ queryKey: ["admin-notification-history"] });
     },
-    onError: (error: Error) => { toast({ title: "Error", description: error.message, variant: "destructive" }); },
+    onError: (error: Error) => { toast.error("Error", { description: error.message }); },
   });
 
   const canSend = title.trim() && (targetAll || targetUserId);

@@ -5,7 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useSoundSettings } from "@/hooks/useSoundSettings";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
 import { useTheme } from "next-themes";
 import { useTranslation } from "react-i18next";
@@ -30,7 +30,6 @@ const SOUND_FILES: Record<string, string> = { ui: "/sounds/ui-click.mp3" };
 export default function DisplaySound() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { toast } = useToast();
   const { settings: soundSettings, setSettings: setSoundSettings } = useSound();
   const { settings, isLoading, save } = useSoundSettings();
   const initialSyncDone = useRef(false);
@@ -63,7 +62,7 @@ export default function DisplaySound() {
     setSoundSettings(next);
     if (!user?.id) return;
     void save(next).catch((e) => {
-      toast({ title: t("common.error"), description: e?.message ?? t("settings.displaySound.toasts.saveFailed"), variant: "destructive" });
+      toast.error(t("common.error"), { description: e?.message ?? t("settings.displaySound.toasts.saveFailed") });
     });
   }, [user?.id, save, toast, setSoundSettings, t]);
 
@@ -115,7 +114,7 @@ export default function DisplaySound() {
                     const next = opt.value as ThemePreference;
                     setTheme(next);
                     updateProfile.mutate({ theme_preference: next } as any, {
-                      onSuccess: () => { toast({ title: t("settings.displaySound.toasts.themeUpdated"), description: t("settings.displaySound.toasts.themeUpdatedDesc") }); markSync(1); setLatestLog({ text: `THEME: ${next.toUpperCase()}`, type: "ok" }); },
+                      onSuccess: () => { toast.success(t("settings.displaySound.toasts.themeUpdated"), { description: t("settings.displaySound.toasts.themeUpdatedDesc") }); markSync(1); setLatestLog({ text: `THEME: ${next.toUpperCase()}`, type: "ok" }); },
                     });
                   }}
                   disabled={isPending}
@@ -135,7 +134,7 @@ export default function DisplaySound() {
           </div>
         </SettingContentRow>
 
-        <SettingRow icon={<Moon className="h-4 w-4 text-primary" />} label={t("settings.displaySound.reduceMotion")} description={t("settings.displaySound.reduceMotionDesc")} checked={profile?.reduce_motion ?? false} disabled={isPending} onToggle={(v) => updateProfile.mutate({ reduce_motion: v } as any, { onSuccess: () => { toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.motionSaved") }); markSync(1); setLatestLog({ text: `REDUCE_MOTION: ${v ? "ON" : "OFF"}`, type: "ok" }); } })} />
+        <SettingRow icon={<Moon className="h-4 w-4 text-primary" />} label={t("settings.displaySound.reduceMotion")} description={t("settings.displaySound.reduceMotionDesc")} checked={profile?.reduce_motion ?? false} disabled={isPending} onToggle={(v) => updateProfile.mutate({ reduce_motion: v } as any, { onSuccess: () => { toast.success(t("common.updated"), { description: t("settings.displaySound.toasts.motionSaved") }); markSync(1); setLatestLog({ text: `REDUCE_MOTION: ${v ? "ON" : "OFF"}`, type: "ok" }); } })} />
 
         <SettingContentRow icon={<Type className="h-4 w-4 text-primary" />} label={t("settings.displaySound.fontSize") || "Taille de police"} description={t("settings.displaySound.fontSizeDesc") || "Ajuste la taille de police globale (12-24px)"}>
           <div className="flex items-center gap-4">
@@ -147,7 +146,7 @@ export default function DisplaySound() {
                 const nf = v[0] ?? 16;
                 setLocalFontSize(null);
                 updateProfile.mutate({ font_size: nf } as any, {
-                  onSuccess: () => { toast({ title: t("common.updated") }); markSync(1); setLatestLog({ text: `FONT_SIZE: ${nf}px`, type: "ok" }); },
+                  onSuccess: () => { toast.success(t("common.updated")); markSync(1); setLatestLog({ text: `FONT_SIZE: ${nf}px`, type: "ok" }); },
                 });
               }}
               disabled={isPending}
@@ -183,7 +182,7 @@ export default function DisplaySound() {
 
       {/* ── PANEL 3: Particles ── */}
       <CyberPanel title="EFFETS PARTICULES" statusText={<SyncIndicator syncing={syncingPanel === 3} />}>
-        <SettingRow icon={<Sparkles className="h-4 w-4 text-primary" />} label={t("settings.displaySound.enableParticles")} description={t("settings.displaySound.enableParticlesDesc")} checked={profile?.particles_enabled ?? true} disabled={isPending} onToggle={(v) => updateProfile.mutate({ particles_enabled: v } as any, { onSuccess: () => { toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.particleSaved") }); markSync(3); setLatestLog({ text: `PARTICLES: ${v ? "ON" : "OFF"}`, type: "ok" }); } })} />
+        <SettingRow icon={<Sparkles className="h-4 w-4 text-primary" />} label={t("settings.displaySound.enableParticles")} description={t("settings.displaySound.enableParticlesDesc")} checked={profile?.particles_enabled ?? true} disabled={isPending} onToggle={(v) => updateProfile.mutate({ particles_enabled: v } as any, { onSuccess: () => { toast.success(t("common.updated"), { description: t("settings.displaySound.toasts.particleSaved") }); markSync(3); setLatestLog({ text: `PARTICLES: ${v ? "ON" : "OFF"}`, type: "ok" }); } })} />
 
         <SettingContentRow icon={<Sparkles className="h-4 w-4 text-primary" />} label={t("settings.displaySound.intensity")} description={t("settings.displaySound.intensityDesc")}>
           <div className="flex items-center gap-4">
@@ -211,7 +210,7 @@ export default function DisplaySound() {
                   key={color.hex}
                   onClick={() => {
                     updateProfile.mutate({ accent_color: color.hex } as any, {
-                      onSuccess: () => { toast({ title: t("common.updated"), description: color.label }); markSync(4); setLatestLog({ text: `ACCENT: ${color.label.toUpperCase()}`, type: "ok" }); },
+                      onSuccess: () => { toast.success(t("common.updated"), { description: color.label }); markSync(4); setLatestLog({ text: `ACCENT: ${color.label.toUpperCase()}`, type: "ok" }); },
                     });
                   }}
                   disabled={isPending}

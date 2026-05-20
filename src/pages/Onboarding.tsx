@@ -8,7 +8,7 @@ import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLe
 import { Compass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
 const symbols = [
@@ -57,8 +57,6 @@ export default function Onboarding() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
-
   const canNext = () => {
     if (step === 0) return true;
     if (step === 1) return displayName.trim().length > 0;
@@ -93,10 +91,10 @@ export default function Onboarding() {
           selectedValues.map((label, i) => ({ user_id: user.id, label, rank: i })),
         );
       }
-      toast({ title: t("onboarding.welcomeToast"), description: t("onboarding.pactSealed") });
+      toast.success(t("onboarding.welcomeToast"), { description: t("onboarding.pactSealed") });
       navigate("/");
     } catch (error: any) {
-      toast({ title: t("common.error"), description: error.message, variant: "destructive" });
+      toast.error(t("common.error"), { description: error.message });
     } finally {
       setIsSubmitting(false);
     }

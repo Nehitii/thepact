@@ -5,7 +5,7 @@ import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
@@ -37,7 +37,7 @@ export default function NotificationSettings() {
   const handleToggle = useCallback((key: string, value: boolean, panel: number) => {
     updateSettings.mutate({ [key]: value }, {
       onSuccess: () => {
-        toast({ title: t("settings.notifications.toasts.updated"), description: t("settings.notifications.toasts.updatedDesc") });
+        toast.success(t("settings.notifications.toasts.updated"), { description: t("settings.notifications.toasts.updatedDesc") });
         const labelMap: Record<string, string> = {
           system_enabled: "SYSTEM_ALERTS", progress_enabled: "PROGRESS_ALERTS",
           social_enabled: "SOCIAL_ALERTS", marketing_enabled: "MARKETING_ALERTS",
@@ -52,7 +52,7 @@ export default function NotificationSettings() {
   const handleQuietHoursChange = useCallback((key: string, value: string | null) => {
     updateSettings.mutate({ [key]: value || null } as any, {
       onSuccess: () => {
-        toast({ title: t("common.updated"), description: t("settings.notifications.quietHoursUpdated") || "Heures calmes mises à jour." });
+        toast.success(t("common.updated"), { description: t("settings.notifications.quietHoursUpdated") || "Heures calmes mises à jour." });
         setLatestLog({ text: `QUIET_HOURS ${key.includes("start") ? "START" : "END"}: ${value || "DISABLED"}`, type: value ? "ok" : "warn" });
         markSync(3);
       },
@@ -158,8 +158,8 @@ export default function NotificationSettings() {
               {!push.subscribed ? (
                 <Button size="sm" className="gap-2" onClick={async () => {
                   const r = await push.subscribe();
-                  if (r.ok) toast({ title: "Push activé" });
-                  else toast({ title: "Push refusé", description: r.reason, variant: "destructive" });
+                  if (r.ok) toast.success("Push activé");
+                  else toast.error("Push refusé", { description: r.reason });
                 }}>
                   <Bell className="h-3.5 w-3.5" /> Activer les push
                 </Button>
@@ -170,12 +170,12 @@ export default function NotificationSettings() {
                     const { error } = await supabase.functions.invoke("push-send", {
                       body: { user_id: user.id, title: "Test Pacte", body: "Push fonctionnel ✨", url: "/" },
                     });
-                    if (error) toast({ title: "Erreur push", description: error.message, variant: "destructive" });
-                    else toast({ title: "Push de test envoyé" });
+                    if (error) toast.error("Erreur push", { description: error.message });
+                    else toast.success("Push de test envoyé");
                   }}>
                     <Send className="h-3.5 w-3.5" /> Envoyer un test
                   </Button>
-                  <Button size="sm" variant="ghost" className="gap-2" onClick={async () => { await push.unsubscribe(); toast({ title: "Push désactivé" }); }}>
+                  <Button size="sm" variant="ghost" className="gap-2" onClick={async () => { await push.unsubscribe(); toast.success("Push désactivé"); }}>
                     <BellOff className="h-3.5 w-3.5" /> Se désabonner
                   </Button>
                 </>

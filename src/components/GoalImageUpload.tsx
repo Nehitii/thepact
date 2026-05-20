@@ -4,8 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 interface GoalImageUploadProps {
   value: string;
   onChange: (url: string) => void;
@@ -15,8 +14,6 @@ interface GoalImageUploadProps {
 export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
-
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -24,21 +21,13 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
     // Validate file type
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     if (!validTypes.includes(file.type)) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a JPG, PNG, WebP, or GIF image",
-        variant: "destructive",
-      });
+      toast.error("Invalid file type", { description: "Please upload a JPG, PNG, WebP, or GIF image" });
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Image must be less than 5MB",
-        variant: "destructive",
-      });
+      toast.error("File too large", { description: "Image must be less than 5MB" });
       return;
     }
 
@@ -66,17 +55,10 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
 
       onChange(urlData.signedUrl);
 
-      toast({
-        title: "Image uploaded",
-        description: "Your image has been uploaded successfully",
-      });
+      toast.success("Image uploaded", { description: "Your image has been uploaded successfully" });
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast({
-        title: "Upload failed",
-        description: error.message || "Failed to upload image",
-        variant: "destructive",
-      });
+      toast.error("Upload failed", { description: error.message || "Failed to upload image" });
     } finally {
       setUploading(false);
       // Reset file input

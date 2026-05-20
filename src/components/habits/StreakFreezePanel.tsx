@@ -3,7 +3,7 @@ import { format, subDays } from "date-fns";
 import { Snowflake, Loader2 } from "lucide-react";
 import { DSPanel } from "@/components/ds";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   useHabitLogs,
@@ -27,7 +27,6 @@ export function StreakFreezePanel({ goalId }: StreakFreezePanelProps) {
   const { data: logs = [] } = useHabitLogs(goalId);
   const price = useStreakFreezePrice();
   const freeze = useUseStreakFreeze();
-  const { toast } = useToast();
   const [pendingDate, setPendingDate] = useState<string | null>(null);
 
   const balance = bondBalance?.balance ?? 0;
@@ -53,9 +52,9 @@ export function StreakFreezePanel({ goalId }: StreakFreezePanelProps) {
     setPendingDate(date);
     try {
       await freeze.mutateAsync({ goalId, date });
-      toast({ title: "Day frozen", description: `Streak preserved (${price} Bonds spent)` });
+      toast.success("Day frozen", { description: `Streak preserved (${price} Bonds spent)` });
     } catch (e: any) {
-      toast({ title: "Freeze failed", description: e.message || "Try again", variant: "destructive" });
+      toast.error("Freeze failed", { description: e.message || "Try again" });
     } finally {
       setPendingDate(null);
     }

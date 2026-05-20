@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Shield, Palette, Coins, Puzzle, ChevronRight, Sparkles, Bell, AlertTriangle, ScrollText, Eye, EyeOff } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useServerAdminCheck } from "@/hooks/useServerAdminCheck";
 import { useQuery } from "@tanstack/react-query";
 import { AuditLogPanel } from "@/components/admin/AuditLogPanel";
@@ -14,7 +14,6 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 export default function Admin() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [showUpcoming, setShowUpcoming] = useState(false);
   
   const { data: adminCheck, isLoading, error } = useServerAdminCheck(!!user);
@@ -22,7 +21,7 @@ export default function Admin() {
   useEffect(() => {
     if (!user) { navigate("/auth"); return; }
     if (!isLoading && adminCheck && !adminCheck.isAdmin) {
-      toast({ title: "Access Denied", description: "You need admin privileges to access this page", variant: "destructive" });
+      toast.error("Access Denied", { description: "You need admin privileges to access this page" });
       navigate("/");
     }
   }, [user, adminCheck, isLoading, navigate, toast]);

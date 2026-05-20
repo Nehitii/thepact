@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
@@ -69,8 +69,6 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-
   const authSchema = z.object({
     email: z.string().email(t("auth.invalidEmail") || "ERR: INVALID_FORMAT"),
     password: z.string().min(6, t("auth.passwordMin") || "ERR: INSUFFICIENT_LENGTH"),
@@ -81,7 +79,7 @@ export default function Auth() {
     setLoading(true);
     const validation = authSchema.safeParse({ email, password });
     if (!validation.success) {
-      toast({ title: "SYSTEM ERROR", description: validation.error.errors[0].message, variant: "destructive" });
+      toast.error("SYSTEM ERROR", { description: validation.error.errors[0].message });
       setLoading(false);
       return;
     }
@@ -97,11 +95,11 @@ export default function Auth() {
           options: { emailRedirectTo: `${window.location.origin}/` },
         });
         if (error) throw error;
-        toast({ title: "SUCCESS", description: "IDENTITY ESTABLISHED." });
+        toast.success("SUCCESS", { description: "IDENTITY ESTABLISHED." });
         setIsLogin(true);
       }
     } catch (err: any) {
-      toast({ title: "ACCESS DENIED", description: err.message, variant: "destructive" });
+      toast.error("ACCESS DENIED", { description: err.message });
     } finally {
       setLoading(false);
     }

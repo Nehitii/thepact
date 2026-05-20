@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export interface PromoCode {
   id: string;
   code: string;
@@ -35,8 +34,6 @@ export function usePromoCodes() {
 // Admin: Create a new promo code
 export function useCreatePromoCode() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (promoCode: {
       code: string;
@@ -64,17 +61,10 @@ export function useCreatePromoCode() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["promo-codes"] });
-      toast({
-        title: "Promo code created",
-        description: "The promotional code has been created successfully",
-      });
+      toast.success("Promo code created", { description: "The promotional code has been created successfully" });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error creating promo code",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error creating promo code", { description: error.message });
     },
   });
 }
@@ -82,8 +72,6 @@ export function useCreatePromoCode() {
 // Admin: Update a promo code
 export function useUpdatePromoCode() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({
       id,
@@ -104,17 +92,10 @@ export function useUpdatePromoCode() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["promo-codes"] });
-      toast({
-        title: "Promo code updated",
-        description: "The promotional code has been updated",
-      });
+      toast.success("Promo code updated", { description: "The promotional code has been updated" });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error updating promo code",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error updating promo code", { description: error.message });
     },
   });
 }
@@ -122,8 +103,6 @@ export function useUpdatePromoCode() {
 // Admin: Delete a promo code
 export function useDeletePromoCode() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -135,17 +114,10 @@ export function useDeletePromoCode() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["promo-codes"] });
-      toast({
-        title: "Promo code deleted",
-        description: "The promotional code has been removed",
-      });
+      toast.success("Promo code deleted", { description: "The promotional code has been removed" });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error deleting promo code",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Error deleting promo code", { description: error.message });
     },
   });
 }
@@ -153,8 +125,6 @@ export function useDeletePromoCode() {
 // User: Redeem a promo code securely via server-side RPC
 export function useRedeemPromoCode() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async ({ userId, code }: { userId: string; code: string }) => {
       // Call secure server-side RPC function that handles all validation atomically
@@ -185,17 +155,10 @@ export function useRedeemPromoCode() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
-      toast({
-        title: "Code redeemed!",
-        description: `You received ${data.rewardAmount} ${data.rewardType}!`,
-      });
+      toast.success("Code redeemed!", { description: `You received ${data.rewardAmount} ${data.rewardType}!` });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Failed to redeem code",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Failed to redeem code", { description: error.message });
     },
   });
 }

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { Notification } from "@/hooks/useNotifications";
 
 /**
@@ -73,7 +73,6 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   const [claiming, setClaiming] = useState(false);
   
   const Icon = iconMap[notification.icon_key || "bell"] || Bell;
@@ -106,19 +105,12 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
 
-      toast({
-        title: "Reward Claimed!",
-        description: notification.reward_type === "bonds" 
+      toast.success("Reward Claimed!", { description: notification.reward_type === "bonds" 
           ? `+${notification.reward_amount} Bonds added to your balance`
-          : `${notification.reward_type} added to your collection`,
-      });
+          : `${notification.reward_type} added to your collection` });
     } catch (error) {
       console.error("Failed to claim reward:", error);
-      toast({
-        title: "Failed to claim",
-        description: "Please try again later",
-        variant: "destructive",
-      });
+      toast.error("Failed to claim", { description: "Please try again later" });
     } finally {
       setClaiming(false);
     }

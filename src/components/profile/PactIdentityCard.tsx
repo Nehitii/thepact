@@ -4,7 +4,7 @@ import { DataPanel } from "./settings-ui";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { PactVisual } from "@/components/PactVisual";
 import { cn } from "@/lib/utils";
 
@@ -77,11 +77,11 @@ export function PactIdentityCard({
 }: PactIdentityCardProps) {
   const handleSave = useCallback(async () => {
     if (!pactId) {
-      toast({ title: "No Pact Found", description: "Please complete onboarding first.", variant: "destructive" });
+      toast.error("No Pact Found", { description: "Please complete onboarding first." });
       return;
     }
     if (!pactName.trim()) {
-      toast({ title: "Project Name Required", description: "Please enter a name for your project.", variant: "destructive" });
+      toast.error("Project Name Required", { description: "Please enter a name for your project." });
       return;
     }
     await onSave();

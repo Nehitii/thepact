@@ -36,7 +36,7 @@ import {
   Compass,
 } from "lucide-react";
 import { EditStepsList, EditStepItem } from "@/components/goals/EditStepsList";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { GoalImageUpload } from "@/components/GoalImageUpload";
 import { CostItemsEditor, CostItemData } from "@/components/goals/CostItemsEditor";
 import { GoalSelectionList, AutoBuildRuleEditor, SuperGoalRule, filterGoalsByRule } from "@/components/goals/super";
@@ -77,7 +77,6 @@ export default function NewGoal() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { data: pactData } = usePact(user?.id);
   const { data: existingGoals = [] } = useGoals(pactData?.id, { includeStepCounts: true, includeTags: true });
   const { areas: lifeAreas } = useLifeAreas();
@@ -117,7 +116,7 @@ export default function NewGoal() {
 
   const handleAiDecompose = async () => {
     if (!name.trim()) {
-      toast({ title: "Renseigne d'abord un nom", variant: "destructive" });
+      toast.error("Renseigne d'abord un nom");
       return;
     }
     setAiDecomposing(true);
@@ -135,12 +134,12 @@ export default function NewGoal() {
       setStepItems(items);
       setStepCount(items.length);
       if (data?.rationale) {
-        toast({ title: "Décomposition IA appliquée", description: data.rationale });
+        toast.success("Décomposition IA appliquée", { description: data.rationale });
       } else {
-        toast({ title: "Décomposition IA appliquée" });
+        toast.success("Décomposition IA appliquée");
       }
     } catch (e: any) {
-      toast({ title: "Échec décomposition IA", description: e?.message ?? String(e), variant: "destructive" });
+      toast.error("Échec décomposition IA", { description: e?.message ?? String(e) });
     } finally {
       setAiDecomposing(false);
     }
@@ -197,7 +196,7 @@ export default function NewGoal() {
 
   const handleCreate = async () => {
     if (!user) {
-      toast({ title: "Error", description: "You must be logged in to create goals", variant: "destructive" });
+      toast.error("Error", { description: "You must be logged in to create goals" });
       return;
     }
 
@@ -209,11 +208,7 @@ export default function NewGoal() {
           : filterGoalsByRule(existingGoals, superGoalRule).map((g) => g.id);
 
       if (childIds.length === 0) {
-        toast({
-          title: "Error",
-          description: "Super Goal must contain at least one child goal",
-          variant: "destructive",
-        });
+        toast.error("Error", { description: "Super Goal must contain at least one child goal" });
         return;
       }
     }
@@ -233,7 +228,7 @@ export default function NewGoal() {
 
       const { data: pactResult } = await supabase.from("pacts").select("id").eq("user_id", user.id).single();
       if (!pactResult) {
-        toast({ title: "Error", description: "Pact not found", variant: "destructive" });
+        toast.error("Error", { description: "Pact not found" });
         setLoading(false);
         return;
       }
@@ -330,16 +325,13 @@ export default function NewGoal() {
       setTimeout(() => {
         trackGoalCreated(user.id, difficulty);
       }, 0);
-      toast({
-        title: goalType === "super" ? "Super Goal Created" : "Goal Created",
-        description: "Your Pact evolution has been added",
-      });
+      toast.success(goalType === "super" ? "Super Goal Created" : "Goal Created", { description: "Your Pact evolution has been added" });
       navigate(`/goals/${goalData.id}`);
     } catch (error: any) {
       if (error instanceof z.ZodError) {
-        toast({ title: "Validation Error", description: error.errors[0].message, variant: "destructive" });
+        toast.error("Validation Error", { description: error.errors[0].message });
       } else {
-        toast({ title: "Error", description: error.message || "Failed to create goal", variant: "destructive" });
+        toast.error("Error", { description: error.message || "Failed to create goal" });
       }
     } finally {
       setLoading(false);
