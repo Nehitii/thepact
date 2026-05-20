@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export interface BundleItem {
   item_id: string;
   item_type: "cosmetic_frame" | "cosmetic_banner" | "cosmetic_title" | "module";
@@ -57,8 +56,6 @@ export function useShopBundles() {
  */
 export function usePurchaseBundle() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ bundleId }: { bundleId: string }) => {
       const { data, error } = await supabase.rpc("purchase_bundle", {
@@ -76,14 +73,10 @@ export function usePurchaseBundle() {
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
-      toast({ title: "Bundle unlocked!", description: "All items added to your collection" });
+      toast.success("Bundle unlocked!", { description: "All items added to your collection" });
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Purchase failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Purchase failed", { description: error.message });
     },
   });
 }

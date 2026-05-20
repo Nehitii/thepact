@@ -9,7 +9,7 @@ import { RankBadge } from "@/components/ranks/RankCard";
 import { useRankXP } from "@/hooks/useRankXP";
 import { usePact } from "@/hooks/usePact";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Upload, Link as LinkIcon, ImageIcon, Crown, Sparkles, Lock, Save, Loader2, Shield } from "lucide-react";
 
@@ -163,7 +163,6 @@ export function ProfileBoundedProfile({
   avatarUrl,
   onAvatarUrlChange,
 }: ProfileBoundedProfileProps) {
-  const { toast } = useToast();
   const { data: pact } = usePact(userId);
   const { data: rankData } = useRankXP(userId, pact?.id);
 
@@ -241,7 +240,7 @@ export function ProfileBoundedProfile({
       const urlWithCacheBust = newUrl.includes("?") ? `${newUrl}&t=${Date.now()}` : `${newUrl}?t=${Date.now()}`;
       onAvatarUrlChange(urlWithCacheBust);
       await supabase.from("profiles").update({ avatar_url: newUrl }).eq("id", userId);
-      toast({ title: "Avatar updated", description: "Your profile image has been saved" });
+      toast.success("Avatar updated", { description: "Your profile image has been saved" });
     }
     setShowAvatarDialog(false);
     setAvatarUrlInput("");
@@ -252,7 +251,7 @@ export function ProfileBoundedProfile({
     if (!file) return;
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
-      toast({ title: "Invalid file", description: "Must be JPG/PNG/WEBP under 5MB", variant: "destructive" });
+      toast.error("Invalid file", { description: "Must be JPG/PNG/WEBP under 5MB" });
       return;
     }
 
@@ -275,10 +274,10 @@ export function ProfileBoundedProfile({
         const finalUrl = `${signedUrlData.signedUrl}&t=${Date.now()}`;
         onAvatarUrlChange(finalUrl);
         await supabase.from("profiles").update({ avatar_url: signedUrlData.signedUrl }).eq("id", userId);
-        toast({ title: "Avatar uploaded", description: "Identity updated successfully." });
+        toast.success("Avatar uploaded", { description: "Identity updated successfully." });
       }
     } catch (error: any) {
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+      toast.error("Upload failed", { description: error.message });
     } finally {
       setUploading(false);
       setShowAvatarDialog(false);
@@ -298,9 +297,9 @@ export function ProfileBoundedProfile({
       .eq("id", userId);
 
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
-      toast({ title: "Identity Saved", description: "Your bounded profile has been synchronized." });
+      toast.success("Identity Saved", { description: "Your bounded profile has been synchronized." });
     }
     setSaving(false);
   };

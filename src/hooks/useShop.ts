@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export interface BondBalance {
   id: string;
   user_id: string;
@@ -275,8 +274,6 @@ export function useUserCosmetics(userId: string | undefined) {
  */
 export function usePurchaseCosmetic() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -305,14 +302,10 @@ export function usePurchaseCosmetic() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
-      toast({ title: "Purchase successful!" });
+      toast.success("Purchase successful!");
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Purchase failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Purchase failed", { description: error.message });
     },
   });
 }
@@ -323,8 +316,6 @@ export function usePurchaseCosmetic() {
  */
 export function usePurchaseModule() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -353,14 +344,10 @@ export function usePurchaseModule() {
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases", data.userId] });
       queryClient.invalidateQueries({ queryKey: ["bond-balance"] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
-      toast({ title: "Module unlocked!", description: "Your new module is now available" });
+      toast.success("Module unlocked!", { description: "Your new module is now available" });
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Purchase failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Purchase failed", { description: error.message });
     },
   });
 }

@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export type PactWishlistItemType = "required" | "optional";
 export type WishlistPriority = "low" | "med" | "high" | "critical";
 
@@ -69,8 +68,6 @@ export function usePactWishlistItems(userId: string | undefined) {
 
 export function useCreatePactWishlistItem() {
   const qc = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (input: {
       userId: string;
@@ -105,25 +102,16 @@ export function useCreatePactWishlistItem() {
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
-      toast({
-        title: "Added to Wishlist",
-        description: "Item saved. You can refine it anytime.",
-      });
+      toast.success("Added to Wishlist", { description: "Item saved. You can refine it anytime." });
     },
     onError: (e: any) => {
-      toast({
-        title: "Could not add item",
-        description: e?.message ?? "Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Could not add item", { description: e?.message ?? "Please try again." });
     },
   });
 }
 
 export function useUpdatePactWishlistItem() {
   const qc = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (input: {
       userId: string;
@@ -147,19 +135,13 @@ export function useUpdatePactWishlistItem() {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
     },
     onError: (e: any) => {
-      toast({
-        title: "Update failed",
-        description: e?.message ?? "Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Update failed", { description: e?.message ?? "Please try again." });
     },
   });
 }
 
 export function useDeletePactWishlistItem() {
   const qc = useQueryClient();
-  const { toast } = useToast();
-
   return useMutation({
     mutationFn: async (input: { userId: string; id: string }) => {
       const { error } = await supabase.from("wishlist_items").delete().eq("id", input.id);
@@ -168,14 +150,10 @@ export function useDeletePactWishlistItem() {
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: queryKeys.all(vars.userId) });
-      toast({ title: "Removed", description: "Wishlist item deleted." });
+      toast.success("Removed", { description: "Wishlist item deleted." });
     },
     onError: (e: any) => {
-      toast({
-        title: "Delete failed",
-        description: e?.message ?? "Please try again.",
-        variant: "destructive",
-      });
+      toast.error("Delete failed", { description: e?.message ?? "Please try again." });
     },
   });
 }

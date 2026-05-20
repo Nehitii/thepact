@@ -5,7 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useSoundSettings } from "@/hooks/useSoundSettings";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { useProfileSettings, type ThemePreference } from "@/hooks/useProfileSettings";
 import { useTheme } from "next-themes";
@@ -14,7 +14,6 @@ import { useTranslation } from "react-i18next";
 export function ProfileDisplaySounds() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { toast } = useToast();
   const { settings: soundSettings, setSettings: setSoundSettings } = useSound();
   const { settings, isLoading, save } = useSoundSettings();
   const initialSyncDone = useRef(false);
@@ -44,11 +43,7 @@ export function ProfileDisplaySounds() {
     setSoundSettings(next);
     if (!user?.id) return;
     void save(next).catch((e) => {
-      toast({
-        title: t("common.error"),
-        description: e?.message ?? t("settings.displaySound.toasts.saveFailed"),
-        variant: "destructive",
-      });
+      toast.error(t("common.error"), { description: e?.message ?? t("settings.displaySound.toasts.saveFailed") });
     });
   }, [user?.id, save, toast, setSoundSettings, t]);
 
@@ -105,10 +100,7 @@ export function ProfileDisplaySounds() {
                           { theme_preference: next } as any,
                           {
                             onSuccess: () =>
-                              toast({
-                                title: t("settings.displaySound.toasts.themeUpdated"),
-                                description: t("settings.displaySound.toasts.themeUpdatedDesc"),
-                              }),
+                              toast.success(t("settings.displaySound.toasts.themeUpdated"), { description: t("settings.displaySound.toasts.themeUpdatedDesc") }),
                           }
                         );
                       }}
@@ -143,10 +135,7 @@ export function ProfileDisplaySounds() {
                     { reduce_motion: v } as any,
                     {
                       onSuccess: () =>
-                        toast({
-                          title: t("common.updated"),
-                          description: t("settings.displaySound.toasts.motionSaved"),
-                        }),
+                        toast.success(t("common.updated"), { description: t("settings.displaySound.toasts.motionSaved") }),
                     }
                   )
                 }
@@ -293,7 +282,7 @@ export function ProfileDisplaySounds() {
                     { particles_enabled: v } as any,
                     {
                       onSuccess: () =>
-                        toast({ title: t("common.updated"), description: t("settings.displaySound.toasts.particleSaved") }),
+                        toast.success(t("common.updated"), { description: t("settings.displaySound.toasts.particleSaved") }),
                     }
                   )
                 }

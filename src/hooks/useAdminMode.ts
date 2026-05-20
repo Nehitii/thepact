@@ -1,8 +1,7 @@
 import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export interface AdminModeState {
   isAdmin: boolean;
   isAdminModeActive: boolean;
@@ -31,8 +30,6 @@ export function useIsAdmin(userId: string | undefined) {
 // Admin force purchase cosmetic (bypasses balance check)
 export function useAdminForcePurchaseCosmetic() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -54,14 +51,10 @@ export function useAdminForcePurchaseCosmetic() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
-      toast({ title: "Cosmetic granted (Admin)" });
+      toast.success("Cosmetic granted (Admin)");
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Grant failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Grant failed", { description: error.message });
     },
   });
 }
@@ -69,8 +62,6 @@ export function useAdminForcePurchaseCosmetic() {
 // Admin reset cosmetic ownership
 export function useAdminResetCosmetic() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -89,14 +80,10 @@ export function useAdminResetCosmetic() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
-      toast({ title: "Cosmetic reset (Admin)" });
+      toast.success("Cosmetic reset (Admin)");
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Reset failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Reset failed", { description: error.message });
     },
   });
 }
@@ -104,8 +91,6 @@ export function useAdminResetCosmetic() {
 // Admin force purchase module (bypasses balance check)
 export function useAdminForcePurchaseModule() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -152,14 +137,10 @@ export function useAdminForcePurchaseModule() {
       // Invalidate with user-specific key for proper cache sync
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases", data.userId] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
-      toast({ title: "Module granted (Admin)" });
+      toast.success("Module granted (Admin)");
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Grant failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Grant failed", { description: error.message });
     },
   });
 }
@@ -167,8 +148,6 @@ export function useAdminForcePurchaseModule() {
 // Admin reset module purchase
 export function useAdminResetModule() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -191,14 +170,10 @@ export function useAdminResetModule() {
       // Invalidate with user-specific key for proper cache sync
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases", data.userId] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
-      toast({ title: "Module reset (Admin)" });
+      toast.success("Module reset (Admin)");
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Reset failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Reset failed", { description: error.message });
     },
   });
 }
@@ -206,8 +181,6 @@ export function useAdminResetModule() {
 // Admin reset all purchases
 export function useAdminResetAll() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ userId }: { userId: string }) => {
       // Reset all cosmetics
@@ -227,14 +200,10 @@ export function useAdminResetAll() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-cosmetics"] });
       queryClient.invalidateQueries({ queryKey: ["user-module-purchases"] });
-      toast({ title: "All purchases reset (Admin)" });
+      toast.success("All purchases reset (Admin)");
     },
     onError: (error: Error) => {
-      toast({ 
-        title: "Reset failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
+      toast.error("Reset failed", { description: error.message });
     },
   });
 }

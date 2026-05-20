@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
 import { logAdminAction } from "@/hooks/useAdminAudit";
@@ -23,7 +23,6 @@ interface SpecialOffer {
 }
 
 export default function AdminMoneyManager() {
-  const { toast } = useToast();
   const [packs, setPacks] = useState<BondPack[]>([]);
   const [offers, setOffers] = useState<SpecialOffer[]>([]);
   const [editingPack, setEditingPack] = useState<Partial<BondPack> | null>(null);
@@ -50,13 +49,13 @@ export default function AdminMoneyManager() {
       await supabase.from("bond_packs").insert(packData);
       await logAdminAction("create", "bond_pack", undefined, { name: editingPack.name });
     }
-    toast({ title: "Pack saved!" }); setEditingPack(null); loadData();
+    toast.success("Pack saved!"); setEditingPack(null); loadData();
   };
 
   const deletePack = async (id: string, name: string) => {
     await supabase.from("bond_packs").delete().eq("id", id);
     await logAdminAction("delete", "bond_pack", id, { name });
-    toast({ title: "Pack deleted" }); loadData();
+    toast.success("Pack deleted"); loadData();
   };
 
   const saveOffer = async () => {
@@ -69,13 +68,13 @@ export default function AdminMoneyManager() {
       await supabase.from("special_offers").insert(offerData);
       await logAdminAction("create", "special_offer", undefined, { name: editingOffer.name });
     }
-    toast({ title: "Offer saved!" }); setEditingOffer(null); loadData();
+    toast.success("Offer saved!"); setEditingOffer(null); loadData();
   };
 
   const deleteOffer = async (id: string, name: string) => {
     await supabase.from("special_offers").delete().eq("id", id);
     await logAdminAction("delete", "special_offer", id, { name });
-    toast({ title: "Offer deleted" }); loadData();
+    toast.success("Offer deleted"); loadData();
   };
 
   return (

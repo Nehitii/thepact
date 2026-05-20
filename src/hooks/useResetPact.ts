@@ -23,17 +23,10 @@ export function useResetPact() {
       queryClient.invalidateQueries({ queryKey: ["ranks"] });
       queryClient.invalidateQueries({ queryKey: ["active-mission"] });
       queryClient.invalidateQueries({ queryKey: ["achievement-tracking"] });
-      toast({
-        title: "Pact reset",
-        description: "All goals, steps and progress have been cleared.",
-      });
+      toast.success("Pact reset", { description: "All goals, steps and progress have been cleared." });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Reset failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      toast.error("Reset failed", { description: error.message });
     },
   });
 }

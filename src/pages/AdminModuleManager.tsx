@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { AdminPageShell } from "@/components/admin/AdminPageShell";
 import { AdminDeleteConfirm } from "@/components/admin/AdminDeleteConfirm";
 import { logAdminAction } from "@/hooks/useAdminAudit";
@@ -38,7 +38,6 @@ const moduleIcons: Record<string, React.ComponentType<{ className?: string }>> =
 };
 
 export default function AdminModuleManager() {
-  const { toast } = useToast();
   const [modules, setModules] = useState<ShopModule[]>([]);
   const [editingModule, setEditingModule] = useState<Partial<ShopModule> | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,7 +70,7 @@ export default function AdminModuleManager() {
       await supabase.from("shop_modules").insert(moduleData);
       await logAdminAction("create", "module", undefined, { name: editingModule.name });
     }
-    toast({ title: "Module saved!" });
+    toast.success("Module saved!");
     setEditingModule(null);
     loadModules();
   };
@@ -79,7 +78,7 @@ export default function AdminModuleManager() {
   const deleteModule = async (id: string, name: string) => {
     await supabase.from("shop_modules").delete().eq("id", id);
     await logAdminAction("delete", "module", id, { name });
-    toast({ title: "Module deleted" });
+    toast.success("Module deleted");
     loadModules();
   };
 
@@ -87,7 +86,7 @@ export default function AdminModuleManager() {
     const { id, ...rest } = mod;
     await supabase.from("shop_modules").insert({ ...rest, name: `${rest.name} (copy)`, key: `${rest.key}-copy` });
     await logAdminAction("duplicate", "module", id, { name: mod.name });
-    toast({ title: "Module duplicated!" });
+    toast.success("Module duplicated!");
     loadModules();
   };
 

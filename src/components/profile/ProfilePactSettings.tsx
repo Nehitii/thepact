@@ -11,7 +11,7 @@ import { AlertTriangle, Loader2, Lock, Check, Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { PactSettingsCard } from "./PactSettingsCard";
 import {
   AlertDialog,
@@ -83,9 +83,6 @@ export function ProfilePactSettings({
   const resetPact = useResetPact();
   const [confirmName, setConfirmName] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-
-  const { toast } = useToast();
-
   const [logLines, setLogLines] = useState<{ text: string; type: "ok" | "warn" | "info" }[]>([
     { text: "PACT SETTINGS LOADED", type: "info" },
     { text: "ALL MODULES ACTIVE", type: "ok" },
@@ -114,7 +111,7 @@ export function ProfilePactSettings({
 
   const handleSaveUnlockCode = async () => {
     if (unlockCode.length !== 4 || !/^\d{4}$/.test(unlockCode)) {
-      toast({ title: "Invalid code", description: "Please enter a 4-digit PIN code", variant: "destructive" });
+      toast.error("Invalid code", { description: "Please enter a 4-digit PIN code" });
       return;
     }
     setSavingCode(true);
@@ -124,10 +121,10 @@ export function ProfilePactSettings({
       .eq("id", userId);
     setSavingCode(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
       setExistingCodeSet(true);
-      toast({ title: "Unlock code saved", description: "Your 4-digit goal lock code has been set." });
+      toast.success("Unlock code saved", { description: "Your 4-digit goal lock code has been set." });
       setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE UPDATED", type: "ok" as const }]);
     }
   };
@@ -140,11 +137,11 @@ export function ProfilePactSettings({
       .eq("id", userId);
     setSavingCode(false);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
       setUnlockCode("");
       setExistingCodeSet(false);
-      toast({ title: "Unlock code removed" });
+      toast.success("Unlock code removed");
       setLogLines(prev => [...prev.slice(-3), { text: "UNLOCK CODE REMOVED", type: "warn" as const }]);
     }
   };

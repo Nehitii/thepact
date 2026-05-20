@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency } from "@/lib/currency";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import {
   PactWishlistItemType,
   WishlistPriority,
@@ -76,8 +76,6 @@ export default function Wishlist() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { currency } = useCurrency();
-  const { toast } = useToast();
-
   const { data: items = [], isLoading } = usePactWishlistItems(user?.id);
   const createItem = useCreatePactWishlistItem();
   const updateItem = useUpdatePactWishlistItem();
@@ -323,7 +321,7 @@ export default function Wishlist() {
         setEditOpen(false);
       }
 
-      toast({ title: "Merged", description: "Duplicates combined into a single wishlist item." });
+      toast.success("Merged", { description: "Duplicates combined into a single wishlist item." });
       setMergeOpen(false); setMergeMode(null); setMergeDuplicateId(null);
       setMergeExistingPreview(null); setMergeIncomingPreview(null); setNewOpen(false);
     } finally {
@@ -371,7 +369,7 @@ export default function Wishlist() {
     bulkSelected.forEach((id) => {
       updateItem.mutate({ userId: user.id, id, patch: { acquired: true } });
     });
-    toast({ title: "Bulk acquired", description: `${bulkSelected.size} items marked as acquired.` });
+    toast.success("Bulk acquired", { description: `${bulkSelected.size} items marked as acquired.` });
     setBulkSelected(new Set()); setBulkMode(false);
   };
 
@@ -380,7 +378,7 @@ export default function Wishlist() {
     bulkSelected.forEach((id) => {
       deleteItem.mutate({ userId: user.id, id });
     });
-    toast({ title: "Bulk deleted", description: `${bulkSelected.size} items removed.` });
+    toast.success("Bulk deleted", { description: `${bulkSelected.size} items removed.` });
     setBulkSelected(new Set()); setBulkMode(false);
   };
 

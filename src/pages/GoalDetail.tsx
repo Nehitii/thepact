@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useGoalTags, useSaveGoalTags } from "@/hooks/useGoalTags";
 import { useGoalDetail } from "@/hooks/useGoalDetail";
 import { useProfile } from "@/hooks/useProfile";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
@@ -47,7 +47,6 @@ export default function GoalDetail() {
   const { user } = useAuth();
   const { currency } = useCurrency();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { isModulePurchased } = useUserShop(user?.id);
   const queryClient = useQueryClient();
   const createWishlistItem = useCreatePactWishlistItem();
@@ -209,8 +208,8 @@ export default function GoalDetail() {
       if (editDeadline !== currentDeadline) updates.deadline = editDeadline || null;
 
       if (id) {
-        try { const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems }); updates.estimated_cost = newTotal; } catch { toast({ title: "Error", description: "Failed to save cost items", variant: "destructive" }); }
-        try { await saveGoalTags.mutateAsync({ goalId: id, tags: editTags }); } catch { toast({ title: "Error", description: "Failed to save tags", variant: "destructive" }); }
+        try { const newTotal = await saveCostItems.mutateAsync({ goalId: id, items: editCostItems }); updates.estimated_cost = newTotal; } catch { toast.error("Error", { description: "Failed to save cost items" }); }
+        try { await saveGoalTags.mutateAsync({ goalId: id, tags: editTags }); } catch { toast.error("Error", { description: "Failed to save tags" }); }
       }
 
       handleUpdateGoal(goal.id, goal.total_steps, updates as any, async () => {
@@ -244,8 +243,8 @@ export default function GoalDetail() {
         queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
         setEditDialogOpen(false);
         setSaving(false);
-        toast({ title: "Goal Updated", description: "Changes saved successfully" });
-      }, (message) => { setSaving(false); toast({ title: "Error", description: message, variant: "destructive" }); });
+        toast.success("Goal Updated", { description: "Changes saved successfully" });
+      }, (message) => { setSaving(false); toast.error("Error", { description: message }); });
     } catch { setSaving(false); }
   }, [goal, saving, editName, editSteps, editDifficulty, editTags, editNotes, editStartDate, editCompletionDate, editImage, editDeadline, editStepItems, editCostItems, id, steps, saveCostItems, saveGoalTags, queryClient, toast]);
 
@@ -253,12 +252,12 @@ export default function GoalDetail() {
   const handleSuperGoalSave = useCallback(async ({ childGoalIds, rule, isDynamic }: { childGoalIds: string[]; rule: SuperGoalRule | null; isDynamic: boolean }) => {
     if (!goal) return;
     const { error } = await supabase.from("goals").update({ child_goal_ids: childGoalIds, super_goal_rule: rule as any, is_dynamic_super: isDynamic }).eq("id", goal.id);
-    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    if (error) { toast.error("Error", { description: error.message }); return; }
     const { data: updatedGoal } = await supabase.from("goals").select("*").eq("id", goal.id).single();
     if (updatedGoal) setGoal(updatedGoal);
     queryClient.invalidateQueries({ queryKey: ["goals"] });
     queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
-    toast({ title: "Super Goal Updated", description: "Child goals have been updated" });
+    toast.success("Super Goal Updated", { description: "Child goals have been updated" });
   }, [goal, id, queryClient, toast]);
 
   // Loading / Not found
@@ -307,7 +306,7 @@ export default function GoalDetail() {
     ? (item: CostItemData) => {
         if (!user?.id) return;
         const name = (item.name || "").trim();
-        if (!name) { toast({ title: "Name required", description: "Give this cost item a name first.", variant: "destructive" }); return; }
+        if (!name) { toast.error("Name required", { description: "Give this cost item a name first." }); return; }
         createWishlistItem.mutate({ userId: user.id, name, estimatedCost: Number(item.price) || 0, itemType: "required", category: item.category ?? goal.type ?? null, goalId: goal.id });
       }
     : undefined;
@@ -342,7 +341,7 @@ export default function GoalDetail() {
             if (!error) {
               setGoal({ ...goal, is_locked: newLocked });
               queryClient.invalidateQueries({ queryKey: ["goals"] });
-              toast({ title: newLocked ? "Goal locked" : "Goal unlocked" });
+              toast.success(newLocked ? "Goal locked" : "Goal unlocked");
             }
           }}
         />

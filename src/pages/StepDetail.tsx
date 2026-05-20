@@ -62,7 +62,7 @@ export default function StepDetail() {
       setExcludeFromSpin(stepData.exclude_from_spin ?? false);
     } catch (error: any) {
       console.error("Error loading step:", error);
-      toast({ title: "Error", description: "Failed to load step details", variant: "destructive" });
+      toast.error("Error", { description: "Failed to load step details" });
     } finally {
       setLoading(false);
     }
@@ -94,11 +94,11 @@ export default function StepDetail() {
       queryClient.invalidateQueries({ queryKey: ["goal-detail", step.goal_id] });
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       
-      toast({ title: "Success", description: "Step updated successfully" });
+      toast.success("Success", { description: "Step updated successfully" });
       navigate(`/goals/${step.goal_id}`);
     } catch (error: any) {
       console.error("Error saving step:", error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } finally {
       setSaving(false);
     }

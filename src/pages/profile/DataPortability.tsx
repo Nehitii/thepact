@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -20,7 +20,6 @@ type ExportCategory = "all" | "goals-steps" | "journal" | "finance" | "health";
 
 export default function DataPortability() {
   const { user, session } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [exportCategory, setExportCategory] = useState<ExportCategory>("all");
@@ -76,7 +75,7 @@ export default function DataPortability() {
             const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a"); a.href = url; a.download = `health-data-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); URL.revokeObjectURL(url);
-            toast({ title: t("profile.data.exportComplete"), description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
+            toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
             setLatestLog({ text: "HEALTH CSV EXPORTED", type: "ok" });
             return;
           }
@@ -102,10 +101,10 @@ export default function DataPortability() {
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a"); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-      toast({ title: t("profile.data.exportComplete"), description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
+      toast.success(t("profile.data.exportComplete"), { description: t("profile.data.exportSuccess", { category: getCategoryLabel(exportCategory).toLowerCase() }) });
       setLatestLog({ text: `EXPORT COMPLETE: ${exportCategory.toUpperCase()}`, type: "ok" });
     } catch {
-      toast({ title: t("profile.data.exportFailed"), description: t("profile.data.exportError"), variant: "destructive" });
+      toast.error(t("profile.data.exportFailed"), { description: t("profile.data.exportError") });
       setLatestLog({ text: "EXPORT FAILED", type: "warn" });
     } finally {
       setIsExporting(false);
@@ -121,7 +120,7 @@ export default function DataPortability() {
       const parsed = JSON.parse(text);
       setImportPreview({ category: parsed.category || "unknown", exportedAt: parsed.exportedAt || "unknown", goals: parsed.goals?.length || 0, steps: parsed.steps?.length || 0, journalEntries: parsed.journalEntries?.length || 0 });
     } catch {
-      toast({ title: "Fichier invalide", description: "Le fichier n'est pas un export JSON valide.", variant: "destructive" });
+      toast.error("Fichier invalide", { description: "Le fichier n'est pas un export JSON valide." });
       setImportFile(null); setImportPreview(null);
     }
   };
@@ -139,11 +138,11 @@ export default function DataPortability() {
           await supabase.from("journal_entries").upsert({ ...rest, user_id: user.id }, { onConflict: "id" });
         }
       }
-      toast({ title: "Import terminé", description: "Les données ont été importées avec succès." });
+      toast.success("Import terminé", { description: "Les données ont été importées avec succès." });
       setLatestLog({ text: "IMPORT COMPLETE", type: "ok" });
       setImportFile(null); setImportPreview(null);
     } catch (e: any) {
-      toast({ title: "Erreur d'import", description: e.message, variant: "destructive" });
+      toast.error("Erreur d'import", { description: e.message });
       setLatestLog({ text: "IMPORT FAILED", type: "warn" });
     } finally { setIsImporting(false); }
   };
@@ -156,11 +155,11 @@ export default function DataPortability() {
       const { data, error } = await supabase.functions.invoke("delete-all-data", { headers: { Authorization: `Bearer ${session?.access_token}` } });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      toast({ title: "Données supprimées", description: "Toutes tes données ont été réinitialisées." });
+      toast.success("Données supprimées", { description: "Toutes tes données ont été réinitialisées." });
       setLatestLog({ text: "ALL DATA PURGED", type: "ok" });
       setShowResetModal(false); setResetConfirm("");
     } catch (e: any) {
-      toast({ title: "Erreur", description: e.message, variant: "destructive" });
+      toast.error("Erreur", { description: e.message });
       setLatestLog({ text: "RESET FAILED", type: "warn" });
     } finally { setIsResetting(false); }
   };

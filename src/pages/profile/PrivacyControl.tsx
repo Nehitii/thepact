@@ -40,7 +40,7 @@ export default function PrivacyControl() {
       { [key]: value },
       {
         onSuccess: () => {
-          toast({ title: t("settings.privacy.toasts.updated"), description: t("settings.privacy.toasts.updatedDesc") });
+          toast.success(t("settings.privacy.toasts.updated"), { description: t("settings.privacy.toasts.updatedDesc") });
           setLatestLog({ text: `${key.toUpperCase().replace(/_/g, "_")}: ${value ? "ENABLED" : "DISABLED"}`, type: value ? "ok" : "warn" });
           markSync(panel);
         },
@@ -63,12 +63,12 @@ export default function PrivacyControl() {
 
   const revokeGoalShare = useMutation({
     mutationFn: async (shareId: string) => { const { error } = await supabase.from("shared_goals").delete().eq("id", shareId); if (error) throw error; },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["shared-data-overview"] }); toast({ title: t("settings.privacy.shareRevoked") || "Partage révoqué" }); setLatestLog({ text: "GOAL_SHARE REVOKED", type: "warn" }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["shared-data-overview"] }); toast.success(t("settings.privacy.shareRevoked") || "Partage révoqué"); setLatestLog({ text: "GOAL_SHARE REVOKED", type: "warn" }); },
   });
 
   const revokePactShare = useMutation({
     mutationFn: async (shareId: string) => { const { error } = await supabase.from("shared_pacts").delete().eq("id", shareId); if (error) throw error; },
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["shared-data-overview"] }); toast({ title: t("settings.privacy.shareRevoked") || "Partage révoqué" }); setLatestLog({ text: "PACT_SHARE REVOKED", type: "warn" }); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["shared-data-overview"] }); toast.success(t("settings.privacy.shareRevoked") || "Partage révoqué"); setLatestLog({ text: "PACT_SHARE REVOKED", type: "warn" }); },
   });
 
   const visibilityOn = [profile?.community_profile_discoverable ?? true, profile?.show_activity_status ?? true].filter(Boolean).length;

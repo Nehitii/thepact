@@ -46,16 +46,16 @@ export default function Automations() {
 
   const save = async () => {
     if (!editing?.name) {
-      toast({ title: "Nom requis", variant: "destructive" });
+      toast.error("Nom requis");
       return;
     }
     try {
       await upsert.mutateAsync(editing);
-      toast({ title: "Règle enregistrée" });
+      toast.success("Règle enregistrée");
       setOpen(false);
       setEditing(null);
     } catch (e: any) {
-      toast({ title: "Erreur", description: e?.message ?? String(e), variant: "destructive" });
+      toast.error("Erreur", { description: e?.message ?? String(e) });
     }
   };
 

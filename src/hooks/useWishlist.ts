@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-
+import { toast } from "sonner";
 export interface WishlistItem {
   id: string;
   user_id: string;
@@ -31,8 +30,6 @@ export function useWishlist(userId: string | undefined) {
 
 export function useAddToWishlist() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -63,11 +60,11 @@ export function useAddToWishlist() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["wishlist", variables.userId] });
-      toast({ title: "Added to wishlist", description: "We'll notify you when you can afford it!" });
+      toast.success("Added to wishlist", { description: "We'll notify you when you can afford it!" });
     },
     onError: (error: Error) => {
       if (error.message !== "Already in wishlist") {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
+        toast.error("Error", { description: error.message });
       }
     },
   });
@@ -75,8 +72,6 @@ export function useAddToWishlist() {
 
 export function useRemoveFromWishlist() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
   return useMutation({
     mutationFn: async ({ 
       userId, 
@@ -99,10 +94,10 @@ export function useRemoveFromWishlist() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["wishlist", variables.userId] });
-      toast({ title: "Removed from wishlist" });
+      toast.success("Removed from wishlist");
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     },
   });
 }

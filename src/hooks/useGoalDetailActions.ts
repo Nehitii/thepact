@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { trackStepCompleted, trackGoalCompleted } from "@/lib/achievements";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import type { GoalDetailData } from "@/hooks/useGoalDetail";
 
 interface CostItem {
@@ -45,8 +45,6 @@ export function useGoalDetailActions({
 }: UseGoalDetailActionsOptions) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-
   const invalidateGoals = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["goals"] });
     queryClient.invalidateQueries({ queryKey: ["goal-detail", goalId] });
@@ -73,7 +71,7 @@ export function useGoalDetailActions({
         .update({ status: newStatus, validated_at: validatedAt })
         .eq("id", stepId);
       if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
+        toast.error("Error", { description: error.message });
         return;
       }
 
@@ -90,7 +88,7 @@ export function useGoalDetailActions({
         invalidateGoals();
         if (newStatus === "completed" && userId) {
           setTimeout(() => trackStepCompleted(userId), 0);
-          toast({ title: "Step Completed", description: "You're making progress!" });
+          toast.success("Step Completed", { description: "You're making progress!" });
         }
       }
 
@@ -139,7 +137,7 @@ export function useGoalDetailActions({
         })
         .eq("id", goal.id);
       if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
+        toast.error("Error", { description: error.message });
         return;
       }
       setGoal({
@@ -151,12 +149,9 @@ export function useGoalDetailActions({
       invalidateGoals();
       if (newChecks[dayIndex]) {
         setTimeout(() => trackStepCompleted(userId), 0);
-        toast({
-          title: `Day ${dayIndex + 1} Complete!`,
-          description: isNowComplete
+        toast.success(`Day ${dayIndex + 1} Complete!`, { description: isNowComplete
             ? "Congratulations! Habit completed!"
-            : `${completedCount}/${goal.habit_duration_days} days done`,
-        });
+            : `${completedCount}/${goal.habit_duration_days} days done` });
       }
     },
     [goal, userId, setGoal, triggerParticles, getDifficultyColor, invalidateGoals, toast],
@@ -165,7 +160,7 @@ export function useGoalDetailActions({
   const handleFullyComplete = useCallback(async () => {
     if (!goal || !userId) return;
     if (goal.status === "fully_completed") {
-      toast({ title: "Already Completed", description: "This goal is already fully completed." });
+      toast.success("Already Completed", { description: "This goal is already fully completed." });
       return;
     }
     try {
@@ -194,9 +189,9 @@ export function useGoalDetailActions({
       const { data: updatedSteps } = await supabase.from("steps").select("*").eq("goal_id", goal.id).order("order", { ascending: true });
       if (updatedSteps) setSteps(updatedSteps);
       invalidateGoals();
-      toast({ title: "Goal Completed! 🎉", description: "All steps have been marked as complete" });
+      toast.success("Goal Completed! 🎉", { description: "All steps have been marked as complete" });
     } catch (error: any) {
-      toast({ title: "Error", description: error.message || "Failed to complete goal", variant: "destructive" });
+      toast.error("Error", { description: error.message || "Failed to complete goal" });
     }
   }, [goal, userId, setGoal, setSteps, invalidateGoals, toast]);
 
@@ -206,7 +201,7 @@ export function useGoalDetailActions({
     if (!error) {
       setGoal({ ...goal, status: "paused" });
       invalidateGoals();
-      toast({ title: "Goal Paused", description: "This goal has been paused." });
+      toast.success("Goal Paused", { description: "This goal has been paused." });
     }
   }, [goal, setGoal, invalidateGoals, toast]);
 
@@ -217,7 +212,7 @@ export function useGoalDetailActions({
     if (!error) {
       setGoal({ ...goal, status: newStatus });
       invalidateGoals();
-      toast({ title: "Goal Resumed", description: "This goal is now active again." });
+      toast.success("Goal Resumed", { description: "This goal is now active again." });
     }
   }, [goal, setGoal, invalidateGoals, toast]);
 
@@ -227,7 +222,7 @@ export function useGoalDetailActions({
     if (!error) {
       setGoal({ ...goal, status: "archived" });
       invalidateGoals();
-      toast({ title: "Goal Archived", description: "This goal has been archived." });
+      toast.success("Goal Archived", { description: "This goal has been archived." });
     }
   }, [goal, setGoal, invalidateGoals, toast]);
 
@@ -291,10 +286,10 @@ export function useGoalDetailActions({
         }
 
         invalidateGoals();
-        toast({ title: "Goal Duplicated", description: "A copy of this goal has been created." });
+        toast.success("Goal Duplicated", { description: "A copy of this goal has been created." });
         navigate(`/goals/${newGoal.id}`);
       } catch (error: any) {
-        toast({ title: "Error", description: error.message || "Failed to duplicate goal", variant: "destructive" });
+        toast.error("Error", { description: error.message || "Failed to duplicate goal" });
       }
     },
     [goal, steps, costItems, userId, invalidateGoals, navigate, toast],
@@ -304,10 +299,10 @@ export function useGoalDetailActions({
     if (!goalId) return;
     const { error } = await supabase.from("goals").delete().eq("id", goalId);
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
-      toast({ title: "Goal Deleted", description: "This evolution has been removed from your Pact" });
+      toast.success("Goal Deleted", { description: "This evolution has been removed from your Pact" });
       navigate("/goals");
     }
   }, [goalId, queryClient, navigate, toast]);

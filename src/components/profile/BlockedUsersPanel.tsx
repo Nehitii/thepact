@@ -3,7 +3,7 @@ import { UserX, Loader2, Search } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { DataPanel } from "@/components/profile/settings-ui";
@@ -11,7 +11,6 @@ import { useTranslation } from "react-i18next";
 
 export function BlockedUsersPanel() {
   const { user } = useAuth();
-  const { toast } = useToast();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
@@ -57,7 +56,7 @@ export function BlockedUsersPanel() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blocked-users"] });
-      toast({ title: t("friends.userUnblocked"), description: t("friends.userUnblockedDesc") });
+      toast.success(t("friends.userUnblocked"), { description: t("friends.userUnblockedDesc") });
     },
   });
 

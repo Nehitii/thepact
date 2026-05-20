@@ -4,7 +4,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { DataPanel } from "./settings-ui";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 import { Calendar as CalendarIcon, Clock, ArrowRight, Loader2 } from "lucide-react";
 import { format } from "date-fns";
@@ -34,7 +34,6 @@ export function ProjectTimelineCard({
   onProjectStartDateChange,
   onProjectEndDateChange,
 }: ProjectTimelineCardProps) {
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [saving, setSaving] = useState(false);
 
@@ -44,11 +43,11 @@ export function ProjectTimelineCard({
 
   const handleSave = async () => {
     if (dateValidationError) {
-      toast({ title: "Validation Error", description: dateValidationError, variant: "destructive" });
+      toast.error("Validation Error", { description: dateValidationError });
       return;
     }
     if (!pactId) {
-      toast({ title: "Error", description: "No pact found to update.", variant: "destructive" });
+      toast.error("Error", { description: "No pact found to update." });
       return;
     }
 
@@ -62,10 +61,10 @@ export function ProjectTimelineCard({
       .eq("id", pactId);
 
     if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast.error("Error", { description: error.message });
     } else {
       queryClient.invalidateQueries({ queryKey: ["pact"] });
-      toast({ title: "Timeline Updated", description: "Your project timeline has been saved." });
+      toast.success("Timeline Updated", { description: "Your project timeline has been saved." });
     }
     setSaving(false);
   };
