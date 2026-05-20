@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Shield, Eye, Bell, Users, Award, Loader2, Share2, Target, Link2 } from "lucide-react";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

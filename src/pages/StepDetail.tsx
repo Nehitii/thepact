@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { ArrowLeft, Target, Check, StickyNote, ListOrdered, Dices } from "lucide-react";
 import { format } from "date-fns";
 import { CyberBackground } from "@/components/CyberBackground";
