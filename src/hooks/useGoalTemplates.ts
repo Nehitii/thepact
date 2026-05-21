@@ -172,7 +172,8 @@ export function useIncrementTemplateUse() {
         .update({ use_count: supabase.rpc ? undefined : 0 })
         .eq("id", templateId);
       // Simple increment via raw update
-      const { error: err2 } = await supabase.rpc("increment_template_use", { p_template_id: templateId }).catch(() => {
+      // increment_template_use RPC is not yet in generated types — cast preserved.
+      const { error: err2 } = await (supabase as any).rpc("increment_template_use", { p_template_id: templateId }).catch(() => {
         // Fallback: just ignore if RPC doesn't exist
       });
     },
