@@ -84,12 +84,12 @@ export function useSignGoalContract() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { contractId: string; signatureName: string }) => {
-      const { data, error } = await (supabase as any).rpc("sign_goal_contract", {
+      const { data, error } = await supabase.rpc("sign_goal_contract", {
         _contract_id: args.contractId,
         _signature_name: args.signatureName,
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Erreur de signature");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Erreur de signature");
       return data as { success: true; signed: number; required: number; activated: boolean };
     },
     onSuccess: (res) => {
@@ -115,7 +115,7 @@ export function useContractSignatures(contractId?: string) {
     queryKey: ["contract-signatures", contractId],
     queryFn: async () => {
       if (!contractId) return [] as ContractSignature[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("contract_signatures")
         .select("*")
         .eq("contract_id", contractId)

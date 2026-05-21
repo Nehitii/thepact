@@ -30,7 +30,7 @@ export function HabitStackPanel({ goalId, pactId, prerequisiteHabitId }: HabitSt
     queryKey: ["habit-stack-candidates", user?.id, pactId],
     queryFn: async () => {
       if (!user?.id) return [];
-      let q = (supabase as any)
+      let q: any = supabase
         .from("goals")
         .select("id, name")
         .eq("user_id", user.id)
@@ -46,7 +46,7 @@ export function HabitStackPanel({ goalId, pactId, prerequisiteHabitId }: HabitSt
 
   const setPrereq = useMutation({
     mutationFn: async (value: string | null) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("goals")
         .update({ prerequisite_habit_id: value })
         .eq("id", goalId);

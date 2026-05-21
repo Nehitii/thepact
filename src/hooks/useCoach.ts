@@ -55,7 +55,7 @@ export function useCoachConversations() {
     queryKey: ["coach_conversations", user?.id],
     queryFn: async () => {
       if (!user?.id) return [] as CoachConversation[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("coach_conversations")
         .select("*")
         .eq("user_id", user.id)
@@ -70,7 +70,7 @@ export function useCoachConversations() {
   const create = useMutation({
     mutationFn: async (title?: string | undefined) => {
       if (!user?.id) throw new Error("Non authentifié");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("coach_conversations")
         .insert({ user_id: user.id, title: title ?? "Nouvelle conversation" })
         .select()
@@ -84,7 +84,7 @@ export function useCoachConversations() {
 
   const archive = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("coach_conversations")
         .update({ archived: true })
         .eq("id", id);
@@ -107,7 +107,7 @@ export function useCoachMessages(conversationId: string | null) {
     queryKey: ["coach_messages", conversationId],
     queryFn: async () => {
       if (!conversationId) return [] as CoachMessage[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("coach_messages")
         .select("*")
         .eq("conversation_id", conversationId)

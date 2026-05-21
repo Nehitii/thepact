@@ -70,7 +70,7 @@ export default function GoalsGraph() {
     queryKey: ["all-goal-deps", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("goal_dependencies")
         .select("id, goal_id, depends_on_goal_id, kind")
         .eq("user_id", user.id);

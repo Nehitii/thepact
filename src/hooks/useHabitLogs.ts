@@ -22,7 +22,7 @@ export function useHabitLogs(goalId?: string) {
     queryKey: ["habit-logs", user?.id, goalId],
     queryFn: async () => {
       if (!user?.id) return [];
-      let query = (supabase as any)
+      let query = supabase
         .from("habit_logs")
         .select("*")
         .eq("user_id", user.id)
@@ -49,7 +49,7 @@ export function useAllHabitLogs() {
       const yearAgo = new Date();
       yearAgo.setFullYear(yearAgo.getFullYear() - 1);
 
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("habit_logs")
         .select("*")
         .eq("user_id", user.id)
@@ -72,7 +72,7 @@ export function useToggleHabitLog() {
       if (!user?.id) throw new Error("Not authenticated");
 
       // Check if log exists
-      const { data: existing } = await (supabase as any)
+      const { data: existing } = await supabase
         .from("habit_logs")
         .select("id, completed")
         .eq("user_id", user.id)
@@ -82,7 +82,7 @@ export function useToggleHabitLog() {
 
       if (existing) {
         // Toggle
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("habit_logs")
           .update({ completed: !existing.completed })
           .eq("id", existing.id);
@@ -90,14 +90,14 @@ export function useToggleHabitLog() {
         return !existing.completed;
       } else {
         // Habit stacking: enforce prerequisite habit completion today
-        const { data: goalRow } = await (supabase as any)
+        const { data: goalRow } = await supabase
           .from("goals")
           .select("prerequisite_habit_id")
           .eq("id", goalId)
           .maybeSingle();
         const prereq = goalRow?.prerequisite_habit_id as string | null | undefined;
         if (prereq) {
-          const { data: prereqLog } = await (supabase as any)
+          const { data: prereqLog } = await supabase
             .from("habit_logs")
             .select("id")
             .eq("user_id", user.id)
@@ -113,7 +113,7 @@ export function useToggleHabitLog() {
         // Calculate streak
         const yesterday = new Date(date);
         yesterday.setDate(yesterday.getDate() - 1);
-        const { data: prevLog } = await (supabase as any)
+        const { data: prevLog } = await supabase
           .from("habit_logs")
           .select("streak_count")
           .eq("user_id", user.id)
@@ -126,7 +126,7 @@ export function useToggleHabitLog() {
         // Streak multiplier: 1 bond per day, +1 every 7 days of streak
         const bondReward = 1 + Math.floor(streakCount / 7);
 
-        const { error } = await (supabase as any)
+        const { error } = await supabase
           .from("habit_logs")
           .insert({
             user_id: user.id,
@@ -196,12 +196,12 @@ export function useUseStreakFreeze() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ goalId, date }: { goalId: string; date: string }) => {
-      const { data, error } = await (supabase as any).rpc("use_streak_freeze", {
+      const { data, error } = await supabase.rpc("use_streak_freeze", {
         _goal_id: goalId,
         _date: date,
       });
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || "Freeze failed");
+      if (!(data as any)?.success) throw new Error((data as any)?.error || "Freeze failed");
       return data;
     },
     onSuccess: () => {

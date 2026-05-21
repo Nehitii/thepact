@@ -40,13 +40,13 @@ export function useAdminForcePurchaseCosmetic() {
       cosmeticId: string; 
       cosmeticType: "frame" | "banner" | "title"; 
     }) => {
-      const { data, error } = await (supabase as any).rpc("admin_grant_cosmetic", {
+      const { data, error } = await supabase.rpc("admin_grant_cosmetic", {
         p_user_id: userId,
         p_cosmetic_id: cosmeticId,
         p_cosmetic_type: cosmeticType,
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Grant failed");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Grant failed");
       return true;
     },
     onSuccess: () => {
@@ -70,12 +70,12 @@ export function useAdminResetCosmetic() {
       userId: string; 
       cosmeticId: string; 
     }) => {
-      const { data, error } = await (supabase as any).rpc("admin_reset_cosmetic", {
+      const { data, error } = await supabase.rpc("admin_reset_cosmetic", {
         p_user_id: userId,
         p_cosmetic_id: cosmeticId,
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Reset failed");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Reset failed");
       return true;
     },
     onSuccess: () => {

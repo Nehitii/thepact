@@ -80,7 +80,7 @@ export function useSinkingFunds() {
     queryKey: ["sinking-funds", user?.id],
     queryFn: async () => {
       if (!user?.id) return [] as SinkingFund[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("sinking_funds")
         .select("*")
         .eq("user_id", user.id)
@@ -99,7 +99,7 @@ export function useUpsertSinkingFund() {
     mutationFn: async (payload: Partial<SinkingFund> & { name: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
       const row = { ...payload, user_id: user.id };
-      const { data, error } = await (supabase as any).from("sinking_funds").upsert(row).select().single();
+      const { data, error } = await supabase.from("sinking_funds").upsert(row).select().single();
       if (error) throw error;
       return data as SinkingFund;
     },
@@ -115,7 +115,7 @@ export function useDeleteSinkingFund() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("sinking_funds").delete().eq("id", id);
+      const { error } = await supabase.from("sinking_funds").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["sinking-funds"] }),
@@ -127,14 +127,14 @@ export function useApplySinkingContribution() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { fundId: string; amount: number; note?: string }) => {
-      const { data, error } = await (supabase as any).rpc("apply_sinking_contribution", {
+      const { data, error } = await supabase.rpc("apply_sinking_contribution", {
         _fund_id: args.fundId,
         _amount: args.amount,
         _note: args.note ?? null,
         _source: "manual",
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Échec");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Échec");
       return data;
     },
     onSuccess: () => {
@@ -152,7 +152,7 @@ export function useDebts() {
     queryKey: ["debts", user?.id],
     queryFn: async () => {
       if (!user?.id) return [] as Debt[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("debts")
         .select("*")
         .eq("user_id", user.id)
@@ -170,7 +170,7 @@ export function useUpsertDebt() {
   return useMutation({
     mutationFn: async (payload: Partial<Debt> & { name: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any).from("debts").upsert({ ...payload, user_id: user.id }).select().single();
+      const { data, error } = await supabase.from("debts").upsert({ ...payload, user_id: user.id }).select().single();
       if (error) throw error;
       return data as Debt;
     },
@@ -186,7 +186,7 @@ export function useDeleteDebt() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("debts").delete().eq("id", id);
+      const { error } = await supabase.from("debts").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["debts"] }),
@@ -199,7 +199,7 @@ export function useDebtSchedule(debtId: string | null) {
     queryKey: ["debt-schedule", debtId],
     queryFn: async () => {
       if (!debtId) return [] as DebtScheduleRow[];
-      const { data, error } = await (supabase as any).rpc("compute_debt_schedule", { _debt_id: debtId });
+      const { data, error } = await supabase.rpc("compute_debt_schedule", { _debt_id: debtId });
       if (error) throw error;
       return (data ?? []) as DebtScheduleRow[];
     },
@@ -215,7 +215,7 @@ export function useCashflowProjection(months = 6) {
     queryKey: ["cashflow-projection", user?.id, months],
     queryFn: async () => {
       if (!user?.id) return [] as CashflowMonth[];
-      const { data, error } = await (supabase as any).rpc("compute_cashflow_projection", { _months: months });
+      const { data, error } = await supabase.rpc("compute_cashflow_projection", { _months: months });
       if (error) throw error;
       return (data ?? []) as CashflowMonth[];
     },
@@ -231,7 +231,7 @@ export function useCategorizationRules() {
     queryKey: ["categorization-rules", user?.id],
     queryFn: async () => {
       if (!user?.id) return [] as CategorizationRule[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("categorization_rules")
         .select("*")
         .eq("user_id", user.id)
@@ -249,7 +249,7 @@ export function useUpsertCategorizationRule() {
   return useMutation({
     mutationFn: async (payload: Partial<CategorizationRule> & { pattern: string; category: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any).from("categorization_rules").upsert({ ...payload, user_id: user.id }).select().single();
+      const { data, error } = await supabase.from("categorization_rules").upsert({ ...payload, user_id: user.id }).select().single();
       if (error) throw error;
       return data as CategorizationRule;
     },
@@ -262,7 +262,7 @@ export function useDeleteCategorizationRule() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("categorization_rules").delete().eq("id", id);
+      const { error } = await supabase.from("categorization_rules").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["categorization-rules"] }),
@@ -274,7 +274,7 @@ export function useApplyCategorizationRules() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (limit?: number) => {
-      const { data, error } = await (supabase as any).rpc("apply_categorization_rules", { _limit: limit ?? 500 });
+      const { data, error } = await supabase.rpc("apply_categorization_rules", { _limit: limit ?? 500 });
       if (error) throw error;
       return data as { success: boolean; updated: number };
     },

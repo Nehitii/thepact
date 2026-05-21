@@ -44,7 +44,7 @@ export function useAutomationRules() {
     queryKey: ["automation-rules", user?.id],
     enabled: !!user?.id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("user_automation_rules")
         .select("*")
         .order("created_at", { ascending: false });
@@ -57,9 +57,9 @@ export function useAutomationRules() {
     mutationFn: async (input: Partial<AutomationRule> & { id?: string }) => {
       if (!user?.id) throw new Error("Not authenticated");
       const payload = { ...input, user_id: user.id };
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("user_automation_rules")
-        .upsert(payload)
+        .upsert(payload as any)
         .select("*")
         .single();
       if (error) throw error;
@@ -70,7 +70,7 @@ export function useAutomationRules() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from("user_automation_rules").delete().eq("id", id);
+      const { error } = await supabase.from("user_automation_rules").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["automation-rules", user?.id] }),
@@ -78,7 +78,7 @@ export function useAutomationRules() {
 
   const toggle = useMutation({
     mutationFn: async ({ id, is_active }: { id: string; is_active: boolean }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("user_automation_rules")
         .update({ is_active })
         .eq("id", id);

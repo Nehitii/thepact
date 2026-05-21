@@ -42,7 +42,7 @@ export function useWeeklyReviews() {
     queryKey: ["weekly-reviews", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("weekly_reviews")
         .select("*")
         .eq("user_id", user.id)
@@ -63,7 +63,7 @@ export function useCurrentWeekReview() {
     queryKey: ["weekly-review-current", user?.id, weekStart],
     queryFn: async () => {
       if (!user?.id) return null;
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("weekly_reviews")
         .select("*")
         .eq("user_id", user.id)
@@ -104,7 +104,7 @@ export function useSaveWeeklyReflection() {
   return useMutation({
     mutationFn: async ({ reviewId, reflection_note, week_rating }: { reviewId: string; reflection_note: string; week_rating: number }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("weekly_reviews")
         .update({ reflection_note, week_rating, updated_at: new Date().toISOString() })
         .eq("id", reviewId)

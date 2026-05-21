@@ -154,9 +154,9 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           : Promise.resolve({ data: [] }),
         supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
         supabase.from("finance").select("month, income, fixed_expenses, variable_expenses, savings").eq("user_id", user.id).order("month"),
-        (supabase as any).from("habit_logs").select("log_date, completed").eq("user_id", user.id).order("log_date", { ascending: false }).limit(400),
+        supabase.from("habit_logs").select("log_date, completed").eq("user_id", user.id).order("log_date", { ascending: false }).limit(400),
         supabase.from("todo_history").select("completed_at").eq("user_id", user.id),
-        (supabase as any).from("pomodoro_sessions").select("duration_minutes, completed, completed_at, started_at").eq("user_id", user.id).eq("completed", true),
+        supabase.from("pomodoro_sessions").select("duration_minutes, completed, completed_at, started_at").eq("user_id", user.id).eq("completed", true),
         supabase.from("profiles").select("already_funded").eq("id", user.id).maybeSingle(),
       ]);
 

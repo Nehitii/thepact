@@ -93,11 +93,11 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
     try {
       // Atomic, server-validated claim (validates ownership, prevents double-claim,
       // credits bonds, grants cosmetic, marks notification claimed).
-      const { data: claimResult, error: claimError } = await (supabase as any)
+      const { data: claimResult, error: claimError } = await supabase
         .rpc("claim_notification_reward", { p_notification_id: notification.id });
       if (claimError) throw claimError;
-      if (claimResult && claimResult.success === false) {
-        throw new Error(claimResult.error || "Claim failed");
+      if (claimResult && (claimResult as any).success === false) {
+        throw new Error((claimResult as any).error || "Claim failed");
       }
 
       // Invalidate queries
