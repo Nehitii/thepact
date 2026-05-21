@@ -89,7 +89,7 @@ export function useSignGoalContract() {
         _signature_name: args.signatureName,
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Erreur de signature");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Erreur de signature");
       return data as { success: true; signed: number; required: number; activated: boolean };
     },
     onSuccess: (res) => {

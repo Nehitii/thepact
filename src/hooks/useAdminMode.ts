@@ -46,7 +46,7 @@ export function useAdminForcePurchaseCosmetic() {
         p_cosmetic_type: cosmeticType,
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Grant failed");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Grant failed");
       return true;
     },
     onSuccess: () => {
@@ -75,7 +75,7 @@ export function useAdminResetCosmetic() {
         p_cosmetic_id: cosmeticId,
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Reset failed");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Reset failed");
       return true;
     },
     onSuccess: () => {

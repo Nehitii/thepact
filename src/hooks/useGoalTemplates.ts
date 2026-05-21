@@ -82,7 +82,7 @@ export function useRateTemplate() {
         _review: args.review ?? null,
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Erreur");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Erreur");
       return data;
     },
     onSuccess: (_, vars) => {

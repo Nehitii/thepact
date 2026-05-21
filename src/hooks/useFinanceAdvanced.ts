@@ -134,7 +134,7 @@ export function useApplySinkingContribution() {
         _source: "manual",
       });
       if (error) throw error;
-      if (data && data.success === false) throw new Error(data.error || "Échec");
+      if (data && (data as any).success === false) throw new Error((data as any).error || "Échec");
       return data;
     },
     onSuccess: () => {
