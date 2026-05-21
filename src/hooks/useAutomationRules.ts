@@ -59,7 +59,7 @@ export function useAutomationRules() {
       const payload = { ...input, user_id: user.id };
       const { data, error } = await supabase
         .from("user_automation_rules")
-        .upsert(payload)
+        .upsert(payload as any)
         .select("*")
         .single();
       if (error) throw error;
