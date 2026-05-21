@@ -96,8 +96,8 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
       const { data: claimResult, error: claimError } = await supabase
         .rpc("claim_notification_reward", { p_notification_id: notification.id });
       if (claimError) throw claimError;
-      if (claimResult && claimResult.success === false) {
-        throw new Error(claimResult.error || "Claim failed");
+      if (claimResult && (claimResult as any).success === false) {
+        throw new Error((claimResult as any).error || "Claim failed");
       }
 
       // Invalidate queries
