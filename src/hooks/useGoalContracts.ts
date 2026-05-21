@@ -84,7 +84,7 @@ export function useSignGoalContract() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { contractId: string; signatureName: string }) => {
-      const { data, error } = await (supabase as any).rpc("sign_goal_contract", {
+      const { data, error } = await supabase.rpc("sign_goal_contract", {
         _contract_id: args.contractId,
         _signature_name: args.signatureName,
       });
@@ -115,7 +115,7 @@ export function useContractSignatures(contractId?: string) {
     queryKey: ["contract-signatures", contractId],
     queryFn: async () => {
       if (!contractId) return [] as ContractSignature[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("contract_signatures")
         .select("*")
         .eq("contract_id", contractId)

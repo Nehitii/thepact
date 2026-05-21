@@ -87,7 +87,7 @@ export default function Onboarding() {
       }
       await supabase.from("pacts").insert({ user_id: user.id, name, mantra, symbol, color });
       if (selectedValues.length > 0) {
-        await (supabase as any).from("user_values").insert(
+        await supabase.from("user_values").insert(
           selectedValues.map((label, i) => ({ user_id: user.id, label, rank: i })),
         );
       }

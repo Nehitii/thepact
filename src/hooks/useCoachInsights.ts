@@ -30,7 +30,7 @@ export function useCoachInsights() {
     queryFn: async () => {
       if (!user?.id) return [] as CoachInsight[];
       const nowIso = new Date().toISOString();
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("coach_insights")
         .select("*")
         .eq("user_id", user.id)
@@ -47,7 +47,7 @@ export function useCoachInsights() {
 
   const dismiss = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("coach_insights")
         .update({ dismissed_at: new Date().toISOString() })
         .eq("id", id);

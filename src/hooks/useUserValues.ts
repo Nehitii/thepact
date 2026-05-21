@@ -26,7 +26,7 @@ export function useUserValues() {
     queryKey: ["user_values", user?.id],
     queryFn: async () => {
       if (!user?.id) return [] as UserValue[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE)
         .select("*")
         .eq("user_id", user.id)
@@ -40,7 +40,7 @@ export function useUserValues() {
   const upsert = useMutation({
     mutationFn: async (input: Partial<UserValue> & { label: string }) => {
       if (!user?.id) throw new Error("Non authentifié");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE)
         .upsert({ ...input, user_id: user.id })
         .select()
@@ -54,7 +54,7 @@ export function useUserValues() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from(TABLE).delete().eq("id", id);
+      const { error } = await supabase.from(TABLE).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["user_values", user?.id] }),

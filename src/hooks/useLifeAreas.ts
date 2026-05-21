@@ -29,7 +29,7 @@ export function useLifeAreas() {
     queryKey: ["life_areas", user?.id],
     queryFn: async () => {
       if (!user?.id) return [] as LifeArea[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE)
         .select("*")
         .eq("user_id", user.id)
@@ -44,7 +44,7 @@ export function useLifeAreas() {
     mutationFn: async (input: Partial<LifeArea> & { name: string }) => {
       if (!user?.id) throw new Error("Non authentifié");
       const payload = { ...input, user_id: user.id };
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE)
         .upsert(payload)
         .select()
@@ -61,7 +61,7 @@ export function useLifeAreas() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from(TABLE).delete().eq("id", id);
+      const { error } = await supabase.from(TABLE).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {

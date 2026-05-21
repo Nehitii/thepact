@@ -40,7 +40,7 @@ export function useAdminForcePurchaseCosmetic() {
       cosmeticId: string; 
       cosmeticType: "frame" | "banner" | "title"; 
     }) => {
-      const { data, error } = await (supabase as any).rpc("admin_grant_cosmetic", {
+      const { data, error } = await supabase.rpc("admin_grant_cosmetic", {
         p_user_id: userId,
         p_cosmetic_id: cosmeticId,
         p_cosmetic_type: cosmeticType,
@@ -70,7 +70,7 @@ export function useAdminResetCosmetic() {
       userId: string; 
       cosmeticId: string; 
     }) => {
-      const { data, error } = await (supabase as any).rpc("admin_reset_cosmetic", {
+      const { data, error } = await supabase.rpc("admin_reset_cosmetic", {
         p_user_id: userId,
         p_cosmetic_id: cosmeticId,
       });

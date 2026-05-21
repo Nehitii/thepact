@@ -43,7 +43,7 @@ export function useDecisions(filters?: { status?: DecisionStatus; lifeAreaId?: s
     queryKey: ["decisions", user?.id, filters?.status, filters?.lifeAreaId],
     queryFn: async () => {
       if (!user?.id) return [] as Decision[];
-      let q = (supabase as any)
+      let q = supabase
         .from(TABLE)
         .select("*")
         .eq("user_id", user.id)
@@ -65,7 +65,7 @@ export function useDecisionsDueForReview() {
     queryFn: async () => {
       if (!user?.id) return [] as Decision[];
       const today = new Date().toISOString().slice(0, 10);
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE)
         .select("*")
         .eq("user_id", user.id)
@@ -92,7 +92,7 @@ export function useDecisionMutations() {
   const create = useMutation({
     mutationFn: async (input: Partial<Decision> & { title: string; decision_text: string }) => {
       if (!user?.id) throw new Error("Non authentifié");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE)
         .insert({ ...input, user_id: user.id })
         .select()
@@ -109,7 +109,7 @@ export function useDecisionMutations() {
 
   const update = useMutation({
     mutationFn: async ({ id, ...patch }: Partial<Decision> & { id: string }) => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from(TABLE)
         .update(patch)
         .eq("id", id)
@@ -124,7 +124,7 @@ export function useDecisionMutations() {
 
   const markReviewed = useMutation({
     mutationFn: async ({ id, actual_outcome, lesson }: { id: string; actual_outcome: string; lesson: string }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from(TABLE)
         .update({
           status: "reviewed",
@@ -144,7 +144,7 @@ export function useDecisionMutations() {
 
   const remove = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase as any).from(TABLE).delete().eq("id", id);
+      const { error } = await supabase.from(TABLE).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => invalidate(),

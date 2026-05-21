@@ -155,7 +155,7 @@ export function usePomodoroSessions() {
     queryKey: ["pomodoro-sessions", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("pomodoro_sessions")
         .select("*")
         .eq("user_id", user.id)
@@ -177,7 +177,7 @@ export function usePomodoroSessions() {
       started_at: string;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { error } = await (supabase as any).from("pomodoro_sessions").insert({
+      const { error } = await supabase.from("pomodoro_sessions").insert({
         ...session,
         user_id: user.id,
         completed_at: session.completed ? new Date().toISOString() : null,

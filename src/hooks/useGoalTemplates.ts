@@ -36,7 +36,7 @@ export function usePublicTemplates(filters?: { category?: string; search?: strin
   return useQuery({
     queryKey: ["public-templates", filters],
     queryFn: async () => {
-      let q = (supabase as any)
+      let q = supabase
         .from("goal_templates")
         .select("*")
         .eq("is_public", true);
@@ -59,7 +59,7 @@ export function useTemplateRatings(templateId?: string) {
     queryKey: ["template-ratings", templateId],
     queryFn: async () => {
       if (!templateId) return [] as TemplateRating[];
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("template_ratings")
         .select("*")
         .eq("template_id", templateId)
@@ -76,7 +76,7 @@ export function useRateTemplate() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { templateId: string; rating: number; review?: string }) => {
-      const { data, error } = await (supabase as any).rpc("rate_template", {
+      const { data, error } = await supabase.rpc("rate_template", {
         _template_id: args.templateId,
         _rating: args.rating,
         _review: args.review ?? null,
@@ -97,7 +97,7 @@ export function useToggleTemplatePublic() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (args: { templateId: string; is_public: boolean }) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("goal_templates")
         .update({ is_public: args.is_public })
         .eq("id", args.templateId);
@@ -114,7 +114,7 @@ export function useGoalTemplates() {
   return useQuery({
     queryKey: ["goal-templates"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("goal_templates")
         .select("*")
         .order("is_featured", { ascending: false })
@@ -144,7 +144,7 @@ export function useCreateTemplate() {
       source_goal_id?: string;
     }) => {
       if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("goal_templates")
         .insert({
           ...template,
@@ -167,12 +167,12 @@ export function useIncrementTemplateUse() {
 
   return useMutation({
     mutationFn: async (templateId: string) => {
-      const { error } = await (supabase as any)
+      const { error } = await supabase
         .from("goal_templates")
-        .update({ use_count: (supabase as any).rpc ? undefined : 0 })
+        .update({ use_count: supabase.rpc ? undefined : 0 })
         .eq("id", templateId);
       // Simple increment via raw update
-      const { error: err2 } = await (supabase as any).rpc("increment_template_use", { p_template_id: templateId }).catch(() => {
+      const { error: err2 } = await supabase.rpc("increment_template_use", { p_template_id: templateId }).catch(() => {
         // Fallback: just ignore if RPC doesn't exist
       });
     },
