@@ -2,160 +2,33 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings } from '@/types/finance';
+import { createTableCrudHooks } from './utils/createTableCrudHooks';
 
 export type { RecurringExpense, RecurringIncome, MonthlyValidation, FinanceSettings };
 
-// Recurring Expenses hooks
-export function useRecurringExpenses(userId?: string) {
-  return useQuery({
-    queryKey: ['recurring-expenses', userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const { data, error } = await supabase
-        .from('recurring_expenses')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      return data as RecurringExpense[];
-    },
-    enabled: !!userId,
-  });
-}
+// Recurring Expenses — CRUD via generic factory.
+// `useAdd`/`useUpdate` both alias to the same upsert (Supabase upsert inserts
+// when no id is provided, updates when it is).
+const expensesCrud = createTableCrudHooks<RecurringExpense>('recurring_expenses', {
+  queryKey: 'recurring-expenses',
+  orderBy: { column: 'created_at', ascending: true },
+});
+// Preserve legacy signature: `useRecurringExpenses(userId?)` — userId is now
+// derived from the auth context but the argument is kept for API stability.
+export const useRecurringExpenses = (_userId?: string) => expensesCrud.useList();
+export const useAddRecurringExpense = expensesCrud.useUpsert;
+export const useUpdateRecurringExpense = expensesCrud.useUpsert;
+export const useDeleteRecurringExpense = expensesCrud.useDelete;
 
-export function useAddRecurringExpense() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  return useMutation({
-    mutationFn: async (expense: { name: string; amount: number; category?: string; icon_emoji?: string; icon_url?: string }) => {
-      if (!user) throw new Error('Not authenticated');
-      const { data, error } = await supabase
-        .from('recurring_expenses')
-        .insert({ ...expense, user_id: user.id })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
-    },
-  });
-}
-
-export function useUpdateRecurringExpense() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string; icon_emoji?: string; icon_url?: string }) => {
-      const { data, error } = await supabase
-        .from('recurring_expenses')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
-    },
-  });
-}
-
-export function useDeleteRecurringExpense() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('recurring_expenses')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring-expenses'] });
-    },
-  });
-}
-
-// Recurring Income hooks
-export function useRecurringIncome(userId?: string) {
-  return useQuery({
-    queryKey: ['recurring-income', userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const { data, error } = await supabase
-        .from('recurring_income')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
-      if (error) throw error;
-      return data as RecurringIncome[];
-    },
-    enabled: !!userId,
-  });
-}
-
-export function useAddRecurringIncome() {
-  const queryClient = useQueryClient();
-  const { user } = useAuth();
-
-  return useMutation({
-    mutationFn: async (income: { name: string; amount: number; category?: string; icon_emoji?: string; icon_url?: string }) => {
-      if (!user) throw new Error('Not authenticated');
-      const { data, error } = await supabase
-        .from('recurring_income')
-        .insert({ ...income, user_id: user.id })
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring-income'] });
-    },
-  });
-}
-
-export function useUpdateRecurringIncome() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async ({ id, ...updates }: { id: string; name?: string; amount?: number; is_active?: boolean; category?: string; icon_emoji?: string; icon_url?: string }) => {
-      const { data, error } = await supabase
-        .from('recurring_income')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring-income'] });
-    },
-  });
-}
-
-export function useDeleteRecurringIncome() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from('recurring_income')
-        .delete()
-        .eq('id', id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recurring-income'] });
-    },
-  });
-}
+// Recurring Income — same pattern.
+const incomeCrud = createTableCrudHooks<RecurringIncome>('recurring_income', {
+  queryKey: 'recurring-income',
+  orderBy: { column: 'created_at', ascending: true },
+});
+export const useRecurringIncome = (_userId?: string) => incomeCrud.useList();
+export const useAddRecurringIncome = incomeCrud.useUpsert;
+export const useUpdateRecurringIncome = incomeCrud.useUpsert;
+export const useDeleteRecurringIncome = incomeCrud.useDelete;
 
 // Monthly Validations hooks
 export function useMonthlyValidations(userId?: string) {

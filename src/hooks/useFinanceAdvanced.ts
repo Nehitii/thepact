@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { createTableCrudHooks } from "./utils/createTableCrudHooks";
 
 // ---------- Types ----------
 export interface SinkingFund {
@@ -74,54 +75,15 @@ export interface DebtScheduleRow {
 }
 
 // ---------- Sinking funds ----------
-export function useSinkingFunds() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["sinking-funds", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [] as SinkingFund[];
-      const { data, error } = await supabase
-        .from("sinking_funds")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as SinkingFund[];
-    },
-    enabled: !!user?.id,
-  });
-}
-
-export function useUpsertSinkingFund() {
-  const qc = useQueryClient();
-  const { user } = useAuth();
-  return useMutation({
-    mutationFn: async (payload: Partial<SinkingFund> & { name: string }) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      const row = { ...payload, user_id: user.id };
-      const { data, error } = await supabase.from("sinking_funds").upsert(row).select().single();
-      if (error) throw error;
-      return data as SinkingFund;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["sinking-funds"] });
-      toast.success("Fonds sauvegardé");
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-}
-
-export function useDeleteSinkingFund() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("sinking_funds").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["sinking-funds"] }),
-    onError: (e: Error) => toast.error(e.message),
-  });
-}
+export const {
+  useList: useSinkingFunds,
+  useUpsert: useUpsertSinkingFund,
+  useDelete: useDeleteSinkingFund,
+} = createTableCrudHooks<SinkingFund>("sinking_funds", {
+  queryKey: "sinking-funds",
+  orderBy: { column: "created_at", ascending: false },
+  successMessages: { upsert: "Fonds sauvegardé" },
+});
 
 export function useApplySinkingContribution() {
   const qc = useQueryClient();
@@ -146,53 +108,15 @@ export function useApplySinkingContribution() {
 }
 
 // ---------- Debts ----------
-export function useDebts() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["debts", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [] as Debt[];
-      const { data, error } = await supabase
-        .from("debts")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Debt[];
-    },
-    enabled: !!user?.id,
-  });
-}
-
-export function useUpsertDebt() {
-  const qc = useQueryClient();
-  const { user } = useAuth();
-  return useMutation({
-    mutationFn: async (payload: Partial<Debt> & { name: string }) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await supabase.from("debts").upsert({ ...payload, user_id: user.id }).select().single();
-      if (error) throw error;
-      return data as Debt;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["debts"] });
-      toast.success("Dette sauvegardée");
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-}
-
-export function useDeleteDebt() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("debts").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["debts"] }),
-    onError: (e: Error) => toast.error(e.message),
-  });
-}
+export const {
+  useList: useDebts,
+  useUpsert: useUpsertDebt,
+  useDelete: useDeleteDebt,
+} = createTableCrudHooks<Debt>("debts", {
+  queryKey: "debts",
+  orderBy: { column: "created_at", ascending: false },
+  successMessages: { upsert: "Dette sauvegardée" },
+});
 
 export function useDebtSchedule(debtId: string | null) {
   return useQuery({
@@ -225,50 +149,14 @@ export function useCashflowProjection(months = 6) {
 }
 
 // ---------- Categorization rules ----------
-export function useCategorizationRules() {
-  const { user } = useAuth();
-  return useQuery({
-    queryKey: ["categorization-rules", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [] as CategorizationRule[];
-      const { data, error } = await supabase
-        .from("categorization_rules")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("priority", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as CategorizationRule[];
-    },
-    enabled: !!user?.id,
-  });
-}
-
-export function useUpsertCategorizationRule() {
-  const qc = useQueryClient();
-  const { user } = useAuth();
-  return useMutation({
-    mutationFn: async (payload: Partial<CategorizationRule> & { pattern: string; category: string }) => {
-      if (!user?.id) throw new Error("Not authenticated");
-      const { data, error } = await supabase.from("categorization_rules").upsert({ ...payload, user_id: user.id }).select().single();
-      if (error) throw error;
-      return data as CategorizationRule;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["categorization-rules"] }),
-    onError: (e: Error) => toast.error(e.message),
-  });
-}
-
-export function useDeleteCategorizationRule() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase.from("categorization_rules").delete().eq("id", id);
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["categorization-rules"] }),
-    onError: (e: Error) => toast.error(e.message),
-  });
-}
+export const {
+  useList: useCategorizationRules,
+  useUpsert: useUpsertCategorizationRule,
+  useDelete: useDeleteCategorizationRule,
+} = createTableCrudHooks<CategorizationRule>("categorization_rules", {
+  queryKey: "categorization-rules",
+  orderBy: { column: "priority", ascending: true },
+});
 
 export function useApplyCategorizationRules() {
   const qc = useQueryClient();

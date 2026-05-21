@@ -30,8 +30,8 @@ export function HabitStackPanel({ goalId, pactId, prerequisiteHabitId }: HabitSt
     queryKey: ["habit-stack-candidates", user?.id, pactId],
     queryFn: async () => {
       if (!user?.id) return [];
-      let q: any = supabase
-        .from("goals")
+      const base: any = supabase.from("goals");
+      let q = base
         .select("id, name")
         .eq("user_id", user.id)
         .eq("goal_type", "habit")
