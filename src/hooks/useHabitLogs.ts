@@ -201,7 +201,7 @@ export function useUseStreakFreeze() {
         _date: date,
       });
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || "Freeze failed");
+      if (!(data as any)?.success) throw new Error((data as any)?.error || "Freeze failed");
       return data;
     },
     onSuccess: () => {

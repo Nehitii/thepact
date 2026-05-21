@@ -48,7 +48,7 @@ export function usePublicTemplates(filters?: { category?: string; search?: strin
       else q = q.order("created_at", { ascending: false });
       const { data, error } = await q.limit(200);
       if (error) throw error;
-      return (data || []) as GoalTemplate[];
+      return (data || []) as unknown as GoalTemplate[];
     },
     staleTime: 60_000,
   });
@@ -120,7 +120,7 @@ export function useGoalTemplates() {
         .order("is_featured", { ascending: false })
         .order("use_count", { ascending: false });
       if (error) throw error;
-      return (data || []) as GoalTemplate[];
+      return (data || []) as unknown as GoalTemplate[];
     },
     staleTime: 5 * 60 * 1000,
   });
