@@ -49,3 +49,7 @@ verify_jwt = false
 # Dual mode: per-user JWT OR cron with x-cron-secret. JWT verification handled in code.
 [functions.push-send]
 verify_jwt = false
+
+# Dual mode: cron + user. JWT auth handled in code.
+[functions.coach-weekly-digest]
+verify_jwt = false

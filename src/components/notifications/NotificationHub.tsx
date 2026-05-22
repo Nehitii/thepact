@@ -3,6 +3,7 @@ import { Bell, CheckCheck, Trash2, MessageSquare, Settings } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "@/hooks/useNotifications";
 import { useMessages } from "@/hooks/useMessages";
+import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import { NotificationCard } from "./NotificationCard";
 import { NotificationBadge } from "./NotificationBadge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,6 +23,7 @@ interface NotificationHubProps {
 export function NotificationHub({ trigger }: NotificationHubProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const social = useSocialFeatures();
   const {
     notifications,
     unreadCount,
@@ -33,7 +35,14 @@ export function NotificationHub({ trigger }: NotificationHubProps) {
   } = useNotifications();
   const { unreadCount: messageUnreadCount } = useMessages();
 
-  const totalUnread = unreadCount + messageUnreadCount;
+  // Hide social-category notifications when no social feature is enabled (avoids orphan items).
+  const visibleNotifications = social.anySocial
+    ? notifications
+    : notifications.filter((n) => n.category !== "social");
+  const visibleUnreadCount = social.anySocial
+    ? unreadCount
+    : visibleNotifications.filter((n) => !n.is_read).length;
+  const totalUnread = visibleUnreadCount + (social.inbox ? messageUnreadCount : 0);
 
   const defaultTrigger = (
     <button className="relative p-2 rounded-lg hover:bg-primary/10 transition-colors">
@@ -57,15 +66,15 @@ export function NotificationHub({ trigger }: NotificationHubProps) {
             <SheetTitle className="text-xl font-orbitron text-primary flex items-center gap-2">
               <Bell className="h-5 w-5" />
               Notifications
-              {unreadCount > 0 && (
+              {visibleUnreadCount > 0 && (
                 <span className="text-sm text-muted-foreground font-rajdhani">
-                  ({unreadCount} new)
+                  ({visibleUnreadCount} new)
                 </span>
               )}
             </SheetTitle>
 
             <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
+              {visibleUnreadCount > 0 && (
                 <button
                   onClick={() => markAllAsRead.mutate()}
                   className="p-2 rounded-lg hover:bg-primary/10 transition-colors"
@@ -74,7 +83,7 @@ export function NotificationHub({ trigger }: NotificationHubProps) {
                   <CheckCheck className="h-4 w-4 text-primary" />
                 </button>
               )}
-              {notifications.length > 0 && (
+              {visibleNotifications.length > 0 && (
                 <button
                   onClick={() => clearAll.mutate()}
                   className="p-2 rounded-lg hover:bg-destructive/10 transition-colors"
@@ -105,16 +114,18 @@ export function NotificationHub({ trigger }: NotificationHubProps) {
               className="relative data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
             >
               Notifications
-              <NotificationBadge count={unreadCount} size="sm" className="relative -top-0 -right-0 ml-1.5" />
+              <NotificationBadge count={visibleUnreadCount} size="sm" className="relative -top-0 -right-0 ml-1.5" />
             </TabsTrigger>
-            <TabsTrigger
-              value="messages"
-              className="relative data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-            >
-              <MessageSquare className="h-4 w-4 mr-1.5" />
-              Messages
-              <NotificationBadge count={messageUnreadCount} size="sm" className="relative -top-0 -right-0 ml-1.5" />
-            </TabsTrigger>
+            {social.inbox && (
+              <TabsTrigger
+                value="messages"
+                className="relative data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+              >
+                <MessageSquare className="h-4 w-4 mr-1.5" />
+                Messages
+                <NotificationBadge count={messageUnreadCount} size="sm" className="relative -top-0 -right-0 ml-1.5" />
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="notifications" className="flex-1 m-0 p-0">
@@ -137,7 +148,7 @@ export function NotificationHub({ trigger }: NotificationHubProps) {
                     </p>
                   </div>
                 ) : (
-                  notifications.map((notification) => (
+                  visibleNotifications.map((notification) => (
                     <NotificationCard
                       key={notification.id}
                       notification={notification}

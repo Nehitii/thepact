@@ -3,6 +3,7 @@ import { Home, Target, Handshake, Inbox, UserCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
 import { useMessages } from "@/hooks/useMessages";
+import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import { cn } from "@/lib/utils";
 
 interface NavTab {
@@ -13,7 +14,7 @@ interface NavTab {
   matchPaths?: string[];
 }
 
-const TABS: NavTab[] = [
+const ALL_TABS: NavTab[] = [
   { to: "/", icon: Home, label: "Home" },
   { to: "/goals", icon: Target, label: "Goals", matchPaths: ["/goals", "/goals/new"] },
   { to: "/friends", icon: Handshake, label: "Friends", badgeKey: "friends" },
@@ -31,8 +32,15 @@ export function MobileBottomNav() {
   const location = useLocation();
   const { count: friendCount } = usePendingFriendCount();
   const { unreadCount: messageCount } = useMessages();
+  const social = useSocialFeatures();
 
   if (!isMobile) return null;
+
+  const TABS = ALL_TABS.filter((tab) => {
+    if (tab.to === "/friends") return social.friends;
+    if (tab.to === "/inbox") return social.inbox;
+    return true;
+  });
 
   return (
     <nav
