@@ -90,10 +90,8 @@ export const useParticleEffect = () => {
   const enabled = profile?.particles_enabled ?? true;
   const intensity = typeof profile?.particles_intensity === "number" ? profile!.particles_intensity : 1;
 
-  const trigger = (event: React.MouseEvent, color = 'hsl(195 100% 55%)', count = 12) => {
+  const trigger = (x: number, y: number, color = 'hsl(195 100% 55%)', count = 12) => {
     if (!enabled) return;
-    const x = event.clientX;
-    const y = event.clientY;
 
     const scaledCount = Math.max(0, Math.round(count * Math.max(0, Math.min(1, intensity))));
     if (scaledCount <= 0) return;
