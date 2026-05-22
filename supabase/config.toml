@@ -8,6 +8,29 @@ verify_jwt = false
 [functions.weekly-review]
 verify_jwt = true
 
+# User-mode only — JWT verified at platform AND in code (defense in depth).
+[functions.verify-admin]
+verify_jwt = true
+
+[functions.delete-account]
+verify_jwt = true
+
+[functions.two-factor]
+verify_jwt = true
+
+[functions.ai-coach]
+verify_jwt = true
+
+[functions.goal-decompose]
+verify_jwt = true
+
+[functions.health-insights]
+verify_jwt = true
+
+[functions.scrape-product]
+verify_jwt = true
+
+# Cron-only / shared-secret invocation — no user JWT to verify.
 [functions.delete-all-data]
 verify_jwt = false
 
