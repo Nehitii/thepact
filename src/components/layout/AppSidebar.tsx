@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useShopModules, useUserModulePurchases } from "@/hooks/useShop";
 import { usePendingFriendCount } from "@/hooks/usePendingFriendCount";
+import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import {
   Home,
   Target,
@@ -245,6 +246,7 @@ export const AppSidebar = memo(function AppSidebar() {
   const { unreadCount, unreadByModule } = useNotifications();
   const { unreadCount: messageUnreadCount } = useMessages();
   const { count: friendRequestCount } = usePendingFriendCount();
+  const social = useSocialFeatures();
   const totalUnread = unreadCount + messageUnreadCount + friendRequestCount;
 
   const { data: allModules = [] } = useShopModules();
@@ -283,7 +285,13 @@ export const AppSidebar = memo(function AppSidebar() {
       overview: [...baseNavigation.overview],
       operations: [...baseNavigation.operations],
       lifeSystems: [...baseNavigation.lifeSystems],
-      network: [...baseNavigation.network],
+      network: baseNavigation.network.filter((item) => {
+        if (item.to === "/community") return social.community;
+        if (item.to === "/friends") return social.friends;
+        if (item.to === "/leaderboard") return social.leaderboard;
+        // /achievements stays always visible (solo gamification)
+        return true;
+      }),
       system: [...baseNavigation.system],
     };
 
@@ -299,7 +307,7 @@ export const AppSidebar = memo(function AppSidebar() {
     });
 
     return categories;
-  }, [purchasedModuleKeys]);
+  }, [purchasedModuleKeys, social.community, social.friends, social.leaderboard]);
 
   const hasAnyModule = purchasedModuleKeys.some((k) => k in moduleConfig);
 
