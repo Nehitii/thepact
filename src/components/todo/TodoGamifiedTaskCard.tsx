@@ -153,7 +153,7 @@ export function TodoGamifiedTaskCard({
       setIsCompleting(true);
       sound.play("success", "reward");
       const particleCount = task.priority === "high" ? 40 : task.priority === "medium" ? 25 : 15;
-      trigger(e, config.accent, particleCount);
+      trigger(e.clientX, e.clientY, config.accent, particleCount);
       setTimeout(() => onComplete(), 500);
     },
     [onComplete, trigger, config.accent, sound, task.priority],
