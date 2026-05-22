@@ -254,7 +254,7 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     mutationFn: async (newStatus: string) => {
       const detail = getDetail();
       if (!detail) throw new Error("Goal not loaded");
-      const { error } = await supabase.from("goals").update({ status: newStatus }).eq("id", detail.goal.id);
+      const { error } = await supabase.from("goals").update({ status: newStatus as any }).eq("id", detail.goal.id);
       if (error) throw error;
       return newStatus;
     },
