@@ -93,15 +93,10 @@ export default function GoalDetail() {
     [customDifficultyColor],
   );
 
-  // Actions hook
+  // Actions hook — reads/writes the React Query cache directly.
   const actions = useGoalDetailActions({
     goalId: id,
     userId: user?.id,
-    goal,
-    steps,
-    costItems,
-    setGoal,
-    setSteps,
     triggerParticles,
     getDifficultyColor,
   });
