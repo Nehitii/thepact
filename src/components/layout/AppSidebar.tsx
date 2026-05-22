@@ -487,20 +487,22 @@ export const AppSidebar = memo(function AppSidebar() {
             </div>
           )}
 
-          <div className="space-y-0.5 mb-2">
-            {!mini && <SectionLabel label="Social" />}
-            {activeCategories.network.map((item) => (
-              <SidebarNavItem
-                key={item.to}
-                {...item}
-                badge={getBadgeCount(item)}
-                mini={mini}
-                closeMobile={closeMobile}
-                navigate={navigate}
-                location={location}
-              />
-            ))}
-          </div>
+          {activeCategories.network.length > 0 && (
+            <div className="space-y-0.5 mb-2">
+              {!mini && <SectionLabel label="Social" />}
+              {activeCategories.network.map((item) => (
+                <SidebarNavItem
+                  key={item.to}
+                  {...item}
+                  badge={getBadgeCount(item)}
+                  mini={mini}
+                  closeMobile={closeMobile}
+                  navigate={navigate}
+                  location={location}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="space-y-0.5 mb-2">
             {!mini && <SectionLabel label="System" />}
@@ -621,23 +623,25 @@ export const AppSidebar = memo(function AppSidebar() {
                 {/* 1. Redirige vers /inbox (au lieu de /notifications)
                   2. Affiche totalUnread pour être strictement cohérent avec la pastille de l'avatar 
                 */}
-                <DropdownMenuItem
-                  onClick={() => {
-                    navigate("/inbox");
-                    closeMobile();
-                  }}
-                  className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center justify-between"
-                >
-                  <div className="flex items-center">
-                    <Mail className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
-                    <span className="text-xs font-bold tracking-widest uppercase">Inbox</span>
-                  </div>
-                  {totalUnread > 0 && (
-                    <span className="bg-primary text-[#050508] text-[9px] px-1.5 py-0.5 font-bold rounded-sm">
-                      {totalUnread}
-                    </span>
-                  )}
-                </DropdownMenuItem>
+                {social.inbox && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      navigate("/inbox");
+                      closeMobile();
+                    }}
+                    className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none flex items-center justify-between"
+                  >
+                    <div className="flex items-center">
+                      <Mail className="mr-3 h-4 w-4 opacity-70 group-hover:opacity-100" />
+                      <span className="text-xs font-bold tracking-widest uppercase">Inbox</span>
+                    </div>
+                    {totalUnread > 0 && (
+                      <span className="bg-primary text-[#050508] text-[9px] px-1.5 py-0.5 font-bold rounded-sm">
+                        {totalUnread}
+                      </span>
+                    )}
+                  </DropdownMenuItem>
+                )}
 
                 <DropdownMenuItem
                   onClick={() => {
