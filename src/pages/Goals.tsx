@@ -53,7 +53,7 @@ export default function Goals() {
 
       const goal = goals.find((g) => g.id === goalId);
       if (goal) {
-        triggerParticles(e, getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor));
+        triggerParticles(e.clientX, e.clientY, getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor));
       }
 
       // Optimistic update
