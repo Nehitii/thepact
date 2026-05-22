@@ -69,6 +69,9 @@ Deno.serve(async (req) => {
     });
     const { data: claims } = await supabase.auth.getClaims(auth.replace("Bearer ", ""));
     if (!claims?.claims?.sub) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { checkAiQuota } = await import("../_shared/quota.ts");
+    const quotaResp = await checkAiQuota(supabase, "generate-daily-quests", 10, corsHeaders);
+    if (quotaResp) return quotaResp;
     const result = await seedUser(supabase, claims.claims.sub);
     return new Response(JSON.stringify({ ok: true, ...result }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e: any) {

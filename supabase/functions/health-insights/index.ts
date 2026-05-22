@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -32,6 +33,9 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const quotaResp = await checkAiQuota(authClient, "health-insights", 10, corsHeaders);
+    if (quotaResp) return quotaResp;
 
     const { healthData, streakDays } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

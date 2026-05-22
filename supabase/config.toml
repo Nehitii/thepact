@@ -1,43 +1,51 @@
 project_id = "lzosyvpsuqwsihifcwua"
 
-[functions.verify-admin]
-verify_jwt = false
-
-[functions.two-factor]
-verify_jwt = false
-
-[functions.health-insights]
-verify_jwt = false
-
+# Cron-triggered — runs over all users with CRON_SECRET, no per-user JWT.
 [functions.smart-notifications]
 verify_jwt = false
 
+# User-mode invocation — JWT auth handled in code (defense in depth).
 [functions.weekly-review]
-verify_jwt = false
+verify_jwt = true
 
-[functions.scrape-product]
-verify_jwt = false
+# User-mode only — JWT verified at platform AND in code (defense in depth).
+[functions.verify-admin]
+verify_jwt = true
 
 [functions.delete-account]
-verify_jwt = false
+verify_jwt = true
 
+[functions.two-factor]
+verify_jwt = true
+
+[functions.ai-coach]
+verify_jwt = true
+
+[functions.goal-decompose]
+verify_jwt = true
+
+[functions.health-insights]
+verify_jwt = true
+
+[functions.scrape-product]
+verify_jwt = true
+
+# Cron-only / shared-secret invocation — no user JWT to verify.
 [functions.delete-all-data]
 verify_jwt = false
 
-[functions.ai-coach]
-verify_jwt = false
-
+# Dual mode: per-user JWT OR cron with x-cron-secret. JWT verification handled in code.
 [functions.coach-index-memory]
 verify_jwt = false
 
-[functions.goal-decompose]
-verify_jwt = false
-
+# Dual mode: per-user JWT OR cron with CRON_SECRET. JWT verification handled in code.
 [functions.coach-pattern-detect]
 verify_jwt = false
 
+# Dual mode: per-user JWT OR cron with CRON_SECRET. JWT verification handled in code.
 [functions.generate-daily-quests]
 verify_jwt = false
 
+# Dual mode: per-user JWT OR cron with x-cron-secret. JWT verification handled in code.
 [functions.push-send]
 verify_jwt = false

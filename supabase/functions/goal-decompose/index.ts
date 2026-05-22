@@ -1,6 +1,7 @@
 // goal-decompose — Suggests steps + supporting habits for a goal description, via Lovable AI Gateway.
 // Returns structured JSON via tool calling. No DB writes.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

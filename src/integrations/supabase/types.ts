@@ -341,6 +341,30 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_usage_daily: {
+        Row: {
+          call_count: number
+          day: string
+          function_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          call_count?: number
+          day?: string
+          function_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          call_count?: number
+          day?: string
+          function_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bank_transactions: {
         Row: {
           account_id: string | null
@@ -5228,6 +5252,10 @@ export type Database = {
           _note?: string
           _source?: string
         }
+        Returns: Json
+      }
+      check_and_increment_ai_quota: {
+        Args: { _daily_limit?: number; _function_name: string }
         Returns: Json
       }
       claim_notification_reward: {

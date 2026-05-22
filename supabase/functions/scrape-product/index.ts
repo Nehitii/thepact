@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -118,6 +119,9 @@ Deno.serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const quotaResp = await checkAiQuota(supabase, "scrape-product", 30, corsHeaders);
+    if (quotaResp) return quotaResp;
 
     const { url } = await req.json();
     if (!url || typeof url !== 'string') {
