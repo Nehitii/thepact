@@ -13,6 +13,7 @@ import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
 import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
+import { useSocialFeatures } from "@/hooks/useSocialFeatures";
 import { CyberBackground } from "@/components/CyberBackground";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
@@ -48,6 +49,7 @@ export default function GoalDetail() {
   const { currency } = useCurrency();
   const navigate = useNavigate();
   const { isModulePurchased } = useUserShop(user?.id);
+  const social = useSocialFeatures();
   const queryClient = useQueryClient();
   const createWishlistItem = useCreatePactWishlistItem();
 
@@ -341,12 +343,14 @@ export default function GoalDetail() {
           }}
         />
 
-        {/* Share Goal Button */}
-        <div className="flex justify-end">
-          <Button variant="outline" size="sm" onClick={() => setShareModalOpen(true)} className="text-xs font-bold uppercase tracking-wider gap-1.5">
-            <Link2 className="h-3.5 w-3.5" /> Share with Friend
-          </Button>
-        </div>
+        {/* Share Goal Button — gated behind social.sharing flag */}
+        {social.sharing && (
+          <div className="flex justify-end">
+            <Button variant="outline" size="sm" onClick={() => setShareModalOpen(true)} className="text-xs font-bold uppercase tracking-wider gap-1.5">
+              <Link2 className="h-3.5 w-3.5" /> Share with Friend
+            </Button>
+          </div>
+        )}
 
         {isSuperGoal ? (
           <GoalDetailSuperGoal
