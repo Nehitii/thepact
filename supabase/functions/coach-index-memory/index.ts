@@ -2,6 +2,7 @@
 // Embeds recent journal entries, reviews, and decisions into coach_embeddings.
 // Can be invoked manually (per-user via JWT) or by cron (with service role).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
