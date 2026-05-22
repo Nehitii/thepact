@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import * as Sentry from "@sentry/react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +35,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
         setLoading(false);
 
+        // Sync user with Sentry for error context
+        if (session?.user) {
+          Sentry.setUser({ id: session.user.id, email: session.user.email ?? undefined });
+        } else {
+          Sentry.setUser(null);
+        }
+
         // Handle sign in - track login for achievements
         if (event === "SIGNED_IN" && session?.user) {
           setTimeout(() => {
@@ -56,6 +64,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Sync existing session with Sentry
+      if (session?.user) {
+        Sentry.setUser({ id: session.user.id, email: session.user.email ?? undefined });
+      } else {
+        Sentry.setUser(null);
+      }
       
       // Track login for existing session
       if (session?.user) {
@@ -71,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    Sentry.setUser(null);
   };
 
   return (
