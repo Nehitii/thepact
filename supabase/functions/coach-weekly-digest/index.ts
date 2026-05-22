@@ -147,6 +147,9 @@ Deno.serve(async (req) => {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const { checkAiQuota } = await import("../_shared/quota.ts");
+    const quotaResp = await checkAiQuota(anon, "coach-weekly-digest", 5, corsHeaders);
+    if (quotaResp) return quotaResp;
     targetUsers = [uid];
   }
 

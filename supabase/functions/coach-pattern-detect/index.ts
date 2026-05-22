@@ -2,6 +2,7 @@
 // Aggregates recent user activity (habits, journal mood, finance, goals) and
 // uses an LLM to surface 1-3 actionable insights, persisted as notifications.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -127,6 +128,8 @@ Deno.serve(async (req) => {
     });
     const { data: claims } = await supabase.auth.getClaims(auth.replace("Bearer ", ""));
     if (!claims?.claims?.sub) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const quotaResp = await checkAiQuota(supabase, "coach-pattern-detect", 20, corsHeaders);
+    if (quotaResp) return quotaResp;
     const result = await processUser(supabase, claims.claims.sub, aiKey);
     return new Response(JSON.stringify({ ok: true, ...result }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e: any) {

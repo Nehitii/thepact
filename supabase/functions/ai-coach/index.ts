@@ -1,6 +1,7 @@
 // AI Coach — streaming chat via Lovable AI Gateway (no API key required).
 // Persists user + assistant messages in coach_messages, supports tool calls.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -449,6 +450,10 @@ Deno.serve(async (req) => {
       });
     }
     const userId = userData.user.id;
+
+    // Daily AI quota per user — fail-open on infra errors.
+    const quotaResp = await checkAiQuota(supabase, "ai-coach", 100, corsHeaders);
+    if (quotaResp) return quotaResp;
 
     const body = (await req.json()) as ChatBody;
     if (!body?.conversation_id || !body?.message?.trim()) {

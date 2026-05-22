@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { checkAiQuota } from "../_shared/quota.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -37,6 +38,9 @@ Deno.serve(async (req) => {
       });
     }
     const user_id: string = claimsData.claims.sub;
+
+    const quotaResp = await checkAiQuota(authClient, "weekly-review", 5, corsHeaders);
+    if (quotaResp) return quotaResp;
 
     // Discard any user_id from the request body.
     try { await req.json(); } catch { /* body optional */ }
