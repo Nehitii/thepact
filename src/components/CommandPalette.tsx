@@ -32,7 +32,11 @@ import {
   Volume2,
   Search,
   GripVertical,
+  Keyboard,
+  Compass,
+  UserCircle,
 } from "lucide-react";
+import { SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 
 interface PaletteItem {
   label: string;
@@ -40,6 +44,7 @@ interface PaletteItem {
   route: string;
   group: string;
   keywords?: string;
+  action?: "shortcut-help";
 }
 
 const allItems: PaletteItem[] = [
@@ -67,30 +72,43 @@ const allItems: PaletteItem[] = [
   { label: "Wishlist", icon: ShoppingCart, route: "/wishlist", group: "Modules", keywords: "wants needs items" },
 
   // Settings
-  { label: "Account Info", icon: User, route: "/profile", group: "Settings", keywords: "profile account" },
+  { label: "Compte", icon: UserCircle, route: "/profile", group: "Settings", keywords: "profile account compte" },
+  { label: "Profil public", icon: User, route: "/profile/bounded", group: "Settings", keywords: "public bounded" },
+  { label: "Domaines de vie", icon: Compass, route: "/profile/life-areas", group: "Settings", keywords: "life areas domaines" },
   {
-    label: "Pact Settings",
+    label: "Mon Pacte",
     icon: Settings,
     route: "/profile/pact-settings",
     group: "Settings",
-    keywords: "pact config",
+    keywords: "pact config pacte rules",
   },
   {
-    label: "Display & Sound",
+    label: "Apparence & sons",
     icon: Volume2,
     route: "/profile/display-sound",
     group: "Settings",
-    keywords: "theme volume particles",
+    keywords: "theme volume particles display sound apparence",
   },
   {
     label: "Notifications",
     icon: Bell,
     route: "/profile/notifications",
     group: "Settings",
-    keywords: "alerts reminders",
+    keywords: "alerts reminders notifications",
   },
-  { label: "Privacy & Control", icon: Shield, route: "/profile/privacy", group: "Settings", keywords: "security data" },
-  { label: "Data & Portability", icon: Database, route: "/profile/data", group: "Settings", keywords: "export import" },
+  { label: "Automatisations", icon: Zap, route: "/profile/automations", group: "Settings", keywords: "automations rules automatisations" },
+  { label: "Confidentialité", icon: Shield, route: "/profile/privacy", group: "Settings", keywords: "security data privacy confidentialite" },
+  { label: "Mes données", icon: Database, route: "/profile/data", group: "Settings", keywords: "export import data portability donnees" },
+
+  // Help
+  {
+    label: "⌨ Keyboard shortcuts",
+    icon: Keyboard,
+    route: "__shortcut-help",
+    group: "Help",
+    keywords: "shortcuts help raccourcis aide clavier",
+    action: "shortcut-help",
+  },
 ];
 
 export function CommandPalette() {
@@ -125,9 +143,13 @@ export function CommandPalette() {
     return map;
   }, []);
 
-  const handleSelect = (route: string) => {
+  const handleSelect = (item: PaletteItem) => {
     setOpen(false);
-    navigate(route);
+    if (item.action === "shortcut-help") {
+      window.dispatchEvent(new Event(SHORTCUT_HELP_EVENT));
+      return;
+    }
+    navigate(item.route);
   };
 
   return (
@@ -195,7 +217,7 @@ export function CommandPalette() {
                   <CommandItem
                     key={item.route}
                     value={`${item.label} ${item.keywords || ""}`}
-                    onSelect={() => handleSelect(item.route)}
+                    onSelect={() => handleSelect(item)}
                     className="flex items-center gap-3 cursor-pointer"
                   >
                     <item.icon className="h-4 w-4 text-primary/70" />
