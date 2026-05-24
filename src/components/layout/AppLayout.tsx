@@ -7,10 +7,12 @@ import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
 import type { ReviewType } from "@/hooks/useReviews";
 import { useEffect, useState } from "react";
 import { Bot } from "lucide-react";
+import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 
 export function AppLayout() {
   const [coachOpen, setCoachOpen] = useState(false);
   const [ritualType, setRitualType] = useState<ReviewType | null>(null);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -21,7 +23,17 @@ export function AppLayout() {
       }
       // Avoid stealing keys while typing
       const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      const inEditable =
+        !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+
+      // Shortcut help: "?" or Ctrl+/ (only outside inputs)
+      if (!inEditable && ((e.key === "?" || (e.shiftKey && e.key === "/")) || ((e.ctrlKey || e.metaKey) && e.key === "/"))) {
+        e.preventDefault();
+        setShortcutsOpen((v) => !v);
+        return;
+      }
+
+      if (inEditable) return;
       if (e.key === "F7") {
         e.preventDefault();
         setRitualType("daily");
@@ -34,7 +46,12 @@ export function AppLayout() {
       }
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    const onOpenHelp = () => setShortcutsOpen(true);
+    window.addEventListener(SHORTCUT_HELP_EVENT, onOpenHelp);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener(SHORTCUT_HELP_EVENT, onOpenHelp);
+    };
   }, []);
 
   return (
@@ -69,6 +86,8 @@ export function AppLayout() {
           type={ritualType}
         />
       )}
+
+      <ShortcutHelpOverlay open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   );
 }
