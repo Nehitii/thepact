@@ -73,7 +73,7 @@ export default function Shop() {
   };
 
   return (
-    <DSPageShell width="xl" padding="none" background={
+    <DSPageShell width="xl" padding="tight" className="!px-0 !pt-0 !pb-0" background={
       <div
         className="fixed inset-0 pointer-events-none z-[1] opacity-[0.03]"
         style={{

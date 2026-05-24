@@ -346,7 +346,7 @@ export default function NewGoal() {
     "h-12 text-base rounded-xl bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
 
   return (
-    <DSPageShell width="sm" padding="none" background={<DSBackground variant="cyber" />}>
+    <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
       <div className="px-6 py-8 relative z-10">
         {/* Header */}
         <motion.div

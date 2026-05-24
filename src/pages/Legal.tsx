@@ -80,7 +80,7 @@ export default function Legal() {
   };
 
   return (
-    <DSPageShell width="sm" padding="none" background={<DSBackground variant="cyber" />}>
+    <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
       <ScrollArea className="h-screen">
         <div className="p-6 space-y-6 relative z-10 pb-12">
           {/* Header */}

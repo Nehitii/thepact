@@ -137,7 +137,7 @@ export default function StepDetail() {
 
   if (loading) {
     return (
-      <DSPageShell width="sm" padding="none" background={<DSBackground variant="cyber" />}>
+      <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
         <DSPageLoader />
       </DSPageShell>
     );
@@ -145,7 +145,7 @@ export default function StepDetail() {
 
   if (!step) {
     return (
-      <DSPageShell width="sm" padding="none" background={<DSBackground variant="cyber" />}>
+      <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
         <div className="min-h-[60vh] flex items-center justify-center">
           <div className="text-center">
             <p className="text-muted-foreground mb-4 font-rajdhani">Step not found</p>
