@@ -21,7 +21,8 @@ import { AccountsOverview } from "@/components/finance/accounts";
 import { NetWorthHistoryPanel } from "@/components/finance/NetWorthHistoryPanel";
 import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
 import { TransactionsTab } from "@/components/finance/transactions";
-import { AuraBackground, AuraBalanceHero, FloatingTabBar } from "@/components/finance/aura";
+import { AuraBalanceHero, FloatingTabBar } from "@/components/finance/aura";
+import { DSPageShell, DSBackground } from "@/components/ds";
 import { CashflowProjectionPanel, SinkingFundsPanel, DebtsPanel, ImportTransactionsModal } from "@/components/finance/advanced";
 import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
 import { exportFullReport } from "@/lib/financeExport";
@@ -136,11 +137,9 @@ export default function Finance() {
   ];
 
   return (
-    <div className="min-h-screen relative">
-      <AuraBackground />
-
-      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-16 relative z-10 space-y-6">
-        {/* AURA Hero */}
+    <DSPageShell width="xl" background={<DSBackground variant="aura" />}>
+      <div className="space-y-6">
+        {/* NOTE: No DSPageHeader — AuraBalanceHero IS the signature hero for Finance */}
         <AuraBalanceHero
           netWorth={netWorth}
           prevMonthNet={prevMonthNet}
@@ -275,6 +274,6 @@ export default function Finance() {
 
       <FinanceSettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} currentSettings={settings} />
       <ImportTransactionsModal open={importOpen} onOpenChange={setImportOpen} />
-    </div>
+    </DSPageShell>
   );
 }

@@ -23,7 +23,7 @@ import { HealthBreathingExercise } from "@/components/health/HealthBreathingExer
 import { HealthEnergyCurve } from "@/components/health/HealthEnergyCurve";
 import { HealthVitalCoreHero } from "@/components/health/HealthVitalCoreHero";
 import { HealthTacticalReadout } from "@/components/health/HealthTacticalReadout";
-import { HealthBioMesh } from "@/components/health/HealthBioMesh";
+import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 
 import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
@@ -57,16 +57,7 @@ export default function Health() {
   useHealthReminders();
 
   if (settingsLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-hud-phosphor border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground font-mono uppercase tracking-wider text-xs">
-            {t("health.loading")}
-          </p>
-        </div>
-      </div>
-    );
+    return <DSPageLoader variant="verbose" message={t("health.loading")} />;
   }
 
   const lastSync = todayData?.created_at
@@ -74,12 +65,13 @@ export default function Health() {
     : "—";
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Score-reactive bio-mesh background */}
-      <HealthBioMesh score={healthScore.score} />
-
-      <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-5 relative z-10">
-        {/* === SIGNATURE HERO === */}
+    <DSPageShell
+      width="xl"
+      className="!px-4 sm:!px-6 !pt-4 sm:!pt-6 !pb-4 sm:!pb-6"
+      background={<DSBackground variant="bio" bioScore={healthScore.score} />}
+    >
+      <div className="space-y-5">
+        {/* NOTE: No DSPageHeader — HealthVitalCoreHero IS the signature hero for Health */}
         <HealthVitalCoreHero score={healthScore.score} />
 
         {/* === TACTICAL READOUT (replaces command bar) === */}
@@ -246,6 +238,6 @@ export default function Health() {
       <HealthSettingsModal open={showSettings} onOpenChange={setShowSettings} />
       <HealthDailyCheckin open={showCheckin} onOpenChange={setShowCheckin} />
       <HealthBreathingExercise open={showBreathing} onOpenChange={setShowBreathing} />
-    </div>
+    </DSPageShell>
   );
 }
