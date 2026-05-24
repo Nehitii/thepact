@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
-import { ModuleHeader } from "@/components/layout/ModuleHeader";
+import { DSPageShell, DSPageHeader } from "@/components/ds";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -206,21 +206,30 @@ export default function Focus() {
   const textColor = timer.isRunning ? (isBreak ? "text-accent/40" : "text-primary/40") : "text-muted-foreground/30";
 
   return (
-    <motion.div
-      className="min-h-screen relative overflow-hidden bg-[#050508] flex flex-col"
-      animate={{
-        backgroundColor: timer.isRunning
-          ? isBreak
-            ? "rgba(var(--accent-rgb), 0.03)"
-            : "rgba(var(--primary-rgb), 0.03)"
-          : "#050508",
-      }}
-      transition={{ duration: 1.2, ease: "easeInOut" }}
+    <DSPageShell
+      width="sm"
+      padding="tight"
+      background={
+        <>
+          <motion.div
+            className="absolute inset-0"
+            animate={{
+              backgroundColor: timer.isRunning
+                ? isBreak
+                  ? "rgba(var(--accent-rgb), 0.03)"
+                  : "rgba(var(--primary-rgb), 0.03)"
+                : "#050508",
+            }}
+            initial={{ backgroundColor: "#050508" }}
+            transition={{ duration: 1.2, ease: "easeInOut" }}
+          />
+          {timer.isRunning && (
+            <FocusAmbientEffects progress={timer.progress} isBreak={isBreak} />
+          )}
+        </>
+      }
+      className="flex flex-col"
     >
-      {timer.isRunning && (
-        <FocusAmbientEffects progress={timer.progress} isBreak={isBreak} />
-      )}
-
       <AnimatePresence>
         {showFlash && (
           <motion.div
@@ -271,8 +280,13 @@ export default function Focus() {
         )}
       </div>
 
-      <div className="relative z-10 max-w-2xl mx-auto px-4 pb-6 pt-6 flex-1 flex flex-col">
-        <ModuleHeader title={t("focus.title")} titleAccent={t("focus.titleAccent")} systemLabel={t("focus.systemLabel")} badges={[]} />
+      <div className="flex-1 flex flex-col">
+        <DSPageHeader
+          variant="hud"
+          title={t("focus.title")}
+          titleAccent={t("focus.titleAccent")}
+          systemLabel={t("focus.systemLabel")}
+        />
 
         <div className="flex flex-col items-center gap-4 sm:gap-6 mt-4 sm:mt-8">
           {/* Target badge + session counter */}
@@ -427,6 +441,6 @@ export default function Focus() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </motion.div>
+    </DSPageShell>
   );
 }

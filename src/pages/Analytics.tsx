@@ -37,6 +37,7 @@ import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSel
 import { AnalyticsDecor } from "@/components/analytics/clean/AnalyticsDecor";
 import { GoalShowcase } from "@/components/analytics/clean/GoalShowcase";
 import { GoalPodium } from "@/components/analytics/clean/GoalPodium";
+import { DSPageShell, DSPageHeader } from "@/components/ds";
 import {
   AreaChart,
   Area,
@@ -130,20 +131,22 @@ export default function Analytics() {
 
   if (isLoading || !data) {
     return (
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-8 space-y-6">
-        <Skeleton className="h-12 w-72 rounded-lg" />
-        <Skeleton className="h-10 w-full rounded-lg" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 rounded-xl" />
-          ))}
+      <DSPageShell width="xl" background={<AnalyticsDecor />}>
+        <div className="space-y-6">
+          <Skeleton className="h-12 w-72 rounded-lg" />
+          <Skeleton className="h-10 w-full rounded-lg" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-28 rounded-xl" />
+            ))}
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-72 rounded-xl" />
+            ))}
+          </div>
         </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-72 rounded-xl" />
-          ))}
-        </div>
-      </div>
+      </DSPageShell>
     );
   }
 
@@ -330,26 +333,15 @@ export default function Analytics() {
 
   // ───── Render ─────
   return (
-    <div className="relative max-w-6xl mx-auto px-4 md:px-6 pt-6 pb-16">
-      <AnalyticsDecor />
-      {/* Header */}
-      <header className="mb-6">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="min-w-0">
-            <div className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground mb-2">
-              <LayoutDashboard className="h-3.5 w-3.5" />
-              <span>Analytics</span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">
-              Vue d'ensemble
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Suivi de tes signaux à travers les six modules.
-            </p>
-          </div>
-          <CleanPeriodSelector value={period} onChange={setPeriod} />
-        </div>
-      </header>
+    <DSPageShell width="xl" background={<AnalyticsDecor />}>
+      <DSPageHeader
+        variant="sober"
+        systemLabel="Analytics"
+        icon={LayoutDashboard}
+        title="Vue d'ensemble"
+        subtitle="Suivi de tes signaux à travers les six modules."
+        actions={<CleanPeriodSelector value={period} onChange={setPeriod} />}
+      />
 
       {/* Tabs */}
       <div className="mb-6">
@@ -709,7 +701,7 @@ export default function Analytics() {
           )}
         </motion.div>
       </AnimatePresence>
-    </div>
+    </DSPageShell>
   );
 }
 

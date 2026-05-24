@@ -7,9 +7,9 @@ import type { JournalEntry } from "@/types/journal";
 import { MOOD_OPTIONS, getAccent } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
-import { HexBadge, SciFiDivider } from "@/components/journal/JournalDecorations";
+import { SciFiDivider } from "@/components/journal/JournalDecorations";
 import { DailyPromptBanner } from "@/components/journal/DailyPromptBanner";
-import { ModuleHeader } from "@/components/layout/ModuleHeader";
+import { DSPageShell, DSPageHeader } from "@/components/ds";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -122,25 +122,29 @@ export default function Journal() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden overflow-y-auto" style={{ background: "var(--journal-bg)" }}>
-      {/* Background layers */}
-      <div className="journal-scanline" />
-      <div className="journal-noise" />
-      <div className="journal-grid-bg" />
-      <div className="journal-orb-left" />
-      <div className="journal-orb-right" />
-
-      {/* Corner frames */}
-      {[
-        { top: 16, left: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
-        { top: 16, right: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
-        { bottom: 16, left: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
-        { bottom: 16, right: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
-      ].map((s, i) => (
-        <div key={i} className="absolute w-8 h-8 z-[9500] pointer-events-none dark:block hidden" style={s as React.CSSProperties} />
-      ))}
-
-      {/* Side decorations — dark only */}
+    <DSPageShell
+      width="md"
+      background={
+        <>
+          <div className="absolute inset-0" style={{ background: "var(--journal-bg)" }} />
+          <div className="journal-scanline" />
+          <div className="journal-noise" />
+          <div className="journal-grid-bg" />
+          <div className="journal-orb-left" />
+          <div className="journal-orb-right" />
+          {/* Corner frames — kept as-is to preserve Journal identity */}
+          {[
+            { top: 16, left: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
+            { top: 16, right: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
+            { bottom: 16, left: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
+            { bottom: 16, right: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
+          ].map((s, i) => (
+            <div key={i} className="absolute w-8 h-8 z-[9500] pointer-events-none dark:block hidden" style={s as React.CSSProperties} />
+          ))}
+        </>
+      }
+    >
+      {/* Side decorations — dark only (fixed positioning, viewport-anchored) */}
       <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2">
         <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,255,224,0.3))" }} />
         {["◈", "◉", "◎", "◐", "◯", "◆"].map((s, i) => (
@@ -161,19 +165,17 @@ export default function Journal() {
         <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }} />
       </div>
 
-      {/* Main content */}
-      <div className="relative z-[1] max-w-[680px] mx-auto px-4 sm:px-6">
-        {/* Standardized ModuleHeader */}
-        <ModuleHeader
-          systemLabel="NEURAL_JOURNAL // SYS.ACTIVE"
-          title="CHRONO"
-          titleAccent="LOG"
-          badges={[
-            { label: "ENTRIES", value: allEntries.length, color: "#00ffe0" },
-            { label: "PINNED", value: pinnedCount, color: "#bf5af2" },
-            { label: "K-WORDS", value: `${(Math.round(totalWords / 100) / 10).toFixed(1)}k`, color: "#ffd60a" },
-          ]}
-        >
+      <DSPageHeader
+        variant="hud"
+        systemLabel="NEURAL_JOURNAL // SYS.ACTIVE"
+        title="CHRONO"
+        titleAccent="LOG"
+        badges={[
+          { label: "ENTRIES", value: allEntries.length, color: "#00ffe0" },
+          { label: "PINNED", value: pinnedCount, color: "#bf5af2" },
+          { label: "K-WORDS", value: `${(Math.round(totalWords / 100) / 10).toFixed(1)}k`, color: "#ffd60a" },
+        ]}
+        actions={
           <motion.button
             onClick={() => setIsNewEntryOpen(true)}
             whileHover={{ scale: 1.04, boxShadow: "0 0 40px hsl(var(--primary) / 0.25), 0 0 80px hsl(var(--primary) / 0.1)" }}
@@ -188,7 +190,8 @@ export default function Journal() {
             <span className="text-[16px] font-light font-mono">+</span>
             NEW ENTRY
           </motion.button>
-        </ModuleHeader>
+        }
+      />
 
         <DailyPromptBanner onUse={() => setIsNewEntryOpen(true)} />
 
@@ -308,7 +311,6 @@ export default function Journal() {
             </motion.div>
           )}
         </div>
-      </div>
 
       {/* Editor */}
       <JournalNewEntryModal
@@ -342,6 +344,6 @@ export default function Journal() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </DSPageShell>
   );
 }
