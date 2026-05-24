@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,14 +7,14 @@ import { DSPageShell, DSBackground, DSPageHeader } from "@/components/ds";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { usePact } from "@/hooks/usePact";
-import { useGoals } from "@/hooks/useGoals";
+import { useGoals, type Goal } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoalFilters } from "@/hooks/useGoalFilters";
 import { GoalsToolbar } from "@/components/goals/GoalsToolbar";
 import { GoalsList } from "@/components/goals/GoalsList";
 import { GoalsSkeleton } from "@/components/goals/GoalsSkeleton";
 import { motion } from "framer-motion";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 
 const itemVariants = {
   hidden: { opacity: 0, y: 12 },
@@ -33,43 +33,44 @@ export default function Goals() {
 
   const customDifficultyName = profile?.custom_difficulty_name || "";
   const customDifficultyColor = profile?.custom_difficulty_color || "#a855f7";
+  const unlockCode = profile?.goal_unlock_code ?? "";
   const loading = !user || goalsLoading;
-  const [unlockCode, setUnlockCode] = useState<string>("");
-
-  useEffect(() => {
-    if (!user) return;
-    supabase.from("profiles").select("goal_unlock_code").eq("id", user.id).maybeSingle().then(({ data }) => {
-      if ((data as any)?.goal_unlock_code) setUnlockCode((data as any).goal_unlock_code);
-    });
-  }, [user]);
 
   const filters = useGoalFilters(goals);
 
-  // Optimistic focus toggle — mutate cache directly
-  const toggleFocus = useCallback(
-    async (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
-      e.stopPropagation();
+  // Optimistic focus toggle — React Query mutation with prefix-scoped invalidation
+  const focusKey = ["goals", pact?.id] as const;
+  const toggleFocusMutation = useMutation({
+    mutationFn: async ({ goalId, nextFocus }: { goalId: string; nextFocus: boolean }) => {
+      const { error } = await supabase.from("goals").update({ is_focus: nextFocus }).eq("id", goalId);
+      if (error) throw error;
+    },
+    onMutate: async ({ goalId, nextFocus }) => {
+      await queryClient.cancelQueries({ queryKey: focusKey });
+      const snapshots = queryClient.getQueriesData<Goal[]>({ queryKey: focusKey });
+      queryClient.setQueriesData<Goal[]>({ queryKey: focusKey }, (old) =>
+        old?.map((g) => (g.id === goalId ? { ...g, is_focus: nextFocus } : g)),
+      );
+      return { snapshots };
+    },
+    onError: (_err, _vars, ctx) => {
+      ctx?.snapshots.forEach(([key, data]) => queryClient.setQueryData(key, data));
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: focusKey });
+    },
+  });
 
+  const toggleFocus = useCallback(
+    (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
+      e.stopPropagation();
       const goal = goals.find((g) => g.id === goalId);
       if (goal) {
         triggerParticles(e.clientX, e.clientY, getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor));
       }
-
-      // Optimistic update
-      queryClient.setQueryData(["goals", pact?.id, true, true], (old: any) =>
-        old?.map((g: any) => (g.id === goalId ? { ...g, is_focus: !currentFocus } : g)),
-      );
-
-      const { error } = await supabase.from("goals").update({ is_focus: !currentFocus }).eq("id", goalId);
-
-      if (error) {
-        // Revert on failure
-        queryClient.setQueryData(["goals", pact?.id, true, true], (old: any) =>
-          old?.map((g: any) => (g.id === goalId ? { ...g, is_focus: currentFocus } : g)),
-        );
-      }
+      toggleFocusMutation.mutate({ goalId, nextFocus: !currentFocus });
     },
-    [goals, pact?.id, customDifficultyColor, queryClient, triggerParticles],
+    [goals, customDifficultyColor, triggerParticles, toggleFocusMutation],
   );
 
   const headerActions = (
