@@ -357,9 +357,9 @@ export default function StepDetail() {
                 {saving ? "SAVING..." : "SAVE CHANGES"}
               </Button>
             </div>
-    </DSPageShell>
+          </div>
         </motion.div>
       </motion.div>
-    </div>
+    </DSPageShell>
   );
 }
