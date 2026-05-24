@@ -405,7 +405,6 @@ export default function TodoList() {
             <TodoCalendarView tasks={tasks} />
           </DialogContent>
         </Dialog>
-        </div>
       </DSPageShell>
     </>
   );
