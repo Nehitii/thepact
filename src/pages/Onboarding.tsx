@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { DSPageShell } from "@/components/ds";
 
 const symbols = [
   { icon: Flame, label: "Flame", value: "flame" },
@@ -101,6 +102,7 @@ export default function Onboarding() {
   };
 
   return (
+    <DSPageShell width="full" padding="tight" className="!p-0">
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 relative overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px]" />
@@ -290,5 +292,6 @@ export default function Onboarding() {
         </div>
       </div>
     </div>
+    </DSPageShell>
   );
 }

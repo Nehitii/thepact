@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import { DSPageShell } from "@/components/ds";
 
 /* ═══════════════════════════════════════════════════════════
    VOWPACT — Auth v7 (Deep Cyber Terminal)
@@ -106,6 +107,7 @@ export default function Auth() {
   };
 
   return (
+    <DSPageShell width="full" padding="tight" className="!p-0">
     <div className="cyber-auth-layout">
       <style>{STYLES}</style>
 
@@ -205,6 +207,7 @@ export default function Auth() {
         </motion.div>
       </div>
     </div>
+    </DSPageShell>
   );
 }
 

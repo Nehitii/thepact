@@ -12,6 +12,7 @@ import { setTrustedDeviceToken, useTwoFactor } from "@/hooks/useTwoFactor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { Mail, Smartphone, KeyRound, Loader2 } from "lucide-react";
+import { DSPageShell } from "@/components/ds";
 
 type FromState = {
   from?: string;
@@ -166,6 +167,7 @@ export default function TwoFactor() {
   availableModes.push({ key: "recovery", icon: KeyRound, label: t("twoFactor.modeRecovery") });
 
   return (
+    <DSPageShell width="full" padding="tight" className="!p-0">
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-background to-secondary">
       <Card className="w-full max-w-md border-2 shadow-xl">
         <CardHeader className="space-y-2">
@@ -287,5 +289,6 @@ export default function TwoFactor() {
         </CardContent>
       </Card>
     </div>
+    </DSPageShell>
   );
 }

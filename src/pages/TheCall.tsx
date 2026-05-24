@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Zap, Check, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { DSPageShell } from "@/components/ds";
 
 // --- CONFIGURATION ---
 const HOLD_DURATION = 20000; // 20 seconds
@@ -315,6 +316,7 @@ export default function TheCall() {
   const isLocked = sequenceState === FinalSequenceState.LOCKED;
 
   return (
+    <DSPageShell width="full" padding="tight" className="!p-0">
     <div className="h-screen bg-background overflow-hidden flex flex-col relative text-foreground font-sans select-none touch-none perspective-[1000px]">
       {/* BACKGROUND FX */}
       <div
@@ -651,5 +653,6 @@ export default function TheCall() {
         }
       `}</style>
     </div>
+    </DSPageShell>
   );
 }
