@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
 import {
   Moon, Activity, Brain, Droplets, Apple,
   Sparkles, BarChart3, Crosshair, Cpu,
+  Wind, ClipboardCheck, Settings as SettingsIcon,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -21,23 +21,11 @@ import { HealthChallengesPanel } from "@/components/health/HealthChallengesPanel
 import { HealthInsightsPanel } from "@/components/health/HealthInsightsPanel";
 import { HealthBreathingExercise } from "@/components/health/HealthBreathingExercise";
 import { HealthEnergyCurve } from "@/components/health/HealthEnergyCurve";
-import { HealthVitalCoreHero } from "@/components/health/HealthVitalCoreHero";
-import { HealthTacticalReadout } from "@/components/health/HealthTacticalReadout";
-import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
+import { DSPageShell, DSBackground, DSPageLoader, DSPageHeader, DSPanel } from "@/components/ds";
 
 import { useHealthReminders } from "@/hooks/useHealthReminders";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-
-const staggerContainer = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
-};
-
-const staggerItem = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
-};
 
 export default function Health() {
   const { t } = useTranslation();
@@ -64,174 +52,144 @@ export default function Health() {
     ? format(new Date(todayData.created_at), "HH:mm")
     : "—";
 
+  const headerBtn = "p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-border/60 transition-colors";
+
+  const headerActions = (
+    <>
+      <button onClick={() => setShowBreathing(true)} className={headerBtn} title={t("health.actions.breathing", "Breathing")} aria-label="Breathing">
+        <Wind className="h-4 w-4" />
+      </button>
+      <button onClick={() => setShowCheckin(true)} className={headerBtn} title={t("health.actions.checkin", "Check-in")} aria-label="Check-in">
+        <ClipboardCheck className="h-4 w-4" />
+      </button>
+      <button onClick={() => setShowSettings(true)} className={headerBtn} title={t("common.settings")} aria-label="Settings">
+        <SettingsIcon className="h-4 w-4" />
+      </button>
+    </>
+  );
+
   return (
-    <DSPageShell
-      width="xl"
-      className="!px-4 sm:!px-6 !pt-4 sm:!pt-6 !pb-4 sm:!pb-6"
-      background={<DSBackground variant="bio" bioScore={healthScore.score} />}
-    >
-      <div className="space-y-5">
-        {/* NOTE: No DSPageHeader — HealthVitalCoreHero IS the signature hero for Health */}
-        <HealthVitalCoreHero score={healthScore.score} />
+    <DSPageShell width="xl" background={<DSBackground variant="cyber" />}>
+      <DSPageHeader
+        variant="hud"
+        systemLabel="HLT.SYS // BIOMETRICS"
+        title="HE"
+        titleAccent="ALTH"
+        actions={headerActions}
+      />
 
-        {/* === TACTICAL READOUT (replaces command bar) === */}
-        <HealthTacticalReadout
-          onBreathing={() => setShowBreathing(true)}
-          onCheckin={() => setShowCheckin(true)}
-          onSettings={() => setShowSettings(true)}
-          lastSync={lastSync}
-          score={healthScore.score}
-        />
+      <div className="space-y-6">
+        {/* KPI summary */}
+        <DSPanel tier="primary" accent="primary">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="ds-text-label">Health Score</p>
+              <p className="ds-text-metric tabular-nums">{healthScore.score}%</p>
+            </div>
+            <div>
+              <p className="ds-text-label">Trend</p>
+              <p className={`ds-text-metric tabular-nums ${healthScore.trend > 0 ? 'text-[hsl(var(--ds-accent-success))]' : healthScore.trend < 0 ? 'text-[hsl(var(--ds-accent-critical))]' : ''}`}>
+                {healthScore.trend > 0 ? '+' : ''}{healthScore.trend}
+              </p>
+            </div>
+            <div>
+              <p className="ds-text-label">BMI</p>
+              <p className="ds-text-metric tabular-nums">{bmi ?? '—'}</p>
+              {bmiCategory && <p className="text-xs text-muted-foreground mt-0.5">{bmiCategory}</p>}
+            </div>
+            <div>
+              <p className="ds-text-label">Last Sync</p>
+              <p className="ds-text-metric tabular-nums">{lastSync}</p>
+            </div>
+          </div>
+        </DSPanel>
 
-        {/* === TABBED CONTENT === */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="w-full bg-hud-surface/60 border border-hud-phosphor/15 p-1 font-mono rounded-xl relative">
-            {[
-              { value: "overview", icon: Crosshair, label: "OVERVIEW" },
-              { value: "analytics", icon: BarChart3, label: "ANALYTICS" },
-              { value: "intel", icon: Cpu, label: "INTEL" },
-            ].map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value}
-                className="flex-1 data-[state=active]:bg-transparent data-[state=active]:text-hud-phosphor uppercase tracking-wider text-xs font-mono relative z-10 rounded-lg"
-              >
-                <tab.icon className="w-3.5 h-3.5 mr-1.5" />
-                {tab.label}
-                {activeTab === tab.value && (
-                  <motion.div
-                    layoutId="tab-indicator"
-                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-hud-phosphor rounded-full"
-                    style={{ boxShadow: "0 0 8px hsl(var(--hud-phosphor))" }}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-              </TabsTrigger>
-            ))}
+          <TabsList className="grid w-full grid-cols-3 h-auto">
+            <TabsTrigger value="overview" className="gap-1.5 py-2">
+              <Crosshair className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="gap-1.5 py-2">
+              <BarChart3 className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Analytics</span>
+            </TabsTrigger>
+            <TabsTrigger value="intel" className="gap-1.5 py-2">
+              <Cpu className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Intel</span>
+            </TabsTrigger>
           </TabsList>
 
-          {/* OVERVIEW TAB */}
-          <TabsContent value="overview" className="mt-5 space-y-5">
-            <motion.div
-              key="overview"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              className="space-y-5"
-            >
-              {/* Health Score Hero (radar disk) */}
+          <TabsContent value="overview" className="mt-6 space-y-4">
+            <DSPanel title="VITAL SIGNS">
               <HealthScoreCard
                 score={healthScore.score}
                 trend={healthScore.trend}
                 factors={healthScore.factors}
               />
+            </DSPanel>
 
-              {/* BMI Indicator */}
-              {settings?.show_bmi && (
+            {settings?.show_bmi && (
+              <DSPanel title="BMI" tier="secondary">
                 <HealthBMIIndicator bmi={bmi} category={bmiCategory} />
+              </DSPanel>
+            )}
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {settings?.show_sleep !== false && (
+                <DSPanel title="SLEEP" tier="secondary">
+                  <HealthMetricCard icon={Moon} title={t("health.metrics.sleep")} color="blue" metricKey="sleep" />
+                </DSPanel>
               )}
-
-              {/* Bio-Sensor Modules — horizontal cards */}
-              <motion.div
-                variants={staggerContainer}
-                initial="hidden"
-                animate="show"
-                className="grid grid-cols-1 lg:grid-cols-2 gap-3"
-              >
-                {settings?.show_sleep !== false && (
-                  <motion.div variants={staggerItem}>
-                    <HealthMetricCard
-                      icon={Moon}
-                      title={t("health.metrics.sleep")}
-                      color="blue"
-                      metricKey="sleep"
-                    />
-                  </motion.div>
-                )}
-                {settings?.show_activity !== false && (
-                  <motion.div variants={staggerItem}>
-                    <HealthMetricCard
-                      icon={Activity}
-                      title={t("health.metrics.activity")}
-                      color="cyan"
-                      metricKey="activity"
-                    />
-                  </motion.div>
-                )}
-                {settings?.show_stress !== false && (
-                  <motion.div variants={staggerItem}>
-                    <HealthMetricCard
-                      icon={Brain}
-                      title={t("health.metrics.stress")}
-                      color="amber"
-                      metricKey="stress"
-                    />
-                  </motion.div>
-                )}
-                {settings?.show_hydration !== false && (
-                  <motion.div variants={staggerItem}>
-                    <HealthMetricCard
-                      icon={Droplets}
-                      title={t("health.metrics.hydration")}
-                      color="cyan"
-                      metricKey="hydration"
-                    />
-                  </motion.div>
-                )}
-                {settings?.show_nutrition && (
-                  <motion.div variants={staggerItem}>
-                    <HealthMetricCard
-                      icon={Apple}
-                      title={t("health.metrics.nutrition")}
-                      color="orange"
-                      metricKey="nutrition"
-                    />
-                  </motion.div>
-                )}
-              </motion.div>
-            </motion.div>
+              {settings?.show_activity !== false && (
+                <DSPanel title="ACTIVITY" tier="secondary">
+                  <HealthMetricCard icon={Activity} title={t("health.metrics.activity")} color="cyan" metricKey="activity" />
+                </DSPanel>
+              )}
+              {settings?.show_stress !== false && (
+                <DSPanel title="STRESS" tier="secondary">
+                  <HealthMetricCard icon={Brain} title={t("health.metrics.stress")} color="amber" metricKey="stress" />
+                </DSPanel>
+              )}
+              {settings?.show_hydration !== false && (
+                <DSPanel title="HYDRATION" tier="secondary">
+                  <HealthMetricCard icon={Droplets} title={t("health.metrics.hydration")} color="cyan" metricKey="hydration" />
+                </DSPanel>
+              )}
+              {settings?.show_nutrition && (
+                <DSPanel title="NUTRITION" tier="secondary">
+                  <HealthMetricCard icon={Apple} title={t("health.metrics.nutrition")} color="orange" metricKey="nutrition" />
+                </DSPanel>
+              )}
+            </div>
           </TabsContent>
 
-          {/* ANALYTICS TAB */}
-          <TabsContent value="analytics" className="mt-5 space-y-5">
-            <motion.div
-              key="analytics"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              className="space-y-5"
-            >
+          <TabsContent value="analytics" className="mt-6 space-y-4">
+            <DSPanel title="WEEKLY">
               <HealthWeeklyChart />
+            </DSPanel>
+            <DSPanel title="ENERGY CURVE" tier="secondary">
               <HealthEnergyCurve />
+            </DSPanel>
+            <DSPanel title="HISTORY" tier="secondary">
               <HealthHistoryChart />
-            </motion.div>
+            </DSPanel>
           </TabsContent>
 
-          {/* INTEL TAB */}
-          <TabsContent value="intel" className="mt-5 space-y-5">
-            <motion.div
-              key="intel"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.35 }}
-              className="space-y-5"
-            >
+          <TabsContent value="intel" className="mt-6 space-y-4">
+            <DSPanel title="INSIGHTS">
               <HealthInsightsPanel />
+            </DSPanel>
+            <DSPanel title="CHALLENGES" tier="secondary">
               <HealthChallengesPanel />
-            </motion.div>
+            </DSPanel>
           </TabsContent>
         </Tabs>
 
-        {/* Disclaimer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-xs text-muted-foreground/50 py-4 font-mono uppercase tracking-wider"
-        >
+        <p className="ds-text-label text-center text-muted-foreground/50 py-4">
           <Sparkles className="w-3 h-3 inline mr-1" />
           {t("health.disclaimer")}
-        </motion.div>
+        </p>
       </div>
 
       {/* Modals */}
