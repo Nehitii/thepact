@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Zap, Check, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { DSPageShell } from "@/components/ds";
 
 // --- CONFIGURATION ---
 const HOLD_DURATION = 20000; // 20 seconds

@@ -12,6 +12,7 @@ import { setTrustedDeviceToken, useTwoFactor } from "@/hooks/useTwoFactor";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { Mail, Smartphone, KeyRound, Loader2 } from "lucide-react";
+import { DSPageShell } from "@/components/ds";
 
 type FromState = {
   from?: string;

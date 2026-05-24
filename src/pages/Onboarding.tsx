@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
+import { DSPageShell } from "@/components/ds";
 
 const symbols = [
   { icon: Flame, label: "Flame", value: "flame" },
