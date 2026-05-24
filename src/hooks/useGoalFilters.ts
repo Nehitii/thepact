@@ -71,7 +71,7 @@ function sortGoals(goals: Goal[], sortBy: SortOption, dir: SortDirection): Goal[
     case "name":
       return sorted.sort((a, b) => a.name.localeCompare(b.name) * d);
     case "status": {
-      const order = ["not_started", "in_progress", "fully_completed", "paused"];
+      const order = ["not_started", "in_progress", "fully_completed", "validated", "paused"];
       return sorted.sort((a, b) => (order.indexOf(a.status) - order.indexOf(b.status)) * d);
     }
     case "start":

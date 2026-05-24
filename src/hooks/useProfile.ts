@@ -19,6 +19,7 @@ export interface ProfileSettings {
   currency: string | null;
   birthday: string | null;
   country: string | null;
+  goal_unlock_code: string | null;
 }
 
 export function useProfile(userId: string | undefined) {
@@ -29,7 +30,7 @@ export function useProfile(userId: string | undefined) {
 
       const { data, error } = await supabase
         .from("profiles")
-        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active, timezone, language, currency, birthday, country")
+        .select("display_name, avatar_url, custom_difficulty_name, custom_difficulty_color, custom_difficulty_active, timezone, language, currency, birthday, country, goal_unlock_code")
         .eq("id", userId)
         .maybeSingle();
 
