@@ -2,9 +2,8 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LayoutDashboard, FileText, Settings, Landmark, ArrowLeftRight, Download, TrendingUp, Upload, CreditCard } from "lucide-react";
-import { motion } from "framer-motion";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
@@ -21,8 +20,7 @@ import { AccountsOverview } from "@/components/finance/accounts";
 import { NetWorthHistoryPanel } from "@/components/finance/NetWorthHistoryPanel";
 import { BudgetProgressPanel, SavingsGoalTracker } from "@/components/finance/budgets";
 import { TransactionsTab } from "@/components/finance/transactions";
-import { AuraBalanceHero, FloatingTabBar } from "@/components/finance/aura";
-import { DSPageShell, DSBackground } from "@/components/ds";
+import { DSPageShell, DSBackground, DSPageHeader, DSPanel } from "@/components/ds";
 import { CashflowProjectionPanel, SinkingFundsPanel, DebtsPanel, ImportTransactionsModal } from "@/components/finance/advanced";
 import { EXPENSE_CATEGORIES } from "@/lib/financeCategories";
 import { exportFullReport } from "@/lib/financeExport";
@@ -30,6 +28,7 @@ import { roundMoney } from "@/lib/financeCategories";
 import { parseISO, format, startOfMonth, subMonths } from "date-fns";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { formatCurrency } from "@/lib/currency";
 
 export default function Finance() {
   const { t } = useTranslation();
@@ -136,59 +135,93 @@ export default function Finance() {
     { value: 'debts', label: 'Dettes', icon: CreditCard },
   ];
 
+  const deltaVsPrev = prevMonthNet !== null ? roundMoney(monthlyNet - prevMonthNet) : null;
+  const activeAccountsCount = accounts.filter(a => a.is_active).length;
+
+  const headerActions = (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-border/60 transition-colors"
+            title={t('finance.export.title')}
+            aria-label={t('finance.export.title')}
+          >
+            <Download className="h-4 w-4" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="bg-popover border-border">
+          <DropdownMenuItem onClick={handleExportAll}>
+            <Download className="w-3.5 h-3.5 mr-2" />{t('finance.export.fullReport')}
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setImportOpen(true)}>
+            <Upload className="w-3.5 h-3.5 mr-2" />Importer CSV
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <button
+        onClick={() => setSettingsOpen(true)}
+        className="p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/40 border border-border/60 transition-colors"
+        title={t('common.settings')}
+        aria-label={t('common.settings')}
+      >
+        <Settings className="h-4 w-4" />
+      </button>
+    </>
+  );
+
   return (
-    <DSPageShell width="xl" background={<DSBackground variant="aura" />}>
+    <DSPageShell width="xl" background={<DSBackground variant="cyber" />}>
+      <DSPageHeader
+        variant="hud"
+        systemLabel="FIN.SYS // BALANCE"
+        title="FIN"
+        titleAccent="ANCE"
+        actions={headerActions}
+      />
+
       <div className="space-y-6">
-        {/* NOTE: No DSPageHeader — AuraBalanceHero IS the signature hero for Finance */}
-        <AuraBalanceHero
-          netWorth={netWorth}
-          prevMonthNet={prevMonthNet}
-          monthlyNet={monthlyNet}
-          transactions={allTransactions as any}
-          accountsCount={accounts.filter(a => a.is_active).length}
-        />
+        {/* KPI summary */}
+        <DSPanel tier="primary" accent="primary">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <p className="ds-text-label">Net Worth</p>
+              <p className="ds-text-metric tabular-nums">{formatCurrency(netWorth, currency)}</p>
+            </div>
+            <div>
+              <p className="ds-text-label">This Month</p>
+              <p className={`ds-text-metric tabular-nums ${monthlyNet >= 0 ? 'text-[hsl(var(--ds-accent-success))]' : 'text-[hsl(var(--ds-accent-critical))]'}`}>
+                {monthlyNet >= 0 ? '+' : ''}{formatCurrency(monthlyNet, currency)}
+              </p>
+            </div>
+            <div>
+              <p className="ds-text-label">vs Last Month</p>
+              <p className={`ds-text-metric tabular-nums ${deltaVsPrev === null ? 'text-muted-foreground' : deltaVsPrev >= 0 ? 'text-[hsl(var(--ds-accent-success))]' : 'text-[hsl(var(--ds-accent-critical))]'}`}>
+                {deltaVsPrev === null ? '—' : `${deltaVsPrev >= 0 ? '+' : ''}${formatCurrency(deltaVsPrev, currency)}`}
+              </p>
+            </div>
+            <div>
+              <p className="ds-text-label">Accounts</p>
+              <p className="ds-text-metric tabular-nums">{activeAccountsCount}</p>
+            </div>
+          </div>
+        </DSPanel>
 
-        {/* Floating Tab Bar */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <FloatingTabBar
-            items={tabs}
-            active={activeTab}
-            onChange={setActiveTab}
-            rightSlot={
-              <>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="p-2 rounded-[12px] text-muted-foreground/70 hover:text-foreground hover:bg-white/[0.04] transition-colors"
-                      title={t('finance.export.title')}
-                      aria-label={t('finance.export.title')}
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-popover border-border rounded-xl">
-                    <DropdownMenuItem onClick={handleExportAll} className="text-foreground">
-                      <Download className="w-3.5 h-3.5 mr-2" />{t('finance.export.fullReport')}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setImportOpen(true)} className="text-foreground">
-                      <Upload className="w-3.5 h-3.5 mr-2" />Importer CSV
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                <button
-                  onClick={() => setSettingsOpen(true)}
-                  className="p-2 rounded-[12px] text-muted-foreground/70 hover:text-foreground hover:bg-white/[0.04] transition-colors"
-                  title={t('common.settings')}
-                  aria-label={t('common.settings')}
-                >
-                  <Settings className="h-4 w-4" />
-                </button>
-              </>
-            }
-          />
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 h-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <TabsTrigger key={tab.value} value={tab.value} className="gap-1.5 py-2">
+                  <Icon className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{tab.label}</span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
 
-          <TabsContent value="overview" className="mt-6">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-8">
+          <TabsContent value="overview" className="mt-6 space-y-4">
+            <DSPanel title="PROJECT FUNDING">
               <FinanceDashboard
                 totalEstimated={totalEstimated}
                 totalPaid={financed}
@@ -196,44 +229,39 @@ export default function Finance() {
                 isCustomMode={isCustomMode}
                 monthlyAllocation={settings.project_monthly_allocation}
               />
-              {/* Forecast (ex-Planner) integrated */}
-              <div className="aura-glass p-6 sm:p-8">
-                <h2 className="text-sm font-mono uppercase tracking-[0.2em] text-muted-foreground/80 mb-1">
-                  {t('finance.aura.forecast', 'Forecast')}
-                </h2>
-                <p className="text-xs text-muted-foreground/60 mb-6">
-                  {t('finance.aura.forecastSubtitle', 'Long-term financial projections')}
-                </p>
-                <ProjectionsPanel
-                  projectEndDate={projectEndDate}
-                  monthlyAllocation={settings.project_monthly_allocation}
-                  totalRemaining={remaining}
-                  totalRecurringExpenses={totalRecurringExpenses}
-                  totalRecurringIncome={totalRecurringIncome}
-                />
-              </div>
-            </motion.div>
+            </DSPanel>
+            <DSPanel title="FORECAST" tier="secondary">
+              <ProjectionsPanel
+                projectEndDate={projectEndDate}
+                monthlyAllocation={settings.project_monthly_allocation}
+                totalRemaining={remaining}
+                totalRecurringExpenses={totalRecurringExpenses}
+                totalRecurringIncome={totalRecurringIncome}
+              />
+            </DSPanel>
           </TabsContent>
 
           <TabsContent value="budget" className="mt-6">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
-              <MonthlyDashboard salaryPaymentDay={settings.salary_payment_day} />
-            </motion.div>
+            <MonthlyDashboard salaryPaymentDay={settings.salary_payment_day} />
           </TabsContent>
 
           <TabsContent value="transactions" className="mt-6">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="aura-glass p-6">
+            <DSPanel title="TRANSACTIONS">
               <TransactionsTab accountFilter={accountFilter} onClearAccountFilter={() => setAccountFilter(null)} financeSettings={settings} />
-            </motion.div>
+            </DSPanel>
           </TabsContent>
 
-          <TabsContent value="accounts" className="mt-6">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-8">
+          <TabsContent value="accounts" className="mt-6 space-y-4">
+            <DSPanel title="ACCOUNTS">
               <AccountsOverview onSelectAccount={(account) => {
                 setAccountFilter(account.id);
                 setActiveTab('transactions');
               }} />
+            </DSPanel>
+            <DSPanel title="NET WORTH HISTORY" tier="secondary">
               <NetWorthHistoryPanel />
+            </DSPanel>
+            <DSPanel title="BUDGETS" tier="secondary">
               <BudgetProgressPanel
                 budgets={budgets}
                 expenseItems={recurringExpenses}
@@ -245,6 +273,8 @@ export default function Finance() {
                 onDelete={(id) => deleteBudget.mutate(id)}
                 isPending={upsertBudget.isPending}
               />
+            </DSPanel>
+            <DSPanel title="SAVINGS GOALS" tier="secondary">
               <SavingsGoalTracker
                 goals={savingsGoals}
                 accounts={accounts}
@@ -254,20 +284,22 @@ export default function Finance() {
                 onDelete={(id) => deleteSavingsGoal.mutate(id)}
                 isPending={addSavingsGoal.isPending}
               />
-            </motion.div>
+            </DSPanel>
           </TabsContent>
 
-          <TabsContent value="forecast" className="mt-6">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }} className="space-y-6">
+          <TabsContent value="forecast" className="mt-6 space-y-4">
+            <DSPanel title="CASHFLOW PROJECTION">
               <CashflowProjectionPanel />
+            </DSPanel>
+            <DSPanel title="SINKING FUNDS" tier="secondary">
               <SinkingFundsPanel />
-            </motion.div>
+            </DSPanel>
           </TabsContent>
 
           <TabsContent value="debts" className="mt-6">
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}>
+            <DSPanel title="DEBTS">
               <DebtsPanel />
-            </motion.div>
+            </DSPanel>
           </TabsContent>
         </Tabs>
       </div>
