@@ -1,6 +1,6 @@
 import React, { memo, useMemo } from "react";
 import { Star, Target, Trophy, TrendingUp, Link2 } from "lucide-react";
-import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
+import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity, getGoalStatusIcon } from "@/lib/goalConstants";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
 
@@ -168,7 +168,13 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
                 <h3 className="bar-card-name">{goal.name}</h3>
                 {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
                 <div className="bar-card-meta">
-                  <div className="bar-card-status">{statusLabel}</div>
+                  <div className="bar-card-status inline-flex items-center gap-1">
+                    {(() => {
+                      const Icon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
+                      return <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />;
+                    })()}
+                    {statusLabel}
+                  </div>
                   {deadlineInfo && !isCompleted && (
                     <div className="bar-card-steps" style={{ color: deadlineInfo.color }}>
                       {deadlineInfo.daysLeft > 0
