@@ -2,7 +2,6 @@ export { PeriodSelector, type AnalyticsPeriod } from "./PeriodSelector";
 export { PrismBackground } from "./PrismBackground";
 export { PrismHeadline } from "./PrismHeadline";
 export { PrismRail, type PrismSection } from "./PrismRail";
-export { PrismPanel } from "./PrismPanel";
 export { PrismFrame } from "./PrismFrame";
 export { PrismDivider } from "./PrismDivider";
 export { PrismDataNoise } from "./PrismDataNoise";
