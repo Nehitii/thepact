@@ -238,7 +238,6 @@ export default function Health() {
       <HealthSettingsModal open={showSettings} onOpenChange={setShowSettings} />
       <HealthDailyCheckin open={showCheckin} onOpenChange={setShowCheckin} />
       <HealthBreathingExercise open={showBreathing} onOpenChange={setShowBreathing} />
-      </div>
     </DSPageShell>
   );
 }
