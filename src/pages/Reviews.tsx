@@ -10,7 +10,7 @@ import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ModuleHeader } from "@/components/layout/ModuleHeader";
+import { DSPageShell, DSPageHeader, DSBackground } from "@/components/ds";
 
 const TYPES: { value: ReviewType | "all"; label: string }[] = [
   { value: "all", label: "Tous" },
@@ -45,12 +45,14 @@ export default function Reviews() {
   }, [reviews, search]);
 
   return (
-    <div className="page-px page-py space-y-6 max-w-5xl mx-auto">
-      <ModuleHeader
-        systemLabel="REFLECT · ARCHIVE"
-        title="Reflect"
-        titleAccent="Archive"
-      />
+    <DSPageShell width="lg" background={<DSBackground variant="cyber" />}>
+      <div className="space-y-6">
+        <DSPageHeader
+          variant="hud"
+          systemLabel="REFLECT · ARCHIVE"
+          title="Reflect"
+          titleAccent="Archive"
+        />
 
       <div className="flex flex-wrap gap-2 items-center">
         {TYPES.map((t) => (
@@ -110,7 +112,8 @@ export default function Reviews() {
       {openType && (
         <ReviewRitualModal open={!!openType} onClose={() => setOpenType(null)} type={openType} />
       )}
-    </div>
+      </div>
+    </DSPageShell>
   );
 }
 
