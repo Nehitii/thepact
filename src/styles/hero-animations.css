@@ -1,0 +1,226 @@
+/* Hero section animations — extracted from index.css */
+@layer base {
+  /* ========== HERO SECTION ANIMATIONS ========== */
+  
+  /* Fluid flow for XP progress bar */
+  @keyframes fluid-flow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  /* Heartbeat pulse for progress indicator */
+  @keyframes heartbeat-circle {
+    0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+    15% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 25px hsl(var(--primary) / 0.9); }
+    30% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+    45% { transform: scale(1.1); opacity: 0.9; box-shadow: 0 0 15px hsl(var(--primary) / 0.7); }
+    60% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+    100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 10px hsl(var(--primary) / 0.6); }
+  }
+
+  /* Breathing glow for rank badge */
+  @keyframes breathe-blue {
+    0%, 100% { box-shadow: 0 0 15px -2px hsl(var(--primary) / 0.4); }
+    50% { box-shadow: 0 0 30px -4px hsl(var(--primary) / 0.7); }
+  }
+
+  .animate-fluid {
+    animation: fluid-flow 4s ease-in-out infinite;
+    background-size: 200% 200%;
+  }
+
+  .animate-heartbeat-circle {
+    animation: heartbeat-circle 2s ease-in-out infinite;
+  }
+
+  .animate-breathe-blue {
+    animation: breathe-blue 3s ease-in-out infinite;
+  }
+
+  /* Smooth transitions */
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+
+  /* Sci-Fi HUD Panel */
+  .hud-panel {
+    background: linear-gradient(135deg, 
+      hsla(var(--card) / 0.9) 0%, 
+      hsla(var(--card) / 0.7) 100%);
+    backdrop-filter: blur(20px);
+    border: 2px solid hsla(var(--primary) / 0.3);
+    box-shadow: 
+      var(--shadow-deep),
+      inset 0 0 20px hsla(var(--primary) / 0.05),
+      0 0 30px hsla(var(--primary) / 0.1);
+    position: relative;
+  }
+
+  .hud-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-hud);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  .hud-panel::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(45deg, 
+      transparent 0%, 
+      hsla(var(--primary) / 0.1) 50%, 
+      transparent 100%);
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .hud-panel:hover::after {
+    opacity: 1;
+  }
+
+  /* HUD Grid Background */
+  .hud-grid {
+    background-image: 
+      linear-gradient(hsla(var(--primary) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--primary) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    position: relative;
+  }
+
+  .hud-grid::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gradient-radial);
+    pointer-events: none;
+  }
+
+  /* Neon Glow Border */
+  .neon-border {
+    position: relative;
+    border: 2px solid hsla(var(--primary) / 0.6);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .neon-border::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: linear-gradient(45deg, 
+      hsla(var(--primary) / 0.3), 
+      hsla(var(--primary-glow) / 0.2), 
+      hsla(var(--primary) / 0.3));
+    border-radius: inherit;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    filter: blur(8px);
+  }
+
+  .neon-border:hover::before {
+    opacity: 1;
+  }
+
+  /* Holographic Corner Brackets - Perfect Alignment */
+  .corner-brackets {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .corner-brackets::before,
+  .corner-brackets::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid hsla(var(--primary) / 0.7);
+    transition: all 0.3s ease;
+    z-index: 1;
+  }
+
+  .corner-brackets::before {
+    top: 0;
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: var(--radius);
+    box-shadow: 0 0 10px hsla(var(--primary) / 0.4);
+  }
+
+  .corner-brackets::after {
+    bottom: 0;
+    right: 0;
+    border-left: none;
+    border-top: none;
+    border-bottom-right-radius: var(--radius);
+    box-shadow: 0 0 10px hsla(var(--primary) / 0.4);
+  }
+
+  .corner-brackets:hover::before,
+  .corner-brackets:hover::after {
+    width: 28px;
+    height: 28px;
+    border-color: hsla(var(--primary) / 1);
+    box-shadow: 0 0 15px hsla(var(--primary) / 0.6), 0 0 30px hsla(var(--primary) / 0.3);
+  }
+
+  /* Holographic Scan Line */
+  .scan-line {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scan-line::after {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent, 
+      hsla(var(--primary) / 0.8), 
+      transparent);
+    box-shadow: 0 0 10px hsla(var(--primary) / 0.6);
+    animation: scan-line 4s linear infinite;
+  }
+
+  /* scan-line already defined above, removed duplicate */
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  /* Radial HUD Glow */
+  .radial-glow {
+    position: relative;
+  }
+
+  .radial-glow::before {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(circle, 
+      hsla(var(--primary) / 0.2) 0%, 
+      transparent 60%);
+    pointer-events: none;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.5; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.1); }
+  }
+
+}
