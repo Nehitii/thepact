@@ -38,7 +38,9 @@ interface DSPanelProps {
 
 /**
  * Pacte OS — Canonical Panel.
- * Generalization of PrismPanel/NexusPanel/AuraWidget into a 3-tier system.
+ * Canonical panel component for new code. Module-specific dialects
+ * (HUDFrame for Health, AuraWidget for Finance metric cards) coexist
+ * by design — they encode module identity that DSPanel doesn't aim to absorb.
  *
  * - tier="primary"   → signature visualization, corner brackets 16px, inner glow
  * - tier="secondary" → standard chart/card, corner brackets 10px (default)

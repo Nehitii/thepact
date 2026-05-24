@@ -38,14 +38,12 @@ export { DSCornerBrackets } from "./DSCornerBrackets";
 export { DSEmptyState } from "./DSEmptyState";
 export { DSLoadingState } from "./DSLoadingState";
 
-/* ─── Sprint 2 — Dialect re-export shims ─────────────────────────
- * Module dialects (Prism / Aura / HUD) keep their distinctive
- * personalities and rich APIs, but new code should import them from
- * the canonical DS barrel so the migration to a single API surface
- * can complete in Sprint 3. Existing imports keep working unchanged.
+/* ─── Module dialects — assumed by design ─────────────────────
+ * Canonical DSPanel is the default for new code. Module-specific
+ * dialects (HUDFrame for Health, AuraWidget for Finance metric cards,
+ * Prism sub-components for Analytics) coexist legitimately — they
+ * encode module identity that DSPanel doesn't aim to absorb.
  * ───────────────────────────────────────────────────────────── */
-export { PrismPanel } from "@/components/analytics/PrismPanel";
-export type { PrismPanelStatus, PrismPanelTier } from "@/components/analytics/PrismPanel";
 export { PrismEmptyCTA } from "@/components/analytics/PrismEmptyCTA";
 export { AuraWidget } from "@/components/finance/aura/AuraWidget";
 export { HUDFrame } from "@/components/health/HUDFrame";
