@@ -143,7 +143,6 @@ export default function Journal() {
           ))}
         </>
       }
-      className="!px-4 sm:!px-6 !pt-0 !pb-0"
     >
       {/* Side decorations — dark only (fixed positioning, viewport-anchored) */}
       <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2">
