@@ -490,6 +490,6 @@ export default function Legal() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </DSPageShell>
   );
 }

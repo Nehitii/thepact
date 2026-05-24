@@ -180,6 +180,6 @@ export default function Shop() {
           rarity={transaction.lastPurchased.rarity}
         />
       )}
-    </div>
+    </DSPageShell>
   );
 }

@@ -907,6 +907,6 @@ export default function NewGoal() {
           </div>
         </motion.div>
       </div>
-    </div>
+    </DSPageShell>
   );
 }
