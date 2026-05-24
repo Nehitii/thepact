@@ -4,13 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLeft, User, Palette } from "lucide-react";
+import { Flame, Heart, Target, Sparkles, Rocket, Shield, ChevronRight, ChevronLeft, User, Palette, Dumbbell, Brain } from "lucide-react";
 import { Compass } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { DSPageShell } from "@/components/ds";
+import { cn } from "@/lib/utils";
 
 const symbols = [
   { icon: Flame, label: "Flame", value: "flame" },
@@ -28,7 +29,67 @@ const colors = [
   { name: "Cyan", value: "cyan", class: "bg-cyan-500" },
 ];
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 6;
+
+type GoalTemplate = {
+  id: string;
+  icon: typeof Flame;
+  name: string;
+  description: string;
+  placeholder: string;
+  difficulty: "easy" | "medium" | "hard" | "extreme" | "impossible";
+  goal_type: "normal" | "habit";
+  total_steps?: number;
+  habit_duration_days?: number;
+  steps: number;
+};
+
+const GOAL_TEMPLATES: GoalTemplate[] = [
+  {
+    id: "30day-habit",
+    icon: Flame,
+    name: "Défi 30 jours",
+    description: "Construis une habitude solide en 30 jours consécutifs",
+    placeholder: "Méditer 10 minutes par jour",
+    difficulty: "medium",
+    goal_type: "habit",
+    habit_duration_days: 30,
+    steps: 30,
+  },
+  {
+    id: "fitness",
+    icon: Dumbbell,
+    name: "Transformation physique",
+    description: "Un parcours fitness/santé en plusieurs étapes",
+    placeholder: "Préparer un semi-marathon",
+    difficulty: "hard",
+    goal_type: "normal",
+    total_steps: 5,
+    steps: 5,
+  },
+  {
+    id: "skill",
+    icon: Brain,
+    name: "Nouvelle compétence",
+    description: "Apprendre quelque chose de nouveau, étape par étape",
+    placeholder: "Apprendre le piano (niveau débutant)",
+    difficulty: "medium",
+    goal_type: "normal",
+    total_steps: 5,
+    steps: 5,
+  },
+  {
+    id: "project",
+    icon: Rocket,
+    name: "Projet à terminer",
+    description: "Un projet concret avec un livrable clair",
+    placeholder: "Lancer mon side project en 90 jours",
+    difficulty: "hard",
+    goal_type: "normal",
+    total_steps: 8,
+    steps: 8,
+  },
+];
 
 const VALUE_SUGGESTIONS = [
   "Liberté",
@@ -55,6 +116,8 @@ export default function Onboarding() {
   const [color, setColor] = useState("amber");
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [customValue, setCustomValue] = useState("");
+  const [firstGoal, setFirstGoal] = useState<GoalTemplate | { id: "custom" } | null>(null);
+  const [customGoalName, setCustomGoalName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -63,6 +126,11 @@ export default function Onboarding() {
     if (step === 1) return displayName.trim().length > 0;
     if (step === 2) return name.trim().length > 0 && mantra.trim().length > 0;
     if (step === 3) return true; // Values step is optional
+    if (step === 4) {
+      if (!firstGoal) return false;
+      if (firstGoal.id === "custom") return customGoalName.trim().length > 0;
+      return true;
+    }
     return true;
   };
 
@@ -80,26 +148,61 @@ export default function Onboarding() {
   };
 
   const handleFinish = async () => {
-    if (!user) return;
+    if (!user || !firstGoal) return;
     setIsSubmitting(true);
     try {
       if (displayName.trim()) {
         await supabase.from("profiles").update({ display_name: displayName.trim() }).eq("id", user.id);
       }
-      await supabase.from("pacts").insert({ user_id: user.id, name, mantra, symbol, color });
+      const { data: pact, error: pactErr } = await supabase
+        .from("pacts")
+        .insert({ user_id: user.id, name, mantra, symbol, color })
+        .select()
+        .single();
+      if (pactErr) throw pactErr;
       if (selectedValues.length > 0) {
         await supabase.from("user_values").insert(
           selectedValues.map((label, i) => ({ user_id: user.id, label, rank: i })),
         );
       }
+      // Create first goal
+      if (firstGoal.id !== "custom") {
+        const tpl = firstGoal as GoalTemplate;
+        const goalPayload: any = {
+          pact_id: pact.id,
+          name: tpl.placeholder,
+          difficulty: tpl.difficulty,
+          goal_type: tpl.goal_type,
+          total_steps: tpl.total_steps ?? tpl.habit_duration_days ?? 0,
+          is_focus: true,
+        };
+        if (tpl.goal_type === "habit" && tpl.habit_duration_days) {
+          goalPayload.habit_duration_days = tpl.habit_duration_days;
+          goalPayload.habit_checks = Array(tpl.habit_duration_days).fill(false);
+        }
+        await supabase.from("goals").insert(goalPayload);
+      } else {
+        await supabase.from("goals").insert({
+          pact_id: pact.id,
+          name: customGoalName.trim(),
+          difficulty: "medium",
+          goal_type: "normal",
+          total_steps: 5,
+          is_focus: true,
+        } as any);
+      }
+      // Let the sealing animation breathe before navigating
+      await new Promise((r) => setTimeout(r, 1600));
       toast.success(t("onboarding.welcomeToast"), { description: t("onboarding.pactSealed") });
       navigate("/");
     } catch (error: any) {
       toast.error(t("common.error"), { description: error.message });
-    } finally {
       setIsSubmitting(false);
     }
   };
+
+  const SymbolIcon = symbols.find((s) => s.value === symbol)?.icon ?? Flame;
+  const colorClass = colors.find((c) => c.value === color)?.class ?? "bg-amber-500";
 
   return (
     <DSPageShell width="full" padding="tight" className="!p-0">
@@ -237,6 +340,83 @@ export default function Onboarding() {
           )}
 
           {step === 4 && (
+            <motion.div key="firstGoal" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="space-y-6">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 mx-auto mb-4 bg-card border border-border/50 rounded-full flex items-center justify-center">
+                  <Target className="h-7 w-7 text-primary" />
+                </div>
+                <h2 className="text-2xl font-black font-orbitron text-foreground mb-2">Ton premier engagement</h2>
+                <p className="text-sm text-muted-foreground">
+                  Active ton Pacte avec un goal concret. Choisis un template ou crée le tien.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                {GOAL_TEMPLATES.map((template) => {
+                  const Icon = template.icon;
+                  const active = firstGoal?.id === template.id;
+                  return (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => setFirstGoal(template)}
+                      className={cn(
+                        "p-4 rounded-lg border text-left transition-all",
+                        active
+                          ? "border-primary bg-primary/10 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.4)]"
+                          : "border-border/50 bg-card hover:border-primary/50",
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Icon className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                        <div className="flex-1">
+                          <p className="font-semibold text-sm">{template.name}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{template.description}</p>
+                          <p className="text-[10px] font-mono uppercase tracking-wider text-primary/60 mt-2">
+                            {template.steps} étapes · {template.difficulty}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                <button
+                  type="button"
+                  onClick={() => setFirstGoal({ id: "custom" })}
+                  className={cn(
+                    "p-4 rounded-lg border text-left transition-all",
+                    firstGoal?.id === "custom"
+                      ? "border-primary bg-primary/10 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.4)]"
+                      : "border-border/50 bg-card hover:border-primary/50",
+                  )}
+                >
+                  <div className="flex items-start gap-3">
+                    <Sparkles className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <p className="font-semibold text-sm">Crée le tien</p>
+                      <Input
+                        value={customGoalName}
+                        onChange={(e) => {
+                          setCustomGoalName(e.target.value);
+                          if (firstGoal?.id !== "custom") setFirstGoal({ id: "custom" });
+                        }}
+                        placeholder="Nom de ton goal"
+                        onClick={(e) => e.stopPropagation()}
+                        maxLength={80}
+                      />
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <p className="text-xs text-center text-muted-foreground font-mono">
+                Tu pourras le modifier ou en créer d'autres plus tard.
+              </p>
+            </motion.div>
+          )}
+
+          {step === 5 && (
             <motion.div key="customize" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -30 }} className="space-y-6">
               <div className="text-center mb-6">
                 <div className="w-16 h-16 mx-auto mb-4 bg-card border border-border/50 rounded-full flex items-center justify-center">
@@ -292,6 +472,43 @@ export default function Onboarding() {
         </div>
       </div>
     </div>
+
+    <AnimatePresence>
+      {isSubmitting && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-background flex items-center justify-center"
+        >
+          <motion.div
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center space-y-6 px-6"
+          >
+            <div className="relative inline-block">
+              <div className="absolute inset-0 bg-primary/30 rounded-full blur-2xl animate-pulse" />
+              <div className={cn(
+                "relative w-32 h-32 rounded-full flex items-center justify-center border-2 border-primary",
+                `${colorClass}/20`,
+              )}>
+                <SymbolIcon className="h-16 w-16 text-primary" />
+              </div>
+            </div>
+            <h2 className="text-4xl font-black font-orbitron text-foreground tracking-wider">
+              {name}
+            </h2>
+            <p className="text-lg text-muted-foreground font-rajdhani italic max-w-md">
+              "{mantra}"
+            </p>
+            <p className="text-xs font-mono uppercase tracking-[0.3em] text-primary/60 mt-8">
+              SEALING PACT...
+            </p>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
     </DSPageShell>
   );
 }
