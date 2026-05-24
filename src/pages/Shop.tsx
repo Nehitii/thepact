@@ -18,6 +18,7 @@ import { useBondBalance } from "@/hooks/useShop";
 import { useShopTransaction } from "@/hooks/useShopTransaction";
 import { useTranslation } from "react-i18next";
 import { Store } from "lucide-react";
+import { DSPageShell } from "@/components/ds";
 
 export default function Shop() {
   const { t } = useTranslation();

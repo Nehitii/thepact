@@ -47,6 +47,7 @@ import { z } from "zod";
 import { motion } from "framer-motion";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { Sparkles as SparklesIcon, Loader2 } from "lucide-react";
+import { DSPageShell, DSBackground } from "@/components/ds";
 
 // ... (Le schéma Zod reste inchangé)
 const goalSchema = z.object({

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, Target, Check, StickyNote, ListOrdered, Dices } from "lucide-react";
 import { format } from "date-fns";
-import { CyberBackground } from "@/components/CyberBackground";
+import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 import { motion } from "framer-motion";
 
 interface Step {
