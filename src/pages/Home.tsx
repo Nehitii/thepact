@@ -182,8 +182,9 @@ export default function Home() {
 
   return (
     <DSPageShell
-      width="lg"
-      className="selection:bg-primary/20 !p-4 md:!p-5"
+      width="full"
+      padding="tight"
+      className="selection:bg-primary/20 !p-0"
       background={
         <>
           {/* Home-specific background: subtle gradients + scanline (kept inline for visual fidelity vs DSBackground variant="cyber" which is more intense) */}
@@ -213,7 +214,7 @@ export default function Home() {
 
       {/* NOTE: Home volontairement sans DSPageHeader — NexusHeroBanner joue le rôle d'identité visuelle */}
       <motion.div
-        className="space-y-4"
+        className="max-w-5xl mx-auto p-4 md:p-5 space-y-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
