@@ -315,6 +315,7 @@ export default function TheCall() {
   const isLocked = sequenceState === FinalSequenceState.LOCKED;
 
   return (
+    <DSPageShell width="full" padding="tight" className="!p-0">
     <div className="h-screen bg-background overflow-hidden flex flex-col relative text-foreground font-sans select-none touch-none perspective-[1000px]">
       {/* BACKGROUND FX */}
       <div
@@ -651,5 +652,6 @@ export default function TheCall() {
         }
       `}</style>
     </div>
+    </DSPageShell>
   );
 }
