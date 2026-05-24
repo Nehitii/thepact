@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
-import { DSPageShell, DSBackground, DSPageHeader } from "@/components/ds";
+import { DSPageShell, DSPageHeader } from "@/components/ds";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -226,7 +226,6 @@ export default function Focus() {
           {timer.isRunning && (
             <FocusAmbientEffects progress={timer.progress} isBreak={isBreak} />
           )}
-          <DSBackground variant="none" />
         </>
       }
       className="flex flex-col"
