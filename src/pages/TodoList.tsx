@@ -5,7 +5,7 @@ import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSe
 import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { useTodoList, TodoTask } from '@/hooks/useTodoList';
-import { ModuleHeader } from '@/components/layout/ModuleHeader';
+import { DSPageShell, DSPageHeader, DSPageLoader } from '@/components/ds';
 import { TodoGamifiedTaskCard } from '@/components/todo/TodoGamifiedTaskCard';
 import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
 import { TodoAdvancedStats } from '@/components/todo/TodoAdvancedStats';
@@ -166,14 +166,7 @@ export default function TodoList() {
   // Boot sequence removed for instant load
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-          <p className="text-muted-foreground font-mono text-sm">{t('todo.loadingQuests')}</p>
-        </motion.div>
-      </div>
-    );
+    return <DSPageLoader variant="verbose" message={t('todo.loadingQuests')} />;
   }
 
   return (
@@ -190,20 +183,26 @@ export default function TodoList() {
         />
       )}
 
-      <div className="min-h-screen bg-background relative overflow-x-hidden overflow-y-auto">
-        {/* Ambient background */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
-          <div className="absolute inset-0 opacity-[0.02]" style={{
-            backgroundImage: `linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)`,
-            backgroundSize: '50px 50px',
-          }} />
-        </div>
-
-        <div className="relative z-10 p-6 max-w-5xl mx-auto space-y-6">
-          {/* Module Header (same style as other modules) */}
-          <ModuleHeader
+      <DSPageShell
+        width="lg"
+        className="!p-6"
+        background={
+          <div className="fixed inset-0 pointer-events-none">
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]" />
+            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[100px]" />
+            <div
+              className="absolute inset-0 opacity-[0.02]"
+              style={{
+                backgroundImage: `linear-gradient(hsl(var(--primary) / 0.3) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.3) 1px, transparent 1px)`,
+                backgroundSize: '50px 50px',
+              }}
+            />
+          </div>
+        }
+      >
+        <div className="space-y-6">
+          <DSPageHeader
+            variant="hud"
             systemLabel="QUEST_ENGINE // SYS.ACTIVE"
             title="TASK "
             titleAccent="OPS"
@@ -406,7 +405,7 @@ export default function TodoList() {
             <TodoCalendarView tasks={tasks} />
           </DialogContent>
         </Dialog>
-      </div>
+      </DSPageShell>
     </>
   );
 }

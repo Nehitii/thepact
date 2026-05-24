@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { DSPageShell, DSPageLoader } from "@/components/ds";
 
 // Components
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
@@ -149,16 +150,7 @@ export default function Home() {
   }
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto" />
-          <p className="text-[rgba(160,210,255,0.4)] text-[10px] font-orbitron uppercase tracking-[0.3em]">
-            Initializing...
-          </p>
-        </div>
-      </div>
-    );
+    return <DSPageLoader variant="verbose" message="Initializing..." />;
   }
 
   if (!pact) return null;
@@ -189,33 +181,40 @@ export default function Home() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-background relative overflow-x-hidden selection:bg-primary/20">
-      {/* Background gradients */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse 100% 60% at 50% -5%, rgba(0,80,180,0.07), transparent 65%),
-              radial-gradient(ellipse 50% 40% at 85% 70%, rgba(139,0,255,0.03), transparent 50%)
-            `,
-          }}
-        />
-      </div>
-
-      {/* Scanline — scoped to Home only, not global z-9999 */}
-      <div
-        className="absolute inset-0 pointer-events-none z-[1]"
-        style={{
-          background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.022) 2px, rgba(0,0,0,0.022) 4px)",
-        }}
-      />
-
-      {/* Neural Bar */}
+    <DSPageShell
+      width="full"
+      padding="tight"
+      className="selection:bg-primary/20 !p-0"
+      background={
+        <>
+          {/* Home-specific background: subtle gradients + scanline (kept inline for visual fidelity vs DSBackground variant="cyber" which is more intense) */}
+          <div className="fixed inset-0 pointer-events-none z-0">
+            <div
+              className="absolute inset-0"
+              style={{
+                background: `
+                  radial-gradient(ellipse 100% 60% at 50% -5%, rgba(0,80,180,0.07), transparent 65%),
+                  radial-gradient(ellipse 50% 40% at 85% 70%, rgba(139,0,255,0.03), transparent 50%)
+                `,
+              }}
+            />
+          </div>
+          <div
+            className="absolute inset-0 pointer-events-none z-[1]"
+            style={{
+              background:
+                "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.022) 2px, rgba(0,0,0,0.022) 4px)",
+            }}
+          />
+        </>
+      }
+    >
+      {/* Neural Bar — sticky header, stays as first child */}
       <NeuralBar pact={pact} rankData={safeRankData} />
 
+      {/* NOTE: Home volontairement sans DSPageHeader — NexusHeroBanner joue le rôle d'identité visuelle */}
       <motion.div
-        className="max-w-5xl mx-auto p-4 md:p-5 space-y-4 relative z-10"
+        className="max-w-5xl mx-auto p-4 md:p-5 space-y-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
@@ -306,6 +305,6 @@ export default function Home() {
           </section>
         )}
       </motion.div>
-    </div>
+    </DSPageShell>
   );
 }
