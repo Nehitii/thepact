@@ -15,7 +15,7 @@ import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DSPanel, DSLoadingState, DSEmptyState } from "@/components/ds";
+import { DSPanel, DSEmptyState, DSPageShell, DSPageLoader } from "@/components/ds";
 import { ArrowLeft, Network } from "lucide-react";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -122,11 +122,15 @@ export default function GoalsGraph() {
   }, [goals, deps]);
 
   if (goalsLoading || depsLoading) {
-    return <div className="p-6"><DSLoadingState message="LOADING TOPOLOGY" /></div>;
+    return <DSPageLoader message="LOADING TOPOLOGY" />;
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 h-screen flex flex-col">
+    <DSPageShell
+      width="full"
+      padding="tight"
+      className="!p-4 sm:!p-6 !h-screen flex flex-col space-y-4"
+    >
       <div className="flex items-center justify-between">
         <div>
           <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
@@ -166,6 +170,6 @@ export default function GoalsGraph() {
           </ReactFlow>
         )}
       </DSPanel>
-    </div>
+    </DSPageShell>
   );
 }

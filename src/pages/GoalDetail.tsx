@@ -14,7 +14,7 @@ import { useCostItems, useSaveCostItems } from "@/hooks/useCostItems";
 import { useCreatePactWishlistItem } from "@/hooks/usePactWishlist";
 import { useUserShop } from "@/hooks/useShop";
 import { useSocialFeatures } from "@/hooks/useSocialFeatures";
-import { CyberBackground } from "@/components/CyberBackground";
+import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 import { Button } from "@/components/ui/button";
 import { ShareGoalModal } from "@/components/goals/ShareGoalModal";
 import { UnlockGoalModal } from "@/components/goals/UnlockGoalModal";
@@ -259,20 +259,18 @@ export default function GoalDetail() {
 
   // Loading / Not found
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
+    return <DSPageLoader />;
   }
   if (!goal) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="text-center">
-          <p className="text-muted-foreground font-rajdhani">Goal not found</p>
-          <Button onClick={() => navigate("/goals")} variant="hud" className="mt-4 rounded-lg">Back to Goals</Button>
+      <DSPageShell width="sm" background={<DSBackground variant="cyber" />}>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-foreground font-rajdhani">Goal not found</p>
+            <Button onClick={() => navigate("/goals")} variant="hud" className="mt-4 rounded-lg">Back to Goals</Button>
+          </div>
         </div>
-      </div>
+      </DSPageShell>
     );
   }
 
@@ -309,11 +307,15 @@ export default function GoalDetail() {
     : undefined;
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <CyberBackground />
+    <DSPageShell
+      width="md"
+      background={<DSBackground variant="cyber" />}
+      className="!px-4 md:!px-6 !pt-8 !pb-24"
+    >
+      {/* Particles overlay — preserved at root level */}
       <ParticleEffects />
 
-      <div className="relative z-10 max-w-3xl mx-auto px-4 md:px-6 py-8 space-y-6 pb-24">
+      <div className="space-y-6">
         <GoalDetailHero
           goal={goal}
           progress={progress}
@@ -445,6 +447,6 @@ export default function GoalDetail() {
           goalName={goal.name}
         />
       )}
-    </div>
+    </DSPageShell>
   );
 }
