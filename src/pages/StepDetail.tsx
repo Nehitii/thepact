@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ArrowLeft, Target, Check, StickyNote, ListOrdered, Dices } from "lucide-react";
 import { format } from "date-fns";
-import { CyberBackground } from "@/components/CyberBackground";
+import { DSPageShell, DSBackground, DSPageLoader } from "@/components/ds";
 import { motion } from "framer-motion";
 
 interface Step {
@@ -137,22 +137,24 @@ export default function StepDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
+        <DSPageLoader />
+      </DSPageShell>
     );
   }
 
   if (!step) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4 font-rajdhani">Step not found</p>
-          <Button onClick={() => navigate(-1)} className="rounded-xl">
-            Go Back
-          </Button>
+      <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-foreground mb-4 font-rajdhani">Step not found</p>
+            <Button onClick={() => navigate(-1)} className="rounded-xl">
+              Go Back
+            </Button>
+          </div>
         </div>
-      </div>
+      </DSPageShell>
     );
   }
 
@@ -167,32 +169,12 @@ export default function StepDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Deep space background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-      </div>
-
-      {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
+    <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
       <motion.div
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="relative z-10 max-w-2xl mx-auto px-6 py-8 space-y-6"
+        className="relative z-10 px-6 py-8 space-y-6"
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="space-y-6">
@@ -378,6 +360,6 @@ export default function StepDetail() {
           </div>
         </motion.div>
       </motion.div>
-    </div>
+    </DSPageShell>
   );
 }

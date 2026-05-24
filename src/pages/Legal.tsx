@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { DSPageShell, DSBackground } from "@/components/ds";
 
 export default function Legal() {
   const navigate = useNavigate();
@@ -79,29 +80,9 @@ export default function Legal() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Deep space background with radial glow */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-      </div>
-
-      {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-20">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-            linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
-          `,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
+    <DSPageShell width="sm" padding="tight" className="!px-0 !pt-0 !pb-0" background={<DSBackground variant="cyber" />}>
       <ScrollArea className="h-screen">
-        <div className="max-w-2xl mx-auto p-6 space-y-6 relative z-10 pb-12">
+        <div className="p-6 space-y-6 relative z-10 pb-12">
           {/* Header */}
           <div className="pt-8 space-y-4 animate-fade-in">
             <button
@@ -509,6 +490,6 @@ export default function Legal() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </DSPageShell>
   );
 }
