@@ -88,14 +88,14 @@ export default function Health() {
             </div>
             <div>
               <p className="ds-text-label">Trend</p>
-              <p className={`ds-text-metric tabular-nums ${healthScore.trend > 0 ? 'text-[hsl(var(--ds-accent-success))]' : healthScore.trend < 0 ? 'text-[hsl(var(--ds-accent-critical))]' : ''}`}>
-                {healthScore.trend > 0 ? '+' : ''}{healthScore.trend}
+              <p className={`ds-text-metric tabular-nums ${healthScore.trend === 'up' ? 'text-[hsl(var(--ds-accent-success))]' : healthScore.trend === 'down' ? 'text-[hsl(var(--ds-accent-critical))]' : ''}`}>
+                {healthScore.trend === 'up' ? '↑' : healthScore.trend === 'down' ? '↓' : '→'}
               </p>
             </div>
             <div>
               <p className="ds-text-label">BMI</p>
               <p className="ds-text-metric tabular-nums">{bmi ?? '—'}</p>
-              {bmiCategory && <p className="text-xs text-muted-foreground mt-0.5">{bmiCategory}</p>}
+              {bmiCategory && <p className="text-xs text-muted-foreground mt-0.5">{bmiCategory.label}</p>}
             </div>
             <div>
               <p className="ds-text-label">Last Sync</p>
