@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { ModuleHeader } from "@/components/layout/ModuleHeader";
+import { DSPageShell, DSBackground } from "@/components/ds";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { CyberBackground } from "@/components/CyberBackground";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -431,9 +431,11 @@ export default function Wishlist() {
   );
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      <CyberBackground />
-
+    <DSPageShell
+      width="xl"
+      className="!px-0 !pt-0 !pb-0"
+      background={<DSBackground variant="cyber" />}
+    >
       <DuplicateMergeDialog
         open={mergeOpen} onOpenChange={setMergeOpen}
         existing={mergeExistingPreview ?? { name: "", estimatedCost: 0, itemType: "optional", category: null, goalName: null, notes: null } as any}
@@ -529,7 +531,7 @@ export default function Wishlist() {
         </DialogContent>
       </Dialog>
 
-      <div className="relative z-10 max-w-6xl mx-auto page-px py-6 md:py-8 space-y-6">
+      <div className="max-w-6xl mx-auto page-px py-6 md:py-8 space-y-6">
         <ModuleHeader
           systemLabel="ACQUISITION_PLAN // SYS.ACTIVE"
           title="WISH "
@@ -746,6 +748,6 @@ export default function Wishlist() {
           <WishlistBulkBar count={bulkSelected.size} onMarkAcquired={handleBulkAcquired} onDelete={handleBulkDelete} onCancel={cancelBulk} />
         )}
       </AnimatePresence>
-    </div>
+    </DSPageShell>
   );
 }
