@@ -1,0 +1,199 @@
+/* Difficulty gamification animations — extracted from index.css */
+@layer base {
+  /* ========== DIFFICULTY GAMIFICATION ANIMATIONS ========== */
+
+  /* Phase 1: Difficulty Aura Pulse - scales with difficulty */
+  @keyframes difficulty-aura-easy {
+    0%, 100% { box-shadow: 0 0 8px var(--aura-color), 0 0 16px transparent; }
+    50% { box-shadow: 0 0 12px var(--aura-color), 0 0 24px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-medium {
+    0%, 100% { box-shadow: 0 0 10px var(--aura-color), 0 0 20px transparent; }
+    50% { box-shadow: 0 0 16px var(--aura-color), 0 0 32px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-hard {
+    0%, 100% { box-shadow: 0 0 12px var(--aura-color), 0 0 24px transparent; }
+    50% { box-shadow: 0 0 20px var(--aura-color), 0 0 40px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-extreme {
+    0%, 100% { box-shadow: 0 0 15px var(--aura-color), 0 0 30px transparent; }
+    50% { box-shadow: 0 0 25px var(--aura-color), 0 0 50px var(--aura-color); }
+  }
+
+  @keyframes difficulty-aura-impossible {
+    0%, 100% { box-shadow: 0 0 18px var(--aura-color), 0 0 36px transparent; }
+    50% { box-shadow: 0 0 30px var(--aura-color), 0 0 60px var(--aura-color); }
+  }
+
+  /* Phase 2: Badge Shimmer Effect */
+  @keyframes badge-shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% { transform: scale(1); filter: brightness(1); }
+    50% { transform: scale(1.02); filter: brightness(1.15); }
+  }
+
+  /* Phase 3: Progress Bar Animations */
+  @keyframes progress-shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
+  @keyframes progress-glow {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 4px currentColor); }
+    50% { filter: brightness(1.2) drop-shadow(0 0 8px currentColor); }
+  }
+
+  @keyframes progress-sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.5) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1) rotate(180deg); }
+  }
+
+  @keyframes completion-burst {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 var(--burst-color); }
+    50% { transform: scale(1.05); box-shadow: 0 0 30px 10px var(--burst-color); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+  }
+
+  /* Phase 5: Hover Micro-interactions */
+  @keyframes card-hover-glow {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes shimmer-wave {
+    0% { transform: translateX(-100%) skewX(-15deg); }
+    100% { transform: translateX(200%) skewX(-15deg); }
+  }
+
+  @keyframes border-breathe {
+    0%, 100% { border-color: var(--border-color-base); }
+    50% { border-color: var(--border-color-glow); }
+  }
+
+  /* Phase 6: Completion Celebration */
+  @keyframes celebration-flash {
+    0% { opacity: 0; transform: scale(0.8); }
+    20% { opacity: 1; transform: scale(1.1); }
+    40% { opacity: 0.8; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.2); }
+  }
+
+  @keyframes celebration-ripple {
+    0% { transform: scale(0.5); opacity: 0.8; }
+    100% { transform: scale(2); opacity: 0; }
+  }
+
+  /* Utility classes for difficulty radiance - fade-in then constant (no pulsing) */
+  .difficulty-aura-easy { --glow-inner: 12px; --glow-outer: 24px; }
+  .difficulty-aura-medium { --glow-inner: 16px; --glow-outer: 32px; }
+  .difficulty-aura-hard { --glow-inner: 20px; --glow-outer: 40px; }
+  .difficulty-aura-extreme { --glow-inner: 25px; --glow-outer: 50px; }
+  .difficulty-aura-impossible { --glow-inner: 30px; --glow-outer: 60px; }
+
+  .difficulty-aura-easy,
+  .difficulty-aura-medium,
+  .difficulty-aura-hard,
+  .difficulty-aura-extreme,
+  .difficulty-aura-impossible {
+    position: relative;
+    isolation: isolate;
+    z-index: 0;
+  }
+
+  /* Use ::after so we don't conflict with hover-shimmer-wave::before */
+  .difficulty-aura-easy::after,
+  .difficulty-aura-medium::after,
+  .difficulty-aura-hard::after,
+  .difficulty-aura-extreme::after,
+  .difficulty-aura-impossible::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 240ms ease-out;
+    box-shadow:
+      0 0 var(--glow-inner) var(--aura-color),
+      0 0 var(--glow-outer) var(--aura-color-soft, var(--aura-color));
+    z-index: -1;
+  }
+
+  .difficulty-aura-easy:hover::after,
+  .difficulty-aura-medium:hover::after,
+  .difficulty-aura-hard:hover::after,
+  .difficulty-aura-extreme:hover::after,
+  .difficulty-aura-impossible:hover::after {
+    opacity: 1;
+  }
+
+  .badge-shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsla(0, 0%, 100%, 0.3) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: badge-shimmer 2s ease-in-out infinite;
+  }
+
+  .badge-pulse {
+    animation: badge-pulse 2s ease-in-out infinite;
+  }
+
+  .progress-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsla(0, 0%, 100%, 0.4) 50%,
+      transparent 100%
+    );
+    animation: progress-shimmer 1.5s ease-in-out infinite;
+  }
+
+  .hover-shimmer-wave {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hover-shimmer-wave::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      hsla(0, 0%, 100%, 0.1) 50%,
+      transparent 100%
+    );
+    transform: translateX(-100%) skewX(-15deg);
+    transition: none;
+  }
+
+  .hover-shimmer-wave:hover::before {
+    animation: shimmer-wave 0.6s ease-out;
+  }
+
+}
