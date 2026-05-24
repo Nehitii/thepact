@@ -13,6 +13,16 @@
  *  - critical → magenta, errors, losses, destructive
  *  - special  → violet, premium / focus mode / AI features
  */
+
+/* ─── Phase 1 — Page foundations ─────────────────────────────── */
+export { DSPageShell } from "./DSPageShell";
+export type { DSPageWidth } from "./DSPageShell";
+export { DSBackground } from "./DSBackground";
+export type { DSBackgroundVariant } from "./DSBackground";
+export { DSPageLoader } from "./DSPageLoader";
+export { DSPageHeader } from "./DSPageHeader";
+export type { DSPageHeaderBadge } from "./DSPageHeader";
+
 export { DSPanel } from "./DSPanel";
 export type { DSPanelTier, DSAccent } from "./DSPanel";
 export { DSBadge } from "./DSBadge";
