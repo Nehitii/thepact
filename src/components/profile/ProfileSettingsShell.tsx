@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { CyberBackground } from "@/components/CyberBackground";
+import { DSPageShell, DSBackground } from "@/components/ds";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
@@ -23,10 +23,22 @@ export function ProfileSettingsShell({
   containerClassName,
 }: ProfileSettingsShellProps) {
   return (
-    <div className="min-h-screen bg-[#03060A] relative overflow-hidden selection:bg-[#00F2FF]/30">
-      <CyberBackground />
-
-      <div className={cn("relative z-10 page-px pt-8 md:pt-12 pb-6 max-w-5xl mx-auto", containerClassName)}>
+    <DSPageShell
+      width="full"
+      padding="tight"
+      className={cn(
+        "selection:bg-[#00F2FF]/30 !page-px !pt-8 md:!pt-12 !pb-6 !max-w-5xl !mx-auto",
+        containerClassName,
+      )}
+      background={
+        <>
+          {/* Settings-specific deep navy floor preserved via background slot for visual fidelity */}
+          <div className="absolute inset-0" style={{ background: "#03060A" }} />
+          <DSBackground variant="cyber" />
+        </>
+      }
+    >
+      <>
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -56,10 +68,10 @@ export function ProfileSettingsShell({
           </h1>
         </motion.header>
 
-        <main className="space-y-6 relative z-10">{children}</main>
-      </div>
+        <section className="space-y-6 relative z-10">{children}</section>
 
-      {floating ? <div className="relative z-20">{floating}</div> : null}
-    </div>
+        {floating ? <div className="relative z-20">{floating}</div> : null}
+      </>
+    </DSPageShell>
   );
 }
