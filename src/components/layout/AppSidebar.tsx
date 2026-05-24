@@ -98,15 +98,15 @@ const moduleConfig: Record<string, NavItem & { category: NavCategory }> = {
 
 // Paramètres originaux restaurés
 const settingsItems = [
-  { to: "/profile", icon: UserCircle, label: "Account" },
-  { to: "/profile/bounded", icon: User, label: "Bounded" },
-  { to: "/profile/life-areas", icon: Compass, label: "Life Areas" },
-  { to: "/profile/pact-settings", icon: Settings, label: "Pact Rules" },
-  { to: "/profile/display-sound", icon: Volume2, label: "A/V Config" },
-  { to: "/profile/notifications", icon: Bell, label: "Alerts" },
-  { to: "/profile/automations", icon: Zap, label: "Automations" },
-  { to: "/profile/privacy", icon: Shield, label: "Privacy" },
-  { to: "/profile/data", icon: Database, label: "Data Core" },
+  { to: "/profile", icon: UserCircle, label: "Compte" },
+  { to: "/profile/bounded", icon: User, label: "Profil public" },
+  { to: "/profile/life-areas", icon: Compass, label: "Domaines de vie" },
+  { to: "/profile/pact-settings", icon: Settings, label: "Mon Pacte" },
+  { to: "/profile/display-sound", icon: Volume2, label: "Apparence & sons" },
+  { to: "/profile/notifications", icon: Bell, label: "Notifications" },
+  { to: "/profile/automations", icon: Zap, label: "Automatisations" },
+  { to: "/profile/privacy", icon: Shield, label: "Confidentialité" },
+  { to: "/profile/data", icon: Database, label: "Mes données" },
 ];
 
 // ─── UI COMPONENTS (HUD STYLE) ─────────────────────────────
