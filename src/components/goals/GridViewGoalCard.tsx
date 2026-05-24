@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Star, Target, Zap, ImageOff, CheckCircle, Link2 } from "lucide-react";
-import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity } from "@/lib/goalConstants";
+import { getTagColor, getTagLabel, getStatusLabel, getDifficultyIntensity, getGoalStatusIcon } from "@/lib/goalConstants";
 import { cn } from "@/lib/utils";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
@@ -279,7 +279,11 @@ export function GridViewGoalCard({
           {/* Progress */}
           <div className="flex flex-col gap-1 sm:gap-1.5">
             <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-semibold">
-              <span className={cn("uppercase tracking-wider truncate", isCompleted ? "text-[var(--accent)]" : "text-gray-400")}>
+              <span className={cn("inline-flex items-center gap-1 uppercase tracking-wider truncate", isCompleted ? "text-[var(--accent)]" : "text-gray-400")}>
+                {(() => {
+                  const Icon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
+                  return <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />;
+                })()}
                 {statusLabel}
               </span>
               <span className="text-gray-100 tabular-nums">{progress}%</span>

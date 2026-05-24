@@ -3,6 +3,7 @@
 // All labels are translation keys for i18n support
 
 import type { TFunction } from "i18next";
+import { Circle, Activity, CheckCircle2, PauseCircle, Archive, XCircle, type LucideIcon } from "lucide-react";
 
 // Goal Tags with colors - matches database goal_type enum
 export const GOAL_TAGS = [
@@ -173,6 +174,29 @@ export function getTagLabel(type: string, t?: TFunction): string {
 export function getTagColor(type: string): string {
   const found = GOAL_TAGS.find(t => t.value === type);
   return found?.color || "hsl(210 30% 50%)";
+}
+
+// Helper function: Get semantic icon for a goal status (a11y / colorblind support)
+export function getGoalStatusIcon(status: string): LucideIcon {
+  switch (status) {
+    case "not_started":
+      return Circle;
+    case "in_progress":
+    case "active":
+      return Activity;
+    case "validated":
+    case "fully_completed":
+    case "completed":
+      return CheckCircle2;
+    case "paused":
+      return PauseCircle;
+    case "archived":
+      return Archive;
+    case "cancelled":
+      return XCircle;
+    default:
+      return Circle;
+  }
 }
 
 // Helper function: Map legacy/invalid tags to valid ones
