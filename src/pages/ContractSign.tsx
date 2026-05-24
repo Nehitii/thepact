@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { DSPanel, DSBadge, DSLoadingState, DSEmptyState } from "@/components/ds";
+import { DSPanel, DSBadge, DSEmptyState, DSPageShell, DSPageLoader } from "@/components/ds";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BondIcon } from "@/components/ui/bond-icon";
@@ -90,18 +90,18 @@ export default function ContractSign() {
     setProgress(0);
   };
 
-  if (isLoading) return <div className="p-6"><DSLoadingState message="LOADING PACT" /></div>;
+  if (isLoading) return <DSPageLoader message="LOADING PACT" />;
 
   if (!contract) {
     return (
-      <div className="p-6">
+      <DSPageShell width="md" padding="tight">
         <DSEmptyState
           message="CONTRACT NOT FOUND"
           description="Ce pacte a peut-être été annulé ou ne t'est pas accessible."
           ctaLabel="Retour à l'accueil"
           to="/"
         />
-      </div>
+      </DSPageShell>
     );
   }
 
@@ -114,7 +114,7 @@ export default function ContractSign() {
   };
 
   return (
-    <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
+    <DSPageShell width="md" padding="tight" className="!px-4 sm:!px-6 !pt-4 sm:!pt-6 !pb-8 space-y-6">
       <button
         onClick={() => navigate(-1)}
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition"
@@ -259,6 +259,6 @@ export default function ContractSign() {
           </div>
         </DSPanel>
       )}
-    </div>
+    </DSPageShell>
   );
 }
