@@ -346,28 +346,8 @@ export default function NewGoal() {
     "h-12 text-base rounded-xl bg-background/50 border-white/10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50 focus-visible:border-primary/50";
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Deep space background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-primary/3 rounded-full blur-[100px]" />
-      </div>
-
-      {/* Sci-fi grid overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `
-              linear-gradient(rgba(91, 180, 255, 0.1) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(91, 180, 255, 0.1) 1px, transparent 1px)
-            `,
-            backgroundSize: "50px 50px",
-          }}
-        />
-      </div>
-
-      <div className="max-w-2xl mx-auto px-6 py-8 relative z-10">
+    <DSPageShell width="sm" padding="none" background={<DSBackground variant="cyber" />}>
+      <div className="px-6 py-8 relative z-10">
         {/* Header */}
         <motion.div
           className="space-y-6 mb-10"

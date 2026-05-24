@@ -137,22 +137,24 @@ export default function StepDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <DSPageShell width="sm" padding="none" background={<DSBackground variant="cyber" />}>
+        <DSPageLoader />
+      </DSPageShell>
     );
   }
 
   if (!step) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4 font-rajdhani">Step not found</p>
-          <Button onClick={() => navigate(-1)} className="rounded-xl">
-            Go Back
-          </Button>
+      <DSPageShell width="sm" padding="none" background={<DSBackground variant="cyber" />}>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-muted-foreground mb-4 font-rajdhani">Step not found</p>
+            <Button onClick={() => navigate(-1)} className="rounded-xl">
+              Go Back
+            </Button>
+          </div>
         </div>
-      </div>
+      </DSPageShell>
     );
   }
 

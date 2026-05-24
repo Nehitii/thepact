@@ -73,8 +73,7 @@ export default function Shop() {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Subtle grid background */}
+    <DSPageShell width="xl" padding="none" background={
       <div
         className="fixed inset-0 pointer-events-none z-[1] opacity-[0.03]"
         style={{
@@ -83,8 +82,8 @@ export default function Shop() {
           backgroundSize: "40px 40px",
         }}
       />
-
-      <div className="relative z-10 page-px pt-4 md:pt-6 pb-6 max-w-6xl mx-auto">
+    }>
+      <div className="relative z-10 page-px pt-4 md:pt-6 pb-6">
         {/* ─── HEADER ─── */}
         <motion.div
           className="relative mb-6 md:mb-8"
