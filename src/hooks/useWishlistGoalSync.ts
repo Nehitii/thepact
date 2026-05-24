@@ -128,21 +128,20 @@ export function useWishlistGoalSync(
         const promises: PromiseLike<any>[] = [];
 
         if (toInsert.length > 0) {
-          // Use individual inserts; ignore duplicate errors from the partial unique index
-          for (const item of toInsert) {
-            promises.push(
-              supabase
-                .from("wishlist_items")
-                .insert(item)
-                .then((res) => {
-                  if (res.error && res.error.code === "23505") {
-                    // Duplicate — already exists, safe to ignore
-                    return;
-                  }
-                  if (res.error) throw res.error;
-                }),
-            );
-          }
+          // Batched upsert: silently skip rows already covered by the partial unique
+          // index (user_id, source_goal_cost_id) WHERE source_goal_cost_id IS NOT NULL.
+          // Avoids the 23505 flood when the hook re-runs before the wishlist cache refreshes.
+          promises.push(
+            supabase
+              .from("wishlist_items")
+              .upsert(toInsert, {
+                onConflict: "user_id,source_goal_cost_id",
+                ignoreDuplicates: true,
+              })
+              .then((res) => {
+                if (res.error && res.error.code !== "23505") throw res.error;
+              }),
+          );
         }
 
         for (const item of toUpdate) {
