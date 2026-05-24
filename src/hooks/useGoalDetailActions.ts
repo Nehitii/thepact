@@ -120,7 +120,13 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
         onSuccess: ({ newStatus }) => {
           if (newStatus === "completed" && userId) {
             setTimeout(() => trackStepCompleted(userId), 0);
-            toast.success("Step Completed", { description: "You're making progress!" });
+            toast.success("Step Completed", {
+              description: "You're making progress!",
+              action: {
+                label: "Undo",
+                onClick: () => toggleStep.mutate({ stepId, currentStatus: "completed" }),
+              },
+            });
           }
         },
       },
@@ -194,6 +200,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
               description: isNowComplete
                 ? "Congratulations! Habit completed!"
                 : `${completedCount}/${detail.goal.habit_duration_days} days done`,
+              action: {
+                label: "Undo",
+                onClick: () => toggleHabit.mutate({ dayIndex }),
+              },
             });
           }
         },
@@ -276,18 +286,50 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     },
   });
 
-  const handlePauseGoal = () =>
-    updateStatus.mutate("paused", { onSuccess: () => toast.success("Goal Paused", { description: "This goal has been paused." }) });
+  const handlePauseGoal = () => {
+    const detail = getDetail();
+    const previousStatus = detail?.goal.status;
+    updateStatus.mutate("paused", {
+      onSuccess: () =>
+        toast.success("Goal Paused", {
+          description: "This goal has been paused.",
+          action: previousStatus
+            ? { label: "Undo", onClick: () => updateStatus.mutate(previousStatus) }
+            : undefined,
+        }),
+    });
+  };
 
   const handleResumeGoal = () => {
     const detail = getDetail();
     if (!detail) return;
+    const previousStatus = detail.goal.status;
     const newStatus = (detail.goal.validated_steps ?? 0) > 0 ? "in_progress" : "not_started";
-    updateStatus.mutate(newStatus, { onSuccess: () => toast.success("Goal Resumed", { description: "This goal is now active again." }) });
+    updateStatus.mutate(newStatus, {
+      onSuccess: () =>
+        toast.success("Goal Resumed", {
+          description: "This goal is now active again.",
+          action: {
+            label: "Undo",
+            onClick: () => updateStatus.mutate(previousStatus),
+          },
+        }),
+    });
   };
 
-  const handleArchiveGoal = () =>
-    updateStatus.mutate("archived", { onSuccess: () => toast.success("Goal Archived", { description: "This goal has been archived." }) });
+  const handleArchiveGoal = () => {
+    const detail = getDetail();
+    const previousStatus = detail?.goal.status;
+    updateStatus.mutate("archived", {
+      onSuccess: () =>
+        toast.success("Goal Archived", {
+          description: "This goal has been archived.",
+          action: previousStatus
+            ? { label: "Undo", onClick: () => updateStatus.mutate(previousStatus) }
+            : undefined,
+        }),
+    });
+  };
 
   // ---------- Duplicate ----------
   const duplicateGoal = useMutation({
