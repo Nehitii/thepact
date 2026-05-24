@@ -151,7 +151,7 @@ export function CommandPalette() {
         }}
         whileHover={{ scale: 1.02 }}
         whileDrag={{ scale: 1.05, cursor: "grabbing" }}
-        className="fixed bottom-6 right-6 z-[999] pointer-events-auto flex items-center shadow-[0_0_20px_rgba(0,242,255,0.15)] rounded-full bg-[#03060A]/85 backdrop-blur-md border border-[#00F2FF]/30 p-1 cursor-grab active:cursor-grabbing"
+        className="fixed bottom-6 right-6 z-[999] pointer-events-auto flex items-center shadow-[0_0_20px_hsl(var(--primary)/0.15)] rounded-full bg-[#03060A]/85 backdrop-blur-md border border-primary/30 p-1 cursor-grab active:cursor-grabbing"
       >
         <div
           className="flex items-center justify-center p-2 text-white/30 hover:text-white/80 transition-colors"
@@ -170,14 +170,14 @@ export function CommandPalette() {
             }
             setOpen(true);
           }}
-          className="flex items-center gap-2 pr-5 pl-1 py-2 text-[#00F2FF]/80 hover:text-[#00F2FF] transition-all outline-none"
+          className="flex items-center gap-2 pr-5 pl-1 py-2 text-primary/80 hover:text-primary transition-all outline-none"
           aria-label="Search or jump to…"
         >
           <Search className="h-4 w-4" />
           <span className="hidden sm:inline-block text-xs font-mono font-bold tracking-[0.15em] uppercase mt-0.5">
             SEARCH
           </span>
-          <kbd className="hidden sm:inline-flex ml-2 items-center gap-1 px-2 py-0.5 rounded bg-[#00F2FF]/10 border border-[#00F2FF]/20 text-[10px] font-bold text-[#00F2FF]">
+          <kbd className="hidden sm:inline-flex ml-2 items-center gap-1 px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary">
             <span className="text-xs">⌘</span>K
           </kbd>
         </button>
@@ -198,7 +198,7 @@ export function CommandPalette() {
                     onSelect={() => handleSelect(item.route)}
                     className="flex items-center gap-3 cursor-pointer"
                   >
-                    <item.icon className="h-4 w-4 text-[#00F2FF]/70" />
+                    <item.icon className="h-4 w-4 text-primary/70" />
                     <span>{item.label}</span>
                   </CommandItem>
                 ))}
