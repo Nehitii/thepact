@@ -27,8 +27,7 @@ export function ProfileSettingsShell({
       width="full"
       padding="tight"
       className={cn(
-        "selection:bg-[#00F2FF]/30 !page-px !pt-8 md:!pt-12 !pb-6 !max-w-5xl !mx-auto",
-        containerClassName,
+        "selection:bg-[#00F2FF]/30 !p-0",
       )}
       background={
         <>
@@ -38,7 +37,7 @@ export function ProfileSettingsShell({
         </>
       }
     >
-      <>
+      <div className={cn("page-px pt-8 md:pt-12 pb-6 max-w-5xl mx-auto", containerClassName)}>
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -71,7 +70,7 @@ export function ProfileSettingsShell({
         <section className="space-y-6 relative z-10">{children}</section>
 
         {floating ? <div className="relative z-20">{floating}</div> : null}
-      </>
+      </div>
     </DSPageShell>
   );
 }
