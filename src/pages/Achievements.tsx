@@ -9,6 +9,7 @@ import * as LucideIcons from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
+import { DSPageShell } from "@/components/ds";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
@@ -101,11 +102,18 @@ export default function Achievements() {
   const totalPoints = achievements.filter(a => a.unlocked).reduce((sum, a) => sum + (a.points || 0), 0);
 
   return (
-    <div className="pantheon-wrapper min-h-screen text-slate-200 relative overflow-hidden">
-      <div className="celestial-light" />
-      <div className="ground-grid" />
-
-      <div className="max-w-6xl mx-auto page-px py-8 md:py-16 relative z-10 font-rajdhani">
+    <DSPageShell
+      width="xl"
+      className="pantheon-wrapper text-slate-200 !px-0 !pt-0 !pb-0"
+      background={
+        <>
+          <div className="celestial-light" />
+          <div className="ground-grid" />
+        </>
+      }
+    >
+      {/* NOTE: No DSPageHeader — the Trophy/Hall of Eternity header IS the signature hero */}
+      <div className="max-w-6xl mx-auto page-px py-8 md:py-16 font-rajdhani">
         <header className="relative mb-12 md:mb-24 text-center">
           <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="inline-block relative mb-4 md:mb-8">
             <div className="absolute inset-0 bg-primary/30 blur-[80px] rounded-full" />
@@ -231,6 +239,6 @@ export default function Achievements() {
           </motion.div>
         )}
       </div>
-    </div>
+    </DSPageShell>
   );
 }
