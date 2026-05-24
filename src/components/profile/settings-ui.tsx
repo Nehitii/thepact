@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
-import { CyberBackground } from "@/components/CyberBackground";
+import { DSPageShell, DSBackground } from "@/components/ds";
 
 /* ══════════════════════════════════════════════
    Shared cyberpunk UI primitives for settings pages
@@ -26,8 +26,12 @@ export function SettingsPageShell({
   stickyBar?: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[hsl(var(--background))] relative overflow-hidden selection:bg-primary/30">
-      <CyberBackground />
+    <DSPageShell
+      width="full"
+      padding="tight"
+      className="!px-0 !pt-0 !pb-0 selection:bg-primary/30"
+      background={<DSBackground variant="cyber" />}
+    >
       <div className="relative z-10 px-4 pt-12 pb-6 max-w-4xl mx-auto">
         <motion.header
           initial={{ opacity: 0, y: -20 }}
@@ -55,7 +59,7 @@ export function SettingsPageShell({
         <main className="space-y-8 relative z-10 pb-32">{children}</main>
       </div>
       {stickyBar}
-    </div>
+    </DSPageShell>
   );
 }
 
