@@ -28,8 +28,8 @@ export function SettingsPageShell({
   return (
     <DSPageShell
       width="full"
-      padding="none"
-      className="overflow-hidden selection:bg-primary/30"
+      padding="tight"
+      className="!px-0 !pt-0 !pb-0 selection:bg-primary/30"
       background={<DSBackground variant="cyber" />}
     >
       <div className="relative z-10 px-4 pt-12 pb-6 max-w-4xl mx-auto">
