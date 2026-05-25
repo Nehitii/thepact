@@ -1,5 +1,5 @@
 /* Shop utilities + module cards — extracted from index.css */
-@layer base {
+
   /* ========== SHOP UTILITIES ========== */
   
   /* Hide scrollbar while keeping functionality */
@@ -94,4 +94,4 @@
       grid-template-columns: repeat(3, 1fr);
     }
   }
-}
+

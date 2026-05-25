@@ -1,5 +1,5 @@
 /* Difficulty gamification animations — extracted from index.css */
-@layer base {
+
   /* ========== DIFFICULTY GAMIFICATION ANIMATIONS ========== */
 
   /* Phase 1: Difficulty Aura Pulse - scales with difficulty */
@@ -196,4 +196,4 @@
     animation: shimmer-wave 0.6s ease-out;
   }
 
-}
+

@@ -1055,7 +1055,7 @@
   --aura-bg: 222 35% 5%;
 }
 
-@layer components {
+
   .aura-glass {
     position: relative;
     background: hsl(var(--aura-glass-bg) / 0.035);
@@ -1087,7 +1087,7 @@
     pointer-events: none;
     opacity: 0.85;
   }
-}
+
 
 @keyframes aura-orb-drift {
   0%, 100% { transform: translate(0, 0) scale(1); }
@@ -1122,7 +1122,7 @@
   --prism-bg: 222 60% 3%;
 }
 
-@layer components {
+
   .prism-panel {
     position: relative;
     background: hsl(var(--prism-panel-bg) / 0.4);
@@ -1210,7 +1210,7 @@
   .prism-text-lime { color: hsl(var(--prism-lime)); }
   .prism-text-violet { color: hsl(var(--prism-violet)); }
   .prism-text-amber { color: hsl(var(--prism-amber)); }
-}
+
 
 @keyframes prism-scanline {
   0%   { top: -2%; opacity: 0; }

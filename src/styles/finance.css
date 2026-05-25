@@ -1,5 +1,5 @@
 /* Neumorphic finance dashboard system — extracted from index.css */
-@layer base {
+
   /* ========== NEUMORPHIC FINANCE DASHBOARD SYSTEM ========== */
   
   /* Neumorphic Shadow Variables */
@@ -312,4 +312,4 @@
     animation: neu-count-up 0.5s ease-out forwards;
   }
 
-}
+

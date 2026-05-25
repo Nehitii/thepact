@@ -27,7 +27,7 @@
   50%      { opacity: 0.75; }
 }
 
-@layer components {
+
   /* Hero ticker character reveal */
   .prism-ticker-char {
     display: inline-block;
@@ -108,7 +108,7 @@
     box-shadow: 0 0 6px hsl(var(--prism-cyan) / 0.6);
     animation: prism-particle-drift 14s linear infinite;
   }
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   .prism-ticker-char,
