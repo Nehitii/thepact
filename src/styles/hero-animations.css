@@ -1,5 +1,5 @@
 /* Hero section animations — extracted from index.css */
-@layer base {
+
   /* ========== HERO SECTION ANIMATIONS ========== */
   
   /* Fluid flow for XP progress bar */
@@ -223,4 +223,4 @@
     50% { opacity: 1; transform: scale(1.1); }
   }
 
-}
+
