@@ -2,6 +2,16 @@ import * as Sentry from "@sentry/react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+// Module-scoped stylesheets (cannot be loaded via @import at the bottom of
+// index.css — those rules are CSS-spec invalid and silently dropped).
+import "./styles/hero-animations.css";
+import "./styles/difficulty.css";
+import "./styles/finance.css";
+import "./styles/shop.css";
+import "./styles/glassmorphism.css";
+import "./styles/journal.css";
+import "./styles/goals.css";
+import "./styles/analytics.css";
 
 // i18n must be initialized once, before any components render.
 import "@/i18n/i18n";
