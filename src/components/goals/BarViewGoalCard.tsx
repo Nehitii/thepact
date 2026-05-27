@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from "react";
-import { Star, Target, Trophy, TrendingUp, Link2 } from "lucide-react";
+import { Star, Target, Trophy } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getStatusLabel, getDifficultyIntensity, getGoalStatusIcon } from "@/lib/goalConstants";
 import { SharedGoalBadge } from "@/components/goals/SharedGoalBadge";
 import { GoalLockOverlay } from "@/components/goals/GoalLockOverlay";
@@ -76,7 +76,7 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
   onNavigate,
   onToggleFocus,
 }: BarViewGoalCardProps) {
-  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity, deadlineInfo } =
+  const { theme, difficultyLabel, progressPercent, statusLabel, totalSteps, completedSteps, intensity, deadlineInfo, kpi } =
     useMemo(() => {
       const diff = goal.difficulty || "easy";
       const total = goal.totalStepsCount || 0;
@@ -87,15 +87,36 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
         const daysLeft = Math.ceil((dl.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
         deadlineInfo = { daysLeft, color: daysLeft > 7 ? "#22c55e" : daysLeft > 0 ? "#f59e0b" : "#ef4444" };
       }
+      const percent = total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0;
+      const intensityVal = getDifficultyIntensity(diff);
+
+      // Derive a contextual KPI
+      let kpi: { value: React.ReactNode; label: string } = {
+        value: <>{intensityVal}<span className="unit">/5</span></>,
+        label: "Intensity",
+      };
+      if (isCompleted) {
+        kpi = { value: <Trophy size={24} strokeWidth={2.2} />, label: "Done" };
+      } else if (total > 0) {
+        kpi = { value: <>{percent}<span className="unit">%</span></>, label: "Progress" };
+      } else if (deadlineInfo) {
+        const d = deadlineInfo.daysLeft;
+        kpi = {
+          value: <>{Math.abs(d)}<span className="unit">d</span></>,
+          label: d > 0 ? "Remaining" : d === 0 ? "Today" : "Overdue",
+        };
+      }
+
       return {
         theme: getDifficultyTheme(diff, customDifficultyColor),
         difficultyLabel: getDifficultyDisplayLabel(diff, customDifficultyName),
-        progressPercent: total > 0 ? Math.min(100, Math.round((completed / total) * 100)) : 0,
+        progressPercent: percent,
         statusLabel: isCompleted ? "Completed" : getStatusLabel(goal.status || "not_started"),
         totalSteps: total,
         completedSteps: completed,
-        intensity: getDifficultyIntensity(diff),
+        intensity: intensityVal,
         deadlineInfo,
+        kpi,
       };
     }, [goal, isCompleted, customDifficultyName, customDifficultyColor]);
 
@@ -107,16 +128,22 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
     "--percent": `${progressPercent}%`,
   } as React.CSSProperties;
 
+  const StatusIcon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
+
   return (
     <div
-      className="bar-card-root relative overflow-hidden rounded-xl rarity-halo"
+      className={`bar-card-root rarity-halo${goal.is_focus ? " is-focus" : ""}`}
       style={cssVars}
       data-halo={intensity}
       onClick={() => onNavigate(goal.id)}
     >
       {goal.is_locked && <GoalLockOverlay className="z-50" />}
       <div className="bar-card-container noselect">
+        <div className="bar-card-scanline" aria-hidden="true" />
+
         <button
+          type="button"
+          aria-label={goal.is_focus ? "Unset focus" : "Set as focus"}
           className={`bar-card-focus-btn ${goal.is_focus ? "active" : ""}`}
           onClick={(e) => {
             e.stopPropagation();
@@ -126,78 +153,79 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
           <Star className="star-icon" size={14} fill={goal.is_focus ? theme.color : "none"} stroke={theme.color} />
         </button>
 
-        <div className="bar-card-canvas">
-          {[...Array(9)].map((_, i) => (
-            <div key={i} className={`bar-card-tracker tr-${i + 1}`} />
-          ))}
-          <div className="bar-card-inner">
-            <div className="bar-card-noise" />
-            <div className="bar-card-content">
-              <div className="bar-card-visual">
-                <div className="bar-card-img-glow" />
-                <div className="bar-card-img-frame">
-                  {goal.image_url ? (
-                    <img src={goal.image_url} alt={goal.name} loading="lazy" />
-                  ) : (
-                    <div className="bar-card-placeholder">
-                      <Target size={24} />
-                    </div>
-                  )}
+        <div className="bar-card-content">
+          {/* Visual block */}
+          <div className="bar-card-visual">
+            <div className="bar-card-img-glow" />
+            <div className="bar-card-img-frame">
+              {goal.image_url ? (
+                <img src={goal.image_url} alt={goal.name} loading="lazy" />
+              ) : (
+                <div className="bar-card-placeholder">
+                  <Target size={28} strokeWidth={1.8} />
                 </div>
-                {totalSteps > 0 && (
-                  <div
-                    className="bar-card-mini-ring"
-                    style={{
-                      background: `conic-gradient(${theme.color} ${progressPercent}%, rgba(255,255,255,0.1) 0)`,
-                    }}
-                  >
-                    <div className="bar-card-ring-inner">
-                      {isCompleted ? <Trophy size={10} color={theme.color} /> : <TrendingUp size={10} color="white" />}
-                    </div>
-                  </div>
-                )}
+              )}
+            </div>
+            {totalSteps > 0 && (
+              <div
+                className="bar-card-mini-ring"
+                style={{
+                  background: `conic-gradient(${theme.color} ${progressPercent}%, rgba(255,255,255,0.08) 0)`,
+                }}
+              >
+                <div className="bar-card-ring-inner">
+                  {isCompleted ? <Trophy size={11} /> : `${progressPercent}`}
+                </div>
               </div>
+            )}
+          </div>
 
-              <div className="bar-card-info">
-                <div className="bar-card-header">
-                  <div className="bar-card-diff-tag">
-                    <span className="bar-card-dot" />
-                    {difficultyLabel}
-                  </div>
-                </div>
-                <h3 className="bar-card-name">{goal.name}</h3>
-                {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
-                <div className="bar-card-meta">
-                  <div className="bar-card-status inline-flex items-center gap-1">
-                    {(() => {
-                      const Icon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
-                      return <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />;
-                    })()}
-                    {statusLabel}
-                  </div>
-                  {deadlineInfo && !isCompleted && (
-                    <div className="bar-card-steps" style={{ color: deadlineInfo.color }}>
-                      {deadlineInfo.daysLeft > 0
-                        ? `${deadlineInfo.daysLeft}d`
-                        : deadlineInfo.daysLeft === 0
-                          ? "Today"
-                          : `${Math.abs(deadlineInfo.daysLeft)}d late`}
-                    </div>
-                  )}
-                  {totalSteps > 0 && (
-                    <div className="bar-card-steps">
-                      {completedSteps} <span className="bar-card-sep">/</span> {totalSteps}
-                    </div>
-                  )}
-                </div>
-                <div className="bar-card-progress">
-                  <div className="bar-card-track">
-                    <div className="bar-card-fill" />
-                    <div className="bar-card-shine" />
-                  </div>
-                </div>
+          {/* Info block */}
+          <div className="bar-card-info">
+            <div className="bar-card-diff-chip">
+              <span className="bar-card-dot" />
+              {difficultyLabel}
+            </div>
+            <h3 className="bar-card-name">{goal.name}</h3>
+            <div className="bar-card-meta">
+              <span className="bar-card-status">
+                <StatusIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
+                {statusLabel}
+              </span>
+              {deadlineInfo && !isCompleted && (
+                <>
+                  <span className="bar-card-meta-divider" aria-hidden="true" />
+                  <span className="bar-card-steps" style={{ color: deadlineInfo.color }}>
+                    {deadlineInfo.daysLeft > 0
+                      ? `${deadlineInfo.daysLeft}d`
+                      : deadlineInfo.daysLeft === 0
+                        ? "Today"
+                        : `${Math.abs(deadlineInfo.daysLeft)}d late`}
+                  </span>
+                </>
+              )}
+              {totalSteps > 0 && (
+                <>
+                  <span className="bar-card-meta-divider" aria-hidden="true" />
+                  <span className="bar-card-steps">
+                    {completedSteps}<span className="bar-card-sep"> / </span>{totalSteps}
+                  </span>
+                </>
+              )}
+              {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
+            </div>
+            <div className="bar-card-progress">
+              <div className="bar-card-track">
+                <div className="bar-card-fill" />
+                <div className="bar-card-shine" />
               </div>
             </div>
+          </div>
+
+          {/* KPI block (right) */}
+          <div className="bar-card-kpi" aria-hidden="true">
+            <div className="bar-card-kpi-value">{kpi.value}</div>
+            <div className="bar-card-kpi-label">{kpi.label}</div>
           </div>
         </div>
       </div>
