@@ -76,7 +76,7 @@ export default defineConfig(({ mode }) => ({
           "query-vendor": ["@tanstack/react-query"],
           "framer-vendor": ["framer-motion"],
           "sentry-vendor": ["@sentry/react"],
-          "i18n-vendor": ["i18next", "react-i18next", "i18next-browser-languagedetector"],
+          "i18n-vendor": ["i18next", "react-i18next"],
           "date-vendor": ["date-fns"],
           "dnd-vendor": ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
           "radix-vendor": [
