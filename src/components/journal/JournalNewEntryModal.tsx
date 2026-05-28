@@ -1,7 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { JournalEditor } from "./JournalEditor";
+const JournalEditor = lazy(() =>
+  import("./JournalEditor").then((m) => ({ default: m.JournalEditor })),
+);
 import { HUDCorner } from "./JournalDecorations";
 import { useCreateJournalEntry, useUpdateJournalEntry } from "@/hooks/useJournal";
 import type { JournalEntry } from "@/types/journal";
