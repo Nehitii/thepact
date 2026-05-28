@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from "vite-plugin-pwa";
+import { visualizer } from "rollup-plugin-visualizer";
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -15,12 +16,20 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     mode === "development" && componentTagger(),
+    mode === "analyze" && visualizer({
+      filename: "dist/stats.html",
+      open: false,
+      gzipSize: true,
+      brotliSize: true,
+      template: "treemap",
+    }),
     VitePWA({
       registerType: "autoUpdate",
       devOptions: { enabled: false },
       includeAssets: ["favicon.ico", "robots.txt", "placeholder.svg"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+        globIgnores: ["**/stats.html"],
         navigateFallbackDenylist: [/^\/api\//, /^\/functions\//, /^\/~oauth/],
         runtimeCaching: [
           {

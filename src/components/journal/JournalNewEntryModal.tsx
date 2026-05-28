@@ -1,7 +1,9 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { JournalEditor } from "./JournalEditor";
+const JournalEditor = lazy(() =>
+  import("./JournalEditor").then((m) => ({ default: m.JournalEditor })),
+);
 import { HUDCorner } from "./JournalDecorations";
 import { useCreateJournalEntry, useUpdateJournalEntry } from "@/hooks/useJournal";
 import type { JournalEntry } from "@/types/journal";
@@ -227,7 +229,9 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                 }}
               />
               <div className="flex-1 overflow-y-auto py-6">
-                <JournalEditor content={content} onChange={setContent} placeholder="Begin writing..." />
+                <Suspense fallback={<div className="h-32 opacity-40 text-xs">Loading editor…</div>}>
+                  <JournalEditor content={content} onChange={setContent} placeholder="Begin writing..." />
+                </Suspense>
               </div>
             </div>
           )}
