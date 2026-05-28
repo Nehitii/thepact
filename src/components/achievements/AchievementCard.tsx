@@ -1,8 +1,8 @@
 import { Achievement, rarityColors, AchievementRarity } from "@/lib/achievements";
 import { motion } from "framer-motion";
-import * as LucideIcons from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
+import { DynamicLucideIcon } from "@/components/DynamicLucideIcon";
 
 interface AchievementCardProps {
   achievement: Achievement;
@@ -10,13 +10,7 @@ interface AchievementCardProps {
 }
 
 export function AchievementCard({ achievement, compact = false }: AchievementCardProps) {
-  const IconComponent =
-    (LucideIcons as any)[
-      achievement.icon_key
-        .split("-")
-        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join("")
-    ] || LucideIcons.Award;
+  const iconKey = achievement.icon_key;
 
   const isLocked = !achievement.unlocked;
   const isHidden = achievement.is_hidden && isLocked;
@@ -67,7 +61,9 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
                 style={{ borderColor: color }}
               />
             )}
-            <IconComponent
+            <DynamicLucideIcon
+              name={iconKey}
+              fallback="award"
               className={cn("z-10 transition-all duration-500", isLocked ? "text-slate-700" : "")}
               style={{
                 color: isLocked ? undefined : color,
