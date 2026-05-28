@@ -148,7 +148,6 @@ export default function Achievements() {
             <div className="flex gap-2 pb-2">
               {ALL_CATEGORIES.map((cat) => {
                 const iconKey = cat === "all" ? "layers" : (categoryIcons[cat] || "circle");
-                const Icon = (LucideIcons as any)[iconKey.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join("")] || LucideIcons.Circle;
                 const count = cat === "all" ? null : categoryCounts[cat];
                 const isActive = selectedCategory === cat;
                 return (
@@ -162,7 +161,7 @@ export default function Achievements() {
                         : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
                     )}
                   >
-                    <Icon size={12} />
+                    <DynamicLucideIcon name={iconKey} fallback="circle" size={12} />
                     <span>{categoryLabels[cat] || cat}</span>
                     {count && (
                       <span className="text-[8px] opacity-50">{count.unlocked}/{count.total}</span>
