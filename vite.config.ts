@@ -29,6 +29,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.ico", "robots.txt", "placeholder.svg"],
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff2}"],
+        globIgnores: ["**/stats.html"],
         navigateFallbackDenylist: [/^\/api\//, /^\/functions\//, /^\/~oauth/],
         runtimeCaching: [
           {
