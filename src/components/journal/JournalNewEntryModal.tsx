@@ -229,7 +229,9 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                 }}
               />
               <div className="flex-1 overflow-y-auto py-6">
-                <JournalEditor content={content} onChange={setContent} placeholder="Begin writing..." />
+                <Suspense fallback={<div className="h-32 opacity-40 text-xs">Loading editor…</div>}>
+                  <JournalEditor content={content} onChange={setContent} placeholder="Begin writing..." />
+                </Suspense>
               </div>
             </div>
           )}
