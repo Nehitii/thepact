@@ -61,7 +61,9 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
                 style={{ borderColor: color }}
               />
             )}
-            <IconComponent
+            <DynamicLucideIcon
+              name={iconKey}
+              fallback="award"
               className={cn("z-10 transition-all duration-500", isLocked ? "text-slate-700" : "")}
               style={{
                 color: isLocked ? undefined : color,
