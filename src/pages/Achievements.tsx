@@ -5,7 +5,7 @@ import { getUserAchievements, Achievement, AchievementRarity, rarityColors, cate
 import { AchievementCard } from "@/components/achievements/AchievementCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, ChevronDown, Check, Sparkles, Crown } from "lucide-react";
-import * as LucideIcons from "lucide-react";
+import { DynamicLucideIcon } from "@/components/DynamicLucideIcon";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
