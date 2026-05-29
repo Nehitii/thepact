@@ -209,7 +209,7 @@ export function RanksCard({ userId }: RanksCardProps) {
                         }}>
                         <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 border"
                           style={{ borderColor: `${frameColor}50`, background: `linear-gradient(135deg, ${frameColor}10, transparent)` }}>
-                          {rank.logo_url ? <img src={rank.logo_url} alt="" className="w-6 h-6 object-contain" /> : <Trophy className="h-5 w-5" style={{ color: frameColor }} />}
+                          {rank.logo_url ? <img src={rank.logo_url} alt="" className="w-6 h-6 object-contain" loading="lazy" decoding="async" /> : <Trophy className="h-5 w-5" style={{ color: frameColor }} />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">

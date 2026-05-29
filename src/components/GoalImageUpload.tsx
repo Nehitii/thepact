@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, X, Loader2, ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { optimizeImage } from "@/lib/imageOptimization";
 interface GoalImageUploadProps {
   value: string;
   onChange: (url: string) => void;
@@ -34,13 +35,15 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
     setUploading(true);
 
     try {
-      // Generate unique filename
-      const fileExt = file.name.split(".").pop();
+      // Compress + convert to WebP before upload
+      const optimized = await optimizeImage(file, "goal");
+      const fileExt = optimized.type === "image/gif" ? "gif" : "webp";
       const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage.from("goal-images").upload(fileName, file, {
-        cacheControl: "3600",
+      const { data, error } = await supabase.storage.from("goal-images").upload(fileName, optimized, {
+        contentType: optimized.type,
+        cacheControl: "31536000",
         upsert: false,
       });
 
@@ -81,6 +84,8 @@ export function GoalImageUpload({ value, onChange, userId }: GoalImageUploadProp
             src={value}
             alt="Goal preview"
             className="w-full h-full object-contain"
+            loading="lazy"
+            decoding="async"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "";
               (e.target as HTMLImageElement).style.display = "none";

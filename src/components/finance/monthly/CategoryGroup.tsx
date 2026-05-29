@@ -162,7 +162,7 @@ export function CategoryGroup({
                     <>
                       <div className="flex items-center gap-2 flex-1 min-w-0 pl-2">
                         {item.icon_url ? (
-                          <img src={item.icon_url} alt="" className="w-5 h-5 rounded object-cover shrink-0" />
+                          <img src={item.icon_url} alt="" className="w-5 h-5 rounded object-cover shrink-0" loading="lazy" decoding="async" />
                         ) : item.icon_emoji ? (
                           <span className="text-base shrink-0">{item.icon_emoji}</span>
                         ) : null}

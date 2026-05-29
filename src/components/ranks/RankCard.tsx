@@ -44,7 +44,7 @@ export function RankBadge({ rank, size = "md", className }: RankBadgeProps) {
         }}
       >
         {rank.logo_url ? (
-          <img src={rank.logo_url} alt={rank.name} className={cn("object-contain", iconSize[size])} />
+          <img src={rank.logo_url} alt={rank.name} className={cn("object-contain", iconSize[size])} loading="lazy" decoding="async" />
         ) : (
           <Shield className={cn(iconSize[size])} style={{ color: frameColor }} />
         )}

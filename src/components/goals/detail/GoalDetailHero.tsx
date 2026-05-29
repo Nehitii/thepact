@@ -95,7 +95,7 @@ export const GoalDetailHero = React.memo(function GoalDetailHero({
                 className={`relative w-24 h-24 md:w-32 md:h-32 rounded-xl overflow-hidden border-2 ${isCompleted ? "grayscale" : ""}`}
                 style={{ borderColor: `${difficultyColor}60`, boxShadow: `0 0 25px ${difficultyColor}40` }}
               >
-                <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
+                <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
               </div>
             ) : (
               <div

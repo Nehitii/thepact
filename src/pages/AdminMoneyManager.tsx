@@ -169,7 +169,7 @@ export default function AdminMoneyManager() {
               <div key={offer.id} className="flex items-center justify-between p-4 rounded-xl bg-card/50 border border-primary/20">
                 <div className="flex items-center gap-4">
                   {offer.image_url ? (
-                    <img src={offer.image_url} alt={offer.name} className="w-12 h-12 rounded-xl object-cover" />
+                    <img src={offer.image_url} alt={offer.name} className="w-12 h-12 rounded-xl object-cover" loading="lazy" decoding="async" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center"><Gift className="h-6 w-6 text-amber-400" /></div>
                   )}

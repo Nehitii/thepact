@@ -85,7 +85,7 @@ export function FocusTimerRing({
                 filter: `drop-shadow(0 0 15px ${colorHsl})`,
               }}
             >
-              <img src={goalImageUrl} alt="" className="w-full h-full object-cover" />
+              <img src={goalImageUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
             </div>
           </motion.div>
         )}

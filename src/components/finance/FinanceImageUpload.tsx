@@ -5,6 +5,7 @@ import { ImagePlus, X, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { optimizeImage } from '@/lib/imageOptimization';
 
 interface FinanceImageUploadProps {
   currentUrl?: string | null;
@@ -34,9 +35,14 @@ export function FinanceImageUpload({ currentUrl, onUpload, onClear, size = 'md' 
 
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop();
+      const optimized = await optimizeImage(file, 'thumbnail');
+      const ext = optimized.type === 'image/gif' ? 'gif' : 'webp';
       const path = `${user.id}/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('finance-icons').upload(path, file, { upsert: true });
+      const { error } = await supabase.storage.from('finance-icons').upload(path, optimized, {
+        upsert: true,
+        contentType: optimized.type,
+        cacheControl: '31536000',
+      });
       if (error) throw error;
       const { data: { publicUrl } } = supabase.storage.from('finance-icons').getPublicUrl(path);
       onUpload(publicUrl);
@@ -63,7 +69,7 @@ export function FinanceImageUpload({ currentUrl, onUpload, onClear, size = 'md' 
 
       {currentUrl ? (
         <div className={`relative ${dimensions} rounded-xl overflow-hidden group`}>
-          <img src={currentUrl} alt="" className="w-full h-full object-cover" />
+          <img src={currentUrl} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
           <button
             onClick={(e) => { e.stopPropagation(); onClear(); }}
             className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"

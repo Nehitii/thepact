@@ -564,7 +564,7 @@ export default function AdminCosmeticsManager() {
                     {frame.preview_url ? (
                       <div className="relative w-full h-full">
                         <div className="absolute inset-[15%] rounded-full bg-card/50" />
-                        <img src={frame.preview_url} alt={frame.name} className="absolute inset-0 w-full h-full object-contain"
+                        <img src={frame.preview_url} alt={frame.name} className="absolute inset-0 w-full h-full object-contain" loading="lazy" decoding="async"
                           style={{ transform: `scale(${frame.frame_scale || 1}) translate(${frame.frame_offset_x || 0}px, ${frame.frame_offset_y || 0}px)` }} />
                       </div>
                     ) : (
