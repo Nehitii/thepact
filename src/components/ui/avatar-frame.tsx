@@ -65,7 +65,7 @@ export function AvatarFrame({
           className="absolute inset-0 z-20 pointer-events-none flex items-center justify-center"
           style={{ transform, transformOrigin }}
         >
-          <img src={frameImage} alt="" className="w-full h-full object-contain" />
+          <img src={frameImage} alt="" className="w-full h-full object-contain" loading="lazy" decoding="async" />
         </div>
       )}
     </div>

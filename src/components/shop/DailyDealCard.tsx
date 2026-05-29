@@ -81,7 +81,7 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
       <div className="relative flex items-center justify-center p-6 pt-10 pb-4 min-h-[120px]"
         style={{ background: `linear-gradient(180deg, ${r.glow}, transparent)` }}>
         {deal.item.preview_url ? (
-          <img src={deal.item.preview_url} alt={deal.item.name} className="w-20 h-20 object-contain" />
+          <img src={deal.item.preview_url} alt={deal.item.name} className="w-20 h-20 object-contain" loading="lazy" decoding="async" />
         ) : (
           <Sparkles className="w-12 h-12" style={{ color: r.accent }} />
         )}

@@ -85,7 +85,7 @@ export function FocusGoalsModule({
                 <div className="flex">
                   <div className="relative w-14 h-14 flex-shrink-0 bg-[rgba(0,180,255,0.02)]">
                     {goal.image_url ? (
-                      <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" />
+                      <img src={goal.image_url} alt={goal.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Target className="w-5 h-5 text-[rgba(160,210,255,0.15)]" />

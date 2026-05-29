@@ -494,7 +494,7 @@ export default function Wishlist() {
                 className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-mono text-xs" />
               {editImageUrl && (
                 <div className="h-16 w-16 border border-cyan-500/15 overflow-hidden bg-slate-900/50" style={{ clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))" }}>
-                  <img src={editImageUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                  <img src={editImageUrl} alt="Preview" className="w-full h-full object-cover" loading="lazy" decoding="async" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                 </div>
               )}
             </div>
@@ -609,7 +609,7 @@ export default function Wishlist() {
                       className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-mono text-xs" />
                     {newImageUrl && (
                       <div className="h-16 w-16 border border-cyan-500/15 overflow-hidden bg-slate-900/50" style={{ clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))" }}>
-                        <img src={newImageUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        <img src={newImageUrl} alt="Preview" className="w-full h-full object-cover" loading="lazy" decoding="async" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
                       </div>
                     )}
                   </div>

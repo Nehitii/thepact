@@ -58,7 +58,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
               boxShadow: `inset 0 -3px 8px ${r.glow}, 0 4px 16px hsl(var(--background) / 0.5)`,
             }}>
               {bundle.image_url ? (
-                <img src={bundle.image_url} alt={bundle.name} className="w-full h-full object-cover rounded-xl" />
+                <img src={bundle.image_url} alt={bundle.name} className="w-full h-full object-cover rounded-xl" loading="lazy" decoding="async" />
               ) : (
                 <Package className="w-10 h-10" style={{ color: r.accent }} />
               )}

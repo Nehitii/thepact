@@ -81,7 +81,7 @@ export function BondsShop() {
                   <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-purple-500 to-amber-500 animate-shimmer bg-[length:200%_100%]" />
                   <div className="relative flex flex-col md:flex-row items-center gap-6 p-6 rounded-[15px]" style={{ background: "hsl(var(--card) / 0.95)" }}>
                     <div className="relative h-20 w-20 shrink-0">
-                      <img src={offer.image_url || "/placeholder.svg"} className="w-full h-full object-contain" alt="" />
+                      <img src={offer.image_url || "/placeholder.svg"} className="w-full h-full object-contain" alt="" loading="lazy" decoding="async" />
                     </div>
                     <div className="flex-1 text-center md:text-left space-y-1">
                       <h3 className="font-orbitron text-lg font-bold text-foreground">{offer.name}</h3>
