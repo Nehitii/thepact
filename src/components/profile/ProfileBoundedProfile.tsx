@@ -257,13 +257,19 @@ export function ProfileBoundedProfile({
 
     setUploading(true);
     try {
-      const fileExt = file.name.split(".").pop();
+      const { optimizeImage } = await import("@/lib/imageOptimization");
+      const optimized = await optimizeImage(file, "avatar");
+      const fileExt = optimized.type === "image/gif" ? "gif" : "webp";
       const fileName = `avatar-${Date.now()}.${fileExt}`;
       const filePath = `${userId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from("goal-images")
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, optimized, {
+          upsert: true,
+          contentType: optimized.type,
+          cacheControl: "31536000",
+        });
       if (uploadError) throw uploadError;
 
       const { data: signedUrlData } = await supabase.storage
