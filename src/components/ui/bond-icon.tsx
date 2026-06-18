@@ -1,4 +1,4 @@
-import bondIcon from "@/assets/bond-icon.png";
+import bondIcon from "@/assets/bond-icon.webp";
 
 interface BondIconProps {
   className?: string;
@@ -10,6 +10,8 @@ export function BondIcon({ className = "", size = 24 }: BondIconProps) {
     <img 
       src={bondIcon} 
       alt="Bonds" 
+      loading="lazy"
+      decoding="async"
       className={`inline-block ${className}`}
       style={{ width: size, height: size }}
     />
