@@ -2,12 +2,15 @@ import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { CommandPalette } from "@/components/CommandPalette";
-import { CoachPanel } from "@/components/coach/CoachPanel";
 import { ReviewRitualModal } from "@/components/reflect/ReviewRitualModal";
 import type { ReviewType } from "@/hooks/useReviews";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Bot } from "lucide-react";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
+
+const CoachPanel = lazy(() =>
+  import("@/components/coach/CoachPanel").then((m) => ({ default: m.CoachPanel }))
+);
 
 export function AppLayout() {
   const [coachOpen, setCoachOpen] = useState(false);
