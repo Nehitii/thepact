@@ -80,7 +80,11 @@ export function AppLayout() {
         <Bot className="h-5 w-5" />
       </button>
 
-      <CoachPanel open={coachOpen} onClose={() => setCoachOpen(false)} />
+      {coachOpen && (
+        <Suspense fallback={null}>
+          <CoachPanel open={coachOpen} onClose={() => setCoachOpen(false)} />
+        </Suspense>
+      )}
 
       {ritualType && (
         <ReviewRitualModal
