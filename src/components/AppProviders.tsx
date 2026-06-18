@@ -16,9 +16,11 @@ import { OnlineStatusPing } from "@/components/friends/OnlineStatusPing";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30_000,
+      staleTime: 300_000,
+      gcTime: 3_600_000,
       retry: 1,
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
     },
   },
 });
