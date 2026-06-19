@@ -1,15 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useProfileSettings } from "@/hooks/useProfileSettings";
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-  color: string;
-}
 
 interface ParticleEffectProps {
   x: number;
@@ -18,67 +8,98 @@ interface ParticleEffectProps {
   count?: number;
 }
 
+type ParticleState = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  el: HTMLDivElement;
+};
+
 export const ParticleEffect = ({ x, y, color = 'hsl(195 100% 55%)', count = 12 }: ParticleEffectProps) => {
-  const [particles, setParticles] = useState<Particle[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Create particles
-    const newParticles: Particle[] = [];
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Create DOM nodes for each particle (no React state per frame)
+    const particles: ParticleState[] = [];
     for (let i = 0; i < count; i++) {
       const angle = (Math.PI * 2 * i) / count;
       const speed = 2 + Math.random() * 3;
-      newParticles.push({
-        id: i,
+      const el = document.createElement('div');
+      el.style.position = 'absolute';
+      el.style.width = '6px';
+      el.style.height = '6px';
+      el.style.borderRadius = '9999px';
+      el.style.backgroundColor = color;
+      el.style.boxShadow = `0 0 4px ${color}`;
+      el.style.willChange = 'transform, opacity';
+      el.style.pointerEvents = 'none';
+      el.style.left = '0px';
+      el.style.top = '0px';
+      el.style.transform = `translate3d(${x}px, ${y}px, 0) scale(1)`;
+      container.appendChild(el);
+      particles.push({
         x,
         y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
         life: 1,
-        color,
+        el,
       });
     }
-    setParticles(newParticles);
 
-    // Animate particles
-    const interval = setInterval(() => {
-      setParticles((prev) =>
-        prev
-          .map((p) => ({
-            ...p,
-            x: p.x + p.vx,
-            y: p.y + p.vy,
-            vy: p.vy + 0.2, // gravity
-            life: p.life - 0.05,
-          }))
-          .filter((p) => p.life > 0)
-      );
-    }, 16);
+    let rafId = 0;
+    let lastTs = performance.now();
+    // Original loop: setInterval 16ms with life -= 0.05 and vy += 0.2 per tick.
+    // Normalize to time so visuals match across refresh rates.
+    const STEP_MS = 16;
 
-    // Clean up after animation
-    setTimeout(() => {
-      setParticles([]);
-    }, 400);
+    const tick = (ts: number) => {
+      const dt = (ts - lastTs) / STEP_MS;
+      lastTs = ts;
 
-    return () => clearInterval(interval);
+      let alive = false;
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        if (p.life <= 0) continue;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 0.2 * dt; // gravity
+        p.life -= 0.05 * dt;
+        if (p.life <= 0) {
+          p.el.style.opacity = '0';
+          continue;
+        }
+        alive = true;
+        const life = p.life;
+        p.el.style.opacity = String(life);
+        p.el.style.boxShadow = `0 0 ${4 * life}px ${color}`;
+        p.el.style.transform = `translate3d(${p.x}px, ${p.y}px, 0) scale(${life})`;
+      }
+
+      if (alive) {
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      for (const p of particles) {
+        p.el.remove();
+      }
+    };
   }, [x, y, color, count]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50">
-      {particles.map((particle) => (
-        <div
-          key={particle.id}
-          className="absolute w-1.5 h-1.5 rounded-full"
-          style={{
-            left: particle.x,
-            top: particle.y,
-            backgroundColor: particle.color,
-            opacity: particle.life,
-            boxShadow: `0 0 ${4 * particle.life}px ${particle.color}`,
-            transform: `scale(${particle.life})`,
-          }}
-        />
-      ))}
-    </div>
+    <div
+      ref={containerRef}
+      className="fixed inset-0 pointer-events-none z-50"
+    />
   );
 };
 
