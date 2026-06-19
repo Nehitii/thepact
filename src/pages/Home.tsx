@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
-import { DSPageShell, DSPageLoader } from "@/components/ds";
+import { DSPageShell } from "@/components/ds";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Components
