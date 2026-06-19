@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { DSPageShell, DSPageLoader } from "@/components/ds";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Components
 import { GettingStartedCard } from "@/components/home/GettingStartedCard";
@@ -136,8 +137,6 @@ export default function Home() {
     };
   }, [allGoals, financeSettings, pact?.created_at, isModulePurchased]);
 
-  const loading = !user || pactLoading || (pact && goalsLoading) || shopLoading;
-
   // Phase 4: Wrap navigation in useEffect to avoid render-time side effects
   useEffect(() => {
     if (!pactLoading && !pact && user) {
@@ -149,11 +148,9 @@ export default function Home() {
     return null;
   }
 
-  if (loading) {
-    return <DSPageLoader variant="verbose" message="Initializing..." />;
-  }
-
-  if (!pact) return null;
+  // Progressive rendering: show shell + skeletons while pact loads
+  const isGoalsReady = !!pact && !goalsLoading;
+  const isShopReady = !shopLoading;
 
   const safeRankData = rankData || {
     ranks: [],
@@ -172,7 +169,7 @@ export default function Home() {
     return idx >= 0 ? idx + 1 : 1;
   })();
 
-  const activeDays = pact.created_at
+  const activeDays = pact?.created_at
     ? Math.max(1, Math.floor((Date.now() - new Date(pact.created_at).getTime()) / (1000 * 60 * 60 * 24)))
     : 1;
 
@@ -210,7 +207,15 @@ export default function Home() {
       }
     >
       {/* Neural Bar — sticky header, stays as first child */}
-      <NeuralBar pact={pact} rankData={safeRankData} />
+      {pact ? (
+        <NeuralBar pact={pact} rankData={safeRankData} />
+      ) : (
+        <div className="sticky top-0 z-40 h-12 border-b border-[rgba(0,180,255,0.08)] bg-background/80 backdrop-blur px-4 flex items-center gap-3">
+          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-24 ml-auto" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+      )}
 
       {/* NOTE: Home volontairement sans DSPageHeader — NexusHeroBanner joue le rôle d'identité visuelle */}
       <motion.div
@@ -220,48 +225,64 @@ export default function Home() {
         transition={{ duration: 0.4 }}
       >
         {/* HERO BANNER */}
-        <NexusHeroBanner
-          progression={progression}
-          level={level}
-          totalMissions={allGoals.length}
-          activeDays={activeDays}
-          pactName={pact.name}
-          pactMantra={pact.mantra}
-          pactSymbol={pact.symbol}
-          titleFont={pact.title_font}
-          titleEffect={pact.title_effect}
-        />
+        {pact ? (
+          <NexusHeroBanner
+            progression={progression}
+            level={level}
+            totalMissions={allGoals.length}
+            activeDays={activeDays}
+            pactName={pact.name}
+            pactMantra={pact.mantra}
+            pactSymbol={pact.symbol}
+            titleFont={pact.title_font}
+            titleEffect={pact.title_effect}
+          />
+        ) : (
+          <Skeleton className="h-48 w-full rounded-xl" />
+        )}
 
         {/* RANK + QUICK ACCESS */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
           <RankPanel rankData={safeRankData} className="md:col-span-7" />
-          <QuickAccessPanel
-            ownedModules={{
-              "todo-list": ownedModules["todo-list"],
-              journal: ownedModules["journal"],
-              "track-health": ownedModules["track-health"],
-            }}
-            onWeeklyReview={() => setWeeklyReviewOpen(true)}
-            className="md:col-span-5"
-          />
+          {isShopReady ? (
+            <QuickAccessPanel
+              ownedModules={{
+                "todo-list": ownedModules["todo-list"],
+                journal: ownedModules["journal"],
+                "track-health": ownedModules["track-health"],
+              }}
+              onWeeklyReview={() => setWeeklyReviewOpen(true)}
+              className="md:col-span-5"
+            />
+          ) : (
+            <Skeleton className="md:col-span-5 h-40 rounded-xl" />
+          )}
         </div>
 
         {/* COUNTDOWN */}
-        <CountdownPanel
-          projectStartDate={pact.project_start_date}
-          projectEndDate={pact.project_end_date}
-          goalsCompleted={dashboardData.goalsCompleted}
-          totalGoals={dashboardData.totalGoals}
-          pactName={pact.name}
-        />
+        {pact ? (
+          <CountdownPanel
+            projectStartDate={pact.project_start_date}
+            projectEndDate={pact.project_end_date}
+            goalsCompleted={dashboardData.goalsCompleted}
+            totalGoals={dashboardData.totalGoals}
+            pactName={pact.name}
+          />
+        ) : (
+          <Skeleton className="h-24 w-full rounded-xl" />
+        )}
 
         {/* MISSION RANDOMIZER */}
-        <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
+        {isGoalsReady ? (
+          <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
+        ) : (
+          <Skeleton className="h-32 w-full rounded-xl" />
+        )}
 
         <WeeklyReviewModal open={weeklyReviewOpen} onClose={() => setWeeklyReviewOpen(false)} />
 
         {/* ONBOARDING */}
-        {userState === "onboarding" && (
+        {pact && isGoalsReady && userState === "onboarding" && (
           <GettingStartedCard
             hasGoals={dashboardData.totalGoals > 0}
             hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
@@ -280,23 +301,31 @@ export default function Home() {
             <span className="text-[9px] font-mono text-primary/50 hidden group-open:inline">▾ COLLAPSE</span>
           </summary>
           <div className="space-y-4 pt-2">
-            <MonitoringGlobalPanel
-              data={dashboardData}
-              projectStartDate={pact.project_start_date}
-              projectEndDate={pact.project_end_date}
-            />
-            <DifficultyScalePanel
-              difficultyProgress={dashboardData.difficultyProgress}
-              customDifficultyName={customDifficultyName}
-              customDifficultyColor={customDifficultyColor}
-            />
+            {pact && isGoalsReady ? (
+              <MonitoringGlobalPanel
+                data={dashboardData}
+                projectStartDate={pact.project_start_date}
+                projectEndDate={pact.project_end_date}
+              />
+            ) : (
+              <Skeleton className="h-40 w-full rounded-xl" />
+            )}
+            {isGoalsReady ? (
+              <DifficultyScalePanel
+                difficultyProgress={dashboardData.difficultyProgress}
+                customDifficultyName={customDifficultyName}
+                customDifficultyColor={customDifficultyColor}
+              />
+            ) : (
+              <Skeleton className="h-40 w-full rounded-xl" />
+            )}
             <LifeAreasBalancePanel />
             <DailyQuestsPanel />
           </div>
         </details>
 
         {/* LOCKED MODULES */}
-        {lockedModules.length > 0 && (
+        {isShopReady && lockedModules.length > 0 && (
           <section className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
             <h3 className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-[rgba(160,210,255,0.35)] mb-4">
               Available Modules
