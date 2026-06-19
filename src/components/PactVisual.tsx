@@ -533,7 +533,7 @@ export function PactVisual({ symbol = "flame", progress = 0, size = "lg", classN
       {hasStarFlashes && [0, 1, 2, 3].map((i) => <StarFlash key={i} color={color} index={i} />)}
 
       {/* ── progress ring + icon ── */}
-      <div className="relative" style={{ filter: `drop-shadow(0 0 14px ${color}66)` }}>
+      <div className="relative" style={{ filter: `drop-shadow(0 0 14px ${color}66) drop-shadow(0 0 28px ${color}44)` }}>
         <svg className={s.wrap} viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)", overflow: "visible" }}>
           {/* track */}
           <circle cx="50" cy="50" r={r} fill="none" stroke={`${color}1a`} strokeWidth="3" />
@@ -557,20 +557,13 @@ export function PactVisual({ symbol = "flame", progress = 0, size = "lg", classN
 
         {/* center icon */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative">
-            {/* blur ghost */}
-            <div className="absolute -inset-1 blur-md opacity-60" aria-hidden>
-              <Icon id={`${uid}-blur`} size={s.icon} />
-            </div>
-            {/* animated icon */}
-            <div
-              style={{
-                animation: iconAnimation,
-                transformOrigin: iconTransformOrigin ?? "center",
-              }}
-            >
-              <Icon id={`${uid}-main`} size={s.icon} />
-            </div>
+          <div
+            style={{
+              animation: iconAnimation,
+              transformOrigin: iconTransformOrigin ?? "center",
+            }}
+          >
+            <Icon id={`${uid}-main`} size={s.icon} />
           </div>
         </div>
       </div>
