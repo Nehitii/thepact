@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import "@/styles/finance.css";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
