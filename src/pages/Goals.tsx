@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import "@/styles/goals.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
