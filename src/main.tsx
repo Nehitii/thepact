@@ -1,16 +1,18 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-// Module-scoped stylesheets (cannot be loaded via @import at the bottom of
+// Global stylesheets (cannot be loaded via @import at the bottom of
 // index.css — those rules are CSS-spec invalid and silently dropped).
+// Kept global because their classes are used across multiple pages or
+// shared components (sidebar, DSBackground, profile, etc.).
 import "./styles/hero-animations.css";
 import "./styles/difficulty.css";
-import "./styles/finance.css";
 import "./styles/shop.css";
 import "./styles/glassmorphism.css";
 import "./styles/journal.css";
-import "./styles/goals.css";
-import "./styles/analytics.css";
+// finance.css, analytics.css and goals.css are co-located with their
+// respective lazy pages (Finance/Analytics/Goals) so they ship in the
+// page chunk instead of the initial bundle.
 
 // i18n must be initialized once, before any components render.
 import "@/i18n/i18n";
