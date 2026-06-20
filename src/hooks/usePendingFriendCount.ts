@@ -18,8 +18,10 @@ export function usePendingFriendCount() {
       return count ?? 0;
     },
     enabled: !!user?.id,
-    staleTime: 30_000,
-    refetchInterval: 60_000,
+    // Aligned with the global 5 min cache: the badge updates after
+    // mutations (accept/decline/send invalidate this key) and on natural
+    // remount; no aggressive polling needed for a sidebar badge.
+    staleTime: 5 * 60 * 1000,
   });
 
   return { count };

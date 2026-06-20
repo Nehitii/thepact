@@ -45,7 +45,7 @@ export function useMessages() {
       return data as PrivateMessage[];
     },
     enabled: !!user?.id,
-    staleTime: 30 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 
   // Unread message count
