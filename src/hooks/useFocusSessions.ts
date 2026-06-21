@@ -13,20 +13,23 @@ export interface FocusSession {
   created_at: string;
 }
 
+// Reusable fetcher — used by useFocusSessions and by background prefetch.
+export async function fetchFocusSessions(limit = 50): Promise<FocusSession[]> {
+  const { data, error } = await supabase
+    .from("focus_sessions" as any)
+    .select("*")
+    .order("started_at", { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as unknown as FocusSession[];
+}
+
 export function useFocusSessions(limit = 50) {
   const { user } = useAuth();
   return useQuery({
     queryKey: ["focus-sessions", user?.id, limit],
     enabled: !!user?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("focus_sessions" as any)
-        .select("*")
-        .order("started_at", { ascending: false })
-        .limit(limit);
-      if (error) throw error;
-      return (data ?? []) as unknown as FocusSession[];
-    },
+    queryFn: () => fetchFocusSessions(limit),
   });
 }
 
