@@ -51,12 +51,12 @@ interface UseGoalsOptions {
   includeTags?: boolean;
 }
 
-export function useGoals(pactId: string | undefined, options?: UseGoalsOptions) {
+// Reusable fetcher — used by useGoals and by background prefetch.
+export async function fetchGoals(
+  pactId: string | undefined,
+  options?: UseGoalsOptions,
+): Promise<Goal[]> {
   const { includeStepCounts = false, includeTags = true } = options ?? {};
-
-  return useQuery({
-    queryKey: ["goals", pactId, includeStepCounts, includeTags],
-    queryFn: async (): Promise<Goal[]> => {
       if (!pactId) return [];
 
       // Build select string — embed tags relationally when requested
@@ -113,7 +113,14 @@ export function useGoals(pactId: string | undefined, options?: UseGoalsOptions) 
           tags: relationalTags && relationalTags.length > 0 ? relationalTags : undefined,
         } as Goal;
       });
-    },
+}
+
+export function useGoals(pactId: string | undefined, options?: UseGoalsOptions) {
+  const { includeStepCounts = false, includeTags = true } = options ?? {};
+
+  return useQuery({
+    queryKey: ["goals", pactId, includeStepCounts, includeTags],
+    queryFn: () => fetchGoals(pactId, { includeStepCounts, includeTags }),
     enabled: !!pactId,
     staleTime: 30_000,
   });
