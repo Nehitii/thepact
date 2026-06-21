@@ -22,42 +22,41 @@ export interface Pact {
   title_effect?: string | null;
 }
 
+// Reusable fetcher — used by usePact and by background prefetch.
+export async function fetchPact(userId: string | undefined): Promise<Pact | null> {
+  if (!userId) return null;
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("active_pact_id")
+    .eq("id", userId)
+    .single();
+
+  const activePactId = (profile as any)?.active_pact_id;
+
+  if (activePactId) {
+    const { data, error } = await supabase
+      .from("pacts")
+      .select("*")
+      .eq("id", activePactId)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) return data as Pact;
+  }
+
+  const { data, error } = await supabase
+    .from("pacts")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data as Pact | null;
+}
+
 export function usePact(userId: string | undefined) {
   return useQuery({
     queryKey: ["pact", userId],
-    queryFn: async () => {
-      if (!userId) return null;
-
-      // Check if user has an active_pact_id preference
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("active_pact_id")
-        .eq("id", userId)
-        .single();
-
-      const activePactId = (profile as any)?.active_pact_id;
-
-      if (activePactId) {
-        // Load the chosen pact (could be personal or shared)
-        const { data, error } = await supabase
-          .from("pacts")
-          .select("*")
-          .eq("id", activePactId)
-          .maybeSingle();
-        if (error) throw error;
-        if (data) return data as Pact;
-      }
-
-      // Fallback: load personal pact
-      const { data, error } = await supabase
-        .from("pacts")
-        .select("*")
-        .eq("user_id", userId)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data as Pact | null;
-    },
+    queryFn: () => fetchPact(userId),
     enabled: !!userId,
     staleTime: 30 * 1000,
   });
