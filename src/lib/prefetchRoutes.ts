@@ -68,6 +68,9 @@ function isSaveData(): boolean {
   return et === "2g" || et === "slow-2g";
 }
 
+// Re-exported so the data-prefetch module shares the exact same gate.
+export const shouldSkipPrefetch = isSaveData;
+
 function runIdle(cb: () => void) {
   const ric = (globalThis as any).requestIdleCallback as
     | ((cb: () => void, opts?: { timeout?: number }) => number)

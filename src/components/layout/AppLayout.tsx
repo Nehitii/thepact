@@ -8,6 +8,9 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Bot } from "lucide-react";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
 import { prefetchAllRoutes } from "@/lib/prefetchRoutes";
+import { prefetchCoreData } from "@/lib/prefetchData";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 const CoachPanel = lazy(() =>
   import("@/components/coach/CoachPanel").then((m) => ({ default: m.CoachPanel }))
@@ -17,6 +20,8 @@ export function AppLayout() {
   const [coachOpen, setCoachOpen] = useState(false);
   const [ritualType, setRitualType] = useState<ReviewType | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -70,6 +75,21 @@ export function AppLayout() {
       clearTimeout(t);
     };
   }, []);
+
+  // Background data prefetch — runs AFTER the code prefetch starts, so the
+  // initial render is never delayed. Re-uses the page hooks' queryKey+queryFn,
+  // skipped on Save-Data / 2g, and bounded to a known set of core pages.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    const t = setTimeout(() => {
+      if (!cancelled) prefetchCoreData(queryClient, user.id);
+    }, 4000);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [user?.id, queryClient]);
 
   return (
     <div className="flex min-h-screen w-full relative">

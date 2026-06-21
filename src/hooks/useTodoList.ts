@@ -74,6 +74,20 @@ export interface CreateTaskInput {
 
 const MAX_ACTIVE_TASKS = 30;
 
+// Reusable fetcher — used by useTodoList and by background prefetch.
+export async function fetchTodoTasks(userId: string | undefined): Promise<TodoTask[]> {
+  if (!userId) return [];
+  const { data, error } = await supabase
+    .from('todo_tasks')
+    .select('*')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .order('position', { ascending: true })
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return (data || []) as TodoTask[];
+}
+
 export function useTodoList() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -82,19 +96,7 @@ export function useTodoList() {
   // Fetch active tasks
   const { data: tasks = [], isLoading: tasksLoading } = useQuery({
     queryKey: ['todo-tasks', userId],
-    queryFn: async () => {
-      if (!userId) return [];
-      const { data, error } = await supabase
-        .from('todo_tasks')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('status', 'active')
-        .order('position', { ascending: true })
-        .order('created_at', { ascending: false });
-      
-      if (error) throw error;
-      return (data || []) as TodoTask[];
-    },
+    queryFn: () => fetchTodoTasks(userId),
     enabled: !!userId,
   });
 

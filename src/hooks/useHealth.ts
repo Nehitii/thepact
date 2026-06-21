@@ -104,23 +104,25 @@ export function getBMICategory(bmi: number | null): { label: string; color: stri
   return { label: "Obese", color: "text-orange-400" };
 }
 
+// Reusable fetcher — used by useTodayHealth and by background prefetch.
+export async function fetchTodayHealth(userId: string | undefined): Promise<HealthData | null> {
+  if (!userId) return null;
+  const today = format(new Date(), "yyyy-MM-dd");
+  const { data, error } = await supabase
+    .from("health_data")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("entry_date", today)
+    .maybeSingle();
+  if (error) throw error;
+  return data as HealthData | null;
+}
+
 // Hook: Fetch today's health data
 export function useTodayHealth(userId: string | undefined) {
   return useQuery({
     queryKey: ["health-today", userId],
-    queryFn: async () => {
-      if (!userId) return null;
-      const today = format(new Date(), "yyyy-MM-dd");
-      const { data, error } = await supabase
-        .from("health_data")
-        .select("*")
-        .eq("user_id", userId)
-        .eq("entry_date", today)
-        .maybeSingle();
-      
-      if (error) throw error;
-      return data as HealthData | null;
-    },
+    queryFn: () => fetchTodayHealth(userId),
     enabled: !!userId,
   });
 }
