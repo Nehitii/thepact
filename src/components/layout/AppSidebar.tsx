@@ -52,6 +52,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 import { useMessages } from "@/hooks/useMessages";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { prefetchRoute } from "@/lib/prefetchRoutes";
 
 // ─── CONFIGURATION DE LA NAVIGATION ────────────────────────
 
@@ -121,6 +122,7 @@ interface NavItemProps extends NavItem {
 
 function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navigate, location }: NavItemProps) {
   const isActive = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+  const prefetch = () => prefetchRoute(to);
 
   if (mini) {
     return (
@@ -131,6 +133,9 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
               navigate(to);
               closeMobile();
             }}
+            onMouseEnter={prefetch}
+            onFocus={prefetch}
+            onTouchStart={prefetch}
             aria-label={label}
             aria-current={isActive ? "page" : undefined}
             className={cn(
@@ -165,6 +170,9 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
       to={to}
       end={to === "/"}
       onClick={closeMobile}
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
+      onTouchStart={prefetch}
       aria-label={label}
       className={({ isActive }) =>
         cn(

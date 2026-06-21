@@ -7,6 +7,7 @@ import type { ReviewType } from "@/hooks/useReviews";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Bot } from "lucide-react";
 import { ShortcutHelpOverlay, SHORTCUT_HELP_EVENT } from "@/components/ShortcutHelpOverlay";
+import { prefetchAllRoutes } from "@/lib/prefetchRoutes";
 
 const CoachPanel = lazy(() =>
   import("@/components/coach/CoachPanel").then((m) => ({ default: m.CoachPanel }))
@@ -54,6 +55,19 @@ export function AppLayout() {
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener(SHORTCUT_HELP_EVENT, onOpenHelp);
+    };
+  }, []);
+
+  // Background prefetch of route chunks once the authenticated shell has mounted.
+  // Runs during idle time, one chunk at a time, and skipped on Save-Data / 2g.
+  useEffect(() => {
+    let cancelled = false;
+    const t = setTimeout(() => {
+      if (!cancelled) prefetchAllRoutes();
+    }, 1500);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
     };
   }, []);
 
