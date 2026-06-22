@@ -384,7 +384,7 @@ export default function TheCall() {
                   ? reducedMotion
                     ? "duration-500 opacity-80 bg-white/80"
                     : "duration-75 opacity-100 bg-white"
-                  : "duration-[3000ms] opacity-0 bg-white"
+                  : "[transition-duration:3000ms] opacity-0 bg-white"
               }`}
             />
 
