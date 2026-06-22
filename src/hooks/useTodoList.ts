@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import { trackTodoCompleted } from '@/lib/achievements';
 
 // Types
 export type TodoPriority = 'low' | 'medium' | 'high';
@@ -286,7 +287,7 @@ export function useTodoList() {
       queryClient.invalidateQueries({ queryKey: ['todo-history', userId] });
       toast.success('Task completed! +10 points');
       if (userId) {
-        import('@/lib/achievements').then(m => m.trackTodoCompleted(userId));
+        trackTodoCompleted(userId);
       }
     },
     onError: () => {
