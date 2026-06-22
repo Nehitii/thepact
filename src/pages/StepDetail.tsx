@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
@@ -44,13 +44,7 @@ export default function StepDetail() {
   const [status, setStatus] = useState("pending");
   const [excludeFromSpin, setExcludeFromSpin] = useState(false);
 
-  useEffect(() => {
-    if (user && stepId) {
-      loadStepData();
-    }
-  }, [user, stepId]);
-
-  const loadStepData = async () => {
+  const loadStepData = useCallback(async () => {
     try {
       setLoading(true);
       const { data: stepData, error: stepError } = await supabase.from("steps").select("*").eq("id", stepId).single();
@@ -66,7 +60,13 @@ export default function StepDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [stepId]);
+
+  useEffect(() => {
+    if (user && stepId) {
+      loadStepData();
+    }
+  }, [user, stepId, loadStepData]);
 
   const handleSave = async () => {
     if (!step) return;
