@@ -7,6 +7,7 @@ import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { JournalEntry } from "@/types/journal";
+import { trackJournalEntry } from "@/lib/achievements";
 
 // Re-export types from the central file so existing imports keep working
 export type { JournalEntry, JournalMood } from "@/types/journal";
@@ -77,7 +78,7 @@ export function useCreateJournalEntry() {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["journal-entries", data.user_id] });
       toast.success("Log recorded", { description: "Neural log entry saved" });
-      import('@/lib/achievements').then(m => m.trackJournalEntry(data.user_id));
+      trackJournalEntry(data.user_id);
     },
     onError: (error: Error) => {
       toast.error("Failed to save entry", { description: error.message });
