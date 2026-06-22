@@ -109,21 +109,6 @@ export default function TodoList() {
     setSortDirection(direction);
   };
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = filteredAndSortedTasks.findIndex(t => t.id === active.id);
-    const newIndex = filteredAndSortedTasks.findIndex(t => t.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const newOrder = [...filteredAndSortedTasks];
-    const [moved] = newOrder.splice(oldIndex, 1);
-    newOrder.splice(newIndex, 0, moved);
-
-    reorderTasks.mutate(newOrder.map(t => t.id));
-  }, [reorderTasks, filteredAndSortedTasks]);
-
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
     const result = tasks.filter(task => {
@@ -163,6 +148,21 @@ export default function TodoList() {
 
     return result;
   }, [tasks, selectedTaskType, sortField, sortDirection]);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = filteredAndSortedTasks.findIndex(t => t.id === active.id);
+    const newIndex = filteredAndSortedTasks.findIndex(t => t.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = [...filteredAndSortedTasks];
+    const [moved] = newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, moved);
+
+    reorderTasks.mutate(newOrder.map(t => t.id));
+  }, [reorderTasks, filteredAndSortedTasks]);
 
   // Boot sequence removed for instant load
 
