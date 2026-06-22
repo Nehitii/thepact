@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackPomodoroCompleted } from "@/lib/achievements";
 
 export type PomodoroPhase = "work" | "break" | "idle";
 
@@ -187,7 +188,7 @@ export function usePomodoroSessions() {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["pomodoro-sessions"] });
       if (user?.id && variables.completed) {
-        import('@/lib/achievements').then(m => m.trackPomodoroCompleted(user.id, variables.duration_minutes));
+        trackPomodoroCompleted(user.id, variables.duration_minutes);
       }
     },
   });
