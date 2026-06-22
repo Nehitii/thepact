@@ -135,6 +135,17 @@ export default function TheCall() {
   // --- CINEMATIC EFFECTS ---
   const reducedMotion = prefersReducedMotion();
 
+  const resetPhysicalEffects = useCallback(() => {
+    if (screenShakeRef.current) {
+      screenShakeRef.current.style.transform = "none";
+      screenShakeRef.current.style.textShadow = "none";
+      screenShakeRef.current.style.filter = "none";
+    }
+    if (coreButtonRef.current && sequenceState !== FinalSequenceState.IMPLOSION) {
+      coreButtonRef.current.style.transform = "none";
+    }
+  }, [sequenceState]);
+
   const applyCinematicEffects = useCallback(
     (progress: number) => {
       if (hasCompletedRef.current || sequenceState !== FinalSequenceState.IDLE) {
