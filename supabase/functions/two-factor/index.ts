@@ -402,17 +402,18 @@ Deno.serve(async (req) => {
       // Try recovery code
       if (!ok && recoveryCode) {
         const hash = await sha256Hex(recoveryCode.trim());
-        const { data } = await supabaseClient
+        const { data } = await supabaseAdmin
           .from("user_recovery_codes")
           .select("id, used_at")
           .eq("code_hash", hash)
+          .eq("user_id", user.id)
           .limit(1)
           .maybeSingle();
 
         if (data?.id && !data.used_at) {
           ok = true;
           usedRecovery = true;
-          await supabaseClient
+          await supabaseAdmin
             .from("user_recovery_codes")
             .update({ used_at: new Date().toISOString() })
             .eq("id", data.id);
