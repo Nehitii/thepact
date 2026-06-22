@@ -57,7 +57,6 @@ export default function Legal() {
         supabase.from("journal_entries").delete().eq("user_id", user.id),
         supabase.from("user_achievements").delete().eq("user_id", user.id),
         supabase.from("user_cosmetics").delete().eq("user_id", user.id),
-        supabase.from("user_module_purchases").delete().eq("user_id", user.id),
         supabase.from("bond_balance").delete().eq("user_id", user.id),
         supabase.from("bond_transactions").delete().eq("user_id", user.id),
         supabase.from("achievement_tracking").delete().eq("user_id", user.id),
