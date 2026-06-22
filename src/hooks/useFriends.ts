@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { trackFriendAdded } from "@/lib/achievements";
 
 export interface Friend {
   friendship_id: string;
@@ -145,7 +146,7 @@ export function useFriends() {
     onSuccess: () => {
       invalidateAll();
       if (user?.id) {
-        import('@/lib/achievements').then(m => m.trackFriendAdded(user.id));
+        trackFriendAdded(user.id);
       }
     },
   });

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { useSound } from "@/contexts/SoundContext";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium font-orbitron uppercase tracking-widest transition-all duration-200 ease-[var(--ds-ease-out)] focus-visible:outline-none focus-visible:shadow-[var(--ds-glow-focus)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative overflow-hidden group",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium font-orbitron uppercase tracking-widest transition-all duration-200 [transition-timing-function:var(--ds-ease-out)] focus-visible:outline-none focus-visible:shadow-[var(--ds-glow-focus)] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 relative overflow-hidden group",
   {
     variants: {
       variant: {

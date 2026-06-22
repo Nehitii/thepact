@@ -6,6 +6,7 @@ import { useState, useCallback } from "react";
 import { usePurchaseCosmetic, usePurchaseModule, useBondBalance } from "@/hooks/useShop";
 import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
+import { trackModulePurchased, trackCosmeticPurchased, trackBondsSpent } from "@/lib/achievements";
 
 export type TransactionItemType = "module" | "frame" | "banner" | "title";
 export type TransactionStatus = "idle" | "pending" | "success" | "error";
@@ -58,14 +59,12 @@ export function useShopTransaction() {
           setTimeout(() => setTransactionStatus("idle"), 100);
           // Track achievement
           if (user?.id) {
-            import('@/lib/achievements').then(m => {
-              if (input.itemType === "module") {
-                m.trackModulePurchased(user!.id);
-              } else {
-                m.trackCosmeticPurchased(user!.id);
-              }
-              m.trackBondsSpent(user!.id, input.price);
-            });
+            if (input.itemType === "module") {
+              trackModulePurchased(user.id);
+            } else {
+              trackCosmeticPurchased(user.id);
+            }
+            trackBondsSpent(user.id, input.price);
           }
           resolve(true);
         };

@@ -135,6 +135,17 @@ export default function TheCall() {
   // --- CINEMATIC EFFECTS ---
   const reducedMotion = prefersReducedMotion();
 
+  const resetPhysicalEffects = useCallback(() => {
+    if (screenShakeRef.current) {
+      screenShakeRef.current.style.transform = "none";
+      screenShakeRef.current.style.textShadow = "none";
+      screenShakeRef.current.style.filter = "none";
+    }
+    if (coreButtonRef.current && sequenceState !== FinalSequenceState.IMPLOSION) {
+      coreButtonRef.current.style.transform = "none";
+    }
+  }, [sequenceState]);
+
   const applyCinematicEffects = useCallback(
     (progress: number) => {
       if (hasCompletedRef.current || sequenceState !== FinalSequenceState.IDLE) {
@@ -190,19 +201,8 @@ export default function TheCall() {
         backgroundFxRef.current.style.transform = `scale(${1 + intensity * 1.5})`;
       }
     },
-    [sequenceState, reducedMotion],
+    [sequenceState, reducedMotion, resetPhysicalEffects],
   );
-
-  const resetPhysicalEffects = () => {
-    if (screenShakeRef.current) {
-      screenShakeRef.current.style.transform = "none";
-      screenShakeRef.current.style.textShadow = "none";
-      screenShakeRef.current.style.filter = "none";
-    }
-    if (coreButtonRef.current && sequenceState !== FinalSequenceState.IMPLOSION) {
-      coreButtonRef.current.style.transform = "none";
-    }
-  };
 
   // --- ANIMATION LOOP ---
   const animate = () => {
@@ -384,7 +384,7 @@ export default function TheCall() {
                   ? reducedMotion
                     ? "duration-500 opacity-80 bg-white/80"
                     : "duration-75 opacity-100 bg-white"
-                  : "duration-[3000ms] opacity-0 bg-white"
+                  : "[transition-duration:3000ms] opacity-0 bg-white"
               }`}
             />
 

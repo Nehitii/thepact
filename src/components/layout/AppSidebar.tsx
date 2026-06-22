@@ -346,7 +346,7 @@ export const AppSidebar = memo(function AppSidebar() {
         className={cn(
           "flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
           "shadow-[8px_0_30px_-10px_rgba(var(--primary),0.15)]",
-          "transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]",
+          "transition-[width] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]",
           !isMobile && "sticky top-0 h-screen overflow-hidden",
           isMobile && "fixed top-0 left-0 h-full transition-transform duration-300",
           isMobile && (mobileOpen ? "translate-x-0" : "-translate-x-full"),

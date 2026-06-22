@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tansta
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
+import { trackCommunityPost } from "@/lib/achievements";
 
 export interface CommunityPost {
   id: string;
@@ -289,7 +290,7 @@ export function useCreatePost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-posts"] });
       if (user?.id) {
-        import('@/lib/achievements').then(m => m.trackCommunityPost(user.id));
+        trackCommunityPost(user.id);
       }
     }
   });

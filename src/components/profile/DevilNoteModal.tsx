@@ -91,7 +91,7 @@ export function DevilNoteModal({ open, onOpenChange, showSecretSymbol = false }:
 
         {/* L'Artefact Principal */}
         <div
-          className={`relative min-h-[350px] w-full transition-all duration-[1200ms] ease-in-out flex flex-col items-center justify-center p-12
+          className={`relative min-h-[350px] w-full transition-all [transition-duration:1200ms] ease-in-out flex flex-col items-center justify-center p-12
             ${revealed ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-90 -rotate-1"}`}
           style={{
             background: "linear-gradient(145deg, #0d0404 0%, #1a0808 45%, #080202 100%)",

@@ -109,24 +109,9 @@ export default function TodoList() {
     setSortDirection(direction);
   };
 
-  const handleDragEnd = useCallback((event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const oldIndex = filteredAndSortedTasks.findIndex(t => t.id === active.id);
-    const newIndex = filteredAndSortedTasks.findIndex(t => t.id === over.id);
-    if (oldIndex === -1 || newIndex === -1) return;
-
-    const newOrder = [...filteredAndSortedTasks];
-    const [moved] = newOrder.splice(oldIndex, 1);
-    newOrder.splice(newIndex, 0, moved);
-
-    reorderTasks.mutate(newOrder.map(t => t.id));
-  }, [reorderTasks]);
-
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
-    let result = tasks.filter(task => {
+    const result = tasks.filter(task => {
       if (selectedTaskType && task.task_type !== selectedTaskType) return false;
       return true;
     });
@@ -143,10 +128,11 @@ export default function TodoList() {
           else if (!b.deadline) comparison = -1;
           else comparison = new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
           break;
-        case 'priority':
+        case 'priority': {
           const priorityOrder = { high: 3, medium: 2, low: 1 };
           comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
           break;
+        }
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
@@ -162,6 +148,21 @@ export default function TodoList() {
 
     return result;
   }, [tasks, selectedTaskType, sortField, sortDirection]);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = filteredAndSortedTasks.findIndex(t => t.id === active.id);
+    const newIndex = filteredAndSortedTasks.findIndex(t => t.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = [...filteredAndSortedTasks];
+    const [moved] = newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, moved);
+
+    reorderTasks.mutate(newOrder.map(t => t.id));
+  }, [reorderTasks, filteredAndSortedTasks]);
 
   // Boot sequence removed for instant load
 

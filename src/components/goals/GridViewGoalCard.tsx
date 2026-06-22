@@ -134,7 +134,7 @@ export function GridViewGoalCard({
       data-halo={intensity}
       className={cn(
         "group relative w-full mx-auto cursor-pointer select-none rounded-[22px]",
-        "transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+        "transition-transform duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]",
         "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
         "[perspective:1000px]",
         "rarity-halo",
@@ -147,7 +147,7 @@ export function GridViewGoalCard({
         className={cn(
           "relative w-full rounded-[22px] overflow-hidden tcg-frame",
           "bg-[var(--goal-card-bg)] border border-[var(--goal-card-border)]",
-          "shadow-sm transition-all duration-400 ease-[cubic-bezier(0.25,0.8,0.25,1)]",
+          "shadow-sm transition-all duration-400 [transition-timing-function:cubic-bezier(0.25,0.8,0.25,1)]",
           "group-hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.6),0_0_0_1px_rgba(var(--accent-rgb),0.3)]",
           "group-hover:border-[rgba(var(--accent-rgb),0.3)]",
         )}

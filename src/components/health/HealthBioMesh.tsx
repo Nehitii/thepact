@@ -44,7 +44,7 @@ export function HealthBioMesh({ score = 75 }: HealthBioMeshProps) {
     >
       {/* Layer 1: Score-reactive ambient orbs */}
       <div
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] rounded-full blur-[140px] transition-all duration-[3000ms]"
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[800px] rounded-full blur-[140px] transition-all [transition-duration:3000ms]"
         style={{
           background: `radial-gradient(ellipse at center, ${ambientColor}10 0%, transparent 60%)`,
         }}

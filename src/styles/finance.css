@@ -1,14 +1,16 @@
 /* Neumorphic finance dashboard system — extracted from index.css */
 
   /* ========== NEUMORPHIC FINANCE DASHBOARD SYSTEM ========== */
-  
+
   /* Neumorphic Shadow Variables */
-  --neu-shadow-raised: 8px 8px 24px hsla(210 100% 2% / 0.5), -4px -4px 16px hsla(215 30% 20% / 0.08);
-  --neu-shadow-pressed: inset 4px 4px 12px hsla(210 100% 2% / 0.4), inset -4px -4px 12px hsla(215 30% 20% / 0.05);
-  --neu-shadow-subtle: 4px 4px 16px hsla(210 100% 2% / 0.35), -2px -2px 10px hsla(215 30% 20% / 0.06);
-  --neu-shadow-glow-emerald: 0 0 40px hsla(160 80% 50% / 0.15);
-  --neu-shadow-glow-rose: 0 0 40px hsla(350 80% 60% / 0.15);
-  --neu-shadow-glow-primary: 0 0 40px hsla(200 100% 67% / 0.15);
+  :root {
+    --neu-shadow-raised: 8px 8px 24px hsla(210 100% 2% / 0.5), -4px -4px 16px hsla(215 30% 20% / 0.08);
+    --neu-shadow-pressed: inset 4px 4px 12px hsla(210 100% 2% / 0.4), inset -4px -4px 12px hsla(215 30% 20% / 0.05);
+    --neu-shadow-subtle: 4px 4px 16px hsla(210 100% 2% / 0.35), -2px -2px 10px hsla(215 30% 20% / 0.06);
+    --neu-shadow-glow-emerald: 0 0 40px hsla(160 80% 50% / 0.15);
+    --neu-shadow-glow-rose: 0 0 40px hsla(350 80% 60% / 0.15);
+    --neu-shadow-glow-primary: 0 0 40px hsla(200 100% 67% / 0.15);
+  }
 
   /* Neumorphic animations */
   @keyframes neu-pulse {

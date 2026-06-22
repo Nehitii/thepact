@@ -17,6 +17,8 @@ export default function InboxThread() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { messages, sendMessage, markConversationAsRead } = useMessages();
+  // React Query mutation's `mutate` is referentially stable across renders.
+  const { mutate: markAsRead } = markConversationAsRead;
   const [newMessage, setNewMessage] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -47,9 +49,9 @@ export default function InboxThread() {
   // Mark as read on mount
   useEffect(() => {
     if (userId) {
-      markConversationAsRead.mutate(userId);
+      markAsRead(userId);
     }
-  }, [userId]);
+  }, [userId, markAsRead]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -70,7 +72,7 @@ export default function InboxThread() {
           filter: `sender_id=eq.${userId}`,
         },
         () => {
-          markConversationAsRead.mutate(userId);
+          markAsRead(userId);
         }
       )
       .subscribe();
@@ -78,7 +80,7 @@ export default function InboxThread() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, userId]);
+  }, [user?.id, userId, markAsRead]);
 
   const handleSend = async () => {
     if (!newMessage.trim() || !userId) return;
