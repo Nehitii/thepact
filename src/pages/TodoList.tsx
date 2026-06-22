@@ -122,11 +122,11 @@ export default function TodoList() {
     newOrder.splice(newIndex, 0, moved);
 
     reorderTasks.mutate(newOrder.map(t => t.id));
-  }, [reorderTasks]);
+  }, [reorderTasks, filteredAndSortedTasks]);
 
   // Filter and sort tasks
   const filteredAndSortedTasks = useMemo(() => {
-    let result = tasks.filter(task => {
+    const result = tasks.filter(task => {
       if (selectedTaskType && task.task_type !== selectedTaskType) return false;
       return true;
     });
@@ -143,10 +143,11 @@ export default function TodoList() {
           else if (!b.deadline) comparison = -1;
           else comparison = new Date(a.deadline).getTime() - new Date(b.deadline).getTime();
           break;
-        case 'priority':
+        case 'priority': {
           const priorityOrder = { high: 3, medium: 2, low: 1 };
           comparison = priorityOrder[a.priority] - priorityOrder[b.priority];
           break;
+        }
         case 'name':
           comparison = a.name.localeCompare(b.name);
           break;
