@@ -201,19 +201,8 @@ export default function TheCall() {
         backgroundFxRef.current.style.transform = `scale(${1 + intensity * 1.5})`;
       }
     },
-    [sequenceState, reducedMotion],
+    [sequenceState, reducedMotion, resetPhysicalEffects],
   );
-
-  const resetPhysicalEffects = () => {
-    if (screenShakeRef.current) {
-      screenShakeRef.current.style.transform = "none";
-      screenShakeRef.current.style.textShadow = "none";
-      screenShakeRef.current.style.filter = "none";
-    }
-    if (coreButtonRef.current && sequenceState !== FinalSequenceState.IMPLOSION) {
-      coreButtonRef.current.style.transform = "none";
-    }
-  };
 
   // --- ANIMATION LOOP ---
   const animate = () => {
