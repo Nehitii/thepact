@@ -8,6 +8,7 @@ import {
   isBefore, isAfter, parseISO,
   startOfDay, endOfDay,
 } from "date-fns";
+import { trackCalendarEventCreated } from "@/lib/achievements";
 
 // ─── Types ───────────────────────────────────────────────────
 export interface RecurrenceRule {
@@ -352,7 +353,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
     onSuccess: () => {
       invalidate();
       if (user?.id) {
-        import('@/lib/achievements').then(m => m.trackCalendarEventCreated(user.id));
+        trackCalendarEventCreated(user.id);
       }
     },
   });
