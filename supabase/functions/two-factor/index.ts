@@ -347,8 +347,8 @@ Deno.serve(async (req) => {
       const codes = generateRecoveryCodes(10);
       const rows = await Promise.all(codes.map(async (c) => ({ user_id: user.id, code_hash: await sha256Hex(c) })));
 
-      await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
-      await supabaseClient.from("user_recovery_codes").insert(rows);
+      await supabaseAdmin.from("user_recovery_codes").delete().eq("user_id", user.id);
+      await supabaseAdmin.from("user_recovery_codes").insert(rows);
 
       await logEvent("2fa_enabled");
       await logEvent("recovery_codes_regenerated", { count: codes.length });
@@ -451,7 +451,7 @@ Deno.serve(async (req) => {
       await supabaseAdmin
         .from("user_2fa_settings")
         .upsert({ user_id: user.id, totp_enabled: false, totp_secret: null }, { onConflict: "user_id" });
-      await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
+      await supabaseAdmin.from("user_recovery_codes").delete().eq("user_id", user.id);
       await supabaseClient.from("user_trusted_devices").delete().eq("user_id", user.id);
       await logEvent("2fa_disabled");
       return jsonResponse({ success: true });
@@ -509,8 +509,8 @@ Deno.serve(async (req) => {
       if (!settings.enabled) {
         const codes = generateRecoveryCodes(10);
         const rows = await Promise.all(codes.map(async (c) => ({ user_id: user.id, code_hash: await sha256Hex(c) })));
-        await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
-        await supabaseClient.from("user_recovery_codes").insert(rows);
+        await supabaseAdmin.from("user_recovery_codes").delete().eq("user_id", user.id);
+        await supabaseAdmin.from("user_recovery_codes").insert(rows);
         await logEvent("email_2fa_enabled");
         await logEvent("recovery_codes_regenerated", { count: codes.length });
         return jsonResponse({ success: true, recoveryCodes: codes });
@@ -561,7 +561,7 @@ Deno.serve(async (req) => {
       // If TOTP is also disabled, clean up trusted devices and recovery codes
       const settings = await getSettings();
       if (!settings.enabled) {
-        await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
+        await supabaseAdmin.from("user_recovery_codes").delete().eq("user_id", user.id);
         await supabaseClient.from("user_trusted_devices").delete().eq("user_id", user.id);
       }
 
@@ -575,8 +575,8 @@ Deno.serve(async (req) => {
       if (!settings.enabled && !settings.emailEnabled) return jsonResponse({ error: "2FA not enabled" }, 400);
       const codes = generateRecoveryCodes(10);
       const rows = await Promise.all(codes.map(async (c) => ({ user_id: user.id, code_hash: await sha256Hex(c) })));
-      await supabaseClient.from("user_recovery_codes").delete().eq("user_id", user.id);
-      await supabaseClient.from("user_recovery_codes").insert(rows);
+      await supabaseAdmin.from("user_recovery_codes").delete().eq("user_id", user.id);
+      await supabaseAdmin.from("user_recovery_codes").insert(rows);
       await logEvent("recovery_codes_regenerated", { count: codes.length });
       return jsonResponse({ success: true, recoveryCodes: codes });
     }
