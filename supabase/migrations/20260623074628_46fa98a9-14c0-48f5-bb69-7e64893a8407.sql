@@ -1,0 +1,1 @@
+UPDATE public.feature_flags SET enabled = true, updated_at = now() WHERE key IN ('social.friends','social.community','social.leaderboard','social.inbox','social.hall_of_fame','social.templates_marketplace','social.guilds');
