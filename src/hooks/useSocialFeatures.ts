@@ -32,6 +32,26 @@ export function useSocialFeatures() {
       leaderboard.enabled ||
       hallOfFame.enabled ||
       inbox.enabled,
-    isLoading: friends.isLoading || guilds.isLoading || community.isLoading,
+    isLoading:
+      friends.isLoading ||
+      guilds.isLoading ||
+      community.isLoading ||
+      leaderboard.isLoading ||
+      hallOfFame.isLoading ||
+      inbox.isLoading ||
+      sharing.isLoading ||
+      templatesMarketplace.isLoading ||
+      victoryReels.isLoading,
+    loadingMap: {
+      friends: friends.isLoading,
+      guilds: guilds.isLoading,
+      community: community.isLoading,
+      leaderboard: leaderboard.isLoading,
+      hallOfFame: hallOfFame.isLoading,
+      inbox: inbox.isLoading,
+      sharing: sharing.isLoading,
+      templatesMarketplace: templatesMarketplace.isLoading,
+      victoryReels: victoryReels.isLoading,
+    },
   };
 }

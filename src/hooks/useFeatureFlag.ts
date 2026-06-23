@@ -9,7 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 export function useFeatureFlag(key: string): { enabled: boolean; isLoading: boolean } {
   const { user } = useAuth();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ["feature-flag", key, user?.id ?? "anon"],
     queryFn: async () => {
       const [{ data: flag }, override] = await Promise.all([
@@ -30,5 +30,7 @@ export function useFeatureFlag(key: string): { enabled: boolean; isLoading: bool
     staleTime: 60_000,
   });
 
-  return { enabled: !!data, isLoading };
+  // Treat as loading until we have a resolved value, to avoid false negatives in route guards.
+  const loading = isLoading || (data === undefined && isFetching);
+  return { enabled: !!data, isLoading: loading };
 }

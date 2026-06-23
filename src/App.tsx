@@ -59,7 +59,22 @@ const AdminNotifications = lazy(() => import("./pages/AdminNotifications"));
 const AdminPromoManager = lazy(() => import("./pages/AdminPromoManager"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
-function SocialGate({ enabled, children }: { enabled: boolean; children: React.ReactNode }) {
+function SocialGate({
+  enabled,
+  loading,
+  children,
+}: {
+  enabled: boolean;
+  loading?: boolean;
+  children: React.ReactNode;
+}) {
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
   return enabled ? <>{children}</> : <Navigate to="/" replace />;
 }
 
@@ -81,7 +96,7 @@ function AppRoutes() {
         <Route path="the-call" element={<TheCall />} />
         <Route path="goals" element={<Goals />} />
         <Route path="goals/graph" element={<GoalsGraph />} />
-        <Route path="templates/marketplace" element={<SocialGate enabled={social.templatesMarketplace}><TemplatesMarketplace /></SocialGate>} />
+        <Route path="templates/marketplace" element={<SocialGate enabled={social.templatesMarketplace} loading={social.loadingMap.templatesMarketplace}><TemplatesMarketplace /></SocialGate>} />
         <Route path="goals/new" element={<NewGoal />} />
         <Route path="goals/:id" element={<GoalDetail />} />
         <Route path="step/:stepId" element={<StepDetail />} />
@@ -98,19 +113,19 @@ function AppRoutes() {
         <Route path="profile/automations" element={<Automations />} />
         <Route path="achievements" element={<Achievements />} />
         <Route path="shop" element={<Shop />} />
-        <Route path="community" element={<SocialGate enabled={social.community}><Community /></SocialGate>} />
+        <Route path="community" element={<SocialGate enabled={social.community} loading={social.loadingMap.community}><Community /></SocialGate>} />
         <Route path="legal" element={<Legal />} />
         <Route path="todo" element={<TodoList />} />
-        <Route path="inbox" element={<SocialGate enabled={social.inbox}><Inbox /></SocialGate>} />
-        <Route path="inbox/thread/:userId" element={<SocialGate enabled={social.inbox}><InboxThread /></SocialGate>} />
+        <Route path="inbox" element={<SocialGate enabled={social.inbox} loading={social.loadingMap.inbox}><Inbox /></SocialGate>} />
+        <Route path="inbox/thread/:userId" element={<SocialGate enabled={social.inbox} loading={social.loadingMap.inbox}><InboxThread /></SocialGate>} />
         <Route path="health" element={<Health />} />
         <Route path="wishlist" element={<Wishlist />} />
-        <Route path="leaderboard" element={<SocialGate enabled={social.leaderboard}><Leaderboard /></SocialGate>} />
-        <Route path="hall-of-fame" element={<SocialGate enabled={social.hallOfFame}><HallOfFame /></SocialGate>} />
+        <Route path="leaderboard" element={<SocialGate enabled={social.leaderboard} loading={social.loadingMap.leaderboard}><Leaderboard /></SocialGate>} />
+        <Route path="hall-of-fame" element={<SocialGate enabled={social.hallOfFame} loading={social.loadingMap.hallOfFame}><HallOfFame /></SocialGate>} />
         <Route path="focus" element={<Focus />} />
         <Route path="analytics" element={<Analytics />} />
-        <Route path="friends" element={<SocialGate enabled={social.friends}><Friends /></SocialGate>} />
-        <Route path="guild/:id" element={<SocialGate enabled={social.guilds}><GuildPage /></SocialGate>} />
+        <Route path="friends" element={<SocialGate enabled={social.friends} loading={social.loadingMap.friends}><Friends /></SocialGate>} />
+        <Route path="guild/:id" element={<SocialGate enabled={social.guilds} loading={social.loadingMap.guilds}><GuildPage /></SocialGate>} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="reviews" element={<Reviews />} />
         <Route path="contracts/sign/:contractId" element={<ContractSign />} />
