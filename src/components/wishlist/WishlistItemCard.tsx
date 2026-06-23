@@ -8,7 +8,7 @@ import {
   Zap, Flame, CircleDot,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState, useCallback } from "react";
+import React, { useState, useCallback, forwardRef } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useSortable } from "@dnd-kit/sortable";
@@ -34,10 +34,10 @@ interface WishlistItemCardProps {
   draggable?: boolean;
 }
 
-export function WishlistItemCard({
+export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps>(function WishlistItemCard({
   item, currency, onEdit, onDelete, onToggleAcquired,
   bulkMode = false, selected = false, onSelect, draggable = false,
-}: WishlistItemCardProps) {
+}, forwardedRef) {
   const navigate = useNavigate();
   const { id, name, category, notes, estimated_cost, acquired, goal, item_type, url, source_type, image_url, priority } = item;
 
