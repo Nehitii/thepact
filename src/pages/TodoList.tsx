@@ -32,7 +32,7 @@ type ActivePanel = 'none' | 'create' | 'stats' | 'history' | 'calendar' | 'edit'
 type ViewMode = 'expanded' | 'compact';
 
 // Sortable wrapper component
-function SortableTaskCard({ task, viewMode, onComplete, onPostpone, onDelete, onEdit, onFocus }: {
+type SortableTaskCardProps = {
   task: TodoTask;
   viewMode: ViewMode;
   onComplete: () => void;
@@ -40,7 +40,11 @@ function SortableTaskCard({ task, viewMode, onComplete, onPostpone, onDelete, on
   onDelete: () => void;
   onEdit: () => void;
   onFocus: () => void;
-}) {
+};
+const SortableTaskCard = React.forwardRef<HTMLDivElement, SortableTaskCardProps>(function SortableTaskCard(
+  { task, viewMode, onComplete, onPostpone, onDelete, onEdit, onFocus },
+  ref,
+) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -48,8 +52,14 @@ function SortableTaskCard({ task, viewMode, onComplete, onPostpone, onDelete, on
     zIndex: isDragging ? 50 : undefined,
   };
 
+  const setRefs = (node: HTMLDivElement | null) => {
+    setNodeRef(node);
+    if (typeof ref === "function") ref(node);
+    else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
+  };
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setRefs} style={style} {...attributes} {...listeners}>
       <TodoGamifiedTaskCard
         task={task}
         variant={viewMode}
@@ -62,7 +72,7 @@ function SortableTaskCard({ task, viewMode, onComplete, onPostpone, onDelete, on
       />
     </div>
   );
-}
+});
 
 export default function TodoList() {
   const { t } = useTranslation();
