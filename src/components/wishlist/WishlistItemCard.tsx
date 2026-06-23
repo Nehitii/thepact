@@ -88,7 +88,11 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
 
   return (
     <motion.div
-      ref={setNodeRef}
+      ref={(node: HTMLDivElement | null) => {
+        setNodeRef(node);
+        if (typeof forwardedRef === "function") forwardedRef(node);
+        else if (forwardedRef) (forwardedRef as React.MutableRefObject<HTMLDivElement | null>).current = node;
+      }}
       {...(draggable ? { ...attributes } : {})}
       layout={!draggable}
       initial={{ opacity: 0, y: 20 }}
@@ -276,4 +280,4 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
       </div>
     </motion.div>
   );
-}
+});
