@@ -77,7 +77,9 @@
   src: url('/fonts/jetbrains-mono-500.woff2') format('woff2');
 }
 
-@import "./styles/design-tokens.css";
+/* design-tokens.css est importe depuis main.tsx. Un @import place ici, apres
+   les @font-face qui precedent, est invalide au sens de la spec CSS et se
+   trouve silencieusement ignore : la feuille n'etait jamais chargee. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

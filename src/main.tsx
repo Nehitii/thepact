@@ -5,6 +5,12 @@ import "./index.css";
 // index.css — those rules are CSS-spec invalid and silently dropped).
 // Kept global because their classes are used across multiple pages or
 // shared components (sidebar, DSBackground, profile, etc.).
+// design-tokens.css etait importe depuis index.css ligne 80, apres 66 regles :
+// un @import CSS doit preceder toute autre regle, sinon il est invalide et
+// silencieusement ignore. Les 45 variables et 24 classes ds-* qu'il definit
+// n'etaient donc jamais chargees — d'ou le lien "Skip to content" visible sur
+// toutes les pages, qui aurait du rester masque hors focus.
+import "./styles/design-tokens.css";
 import "./styles/hero-animations.css";
 import "./styles/difficulty.css";
 import "./styles/shop.css";
