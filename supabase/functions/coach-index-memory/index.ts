@@ -3,25 +3,17 @@
 // Can be invoked manually (per-user via JWT) or by cron (with service role).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
+import { embedBatch, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const EMBED_MODEL = "openai/text-embedding-3-small";
 const BATCH_SIZE = 16;
 
-async function embed(texts: string[], aiKey: string): Promise<number[][]> {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
-    body: JSON.stringify({ model: EMBED_MODEL, input: texts }),
-  });
-  if (!res.ok) throw new Error(`embed ${res.status}: ${await res.text()}`);
-  const json = await res.json();
-  return (json.data ?? []).map((d: any) => d.embedding);
-}
+// Stored content, not search queries — keep the document side of the embedding space.
+const embed = (texts: string[], aiKey: string) => embedBatch(texts, aiKey, "RETRIEVAL_DOCUMENT");
 
 interface Item { source_type: string; source_id: string; content: string; metadata: any }
 
@@ -116,9 +108,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const aiKey = Deno.env.get("LOVABLE_API_KEY");
+    const aiKey = getAiKey();
     if (!aiKey) {
-      return new Response(JSON.stringify({ error: "AI gateway not configured" }), {
+      return new Response(JSON.stringify({ error: "AI provider not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

@@ -6,6 +6,7 @@
 //   - insert notification (category=system)
 //   - fire push if subscription exists
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
+import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,7 +16,7 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const CRON_SECRET = Deno.env.get("CRON_SECRET");
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const AI_API_KEY = getAiKey();
 const FUNCTIONS_BASE = SUPABASE_URL.replace(".supabase.co", ".functions.supabase.co");
 
 function weekBounds(offsetWeeks = 0) {
@@ -87,7 +88,7 @@ function deltaLabel(curr: number, prev: number) {
 }
 
 async function generateInsight(curr: any, prev: any): Promise<string> {
-  if (!LOVABLE_API_KEY) {
+  if (!AI_API_KEY) {
     return `Cette semaine : ${curr.stepsCompleted} étape(s), ${curr.habitLogs} habitude(s), ${curr.journalCount} entrée(s) journal, ${curr.todoCount} tâche(s). Compare à la semaine passée : étapes ${deltaLabel(curr.stepsCompleted, prev.stepsCompleted)}, habitudes ${deltaLabel(curr.habitLogs, prev.habitLogs)}.`;
   }
   const prompt = `Tu es Pacte Coach. Rédige un digest hebdo (max 120 mots, ton direct, tutoie, markdown léger). Compare la semaine à la précédente, salue les progrès, pointe 1 levier concret.
@@ -95,17 +96,13 @@ async function generateInsight(curr: any, prev: any): Promise<string> {
 Semaine actuelle : étapes ${curr.stepsCompleted}, habitudes ${curr.habitLogs}, journal ${curr.journalCount}, tâches ${curr.todoCount}.
 Semaine précédente : étapes ${prev.stepsCompleted}, habitudes ${prev.habitLogs}, journal ${prev.journalCount}, tâches ${prev.todoCount}.`;
   try {
-    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "Tu es un coach personnel concis et direct. Tutoie. Markdown léger." },
-          { role: "user", content: prompt },
-        ],
-      }),
-    });
+    const r = await chatCompletion({
+      model: DEFAULT_CHAT_MODEL,
+      messages: [
+        { role: "system", content: "Tu es un coach personnel concis et direct. Tutoie. Markdown léger." },
+        { role: "user", content: prompt },
+      ],
+    }, AI_API_KEY);
     const j = await r.json();
     return j?.choices?.[0]?.message?.content ?? "Digest indisponible cette semaine.";
   } catch {

@@ -17,17 +17,13 @@ import "./styles/journal.css";
 // i18n must be initialized once, before any components render.
 import "@/i18n/i18n";
 
-// Service worker: register only on production custom domains (push notifications).
-// In Lovable preview / iframes, unregister any existing SW to avoid HMR collisions.
+// Service worker: register only on real top-level pages (push notifications).
+// Inside an iframe, unregister any existing SW to avoid HMR collisions.
 (() => {
   const isInIframe = (() => {
     try { return window.self !== window.top; } catch { return true; }
   })();
-  const isPreviewHost =
-    window.location.hostname.includes("id-preview--") ||
-    window.location.hostname.includes("lovableproject.com") ||
-    window.location.hostname.includes("lovable.app");
-  if (isPreviewHost || isInIframe) {
+  if (isInIframe) {
     navigator.serviceWorker?.getRegistrations().then((regs) => {
       regs.forEach((r) => r.unregister());
     }).catch(() => {});
@@ -73,12 +69,6 @@ function initSentryDeferred() {
         /moz-extension/i,
       ],
       beforeSend(event) {
-        if (typeof window !== "undefined") {
-          const host = window.location.hostname;
-          if (host.includes("id-preview--") || host.includes("lovableproject.com")) {
-            return null;
-          }
-        }
         return event;
       },
     });

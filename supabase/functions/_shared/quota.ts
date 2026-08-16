@@ -1,6 +1,8 @@
 // Shared AI quota helper. Call AFTER auth, BEFORE the AI gateway request.
 // Returns null when the call is allowed, or a ready-to-return 429 Response.
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+// Pinned to match the version the calling functions import — an unpinned "@2"
+// resolves to a newer client whose SupabaseClient type is structurally different.
+import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 export async function checkAiQuota(
   userClient: SupabaseClient,

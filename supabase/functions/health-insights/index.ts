@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { checkAiQuota } from "../_shared/quota.ts";
+import { chatCompletion, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +20,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+    const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2.58.0");
     const authClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
@@ -38,8 +39,8 @@ serve(async (req) => {
     if (quotaResp) return quotaResp;
 
     const { healthData, streakDays } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const aiKey = getAiKey();
+    if (!aiKey) throw new Error("AI_API_KEY is not configured");
 
     const systemPrompt = `You are a concise wellness insights analyst. Given a user's recent health check-in data, produce 3-5 short, actionable observations. Each insight should be one sentence. Focus on:
 - Correlations (e.g. sleep vs stress, activity vs mood)
@@ -54,14 +55,9 @@ Return JSON using the provided tool. Never give medical advice. Use encouraging,
       currentStreak: streakDays,
     });
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+    const response = await chatCompletion(
+      {
+        model: "gemini-3-flash-preview",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Analyze this wellness data and provide insights:\n${dataStr}` },
@@ -97,8 +93,9 @@ Return JSON using the provided tool. Never give medical advice. Use encouraging,
           },
         ],
         tool_choice: { type: "function", function: { name: "provide_insights" } },
-      }),
-    });
+      },
+      aiKey,
+    );
 
     if (!response.ok) {
       if (response.status === 429) {

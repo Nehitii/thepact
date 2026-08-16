@@ -1,7 +1,8 @@
-// AI Coach — streaming chat via Lovable AI Gateway (no API key required).
+// AI Coach — streaming chat via the configured AI provider (see _shared/ai.ts).
 // Persists user + assistant messages in coach_messages, supports tool calls.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
+import { chatCompletion, embed, getAiKey, normalizeModel, upstreamErrorMessage } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -266,15 +267,8 @@ async function runTool(
       const query = String(args?.query ?? "").trim();
       if (!query) return JSON.stringify([]);
       // Embed the query
-      const embRes = await fetch("https://ai.gateway.lovable.dev/v1/embeddings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
-        body: JSON.stringify({ model: "openai/text-embedding-3-small", input: query }),
-      });
-      if (!embRes.ok) return JSON.stringify({ error: "embed_failed" });
-      const embJson = await embRes.json();
-      const vector = embJson?.data?.[0]?.embedding;
-      if (!vector) return JSON.stringify([]);
+      const vector = await embed(query, aiKey, "RETRIEVAL_QUERY");
+      if (!vector) return JSON.stringify({ error: "embed_failed" });
       const { data } = await supabase.rpc("match_coach_memory", {
         _query: vector,
         _match_count: 6,
@@ -462,7 +456,7 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const model = body.model ?? "google/gemini-2.5-flash";
+    const model = normalizeModel(body.model);
 
     // Persist user message
     await supabase.from("coach_messages").insert({
@@ -485,9 +479,9 @@ Deno.serve(async (req) => {
       ...((history ?? []).map((m: any) => ({ role: m.role, content: m.content }))),
     ];
 
-    const aiKey = Deno.env.get("LOVABLE_API_KEY");
+    const aiKey = getAiKey();
     if (!aiKey) {
-      return new Response(JSON.stringify({ error: "AI gateway not configured" }), {
+      return new Response(JSON.stringify({ error: "AI provider not configured" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -498,11 +492,10 @@ Deno.serve(async (req) => {
     const aggregatedCitations: ToolReceipt["citations"] = [];
     const aggregatedActions: NonNullable<ToolReceipt["action"]>[] = [];
     for (let hop = 0; hop < 4; hop++) {
-      const probe = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
-        body: JSON.stringify({ model, messages: workMessages, tools: TOOLS, tool_choice: "auto" }),
-      });
+      const probe = await chatCompletion(
+        { model, messages: workMessages, tools: TOOLS, tool_choice: "auto" },
+        aiKey,
+      );
       if (!probe.ok) break;
       const probeJson = await probe.json();
       const msg = probeJson?.choices?.[0]?.message;
@@ -520,26 +513,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${aiKey}`,
-      },
-      body: JSON.stringify({ model, messages: workMessages, stream: true }),
-    });
+    const upstream = await chatCompletion(
+      { model, messages: workMessages, stream: true },
+      aiKey,
+    );
 
     if (!upstream.ok || !upstream.body) {
       const errText = await upstream.text();
-      if (upstream.status === 429) {
-        return new Response(JSON.stringify({ error: "Limite atteinte, réessaie dans un instant." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (upstream.status === 402) {
-        return new Response(JSON.stringify({ error: "Crédits IA épuisés. Recharge ton workspace Lovable." }), {
-          status: 402,
+      if (upstream.status === 429 || upstream.status === 402) {
+        return new Response(JSON.stringify({ error: upstreamErrorMessage(upstream.status) }), {
+          status: upstream.status,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }

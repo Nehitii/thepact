@@ -148,7 +148,7 @@ export default function NotificationSettings() {
       <CyberPanel title="WEB PUSH (PWA)" statusText={<span className={cn(push.subscribed ? "text-emerald-400" : "text-muted-foreground")}>{push.subscribed ? "ABONNÉ" : "INACTIF"}</span>}>
         <div className="px-1 py-2 space-y-3">
           {!push.supported && (
-            <p className="text-xs text-muted-foreground">Le navigateur ne supporte pas les notifications push, ou tu es dans l'aperçu Lovable (les push fonctionnent en production seulement).</p>
+            <p className="text-xs text-muted-foreground">Le navigateur ne supporte pas les notifications push, ou tu es dans un aperçu embarqué (les push fonctionnent en production seulement).</p>
           )}
           {push.supported && !push.hasVapid && (
             <p className="text-xs text-amber-400">Les clés VAPID ne sont pas configurées. Demande à l'admin d'ajouter VITE_VAPID_PUBLIC_KEY puis VAPID_PRIVATE_KEY côté serveur.</p>

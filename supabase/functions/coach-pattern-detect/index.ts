@@ -3,20 +3,18 @@
 // uses an LLM to surface 1-3 actionable insights, persisted as notifications.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
+import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const MODEL = "google/gemini-2.5-flash";
-
 async function llm(messages: any[], aiKey: string) {
-  const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
-    body: JSON.stringify({ model: MODEL, messages, response_format: { type: "json_object" } }),
-  });
+  const res = await chatCompletion(
+    { model: DEFAULT_CHAT_MODEL, messages, response_format: { type: "json_object" } },
+    aiKey,
+  );
   if (!res.ok) throw new Error(`llm ${res.status}: ${await res.text()}`);
   const j = await res.json();
   return j.choices?.[0]?.message?.content ?? "{}";
@@ -93,8 +91,8 @@ async function processUser(supabase: any, userId: string, aiKey: string) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
-  const aiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!aiKey) return new Response(JSON.stringify({ error: "missing LOVABLE_API_KEY" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  const aiKey = getAiKey();
+  if (!aiKey) return new Response(JSON.stringify({ error: "missing AI_API_KEY" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   const cronSecret = Deno.env.get("CRON_SECRET");
   const auth = req.headers.get("Authorization") ?? "";

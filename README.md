@@ -1,73 +1,96 @@
-# Welcome to your Lovable project
+# Vowpact
 
-## Project info
+> Find The Light
 
-**URL**: https://lovable.dev/projects/5a4a3b54-39f4-4a9a-9db4-4ef0f92310c9
+Application web progressive (PWA) de suivi d'habitudes, d'objectifs et de bien-être,
+avec coach IA conversationnel.
 
-## How can I edit this code?
+## Stack
 
-There are several ways of editing your application.
+| Couche | Technologie |
+|---|---|
+| Front | React 18 + TypeScript + Vite 5 |
+| UI | Tailwind CSS + shadcn/ui (Radix) + framer-motion |
+| État serveur | TanStack Query |
+| Backend | Supabase (Postgres + Auth + Storage + Edge Functions) |
+| IA | Edge Functions Deno appelant une API compatible OpenAI |
+| PWA | vite-plugin-pwa (Workbox) |
+| i18n | i18next / react-i18next |
+| Monitoring | Sentry |
 
-**Use Lovable**
+## Prérequis
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5a4a3b54-39f4-4a9a-9db4-4ef0f92310c9) and start prompting.
+- Node.js 20+
+- Un projet Supabase
+- La [Supabase CLI](https://supabase.com/docs/guides/cli) pour les migrations et les Edge Functions
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Démarrage
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+npm install
+cp .env.example .env
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+L'application démarre sur http://localhost:8080.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Variables d'environnement
 
-**Use GitHub Codespaces**
+Copier `.env.example` vers `.env` et renseigner les valeurs.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+| Variable | Rôle |
+|---|---|
+| `VITE_SUPABASE_URL` | URL du projet Supabase |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | Clé `anon` (publique, protégée par les RLS) |
+| `VITE_SUPABASE_PROJECT_ID` | Identifiant du projet Supabase |
+| `VITE_SENTRY_DSN` | DSN Sentry (optionnel — le monitoring est désactivé si absent) |
 
-## What technologies are used for this project?
+`.env` ne doit **jamais** être committé.
 
-This project is built with:
+Les Edge Functions lisent leurs propres secrets côté Supabase
+(`supabase secrets set`), jamais depuis ce fichier.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Scripts
 
-## How can I deploy this project?
+| Commande | Effet |
+|---|---|
+| `npm run dev` | Serveur de développement |
+| `npm run build` | Build de production dans `dist/` |
+| `npm run build:dev` | Build en mode development |
+| `npm run preview` | Prévisualise le build de production |
+| `npm run lint` | ESLint |
 
-Simply open [Lovable](https://lovable.dev/projects/5a4a3b54-39f4-4a9a-9db4-4ef0f92310c9) and click on Share -> Publish.
+Analyse de la taille du bundle :
 
-## Can I connect a custom domain to my Lovable project?
+```sh
+npx vite build --mode analyze
+```
 
-Yes, you can!
+Le rapport est écrit dans `dist/stats.html`.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## Base de données
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Les migrations vivent dans `supabase/migrations/` et s'appliquent dans l'ordre
+chronologique.
+
+```sh
+supabase link --project-ref <project-ref>
+supabase db push
+```
+
+## Edge Functions
+
+Le code des fonctions est dans `supabase/functions/`. Leur configuration
+d'authentification (`verify_jwt`) est dans `supabase/config.toml`.
+
+```sh
+supabase functions deploy <nom-de-la-fonction>
+```
+
+## Déploiement
+
+Le front est une SPA statique : `npm run build` produit `dist/`, à servir
+derrière un fallback SPA (toutes les routes inconnues renvoient `index.html`).
+
+Les variables `VITE_*` sont injectées **au moment du build** — changer une valeur
+nécessite un nouveau build, pas seulement un redémarrage.

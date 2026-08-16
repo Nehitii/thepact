@@ -1,4 +1,4 @@
-project_id = "lzosyvpsuqwsihifcwua"
+project_id = "upfethjdvrgmmfgfvqdo"
 
 # Cron-triggered — runs over all users with CRON_SECRET, no per-user JWT.
 [functions.smart-notifications]
@@ -52,4 +52,16 @@ verify_jwt = false
 
 # Dual mode: cron + user. JWT auth handled in code.
 [functions.coach-weekly-digest]
+verify_jwt = false
+
+# Cron-only. Each verifies CRON_SECRET in code; leaving verify_jwt at its
+# default of true made the gateway reject the scheduled call before the
+# function ran, since pg_cron sends no user JWT.
+[functions.season-reset]
+verify_jwt = false
+
+[functions.coach-cron-runner]
+verify_jwt = false
+
+[functions.automation-evaluator]
 verify_jwt = false

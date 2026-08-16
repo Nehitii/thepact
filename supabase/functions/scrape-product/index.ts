@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
 
     const response = await fetch(formattedUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; LovableBot/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; VowpactBot/1.0)',
         'Accept': 'text/html,application/xhtml+xml',
         'Accept-Language': 'en-US,en;q=0.9,fr;q=0.8',
       },

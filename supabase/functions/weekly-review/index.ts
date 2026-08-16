@@ -1,5 +1,6 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
+import { chatCompletion, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -91,10 +92,12 @@ Deno.serve(async (req) => {
 
     let healthAvg = null;
     if (healthData && healthData.length > 0) {
+      // Filter on type, not truthiness: a legitimate score of 0 must still count.
       const scores = healthData.map((h: any) => {
-        const values = [h.mood_level, h.sleep_quality, h.activity_level].filter(Boolean);
+        const values = [h.mood_level, h.sleep_quality, h.activity_level]
+          .filter((v: unknown): v is number => typeof v === "number");
         return values.length > 0 ? values.reduce((a: number, b: number) => a + b, 0) / values.length : null;
-      }).filter(Boolean);
+      }).filter((v: number | null): v is number => v !== null);
       if (scores.length > 0) {
         healthAvg = Math.round((scores.reduce((a: number, b: number) => a + b, 0) / scores.length) * 10) / 10;
       }
@@ -134,8 +137,8 @@ Deno.serve(async (req) => {
 
     // 6. Generate AI insights
     let aiInsights = null;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (LOVABLE_API_KEY) {
+    const aiKey = getAiKey();
+    if (aiKey) {
       try {
         const prompt = `You are a concise personal coach for a productivity/life-management app called "The Pact". Based on this week's data, provide 2-3 brief actionable insights (max 150 words total). Be encouraging but direct.
 
@@ -148,20 +151,13 @@ This week's summary:
 
 Give practical advice based on patterns you notice. Use short bullet points.`;
 
-        const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "google/gemini-3-flash-preview",
-            messages: [
-              { role: "system", content: "You are a concise personal development coach. Keep responses under 150 words." },
-              { role: "user", content: prompt },
-            ],
-          }),
-        });
+        const aiResp = await chatCompletion({
+          model: "gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: "You are a concise personal development coach. Keep responses under 150 words." },
+            { role: "user", content: prompt },
+          ],
+        }, aiKey);
 
         if (aiResp.ok) {
           const aiData = await aiResp.json();

@@ -1,7 +1,8 @@
-// goal-decompose — Suggests steps + supporting habits for a goal description, via Lovable AI Gateway.
+// goal-decompose — Suggests steps + supporting habits for a goal description, via the configured AI provider.
 // Returns structured JSON via tool calling. No DB writes.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
+import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -75,9 +76,9 @@ Deno.serve(async (req) => {
       });
     }
 
-    const aiKey = Deno.env.get("LOVABLE_API_KEY");
+    const aiKey = getAiKey();
     if (!aiKey) {
-      return new Response(JSON.stringify({ error: "AI gateway not configured" }), {
+      return new Response(JSON.stringify({ error: "AI provider not configured" }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -85,19 +86,15 @@ Deno.serve(async (req) => {
     const sys = `Tu es un coach de productivité. Décompose les objectifs en étapes claires (5-10) et 1-3 habitudes de soutien réalistes. Tutoie. Réponds en français.`;
     const userMsg = `Objectif: ${name}\nDescription: ${description ?? "—"}\nDeadline: ${deadline ?? "—"}\nDifficulté: ${difficulty ?? "—"}\nDécompose-le.`;
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${aiKey}` },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: sys },
-          { role: "user", content: userMsg },
-        ],
-        tools: [TOOL],
-        tool_choice: { type: "function", function: { name: "decompose_goal" } },
-      }),
-    });
+    const res = await chatCompletion({
+      model: DEFAULT_CHAT_MODEL,
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content: userMsg },
+      ],
+      tools: [TOOL],
+      tool_choice: { type: "function", function: { name: "decompose_goal" } },
+    }, aiKey);
     if (!res.ok) {
       if (res.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit, réessaie plus tard." }), {

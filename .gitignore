@@ -27,3 +27,12 @@ dist-ssr
 .env
 .env.local
 .env.*.local
+
+# Deno — genere par `deno check` sur les Edge Functions, pas un artefact du projet
+deno.lock
+
+# Script ponctuel de migration des images depuis Lovable
+migrer-images.mjs
+
+# Etat local de la CLI Supabase (projet lie, conteneurs)
+supabase/.temp/
