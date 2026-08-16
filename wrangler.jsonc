@@ -1,0 +1,13 @@
+{
+  // Deploiement statique via Cloudflare Workers (assets-only : aucun code
+  // Worker, seulement le build Vite servi tel quel).
+  "name": "thepact",
+  "compatibility_date": "2026-08-16",
+  "assets": {
+    "directory": "./dist",
+    // Renvoie index.html avec un 200 pour toute route inconnue, ce qui
+    // permet au routeur React de prendre la main. Sans cela, un
+    // rechargement sur une route profonde donnerait un 404.
+    "not_found_handling": "single-page-application"
+  }
+}
