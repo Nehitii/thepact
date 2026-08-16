@@ -127,8 +127,11 @@ export function useCoachStream(conversationId: string | null) {
   const [streaming, setStreaming] = useState(false);
   const [streamText, setStreamText] = useState("");
 
+  // Le modèle n'est volontairement pas envoyé : il est choisi côté serveur
+  // (DEFAULT_CHAT_MODEL, surchargeable via le secret AI_CHAT_MODEL). Le figer
+  // ici obligerait à reconstruire le front à chaque changement de modèle.
   const send = useCallback(
-    async (message: string, model = "google/gemini-2.5-flash") => {
+    async (message: string) => {
       if (!conversationId || !message.trim()) return;
       setStreaming(true);
       setStreamText("");
@@ -144,7 +147,7 @@ export function useCoachStream(conversationId: string | null) {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ conversation_id: conversationId, message, model }),
+          body: JSON.stringify({ conversation_id: conversationId, message }),
         });
 
         if (!res.ok || !res.body) {
