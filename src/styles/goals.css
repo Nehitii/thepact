@@ -1391,3 +1391,108 @@
     animation: none !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   Bar view — carte Super Goal
+   ──────────────────────────────────────────────────────────────
+   SuperGoalBarCard.tsx reference neuf classes qui n'existaient
+   dans aucune feuille : la carte s'affichait donc sans mise en
+   page. Les trois tags s'empilaient verticalement faute de
+   display:flex, et .bar-card-content perdait son height:100%,
+   son parent .bar-card-inner n'ayant pas de hauteur — d'ou le
+   debordement hors des 120px du conteneur.
+
+   La carte normale (BarViewGoalCard) utilise .bar-card-diff-chip,
+   la super utilise .bar-card-diff-tag : deux vocabulaires pour le
+   meme role. On aligne le second sur l'apparence du premier.
+   ══════════════════════════════════════════════════════════════ */
+
+/* Couche decorative des trackers. Inerte : aucun style ne les
+   cible ailleurs, ils ne doivent ni s'afficher ni capter le
+   pointeur. */
+.bar-card-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+.bar-card-tracker {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/* Chaine de hauteur : sans height:100% ici, le height:100% de
+   .bar-card-content ne resout pas et le contenu deborde. */
+.bar-card-inner {
+  position: relative;
+  height: 100%;
+}
+
+.bar-card-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: radial-gradient(hsl(0 0% 100% / 0.6) 0.5px, transparent 0.5px);
+  background-size: 3px 3px;
+}
+
+.bar-card-header {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* La cause directe de l'empilement vertical. */
+.bar-card-tags-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bar-card-diff-tag,
+.bar-card-super-tag,
+.bar-card-dynamic-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.bar-card-diff-tag {
+  color: var(--accent);
+  border-color: rgba(var(--accent-rgb), 0.35);
+  background: rgba(var(--accent-rgb), 0.1);
+}
+
+.bar-card-super-tag {
+  color: hsl(45 100% 68%);
+  border-color: hsl(45 100% 68% / 0.4);
+  background: hsl(45 100% 68% / 0.12);
+}
+
+.bar-card-dynamic-tag {
+  color: hsl(263 100% 74%);
+  border-color: hsl(263 100% 74% / 0.4);
+  background: hsl(263 100% 74% / 0.12);
+}
+
+/* Sous 420px, les trois tags tiennent mal sur une ligne : on
+   masque le libelle de difficulte, le moins porteur d'info. */
+@media (max-width: 420px) {
+  .bar-card-diff-tag { display: none; }
+}
