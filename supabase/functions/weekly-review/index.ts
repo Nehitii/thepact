@@ -1,6 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 import { checkAiQuota } from "../_shared/quota.ts";
-import { chatCompletion, getAiKey } from "../_shared/ai.ts";
+import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -152,7 +152,7 @@ This week's summary:
 Give practical advice based on patterns you notice. Use short bullet points.`;
 
         const aiResp = await chatCompletion({
-          model: "gemini-3-flash-preview",
+          model: DEFAULT_CHAT_MODEL,
           messages: [
             { role: "system", content: "You are a concise personal development coach. Keep responses under 150 words." },
             { role: "user", content: prompt },

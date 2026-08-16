@@ -8,7 +8,7 @@
 // Secrets (supabase secrets set NAME=value):
 //   AI_API_KEY        required
 //   AI_GATEWAY_URL    optional, defaults to the Gemini OpenAI-compatible layer
-//   AI_CHAT_MODEL     optional, defaults to gemini-2.5-flash
+//   AI_CHAT_MODEL     optional, defaults to gemini-3.5-flash
 //   AI_EMBEDDING_URL  optional, defaults to the Gemini native embed endpoint
 
 const GATEWAY_URL =
@@ -16,7 +16,11 @@ const GATEWAY_URL =
 const EMBEDDING_BASE =
   Deno.env.get("AI_EMBEDDING_URL") ?? "https://generativelanguage.googleapis.com/v1beta/models";
 
-export const DEFAULT_CHAT_MODEL = Deno.env.get("AI_CHAT_MODEL") ?? "gemini-2.5-flash";
+// gemini-2.5-flash est ferme aux nouvelles cles et s'arrete le 16/10/2026.
+// On vise un modele stable et epingle : l'alias gemini-flash-latest changerait
+// de comportement et de tarif sans prevenir.
+// Surchargeable a chaud via le secret AI_CHAT_MODEL, sans redeploiement.
+export const DEFAULT_CHAT_MODEL = Deno.env.get("AI_CHAT_MODEL") ?? "gemini-3.5-flash";
 export const EMBEDDING_MODEL = Deno.env.get("AI_EMBEDDING_MODEL") ?? "gemini-embedding-001";
 
 // Must stay in sync with the vector(1536) columns in coach_embeddings.

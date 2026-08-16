@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { checkAiQuota } from "../_shared/quota.ts";
-import { chatCompletion, getAiKey } from "../_shared/ai.ts";
+import { chatCompletion, DEFAULT_CHAT_MODEL, getAiKey } from "../_shared/ai.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +57,7 @@ Return JSON using the provided tool. Never give medical advice. Use encouraging,
 
     const response = await chatCompletion(
       {
-        model: "gemini-3-flash-preview",
+        model: DEFAULT_CHAT_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: `Analyze this wellness data and provide insights:\n${dataStr}` },
