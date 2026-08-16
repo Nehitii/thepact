@@ -38,7 +38,12 @@ export default function TwoFactor() {
 
   const from = useMemo(() => {
     const state = (location.state ?? {}) as FromState;
-    return state.from && typeof state.from === "string" ? state.from : "/";
+    const candidate = typeof state.from === "string" ? state.from : "";
+    // N'accepter qu'un chemin interne. "//host" et "/\host" sont traités comme
+    // des URL protocole-relatives par le routeur et sortiraient du site
+    // (CVE-2025-68470 et son contournement par antislash).
+    const isInternal = /^\/(?![/\\])/.test(candidate);
+    return isInternal ? candidate : "/";
   }, [location.state]);
 
   // Determine default mode based on what's enabled
