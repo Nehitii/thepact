@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import "@/styles/pantheon.css";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { getUserAchievements, Achievement, AchievementRarity, rarityColors, categoryIcons, AchievementCategory } from "@/lib/achievements";
@@ -107,8 +108,19 @@ export default function Achievements() {
       className="pantheon-wrapper text-slate-200 !px-0 !pt-0 !pb-0"
       background={
         <>
+          {/* Le decor occupe la fenetre entiere, pas la colonne de contenu :
+              DSPageShell rend cette couche en dehors du <main>, qui est
+              centre et borne en largeur. */}
+          <div className="pantheon-backdrop" />
+          <div className="pantheon-stars" />
           <div className="celestial-light" />
-          <div className="ground-grid" />
+          {/* La scene porte la perspective, la grille porte la rotation :
+              une transform 3D ne cree pas sa propre profondeur. */}
+          <div className="ground-stage">
+            <div className="ground-grid" />
+          </div>
+          <div className="ground-horizon" />
+          <div className="pantheon-vignette" />
         </>
       }
     >

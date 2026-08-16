@@ -36,3 +36,6 @@ migrer-images.mjs
 
 # Etat local de la CLI Supabase (projet lie, conteneurs)
 supabase/.temp/
+
+# Apercu isole du decor Hall of Eternity, outil de travail
+public/_pantheon-preview.html
