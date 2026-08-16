@@ -102,6 +102,26 @@ export default function Achievements() {
   const percentage = achievements.length > 0 ? Math.round((unlockedCount / achievements.length) * 100) : 0;
   const totalPoints = achievements.filter(a => a.unlocked).reduce((sum, a) => sum + (a.points || 0), 0);
 
+  // ALL_CATEGORIES est une liste figee de 18 entrees, alors que les succes
+  // reellement presents en dependent des modules possedes. Les categories
+  // vides restaient cliquables et menaient a un ecran vide : on ne propose
+  // qu'un filtre qui a quelque chose a filtrer.
+  const visibleCategories = useMemo(
+    () => ALL_CATEGORIES.filter((c) => c === "all" || (categoryCounts[c]?.total ?? 0) > 0),
+    [categoryCounts],
+  );
+
+  // Le rang affichait "Élite" en dur, quel que soit l'avancement : une
+  // statistique fictive posee entre deux vraies. On montre desormais la
+  // rarete la plus haute effectivement debloquee — un fait verifiable a
+  // l'ecran, sans bareme invente.
+  const highestRarity = useMemo(() => {
+    for (let i = rarityOrder.length - 1; i >= 0; i--) {
+      if (achievements.some((a) => a.unlocked && a.rarity === rarityOrder[i])) return rarityOrder[i];
+    }
+    return null;
+  }, [achievements]);
+
   return (
     <DSPageShell
       width="xl"
@@ -118,8 +138,8 @@ export default function Achievements() {
               une transform 3D ne cree pas sa propre profondeur. */}
           <div className="ground-stage">
             <div className="ground-grid" />
+            <div className="ground-horizon" />
           </div>
-          <div className="ground-horizon" />
           <div className="pantheon-vignette" />
         </>
       }
@@ -142,12 +162,22 @@ export default function Achievements() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-10 max-w-4xl mx-auto">
             {[
               { label: t("achievements.completion"), val: `${percentage}%`, sub: `${unlockedCount} / ${achievements.length}` },
-              { label: t("achievements.legacyRank"), val: t("achievements.elite"), sub: t("achievements.globalStatus") },
+              {
+                label: t("achievements.legacyRank"),
+                val: highestRarity ? rarityLabels[highestRarity] : "—",
+                sub: highestRarity ? t("achievements.highestUnlocked") : t("achievements.noneYet"),
+                color: highestRarity ? rarityColors[highestRarity] : undefined,
+              },
               { label: t("achievements.expedition"), val: totalPoints.toLocaleString(), sub: t("achievements.totalScore") },
             ].map((s, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="stat-monument p-4 md:p-8 rounded-t-2xl transition-transform hover:-translate-y-1 duration-500">
                 <div className="text-[10px] text-primary font-black uppercase tracking-[0.25em] md:tracking-[0.4em] mb-2 md:mb-3">{s.label}</div>
-                <div className="text-3xl md:text-5xl font-black font-orbitron text-white mb-2">{s.val}</div>
+                <div
+                  className="stat-value text-3xl md:text-5xl font-black font-orbitron mb-2"
+                  style={{ color: (s as { color?: string }).color ?? "#fff" }}
+                >
+                  {s.val}
+                </div>
                 <div className="text-[11px] text-muted-foreground font-mono border-l-2 border-primary/40 pl-3 text-left opacity-70">{s.sub}</div>
               </motion.div>
             ))}
@@ -158,7 +188,7 @@ export default function Achievements() {
         <div className="mb-6">
           <ScrollArea className="w-full">
             <div className="flex gap-2 pb-2">
-              {ALL_CATEGORIES.map((cat) => {
+              {visibleCategories.map((cat) => {
                 const iconKey = cat === "all" ? "layers" : (categoryIcons[cat] || "circle");
                 const count = cat === "all" ? null : categoryCounts[cat];
                 const isActive = selectedCategory === cat;
@@ -166,11 +196,13 @@ export default function Achievements() {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
+                    aria-pressed={isActive}
                     className={cn(
                       "flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-orbitron uppercase tracking-wider whitespace-nowrap transition-all border",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#04050a]",
                       isActive
                         ? "bg-primary/20 border-primary/50 text-primary"
-                        : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
+                        : "bg-white/5 border-white/10 text-slate-300 hover:bg-white/10 hover:text-white"
                     )}
                   >
                     <DynamicLucideIcon name={iconKey} fallback="circle" size={12} />
@@ -235,7 +267,11 @@ export default function Achievements() {
           <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-10">
             <AnimatePresence mode="popLayout">
               {filteredAchievements.map((achievement, idx) => (
-                <motion.div key={achievement.id} layout initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.4, delay: idx * 0.05 }}>
+                // La cascade etait en idx * 0.05 sans borne : avec une
+                // centaine de succes, la derniere carte n'apparaissait
+                // qu'apres cinq secondes, et chaque changement de filtre
+                // relancait l'attente. On plafonne le decalage.
+                <motion.div key={achievement.id} layout initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.35, delay: Math.min(idx, 10) * 0.03 }}>
                   <AchievementCard achievement={achievement} />
                 </motion.div>
               ))}
@@ -244,9 +280,13 @@ export default function Achievements() {
         )}
 
         {!isLoading && filteredAchievements.length === 0 && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-32 bg-white/[0.01] border border-dashed border-white/10 rounded-3xl mt-8">
-            <Sparkles className="w-12 h-12 text-white/5 mx-auto mb-4" />
-            <h3 className="font-orbitron uppercase text-muted-foreground tracking-[0.4em]">{t("achievements.noResults")}</h3>
+          // L'icone etait en text-white/5, invisible sur ce fond : un etat
+          // vide qui n'annonce rien. Elle passe a une teinte lisible, et le
+          // message dit comment en sortir.
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24 bg-white/[0.02] border border-dashed border-white/15 rounded-3xl mt-8">
+            <Sparkles className="w-12 h-12 text-primary/40 mx-auto mb-5" />
+            <h3 className="font-orbitron uppercase text-slate-200 tracking-[0.35em] text-sm">{t("achievements.noResults")}</h3>
+            <p className="mt-3 text-[11px] font-mono text-slate-400">{t("achievements.noResultsHint")}</p>
           </motion.div>
         )}
       </div>

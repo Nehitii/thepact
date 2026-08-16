@@ -173,7 +173,10 @@ export function CommandPalette() {
         }}
         whileHover={{ scale: 1.02 }}
         whileDrag={{ scale: 1.05, cursor: "grabbing" }}
-        className="fixed bottom-6 right-6 z-[999] pointer-events-auto flex items-center shadow-[0_0_20px_hsl(var(--primary)/0.15)] rounded-full bg-[#03060A]/85 backdrop-blur-md border border-primary/30 p-1 cursor-grab active:cursor-grabbing"
+        // Position de depart au-dessus du bouton du coach (AppLayout : 48px
+        // de haut, a bottom-20 sur mobile et bottom-6 au-dela) : les deux
+        // se superposaient sur desktop. Reste deplacable a la souris.
+        className="fixed bottom-36 right-4 md:bottom-24 md:right-6 z-[999] pointer-events-auto flex items-center shadow-[0_0_20px_hsl(var(--primary)/0.15)] rounded-full bg-[#03060A]/85 backdrop-blur-md border border-primary/30 p-1 cursor-grab active:cursor-grabbing"
       >
         <div
           className="flex items-center justify-center p-2 text-white/30 hover:text-white/80 transition-colors"

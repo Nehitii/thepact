@@ -1572,6 +1572,8 @@
     "completion": "Completion",
     "legacyRank": "Legacy Rank",
     "elite": "Elite",
+    "highestUnlocked": "Highest rarity unlocked",
+    "noneYet": "No achievement yet",
     "globalStatus": "Global Status",
     "expedition": "Expedition",
     "totalScore": "Total Score",
@@ -1580,7 +1582,8 @@
     "locked": "Locked",
     "allRarities": "All Rarities",
     "showAll": "Show All",
-    "noResults": "Data Remnants Not Found"
+    "noResults": "Data Remnants Not Found",
+    "noResultsHint": "No achievement matches these filters. Widen the rarity or category."
   },
   "journal": {
     "title": "JOURNAL",

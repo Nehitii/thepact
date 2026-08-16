@@ -39,3 +39,10 @@ supabase/.temp/
 
 # Apercu isole du decor Hall of Eternity, outil de travail
 public/_pantheon-preview.html
+
+# Outillage agent installe localement : ce n'est pas du code applicatif, et
+# le versionner sur un depot public releve d'une decision separee.
+.claude/settings.local.json
+.claude/skills/
+.agents/
+.codex/

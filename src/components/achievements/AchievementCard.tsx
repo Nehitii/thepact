@@ -9,6 +9,10 @@ interface AchievementCardProps {
   compact?: boolean;
 }
 
+/** Le biseau de la carte. Il etait duplique a deux endroits du fichier :
+ *  toute retouche de l'un desalignait l'autre. */
+const BEVEL = "polygon(0 0, 92% 0, 100% 25%, 100% 100%, 8% 100%, 0 75%)";
+
 export function AchievementCard({ achievement, compact = false }: AchievementCardProps) {
   const iconKey = achievement.icon_key;
 
@@ -41,7 +45,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
           isLocked ? "bg-slate-900/80 border-slate-700" : "bg-slate-950 border-t border-b border-r",
         )}
         style={{
-          clipPath: "polygon(0 0, 92% 0, 100% 25%, 100% 100%, 8% 100%, 0 75%)",
+          clipPath: BEVEL,
           borderColor: isLocked ? undefined : `${color}60`,
           borderLeftColor: isLocked ? undefined : color,
         }}
@@ -53,11 +57,13 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
         <div className="relative flex items-center h-full px-4 gap-4">
           {/* ICON */}
           <div className="relative shrink-0 flex items-center justify-center w-12 h-12">
+            {/* L'anneau tournait en boucle infinie sur chaque carte debloquee,
+                hors ecran compris : autant d'animations permanentes que de
+                succes. Il ne tourne plus qu'au survol de la carte, ou le
+                mouvement signifie quelque chose. */}
             {!isLocked && (
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 border border-dashed rounded-full opacity-30"
+              <div
+                className="absolute inset-0 rounded-full border border-dashed opacity-30 motion-safe:group-hover:animate-[spin_8s_linear_infinite]"
                 style={{ borderColor: color }}
               />
             )}
@@ -78,8 +84,11 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span
-                  className="text-[10px] font-black uppercase tracking-widest opacity-50 font-mono"
-                  style={{ color: isLocked ? "#475569" : color }}
+                  className={cn(
+                    "text-[10px] font-black uppercase tracking-widest font-mono",
+                    isLocked ? "text-slate-400" : "opacity-60",
+                  )}
+                  style={{ color: isLocked ? undefined : color }}
                 >
                   [{achievement.rarity}]
                 </span>
@@ -109,15 +118,20 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
               className={cn(
                 "font-bold uppercase tracking-tight truncate leading-none mb-1",
                 compact ? "text-xs" : "text-sm",
-                isLocked ? "text-slate-500" : "text-white",
+                isLocked ? "text-slate-300" : "text-white",
               )}
             >
               {isHidden ? "••••••••••••" : achievement.name}
             </h3>
+            {/* Contraste : les valeurs precedentes (slate-500 / slate-600 sous
+                opacity-70) tombaient autour de 2,3:1 sur ce fond. La teinte
+                reste ardoise — elle vient de la surface — mais assez claire
+                pour etre lue. Deux lignes au lieu d'une : la carte fait 144px,
+                la place existe. */}
             <p
               className={cn(
-                "text-[11px] leading-tight line-clamp-1 opacity-70 italic",
-                isLocked ? "text-slate-600" : "text-slate-300",
+                "text-[11px] leading-snug line-clamp-2 italic",
+                isLocked ? "text-slate-400" : "text-slate-300",
               )}
             >
               {isHidden ? "Locked Data Fragment" : achievement.description}
@@ -166,7 +180,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
         className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none"
         style={{
           background: "linear-gradient(105deg, transparent 20%, white 50%, transparent 80%)",
-          clipPath: "polygon(0 0, 92% 0, 100% 25%, 100% 100%, 8% 100%, 0 75%)",
+          clipPath: BEVEL,
         }}
       />
     </motion.div>

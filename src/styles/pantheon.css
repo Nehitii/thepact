@@ -101,6 +101,11 @@
   pointer-events: none;
 }
 
+/* Exception assumee au detecteur (codex-grid-background). La regle vise les
+   grilles decoratives plates, signature d'interface generee. Celle-ci est
+   l'element central du decor d'origine, conserve a la demande : basculee en
+   plan fuyant sous perspective, masquee vers l'horizon et animee vers le
+   spectateur. Ce n'est pas un fond quadrille, c'est un sol. */
 .ground-grid {
   position: absolute;
   left: -60%;
@@ -124,23 +129,41 @@
   to   { background-position: 0 64px; }
 }
 
-/* Ligne d'horizon posee sur la ligne de fuite. */
+/* Lueur d'horizon, enfant de la scene et non element fixe autonome :
+   en position:fixed elle restait plantee au milieu de l'ecran pendant
+   que le contenu defilait, et se lisait comme une barre flottante au
+   lieu de la ligne de fuite du sol. Elle marque desormais le bord
+   superieur du sol, et disparait avec lui. */
 .ground-horizon {
-  position: fixed;
+  position: absolute;
+  top: 0;
   left: 0;
   right: 0;
-  bottom: 55vh;
+  height: 90px;
+  background: linear-gradient(
+    to top,
+    hsl(214 100% 66% / 0.14),
+    transparent 85%
+  );
+  pointer-events: none;
+}
+
+/* Le trait lui-meme : fin, discret, sans halo debordant. */
+.ground-horizon::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 15%;
+  right: 15%;
   height: 1px;
   background: linear-gradient(
     to right,
     transparent,
-    hsl(214 100% 70% / 0.45) 30%,
-    hsl(214 100% 80% / 0.65) 50%,
-    hsl(214 100% 70% / 0.45) 70%,
+    hsl(214 100% 78% / 0.35) 35%,
+    hsl(214 100% 85% / 0.45) 50%,
+    hsl(214 100% 78% / 0.35) 65%,
     transparent
   );
-  box-shadow: 0 0 24px 2px hsl(214 100% 60% / 0.28);
-  pointer-events: none;
 }
 
 /* Vignette : resserre le regard vers le centre. */
@@ -191,6 +214,46 @@
   inset: 0;
   background: radial-gradient(ellipse 60% 40% at 50% 0%, hsl(214 100% 65% / 0.10), transparent 70%);
   pointer-events: none;
+}
+
+/* ────── Surfaces rendues par le navigateur ────── */
+/* Selection, ascenseur et chiffres arrivent avec des valeurs par defaut qui
+   n'appartiennent a aucun systeme de design. Les teinter depuis la palette
+   coute peu et se remarque. */
+
+.pantheon-wrapper ::selection {
+  background: hsl(214 100% 62% / 0.28);
+  color: hsl(210 40% 98%);
+}
+
+.pantheon-wrapper {
+  scrollbar-color: hsl(214 90% 62% / 0.35) transparent;
+  scrollbar-width: thin;
+}
+
+.pantheon-wrapper ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.pantheon-wrapper ::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pantheon-wrapper ::-webkit-scrollbar-thumb {
+  background: hsl(214 90% 62% / 0.28);
+  border: 3px solid transparent;
+  background-clip: content-box;
+  border-radius: 999px;
+}
+.pantheon-wrapper ::-webkit-scrollbar-thumb:hover {
+  background: hsl(214 90% 68% / 0.45);
+  background-clip: content-box;
+}
+
+/* Les trois monuments affichent des nombres cote a cote : sans chasse fixe,
+   les chiffres dansent d'une valeur a l'autre. */
+.stat-monument .stat-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
 /* ────── Sobriete si l'utilisateur la demande ────── */

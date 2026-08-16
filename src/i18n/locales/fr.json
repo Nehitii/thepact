@@ -1572,6 +1572,8 @@
     "completion": "Progression",
     "legacyRank": "Rang Héritage",
     "elite": "Élite",
+    "highestUnlocked": "Plus haute rareté débloquée",
+    "noneYet": "Aucun succès débloqué",
     "globalStatus": "Statut Global",
     "expedition": "Expédition",
     "totalScore": "Score Total",
@@ -1580,7 +1582,8 @@
     "locked": "Verrouillés",
     "allRarities": "Toutes les raretés",
     "showAll": "Tout afficher",
-    "noResults": "Vestiges de données introuvables"
+    "noResults": "Vestiges de données introuvables",
+    "noResultsHint": "Aucun succès ne correspond à ces filtres. Élargis la rareté ou la catégorie."
   },
   "journal": {
     "title": "JOURNAL",
