@@ -76,16 +76,24 @@ curl -X POST "https://<project-ref>.functions.supabase.co/coach-index-memory" \
 Le contenu source (journal, reviews, décisions) n'est pas touché — seuls les
 vecteurs dérivés sont reconstruits.
 
-## 3. Déploiement Cloudflare Pages
+## 3. Déploiement Cloudflare Workers
+
+Cloudflare oriente désormais vers Workers plutôt que Pages. Le déploiement est
+« assets-only » : aucun code Worker, seulement le build Vite servi tel quel.
 
 | Réglage | Valeur |
 |---|---|
 | Build command | `npm run build` |
-| Build output directory | `dist` |
-| Node version | 20 ou plus |
+| Deploy command | `npx wrangler deploy` |
+| Node version | 20, épinglée par `.nvmrc` |
 
-`public/_redirects` contient le fallback SPA (`/* /index.html 200`), sans lequel
-tout rechargement sur une route profonde renverrait un 404.
+La configuration vit dans `wrangler.jsonc`. Son `not_found_handling` en mode
+`single-page-application` renvoie `index.html` avec un 200 sur toute route
+inconnue — sans quoi un rechargement sur une route profonde donnerait un 404.
+
+Ne pas ajouter de `public/_redirects` : Workers le lit aussi, et une règle
+`/* /index.html 200` y est rejetée comme boucle infinie (code 100324). Les deux
+mécanismes se contredisent ; `not_found_handling` suffit.
 
 Variables d'environnement à saisir dans Cloudflare (onglet Settings →
 Environment variables). Elles sont injectées **au build**, donc tout changement
