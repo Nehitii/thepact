@@ -1,6 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useTwoFactor } from "@/hooks/useTwoFactor";
+import { useMfa } from "@/hooks/useMfa";
 import { useProfile } from "@/hooks/useProfile";
 import { usePact } from "@/hooks/usePact";
 import { useSharedPacts } from "@/hooks/useSharedPacts";
@@ -8,7 +8,7 @@ import { useSharedPacts } from "@/hooks/useSharedPacts";
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const location = useLocation();
-  const twoFactor = useTwoFactor();
+  const mfa = useMfa();
   const { data: profile, isError: profileError } = useProfile(user?.id);
   const { data: personalPact, isError: pactError } = usePact(user?.id);
   const { memberships, isError: sharedError } = useSharedPacts();
@@ -33,8 +33,10 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Gate the entire app when 2FA is enabled and required.
-  if (location.pathname !== "/two-factor" && twoFactor.isRequired) {
+  // Redirection de confort uniquement : la vraie contrainte est portée par
+  // les politiques RLS, qui exigent aal2 sur le JWT. Contourner cette
+  // redirection ne donne accès à aucune donnée.
+  if (location.pathname !== "/two-factor" && mfa.isRequired) {
     return (
       <Navigate
         to="/two-factor"

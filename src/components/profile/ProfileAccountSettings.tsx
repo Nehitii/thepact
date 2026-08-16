@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { useTwoFactor } from "@/hooks/useTwoFactor";
+import { MfaEnrollment } from "@/components/profile/MfaEnrollment";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useQuery } from "@tanstack/react-query";
@@ -242,31 +242,19 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
 }
 
 function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn" | "info") => void }) {
-  const navigate = useNavigate();
-  const twoFactor = useTwoFactor();
-
-  const StatusTag = ({ active }: { active: boolean }) => (
-    <span className={cn("px-2 py-1 text-[9px] font-mono tracking-widest uppercase border", active ? "bg-primary/10 border-primary/40 text-primary" : "bg-foreground/5 border-foreground/10 text-muted-foreground")}>{active ? "ACTIVE" : "OFFLINE"}</span>
-  );
-
   return (
     <CyberPanel title="Multi-Factor Auth">
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card/40 border border-foreground/10">
+        <MfaEnrollment />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card/40 border border-foreground/10 opacity-60">
           <div className="flex items-center gap-4 mb-4 sm:mb-0">
-            <Smartphone className="w-5 h-5 text-primary/70" />
-            <div><p className="font-mono text-xs text-foreground/80">Authenticator App</p><p className="font-mono text-[10px] text-muted-foreground mt-1">TOTP Protocol Encryption</p></div>
-            <StatusTag active={twoFactor.enabled} />
+            <Mail className="w-5 h-5 text-muted-foreground" />
+            <div>
+              <p className="font-mono text-xs text-foreground/80">Email Verification</p>
+              <p className="font-mono text-[10px] text-muted-foreground mt-1">Non configuré (aucun fournisseur d'envoi)</p>
+            </div>
           </div>
-          <button onClick={() => navigate("/profile")} className="text-[10px] font-mono text-primary hover:underline uppercase tracking-widest">{">"} CONFIG</button>
-        </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-card/40 border border-foreground/10">
-          <div className="flex items-center gap-4 mb-4 sm:mb-0">
-            <Mail className="w-5 h-5 text-primary/70" />
-            <div><p className="font-mono text-xs text-foreground/80">Email Verification</p><p className="font-mono text-[10px] text-muted-foreground mt-1">Fallback Security Layer</p></div>
-            <StatusTag active={twoFactor.emailEnabled} />
-          </div>
-          <button disabled className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">{">"} LOCKED (CLI ONLY)</button>
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">{">"} INDISPONIBLE</span>
         </div>
       </div>
     </CyberPanel>
