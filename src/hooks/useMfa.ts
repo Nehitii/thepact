@@ -115,9 +115,17 @@ export function useMfa() {
       if (!factorId) throw new Error("Aucun facteur vérifié sur ce compte");
       const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
       if (error) throw error;
-      refresh();
+      // Pendant la fenetre aal1 — apres le mot de passe, avant le code — les
+      // politiques RLS filtrent toutes les tables protegees. Les requetes ne
+      // renvoient pas d'erreur : elles renvoient du vide, que React Query met
+      // en cache. Le JWT vient de passer en aal2, donc ces reponses vides sont
+      // toutes fausses. Sans invalidation globale, Home.tsx lit un pacte
+      // inexistant et redirige vers l'onboarding a chaque connexion sur un
+      // appareil neuf. invalidateQueries() sans cle vide tout le cache, y
+      // compris ["mfa"], ce qui rend refresh() redondant ici.
+      await qc.invalidateQueries();
     },
-    [refresh, verifiedFactor],
+    [qc, verifiedFactor],
   );
 
   /** Retire le second facteur. Le JWT retombe en aal1 à la prochaine émission. */

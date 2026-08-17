@@ -11,12 +11,19 @@ export function AccentColorSync() {
   useEffect(() => {
     if (!profile) return;
 
-    // Apply accent color
-    const accent = profile.accent_color || "hsl(var(--ds-accent-primary))";
-    // Convert hex to HSL for CSS variable compatibility
-    const hsl = hexToHSL(accent);
+    // Apply accent color.
+    // Le repli precedent passait la chaine "hsl(var(--ds-accent-primary))" a
+    // hexToHSL, dont la regex n'accepte qu'un hexadecimal a six chiffres : il
+    // renvoyait toujours null. Sans accent choisi on ne pose rien, et les
+    // feuilles de style gardent leur valeur — c'est deja ce qui se passait.
+    const hsl = profile.accent_color ? hexToHSL(profile.accent_color) : null;
     if (hsl) {
       document.documentElement.style.setProperty("--primary", hsl);
+      // design-tokens.css ligne 56 : les lueurs, separateurs et degrades lisent
+      // --ds-current-accent et retombent sur --ds-accent-primary. Cette variable
+      // n'etait jamais posee, donc ces elements restaient cyan pendant que les
+      // boutons prenaient la couleur du profil — deux accents a l'ecran.
+      document.documentElement.style.setProperty("--ds-current-accent", hsl);
     }
 
     // Apply font size
@@ -25,6 +32,7 @@ export function AccentColorSync() {
 
     return () => {
       document.documentElement.style.removeProperty("--primary");
+      document.documentElement.style.removeProperty("--ds-current-accent");
       document.documentElement.style.fontSize = "";
     };
   }, [profile?.accent_color, profile?.font_size]);
