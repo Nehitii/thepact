@@ -23,6 +23,10 @@ import "./styles/journal.css";
 // i18n must be initialized once, before any components render.
 import "@/i18n/i18n";
 
+// Suspend les animations perpetuelles quand l'onglet est cache.
+import { watchIdleAnimations } from "@/lib/idleAnimations";
+watchIdleAnimations();
+
 // Service worker: register only on real top-level pages (push notifications).
 // Inside an iframe, unregister any existing SW to avoid HMR collisions.
 (() => {

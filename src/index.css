@@ -84,6 +84,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Onglet cache : on suspend tout ce qui bouge. Les navigateurs ralentissent
+   les timers d'un onglet en arriere-plan, mais laissent tourner les
+   animations CSS et celles de Framer — une cinquantaine ici, qui composent
+   des images pour personne. L'attribut est pose par src/lib/idleAnimations.
+   Au retour, chaque animation reprend ou elle s'etait arretee. */
+html[data-idle] *,
+html[data-idle] *::before,
+html[data-idle] *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
+/* Cartes de liste : le navigateur ignore entierement celles qui sont hors
+   ecran — mise en page, peinture et animations comprises. La taille
+   intrinseque reserve la place pour que l'ascenseur ne saute pas.
+   A reserver aux elements de hauteur previsible ; ne pas poser sur un
+   conteneur avec position:sticky a l'interieur. */
+.cv-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 9rem;
+}
+
 /* Shimmer animation for loading states */
 @keyframes shimmer {
   0% { transform: translateX(-100%); }

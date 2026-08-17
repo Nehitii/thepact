@@ -271,7 +271,10 @@ export default function Achievements() {
                 // centaine de succes, la derniere carte n'apparaissait
                 // qu'apres cinq secondes, et chaque changement de filtre
                 // relancait l'attente. On plafonne le decalage.
-                <motion.div key={achievement.id} layout initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.35, delay: Math.min(idx, 10) * 0.03 }}>
+                // cv-card : hors ecran, le navigateur n'en fait rien du tout.
+                // Sur une centaine de succes dont chaque carte debloquee porte
+                // une animation, c'est le gros du travail evite.
+                <motion.div key={achievement.id} layout className="cv-card" initial={{ opacity: 0, scale: 0.9, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.9 }} transition={{ duration: 0.35, delay: Math.min(idx, 10) * 0.03 }}>
                   <AchievementCard achievement={achievement} />
                 </motion.div>
               ))}
