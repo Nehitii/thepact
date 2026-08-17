@@ -661,4 +661,38 @@ All colors MUST be HSL.
 
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Surfaces du navigateur
+
+   Les elements qu'on ne dessine pas portent quand meme le design.
+   La selection de texte et le curseur de saisie arrivaient avec les
+   defauts du navigateur — un bleu systeme qui n'appartient a aucune
+   palette — sur toute l'application. Seul le Panthéon les thematisait
+   (regle .pantheon-wrapper ::selection, plus specifique, conservee).
+
+   Les tokens --primary et --foreground existent en clair et en sombre,
+   donc une seule regle couvre les deux themes.
+   ───────────────────────────────────────────────────────────── */
+@layer base {
+  ::selection {
+    background-color: hsl(var(--primary) / 0.3);
+    color: hsl(var(--foreground));
+  }
+
+  /* Curseur de saisie : 97 fichiers comportent des champs. */
+  input,
+  textarea,
+  [contenteditable],
+  [role="textbox"] {
+    caret-color: hsl(var(--primary));
+  }
+
+  /* Le soulignement par defaut traverse les jambages. */
+  a,
+  .underline {
+    text-underline-offset: 0.2em;
+    text-decoration-thickness: 1px;
+  }
+}
+
 /* ───── Module-scoped styles are imported from src/main.tsx ───── */
