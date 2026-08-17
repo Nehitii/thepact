@@ -28,7 +28,7 @@ export function RankBadge({ rank, size = "md", className }: RankBadgeProps) {
     lg: "h-8 w-8",
   };
 
-  const frameColor = rank.frame_color || "#5bb4ff";
+  const frameColor = rank.frame_color || "hsl(var(--ds-accent-primary))";
   const glowColor = rank.glow_color || "rgba(91,180,255,0.5)";
 
   return (

@@ -141,7 +141,7 @@ export function CosmeticShop() {
                       owned={isOwned(title.id, "title") || title.is_default} canAfford={(balance?.balance || 0) >= title.price} itemType="title" index={i}
                       preview={
                         <span className="font-orbitron text-lg font-bold tracking-wider" style={{
-                          color: originalTitle?.text_color || '#5bb4ff',
+                          color: originalTitle?.text_color || 'hsl(var(--ds-accent-primary))',
                           textShadow: originalTitle?.glow_color ? `0 0 10px ${originalTitle.glow_color}, 0 0 20px ${originalTitle.glow_color}` : undefined,
                         }}>{originalTitle?.title_text || title.name}</span>
                       }

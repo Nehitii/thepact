@@ -60,7 +60,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
               </linearGradient>
               <linearGradient id="hexStroke" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor="#0080ff" />
-                <stop offset="100%" stopColor="#00d4ff" />
+                <stop offset="100%" stopColor="hsl(var(--ds-accent-primary))" />
               </linearGradient>
             </defs>
             <polygon points="40,4 76,23 76,69 40,88 4,69 4,23" fill="url(#hexGrad)" stroke="url(#hexStroke)" strokeWidth="1.5" />
@@ -70,7 +70,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
             <line x1="12" y1="46" x2="68" y2="46" stroke="rgba(0,212,255,0.1)" strokeWidth="1" />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-            <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "#00d4ff", lineHeight: 1 }}>
+            <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "hsl(var(--ds-accent-primary))", lineHeight: 1 }}>
               {level}
             </span>
             <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 7, letterSpacing: 2, color: "rgba(0,212,255,0.5)", textTransform: "uppercase" as const }}>
@@ -90,7 +90,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
           </div>
 
           <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, letterSpacing: 4, color: "var(--nexus-heading)", textTransform: "uppercase" as const, lineHeight: 1 }}>
-            {nameBase}<span style={{ color: "#00d4ff", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" }}>{nameAccent}</span>
+            {nameBase}<span style={{ color: "hsl(var(--ds-accent-primary))", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" }}>{nameAccent}</span>
           </div>
 
           <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, var(--nexus-glow), transparent)", margin: "14px 0" }} />
@@ -108,7 +108,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
 
         <div className="flex justify-between items-baseline" style={{ marginBottom: 10 }}>
           <div>
-            <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 28, fontWeight: 700, color: "#00d4ff", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)", lineHeight: 1 }}>
+            <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 28, fontWeight: 700, color: "hsl(var(--ds-accent-primary))", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)", lineHeight: 1 }}>
               {formatNum(currentXP)}
             </span>
             <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 9, color: "var(--nexus-text-dim)", letterSpacing: 2, marginLeft: 4 }}>
@@ -133,11 +133,11 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
           >
             <div
               className="relative"
-              style={{ height: "100%", width: `${progressInCurrentRank}%`, background: "linear-gradient(90deg, #0044cc 0%, #0088ff 50%, #00d4ff 100%)", borderRadius: 1, animation: "xpShimmer 3s ease-in-out infinite" }}
+              style={{ height: "100%", width: `${progressInCurrentRank}%`, background: "linear-gradient(90deg, #0044cc 0%, #0088ff 50%, hsl(var(--ds-accent-primary)) 100%)", borderRadius: 1, animation: "xpShimmer 3s ease-in-out infinite" }}
             >
               <div className="absolute inset-0" style={{ background: "repeating-linear-gradient(90deg, transparent 0px, transparent 14px, rgba(0,0,0,0.25) 14px, rgba(0,0,0,0.25) 16px)" }} />
               <div className="absolute top-0 left-0 right-0" style={{ height: "40%", background: "linear-gradient(180deg, rgba(255,255,255,0.12), transparent)", borderRadius: 1 }} />
-              <div className="absolute top-0 right-0" style={{ width: 3, height: "100%", background: "#00d4ff", boxShadow: "0 0 8px rgba(0,212,255,1), 0 0 16px rgba(0,212,255,0.6)", borderRadius: 1, animation: "edgePulse 1.5s ease-in-out infinite" }} />
+              <div className="absolute top-0 right-0" style={{ width: 3, height: "100%", background: "hsl(var(--ds-accent-primary))", boxShadow: "0 0 8px rgba(0,212,255,1), 0 0 16px rgba(0,212,255,0.6)", borderRadius: 1, animation: "edgePulse 1.5s ease-in-out infinite" }} />
             </div>
             <span className="absolute" style={{ top: "50%", right: 8, transform: "translateY(-50%)", fontFamily: "'Share Tech Mono', monospace", fontSize: 8, color: "var(--nexus-text-dim)", letterSpacing: 1 }}>
               {Math.round(progressInCurrentRank)}%

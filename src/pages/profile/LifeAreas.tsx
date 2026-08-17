@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const PRESET_AREAS = [
   { name: "Santé", color: "#22c55e", icon: "Heart" },
-  { name: "Carrière", color: "#5bb4ff", icon: "Briefcase" },
+  { name: "Carrière", color: "hsl(var(--ds-accent-primary))", icon: "Briefcase" },
   { name: "Relations", color: "#ec4899", icon: "Users" },
   { name: "Finance", color: "#f59e0b", icon: "Wallet" },
   { name: "Esprit", color: "#8b5cf6", icon: "Brain" },
@@ -29,7 +29,7 @@ export default function LifeAreas() {
     if (!name) return;
     await upsert({
       name,
-      color: preset?.color ?? "#5bb4ff",
+      color: preset?.color ?? "hsl(var(--ds-accent-primary))",
       icon: preset?.icon ?? "Circle",
       sort_order: areas.length,
       weight: 50,

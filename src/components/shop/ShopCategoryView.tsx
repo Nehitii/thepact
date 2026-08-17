@@ -11,7 +11,7 @@ interface ShopCategoryViewProps {
 
 // Mock data
 const themesData = [
-  { name: "Neon Cyber", bg: "#0a0f1a", accent: "#5BB4FF", glow: "#5BB4FF", rarity: "common" as const, status: "available" as const },
+  { name: "Neon Cyber", bg: "#0a0f1a", accent: "hsl(var(--ds-accent-primary))", glow: "hsl(var(--ds-accent-primary))", rarity: "common" as const, status: "available" as const },
   { name: "Crimson Edge", bg: "#1a0a0f", accent: "#FF5B5B", glow: "#FF5B5B", rarity: "rare" as const, status: "available" as const },
   { name: "Void Purple", bg: "#0f0a1a", accent: "#A855F7", glow: "#A855F7", rarity: "epic" as const, status: "available" as const },
   { name: "Golden Dawn", bg: "#1a150a", accent: "#FBB034", glow: "#FBB034", rarity: "legendary" as const, status: "owned" as const },

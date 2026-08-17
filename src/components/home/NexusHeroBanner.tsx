@@ -43,9 +43,9 @@ export function NexusHeroBanner({
   titleEffect = "none",
 }: NexusHeroBannerProps) {
   const stats = useMemo(() => [
-    { value: `${Math.round(progression)}%`, label: "PROGRESSION", color: "#00d4ff", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
-    { value: `LVL ${level}`, label: "RANG", color: "#00d4ff", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
-    { value: String(totalMissions), label: "MISSIONS", color: "#00d4ff", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
+    { value: `${Math.round(progression)}%`, label: "PROGRESSION", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
+    { value: `LVL ${level}`, label: "RANG", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
+    { value: String(totalMissions), label: "MISSIONS", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
     { value: String(activeDays), label: "JOURS ACTIFS", color: "#ff8c00", glow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)" },
   ], [progression, level, totalMissions, activeDays]);
 

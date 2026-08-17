@@ -19,7 +19,16 @@
   --ds-border-strong:  200 50% 75%;  /* use with /0.35 alpha */
 
   /* ─── Accent neon (5 fixed semantic) ─── */
-  --ds-accent-primary:  205 100% 68%;   /* #5BB4FF — cyan signal */
+  /* L'accent primaire etait declare a 205 100% 68%, annote #5BB4FF alors
+     qu'il rend #5CBBFF — le jeton ne correspondait pas a sa propre
+     documentation. Et le code ecrivait par ailleurs #00d4ff en toutes
+     lettres 21 fois, contre 11 pour #5bb4ff : l'application affichait
+     donc trois bleus primaires voisins, selon qu'un composant passait par
+     le jeton ou par un litteral.
+     Le cyan est l'accent reel du produit — c'est la teinte du HUD, des
+     lueurs et des bordures de panneaux. Le jeton s'aligne dessus, et les
+     litteraux le rejoignent. */
+  --ds-accent-primary:  190 100% 50%;   /* #00D4FF — cyan signal */
   --ds-accent-success:  92  100% 71%;   /* #B6FF6A — lime */
   --ds-accent-warning:  32  100% 66%;   /* #FFB454 — amber */
   --ds-accent-critical: 339 100% 65%;   /* #FF4D8F — magenta */

@@ -12,7 +12,7 @@ export function AccentColorSync() {
     if (!profile) return;
 
     // Apply accent color
-    const accent = profile.accent_color || "#5bb4ff";
+    const accent = profile.accent_color || "hsl(var(--ds-accent-primary))";
     // Convert hex to HSL for CSS variable compatibility
     const hsl = hexToHSL(accent);
     if (hsl) {

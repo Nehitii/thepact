@@ -157,7 +157,7 @@ export function FittingRoom({
                   <span
                     className="font-orbitron text-xs font-bold tracking-wider"
                     style={{
-                      color: displayTitle.text_color || "#5bb4ff",
+                      color: displayTitle.text_color || "hsl(var(--ds-accent-primary))",
                       textShadow: displayTitle.glow_color
                         ? `0 0 8px ${displayTitle.glow_color}`
                         : undefined,

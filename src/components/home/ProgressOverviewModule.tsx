@@ -105,7 +105,7 @@ export function ProgressOverviewModule({
                 <stop offset="100%" stopColor="#00cc66" />
               </linearGradient>
               <linearGradient id="stepGradientUnified" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#00d4ff" />
+                <stop offset="0%" stopColor="hsl(var(--ds-accent-primary))" />
                 <stop offset="100%" stopColor="#0088cc" />
               </linearGradient>
               <linearGradient id="habitGradientUnified" x1="0%" y1="0%" x2="100%" y2="0%">

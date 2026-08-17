@@ -30,7 +30,7 @@ interface RankEditorProps {
 
 // Preset color themes
 const colorPresets = [
-  { name: "Cyan", frame: "#5bb4ff", glow: "rgba(91,180,255,0.5)" },
+  { name: "Cyan", frame: "hsl(var(--ds-accent-primary))", glow: "rgba(91,180,255,0.5)" },
   { name: "Gold", frame: "#f59e0b", glow: "rgba(245,158,11,0.5)" },
   { name: "Purple", frame: "#a855f7", glow: "rgba(168,85,247,0.5)" },
   { name: "Crimson", frame: "#ef4444", glow: "rgba(239,68,68,0.5)" },
@@ -241,7 +241,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                       <div className="flex gap-2">
                         <input
                           type="color"
-                          value={editedRank.frame_color || "#5bb4ff"}
+                          value={editedRank.frame_color || "hsl(var(--ds-accent-primary))"}
                           onChange={(e) => {
                             const color = e.target.value;
                             const rgb = parseInt(color.slice(1), 16);
@@ -252,7 +252,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                           }}
                           className="w-12 h-10 rounded cursor-pointer border border-primary/30"
                         />
-                        <Input value={editedRank.frame_color || "#5bb4ff"} onChange={(e) => updateRank({ frame_color: e.target.value })} className="flex-1 bg-card/50 border-primary/30 text-primary font-mono text-sm" />
+                        <Input value={editedRank.frame_color || "hsl(var(--ds-accent-primary))"} onChange={(e) => updateRank({ frame_color: e.target.value })} className="flex-1 bg-card/50 border-primary/30 text-primary font-mono text-sm" />
                       </div>
                     </div>
                   </>
