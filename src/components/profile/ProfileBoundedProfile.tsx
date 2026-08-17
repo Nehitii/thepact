@@ -369,7 +369,14 @@ export function ProfileBoundedProfile({
                   />
 
                   {/* Avatar hover group - scoped to avatar only */}
-                  <div className="relative group cursor-pointer" onClick={() => setShowAvatarDialog(true)}>
+                  {/* Etait un <div onClick> : cliquable a la souris, inatteignable
+                      au clavier et muet pour un lecteur d'ecran. */}
+                  <button
+                    type="button"
+                    onClick={() => setShowAvatarDialog(true)}
+                    aria-label="Changer d'avatar"
+                    className="relative group cursor-pointer rounded-full outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
                     <AvatarFrame
                       avatarUrl={avatarUrl}
                       fallback={displayName?.[0] || "?"}
@@ -390,7 +397,7 @@ export function ProfileBoundedProfile({
                         <Upload className="w-8 h-8 text-white drop-shadow-lg" />
                       </div>
                     </div>
-                  </div>
+                  </button>
                 </div>
 
                 {/* Identity Text */}

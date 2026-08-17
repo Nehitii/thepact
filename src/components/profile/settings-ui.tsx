@@ -168,7 +168,10 @@ export function SettingsTabBar<T extends string>({
             key={tab}
             onClick={() => onChange(tab)}
             className={cn(
+              // outline-none sans remplacement : au clavier, rien n'indiquait
+              // l'onglet courant pendant la tabulation.
               "flex-1 min-w-[120px] py-4 text-xs font-orbitron tracking-[0.25em] transition-all relative outline-none",
+              "focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-inset",
               isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-foreground/5",
             )}
           >

@@ -402,9 +402,13 @@ export const AppSidebar = memo(function AppSidebar() {
                 mini ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100 overflow-visible",
               )}
             >
-              <h1 className="text-xl font-black font-orbitron text-foreground tracking-[0.25em] leading-none mb-1 drop-shadow-md whitespace-nowrap">
+              {/* Le nom du produit est une marque, pas le titre de la page.
+                  En <h1>, il en creait un second sur chaque ecran — la barre
+                  laterale etant rendue en permanence — et le plan du document
+                  devenait illisible pour un lecteur d'ecran. */}
+              <span className="block text-xl font-black font-orbitron text-foreground tracking-[0.25em] leading-none mb-1 drop-shadow-md whitespace-nowrap">
                 VOWPACT
-              </h1>
+              </span>
               <div className="flex items-center gap-2 whitespace-nowrap">
                 <div className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />

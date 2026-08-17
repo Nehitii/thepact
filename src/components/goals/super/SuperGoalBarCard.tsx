@@ -77,7 +77,23 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
   } as React.CSSProperties;
 
   return (
-    <div className="bar-card-root" style={cssVars} onClick={() => onClick(id)}>
+    // Etait un <div onClick> : toute la carte est un controle, elle doit donc
+    // en etre un. type="button" empeche la soumission si elle finit dans un
+    // formulaire, et text-left annule le centrage propre aux boutons.
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={name}
+      className="bar-card-root w-full text-left cursor-pointer rounded-[18px] outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      style={cssVars}
+      onClick={() => onClick(id)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick(id);
+        }
+      }}
+    >
       <div className="bar-card-container noselect">
         <div className="bar-card-canvas">
           {[...Array(9)].map((_, i) => (

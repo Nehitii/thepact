@@ -100,11 +100,16 @@ export function HealthVitalCoreHero({ score }: HealthVitalCoreHeroProps) {
               showPulse
               className="w-full"
             />
-            {/* Title overlay */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <h1 className="font-orbitron font-black text-2xl sm:text-3xl lg:text-4xl tracking-[0.15em] text-foreground/30 whitespace-nowrap">
+            {/* Le titre de la page etait ce filigrane, a 30% d'opacite : bien
+                sous le seuil de contraste, alors que c'est le premier element
+                qu'annonce un lecteur d'ecran. L'effet est conserve tel quel
+                mais rendu invisible aux technologies d'assistance, et le vrai
+                titre part dans un <h1> lisible par la machine seule. */}
+            <h1 className="sr-only">VITA·CORE</h1>
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden="true">
+              <div className="font-orbitron font-black text-2xl sm:text-3xl lg:text-4xl tracking-[0.15em] text-foreground/30 whitespace-nowrap">
                 VITA<span style={{ color: ecgColor, filter: `drop-shadow(0 0 12px ${ecgColor})` }}>·</span>CORE
-              </h1>
+              </div>
             </div>
           </div>
 

@@ -199,7 +199,9 @@ export function ProfileDevilNote({ isVisible = true }: ProfileDevilNoteProps) {
           onTouchEnd={handlePressEnd}
           onTouchCancel={handlePressCancel}
           onContextMenu={(e) => e.preventDefault()}
-          className="relative group select-none touch-none outline-none focus:outline-none"
+          // outline-none double d'un focus:outline-none : le controle n'avait
+          // aucun indicateur de focus, alors qu'il est atteignable au clavier.
+          className="relative group select-none touch-none outline-none focus:outline-none rounded-lg focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           aria-label="Devil Note"
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
