@@ -313,7 +313,10 @@ export function CsvImportModal({ open, onClose, accounts, defaultDateFormat, def
                 </div>
               )}
 
-              <div className="max-h-[200px] overflow-y-auto rounded-xl border border-border">
+              {/* overflow-auto et non overflow-y-auto : la largeur mini du tableau
+                  (date + libelle borne a 150px + montant) frole 320px, donc sur
+                  les plus petits ecrans il poussait la modale horizontalement. */}
+              <div className="max-h-[200px] overflow-auto rounded-xl border border-border">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-border bg-muted/30">

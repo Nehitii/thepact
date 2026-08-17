@@ -106,6 +106,21 @@ html[data-idle] *::after {
   contain-intrinsic-size: auto 9rem;
 }
 
+/* Sur un ecran tactile, il n'y a pas de survol : tout ce qui n'apparait
+   qu'au group-hover reste invisible et donc inatteignable. L'application
+   compte 35 controles dans ce cas — boutons de suppression, barres
+   d'outils de panneaux, zones de televersement — et aucune requete
+   @media (hover) pour les rattraper.
+   Ils deviennent visibles en permanence la ou le survol n'existe pas.
+   Les huit calques purement decoratifs sont exclus par leur
+   pointer-events-none : les afficher en continu serait du bruit. */
+@media (hover: none) {
+  .group .group-hover\:opacity-100:not(.pointer-events-none),
+  .group:focus-within .group-hover\:opacity-100:not(.pointer-events-none) {
+    opacity: 1;
+  }
+}
+
 /* Shimmer animation for loading states */
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
