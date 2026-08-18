@@ -10,7 +10,6 @@ import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { NeuralBar } from "@/components/home/NeuralBar";
 import { NexusHeroBanner } from "@/components/home/NexusHeroBanner";
-import { RankPanel } from "@/components/home/RankPanel";
 import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
 import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
@@ -236,6 +235,11 @@ export default function Home() {
             pactSymbol={pact.symbol}
             titleFont={pact.title_font}
             titleEffect={pact.title_effect}
+            rankName={safeRankData.currentRank?.name}
+            rankTier={safeRankData.nextRank ? `PROCHAIN · ${safeRankData.nextRank.name}` : "RANG MAXIMAL"}
+            rankProgress={safeRankData.progressInCurrentRank}
+            rankXP={safeRankData.currentXP}
+            rankXPTarget={safeRankData.nextRank?.min_points ?? 0}
           />
         ) : (
           <Skeleton className="h-48 w-full rounded-xl" />
@@ -265,25 +269,22 @@ export default function Home() {
           <DailyQuestsPanel />
         </section>
 
-        {/* L'ETAT — ou j'en suis. Rang et compte a rebours cote a cote des
-            que la largeur le permet : empiles, ils faisaient 890px sans une
-            seule action. Sous 1280px ils reviennent l'un sous l'autre, le
-            compte a rebours ayant besoin de sa largeur pour ne pas empiler
-            ses propres colonnes. */}
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-start">
-          <RankPanel rankData={safeRankData} />
-          {pact ? (
-            <CountdownPanel
-              projectStartDate={pact.project_start_date}
-              projectEndDate={pact.project_end_date}
-              goalsCompleted={dashboardData.goalsCompleted}
-              totalGoals={dashboardData.totalGoals}
-              pactName={pact.name}
-            />
-          ) : (
-            <Skeleton className="h-24 w-full rounded-xl" />
-          )}
-        </section>
+        {/* L'ETAT — ou j'en suis. Le panneau de rang a rejoint le coin du
+            bandeau : il occupait 355px pour repeter le niveau deja present
+            dans les statistiques du hub, et son propre nom trois fois. Le
+            compte a rebours reprend donc toute la largeur, ce qui lui rend
+            sa disposition en trois colonnes. */}
+        {pact ? (
+          <CountdownPanel
+            projectStartDate={pact.project_start_date}
+            projectEndDate={pact.project_end_date}
+            goalsCompleted={dashboardData.goalsCompleted}
+            totalGoals={dashboardData.totalGoals}
+            pactName={pact.name}
+          />
+        ) : (
+          <Skeleton className="h-24 w-full rounded-xl" />
+        )}
 
         {/* EXPLORER — ce qu'on ouvre quand on cherche. Le tirage de mission
             et les panneaux d'analyse partagent ce dernier temps : on n'y va

@@ -28,19 +28,33 @@ export function DailyQuestsPanel() {
 
   return (
     <div
-      className="relative flex flex-wrap items-center gap-x-4 gap-y-2"
+      className="relative flex flex-wrap items-center gap-x-6 gap-y-3"
       style={{
         background: "var(--nexus-bg)",
         border: "1px solid var(--nexus-border)",
         borderRadius: 4,
         boxShadow: "var(--nexus-shadow)",
-        padding: "9px 14px",
+        padding: "15px 20px 15px 22px",
       }}
     >
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
+      {/* Arete d accent a gauche : la bande se distinguait mal des autres
+          panneaux, tous bordes de la meme facon. Elle vire a l or des qu une
+          quete est reclamable — le seul moment ou cette bande demande une
+          action. */}
+      <div
+        className="absolute top-0 bottom-0 left-0"
+        style={{
+          width: 3,
+          background: aReclamer
+            ? "linear-gradient(180deg, #ffd700, rgba(255,215,0,0.15))"
+            : "linear-gradient(180deg, hsl(var(--primary) / 0.8), hsl(var(--primary) / 0.1))",
+          boxShadow: aReclamer ? "0 0 12px rgba(255,215,0,0.6)" : "0 0 10px hsl(var(--primary) / 0.45)",
+        }}
+      />
 
       <span className="flex items-center gap-2 shrink-0">
-        <Sword className="h-3.5 w-3.5" style={{ color: aReclamer ? "#ffd700" : "hsl(var(--primary))" }} />
+        <Sword className="h-4 w-4" style={{ color: aReclamer ? "#ffd700" : "hsl(var(--primary))" }} />
         <span
           className="ds-t-label font-mono uppercase"
           style={{ letterSpacing: 3, color: "var(--nexus-text-dim)" }}

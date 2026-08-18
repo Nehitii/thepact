@@ -905,8 +905,8 @@ All colors MUST be HSL.
     position: relative;
     display: grid;
     place-items: center;
-    width: 1.55rem;
-    height: 1.55rem;
+    width: 1.9rem;
+    height: 1.9rem;
     border-radius: 50%;
     background: conic-gradient(
       from -90deg,

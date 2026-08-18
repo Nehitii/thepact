@@ -29,6 +29,14 @@ interface NexusHeroBannerProps {
   pactSymbol?: string;
   titleFont?: string | null;
   titleEffect?: string | null;
+  /** Rang, integre dans un coin du bandeau plutot que dans un panneau
+   *  separe : il repetait le niveau deja affiche dans les statistiques,
+   *  et son nom trois fois dans ses propres 355px. */
+  rankName?: string;
+  rankTier?: string;
+  rankProgress?: number;
+  rankXP?: number;
+  rankXPTarget?: number;
 }
 
 export function NexusHeroBanner({
@@ -41,6 +49,11 @@ export function NexusHeroBanner({
   pactSymbol = "flame",
   titleFont = "orbitron",
   titleEffect = "none",
+  rankName,
+  rankTier,
+  rankProgress = 0,
+  rankXP = 0,
+  rankXPTarget = 0,
 }: NexusHeroBannerProps) {
   const stats = useMemo(() => [
     { value: `${Math.round(progression)}%`, label: "PROGRESSION", color: "hsl(var(--ds-accent-primary))", glow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)" },
@@ -87,6 +100,73 @@ export function NexusHeroBanner({
 
       {/* Top gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
+
+      {/* RANG — pose dans le coin, discret, plutot que dans un panneau de
+          355px qui repetait le nom du rang trois fois et le niveau deja
+          present dans les statistiques ci-dessous. Masque sous 640px :
+          la place y est prise par le c(oe)ur. */}
+      {rankName && (
+        <div
+          className="absolute top-4 right-5 z-20 hidden sm:flex flex-col items-end gap-1 text-right"
+          style={{ maxWidth: "12rem" }}
+        >
+          <span className="flex items-baseline gap-2">
+            <span
+              className="ds-t-label font-mono"
+              style={{ letterSpacing: 2, color: "var(--nexus-text-dimmer)" }}
+            >
+              LVL {level}
+            </span>
+            <span
+              className="font-orbitron uppercase truncate"
+              style={{
+                fontSize: "0.9375rem",
+                fontWeight: 700,
+                letterSpacing: 1.5,
+                color: "hsl(var(--primary))",
+                textShadow: "0 0 10px hsl(var(--primary) / 0.5)",
+              }}
+            >
+              {rankName}
+            </span>
+          </span>
+
+          {rankTier && (
+            <span
+              className="ds-t-label font-mono truncate w-full"
+              style={{ letterSpacing: 1.5, color: "var(--nexus-text-dim)" }}
+            >
+              {rankTier}
+            </span>
+          )}
+
+          {/* Jauge d'XP : meme lecture que l'anneau d'accretion, en barre.
+              Elle tient en 7rem pour ne jamais concurrencer le c(oe)ur. */}
+          <span className="flex items-center gap-2 mt-0.5">
+            <span
+              className="ds-t-label font-mono"
+              style={{ color: "var(--nexus-text-dimmer)", fontVariantNumeric: "tabular-nums" }}
+            >
+              {rankXP.toLocaleString("fr-FR")}
+              {rankXPTarget > 0 && ` / ${rankXPTarget.toLocaleString("fr-FR")}`}
+            </span>
+            <span
+              className="relative overflow-hidden shrink-0"
+              style={{ width: "7rem", height: 3, background: "hsl(var(--primary) / 0.12)", borderRadius: 1 }}
+            >
+              <span
+                className="absolute inset-y-0 left-0"
+                style={{
+                  width: `${Math.min(100, Math.max(0, rankProgress))}%`,
+                  background: "linear-gradient(90deg, hsl(var(--primary) / 0.5), hsl(var(--primary)))",
+                  boxShadow: "0 0 6px hsl(var(--primary) / 0.7)",
+                  transition: "width 900ms cubic-bezier(0.16, 1, 0.3, 1)",
+                }}
+              />
+            </span>
+          </span>
+        </div>
+      )}
 
       <div className="relative z-10 flex flex-col items-center">
         {/* Le c\oeur. L'anneau d'accretion EST la jauge de progression :
