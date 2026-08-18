@@ -893,3 +893,68 @@ All colors MUST be HSL.
   .qa-tile:hover, .qa-tile:focus-visible { transform: none; }
   .qa-tile::before { display: none; }
 }
+
+/* Anneau d'avancement d'une quete. Meme construction que l'anneau
+   d'accretion de la Singularite — conic-gradient arrete au
+   pourcentage reel, masque en couronne — a l'echelle d'une pastille.
+   closest-side est indispensable : sans lui le masque se calerait
+   sur le coin de la boite et non sur son bord, ce qui laisse un
+   cercle dur (voir singularity.css). */
+@layer utilities {
+  .quest-ring {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.55rem;
+    height: 1.55rem;
+    border-radius: 50%;
+    background: conic-gradient(
+      from -90deg,
+      var(--q-c, hsl(var(--primary))) 0%,
+      var(--q-c, hsl(var(--primary))) var(--q-pct, 0%),
+      hsl(var(--primary) / 0.14) var(--q-pct, 0%));
+    mask-image: radial-gradient(circle closest-side, transparent 64%, black 70%, black 100%);
+    -webkit-mask-image: radial-gradient(circle closest-side, transparent 64%, black 70%, black 100%);
+  }
+  /* Le contenu central (la coche d'une quete reclamee) doit echapper au
+     masque en couronne, sinon il est efface avec le centre. */
+  .quest-ring > * {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Compte a rebours : mise en page sur sa propre largeur
+
+   Son point de rupture etait une requete de viewport (lg:grid-cols).
+   Tant qu'il occupait toute la largeur, viewport et element se
+   confondaient. Depuis qu'il partage une rangee avec le panneau de
+   rang, il ne fait plus qu'une demi-colonne — mais la requete
+   continue de lire le viewport et lui impose trois colonnes dans
+   600px, ce qui rogne la colonne de metadonnees.
+
+   Une requete de conteneur lit la largeur de l'element lui-meme.
+   C'est le seul outil correct ici : un composant place dans une
+   grille ne connait pas d'avance la place qu'on lui donnera.
+   ───────────────────────────────────────────────────────────── */
+.countdown-shell {
+  container-type: inline-size;
+  container-name: countdown;
+}
+
+@container countdown (min-width: 860px) {
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: auto 1fr minmax(215px, auto);
+    align-items: center;
+  }
+  .countdown-aside-left {
+    border-right: 1px solid var(--countdown-edge, transparent);
+    border-bottom: 0;
+  }
+  .countdown-aside-right {
+    border-left: 1px solid var(--countdown-edge, transparent);
+    border-top: 0;
+  }
+}

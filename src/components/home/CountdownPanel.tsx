@@ -130,22 +130,26 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
 
   return (
     <div
-      className="relative overflow-hidden"
+      /* countdown-shell etablit la requete de conteneur : depuis que ce
+         panneau partage une rangee avec le rang, il doit se disposer sur
+         sa propre largeur et non sur celle du viewport. */
+      className="countdown-shell relative overflow-hidden"
       style={{
         borderRadius: 4,
         border: `1px solid rgba(${c.rgb},0.15)`,
         background: "var(--nexus-countdown-bg)",
         boxShadow: `0 0 20px rgba(${c.rgb},0.05)`,
+        ["--countdown-edge" as string]: `rgba(${c.rgb},0.22)`,
       }}
     >
       <CornerBrackets color={`rgba(${c.rgb},0.4)`} />
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, rgba(${c.rgb},0.4), transparent)` }} />
       <div className="absolute top-0 bottom-0 left-0" style={{ width: 3, background: `linear-gradient(180deg, rgba(${c.rgb},0.8), rgba(${c.rgb},0.1))`, boxShadow: `0 0 12px rgba(${c.rgb},0.6)` }} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_minmax(215px,auto)] items-center" style={{ minHeight: 100 }}>
+      <div className="countdown-grid grid grid-cols-1 items-center" style={{ minHeight: 100 }}>
         {/* Left: Alert status */}
         <div
-          className="flex flex-col items-center justify-center gap-2 lg:border-r border-b lg:border-b-0"
+          className="countdown-aside-left flex flex-col items-center justify-center gap-2 border-b"
           style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.28)`, background: `rgba(${c.rgb},0.11)` }}
         >
           <div className="relative" style={{ width: 44, height: 44 }}>
@@ -217,7 +221,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
 
         {/* Right: Info rows */}
         <div
-          className="flex flex-col justify-center gap-[14px] lg:border-l border-t lg:border-t-0"
+          className="countdown-aside-right flex flex-col justify-center gap-[14px] border-t"
           style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.22)`, background: `rgba(${c.rgb},0.05)`, minWidth: 215 }}
         >
           {[

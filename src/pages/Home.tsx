@@ -212,8 +212,14 @@ export default function Home() {
       )}
 
       {/* NOTE: Home volontairement sans DSPageHeader — NexusHeroBanner joue le rôle d'identité visuelle */}
+      {/* Le desordre ne venait pas des panneaux mais de leur espacement :
+          dix bandes pleine largeur separees toutes de la meme distance, donc
+          aucun regroupement lisible. La page se lit maintenant en quatre
+          temps — le c(oe)ur, agir, l'etat, explorer — separes de 2.5rem,
+          chaque temps serrant ses propres elements a 0.5rem. Aucun titre de
+          section ajoute : le vide suffit a dire ou commence quoi. */}
       <motion.div
-        className="max-w-5xl mx-auto p-4 md:p-5 space-y-4"
+        className="max-w-5xl mx-auto p-4 md:p-5 space-y-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
@@ -235,63 +241,67 @@ export default function Home() {
           <Skeleton className="h-48 w-full rounded-xl" />
         )}
 
-        {/* ACCES RAPIDE — barre pleine largeur, juste sous le hub.
-            Occupait auparavant cinq douziemes de la rangee suivante pour
-            six raccourcis, en face du panneau de rang. */}
-        {isShopReady ? (
-          <QuickAccessPanel
-            ownedModules={{
-              "todo-list": ownedModules["todo-list"],
-              journal: ownedModules["journal"],
-              "track-health": ownedModules["track-health"],
-            }}
-            onWeeklyReview={() => setWeeklyReviewOpen(true)}
-          />
-        ) : (
-          <Skeleton className="h-14 w-full rounded" />
-        )}
+        {/* AGIR — ce qui se fait maintenant. Les six accès et les quetes du
+            jour forment un seul bloc : ce sont les deux seuls endroits de la
+            page ou l'on declenche quelque chose. Serres a 0.5rem, ils se
+            lisent comme une console d'action et non comme deux panneaux. */}
+        <section className="space-y-2">
+          {isShopReady ? (
+            <QuickAccessPanel
+              ownedModules={{
+                "todo-list": ownedModules["todo-list"],
+                journal: ownedModules["journal"],
+                "track-health": ownedModules["track-health"],
+              }}
+              onWeeklyReview={() => setWeeklyReviewOpen(true)}
+            />
+          ) : (
+            <Skeleton className="h-14 w-full rounded" />
+          )}
 
-        {/* QUETES DU JOUR — remontees hors du repli "Advanced Monitoring",
-            ou elles etaient invisibles par defaut. C'est le contenu le plus
-            perissable de la page : il expire a minuit, et il porte les deux
-            seules actions du tableau de bord qui ne mènent pas ailleurs
-            (generer la journee, reclamer une quête achevee). Le ranger sous
-            une etiquette de surveillance le condamnait a n'etre jamais vu. */}
-        <DailyQuestsPanel />
+          {/* Les quetes expirent a minuit : c'est le contenu le plus
+              perissable de la page. Elles etaient repliees sous une
+              etiquette de surveillance, donc jamais vues. */}
+          <DailyQuestsPanel />
+        </section>
 
-        {/* RANG — pleine largeur depuis que l'acces rapide a quitte la rangee */}
-        <RankPanel rankData={safeRankData} />
+        {/* L'ETAT — ou j'en suis. Rang et compte a rebours cote a cote des
+            que la largeur le permet : empiles, ils faisaient 890px sans une
+            seule action. Sous 1280px ils reviennent l'un sous l'autre, le
+            compte a rebours ayant besoin de sa largeur pour ne pas empiler
+            ses propres colonnes. */}
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-start">
+          <RankPanel rankData={safeRankData} />
+          {pact ? (
+            <CountdownPanel
+              projectStartDate={pact.project_start_date}
+              projectEndDate={pact.project_end_date}
+              goalsCompleted={dashboardData.goalsCompleted}
+              totalGoals={dashboardData.totalGoals}
+              pactName={pact.name}
+            />
+          ) : (
+            <Skeleton className="h-24 w-full rounded-xl" />
+          )}
+        </section>
 
-        {/* COUNTDOWN */}
-        {pact ? (
-          <CountdownPanel
-            projectStartDate={pact.project_start_date}
-            projectEndDate={pact.project_end_date}
-            goalsCompleted={dashboardData.goalsCompleted}
-            totalGoals={dashboardData.totalGoals}
-            pactName={pact.name}
-          />
-        ) : (
-          <Skeleton className="h-24 w-full rounded-xl" />
-        )}
+        {/* EXPLORER — ce qu'on ouvre quand on cherche. Le tirage de mission
+            et les panneaux d'analyse partagent ce dernier temps : on n'y va
+            pas tous les jours. */}
+        <section className="space-y-2">
+          {isGoalsReady ? (
+            <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
+          ) : (
+            <Skeleton className="h-32 w-full rounded-xl" />
+          )}
 
-        {/* MISSION RANDOMIZER */}
-        {isGoalsReady ? (
-          <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
-        ) : (
-          <Skeleton className="h-32 w-full rounded-xl" />
-        )}
-
-        <WeeklyReviewModal open={weeklyReviewOpen} onClose={() => setWeeklyReviewOpen(false)} />
-
-        {/* ONBOARDING */}
-        {pact && isGoalsReady && userState === "onboarding" && (
-          <GettingStartedCard
-            hasGoals={dashboardData.totalGoals > 0}
-            hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
-            hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
-          />
-        )}
+          {pact && isGoalsReady && userState === "onboarding" && (
+            <GettingStartedCard
+              hasGoals={dashboardData.totalGoals > 0}
+              hasTimeline={!!pact.project_start_date || !!pact.project_end_date}
+              hasPurchasedModules={Object.values(ownedModules).some((v) => v)}
+            />
+          )}
 
         {/* ADVANCED PANELS — Collapsible */}
         <details className="group">
@@ -324,17 +334,20 @@ export default function Home() {
             )}
             <LifeAreasBalancePanel />
           </div>
-        </details>
+          </details>
 
-        {/* LOCKED MODULES */}
-        {isShopReady && lockedModules.length > 0 && (
-          <section className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
-            <h3 className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dim)] mb-4">
-              Available Modules
-            </h3>
-            <LockedModulesTeaser lockedModules={lockedModules} />
-          </section>
-        )}
+          {/* LOCKED MODULES */}
+          {isShopReady && lockedModules.length > 0 && (
+            <div className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
+              <h3 className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dim)] mb-4">
+                Available Modules
+              </h3>
+              <LockedModulesTeaser lockedModules={lockedModules} />
+            </div>
+          )}
+        </section>
+
+        <WeeklyReviewModal open={weeklyReviewOpen} onClose={() => setWeeklyReviewOpen(false)} />
       </motion.div>
     </DSPageShell>
   );
