@@ -278,7 +278,10 @@
 .space-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  /* Negatif : le calque ne doit jamais pouvoir peindre par-dessus le
+     contenu, quelle que soit la chaine de contextes d empilement au-
+     dessus de lui. */
+  z-index: -1;
   pointer-events: none;
   overflow: hidden;
 }
