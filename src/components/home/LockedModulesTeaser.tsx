@@ -87,7 +87,7 @@ export function LockedModulesTeaser({ lockedModules, className }: LockedModulesT
               <span className="text-xs text-[var(--nexus-text-dim)] font-orbitron uppercase tracking-[0.15em]">
                 Unlock More
               </span>
-              <span className="text-[10px] text-[var(--nexus-text-dimmer)] font-rajdhani">
+              <span className="text-[11px] text-[var(--nexus-text-dimmer)] font-rajdhani">
                 {lockedModules.length} module{lockedModules.length > 1 ? 's' : ''} available
               </span>
             </div>

@@ -301,9 +301,11 @@ All colors MUST be HSL.
     --nexus-shadow: 0 1px 8px hsla(210, 30%, 50%, 0.08), 0 0 1px hsla(200, 100%, 50%, 0.1);
     --nexus-glow: hsla(200, 100%, 50%, 0.25);
     --nexus-glow-subtle: hsla(200, 100%, 50%, 0.12);
-    --nexus-text-label: hsl(210, 30%, 35%);
-    --nexus-text-dim: hsl(210, 20%, 45%);
-    --nexus-text-dimmer: hsl(210, 15%, 60%);
+    /* Meme plancher de 4,5:1 cote theme clair : sur un fond a 96% de clarte,
+       --dimmer a 60% donnait 2,79:1. Les trois tons sont assombris. */
+    --nexus-text-label: hsl(210, 30%, 26%);
+    --nexus-text-dim: hsl(210, 20%, 34%);
+    --nexus-text-dimmer: hsl(210, 15%, 42%);
     --nexus-heading: hsl(210, 40%, 15%);
     --nexus-inner-bg: hsla(210, 30%, 92%, 0.7);
     --nexus-inner-bg-deep: hsla(210, 25%, 90%, 0.8);
@@ -311,7 +313,8 @@ All colors MUST be HSL.
     --nexus-hover-border: hsla(200, 80%, 50%, 0.45);
     --nexus-hover-bg: hsla(210, 30%, 92%, 0.6);
     --nexus-track-bg: hsla(210, 20%, 85%, 0.5);
-    --nexus-marker-dim: hsla(210, 15%, 50%, 0.4);
+    /* Meme correction cote theme clair : 0.4 sur fond clair etait sous le seuil. */
+    --nexus-marker-dim: hsla(210, 15%, 32%, 0.95);
     --nexus-countdown-bg: linear-gradient(90deg, hsla(345, 50%, 96%, 0.98), hsla(345, 30%, 97%, 0.97), hsla(345, 40%, 97%, 0.98));
     --nexus-countdown-border: hsla(345, 80%, 55%, 0.25);
     --nexus-rank-bg: linear-gradient(160deg, hsla(210, 45%, 96%, 0.97), hsla(210, 35%, 97%, 0.99));
@@ -438,9 +441,14 @@ All colors MUST be HSL.
     --nexus-shadow: 0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06);
     --nexus-glow: rgba(0, 210, 255, 0.4);
     --nexus-glow-subtle: rgba(0, 210, 255, 0.12);
-    --nexus-text-label: rgba(160, 210, 255, 0.65);
-    --nexus-text-dim: rgba(160, 210, 255, 0.5);
-    --nexus-text-dimmer: rgba(160, 210, 255, 0.3);
+    /* Trois tons d'etiquette. Sur le fond sombre, rgb(160,210,255) doit
+       atteindre environ 0.6 d'opacite pour franchir 4,5:1 ; --dimmer etait a
+       0.3, soit 1,99:1. Les trois valeurs partent donc de ce plancher.
+       25 classes ecrites en dur contournaient ces tokens avec 7 opacites
+       differentes (0.15 a 0.5) : elles pointent desormais ici. */
+    --nexus-text-label: rgba(160, 210, 255, 0.88);
+    --nexus-text-dim: rgba(160, 210, 255, 0.72);
+    --nexus-text-dimmer: rgba(160, 210, 255, 0.6);
     --nexus-heading: #ddeeff;
     --nexus-inner-bg: rgba(0, 0, 0, 0.2);
     --nexus-inner-bg-deep: rgba(2, 4, 10, 0.8);
@@ -448,7 +456,10 @@ All colors MUST be HSL.
     --nexus-hover-border: rgba(0, 210, 255, 0.25);
     --nexus-hover-bg: rgba(0, 180, 255, 0.04);
     --nexus-track-bg: rgba(255, 255, 255, 0.04);
-    --nexus-marker-dim: rgba(255, 255, 255, 0.17);
+    /* 0.17 donnait 1,59:1 sur le fond sombre — le seuil lisible est 4,5:1.
+       Ces marqueurs portent les jalons de la frise (J.1, J.2252) et les
+       paliers de difficulte : ce sont des donnees, pas du decor. */
+    --nexus-marker-dim: rgba(255, 255, 255, 0.6);
     --nexus-countdown-bg: linear-gradient(90deg, rgba(20,0,4,0.98) 0%, rgba(10,2,6,0.97) 40%, rgba(8,0,3,0.98) 100%);
     --nexus-countdown-border: rgba(255,23,68,0.3);
     --nexus-rank-bg: linear-gradient(160deg, rgba(0,15,40,0.97) 0%, rgba(3,8,20,0.99) 100%);

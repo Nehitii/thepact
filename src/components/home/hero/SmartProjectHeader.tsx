@@ -131,7 +131,7 @@ export function SmartProjectHeader({
                     scan.done ? STATUS_DOT[systemStatus] : "bg-primary/50",
                   )}
                 />
-                <span className="text-[9px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/60">
+                <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/60">
                   {scan.done ? STATUS_LABEL[systemStatus] : "Scanning"}
                 </span>
               </div>
@@ -156,7 +156,7 @@ export function SmartProjectHeader({
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.1 }}
                   >
-                    <span className="text-[10px] font-rajdhani text-muted-foreground/70 tracking-wider">
+                    <span className="text-[11px] font-rajdhani text-muted-foreground/70 tracking-wider">
                       {insights.length > 0
                         ? `${insights.length} insight${insights.length > 1 ? "s" : ""} detected — tap to ${expanded ? "collapse" : "expand"}`
                         : "All systems nominal — no action required"}
@@ -198,7 +198,7 @@ export function SmartProjectHeader({
 
                 <div className="flex items-center justify-center gap-2 pt-1">
                   <Shield className="w-3 h-3 text-muted-foreground/30" />
-                  <span className="text-[9px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/30">
+                  <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/30">
                     Nexus Engine v1.0
                   </span>
                 </div>

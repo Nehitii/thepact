@@ -45,15 +45,15 @@ export function ProgressOverviewModule({
   const statusBreakdown = (
     <div className="grid grid-cols-3 gap-2">
       <div className="text-center p-2 rounded-sm bg-[rgba(0,180,255,0.03)] border border-[rgba(0,180,255,0.08)]">
-        <div className="text-[8px] font-orbitron uppercase tracking-wider text-[rgba(160,210,255,0.35)] mb-1">Not Started</div>
-        <div className="text-base font-mono font-bold text-[rgba(160,210,255,0.5)] tabular-nums">{data.statusCounts.not_started}</div>
+        <div className="text-[11px] font-orbitron uppercase tracking-wider text-[var(--nexus-text-dim)] mb-1">Not Started</div>
+        <div className="text-base font-mono font-bold text-[var(--nexus-text-label)] tabular-nums">{data.statusCounts.not_started}</div>
       </div>
       <div className="text-center p-2 rounded-sm bg-[rgba(0,180,255,0.03)] border border-[rgba(0,180,255,0.08)]">
-        <div className="text-[8px] font-orbitron uppercase tracking-wider text-primary/50 mb-1">In Progress</div>
+        <div className="text-[11px] font-orbitron uppercase tracking-wider text-primary/50 mb-1">In Progress</div>
         <div className="text-base font-mono font-bold text-primary tabular-nums">{data.statusCounts.in_progress}</div>
       </div>
       <div className="text-center p-2 rounded-sm bg-[rgba(0,255,136,0.02)] border border-[rgba(0,255,136,0.08)]">
-        <div className="text-[8px] font-orbitron uppercase tracking-wider text-emerald-400/50 mb-1">Completed</div>
+        <div className="text-[11px] font-orbitron uppercase tracking-wider text-emerald-400/50 mb-1">Completed</div>
         <div className="text-base font-mono font-bold text-emerald-400 tabular-nums">{data.statusCounts.fully_completed}</div>
       </div>
     </div>
@@ -118,7 +118,7 @@ export function ProgressOverviewModule({
             <div className="text-xl font-mono font-bold text-primary tabular-nums">
               {Math.round(overallPercentage)}%
             </div>
-            <div className="text-[8px] text-[rgba(160,210,255,0.3)] font-orbitron uppercase tracking-wider">Overall</div>
+            <div className="text-[11px] text-[var(--nexus-text-dimmer)] font-orbitron uppercase tracking-wider">Overall</div>
           </div>
         </div>
         
@@ -127,7 +127,7 @@ export function ProgressOverviewModule({
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <div className="w-2 h-2 rounded-full bg-emerald-400" />
-              <span className="text-[9px] font-orbitron uppercase tracking-wider text-[rgba(160,210,255,0.4)]">Goals</span>
+              <span className="text-[11px] font-orbitron uppercase tracking-wider text-[var(--nexus-text-dim)]">Goals</span>
             </div>
             <div className="text-base font-mono font-bold text-emerald-400 tabular-nums">
               {data.goalsCompleted}/{data.totalGoals}
@@ -136,7 +136,7 @@ export function ProgressOverviewModule({
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-[9px] font-orbitron uppercase tracking-wider text-[rgba(160,210,255,0.4)]">Steps</span>
+              <span className="text-[11px] font-orbitron uppercase tracking-wider text-[var(--nexus-text-dim)]">Steps</span>
             </div>
             <div className="text-base font-mono font-bold text-primary tabular-nums">
               {data.totalStepsCompleted}/{data.totalSteps}
@@ -146,7 +146,7 @@ export function ProgressOverviewModule({
             <div>
               <div className="flex items-center gap-2 mb-0.5">
                 <div className="w-2 h-2 rounded-full bg-purple-400" />
-                <span className="text-[9px] font-orbitron uppercase tracking-wider text-[rgba(160,210,255,0.4)]">Habits</span>
+                <span className="text-[11px] font-orbitron uppercase tracking-wider text-[var(--nexus-text-dim)]">Habits</span>
               </div>
               <div className="text-base font-mono font-bold text-purple-400 tabular-nums">
                 {data.completedHabitChecks}/{data.totalHabitChecks}

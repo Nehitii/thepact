@@ -144,7 +144,7 @@ export function NexusHeroBanner({
               </span>
               <span
                 style={{
-                  fontSize: 9,
+                  fontSize: 11,
                   letterSpacing: 3,
                   color: "var(--nexus-text-dim)",
                   textTransform: "uppercase" as const,

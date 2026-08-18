@@ -85,12 +85,12 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Flag className={cn("w-4 h-4", urgencyLevel === 'critical' && "text-destructive animate-pulse", urgencyLevel === 'warning' && "text-amber-400", urgencyLevel === 'normal' && "text-primary")} />
-            <span className="text-[10px] font-orbitron uppercase tracking-[0.15em] text-foreground/70">
+            <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-foreground/70">
               Active Mission
             </span>
           </div>
           <div className={cn(
-            "flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono font-bold",
+            "flex items-center gap-1.5 px-2 py-1 text-[11px] font-mono font-bold",
             isExpired && "bg-destructive/20 text-destructive",
             urgencyLevel === 'critical' && !isExpired && "bg-destructive/20 text-destructive animate-pulse",
             urgencyLevel === 'warning' && !isExpired && "bg-amber-500/20 text-amber-400",
@@ -120,7 +120,7 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
         </div>
 
         <div className="p-3 bg-[var(--nexus-inner-bg)] border border-[var(--nexus-separator)]" style={{ borderRadius: "4px" }}>
-          <p className="text-[10px] text-muted-foreground font-rajdhani uppercase tracking-wider mb-1">Focused Step</p>
+          <p className="text-[11px] text-muted-foreground font-rajdhani uppercase tracking-wider mb-1">Focused Step</p>
           <p className="text-sm font-rajdhani text-foreground leading-snug">{mission.step_title}</p>
         </div>
 
@@ -156,7 +156,7 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
           </AlertDialog>
         </div>
 
-        <button onClick={goToGoal} className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-primary transition-colors font-rajdhani uppercase tracking-wider py-1">
+        <button onClick={goToGoal} className="w-full flex items-center justify-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors font-rajdhani uppercase tracking-wider py-1">
           View full goal <ChevronRight className="w-3 h-3" />
         </button>
       </div>

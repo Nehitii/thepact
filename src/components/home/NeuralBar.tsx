@@ -43,7 +43,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
 
         {/* Left: SYS + progress + coords */}
         <div className="flex items-center gap-3 flex-1">
-          <span className="uppercase font-mono text-[9px] tracking-[2px] text-muted-foreground/60">
+          <span className="uppercase font-mono text-[11px] tracking-[2px] text-muted-foreground/60">
             SYS
           </span>
 
@@ -59,8 +59,8 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           </div>
 
           {/* Pact name + ID */}
-          <span className="hidden sm:inline truncate max-w-[200px] font-mono text-[9px] tracking-[1px] text-primary/35">
-            {pact.name} // ID:{pact.id.slice(0, 8)}
+          <span className="hidden sm:inline truncate max-w-[200px] font-mono text-[11px] tracking-[1px] text-primary/70">
+            {pact.name}
           </span>
         </div>
 
@@ -69,7 +69,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           <div className="font-mono text-[15px] tracking-[3px] text-primary neural-bar-clock">
             {timeStr}
           </div>
-          <div className="font-mono text-[8px] tracking-[3px] uppercase mt-px text-muted-foreground/60">
+          <div className="font-mono text-[11px] tracking-[2px] uppercase mt-px text-muted-foreground">
             {dateStr}
           </div>
         </div>
@@ -92,9 +92,6 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
                 />
               ))}
             </div>
-            <span className="font-mono text-[9px] text-primary/30">
-              2.4GHz
-            </span>
           </div>
 
           {/* Bond display */}
@@ -111,7 +108,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           {/* Customize button */}
           <button
             onClick={() => navigate("/profile")}
-            className="neural-bar-btn flex items-center gap-2 cursor-pointer uppercase transition-all font-mono text-[10px] tracking-[2px] text-primary rounded-[4px]"
+            className="neural-bar-btn flex items-center gap-2 cursor-pointer uppercase transition-all font-mono text-[11px] tracking-[2px] text-primary rounded-[4px]"
             style={{
               padding: "6px 14px",
               clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)",
@@ -121,7 +118,10 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
               <circle cx="12" cy="12" r="3" />
               <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
             </svg>
-            CUSTOMIZE
+            {/* Le libelle debordait deja de la barre sous 400px (bord droit a
+                393px sur un ecran de 375, rogne par le parent sans defilement
+                possible) ; le passage de 10 a 11px aggravait la coupe. */}
+            <span className="hidden min-[400px]:inline">CUSTOMIZE</span>
           </button>
         </div>
       </header>
