@@ -49,7 +49,7 @@ function CircularGauge({
           <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 16, fontWeight: 700, color: textColor, textShadow: textGlow }}>
             {Math.round(pct)}%
           </span>
-          <span style={{ fontSize: 11, letterSpacing: 1, color: "var(--nexus-text-dim)", marginTop: 2, opacity: 0.7 }}>
+          <span style={{ fontSize: 11, letterSpacing: 1, color: "var(--nexus-text-dim)", marginTop: 2 }}>
             {label}
           </span>
         </div>

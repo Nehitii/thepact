@@ -152,7 +152,7 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
                   top: 5, right: 7,
                   fontFamily: "'Share Tech Mono', monospace",
                   fontSize: 11, color: btn.color,
-                  opacity: 0.3, letterSpacing: 1,
+                  opacity: 0.9, letterSpacing: 1,
                 }}
               >
                 {btn.hotkey}
@@ -206,7 +206,7 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
       >
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #ffd700, transparent)", opacity: 0.3 }} />
         <div className="absolute bottom-0 right-0" style={{ width: 10, height: 10, background: "#ffd700", clipPath: "polygon(100% 0, 100% 100%, 0 100%)", opacity: 0.25 }} />
-        <span className="absolute" style={{ top: 5, right: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "#ffd700", opacity: 0.3, letterSpacing: 1 }}>F5</span>
+        <span className="absolute" style={{ top: 5, right: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "#ffd700", opacity: 0.9, letterSpacing: 1 }}>F5</span>
         <svg width={20} height={20} viewBox="0 0 26 26" fill="none" stroke="#ffd700" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.75 }}>
           <rect x="3" y="3" width="20" height="20" rx="2" strokeOpacity="0.4" />
           <polyline points="7,9 10,12 19,7" strokeOpacity="0.9" />
@@ -244,7 +244,7 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
       >
         <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #6366f1, transparent)", opacity: 0.3 }} />
         <div className="absolute bottom-0 right-0" style={{ width: 10, height: 10, background: "#6366f1", clipPath: "polygon(100% 0, 100% 100%, 0 100%)", opacity: 0.25 }} />
-        <span className="absolute" style={{ top: 5, right: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "#6366f1", opacity: 0.3, letterSpacing: 1 }}>F6</span>
+        <span className="absolute" style={{ top: 5, right: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "#818cf8", opacity: 0.9, letterSpacing: 1 }}>F6</span>
         <svg width={20} height={20} viewBox="0 0 26 26" fill="none" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.75 }}>
           <rect x="4" y="2" width="18" height="22" rx="2" strokeOpacity="0.5" />
           <line x1="8" y1="7" x2="18" y2="7" strokeOpacity="0.7" />

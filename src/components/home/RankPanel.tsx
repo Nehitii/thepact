@@ -73,7 +73,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
             <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "hsl(var(--ds-accent-primary))", lineHeight: 1 }}>
               {level}
             </span>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 2, color: "rgba(0,212,255,0.5)", textTransform: "uppercase" as const }}>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 2, color: "rgba(0,212,255,0.8)", textTransform: "uppercase" as const }}>
               LEVEL
             </span>
           </div>

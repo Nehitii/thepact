@@ -78,7 +78,7 @@ export function LifeAreasBalancePanel() {
                 </div>
                 <div className="flex items-center gap-2 font-orbitron text-[11px] tabular-nums">
                   <span className="text-primary/80">{actual}%</span>
-                  <span className="text-muted-foreground/60">/ {a.weight}%</span>
+                  <span className="text-muted-foreground">/ {a.weight}%</span>
                   {delta !== 0 && (
                     <span className={delta > 0 ? "text-primary/60" : "text-amber-400/70"}>
                       {delta > 0 ? "+" : ""}{delta}

@@ -293,7 +293,7 @@ export default function Home() {
         {/* ADVANCED PANELS — Collapsible */}
         <details className="group">
           <summary className="flex items-center gap-2 cursor-pointer list-none select-none py-2 px-1">
-            <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground/60 group-open:text-primary/70 transition-colors">
+            <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground group-open:text-primary transition-colors">
               Advanced Monitoring
             </span>
             <span className="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent" />

@@ -192,7 +192,7 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
                   </span>
                 </div>
                 {i < 3 && (
-                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, color: `rgba(${c.rgb},0.3)`, margin: "0 4px 12px", animation: "colonBlink 1s step-end infinite", flexShrink: 0 }}>
+                  <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "clamp(22px, 3vw, 36px)", fontWeight: 700, color: `rgba(${c.rgb},0.6)`, margin: "0 4px 12px", animation: "colonBlink 1s step-end infinite", flexShrink: 0 }}>
                     :
                   </span>
                 )}

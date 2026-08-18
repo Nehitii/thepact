@@ -43,7 +43,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
 
         {/* Left: SYS + progress + coords */}
         <div className="flex items-center gap-3 flex-1">
-          <span className="uppercase font-mono text-[11px] tracking-[2px] text-muted-foreground/60">
+          <span className="uppercase font-mono text-[11px] tracking-[2px] text-muted-foreground">
             SYS
           </span>
 
