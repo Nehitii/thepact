@@ -46,7 +46,6 @@ const Calendar = lazy(routeImports.calendar);
 const Reviews = lazy(routeImports.reviews);
 const ContractSign = lazy(() => import("./pages/ContractSign"));
 const GoalsGraph = lazy(() => import("./pages/GoalsGraph"));
-const TemplatesMarketplace = lazy(() => import("./pages/TemplatesMarketplace"));
 const HallOfFame = lazy(() => import("./pages/HallOfFame"));
 const GuildPage = lazy(() => import("./pages/GuildPage"));
 const PactSelector = lazy(() => import("./components/pact/PactSelectorModal"));
@@ -96,7 +95,6 @@ function AppRoutes() {
         <Route path="the-call" element={<TheCall />} />
         <Route path="goals" element={<Goals />} />
         <Route path="goals/graph" element={<GoalsGraph />} />
-        <Route path="templates/marketplace" element={<SocialGate enabled={social.templatesMarketplace} loading={social.loadingMap.templatesMarketplace}><TemplatesMarketplace /></SocialGate>} />
         <Route path="goals/new" element={<NewGoal />} />
         <Route path="goals/:id" element={<GoalDetail />} />
         <Route path="step/:stepId" element={<StepDetail />} />

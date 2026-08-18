@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus, Network, Sparkles } from "lucide-react";
+import { Plus, Network } from "lucide-react";
 
 /* EN-TETE DES OBJECTIFS
  *
@@ -40,15 +40,6 @@ export function GoalsHeader({ total, actifs, franchis }: Props) {
           <span className="cp-tag">{pct}% ACQUIS</span>
           <span className="ana-panneau-fil" />
           <div className="gl-actions">
-            <button
-              type="button"
-              onClick={() => navigate("/templates/marketplace")}
-              className="gl-btn"
-              aria-label={t("goals.templates")}
-            >
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-              <span className="hidden md:inline">{t("goals.templates")}</span>
-            </button>
             <button
               type="button"
               onClick={() => navigate("/goals/graph")}

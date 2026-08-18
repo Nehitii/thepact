@@ -12,7 +12,6 @@ export function useSocialFeatures() {
   const hallOfFame = useFeatureFlag("social.hall_of_fame");
   const inbox = useFeatureFlag("social.inbox");
   const sharing = useFeatureFlag("social.sharing");
-  const templatesMarketplace = useFeatureFlag("social.templates_marketplace");
   const victoryReels = useFeatureFlag("social.victory_reels");
 
   return {
@@ -23,7 +22,6 @@ export function useSocialFeatures() {
     hallOfFame: hallOfFame.enabled,
     inbox: inbox.enabled,
     sharing: sharing.enabled,
-    templatesMarketplace: templatesMarketplace.enabled,
     victoryReels: victoryReels.enabled,
     anySocial:
       friends.enabled ||
@@ -40,7 +38,6 @@ export function useSocialFeatures() {
       hallOfFame.isLoading ||
       inbox.isLoading ||
       sharing.isLoading ||
-      templatesMarketplace.isLoading ||
       victoryReels.isLoading,
     loadingMap: {
       friends: friends.isLoading,
@@ -50,7 +47,6 @@ export function useSocialFeatures() {
       hallOfFame: hallOfFame.isLoading,
       inbox: inbox.isLoading,
       sharing: sharing.isLoading,
-      templatesMarketplace: templatesMarketplace.isLoading,
       victoryReels: victoryReels.isLoading,
     },
   };
