@@ -11,6 +11,7 @@ import "./index.css";
 // n'etaient donc jamais chargees — d'ou le lien "Skip to content" visible sur
 // toutes les pages, qui aurait du rester masque hors focus.
 import "./styles/design-tokens.css";
+import "./styles/singularity.css";
 import "./styles/hero-animations.css";
 import "./styles/difficulty.css";
 import "./styles/shop.css";

@@ -24,6 +24,10 @@ export function AccentColorSync() {
       // n'etait jamais posee, donc ces elements restaient cyan pendant que les
       // boutons prenaient la couleur du profil — deux accents a l'ecran.
       document.documentElement.style.setProperty("--ds-current-accent", hsl);
+      // La Singularite compose ses couches en hsl() et a besoin de la teinte
+      // seule, pas du triplet : hsl(var(--ds-accent-hue) 100% 62% / 0.5).
+      // hexToHSL renvoie "H S% L%", donc le premier segment est la teinte.
+      document.documentElement.style.setProperty("--ds-accent-hue", hsl.split(" ")[0]);
     }
 
     // Apply font size

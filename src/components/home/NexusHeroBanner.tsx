@@ -52,10 +52,29 @@ export function NexusHeroBanner({
   const fontFamily = FONT_MAP[titleFont || "orbitron"] || FONT_MAP.orbitron;
   const effectStyle = EFFECT_STYLES[titleEffect || "none"] || {};
 
+  // La Singularite tire ses trois parametres des donnees reelles du pacte.
+  // Sans cela, ce ne serait qu'un economiseur d'ecran.
+  const singularity = useMemo(() => {
+    // Respiration : plus la serie est longue, plus le rythme ralentit et
+    // s'approfondit. 5s au premier jour, 13s au plafond — un organisme au
+    // repos, pas un gyrophare. Le palier de 400 jours evite qu'une serie
+    // exceptionnelle fige le c\oeur.
+    const breath = 5 + Math.min(activeDays, 400) / 50;
+    // Luminosite : a 0% le c\oeur couve, a 100% il rayonne. Le plancher de
+    // 0.45 garantit qu'un pacte qui demarre reste visible.
+    const lum = 0.45 + Math.min(Math.max(progression, 0), 100) / 100 * 0.55;
+    return {
+      "--sing-breath": `${breath.toFixed(1)}s`,
+      "--sing-lum": lum.toFixed(3),
+      "--sing-progress": `${Math.min(Math.max(progression, 0), 100)}%`,
+    } as React.CSSProperties;
+  }, [activeDays, progression]);
+
   return (
     <div
-      className="relative overflow-hidden"
+      className="singularity-stage"
       style={{
+        ...singularity,
         background: "var(--nexus-bg)",
         border: "1px solid var(--nexus-border)",
         borderRadius: 4,
@@ -69,32 +88,25 @@ export function NexusHeroBanner({
       {/* Top gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      {/* Background grid */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: "linear-gradient(rgba(0,212,255,0.028) 1px, transparent 1px), linear-gradient(90deg, rgba(0,212,255,0.028) 1px, transparent 1px)",
-          backgroundSize: "40px 40px",
-          maskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 40%, transparent 80%)",
-        }}
-      />
-
-      {/* Hero glow */}
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 500, height: 250,
-          background: "radial-gradient(ellipse, rgba(0,90,200,0.09) 0%, transparent 70%)",
-        }}
-      />
+      {/* Espace profond : nebuleuse au fond, champ d'etoiles par-dessus.
+          La grille quadrillee et la lueur elliptique qui occupaient cette
+          place lisaient comme un gabarit, pas comme un ciel. */}
+      <div className="singularity-nebula" />
+      <div className="singularity-field" />
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Pact Logo */}
-        <div className="mb-4">
-          <PactVisual symbol={pactSymbol} size="md" progress={progression} />
+        {/* Le c\oeur. L'anneau d'accretion EST la jauge de progression :
+            elle n'est plus un chiffre pose a cote d'un dessin. Le symbole
+            du pacte se tient au centre, dans la lumiere du noyau. */}
+        <div className="singularity-core mb-6">
+          <div className="singularity-influx" />
+          <div className="singularity-flare" />
+          <div className="singularity-corona" />
+          <div className="singularity-nucleus" />
+          <div className="singularity-ring" />
+          <div className="relative" style={{ zIndex: 4 }}>
+            <PactVisual symbol={pactSymbol} size="sm" progress={progression} />
+          </div>
         </div>
 
         {/* Pact Title */}

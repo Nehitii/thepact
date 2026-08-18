@@ -1,0 +1,263 @@
+/* ─────────────────────────────────────────────────────────────
+   LA SINGULARITE — le c\oeur d'etoile du tableau de bord
+
+   Direction retenue : concentrer toute l'energie du pacte en un
+   point, et rendre ce point vivant plutot que decoratif.
+
+   Ce qui le rend vivant est pilote par les donnees reelles, jamais
+   par une valeur ecrite en dur :
+
+     --sing-breath  cadence de respiration, issue des jours actifs.
+                    Plus la serie est longue, plus le rythme est lent
+                    et profond — un organisme au repos, pas un
+                    gyrophare. Calculee dans NexusHeroBanner.
+     --sing-lum     luminosite, issue de la progression. A 0% le
+                    c\oeur couve ; a 100% il rayonne.
+     --sing-hue     teinte, heritee de l'accent choisi dans le profil.
+
+   Les couches, du centre vers l'exterieur : noyau dense, couronne
+   qui respire, ejections en rotation lente, champ d'etoiles.
+
+   Performance : une seule couche floutee (la couronne). Les autres
+   sont des degrades composites, sans blur. Les animations sont
+   suspendues par html[data-idle] (src/lib/idleAnimations.ts) quand
+   l'onglet passe en arriere-plan, et desactivees si l'utilisateur
+   demande moins de mouvement.
+   ───────────────────────────────────────────────────────────── */
+
+.singularity-stage {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* ── Champ d'etoiles ────────────────────────────────────────────
+   Trois couches de densites differentes donnent la profondeur.
+   Des ombres portees sur un pseudo-element d'un pixel coutent
+   moins qu'une image et restent nettes a tout facteur de zoom. */
+.singularity-field {
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,1), transparent),
+    radial-gradient(1px 1px at 27% 62%, rgba(190,225,255,0.95), transparent),
+    radial-gradient(1px 1px at 41% 31%, rgba(255,255,255,0.85), transparent),
+    radial-gradient(1px 1px at 58% 77%, rgba(200,230,255,0.95), transparent),
+    radial-gradient(1px 1px at 69% 22%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 83% 54%, rgba(180,220,255,1), transparent),
+    radial-gradient(1px 1px at 91% 12%, rgba(255,255,255,0.75), transparent),
+    radial-gradient(2px 2px at 34% 84%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(2px 2px at 76% 39%, rgba(210,235,255,0.8), transparent);
+  background-repeat: no-repeat;
+  animation: sing-drift 240s linear infinite;
+}
+
+/* Une derive tres lente : le ciel n'est pas fige, mais rien ne
+   doit attirer l'\oeil pendant la lecture. */
+@keyframes sing-drift {
+  to { transform: translate3d(-3%, 2%, 0); }
+}
+
+.singularity-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 19% 44%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(1px 1px at 52% 16%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(1px 1px at 88% 71%, rgba(255,255,255,0.4), transparent);
+  animation: sing-twinkle 7s ease-in-out infinite;
+}
+
+@keyframes sing-twinkle {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.9; }
+}
+
+/* ── Nebuleuse ──────────────────────────────────────────────────
+   Le fond profond derriere le c\oeur. Deux poches de couleur
+   decentrees evitent la symetrie parfaite, qui lit comme un
+   degrade de gabarit plutot que comme un espace. */
+.singularity-nebula {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 55% at 32% 38%,
+      hsl(var(--ds-accent-hue, 200) 90% 40% / calc(0.20 * var(--sing-lum, 1))) 0%,
+      transparent 62%),
+    radial-gradient(ellipse 60% 50% at 71% 66%,
+      hsl(calc(var(--ds-accent-hue, 200) + 55) 85% 42% / calc(0.14 * var(--sing-lum, 1))) 0%,
+      transparent 60%);
+}
+
+/* ── Le c\oeur ──────────────────────────────────────────────────
+   Empile trois couches concentriques. La taille est en em pour
+   suivre la taille de police, comme le reste de l'interface. */
+.singularity-core {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 16.5em;
+  height: 16.5em;
+}
+
+/* Couronne : la couche qui respire. C'est la seule floutee. */
+.singularity-corona {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    hsl(var(--ds-accent-hue, 200) 100% 62% / calc(0.70 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 100% 50% / calc(0.32 * var(--sing-lum, 1))) 38%,
+    transparent 68%);
+  filter: blur(14px);
+  animation: sing-breathe var(--sing-breath, 8s) ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* La respiration : amplitude volontairement faible. Un c\oeur qui
+   pulse fort a l'air d'alerter ; celui-ci a l'air d'etre en vie. */
+@keyframes sing-breathe {
+  0%, 100% { transform: scale(1);     opacity: 0.82; }
+  50%      { transform: scale(1.085); opacity: 1; }
+}
+
+/* Ejections : rayons en rotation, decales de la respiration pour
+   que les deux mouvements ne se synchronisent jamais. */
+.singularity-flare {
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    hsl(var(--ds-accent-hue, 200) 100% 70% / calc(0.16 * var(--sing-lum, 1))) 12deg,
+    transparent 34deg,
+    transparent 96deg,
+    hsl(calc(var(--ds-accent-hue, 200) + 30) 100% 68% / calc(0.11 * var(--sing-lum, 1))) 122deg,
+    transparent 148deg,
+    transparent 214deg,
+    hsl(var(--ds-accent-hue, 200) 100% 72% / calc(0.13 * var(--sing-lum, 1))) 238deg,
+    transparent 266deg,
+    transparent 360deg);
+  mask-image: radial-gradient(circle, transparent 34%, black 46%, black 74%, transparent 88%);
+  -webkit-mask-image: radial-gradient(circle, transparent 34%, black 46%, black 74%, transparent 88%);
+  animation: sing-rotate calc(var(--sing-breath, 8s) * 7) linear infinite;
+}
+
+@keyframes sing-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* Noyau : la lumiere dense au centre.
+   Une lueur et non un disque plein — le symbole du pacte se tient
+   dedans, et un disque opaque l'aurait simplement recouvert.
+   inset centre la boite sans transform : la respiration en utilise
+   deja un, et le second ecraserait le premier. */
+.singularity-nucleus {
+  position: absolute;
+  inset: 26%;
+  z-index: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 46% 42%,
+    hsl(var(--ds-accent-hue, 200) 100% 96% / calc(0.62 * var(--sing-lum, 1))) 0%,
+    hsl(var(--ds-accent-hue, 200) 100% 80% / calc(0.38 * var(--sing-lum, 1))) 34%,
+    hsl(var(--ds-accent-hue, 200) 100% 62% / calc(0.18 * var(--sing-lum, 1))) 58%,
+    transparent 76%);
+  box-shadow:
+    0 0 2.4em hsl(var(--ds-accent-hue, 200) 100% 60% / calc(0.55 * var(--sing-lum, 1))),
+    0 0 6em   hsl(var(--ds-accent-hue, 200) 100% 52% / calc(0.28 * var(--sing-lum, 1)));
+  animation: sing-breathe var(--sing-breath, 8s) ease-in-out infinite;
+}
+
+/* Anneau d'accretion : marque la progression reelle sur le pourtour.
+   conic-gradient s'arrete a --sing-progress, donc l'anneau EST la
+   jauge — pas une decoration posee a cote d'un chiffre. */
+.singularity-ring {
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -90deg,
+    hsl(var(--ds-accent-hue, 200) 100% 68%) 0%,
+    hsl(var(--ds-accent-hue, 200) 100% 68%) var(--sing-progress, 0%),
+    transparent var(--sing-progress, 0%));
+  mask-image: radial-gradient(circle, transparent 78%, black 80%, black 84%, transparent 86%);
+  -webkit-mask-image: radial-gradient(circle, transparent 78%, black 80%, black 84%, transparent 86%);
+  filter: drop-shadow(0 0 4px hsl(var(--ds-accent-hue, 200) 100% 60% / 0.8));
+  transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── La lumiere que le c\oeur jette sur la page ─────────────────
+   Pose sur le conteneur du tableau de bord, sous les panneaux :
+   ce qui est proche du centre recoit plus de lumiere. C'est ce
+   qui relie le hub au reste au lieu d'en faire une vignette. */
+.singularity-cast {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse 90% 42% at 50% 0%,
+    hsl(var(--ds-accent-hue, 200) 90% 45% / calc(0.09 * var(--sing-lum, 1))) 0%,
+    transparent 70%);
+}
+
+/* ── Accessibilite ──────────────────────────────────────────────
+   Sans mouvement, la Singularite reste une image : les couches et
+   la luminosite subsistent, seules les animations s'arretent. */
+@media (prefers-reduced-motion: reduce) {
+  .singularity-field,
+  .singularity-field::after,
+  .singularity-corona,
+  .singularity-nucleus,
+  .singularity-flare {
+    animation: none;
+  }
+  .singularity-corona { opacity: 0.92; }
+}
+
+/* ── Influx ─────────────────────────────────────────────────────
+   Le geste que le reste ne portait pas : la matiere TOMBE vers le
+   c\oeur. Sans lui, la Singularite est un bel objet calme ; avec
+   lui, elle concentre.
+
+   Des rayons fins en conic-gradient, masques en couronne, que l'on
+   fait retrecir vers le centre. scale() plutot qu'une animation de
+   position : une seule propriete composee, aucun recalcul de mise
+   en page a chaque image. */
+.singularity-influx {
+  position: absolute;
+  inset: -60%;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 7deg,
+    hsl(var(--ds-accent-hue, 200) 100% 72% / calc(0.13 * var(--sing-lum, 1))) 8deg,
+    transparent 9deg,
+    transparent 16deg);
+  mask-image: radial-gradient(circle, transparent 12%, black 38%, transparent 72%);
+  -webkit-mask-image: radial-gradient(circle, transparent 12%, black 38%, transparent 72%);
+  animation: sing-infall calc(var(--sing-breath, 8s) * 1.6) cubic-bezier(0.55, 0, 0.85, 0.35) infinite;
+  will-change: transform, opacity;
+}
+
+/* La chute : part large et faible, arrive serree et vive, puis
+   disparait au moment d'atteindre le noyau. L'easing accelere vers
+   la fin, comme une matiere qui tombe dans un puits. */
+@keyframes sing-infall {
+  0%   { transform: scale(1);    opacity: 0; }
+  18%  {                         opacity: 1; }
+  100% { transform: scale(0.18); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .singularity-influx { animation: none; opacity: 0.35; transform: scale(0.55); }
+}
