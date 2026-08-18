@@ -388,7 +388,12 @@
       "created": "Date de création",
       "status": "Statut",
       "name": "Nom",
-      "progress": "Progression"
+      "progress": "Progression",
+      "tag": "Étiquette",
+      "points": "Points",
+      "start": "Date de début",
+      "superFirst": "Super en premier",
+      "superLast": "Super en dernier"
     },
     "form": {
       "goalName": "Nom de l'objectif",
@@ -509,7 +514,16 @@
       "travel": "Voyage",
       "subscriptions": "Abonnements",
       "other": "Autre"
-    }
+    },
+    "templates": "Modèles",
+    "graph": "Graphe",
+    "perPage": "Par page",
+    "hideSuperGoals": "Masquer les super-objectifs",
+    "searchPlaceholder": "Rechercher…",
+    "toolbar": "Filtres",
+    "totalLabel": "Objectifs",
+    "activeLabel": "En cours",
+    "doneLabel": "Franchis"
   },
   "finance": {
     "dashboard": "Tableau de bord financier",

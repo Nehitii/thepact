@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import {
   LayoutGrid,
   LayoutList,
@@ -7,7 +8,6 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
@@ -21,6 +21,21 @@ import type {
   SortDirection,
   DisplayMode,
 } from "@/hooks/useGoalFilters";
+
+/* BARRE D'OUTILS
+ *
+ * Deux corrections de fond.
+ *
+ * Le style : rounded-xl + bg-card/60 + backdrop-blur-sm, soit exactement
+ * l'habillage retire partout ailleurs — et le backdrop-blur moyennait le
+ * champ d'etoiles en gris. La barre suit desormais le chanfrein a 45
+ * degres et le fond opaque du reste de l'application.
+ *
+ * La langue : tous les libelles etaient ecrits en anglais dans le code
+ * alors que les cles existaient deja dans les deux locales, traduites.
+ * "Trier par", "Difficulté", "Par page" etaient disponibles et jamais
+ * lus. Tout passe par t().
+ */
 
 interface GoalsToolbarProps {
   displayMode: DisplayMode;
@@ -38,10 +53,23 @@ interface GoalsToolbarProps {
   handleItemsPerPageChange: (v: string) => void;
 }
 
-const displayModes: { mode: DisplayMode; icon: typeof LayoutList; title: string }[] = [
-  { mode: "bar", icon: LayoutList, title: "Bar View" },
-  { mode: "grid", icon: LayoutGrid, title: "Grid View" },
-  { mode: "bookmark", icon: Bookmark, title: "Bookmark View" },
+const MODES: { mode: DisplayMode; icon: typeof LayoutList; cle: string }[] = [
+  { mode: "bar", icon: LayoutList, cle: "goals.views.bar" },
+  { mode: "grid", icon: LayoutGrid, cle: "goals.views.grid" },
+  { mode: "bookmark", icon: Bookmark, cle: "goals.views.list" },
+];
+
+const TRIS: { valeur: SortOption; cle: string; defaut: string }[] = [
+  { valeur: "difficulty", cle: "goals.sort.difficulty", defaut: "Difficulté" },
+  { valeur: "type", cle: "goals.sort.tag", defaut: "Étiquette" },
+  { valeur: "points", cle: "goals.sort.points", defaut: "Points" },
+  { valeur: "created", cle: "goals.sort.created", defaut: "Date de création" },
+  { valeur: "name", cle: "goals.sort.name", defaut: "Nom" },
+  { valeur: "status", cle: "goals.sort.status", defaut: "Statut" },
+  { valeur: "start", cle: "goals.sort.start", defaut: "Date de début" },
+  { valeur: "progression", cle: "goals.sort.progress", defaut: "Progression" },
+  { valeur: "super_first", cle: "goals.sort.superFirst", defaut: "Super en premier" },
+  { valeur: "super_last", cle: "goals.sort.superLast", defaut: "Super en dernier" },
 ];
 
 export function GoalsToolbar({
@@ -59,119 +87,116 @@ export function GoalsToolbar({
   itemsPerPage,
   handleItemsPerPageChange,
 }: GoalsToolbarProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-card/60 backdrop-blur-sm border border-border">
-      {/* Display Mode Toggle */}
-      <div className="flex items-center gap-1 p-1 rounded-lg bg-muted/50 border border-border">
-        {displayModes.map(({ mode, icon: Icon, title }) => (
+    <div className="cp-cadre">
+      <div className="cp-fond gl-barre">
+        {/* Mode d'affichage — segments usines, comme le selecteur de periode */}
+        <div className="cp-periode" role="group" aria-label={t("goals.views.grid")}>
+          {MODES.map(({ mode, icon: Icon, cle }) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setDisplayMode(mode)}
+              className="cp-periode-seg gl-seg-icone"
+              data-actif={displayMode === mode}
+              aria-pressed={displayMode === mode}
+              title={t(cle)}
+              aria-label={t(cle)}
+            >
+              <Icon className="h-4 w-4" aria-hidden="true" />
+            </button>
+          ))}
+        </div>
+
+        <span className="gl-sep" />
+
+        {/* Tri */}
+        <div className="gl-groupe">
+          <span className="gl-etiquette ds-t-label">{t("goals.sort.label")}</span>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+            <SelectTrigger className="gl-select w-[142px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TRIS.map((o) => (
+                <SelectItem key={o.valeur} value={o.valeur}>
+                  {t(o.cle, o.defaut)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <button
-            key={mode}
-            onClick={() => setDisplayMode(mode)}
-            className={`p-2 rounded-md transition-all ${
-              displayMode === mode
-                ? "bg-primary/20 text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-            title={title}
+            type="button"
+            onClick={toggleSortDirection}
+            className="gl-btn gl-btn-icone"
+            aria-label={sortDirection === "asc" ? "Ordre croissant" : "Ordre décroissant"}
           >
-            <Icon className="h-4 w-4" />
-          </button>
-        ))}
-      </div>
-
-      <div className="h-6 w-px bg-border hidden md:block" />
-
-      {/* Sort Controls */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-rajdhani tracking-wider uppercase text-foreground/60">Sort</span>
-        <Select value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
-          <SelectTrigger className="w-[130px] h-9 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="difficulty">Difficulty</SelectItem>
-            <SelectItem value="type">Tag</SelectItem>
-            <SelectItem value="points">Points</SelectItem>
-            <SelectItem value="created">Created</SelectItem>
-            <SelectItem value="name">Name</SelectItem>
-            <SelectItem value="status">Status</SelectItem>
-            <SelectItem value="start">Start Date</SelectItem>
-            <SelectItem value="progression">Progress</SelectItem>
-            <SelectItem value="super_first">Super First</SelectItem>
-            <SelectItem value="super_last">Super Last</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSortDirection}
-          className="h-9 w-9 rounded-xl border border-border/60 bg-card/90 hover:bg-card hover:border-primary/40 hover:shadow-[0_0_8px_hsl(var(--primary)/0.15)] transition-all duration-200"
-        >
-          <ChevronRight
-            className={`h-4 w-4 text-foreground/70 transition-transform duration-200 ${
-              sortDirection === "asc" ? "-rotate-90" : "rotate-90"
-            }`}
-          />
-        </Button>
-      </div>
-
-      <div className="h-6 w-px bg-border hidden md:block" />
-
-      {/* Search */}
-      <div className="relative flex items-center">
-        <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none z-30" />
-        <Input
-          type="text"
-          placeholder="Search goals..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          variant="light"
-          className="w-[180px] h-9 pl-9 pr-8 text-sm rounded-xl"
-        />
-        {searchQuery && (
-          <button
-            onClick={() => setSearchQuery("")}
-            className="absolute right-2 p-1 rounded-full hover:bg-muted/50 transition-colors"
-          >
-            <X className="h-3.5 w-3.5 text-muted-foreground" />
-          </button>
-        )}
-      </div>
-
-      {/* Hide Super Goals */}
-      {hasSuperGoals && (
-        <>
-          <div className="h-6 w-px bg-border hidden md:block" />
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <Checkbox
-              checked={hideSuperGoals}
-              onCheckedChange={(checked) => setHideSuperGoals(checked === true)}
+            <ChevronRight
+              className={`h-4 w-4 transition-transform duration-200 ${
+                sortDirection === "asc" ? "-rotate-90" : "rotate-90"
+              }`}
+              aria-hidden="true"
             />
-            <span className="text-xs font-rajdhani tracking-wider text-foreground/60">
-              Hide Super Goals
-            </span>
-          </label>
-        </>
-      )}
+          </button>
+        </div>
 
-      <div className="flex-1" />
+        <span className="gl-sep" />
 
-      {/* Per Page */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-rajdhani text-foreground/60">Per page</span>
-        <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
-          <SelectTrigger className="w-[70px] h-9 text-sm">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {["5", "10", "20", "50", "100", "200"].map((v) => (
-              <SelectItem key={v} value={v}>
-                {v}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {/* Recherche */}
+        <div className="gl-recherche">
+          <Search className="gl-recherche-icone h-4 w-4" aria-hidden="true" />
+          <Input
+            type="text"
+            placeholder={t("goals.searchPlaceholder")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            variant="light"
+            className="gl-champ"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="gl-effacer"
+              aria-label="Effacer la recherche"
+            >
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+
+        {hasSuperGoals && (
+          <>
+            <span className="gl-sep" />
+            <label className="gl-case">
+              <Checkbox
+                checked={hideSuperGoals}
+                onCheckedChange={(checked) => setHideSuperGoals(checked === true)}
+              />
+              <span className="gl-etiquette ds-t-label">{t("goals.hideSuperGoals")}</span>
+            </label>
+          </>
+        )}
+
+        <span className="gl-pousse" />
+
+        {/* Densite de page */}
+        <div className="gl-groupe">
+          <span className="gl-etiquette ds-t-label">{t("goals.perPage")}</span>
+          <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+            <SelectTrigger className="gl-select w-[74px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {["5", "10", "20", "50", "100", "200"].map((v) => (
+                <SelectItem key={v} value={v}>{v}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );

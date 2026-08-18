@@ -388,7 +388,12 @@
       "created": "Created",
       "status": "Status",
       "name": "Name",
-      "progress": "Progress"
+      "progress": "Progress",
+      "tag": "Tag",
+      "points": "Points",
+      "start": "Start date",
+      "superFirst": "Super first",
+      "superLast": "Super last"
     },
     "form": {
       "goalName": "Goal Name",
@@ -509,7 +514,16 @@
       "travel": "Travel",
       "subscriptions": "Subscriptions",
       "other": "Other"
-    }
+    },
+    "templates": "Templates",
+    "graph": "Graph",
+    "perPage": "Per page",
+    "hideSuperGoals": "Hide super goals",
+    "searchPlaceholder": "Search…",
+    "toolbar": "Filters",
+    "totalLabel": "Goals",
+    "activeLabel": "Active",
+    "doneLabel": "Completed"
   },
   "finance": {
     "analytics": {

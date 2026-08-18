@@ -1496,3 +1496,241 @@
 @media (max-width: 420px) {
   .bar-card-diff-tag { display: none; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   OBJECTIFS — barre d'outils et onglets, dans le langage etabli
+   sur Statistiques : chanfrein a 45 degres, fond opaque, jaune en
+   accent seulement. Aucun backdrop-filter.
+   ═══════════════════════════════════════════════════════════════ */
+
+.gl-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+}
+.gl-sep {
+  width: 1px;
+  height: 22px;
+  background: var(--nexus-separator);
+}
+@media (max-width: 900px) { .gl-sep { display: none; } }
+.gl-pousse { flex: 1; }
+.gl-groupe { display: flex; align-items: center; gap: 7px; }
+.gl-etiquette {
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  color: var(--cp-texte-doux);
+  white-space: nowrap;
+}
+
+/* Boutons — chanfrein sur deux coins opposes, comme les panneaux. */
+.gl-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.gl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux);
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  cursor: pointer;
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.gl-btn:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); }
+.gl-btn:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.gl-btn-icone { padding: 6px; }
+.gl-btn-primaire {
+  color: #0a0a00;
+  background: var(--cp-jaune);
+  border-color: var(--cp-jaune);
+  font-weight: 700;
+}
+.gl-btn-primaire:hover {
+  color: #0a0a00;
+  background: #fff44d;
+  border-color: #fff44d;
+}
+.gl-seg-icone { display: inline-flex; align-items: center; padding: 5px 9px; }
+
+/* Champs — le chanfrein s'applique au conteneur, pas au champ lui-meme :
+   un input clippe perd son anneau de focus. */
+.gl-select {
+  height: 34px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1px;
+  border-radius: 0;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+}
+.gl-recherche { position: relative; display: flex; align-items: center; }
+.gl-recherche-icone {
+  position: absolute;
+  left: 10px;
+  color: var(--cp-texte-doux);
+  pointer-events: none;
+  z-index: 3;
+}
+.gl-champ {
+  width: 190px;
+  height: 34px;
+  padding-left: 32px;
+  padding-right: 28px;
+  border-radius: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1px;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+}
+.gl-effacer {
+  position: absolute;
+  right: 6px;
+  padding: 3px;
+  color: var(--cp-texte-doux);
+  cursor: pointer;
+}
+.gl-effacer:hover { color: var(--cp-cyan); }
+.gl-case { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
+
+/* ── Onglets ──
+   Chanfrein sur deux coins opposes, accent jaune a gauche sur l'actif :
+   exactement la bascule de vue des Statistiques. Le compteur est un
+   nombre nu, pas "(38)" entre parentheses — les parentheses signalent
+   une aparte, or c'est l'information. */
+.gl-onglets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.gl-onglet {
+  padding: 1px;
+  background: hsl(var(--primary) / 0.2);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  cursor: pointer;
+  transition: background 150ms linear, transform 150ms ease;
+}
+.gl-onglet:hover { background: hsl(var(--primary) / 0.5); transform: translateY(-1px); }
+.gl-onglet:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.gl-onglet-in {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px 8px 17px;
+  background: var(--nexus-bg);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  color: var(--cp-texte-doux);
+}
+.gl-onglet-nom {
+  font-family: 'Orbitron', sans-serif;
+  font-size: max(11px, 0.6875rem);
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+}
+.gl-onglet-nb {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1px;
+  color: var(--nexus-text-dimmer);
+  font-variant-numeric: tabular-nums;
+}
+.gl-onglet[data-actif="true"] { background: hsl(var(--primary) / 0.55); }
+.gl-onglet[data-actif="true"] .gl-onglet-in {
+  color: var(--cp-jaune);
+  background:
+    linear-gradient(90deg, var(--cp-jaune) 0 3px, transparent 3px),
+    linear-gradient(100deg, rgb(24 28 22) 0%, var(--nexus-bg) 52%);
+}
+.gl-onglet[data-actif="true"] .gl-onglet-nb { color: var(--cp-jaune); opacity: 0.8; }
+
+/* ── Etat vide ── */
+.gl-vide {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 11px;
+  padding: 46px 24px;
+  text-align: center;
+}
+.gl-vide-marque {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  color: var(--t);
+  border: 1px solid var(--t);
+  clip-path: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
+}
+.gl-vide-titre {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  text-transform: uppercase;
+  color: #dbeaf7;
+}
+.gl-vide-texte {
+  margin: 0 0 6px;
+  max-width: 30rem;
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--cp-texte-doux);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-onglet { transition: none; }
+  .gl-onglet:hover { transform: none; }
+}
+
+/* ── Pagination ── */
+.gl-page-btn, .gl-page-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux);
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  cursor: pointer;
+  transition: color 140ms linear, border-color 140ms linear;
+}
+.gl-page-btn { padding: 7px 14px; }
+.gl-page-num { width: 34px; height: 34px; font-variant-numeric: tabular-nums; }
+.gl-page-btn:hover:not(:disabled), .gl-page-num:hover { color: var(--cp-cyan); border-color: hsl(var(--primary) / 0.55); }
+.gl-page-btn:disabled { opacity: 0.32; cursor: not-allowed; }
+.gl-page-btn:focus-visible, .gl-page-num:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.gl-page-num[data-actif="true"] {
+  color: #0a0a00;
+  background: var(--cp-jaune);
+  border-color: var(--cp-jaune);
+  font-weight: 700;
+}
+
+/* ── Primitives partagees, corrigees au perimetre de la barre ──
+   Select et Checkbox portent rounded-xl + backdrop-blur dans leur
+   definition. Ce sont des composants utilises par toute l'application :
+   on ne les modifie pas globalement pour une page. L'override est donc
+   limite a la barre d'outils. */
+.gl-barre [role="combobox"],
+.gl-barre input,
+.gl-barre button[role="checkbox"] {
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-color: var(--nexus-bg) !important;
+}

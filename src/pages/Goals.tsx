@@ -1,16 +1,19 @@
 import { useCallback } from "react";
+import "@/styles/cyberpunk.css";
 import "@/styles/goals.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Network, Sparkles } from "lucide-react";
-import { DSPageShell, DSBackground, DSPageHeader } from "@/components/ds";
+import { Plus } from "lucide-react";
+import { DSPageShell } from "@/components/ds";
+import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import { getDifficultyColor as getUnifiedDifficultyColor } from "@/lib/utils";
 import { usePact } from "@/hooks/usePact";
 import { useGoals, type Goal } from "@/hooks/useGoals";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoalFilters } from "@/hooks/useGoalFilters";
+import { GoalsHeader } from "@/components/goals/GoalsHeader";
 import { GoalsToolbar } from "@/components/goals/GoalsToolbar";
 import { GoalsList } from "@/components/goals/GoalsList";
 import { GoalsSkeleton } from "@/components/goals/GoalsSkeleton";
@@ -74,37 +77,18 @@ export default function Goals() {
     [goals, customDifficultyColor, triggerParticles, toggleFocusMutation],
   );
 
-  const headerActions = (
-    <div className="flex items-center gap-1.5">
-      <button
-        onClick={() => navigate("/templates/marketplace")}
-        className="px-3 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-white/[0.08] text-muted-foreground hover:text-primary hover:border-primary/40 transition flex items-center gap-1.5 text-xs"
-        aria-label="Marketplace de modèles"
-      >
-        <Sparkles className="h-3.5 w-3.5" /> <span className="hidden md:inline">Templates</span>
-      </button>
-      <button
-        onClick={() => navigate("/goals/graph")}
-        className="px-3 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-white/[0.08] text-muted-foreground hover:text-primary hover:border-primary/40 transition flex items-center gap-1.5 text-xs"
-        aria-label="Vue topologique"
-      >
-        <Network className="h-3.5 w-3.5" /> <span className="hidden md:inline">Graph</span>
-      </button>
-      <button
-        onClick={() => navigate("/goals/new")}
-        className="relative overflow-hidden group px-5 py-2.5 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/30 text-primary font-rajdhani font-medium tracking-wider transition-all duration-300 hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] flex items-center gap-2"
-      >
-        <Plus className="h-4 w-4" />
-        <span>Add Goal</span>
-      </button>
-    </div>
-  );
+  /* Les trois nombres que l en-tete affiche. Le decoupage suit celui des
+     onglets (useGoalFilters) : un objectif non commence reste actif. */
+  const franchis = goals.filter(
+    (g) => g.status === "fully_completed" || g.status === "validated",
+  ).length;
+  const actifs = goals.length - franchis;
 
   if (loading) {
     return (
-      <DSPageShell width="xl" background={<DSBackground variant="cyber" />}>
+      <DSPageShell width="xl" background={<SpaceBackdrop />}>
         <div className="space-y-6">
-          <DSPageHeader variant="hud" systemLabel="SYS::GOALS" title="GOAL" titleAccent="S" actions={headerActions} />
+          <GoalsHeader total={goals.length} actifs={actifs} franchis={franchis} />
           <GoalsSkeleton mode={filters.displayMode} count={4} />
         </div>
       </DSPageShell>
@@ -112,7 +96,7 @@ export default function Goals() {
   }
 
   return (
-    <DSPageShell width="xl" background={<DSBackground variant="cyber" />}>
+    <DSPageShell width="xl" background={<SpaceBackdrop />}>
       <ParticleEffects />
       <motion.div
         initial="hidden"
@@ -121,7 +105,7 @@ export default function Goals() {
         className="space-y-6"
       >
         <motion.div variants={itemVariants}>
-          <DSPageHeader variant="hud" systemLabel="SYS::GOALS" title="GOAL" titleAccent="S" actions={headerActions} />
+          <GoalsHeader total={goals.length} actifs={actifs} franchis={franchis} />
         </motion.div>
 
         {goals.length > 0 && (

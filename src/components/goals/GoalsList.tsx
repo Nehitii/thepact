@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, List, Zap, CheckCircle2 } from "lucide-react";
@@ -43,10 +44,10 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const } },
 };
 
-const tabs: { id: GoalTab; label: string; icon: typeof List }[] = [
-  { id: "all", label: "All", icon: List },
-  { id: "active", label: "Active", icon: Zap },
-  { id: "completed", label: "Completed", icon: CheckCircle2 },
+const tabs: { id: GoalTab; cle: string; icon: typeof List }[] = [
+  { id: "all", cle: "goals.filters.all", icon: List },
+  { id: "active", cle: "goals.filters.active", icon: Zap },
+  { id: "completed", cle: "goals.filters.completed", icon: CheckCircle2 },
 ];
 
 function getGridClass(displayMode: DisplayMode) {
@@ -75,6 +76,7 @@ export function GoalsList({
   unlockCode,
 }: GoalsListProps) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
   const [pendingGoalId, setPendingGoalId] = useState<string | null>(null);
 
@@ -144,71 +146,77 @@ export function GoalsList({
     );
   };
 
+  /* Etat vide. Les textes existaient deja traduits sous
+     goals.emptyStates.* et n'etaient pas lus : le composant ecrivait
+     l'anglais en dur. */
   const renderEmptyState = () => {
-    const isCompletedTab = activeTab === "completed";
+    const estTermines = activeTab === "completed";
+    const teinte = estTermines ? "#00ff88" : "hsl(var(--primary))";
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl bg-card/60 backdrop-blur-sm border border-border">
-        <div
-          className={`h-16 w-16 rounded-full flex items-center justify-center mb-4 ${
-            isCompletedTab ? "bg-green-500/10" : "bg-primary/10"
-          }`}
-        >
-          {isCompletedTab ? (
-            <CheckCircle2 className="h-8 w-8 text-green-400" />
-          ) : (
-            <Plus className="h-8 w-8 text-primary" />
+      <div className="cp-cadre">
+        <div className="cp-fond gl-vide">
+          <span className="cp-equerre cp-equerre-hg" />
+          <span className="cp-equerre cp-equerre-bd" />
+          <span className="gl-vide-marque" style={{ ["--t" as string]: teinte }}>
+            {estTermines
+              ? <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
+              : <Plus className="h-7 w-7" aria-hidden="true" />}
+          </span>
+          <h3 className="gl-vide-titre font-orbitron">
+            {estTermines
+              ? t("goals.emptyStates.noCompletedGoals")
+              : t("goals.emptyStates.noActiveGoals")}
+          </h3>
+          <p className="gl-vide-texte ds-t-label">
+            {estTermines
+              ? t("goals.emptyStates.noCompletedGoalsDesc")
+              : t("goals.emptyStates.noActiveGoalsDesc")}
+          </p>
+          {!estTermines && (
+            <button
+              type="button"
+              onClick={() => navigate("/goals/new")}
+              className="gl-btn gl-btn-primaire"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              {t("goals.createGoal")}
+            </button>
           )}
         </div>
-        <h3 className="text-lg font-bold font-orbitron tracking-wider text-primary mb-2">
-          {isCompletedTab ? "NO COMPLETED GOALS YET" : "NO ACTIVE GOALS"}
-        </h3>
-        <p className="text-muted-foreground font-rajdhani mb-4">
-          {isCompletedTab ? "Complete your first goal to see it here" : "Start your journey by adding a goal"}
-        </p>
-        {!isCompletedTab && (
-          <Button onClick={() => navigate("/goals/new")} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Goal
-          </Button>
-        )}
       </div>
     );
   };
 
   return (
     <div className="w-full">
-      {/* Tabs */}
-      <motion.div variants={itemVariants} className="flex justify-center mb-6">
-        <div className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl">
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
-            const count = buckets[tab.id].length;
-
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={`relative flex items-center justify-center gap-2 py-3 px-6 rounded-lg font-rajdhani text-sm font-medium transition-all duration-300 ${
-                  isActive ? "text-primary" : "text-muted-foreground hover:text-primary/70"
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="goalsActiveTab"
-                    className="absolute inset-0 bg-primary/10 border border-primary/30 rounded-lg"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <Icon className="w-4 h-4 relative z-10" />
-                <span className="relative z-10">{tab.label}</span>
-                <span className="relative z-10 text-xs opacity-70">({count})</span>
-              </button>
-            );
-          })}
-        </div>
-      </motion.div>
+      {/* Onglets.
+          Le layoutId de framer-motion a ete retire : sur le selecteur de
+          periode des Statistiques, la meme animation partagee redemarrait
+          de zero a chaque remontage et produisait un scintillement. L'etat
+          actif est un fond CSS, il n'y a plus rien a animer. */}
+      <nav className="gl-onglets" aria-label={t("goals.filters.all")}>
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          const count = buckets[tab.id].length;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => handleTabChange(tab.id)}
+              aria-pressed={isActive}
+              className="gl-onglet cp-cadre"
+              data-actif={isActive}
+            >
+              <span className="gl-onglet-in">
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                <span className="gl-onglet-nom">{t(tab.cle)}</span>
+                <span className="gl-onglet-nb">{count}</span>
+              </span>
+            </button>
+          );
+        })}
+      </nav>
 
       {/* Content */}
       <AnimatePresence mode="wait">

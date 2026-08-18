@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -8,6 +9,10 @@ interface GoalsPaginationProps {
 }
 
 export function GoalsPagination({ currentPage, totalPages, onPageChange }: GoalsPaginationProps) {
+  // Le hook doit preceder tout retour anticipe : appele apres le
+  // `return null`, il ne s'executerait plus des que le nombre de pages
+  // retombe a un, et React lance alors une erreur d'ordre des hooks.
+  const { t } = useTranslation();
   if (totalPages <= 1) return null;
 
   const pageNumbers = Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -17,8 +22,10 @@ export function GoalsPagination({ currentPage, totalPages, onPageChange }: Goals
     return currentPage - 2 + i;
   });
 
-  const btnBase =
-    "px-4 py-2 rounded-xl bg-card/80 backdrop-blur-sm border border-primary/20 text-foreground/80 font-rajdhani text-sm font-medium transition-all duration-300 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_15px_hsl(var(--primary)/0.2)] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-primary/20 disabled:hover:bg-card/80 disabled:hover:text-foreground/80 disabled:hover:shadow-none flex items-center gap-1.5";
+  /* Le backdrop-blur-sm qui etait ici moyennait le champ d'etoiles en
+     gris — le meme defaut retire de onze panneaux du tableau de bord
+     puis de toute la page Statistiques. */
+  const btnBase = "gl-page-btn";
 
   return (
     <motion.div
@@ -33,7 +40,7 @@ export function GoalsPagination({ currentPage, totalPages, onPageChange }: Goals
         className={btnBase}
       >
         <ChevronLeft className="h-4 w-4" />
-        <span>Previous</span>
+        <span>{t("common.previous", "Précédent")}</span>
       </button>
 
       <div className="flex items-center gap-1.5 px-2">
@@ -41,11 +48,8 @@ export function GoalsPagination({ currentPage, totalPages, onPageChange }: Goals
           <button
             key={num}
             onClick={() => onPageChange(num)}
-            className={`w-9 h-9 rounded-xl font-rajdhani text-sm font-medium transition-all duration-300 flex items-center justify-center ${
-              currentPage === num
-                ? "bg-primary/15 border border-primary/50 text-primary shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
-                : "bg-card/80 backdrop-blur-sm border border-primary/20 text-foreground/70 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:shadow-[0_0_12px_hsl(var(--primary)/0.15)]"
-            }`}
+            className="gl-page-num"
+            data-actif={currentPage === num}
           >
             {num}
           </button>
@@ -57,7 +61,7 @@ export function GoalsPagination({ currentPage, totalPages, onPageChange }: Goals
         disabled={currentPage === totalPages}
         className={btnBase}
       >
-        <span>Next</span>
+        <span>{t("common.next", "Suivant")}</span>
         <ChevronRight className="h-4 w-4" />
       </button>
     </motion.div>

@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+import "@/styles/cyberpunk.css";
 import "@/styles/analytics.css";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
