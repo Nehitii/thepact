@@ -42,7 +42,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
         <div className="neural-bar-scanline absolute bottom-0 h-px pointer-events-none" />
 
         {/* Left: SYS + progress + coords */}
-        <div className="flex items-center gap-3 flex-1">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
           <span className="uppercase font-mono ds-t-label tracking-[2px] text-muted-foreground">
             SYS
           </span>
@@ -65,7 +65,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
         </div>
 
         {/* Center: Clock */}
-        <div className="flex-1 text-center">
+        <div className="flex-1 min-w-0 text-center leading-none">
           <div className="font-mono text-[0.9375rem] tracking-[3px] text-primary neural-bar-clock">
             {timeStr}
           </div>
@@ -75,9 +75,9 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
         </div>
 
         {/* Right: Freq bars + Customize */}
-        <div className="flex-1 flex justify-end items-center gap-4">
+        <div className="flex-1 min-w-0 flex justify-end items-center gap-3">
           {/* Freq indicator */}
-          <div className="hidden sm:flex items-center gap-1.5">
+          <div className="hidden lg:flex items-center gap-1.5">
             <div className="flex gap-[2px] items-end h-[14px]">
               {[4, 8, 12, 6, 10].map((h, i) => (
                 <div

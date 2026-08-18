@@ -737,44 +737,159 @@ All colors MUST be HSL.
     font-size: max(11px, 0.6875rem);
   }
 }
+/* ─────────────────────────────────────────────────────────────
+   Barre de defilement de la page
+
+   Elle arrivait avec le rail gris du navigateur, au milieu d'une
+   interface qui ne contient pas une seule surface grise. C'est la
+   plus grande surface non dessinee de l'ecran.
+
+   Deux moteurs, deux syntaxes qui ne coexistent pas : des que
+   scrollbar-color ou scrollbar-width est pose sur un element,
+   Chrome ignore ses pseudo-elements ::-webkit-scrollbar. Les regles
+   Firefox sont donc isolees derriere @supports, sur la branche ou
+   ::-webkit-scrollbar n'existe pas.
+
+   Les rails deja thematises ailleurs (finance, journal, pantheon,
+   shop, .scrollbar-thin-x) gardent la main par leur specificite.
+   ───────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+
+::-webkit-scrollbar-track {
+  background:
+    linear-gradient(90deg,
+      transparent 4px,
+      hsl(var(--primary) / 0.10) 4px,
+      hsl(var(--primary) / 0.10) 5px,
+      transparent 5px),
+    #04070f;
+}
+
+::-webkit-scrollbar-thumb {
+  /* Angulaire et non arrondi : l'interface n'a pas un seul rayon
+     superieur a 4px. */
+  border-radius: 1px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  background-color: hsl(var(--primary) / 0.42);
+  box-shadow: inset 0 0 6px hsl(var(--primary) / 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--primary) / 0.72);
+  box-shadow: inset 0 0 8px hsl(var(--primary) / 0.9);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: hsl(var(--primary) / 0.9);
+}
+
+/* L'angle entre les deux rails, visible des qu'une zone defile dans
+   les deux sens. Laisse en gris, il trahit tout le reste. */
+::-webkit-scrollbar-corner {
+  background: #04070f;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary) / 0.5) #04070f;
+  }
+}
 
 /* ─────────────────────────────────────────────────────────────
-   Barre d'acces rapide : conteneur defilant
+   Tuiles d'acces rapide : survol
 
-   Deux defauts se cumulaient. La barre de defilement etait visible
-   en permanence sous les tuiles, et surtout un conteneur en
-   overflow-x: auto etablit un contexte de rognage sur les DEUX
-   axes : le souleve de 1px au survol etait coupe net.
+   L'effet precedent tenait en trois gestionnaires JavaScript qui
+   ecrivaient des styles en ligne — bordure, fond, translation. Il
+   fonctionnait, mais chaque tuile rejouait la meme chose sans
+   intention, et rien ne survivait a un focus clavier.
 
-   padding-block cree la place pour ce souleve, margin-block negatif
-   la reprend pour que la barre n'occupe pas plus de hauteur.
+   Un seul moment compose ici : une lumiere balaie la tuile, la
+   bordure s'allume dans la couleur de l'action, le socle se souleve.
+   --qa-c porte cette couleur, posee par le composant.
 
-   La barre de defilement native est masquee au profit d'un fondu sur
-   le bord droit, pose par le parent : il indique qu'il reste du
-   contenu sans imposer un rail gris a l'interface.
+   L'easing sort vite puis ralentit longuement : le mouvement part
+   d'un etat deja visible au lieu d'entrer en scene.
    ───────────────────────────────────────────────────────────── */
-@layer utilities {
-  .quick-bar-scroll {
-    overflow-x: auto;
-    padding-block: 7px;
-    margin-block: -7px;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .quick-bar-scroll::-webkit-scrollbar {
-    display: none;
-  }
+.qa-tile {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--nexus-border);
+  border-radius: 4px;
+  transition:
+    border-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-  /* Le fondu ne s'affiche que lorsqu'il y a effectivement a defiler :
-     anime par animation-timeline, il reste inerte la ou tout tient. */
-  .quick-bar-fade {
-    position: absolute;
-    top: 1px;
-    bottom: 1px;
-    right: 1px;
-    width: 3rem;
-    pointer-events: none;
-    border-radius: 0 4px 4px 0;
-    background: linear-gradient(90deg, transparent, var(--nexus-bg) 78%);
-  }
+/* Le balayage. Incline pour qu'il ne lise pas comme une barre de
+   chargement, et pose en z-index 0 : le contenu de la tuile reste
+   au-dessus. */
+.qa-tile::before {
+  content: "";
+  position: absolute;
+  top: -60%;
+  bottom: -60%;
+  left: -40%;
+  width: 34%;
+  z-index: 0;
+  transform: translateX(-260%) rotate(14deg);
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--qa-c, #fff) 55%, transparent),
+    transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.qa-tile > * {
+  position: relative;
+  z-index: 1;
+}
+
+.qa-tile:hover:not(:disabled),
+.qa-tile:focus-visible {
+  border-color: var(--qa-c, hsl(var(--primary)));
+  background-color: rgba(255, 255, 255, 0.075);
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.35),
+    0 0 0 1px color-mix(in srgb, var(--qa-c, #fff) 45%, transparent),
+    0 0 16px color-mix(in srgb, var(--qa-c, #fff) 28%, transparent);
+}
+
+.qa-tile:hover::before,
+.qa-tile:focus-visible::before {
+  opacity: 1;
+  transform: translateX(320%) rotate(14deg);
+  transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms linear;
+}
+
+/* L'icone gagne en presence sans changer de taille : un scale ici
+   ferait vibrer le trait des SVG. */
+.qa-tile svg {
+  transition: filter 260ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.qa-tile:hover svg,
+.qa-tile:focus-visible svg {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--qa-c, #fff) 70%, transparent));
+}
+
+.qa-tile:active:not(:disabled) {
+  transform: translateY(0);
+  transition-duration: 90ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qa-tile { transition: border-color 160ms linear, background-color 160ms linear; }
+  .qa-tile:hover, .qa-tile:focus-visible { transform: none; }
+  .qa-tile::before { display: none; }
 }
