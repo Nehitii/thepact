@@ -10,6 +10,7 @@ import { GettingStartedCard } from "@/components/home/GettingStartedCard";
 import { LockedModulesTeaser } from "@/components/home/LockedModulesTeaser";
 import { NeuralBar } from "@/components/home/NeuralBar";
 import { NexusHeroBanner } from "@/components/home/NexusHeroBanner";
+import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
 import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
@@ -188,7 +189,7 @@ export default function Home() {
               contenu, et c'est precisement ce decalage qui donne la
               distance. Les deux degrades discrets qui occupaient cette
               place restaient a l'echelle d'un fond de page. */}
-          <div className="singularity-space" />
+          <SpaceBackdrop />
           <div
             className="absolute inset-0 pointer-events-none z-[1]"
             style={{

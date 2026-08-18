@@ -261,170 +261,122 @@
 @media (prefers-reduced-motion: reduce) {
   .singularity-influx { animation: none; opacity: 0.35; transform: scale(0.55); }
 }
-
 /* ─────────────────────────────────────────────────────────────
-   L'ESPACE DERRIERE TOUT
+   L'ESPACE — version profonde
 
-   Le champ ne vit pas dans le panneau du hub mais derriere
-   l'ensemble du tableau de bord, en position fixed : les cartes
-   flottent dedans au lieu de le contenir. C'est ce qui donne
-   l'impression de distance — le fond ne defile pas avec elles.
+   Remplace le calque precedent, qui empilait deux degrades radiaux et
+   neuf etoiles nommees. Un degrade radial fait une tache, pas un
+   nuage : les nebuleuses viennent de feTurbulence (SpaceBackdrop.tsx),
+   rendu une seule fois, sans cout par image.
 
-   Les etoiles sont tuilees (background-repeat + background-size)
-   plutot que placees une a une : a l'echelle d'un viewport, neuf
-   points nommes donnent un ciel vide, et deux cents alourdiraient
-   la feuille pour rien. La tuile de 420px est assez grande pour
-   que la repetition ne se lise pas.
+
+   Sept plans, du fond vers l'avant : le vide, les nebuleuses
+   fractales, la bande galactique, quatre couches d'etoiles a
+   parallaxes distinctes, la vignette.
    ───────────────────────────────────────────────────────────── */
 
-.singularity-space {
+.space-backdrop {
   position: fixed;
   inset: 0;
-  pointer-events: none;
   z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.space-void {
+  position: absolute;
+  inset: 0;
   background:
-    /* Nebuleuses : deux poches decentrees, tres etalees. */
-    radial-gradient(ellipse 80% 50% at 22% 12%,
-      hsl(var(--ds-accent-hue, 200) 90% 42% / 0.30) 0%, transparent 64%),
-    radial-gradient(ellipse 65% 45% at 84% 58%,
-      hsl(calc(var(--ds-accent-hue, 200) + 60) 80% 44% / 0.24) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 40% at 48% 92%,
-      hsl(calc(var(--ds-accent-hue, 200) - 25) 85% 40% / 0.20) 0%, transparent 58%),
-    /* Le vide entre les nebuleuses. */
-    linear-gradient(180deg, #02050f 0%, #04091a 45%, #02040c 100%);
+    radial-gradient(ellipse 90% 60% at 50% -10%, #071634 0%, transparent 60%),
+    linear-gradient(175deg, #03071a 0%, #050b22 38%, #02040e 78%, #010208 100%);
 }
 
-/* Deux couches d'etoiles a des echelles differentes : les petites
-   tuiles serrees lisent comme des etoiles lointaines, les grandes
-   comme des proches. C'est la parallaxe statique du pauvre, et elle
-   suffit a creer la profondeur. */
-.singularity-space::before,
-.singularity-space::after {
-  content: "";
+.space-nebula {
   position: absolute;
-  inset: -10%;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  mix-blend-mode: screen;
 }
 
-.singularity-space::before {
-  background-image:
-    radial-gradient(1px 1px at 34px 52px,  rgba(255,255,255,0.9), transparent),
-    radial-gradient(1px 1px at 128px 19px, rgba(190,225,255,0.75), transparent),
-    radial-gradient(1px 1px at 211px 143px, rgba(255,255,255,0.65), transparent),
-    radial-gradient(1px 1px at 76px 231px, rgba(210,235,255,0.8), transparent),
-    radial-gradient(1px 1px at 305px 88px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 262px 317px, rgba(180,220,255,0.85), transparent),
-    radial-gradient(1px 1px at 389px 262px, rgba(255,255,255,0.55), transparent),
-    radial-gradient(1px 1px at 155px 388px, rgba(255,255,255,0.7), transparent);
-  background-size: 420px 420px;
-  background-repeat: repeat;
-  animation: sing-drift 300s linear infinite;
+/* La bande galactique. Deux traits superposes — un large et diffus,
+   un fin et dense — donnent l'epaisseur qu'un seul degrade n'a pas. */
+.space-band {
+  position: absolute;
+  inset: -30%;
+  transform: rotate(-24deg);
+  background:
+    linear-gradient(180deg, transparent 42%, hsl(215 60% 70% / 0.055) 50%, transparent 58%),
+    linear-gradient(180deg, transparent 46.5%, hsl(200 80% 82% / 0.085) 50%, transparent 53.5%);
+  filter: blur(1px);
 }
 
-.singularity-space::after {
+/* Couches d'etoiles. Tuilees : a l'echelle d'un viewport, des points
+   nommes un a un donnent un ciel vide ou une feuille interminable. */
+.space-layer {
+  position: absolute;
+  inset: -25% -5%;
+  will-change: transform;
+}
+
+/* Poussiere lointaine : dense, minuscule, presque uniforme. */
+.space-dust {
   background-image:
-    radial-gradient(2px 2px at 92px 167px, rgba(255,255,255,0.55), transparent),
-    radial-gradient(2px 2px at 441px 71px, rgba(215,240,255,0.5), transparent),
-    radial-gradient(2px 2px at 288px 466px, rgba(255,255,255,0.45), transparent);
-  background-size: 620px 620px;
-  background-repeat: repeat;
-  animation: sing-twinkle 9s ease-in-out infinite;
+    radial-gradient(0.5px 0.5px at 17px 29px,  rgba(210,230,255,0.55), transparent),
+    radial-gradient(0.5px 0.5px at 83px 61px,  rgba(255,255,255,0.45), transparent),
+    radial-gradient(0.5px 0.5px at 131px 17px, rgba(190,220,255,0.5), transparent),
+    radial-gradient(0.5px 0.5px at 47px 121px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(0.5px 0.5px at 157px 97px, rgba(220,240,255,0.5), transparent),
+    radial-gradient(0.5px 0.5px at 103px 143px, rgba(255,255,255,0.35), transparent);
+  background-size: 190px 190px;
+}
+
+.space-far {
+  background-image:
+    radial-gradient(1px 1px at 41px 73px,   rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 168px 31px,  rgba(185,215,255,0.65), transparent),
+    radial-gradient(1px 1px at 243px 158px, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1px 1px at 92px 211px,  rgba(215,235,255,0.7), transparent),
+    radial-gradient(1px 1px at 287px 96px,  rgba(255,255,255,0.5), transparent);
+  background-size: 330px 330px;
+  animation: space-twinkle-a 11s ease-in-out infinite;
+}
+
+.space-mid {
+  background-image:
+    radial-gradient(1.4px 1.4px at 63px 118px,  rgba(255,255,255,0.9), transparent),
+    radial-gradient(1.4px 1.4px at 322px 47px,  rgba(200,228,255,0.85), transparent),
+    radial-gradient(1.4px 1.4px at 196px 287px, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1.4px 1.4px at 411px 199px, rgba(230,244,255,0.75), transparent);
+  background-size: 470px 470px;
+  animation: space-twinkle-b 7s ease-in-out infinite;
+}
+
+/* Etoiles proches : rares, franches, avec une croix de diffraction —
+   le signe qui distingue une etoile brillante d'un point blanc. */
+.space-near {
+  background-image:
+    radial-gradient(2px 2px at 118px 176px, rgba(255,255,255,1), transparent),
+    linear-gradient(0deg,  transparent calc(50% - 0.5px), hsl(200 100% 88% / 0.5) 50%, transparent calc(50% + 0.5px)),
+    linear-gradient(90deg, transparent calc(50% - 0.5px), hsl(200 100% 88% / 0.5) 50%, transparent calc(50% + 0.5px));
+  background-size: 660px 660px, 26px 2px, 2px 26px;
+  background-position: 0 0, 108px 175px, 117px 165px;
+  background-repeat: repeat, repeat, repeat;
+  animation: space-twinkle-b 9s ease-in-out infinite reverse;
+}
+
+@keyframes space-twinkle-a { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+@keyframes space-twinkle-b { 0%,100% { opacity: 0.7; }  50% { opacity: 1; } }
+
+/* Vignette : sans elle, le champ d'etoiles s'arrete net sur les bords
+   du viewport et trahit sa nature de calque. */
+.space-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 100% 80% at 50% 45%, transparent 42%, rgba(0,0,0,0.45) 88%, rgba(0,0,0,0.7) 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .singularity-space::before,
-  .singularity-space::after { animation: none; }
-}
-
-/* ─────────────────────────────────────────────────────────────
-   NOYAU DE RANG
-
-   Variante retenue apres maquette. Reprend la construction du
-   c(oe)ur — lueur qui respire, graduations radiales, arc en
-   conic-gradient — a l'echelle d'un satellite pose dans le coin du
-   bandeau. L'XP y est un arc et non une barre : la page montre
-   toutes ses progressions de la meme facon, du c(oe)ur aux quetes.
-
-   La respiration tourne a 9s contre 5 a 13s pour le c(oe)ur, dont
-   la cadence depend des jours actifs. Les deux ne se synchronisent
-   donc jamais durablement — deux pulsations calees l'une sur
-   l'autre lisent comme un mecanisme, pas comme deux organismes.
-
-   Toutes les masques sont en closest-side : sans cela le degrade se
-   calerait sur le coin de la boite et laisserait un cercle dur
-   (voir le commentaire du c(oe)ur).
-   ───────────────────────────────────────────────────────────── */
-
-.rank-core {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: 7rem;
-  height: 7rem;
-}
-
-.rank-core-glow {
-  position: absolute;
-  inset: 8%;
-  border-radius: 50%;
-  background: radial-gradient(circle,
-    hsl(var(--primary) / 0.55) 0%,
-    hsl(var(--primary) / 0.14) 44%,
-    transparent 72%);
-  filter: blur(9px);
-  animation: rank-breathe 9s ease-in-out infinite;
-}
-
-@keyframes rank-breathe {
-  0%, 100% { transform: scale(1);    opacity: 0.78; }
-  50%      { transform: scale(1.06); opacity: 1; }
-}
-
-/* Graduations : une couronne de traits fins, comme le cadran d'un
-   instrument. Elles donnent l'echelle que l'arc seul ne donne pas. */
-.rank-core-ticks {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: repeating-conic-gradient(
-    from 0deg,
-    hsl(var(--primary) / 0.5) 0deg 0.7deg,
-    transparent 0.7deg 9deg);
-  mask-image: radial-gradient(circle closest-side, transparent 66%, black 71%, black 79%, transparent 82%);
-  -webkit-mask-image: radial-gradient(circle closest-side, transparent 66%, black 71%, black 79%, transparent 82%);
-}
-
-/* L'arc d'XP : le conic-gradient s'arrete au pourcentage reel. */
-.rank-core-arc {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from -90deg,
-    hsl(var(--primary)) 0%,
-    hsl(var(--primary)) var(--rank-pct, 0%),
-    hsl(var(--primary) / 0.12) var(--rank-pct, 0%));
-  mask-image: radial-gradient(circle closest-side, transparent 82%, black 85%, black 94%, transparent 98%);
-  -webkit-mask-image: radial-gradient(circle closest-side, transparent 82%, black 85%, black 94%, transparent 98%);
-  filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.8));
-  transition: background 1s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.rank-core-center {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  line-height: 0.9;
-}
-
-.rank-core-center b {
-  display: block;
-  font-family: 'Orbitron', sans-serif;
-  font-weight: 900;
-  font-size: 2.1rem;
-  color: hsl(var(--nexus-heading, 210 40% 96%));
-  text-shadow: 0 0 16px hsl(var(--primary) / 0.9);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rank-core-glow { animation: none; opacity: 0.9; }
+  .space-far, .space-mid, .space-near { animation: none; }
 }
