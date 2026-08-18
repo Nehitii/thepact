@@ -335,8 +335,36 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         savings: Number(f.savings || 0),
       }));
 
-      // Habit completion rate by week
+      /* Habitudes, jour par jour.
+       *
+       * L'application suit deux mecanismes paralleles, et un seul vit :
+       * les habitudes sont cochees dans goals.habit_checks, un tableau de
+       * booleens ou l'index i vaut le i-eme jour depuis la creation de
+       * l'objectif. La table habit_logs, elle, n'a jamais ete remplie —
+       * son unique ecrivain, useToggleHabitLog, n'est branche a aucune
+       * interface. Cet onglet lisait la table morte, d'ou son vide.
+       *
+       * On lit donc habit_checks, en repliant l'index sur une date, et on
+       * retombe sur habit_logs si un jour ce mecanisme est rebranche. */
       const habitByDate = new Map<string, { completed: number; total: number }>();
+
+      (allGoals as any[])
+        .filter((g) => g.goal_type === "habit" && Array.isArray(g.habit_checks) && g.created_at)
+        .forEach((g) => {
+          const depart = new Date(g.created_at);
+          g.habit_checks.forEach((coche: boolean, i: number) => {
+            const d = new Date(depart);
+            d.setDate(d.getDate() + i);
+            // Un jour a venir n'est ni tenu ni manque : il n'existe pas encore.
+            if (d > new Date()) return;
+            const cle = d.toISOString().split("T")[0];
+            const e = habitByDate.get(cle) || { completed: 0, total: 0 };
+            e.total++;
+            if (coche) e.completed++;
+            habitByDate.set(cle, e);
+          });
+        });
+
       habits.forEach((h: any) => {
         const entry = habitByDate.get(h.log_date) || { completed: 0, total: 0 };
         entry.total++;
