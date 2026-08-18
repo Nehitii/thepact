@@ -88,12 +88,6 @@ export function NexusHeroBanner({
       {/* Top gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      {/* Espace profond : nebuleuse au fond, champ d'etoiles par-dessus.
-          La grille quadrillee et la lueur elliptique qui occupaient cette
-          place lisaient comme un gabarit, pas comme un ciel. */}
-      <div className="singularity-nebula" />
-      <div className="singularity-field" />
-
       <div className="relative z-10 flex flex-col items-center">
         {/* Le c\oeur. L'anneau d'accretion EST la jauge de progression :
             elle n'est plus un chiffre pose a cote d'un dessin. Le symbole

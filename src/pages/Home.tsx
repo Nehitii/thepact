@@ -184,18 +184,12 @@ export default function Home() {
       className="selection:bg-primary/20 !p-0"
       background={
         <>
-          {/* Home-specific background: subtle gradients + scanline (kept inline for visual fidelity vs DSBackground variant="cyber" which is more intense) */}
-          <div className="fixed inset-0 pointer-events-none z-0">
-            <div
-              className="absolute inset-0"
-              style={{
-                background: `
-                  radial-gradient(ellipse 100% 60% at 50% -5%, rgba(0,80,180,0.07), transparent 65%),
-                  radial-gradient(ellipse 50% 40% at 85% 70%, rgba(139,0,255,0.03), transparent 50%)
-                `,
-              }}
-            />
-          </div>
+          {/* L'espace, derriere l'ensemble des cartes et non dans le seul
+              panneau du hub. En position fixed : il ne defile pas avec le
+              contenu, et c'est precisement ce decalage qui donne la
+              distance. Les deux degrades discrets qui occupaient cette
+              place restaient a l'echelle d'un fond de page. */}
+          <div className="singularity-space" />
           <div
             className="absolute inset-0 pointer-events-none z-[1]"
             style={{
