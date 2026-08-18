@@ -303,23 +303,34 @@
    d'etoiles seul reste un ciel de nuit, pas une galaxie. */
 .space-galaxy {
   position: absolute;
-  /* Large debord : le filter: blur(22px) est rogne par le overflow:hidden
-     de .space-backdrop, ce qui laisse une arete nette la ou le flou
-     s.arrete. Il faut que ce bord tombe loin hors du viewport. */
+  /* Large debord : le blur est rogne par le overflow:hidden du
+     conteneur, il faut que ce bord tombe loin hors du viewport. */
   inset: -35%;
+  /* Six poches de couleur, volontairement ECARTEES les unes des autres.
+     Le piege est de les empiler : leurs alphas s'additionnent et le
+     resultat n'est plus une nebuleuse mais un voile uniforme — c'est
+     exactement ce qui grisait le fond auparavant. Ici aucune paire ne
+     se recouvre a plus d'un tiers, et le cumul reste sous 0.22. */
   background:
-    radial-gradient(ellipse 30% 18% at 78% 84%,
-      hsl(38 70% 82% / 0.075) 0%,
-      hsl(28 60% 60% / 0.04) 26%,
-      transparent 62%),
-    radial-gradient(ellipse 55% 38% at 80% 86%,
-      hsl(205 90% 62% / 0.055) 0%,
-      hsl(220 85% 45% / 0.028) 45%,
-      transparent 75%),
-    radial-gradient(ellipse 44% 30% at 14% 92%,
-      hsl(268 75% 58% / 0.042) 0%,
-      transparent 68%);
-  filter: blur(22px);
+    /* c(oe)ur chaud, haut gauche */
+    radial-gradient(ellipse 26% 17% at 17% 21%,
+      hsl(32 85% 68% / 0.16) 0%, hsl(24 70% 52% / 0.06) 38%, transparent 66%),
+    /* nappe cyan qui l'entoure */
+    radial-gradient(ellipse 46% 30% at 21% 25%,
+      hsl(196 95% 58% / 0.13) 0%, transparent 70%),
+    /* poche violette, bas droite */
+    radial-gradient(ellipse 34% 24% at 80% 74%,
+      hsl(272 80% 60% / 0.15) 0%, hsl(258 70% 48% / 0.05) 44%, transparent 72%),
+    /* nappe indigo qui la prolonge */
+    radial-gradient(ellipse 44% 30% at 86% 68%,
+      hsl(228 85% 56% / 0.10) 0%, transparent 68%),
+    /* trainee turquoise, bas gauche */
+    radial-gradient(ellipse 30% 20% at 12% 84%,
+      hsl(172 80% 52% / 0.09) 0%, transparent 66%),
+    /* braise lointaine, haut droite */
+    radial-gradient(ellipse 24% 16% at 88% 14%,
+      hsl(340 75% 60% / 0.07) 0%, transparent 64%);
+  filter: blur(26px);
 }
 
 /* Bande galactique : la trainee dense qui traverse le champ. Trois

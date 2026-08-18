@@ -439,17 +439,28 @@ All colors MUST be HSL.
     /* Translucide : les panneaux flottent dans l espace du fond au lieu de
        le masquer. Le fond etant tres sombre (#01030a a #020610), le texte
        garde son contraste malgre la transparence. */
-    /* Quasi opaque : les panneaux sont des surfaces sombres POSEES dans
-       l espace, pas des vitres. L espace se lit entre eux et autour, pas
-       au travers — a 82% la lueur galactique les traversait et les
-       faisait virer au gris. */
-    /* Totalement opaque. A 0.95, le calque spatial transparaissait
-       encore et eclaircissait le panneau : mesure faite en masquant le
-       calque, le panneau passait du gris-bleu au noir. L espace se lit
-       ENTRE les panneaux, jamais au travers. */
-    --nexus-bg: rgb(2, 5, 12);
-    --nexus-border: rgba(0, 180, 255, 0.12);
-    --nexus-shadow: 0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06);
+    /* Opaque, et volontairement : l'espace se lit ENTRE les panneaux,
+       jamais au travers. Sept usages passent par bg-[var(--nexus-bg)],
+       que Tailwind compile en background-color — ce token ne peut donc
+       pas porter de degrade. Le relief vient du bord et de l'ombre.
+
+       Legerement releve de rgb(2,5,12) a rgb(7,12,23) : a plat sur le
+       noir spatial, les panneaux ne se detachaient plus du fond. */
+    --nexus-bg: rgb(7, 12, 23);
+
+    /* Le bord passe de 0.12 a 0.22 : c'est lui qui decoupe la carte sur
+       le vide. Le halo exterieur lui donne son epaisseur. */
+    --nexus-border: rgba(0, 190, 255, 0.22);
+
+    /* Ombre portee avec decalage ET flou — une lueur centree n'est pas
+       une ombre, c'est de la decoration. Trois couches : la portee qui
+       assoit la carte, un liseré exterieur qui la decoupe, et l'arete de
+       lumiere en haut, la ou une surface reelle capte le ciel. */
+    --nexus-shadow:
+      0 10px 34px rgba(0, 0, 0, 0.72),
+      0 0 0 1px rgba(0, 190, 255, 0.05),
+      inset 0 1px 0 rgba(120, 220, 255, 0.14),
+      inset 0 -24px 40px -30px rgba(0, 150, 255, 0.35);
     --nexus-glow: rgba(0, 210, 255, 0.4);
     --nexus-glow-subtle: rgba(0, 210, 255, 0.12);
     /* Trois tons d'etiquette. Sur le fond sombre, rgb(160,210,255) doit
