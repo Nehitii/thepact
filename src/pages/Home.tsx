@@ -15,7 +15,6 @@ import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
 import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
 import { MonitoringPanel } from "@/components/home/MonitoringPanel";
-import { LifeAreasBalancePanel } from "@/components/home/LifeAreasBalancePanel";
 import { DailyQuestsPanel } from "@/components/quests/DailyQuestsPanel";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
 
@@ -331,7 +330,6 @@ export default function Home() {
             ) : (
               <Skeleton className="h-40 w-full rounded-xl" />
             )}
-            <LifeAreasBalancePanel />
           </div>
           </details>
 

@@ -820,97 +820,211 @@ All colors MUST be HSL.
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Tuiles d'acces rapide : survol
-
-   L'effet precedent tenait en trois gestionnaires JavaScript qui
-   ecrivaient des styles en ligne — bordure, fond, translation. Il
-   fonctionnait, mais chaque tuile rejouait la meme chose sans
-   intention, et rien ne survivait a un focus clavier.
-
-   Un seul moment compose ici : une lumiere balaie la tuile, la
-   bordure s'allume dans la couleur de l'action, le socle se souleve.
-   --qa-c porte cette couleur, posee par le composant.
-
-   L'easing sort vite puis ralentit longuement : le mouvement part
-   d'un etat deja visible au lieu d'entrer en scene.
-   ───────────────────────────────────────────────────────────── */
-.qa-tile {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-  background: rgba(255, 255, 255, 0.035);
-  border: 1px solid var(--nexus-border);
-  border-radius: 4px;
-  transition:
-    border-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    background-color 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 260ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 260ms cubic-bezier(0.16, 1, 0.3, 1);
+/* Anneau d'avancement d'une quete. Meme construction que l'anneau
+   d'accretion de la Singularite — conic-gradient arrete au
+   pourcentage reel, masque en couronne — a l'echelle d'une pastille.
+   closest-side est indispensable : sans lui le masque se calerait
+   sur le coin de la boite et non sur son bord, ce qui laisse un
+   cercle dur (voir singularity.css). */
+@layer utilities {
+  .quest-ring {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    background: conic-gradient(
+      from -90deg,
+      var(--q-c, hsl(var(--primary))) 0%,
+      var(--q-c, hsl(var(--primary))) var(--q-pct, 0%),
+      hsl(var(--primary) / 0.14) var(--q-pct, 0%));
+    mask-image: radial-gradient(circle closest-side, transparent 64%, black 70%, black 100%);
+    -webkit-mask-image: radial-gradient(circle closest-side, transparent 64%, black 70%, black 100%);
+  }
+  /* Le contenu central (la coche d'une quete reclamee) doit echapper au
+     masque en couronne, sinon il est efface avec le centre. */
+  .quest-ring > * {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
 }
 
-/* Le balayage. Incline pour qu'il ne lise pas comme une barre de
-   chargement, et pose en z-index 0 : le contenu de la tuile reste
-   au-dessus. */
-.qa-tile::before {
+/* ─────────────────────────────────────────────────────────────
+   Compte a rebours : mise en page sur sa propre largeur
+
+   Son point de rupture etait une requete de viewport (lg:grid-cols).
+   Tant qu'il occupait toute la largeur, viewport et element se
+   confondaient. Depuis qu'il partage une rangee avec le panneau de
+   rang, il ne fait plus qu'une demi-colonne — mais la requete
+   continue de lire le viewport et lui impose trois colonnes dans
+   600px, ce qui rogne la colonne de metadonnees.
+
+   Une requete de conteneur lit la largeur de l'element lui-meme.
+   C'est le seul outil correct ici : un composant place dans une
+   grille ne connait pas d'avance la place qu'on lui donnera.
+   ───────────────────────────────────────────────────────────── */
+.countdown-shell {
+  container-type: inline-size;
+  container-name: countdown;
+}
+
+@container countdown (min-width: 860px) {
+  .countdown-grid {
+    display: grid;
+    grid-template-columns: auto 1fr minmax(215px, auto);
+    align-items: center;
+  }
+  .countdown-aside-left {
+    border-right: 1px solid var(--countdown-edge, transparent);
+    border-bottom: 0;
+  }
+  .countdown-aside-right {
+    border-left: 1px solid var(--countdown-edge, transparent);
+    border-top: 0;
+  }
+}
+/* ─────────────────────────────────────────────────────────────
+   Acces rapide — cellule d'energie
+
+   Direction retenue apres maquette. Chaque action est un module de
+   puissance : l'icone enchassee dans un puits lumineux, le libelle
+   dessous, et une jauge de charge en pied qui se remplit d'un trait
+   au survol. Coins biseautes, comme l'instrumentation du reste.
+
+   L'effet precedent — un balayage de lumiere sur une tuile
+   horizontale — ne se declenchait qu'au survol. Ici le puits est
+   deja lumineux au repos : la barre attire l'oeil avant qu'on la
+   cherche.
+
+   --qa-c porte la couleur de l'action, posee par le composant.
+   ───────────────────────────────────────────────────────────── */
+.qa-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 8.5rem;
+  min-width: 8rem;
+  padding: 0.85rem 0.7rem 0.6rem;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.012));
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  /* Biseau sur deux angles opposes : la forme reste lisible en rangee,
+     la ou quatre coins coupes font sapin. */
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  transition:
+    transform 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 320ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Halo qui descend du haut au survol : la cellule s'alimente. */
+.qa-cell::before {
   content: "";
   position: absolute;
-  top: -60%;
-  bottom: -60%;
-  left: -40%;
-  width: 34%;
-  z-index: 0;
-  transform: translateX(-260%) rotate(14deg);
-  background: linear-gradient(90deg,
-    transparent,
-    color-mix(in srgb, var(--qa-c, #fff) 55%, transparent),
-    transparent);
+  inset: 0;
   opacity: 0;
   pointer-events: none;
+  background: radial-gradient(ellipse 90% 55% at 50% 0%, var(--qa-c, #fff), transparent 72%);
+  transition: opacity 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.qa-tile > * {
+.qa-cell:hover:not(:disabled),
+.qa-cell:focus-visible {
+  transform: translateY(-4px);
+  border-color: color-mix(in srgb, var(--qa-c, #fff) 60%, transparent);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+}
+.qa-cell:hover::before,
+.qa-cell:focus-visible::before { opacity: 0.16; }
+.qa-cell:active:not(:disabled) { transform: translateY(-1px); transition-duration: 90ms; }
+
+/* Le puits. Lumineux au repos, embrase au survol. */
+.qa-well {
   position: relative;
-  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  margin-bottom: 0.6rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--qa-c, #fff) 26%, transparent) 0%, transparent 68%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--qa-c, #fff) 30%, transparent);
+  transition: box-shadow 360ms cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.qa-tile:hover:not(:disabled),
-.qa-tile:focus-visible {
-  border-color: var(--qa-c, hsl(var(--primary)));
-  background-color: rgba(255, 255, 255, 0.075);
-  transform: translateY(-2px);
+.qa-cell:hover .qa-well,
+.qa-cell:focus-visible .qa-well {
   box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.35),
-    0 0 0 1px color-mix(in srgb, var(--qa-c, #fff) 45%, transparent),
-    0 0 16px color-mix(in srgb, var(--qa-c, #fff) 28%, transparent);
+    inset 0 0 0 1px color-mix(in srgb, var(--qa-c, #fff) 72%, transparent),
+    0 0 22px color-mix(in srgb, var(--qa-c, #fff) 45%, transparent);
 }
 
-.qa-tile:hover::before,
-.qa-tile:focus-visible::before {
-  opacity: 1;
-  transform: translateX(320%) rotate(14deg);
-  transition: transform 620ms cubic-bezier(0.16, 1, 0.3, 1), opacity 160ms linear;
+/* L'icone garde sa taille : un scale ferait vibrer le trait des SVG. */
+.qa-well svg {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--qa-c, #fff) 55%, transparent));
+  transition: filter 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.qa-cell:hover .qa-well svg,
+.qa-cell:focus-visible .qa-well svg {
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--qa-c, #fff) 85%, transparent));
 }
 
-/* L'icone gagne en presence sans changer de taille : un scale ici
-   ferait vibrer le trait des SVG. */
-.qa-tile svg {
-  transition: filter 260ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.qa-tile:hover svg,
-.qa-tile:focus-visible svg {
-  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--qa-c, #fff) 70%, transparent));
+.qa-label {
+  position: relative;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.2;
+  color: var(--nexus-text-label);
 }
 
-.qa-tile:active:not(:disabled) {
-  transform: translateY(0);
-  transition-duration: 90ms;
+/* La jauge de charge. Vide au repos, pleine au survol — c'est elle
+   qui donne a la cellule son air d'appareil sous tension. */
+.qa-charge {
+  position: relative;
+  width: 100%;
+  height: 2px;
+  margin-top: 0.55rem;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.qa-charge i {
+  position: absolute;
+  inset: 0 100% 0 0;
+  background: var(--qa-c, #fff);
+  box-shadow: 0 0 8px var(--qa-c, #fff);
+  transition: inset 520ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.qa-cell:hover .qa-charge i,
+.qa-cell:focus-visible .qa-charge i { inset: 0 0 0 0; }
+
+.qa-hk {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.65rem;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.08em;
+  color: var(--qa-c, #fff);
+  opacity: 0.75;
+}
+
+.qa-lock {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.55rem;
+  color: var(--nexus-text-dimmer);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .qa-tile { transition: border-color 160ms linear, background-color 160ms linear; }
-  .qa-tile:hover, .qa-tile:focus-visible { transform: none; }
-  .qa-tile::before { display: none; }
+  .qa-cell, .qa-well, .qa-charge i, .qa-well svg { transition-duration: 120ms; }
+  .qa-cell:hover, .qa-cell:focus-visible { transform: none; }
+  .qa-cell::before { display: none; }
 }
 
 /* Anneau d'avancement d'une quete. Meme construction que l'anneau

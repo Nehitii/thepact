@@ -121,24 +121,21 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
         border: "1px solid var(--nexus-border)",
         borderRadius: 4,
         boxShadow: "var(--nexus-shadow)",
-        padding: "10px 12px",
+        padding: "12px 14px 14px",
       }}
     >
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      <div className="flex flex-wrap items-stretch justify-center gap-2">
-        <span
-          className="hidden lg:flex items-center shrink-0 pr-3 mr-1"
-          style={{
-            fontFamily: "'Share Tech Mono', monospace",
-            fontSize: "max(11px, 0.6875rem)", letterSpacing: 3,
-            color: "var(--nexus-text-dim)",
-            textTransform: "uppercase" as const,
-            borderRight: "1px solid var(--nexus-separator)",
-          }}
-        >
-          // ACCÈS RAPIDE
-        </span>
+      {/* Le libelle passe au-dessus de la rangee : les cellules sont
+          verticales, l'aligner a leur gauche laissait un vide sous lui. */}
+      <span
+        className="ds-t-label font-mono uppercase block mb-2.5"
+        style={{ letterSpacing: 3, color: "var(--nexus-text-dim)" }}
+      >
+        // Accès rapide
+      </span>
+
+      <div className="flex flex-wrap items-stretch gap-2">
 
         {actions.map((btn) => {
           const locked = isLocked(btn.moduleKey);
@@ -150,39 +147,14 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
                 navigate(locked ? "/shop" : (btn.route as string));
               }}
               title={locked ? `${btn.label} — verrouille` : btn.label}
-              className="qa-tile flex items-center gap-2.5 shrink-0 cursor-pointer"
-              style={{
-                padding: "9px 14px 9px 12px",
-                opacity: locked ? 0.45 : 1,
-                ["--qa-c" as string]: btn.color,
-              }}
+              className="qa-cell"
+              style={{ opacity: locked ? 0.45 : 1, ["--qa-c" as string]: btn.color }}
             >
-              {locked && (
-                <Lock size={11} className="shrink-0" style={{ color: "var(--nexus-text-dimmer)" }} />
-              )}
-              <span className="shrink-0 flex items-center">{btn.icon(btn.color)}</span>
-              <span
-                className="whitespace-nowrap"
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: "max(11px, 0.6875rem)", letterSpacing: 2,
-                  color: "var(--nexus-text-label)",
-                  textTransform: "uppercase" as const,
-                }}
-              >
-                {btn.label}
-              </span>
-              <span
-                className="shrink-0 hidden xl:inline"
-                style={{
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: "max(11px, 0.6875rem)",
-                  color: btn.color, opacity: 0.85, letterSpacing: 1,
-                  marginLeft: 2,
-                }}
-              >
-                {btn.hotkey}
-              </span>
+              <span className="qa-hk">{btn.hotkey}</span>
+              {locked && <Lock size={11} className="qa-lock" />}
+              <span className="qa-well">{btn.icon(btn.color)}</span>
+              <span className="qa-label">{btn.label}</span>
+              <span className="qa-charge"><i /></span>
             </button>
           );
         })}
