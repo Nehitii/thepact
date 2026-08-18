@@ -32,8 +32,17 @@ export function SpaceBackdrop() {
 
     const appliquer = () => {
       enAttente = false;
+      const h = window.innerHeight;
       refs.current.forEach((el, i) => {
-        if (el) el.style.transform = `translate3d(0, ${(-brut * facteurs[i]).toFixed(1)}px, 0)`;
+        if (!el) return;
+        // Course maximale avant que le bord bas de la couche n'entre dans le
+        // viewport. Sans cette borne, une page assez longue finit par
+        // reveler une ligne nette la ou les etoiles s'arretent : c'est ce
+        // qui se produisait en depliant "Advanced Monitoring", qui allonge
+        // assez la page pour que .space-near remonte de 576px.
+        const marge = Math.max(0, (el.offsetHeight - h) / 2 - 8);
+        const decalage = Math.min(brut * facteurs[i], marge);
+        el.style.transform = `translate3d(0, ${(-decalage).toFixed(1)}px, 0)`;
       });
     };
 
