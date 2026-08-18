@@ -120,7 +120,10 @@ export function MonitoringPanel({
 
   return (
     <div
-      className="relative overflow-hidden"
+      /* h-full + colonne repartie : place cote a cote avec le compte a
+         rebours, ce panneau doit remplir la meme hauteur, et son contenu
+         se distribuer plutot que de s.entasser en haut. */
+      className="relative overflow-hidden h-full flex flex-col"
       style={{
         background: "var(--nexus-bg)",
         border: "1px solid var(--nexus-border)",
@@ -149,8 +152,8 @@ export function MonitoringPanel({
         )}
       </div>
 
-      {/* Avancement, par type d'objet */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+      {/* Avancement, par type d objet */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5 flex-1 content-center">
         <Jauge valeur={data.goalsCompleted} total={data.totalGoals} libelle="Objectifs" couleur="#00d4ff" />
         <Jauge valeur={data.totalStepsCompleted} total={data.totalSteps} libelle="Étapes" couleur="#ffab00" />
         <Jauge valeur={data.completedHabitChecks} total={data.totalHabitChecks} libelle="Habitudes" couleur="#00ff88" />

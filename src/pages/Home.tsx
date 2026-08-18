@@ -273,7 +273,7 @@ export default function Home() {
             a la meme question et se lisent ensemble. Le monitoring sortait
             d'un repli "Advanced Monitoring" ou il etait invisible par
             defaut, alors qu'il porte l'avancement reel du pacte. */}
-        <section className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-start">
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-stretch">
           {pact ? (
             <CountdownPanel
               projectStartDate={pact.project_start_date}
