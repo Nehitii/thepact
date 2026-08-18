@@ -330,9 +330,9 @@
   inset: -60%;
   transform: rotate(-27deg);
   background:
-    linear-gradient(180deg, transparent 40%, hsl(220 70% 60% / 0.045) 50%, transparent 60%),
-    linear-gradient(180deg, transparent 45%, hsl(210 80% 72% / 0.055) 50%, transparent 55%),
-    linear-gradient(180deg, transparent 48.4%, hsl(200 90% 88% / 0.07) 50%, transparent 51.6%);
+    linear-gradient(180deg, transparent 44%, hsl(220 70% 60% / 0.016) 50%, transparent 56%),
+    linear-gradient(180deg, transparent 47%, hsl(210 80% 72% / 0.020) 50%, transparent 53%),
+    linear-gradient(180deg, transparent 49.2%, hsl(200 90% 88% / 0.028) 50%, transparent 50.8%);
   filter: blur(2px);
 }
 
