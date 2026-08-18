@@ -1833,3 +1833,72 @@
   background-color: hsl(var(--primary)) !important;
   border-color: hsl(var(--primary)) !important;
 }
+
+/* ── Interrupteur "super-objectifs" ──
+   Remplace une case a cocher Radix : un carre generique de 20px, gris
+   quand il n'etait pas coche, sans rapport avec une barre qui n'a que
+   des chanfreins. Ici la position du bloc dit l'etat avant meme sa
+   couleur — c'est ce qu'on lit d'un interrupteur reel.
+
+   La piste et le bloc sont chanfreines dans le meme sens que les
+   panneaux, et le bloc glisse plutot qu'il ne clignote. */
+.gl-bascule {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 11px 5px 7px;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  cursor: pointer;
+  transition: border-color 150ms linear;
+}
+.gl-bascule:hover { border-color: hsl(var(--primary) / 0.5); }
+.gl-bascule:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+
+.gl-bascule-piste {
+  position: relative;
+  flex-shrink: 0;
+  width: 30px;
+  height: 16px;
+  background: hsl(var(--primary) / 0.1);
+  border: 1px solid hsl(var(--primary) / 0.28);
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+  transition: background 180ms linear, border-color 180ms linear;
+}
+.gl-bascule-bloc {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 11px;
+  height: 10px;
+  background: var(--cp-texte-doux);
+  clip-path: polygon(0 0, calc(100% - 3px) 0, 100% 3px, 100% 100%, 3px 100%, 0 calc(100% - 3px));
+  transition: transform 180ms cubic-bezier(.3,.8,.3,1), background 180ms linear;
+}
+.gl-bascule[data-actif="true"] .gl-bascule-piste {
+  background: rgb(252 238 10 / 0.16);
+  border-color: rgb(252 238 10 / 0.6);
+}
+.gl-bascule[data-actif="true"] .gl-bascule-bloc {
+  transform: translateX(13px);
+  background: var(--cp-jaune);
+  box-shadow: 0 0 8px -1px var(--cp-jaune);
+}
+
+.gl-bascule-txt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  color: var(--cp-texte-doux);
+  white-space: nowrap;
+  transition: color 150ms linear;
+}
+.gl-bascule[data-actif="true"] .gl-bascule-txt { color: var(--cp-jaune); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-bascule-bloc, .gl-bascule-piste, .gl-bascule { transition: none; }
+}

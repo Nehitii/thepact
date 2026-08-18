@@ -6,9 +6,10 @@ import {
   Search,
   X,
   ChevronRight,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -171,13 +172,30 @@ export function GoalsToolbar({
         {hasSuperGoals && (
           <>
             <span className="gl-sep" />
-            <label className="gl-case">
-              <Checkbox
-                checked={hideSuperGoals}
-                onCheckedChange={(checked) => setHideSuperGoals(checked === true)}
-              />
-              <span className="gl-etiquette ds-t-label">{t("goals.hideSuperGoals")}</span>
-            </label>
+            {/* Interrupteur, et non case a cocher : une case generique
+                detonnait dans une barre qui n'a que des chanfreins, et son
+                etat se lisait a un carre de 20px. Ici la position du bloc
+                dit l'etat avant meme la couleur, et le libelle change avec
+                lui — "masques" quand ils le sont. role="switch" plutot que
+                checkbox : c'est bien une bascule a deux etats, pas une
+                selection dans un ensemble. */}
+            <button
+              type="button"
+              role="switch"
+              aria-checked={hideSuperGoals}
+              onClick={() => setHideSuperGoals(!hideSuperGoals)}
+              className="gl-bascule"
+              data-actif={hideSuperGoals}
+            >
+              <span className="gl-bascule-piste" aria-hidden="true">
+                <span className="gl-bascule-bloc" />
+              </span>
+              <span className="gl-bascule-txt ds-t-label">
+                {hideSuperGoals ? <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
+                                : <Eye className="h-3.5 w-3.5" aria-hidden="true" />}
+                {t("goals.hideSuperGoals")}
+              </span>
+            </button>
           </>
         )}
 
