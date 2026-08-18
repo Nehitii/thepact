@@ -1821,3 +1821,15 @@
   .gl-btn-appel { animation: none; }
   .gl-btn-reflet { animation: none; opacity: 0; }
 }
+
+/* La case non cochee prenait le gris du navigateur : `revert` renvoie a
+   la feuille de style de l'agent utilisateur, pas au style du projet.
+   On lui donne le fond des panneaux. */
+.gl-barre button[role="checkbox"] {
+  background-color: var(--nexus-bg) !important;
+  border-color: hsl(var(--primary) / 0.45) !important;
+}
+.gl-barre button[role="checkbox"][data-state="checked"] {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+}

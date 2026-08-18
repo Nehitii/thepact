@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Plus, List, Zap, CheckCircle2 } from "lucide-react";
+import { Plus, List, Zap, CheckCircle2, SearchX, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarViewGoalCard } from "@/components/goals/BarViewGoalCard";
@@ -30,6 +30,8 @@ interface GoalsListProps {
   displayMode: DisplayMode;
   customDifficultyName: string;
   customDifficultyColor: string;
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
   toggleFocus: (goalId: string, currentFocus: boolean, e: React.MouseEvent) => void;
   unlockCode?: string;
 }
@@ -72,6 +74,8 @@ export function GoalsList({
   displayMode,
   customDifficultyName,
   customDifficultyColor,
+  searchQuery,
+  setSearchQuery,
   toggleFocus,
   unlockCode,
 }: GoalsListProps) {
@@ -146,33 +150,66 @@ export function GoalsList({
     );
   };
 
-  /* Etat vide. Les textes existaient deja traduits sous
-     goals.emptyStates.* et n'etaient pas lus : le composant ecrivait
-     l'anglais en dur. */
+  /* Etat vide — trois situations, et non deux.
+   *
+   * Une recherche sans correspondance affichait "Aucun objectif actif" :
+   * le message accusait la collection alors que seule la requete etait en
+   * cause, et il proposait de creer un objectif — la mauvaise action,
+   * puisqu'il y en a peut-etre trente-huit dont aucun ne porte ce mot.
+   * On dit ce qui est vrai, et on offre le geste utile : effacer la
+   * recherche.
+   *
+   * Les textes des deux autres cas existaient deja traduits sous
+   * goals.emptyStates.* et n'etaient pas lus. */
   const renderEmptyState = () => {
+    const recherche = (searchQuery || "").trim();
+    const estRecherche = recherche.length > 0;
     const estTermines = activeTab === "completed";
-    const teinte = estTermines ? "#00ff88" : "hsl(var(--primary))";
+    const teinte = estRecherche
+      ? "#ffab00"
+      : estTermines
+        ? "#00ff88"
+        : "hsl(var(--primary))";
+
     return (
       <div className="cp-cadre">
         <div className="cp-fond gl-vide">
           <span className="cp-equerre cp-equerre-hg" />
           <span className="cp-equerre cp-equerre-bd" />
           <span className="gl-vide-marque" style={{ ["--t" as string]: teinte }}>
-            {estTermines
-              ? <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
-              : <Plus className="h-7 w-7" aria-hidden="true" />}
+            {estRecherche
+              ? <SearchX className="h-7 w-7" aria-hidden="true" />
+              : estTermines
+                ? <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
+                : <Plus className="h-7 w-7" aria-hidden="true" />}
           </span>
+
           <h3 className="gl-vide-titre font-orbitron">
-            {estTermines
-              ? t("goals.emptyStates.noCompletedGoals")
-              : t("goals.emptyStates.noActiveGoals")}
+            {estRecherche
+              ? t("goals.emptyStates.noResults")
+              : estTermines
+                ? t("goals.emptyStates.noCompletedGoals")
+                : t("goals.emptyStates.noActiveGoals")}
           </h3>
+
           <p className="gl-vide-texte ds-t-label">
-            {estTermines
-              ? t("goals.emptyStates.noCompletedGoalsDesc")
-              : t("goals.emptyStates.noActiveGoalsDesc")}
+            {estRecherche
+              ? t("goals.emptyStates.noResultsDesc", { query: recherche })
+              : estTermines
+                ? t("goals.emptyStates.noCompletedGoalsDesc")
+                : t("goals.emptyStates.noActiveGoalsDesc")}
           </p>
-          {!estTermines && (
+
+          {estRecherche ? (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="gl-btn gl-btn-primaire"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+              {t("goals.emptyStates.clearSearch")}
+            </button>
+          ) : !estTermines ? (
             <button
               type="button"
               onClick={() => navigate("/goals/new")}
@@ -181,7 +218,7 @@ export function GoalsList({
               <Plus className="h-4 w-4" aria-hidden="true" />
               {t("goals.createGoal")}
             </button>
-          )}
+          ) : null}
         </div>
       </div>
     );

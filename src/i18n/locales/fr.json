@@ -490,7 +490,10 @@
       "noActiveGoals": "Aucun objectif actif",
       "noActiveGoalsDesc": "Tous tes objectifs sont terminés ou en pause",
       "noCompletedGoals": "Pas encore d'objectifs terminés",
-      "noCompletedGoalsDesc": "Termine ton premier objectif pour le voir ici"
+      "noCompletedGoalsDesc": "Termine ton premier objectif pour le voir ici",
+      "noResults": "Pas de résultats",
+      "noResultsDesc": "Aucun objectif ne correspond à « {{query}} ».",
+      "clearSearch": "Effacer la recherche"
     },
     "costCategories": {
       "car": "Pour la voiture",

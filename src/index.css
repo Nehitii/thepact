@@ -1360,3 +1360,24 @@ html {
   overflow-y: scroll;
   scrollbar-gutter: stable;
 }
+
+/* ── Le verrou de defilement ne doit plus compenser ──
+   react-remove-scroll, sous Radix, pose margin-right sur body a hauteur
+   de la barre retiree (--removed-body-scroll-bar-size : 11px ici) pour
+   eviter le saut. Avec overflow-y: scroll plus haut, la barre ne
+   disparait plus jamais : cette compensation retrecit body de 11px sans
+   raison et fait bouger toute la page, barre laterale comprise.
+   Mesure a l ouverture d un menu : body 969 → 958, main 689 → 678.
+
+   Le prefixe html n est pas decoratif. react-remove-scroll injecte
+   exactement le meme selecteur, avec !important :
+     body[data-scroll-locked] { margin-right: 11px !important }
+   A specificite egale, la regle injectee a l execution arrive plus tard
+   dans la cascade et l emporte. html la fait passer de (0,1,1) a (0,1,2).
+
+   On neutralise la compensation, pas le verrou : empecher le defilement
+   de l arriere-plan reste souhaitable. */
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+  padding-right: 0 !important;
+}

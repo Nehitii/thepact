@@ -162,6 +162,8 @@ export default function Goals() {
             displayMode={filters.displayMode}
             customDifficultyName={customDifficultyName}
             customDifficultyColor={customDifficultyColor}
+            searchQuery={filters.searchQuery}
+            setSearchQuery={filters.setSearchQuery}
             toggleFocus={toggleFocus}
             unlockCode={unlockCode}
           />

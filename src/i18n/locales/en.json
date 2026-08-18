@@ -490,7 +490,10 @@
       "noActiveGoals": "No active goals",
       "noActiveGoalsDesc": "All your goals are either completed or paused",
       "noCompletedGoals": "No completed goals yet",
-      "noCompletedGoalsDesc": "Complete your first goal to see it here"
+      "noCompletedGoalsDesc": "Complete your first goal to see it here",
+      "noResults": "No results",
+      "noResultsDesc": "No goal matches \"{{query}}\".",
+      "clearSearch": "Clear search"
     },
     "costCategories": {
       "car": "For the Car",
