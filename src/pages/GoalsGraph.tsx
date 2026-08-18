@@ -1,72 +1,154 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import ReactFlow, {
   Background,
   Controls,
   MiniMap,
+  Position,
   type Edge,
   type Node,
-  Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import "@/styles/cyberpunk.css";
+import "@/styles/graph.css";
 import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfile";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DSPanel, DSEmptyState, DSPageShell, DSPageLoader } from "@/components/ds";
-import { ArrowLeft, Network } from "lucide-react";
+import { DSPageShell, DSPageLoader } from "@/components/ds";
+import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
+import { filterGoalsByRule, type SuperGoalRule } from "@/components/goals/super";
+import { ArrowLeft, Plus } from "lucide-react";
 
-const STATUS_COLORS: Record<string, string> = {
-  completed: "#22c55e",
-  in_progress: "#06b6d4",
-  pending: "#eab308",
-  abandoned: "#71717a",
+/* ─────────────────────────────────────────────────────────────
+   CONSTELLATION
+
+   Cette page lisait goal_dependencies — une table vide, et qui l'est
+   restee : sur 38 objectifs, aucune dependance n'a jamais ete declaree,
+   et le seul endroit ou en creer une est enterre en bas du detail d'un
+   objectif. Le graphe affichait donc 38 boites sans aucun lien.
+
+   Or la structure existe deja, ailleurs : un super-objectif rassemble
+   des objectifs, soit nommement (child_goal_ids), soit par une regle
+   (is_dynamic_super + super_goal_rule). Six super-objectifs, vingt-deux
+   objectifs rattaches. C'est cette constellation-la qu'on dessine.
+
+   Trois defauts corriges au passage, chacun invisible sans mesure :
+
+   1. Le conteneur ReactFlow tombait a 0px de haut. ReactFlow exige un
+      parent de hauteur explicite ; le panneau lui en donnait une, mais
+      pas le div intermediaire. Rien ne s'affichait — pas une erreur, un
+      rectangle vide.
+   2. STATUS_COLORS ne connaissait que "completed", "pending" et
+      "abandoned" : trois clefs qui n'existent nulle part en base. Les
+      statuts reels sont fully_completed, not_started et in_progress.
+      Mesure sur les noeuds rendus : 29 sur 38 tombaient sur le gris de
+      repli.
+   3. Sans arete, tous les noeuds se retrouvaient au meme etage du tri
+      topologique — une colonne de 4070px. fitView demandait un zoom de
+      0,11, minZoom le plafonnait a 0,2, et le texte finissait rendu a
+      2,2px.
+   ───────────────────────────────────────────────────────────── */
+
+const TEINTES: Record<string, string> = {
+  in_progress: "#00d4ff",
+  not_started: "#7089a0",
+  fully_completed: "#00ff88",
+  validated: "#00ff88",
+  paused: "#ffab00",
+  cancelled: "#ff003c",
 };
 
-// Simple layered topological layout
-function layout(nodes: Node[], edges: Edge[]): Node[] {
-  const idToNode = new Map(nodes.map((n) => [n.id, n]));
-  const inDeg = new Map<string, number>();
-  nodes.forEach((n) => inDeg.set(n.id, 0));
-  edges.forEach((e) => inDeg.set(e.target, (inDeg.get(e.target) || 0) + 1));
+const LIBELLES: Record<string, string> = {
+  in_progress: "EN COURS",
+  not_started: "EN ATTENTE",
+  fully_completed: "HONORÉ",
+  validated: "HONORÉ",
+  paused: "EN PAUSE",
+  cancelled: "ANNULÉ",
+};
 
-  const layers: string[][] = [];
-  const visited = new Set<string>();
-  let frontier = nodes.filter((n) => (inDeg.get(n.id) || 0) === 0).map((n) => n.id);
+const JAUNE = "#fcee0a";
 
-  while (frontier.length) {
-    layers.push(frontier);
-    frontier.forEach((id) => visited.add(id));
-    const next = new Set<string>();
-    for (const e of edges) {
-      if (frontier.includes(e.source) && !visited.has(e.target)) next.add(e.target);
+/* Disposition en amas.
+ *
+ * Un tri topologique en couches n'a de sens que pour un graphe oriente
+ * profond. Ici la structure est plate et groupee : le moyeu et ses
+ * satellites.
+ *
+ * Premiere tentative : un anneau de satellites autour de chaque moyeu.
+ * Elle a produit huit chevauchements, mesure a l'appui. La raison est
+ * arithmetique : pour cinq enfants le rayon valait 170px alors que le
+ * moyeu s'etend deja sur 98px de demi-largeur et un satellite sur 84 —
+ * il aurait fallu 212px au minimum, et davantage encore une fois
+ * l'anneau ecrase verticalement. Grossir le rayon dilate l'ensemble et
+ * rend le texte illisible a l'echelle d'ensemble.
+ *
+ * Le moyeu est donc pose a gauche et ses satellites empiles a sa droite
+ * sur deux colonnes. Aucun chevauchement n'est possible par
+ * construction, et l'amas occupe deux fois moins de place qu'un anneau
+ * de meme contenu. */
+const L_NOEUD = 190;
+const H_NOEUD = 96;
+const DECALAGE_MOYEU = 250;
+const COLS_ENFANTS = 2;
+
+function disposer(
+  supers: { id: string; enfants: string[] }[],
+  libres: string[],
+): Map<string, { x: number; y: number }> {
+  const pos = new Map<string, { x: number; y: number }>();
+  const PAR_RANGEE = 2;
+  const LARGEUR_AMAS = DECALAGE_MOYEU + COLS_ENFANTS * L_NOEUD + 70;
+
+  let basDeRangee = 0;
+  let hauteurRangee = 0;
+  let yRangee = 0;
+
+  supers.forEach((s, i) => {
+    const col = i % PAR_RANGEE;
+    if (col === 0 && i > 0) {
+      yRangee += hauteurRangee + 90;
+      hauteurRangee = 0;
     }
-    frontier = Array.from(next);
-    if (layers.length > 30) break; // safety
-  }
-  // Orphans
-  const orphans = nodes.filter((n) => !visited.has(n.id)).map((n) => n.id);
-  if (orphans.length) layers.push(orphans);
+    const cx = col * LARGEUR_AMAS;
+    const lignes = Math.max(1, Math.ceil(s.enfants.length / COLS_ENFANTS));
+    const hauteurAmas = lignes * H_NOEUD;
+    hauteurRangee = Math.max(hauteurRangee, hauteurAmas);
 
-  const COL_W = 220;
-  const ROW_H = 110;
-  return nodes.map((n) => {
-    const layerIdx = layers.findIndex((l) => l.includes(n.id));
-    const rowIdx = layers[layerIdx]?.indexOf(n.id) ?? 0;
-    return { ...n, position: { x: layerIdx * COL_W, y: rowIdx * ROW_H } };
+    // Le moyeu se centre verticalement sur la pile de ses satellites.
+    pos.set(s.id, { x: cx, y: yRangee + (hauteurAmas - H_NOEUD) / 2 });
+
+    s.enfants.forEach((id, k) => {
+      if (pos.has(id)) return; // deja place par un autre amas
+      pos.set(id, {
+        x: cx + DECALAGE_MOYEU + (k % COLS_ENFANTS) * L_NOEUD,
+        y: yRangee + Math.floor(k / COLS_ENFANTS) * H_NOEUD,
+      });
+    });
+    basDeRangee = yRangee + hauteurRangee;
   });
+
+  const basY = basDeRangee + 130;
+  libres.forEach((id, k) => {
+    if (pos.has(id)) return;
+    pos.set(id, { x: (k % 5) * L_NOEUD, y: basY + Math.floor(k / 5) * H_NOEUD });
+  });
+
+  return pos;
 }
 
 export default function GoalsGraph() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: profile } = useProfile(user?.id);
   const { data: pact } = usePact(user?.id);
-  const { data: goals = [], isLoading: goalsLoading } = useGoals(pact?.id);
+  const { data: goals = [], isLoading: chargementGoals } = useGoals(pact?.id);
+  const [montrerDynamiques, setMontrerDynamiques] = useState(false);
 
-  const { data: deps = [], isLoading: depsLoading } = useQuery({
+  const { data: deps = [], isLoading: chargementDeps } = useQuery({
     queryKey: ["all-goal-deps", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -80,96 +162,204 @@ export default function GoalsGraph() {
     enabled: !!user?.id,
   });
 
-  const { nodes, edges } = useMemo(() => {
-    const allowedIds = new Set(goals.map((g) => g.id));
-    const baseNodes: Node[] = goals.map((g) => ({
-      id: g.id,
-      data: {
-        label: (
-          <div className="px-2 py-1.5">
-            <div className="ds-t-label font-display tracking-wide line-clamp-2">{g.name}</div>
-            <div className="ds-t-label uppercase tracking-wider mt-0.5" style={{ color: STATUS_COLORS[g.status] || "#888" }}>
-              {g.status} · {g.difficulty}
-            </div>
-          </div>
-        ),
+  const { nodes, edges, stats } = useMemo(() => {
+    const parId = new Map(goals.map((g) => [g.id, g]));
+    const supers = goals.filter((g) => g.goal_type === "super");
+    const ordinaires = goals.filter((g) => g.goal_type !== "super");
+
+    /* Un super dynamique dont la regle porte sur toutes les difficultes
+       capte l'integralite du pacte. Tracer ses aretes par defaut noierait
+       les vingt-deux liens declares sous trente-deux liens calcules : on
+       les met derriere une bascule. */
+    const amas = supers.map((s) => {
+      const enfants = s.is_dynamic_super && s.super_goal_rule
+        ? filterGoalsByRule(
+            ordinaires.filter((g) => g.id !== s.id),
+            s.super_goal_rule as SuperGoalRule,
+          ).map((g) => g.id)
+        : (s.child_goal_ids || []).filter((id) => parId.has(id));
+      return { id: s.id, enfants, dynamique: !!s.is_dynamic_super };
+    });
+
+    const amasTraces = amas.filter((a) => montrerDynamiques || !a.dynamique);
+    const rattaches = new Set<string>();
+    amasTraces.forEach((a) => a.enfants.forEach((id) => rattaches.add(id)));
+    const libres = ordinaires.filter((g) => !rattaches.has(g.id)).map((g) => g.id);
+
+    const pos = disposer(
+      amasTraces.map((a) => ({ id: a.id, enfants: a.enfants })),
+      libres,
+    );
+    // Les amas dynamiques non traces gardent quand meme un moyeu visible.
+    amas.filter((a) => !amasTraces.includes(a)).forEach((a, i) => {
+      if (!pos.has(a.id)) pos.set(a.id, { x: -420, y: i * 150 });
+    });
+
+    const noeuds: Node[] = goals.map((g) => {
+      const estSuper = g.goal_type === "super";
+      const amasDeCeSuper = amas.find((a) => a.id === g.id);
+      const teinte = estSuper ? JAUNE : TEINTES[g.status] || "#7089a0";
+      return {
+        id: g.id,
+        position: pos.get(g.id) || { x: 0, y: 0 },
+        sourcePosition: Position.Right,
+        targetPosition: Position.Left,
+        className: estSuper ? "gr-noeud gr-noeud--super" : "gr-noeud",
+        style: { ["--t" as string]: teinte },
+        data: {
+          label: (
+            <>
+              <span className="gr-nom">{g.name}</span>
+              <span className="gr-meta">
+                {estSuper
+                  ? `${amasDeCeSuper?.dynamique ? "DYNAMIQUE" : "GROUPE"} · ${amasDeCeSuper?.enfants.length ?? 0}`
+                  : LIBELLES[g.status] || g.status}
+              </span>
+            </>
+          ),
+        },
+      };
+    });
+
+    const aretes: Edge[] = [];
+    amasTraces.forEach((a) => {
+      a.enfants.forEach((idEnfant) => {
+        aretes.push({
+          id: `amas-${a.id}-${idEnfant}`,
+          source: a.id,
+          target: idEnfant,
+          className: a.dynamique ? "gr-arete gr-arete--dyn" : "gr-arete",
+          style: {
+            stroke: a.dynamique ? "rgba(252,238,10,.28)" : "rgba(252,238,10,.55)",
+            strokeWidth: a.dynamique ? 1 : 1.4,
+            strokeDasharray: a.dynamique ? "5 5" : undefined,
+          },
+        });
+      });
+    });
+
+    // Les dependances restent une seconde couche : le jour ou il y en a,
+    // elles se superposent a la structure au lieu de la remplacer.
+    (deps as any[])
+      .filter((d) => parId.has(d.goal_id) && parId.has(d.depends_on_goal_id))
+      .forEach((d) => {
+        aretes.push({
+          id: `dep-${d.id}`,
+          source: d.depends_on_goal_id,
+          target: d.goal_id,
+          animated: d.kind === "blocks",
+          label: d.kind === "blocks" ? "bloque" : undefined,
+          style: {
+            stroke: d.kind === "blocks" ? "#ff003c" : "#00d4ff",
+            strokeWidth: 1.6,
+          },
+          labelStyle: { fontSize: 11, fill: "#ff8fa3" },
+        });
+      });
+
+    return {
+      nodes: noeuds,
+      edges: aretes,
+      stats: {
+        supers: supers.length,
+        rattaches: rattaches.size,
+        libres: libres.length,
+        dependances: aretes.filter((e) => e.id.startsWith("dep-")).length,
+        aDuDynamique: amas.some((a) => a.dynamique),
       },
-      position: { x: 0, y: 0 },
-      sourcePosition: Position.Right,
-      targetPosition: Position.Left,
-      style: {
-        background: "hsl(var(--background))",
-        border: `1.5px solid ${STATUS_COLORS[g.status] || "#444"}`,
-        borderRadius: 8,
-        width: 200,
-        color: "hsl(var(--foreground))",
-      },
-    }));
+    };
+  }, [goals, deps, montrerDynamiques]);
 
-    const baseEdges: Edge[] = (deps as any[])
-      .filter((d) => allowedIds.has(d.goal_id) && allowedIds.has(d.depends_on_goal_id))
-      .map((d) => ({
-        id: d.id,
-        source: d.depends_on_goal_id,
-        target: d.goal_id,
-        animated: d.kind === "blocks",
-        style: { stroke: d.kind === "blocks" ? "#ef4444" : "#64748b", strokeWidth: 1.5 },
-        label: d.kind === "blocks" ? "blocks" : undefined,
-        labelStyle: { fontSize: "max(11px, 0.6875rem)", fill: "#94a3b8" },
-      }));
-
-    return { nodes: layout(baseNodes, baseEdges), edges: baseEdges };
-  }, [goals, deps]);
-
-  if (goalsLoading || depsLoading) {
-    return <DSPageLoader message="LOADING TOPOLOGY" />;
+  if (chargementGoals || chargementDeps) {
+    return <DSPageLoader message="LECTURE DE LA CONSTELLATION" />;
   }
 
   return (
-    <DSPageShell
-      width="full"
-      padding="tight"
-      className="!p-4 sm:!p-6 !h-screen flex flex-col space-y-4"
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="w-3.5 h-3.5" /> Retour
-          </button>
-          <div className="text-xs uppercase tracking-[0.25em] text-primary/80 font-display flex items-center gap-2 mt-2">
-            <Network className="w-3.5 h-3.5" /> Topologie globale
+    <DSPageShell width="full" padding="tight" background={<SpaceBackdrop />} className="!p-0">
+      <div className="gr-page">
+        <div className="cp-cadre gr-tete-cadre">
+          <div className="cp-fond gr-tete">
+            <span className="cp-equerre cp-equerre-hg" />
+            <div className="gr-tete-gauche">
+              <button type="button" onClick={() => navigate(-1)} className="gr-retour ds-t-label">
+                <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Retour
+              </button>
+              <h1 className="gr-titre font-orbitron">
+                Constellation
+              </h1>
+            </div>
+
+            <span className="ana-panneau-fil" />
+
+            <div className="gr-chiffres">
+              <span className="gr-chiffre"><b style={{ color: JAUNE }}>{stats.supers}</b> groupes</span>
+              <span className="gr-chiffre"><b style={{ color: "#00d4ff" }}>{stats.rattaches}</b> rattachés</span>
+              <span className="gr-chiffre"><b style={{ color: "#7089a0" }}>{stats.libres}</b> libres</span>
+              {stats.dependances > 0 && (
+                <span className="gr-chiffre"><b style={{ color: "#ff003c" }}>{stats.dependances}</b> dépendances</span>
+              )}
+            </div>
+
+            {stats.aDuDynamique && (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={montrerDynamiques}
+                onClick={() => setMontrerDynamiques((v) => !v)}
+                className="gl-bascule"
+                data-actif={montrerDynamiques}
+                title="Un super-objectif dynamique capte ses membres par une règle. Sa règle actuelle porte sur toutes les difficultés : ses liens masqueraient les groupes déclarés."
+              >
+                <span className="gl-bascule-piste" aria-hidden="true">
+                  <span className="gl-bascule-bloc" />
+                </span>
+                <span className="gl-bascule-txt ds-t-label">Groupes dynamiques</span>
+              </button>
+            )}
           </div>
-          <h1 className="text-2xl font-display tracking-wide">{nodes.length} objectifs · {edges.length} dépendances</h1>
+        </div>
+
+        {/* La hauteur est portee ici, en dur, et non par une classe flex :
+            ReactFlow mesure son parent au montage et se replie a zero si
+            celui-ci n'a pas de hauteur resolue a cet instant. C'est ce qui
+            laissait un rectangle vide. */}
+        <div className="cp-cadre gr-toile-cadre">
+          <div className="cp-fond gr-toile">
+            {nodes.length === 0 ? (
+              <div className="gr-vide">
+                <p className="ds-t-label">Aucun objectif à relier pour le moment.</p>
+                <button type="button" onClick={() => navigate("/goals/new")} className="gl-btn gl-btn-primaire">
+                  <Plus className="h-4 w-4" aria-hidden="true" /> {t("goals.createGoal")}
+                </button>
+              </div>
+            ) : (
+              <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodeClick={(_, n) => navigate(`/goals/${n.id}`)}
+                fitView
+                fitViewOptions={{ padding: 0.16 }}
+                minZoom={0.08}
+                maxZoom={1.6}
+                proOptions={{ hideAttribution: true }}
+              >
+                <Background color="rgba(0,190,255,.14)" gap={26} />
+                <Controls showInteractive={false} />
+                <MiniMap
+                  pannable
+                  zoomable
+                  maskColor="rgba(3,7,14,.78)"
+                  nodeColor={(n) => {
+                    const g = goals.find((x) => x.id === n.id);
+                    if (!g) return "#7089a0";
+                    return g.goal_type === "super" ? JAUNE : TEINTES[g.status] || "#7089a0";
+                  }}
+                />
+              </ReactFlow>
+            )}
+          </div>
         </div>
       </div>
-
-      <DSPanel className="flex-1 p-0 overflow-hidden min-h-[480px]">
-        {nodes.length === 0 ? (
-          <DSEmptyState
-            message="NO GOALS"
-            description="Crée des objectifs pour visualiser leur topologie."
-            ctaLabel="Créer un objectif"
-            to="/goals/new"
-          />
-        ) : (
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodeClick={(_, n) => navigate(`/goals/${n.id}`)}
-            fitView
-            minZoom={0.2}
-            maxZoom={1.5}
-            proOptions={{ hideAttribution: true }}
-          >
-            <Background color="hsl(var(--border))" gap={24} />
-            <Controls />
-            <MiniMap pannable zoomable nodeColor={(n) => {
-              const g = goals.find(x => x.id === n.id);
-              return STATUS_COLORS[g?.status || ""] || "#444";
-            }} />
-          </ReactFlow>
-        )}
-      </DSPanel>
     </DSPageShell>
   );
 }
