@@ -50,13 +50,25 @@ export default function Home() {
     const habitGoals = allGoals.filter((g) => g.goal_type === "habit");
     const focusGoals = allGoals.filter((g) => g.goal_type !== "habit" && g.is_focus && g.status !== "fully_completed");
 
+    /* Un objectif de type "habit" recopie ses habit_duration_days dans
+       total_steps : 180 jours de suivi y deviennent 180 "etapes". Ces jours
+       sont deja comptes plus bas en habitudes, donc les additionner aux
+       etapes revient a les compter deux fois — et fausse tout ce qui se
+       calcule en etapes. Un seul objectif du pacte est dans ce cas, mais il
+       pesait a lui seul 180 des 364 etapes annoncees : le palier EXTREME
+       s'affichait a 21 % d'avancement alors qu'il est a 85 %.
+       Les habitudes restent comptees comme objectifs ; seules leurs
+       pseudo-etapes sont exclues. */
+    const goalsAvecEtapes = allGoals.filter((g) => g.goal_type !== "habit");
+
     const difficulties = ["easy", "medium", "hard", "extreme", "impossible", "custom"];
     const difficultyProgress = difficulties.map((difficulty) => {
       const diffGoals = allGoals.filter((g) => g.difficulty === difficulty);
+      const diffGoalsAvecEtapes = diffGoals.filter((g) => g.goal_type !== "habit");
       const completedGoals = diffGoals.filter((g) => g.status === "fully_completed").length;
       const totalGoals = diffGoals.length;
-      const totalStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-      const completedStepsForDiff = diffGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+      const totalStepsForDiff = diffGoalsAvecEtapes.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+      const completedStepsForDiff = diffGoalsAvecEtapes.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
       return {
         difficulty,
         completed: completedGoals,
@@ -68,8 +80,8 @@ export default function Home() {
       };
     });
 
-    const totalSteps = allGoals.reduce((sum, g) => sum + (g.total_steps || 0), 0);
-    const totalStepsCompleted = allGoals.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
+    const totalSteps = goalsAvecEtapes.reduce((sum, g) => sum + (g.total_steps || 0), 0);
+    const totalStepsCompleted = goalsAvecEtapes.reduce((sum, g) => sum + (g.validated_steps || 0), 0);
     const totalHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_duration_days || 0), 0);
     const completedHabitChecks = habitGoals.reduce((sum, g) => sum + (g.habit_checks?.filter(Boolean).length || 0), 0);
     const goalsCompleted = allGoals.filter((g) => g.status === "fully_completed").length;

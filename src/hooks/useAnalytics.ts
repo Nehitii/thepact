@@ -126,6 +126,25 @@ function computeTrend(current: number, previous: number): TrendData {
   return { current, previous, percentChange };
 }
 
+/**
+ * Avancement brut d'un objectif, en tenant compte de son type.
+ *
+ * Un objectif de type "habit" n'a aucune ligne dans la table steps : son
+ * total_steps recopie ses habit_duration_days. Le lire comme des etapes fait
+ * deux degats — il compte des jours de suivi parmi les etapes, alors qu'ils
+ * sont deja comptes en habitudes, et il affiche l'habitude a 0 % quel que
+ * soit le nombre de jours reellement tenus.
+ */
+function avancementBrut(g: any): { total: number; completed: number } {
+  if (g?.goal_type === "habit") {
+    return {
+      total: g.habit_duration_days || 0,
+      completed: Array.isArray(g.habit_checks) ? g.habit_checks.filter(Boolean).length : 0,
+    };
+  }
+  return { total: g?.total_steps || 0, completed: g?.validated_steps || 0 };
+}
+
 export function useAnalytics(period: AnalyticsPeriod = "all") {
   const { user } = useAuth();
 
@@ -150,7 +169,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       // Parallel fetch all data - filter goals by pact_id
       const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes] = await Promise.all([
         pactId 
-          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps").eq("pact_id", pactId)
+          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks").eq("pact_id", pactId)
           : Promise.resolve({ data: [] }),
         supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
         supabase.from("finance").select("month, income, fixed_expenses, variable_expenses, savings").eq("user_id", user.id).order("month"),
@@ -169,9 +188,11 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         if (g.status === "fully_completed" || g.status === "validated") {
           totalXP += goalXP;
         } else if (g.status === "in_progress") {
-          const total = g.total_steps || 1;
-          const completed = g.validated_steps || 0;
-          totalXP += Math.floor(goalXP * (completed / total) * 0.5);
+          // Une habitude n'a pas d'etapes : son total_steps recopie ses
+          // habit_duration_days. Son avancement se lit dans habit_checks,
+          // sinon un suivi de 180 jours a moitie tenu compte pour zero.
+          const { total, completed } = avancementBrut(g);
+          totalXP += Math.floor(goalXP * (completed / Math.max(1, total)) * 0.5);
         }
       }
       const goals = period === "all" 
@@ -184,7 +205,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       const showcaseRes = pactId
         ? await supabase
             .from("goals")
-            .select("id, name, image_url, status, difficulty, potential_score, completion_date, total_steps, validated_steps")
+            .select("id, name, image_url, status, difficulty, potential_score, completion_date, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks")
             .eq("pact_id", pactId)
             .order("created_at", { ascending: false })
             .limit(60)
@@ -435,7 +456,10 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
           difficulty: g.difficulty || "easy",
           potential_score: g.potential_score || 0,
           completion_date: g.completion_date || null,
-          progress: g.total_steps > 0 ? Math.round(((g.validated_steps || 0) / g.total_steps) * 100) : 0,
+          progress: (() => {
+            const a = avancementBrut(g);
+            return a.total > 0 ? Math.round((a.completed / a.total) * 100) : 0;
+          })(),
         })),
         topGoals: showcaseGoals
           .filter((g: any) => ["fully_completed", "validated"].includes(g.status))
