@@ -251,6 +251,14 @@ export default function Home() {
           <Skeleton className="h-14 w-full rounded" />
         )}
 
+        {/* QUETES DU JOUR — remontees hors du repli "Advanced Monitoring",
+            ou elles etaient invisibles par defaut. C'est le contenu le plus
+            perissable de la page : il expire a minuit, et il porte les deux
+            seules actions du tableau de bord qui ne mènent pas ailleurs
+            (generer la journee, reclamer une quête achevee). Le ranger sous
+            une etiquette de surveillance le condamnait a n'etre jamais vu. */}
+        <DailyQuestsPanel />
+
         {/* RANG — pleine largeur depuis que l'acces rapide a quitte la rangee */}
         <RankPanel rankData={safeRankData} />
 
@@ -315,7 +323,6 @@ export default function Home() {
               <Skeleton className="h-40 w-full rounded-xl" />
             )}
             <LifeAreasBalancePanel />
-            <DailyQuestsPanel />
           </div>
         </details>
 
