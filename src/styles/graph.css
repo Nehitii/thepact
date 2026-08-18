@@ -166,12 +166,43 @@
   background: var(--t, #94a3b8);
   clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
 }
-.gr-sceau {
-  font-size: 13px;
-  line-height: 1;
-  color: var(--t, #94a3b8);
-  text-shadow: 0 0 8px var(--t, #94a3b8);
+/* Marque d'objectif honore.
+ *
+ * Le premier jet etait un glyphe de 13px. A l'echelle d'ensemble — 0,49 —
+ * il n'en restait que 6px : invisible, c'est-a-dire inutile, puisque la
+ * question posee est justement "qu'est-ce qui est deja fait ?" a laquelle
+ * on doit repondre d'un coup d'oeil.
+ *
+ * Le fanion occupe le coin haut-droit sur 34px et porte un trait epais.
+ * A 0,49 il fait encore 17px, et sa forme triangulaire reste
+ * identifiable meme quand le trait se brouille. La taille est choisie
+ * pour l'echelle d'ensemble, pas pour le zoom.
+ */
+.gr-fanion {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  background: var(--t, #94a3b8);
+  /* Triangle : le coin, pas une pastille. Il epouse le chanfrein. */
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
 }
+.gr-fanion svg {
+  width: 13px;
+  height: 13px;
+  margin: -7px 4px 0 0;
+  fill: none;
+  stroke: #05080f;
+  stroke-width: 3.4;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+.gr-noeud--moyeu .gr-fanion { width: 40px; height: 40px; }
+.gr-noeud--moyeu .gr-fanion svg { width: 15px; height: 15px; margin: -8px 5px 0 0; }
+
 .gr-nom {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -250,4 +281,28 @@
 @media (prefers-reduced-motion: reduce) {
   .gr-noeud { transition: none; }
   .gr-noeud:hover { transform: none; }
+}
+
+/* ── Ecart entre "acquis" et "en cours" ──
+   Les deux etaient a pleine couleur : seul un petit glyphe les separait,
+   et il disparaissait a l'echelle. On creuse l'ecart sur des signaux qui
+   survivent au zoom arriere — l'epaisseur du cadre et le halo. */
+.gr-etat-acquis {
+  padding: 3px;
+  box-shadow: 0 0 26px -5px var(--t, #94a3b8), 0 0 0 1px rgb(255 255 255 / 0.14);
+}
+.gr-etat-acquis .gr-jauge { display: none; }
+.gr-etat-acquis .gr-img { filter: saturate(1.12) contrast(1.06) brightness(1.04); }
+.gr-etat-encours .gr-img { filter: saturate(0.86) brightness(0.9); }
+.gr-etat-encours .gr-jauge { height: 7px; }
+
+/* Le libelle de la bascule tient sur deux lignes : le nom du groupe, puis
+   ce que la regle capte. */
+.gr-bascule .gl-bascule-txt { flex-direction: column; align-items: flex-start; gap: 1px; }
+.gr-bascule-note {
+  font-style: normal;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.2px;
+  opacity: 0.65;
+  text-transform: none;
 }

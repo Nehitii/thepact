@@ -263,7 +263,11 @@ export default function GoalsGraph() {
                   <span className="gr-palier">
                     {estSuper ? (monAmas?.dynamique ? "DYNAMIQUE" : "GROUPE") : NOM_PALIER[palier] || palier}
                   </span>
-                  {etat === "acquis" && <span className="gr-sceau">✦</span>}
+                  {etat === "acquis" && (
+                    <span className="gr-fanion" aria-label="Objectif honoré">
+                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
+                    </span>
+                  )}
                 </span>
                 <span className="gr-nom">{g.name}</span>
                 <span className="gr-jauge"><i style={{ width: `${pct}%` }} /></span>
@@ -328,7 +332,8 @@ export default function GoalsGraph() {
         rattaches: rattaches.size,
         libres: libres.length,
         dependances: aretes.filter((e) => e.id.startsWith("dep-")).length,
-        aDuDynamique: amas.some((a) => a.dynamique),
+        nomsDynamiques: supers.filter((g) => g.is_dynamic_super).map((g) => g.name),
+        tailleDynamique: amas.filter((a) => a.dynamique).reduce((n, a) => n + a.enfants.length, 0),
       },
     };
   }, [goals, deps, montrerDynamiques]);
@@ -363,20 +368,40 @@ export default function GoalsGraph() {
               )}
             </div>
 
-            {stats.aDuDynamique && (
+            {/* Nommer plutot que categoriser.
+
+                "Groupes dynamiques" ne dit rien de ce que la bascule fait.
+                Un super-objectif ordinaire liste ses membres a la main ; un
+                super-objectif dynamique les capte par une regle, et son
+                contenu change donc tout seul. Ici il y en a un — celui de
+                l utilisateur s appelle Nothingness et sa regle porte sur
+                toutes les difficultes, donc il attrape le pacte entier.
+
+                Le libelle nomme ce groupe et annonce combien d objectifs il
+                capterait. C est ce qui rend le comportement previsible avant
+                le clic, plutot qu apres. */}
+            {stats.nomsDynamiques.length > 0 && (
               <button
                 type="button"
                 role="switch"
                 aria-checked={montrerDynamiques}
                 onClick={() => setMontrerDynamiques((v) => !v)}
-                className="gl-bascule"
+                className="gl-bascule gr-bascule"
                 data-actif={montrerDynamiques}
-                title="Un super-objectif dynamique capte ses membres par une règle. Sa règle actuelle porte sur toutes les difficultés : ses liens masqueraient les groupes déclarés."
+                title={
+                  `${stats.nomsDynamiques.join(", ")} rassemble ses membres par une règle, ` +
+                  `pas à la main : son contenu change tout seul. Sa règle capte ` +
+                  `${stats.tailleDynamique} objectifs — assez pour recouvrir les groupes ` +
+                  `déclarés, d'où l'affichage séparé.`
+                }
               >
                 <span className="gl-bascule-piste" aria-hidden="true">
                   <span className="gl-bascule-bloc" />
                 </span>
-                <span className="gl-bascule-txt ds-t-label">Groupes dynamiques</span>
+                <span className="gl-bascule-txt ds-t-label">
+                  {stats.nomsDynamiques.join(" · ")}
+                  <i className="gr-bascule-note">règle auto · {stats.tailleDynamique}</i>
+                </span>
               </button>
             )}
           </div>
