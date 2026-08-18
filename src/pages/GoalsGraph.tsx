@@ -52,23 +52,47 @@ import { ArrowLeft, Plus } from "lucide-react";
       2,2px.
    ───────────────────────────────────────────────────────────── */
 
-const TEINTES: Record<string, string> = {
-  in_progress: "#00d4ff",
-  not_started: "#7089a0",
-  fully_completed: "#00ff88",
-  validated: "#00ff88",
-  paused: "#ffab00",
-  cancelled: "#ff003c",
+/* Couleur = DIFFICULTE, pas statut.
+ *
+ * La version precedente colorait par statut, ce qui repondait a une
+ * question que la liste traite deja mieux. Dans un arbre de competences
+ * la couleur dit la NATURE du noeud — ici son palier — et son etat se lit
+ * a autre chose : un noeud acquis brille, un noeud verrouille est eteint.
+ * On code donc deux informations sans les faire se disputer le meme canal.
+ *
+ * La palette est celle des cartes de la vue grille, a l identique : le
+ * meme objectif ne peut pas changer de couleur selon l ecran ou on le
+ * regarde. */
+const PALIER: Record<string, string> = {
+  easy: "#4ade80",
+  medium: "#facc15",
+  hard: "#fb923c",
+  extreme: "#f87171",
+  impossible: "#c084fc",
+  custom: "#a855f7",
 };
 
-const LIBELLES: Record<string, string> = {
-  in_progress: "EN COURS",
-  not_started: "EN ATTENTE",
-  fully_completed: "HONORÉ",
-  validated: "HONORÉ",
-  paused: "EN PAUSE",
-  cancelled: "ANNULÉ",
+const NOM_PALIER: Record<string, string> = {
+  easy: "FACILE", medium: "MOYEN", hard: "DIFFICILE",
+  extreme: "EXTREME", impossible: "IMPOSSIBLE", custom: "CUSTOM",
 };
+
+type Etat = "acquis" | "encours" | "verrouille";
+
+function etatDe(statut: string): Etat {
+  if (statut === "fully_completed" || statut === "validated") return "acquis";
+  if (statut === "in_progress") return "encours";
+  return "verrouille";
+}
+
+function avancement(g: any): number {
+  const habit = g.goal_type === "habit";
+  const total = habit ? g.habit_duration_days || 0 : g.totalStepsCount ?? g.total_steps ?? 0;
+  const fait = habit
+    ? (Array.isArray(g.habit_checks) ? g.habit_checks.filter(Boolean).length : 0)
+    : g.completedStepsCount ?? g.validated_steps ?? 0;
+  return total > 0 ? Math.min(100, Math.round((fait / total) * 100)) : 0;
+}
 
 const JAUNE = "#fcee0a";
 
@@ -90,9 +114,9 @@ const JAUNE = "#fcee0a";
  * sur deux colonnes. Aucun chevauchement n'est possible par
  * construction, et l'amas occupe deux fois moins de place qu'un anneau
  * de meme contenu. */
-const L_NOEUD = 190;
-const H_NOEUD = 96;
-const DECALAGE_MOYEU = 250;
+const L_NOEUD = 196;
+const H_NOEUD = 108;
+const DECALAGE_MOYEU = 268;
 const COLS_ENFANTS = 2;
 
 function disposer(
@@ -197,25 +221,54 @@ export default function GoalsGraph() {
 
     const noeuds: Node[] = goals.map((g) => {
       const estSuper = g.goal_type === "super";
-      const amasDeCeSuper = amas.find((a) => a.id === g.id);
-      const teinte = estSuper ? JAUNE : TEINTES[g.status] || "#7089a0";
+      const monAmas = amas.find((a) => a.id === g.id);
+      const palier = g.difficulty || "easy";
+      const teinte = estSuper ? JAUNE : PALIER[palier] || "#94a3b8";
+      const etat = estSuper
+        ? (monAmas && monAmas.enfants.length > 0
+            && monAmas.enfants.every((id) => etatDe(parId.get(id)?.status || "") === "acquis")
+            ? "acquis" : "encours")
+        : etatDe(g.status);
+      const pct = estSuper
+        ? (monAmas && monAmas.enfants.length
+            ? Math.round(monAmas.enfants.filter((id) => etatDe(parId.get(id)?.status || "") === "acquis").length
+                / monAmas.enfants.length * 100)
+            : 0)
+        : avancement(g);
+
       return {
         id: g.id,
         position: pos.get(g.id) || { x: 0, y: 0 },
         sourcePosition: Position.Right,
         targetPosition: Position.Left,
-        className: estSuper ? "gr-noeud gr-noeud--super" : "gr-noeud",
-        style: { ["--t" as string]: teinte },
+        className: ["gr-noeud", estSuper && "gr-noeud--moyeu", `gr-etat-${etat}`]
+          .filter(Boolean).join(" "),
+        // La propriete personnalisee doit etre castee : le type CSSProperties
+        // de React ne declare pas les variables --*.
+        style: { ["--t" as string]: teinte } as React.CSSProperties,
         data: {
           label: (
-            <>
-              <span className="gr-nom">{g.name}</span>
-              <span className="gr-meta">
-                {estSuper
-                  ? `${amasDeCeSuper?.dynamique ? "DYNAMIQUE" : "GROUPE"} · ${amasDeCeSuper?.enfants.length ?? 0}`
-                  : LIBELLES[g.status] || g.status}
+            /* Un vrai conteneur, et non un Fragment : ReactFlow insere le
+               label directement dans le noeud, sans div intermediaire. Les
+               regles ecrites pour ".gr-noeud > div" ne correspondaient donc
+               a rien et la hauteur n etait jamais appliquee — les cartes
+               faisaient 173px au lieu de 84, d ou dix-sept chevauchements. */
+            <span className="gr-carte">
+              {g.image_url
+                ? <img src={g.image_url} alt="" className="gr-img" loading="lazy" />
+                : <span className="gr-img gr-img--absente" aria-hidden="true" />}
+              <span className="gr-voile" />
+              <span className="gr-corps">
+                <span className="gr-haut">
+                  <span className="gr-palier">
+                    {estSuper ? (monAmas?.dynamique ? "DYNAMIQUE" : "GROUPE") : NOM_PALIER[palier] || palier}
+                  </span>
+                  {etat === "acquis" && <span className="gr-sceau">✦</span>}
+                </span>
+                <span className="gr-nom">{g.name}</span>
+                <span className="gr-jauge"><i style={{ width: `${pct}%` }} /></span>
               </span>
-            </>
+            </span>
           ),
         },
       };
@@ -224,14 +277,24 @@ export default function GoalsGraph() {
     const aretes: Edge[] = [];
     amasTraces.forEach((a) => {
       a.enfants.forEach((idEnfant) => {
+        const enfant = parId.get(idEnfant);
+        const teinte = PALIER[enfant?.difficulty || "easy"] || "#94a3b8";
+        const acquis = etatDe(enfant?.status || "") === "acquis";
+        /* Le lien porte la couleur du palier de l enfant et s allume
+           lorsqu il est acquis : le courant passe. C est ce qui donne a
+           l ensemble sa lecture d arbre de competences — on voit d un
+           coup d oeil quelles branches sont alimentees. */
         aretes.push({
           id: `amas-${a.id}-${idEnfant}`,
           source: a.id,
           target: idEnfant,
+          type: "smoothstep",
+          animated: acquis && !a.dynamique,
           className: a.dynamique ? "gr-arete gr-arete--dyn" : "gr-arete",
           style: {
-            stroke: a.dynamique ? "rgba(252,238,10,.28)" : "rgba(252,238,10,.55)",
-            strokeWidth: a.dynamique ? 1 : 1.4,
+            stroke: teinte,
+            strokeOpacity: a.dynamique ? 0.22 : acquis ? 0.95 : 0.34,
+            strokeWidth: acquis ? 2.2 : 1.3,
             strokeDasharray: a.dynamique ? "5 5" : undefined,
           },
         });
@@ -352,7 +415,7 @@ export default function GoalsGraph() {
                   nodeColor={(n) => {
                     const g = goals.find((x) => x.id === n.id);
                     if (!g) return "#7089a0";
-                    return g.goal_type === "super" ? JAUNE : TEINTES[g.status] || "#7089a0";
+                    return g.goal_type === "super" ? JAUNE : PALIER[g.difficulty || "easy"] || "#94a3b8";
                   }}
                 />
               </ReactFlow>
