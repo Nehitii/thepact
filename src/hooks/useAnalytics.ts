@@ -169,7 +169,7 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
       // Parallel fetch all data - filter goals by pact_id
       const [goalsRes, healthRes, financeRes, habitRes, todoRes, pomodoroRes, financeSettingsRes] = await Promise.all([
         pactId 
-          ? supabase.from("goals").select("id, created_at, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks").eq("pact_id", pactId)
+          ? supabase.from("goals").select("id, created_at, start_date, status, completion_date, difficulty, estimated_cost, potential_score, total_steps, validated_steps, goal_type, habit_duration_days, habit_checks").eq("pact_id", pactId)
           : Promise.resolve({ data: [] }),
         supabase.from("health_data").select("entry_date, sleep_quality, mood_level, activity_level, hydration_glasses, meal_balance, stress_level").eq("user_id", user.id).order("entry_date", { ascending: false }).limit(180),
         supabase.from("finance").select("month, income, fixed_expenses, variable_expenses, savings").eq("user_id", user.id).order("month"),
@@ -390,12 +390,25 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
         .sort((a, b) => a.date.localeCompare(b.date));
 
       // Goal velocity (average days to complete)
+      //
+      // On mesure depuis start_date, pas created_at : c'est la date que
+      // l'utilisateur declare comme depart de l'objectif, et c'est deja la
+      // base utilisee ailleurs (VictoryReelCard). created_at ne sert que de
+      // repli quand start_date est absent.
+      //
+      // Les durees negatives sont ecartees. Elles apparaissent quand un
+      // objectif est saisi apres coup — la ligne est creee aujourd'hui avec
+      // une completion_date anterieure. Ce n'est pas une mesure, c'est un
+      // artefact de saisie, et il tirait la moyenne mensuelle jusqu'a
+      // -135 jours sur le graphique.
       const goalVelocityByMonth = new Map<string, { totalDays: number; count: number }>();
       goals
-        .filter((g: any) => g.completion_date && g.created_at)
+        .filter((g: any) => g.completion_date && (g.start_date || g.created_at))
         .forEach((g: any) => {
+          const depart = parseISO(g.start_date || g.created_at);
+          const days = differenceInDays(parseISO(g.completion_date), depart);
+          if (days < 0) return;
           const month = g.completion_date.slice(0, 7);
-          const days = differenceInDays(parseISO(g.completion_date), parseISO(g.created_at));
           const entry = goalVelocityByMonth.get(month) || { totalDays: 0, count: 0 };
           entry.totalDays += days;
           entry.count++;

@@ -123,3 +123,240 @@
     transition: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   STATISTIQUES — refonte a trois vues.
+   Meme langage que le tableau de bord : fond opaque --nexus-bg,
+   bord cyan, coins a 4px, ombre a quatre couches.
+   AUCUN backdrop-filter : il moyenne le champ d'etoiles en gris.
+   ═══════════════════════════════════════════════════════════════ */
+
+.ana-page {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+@media (min-width: 768px) { .ana-page { padding: 1.25rem; } }
+
+/* ── Panneau ── */
+.ana-panneau {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  border-radius: 4px;
+  box-shadow: var(--nexus-shadow);
+  padding: 16px 18px;
+}
+.ana-panneau-liseret {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent, hsl(var(--primary) / 0.55) 30%,
+    hsl(var(--primary) / 0.55) 70%, transparent);
+}
+.ana-panneau-tete {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+.ana-panneau-titre {
+  flex-shrink: 0;
+  margin: 0;
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--nexus-text-dim);
+}
+.ana-panneau-fil {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--nexus-separator), transparent);
+}
+.ana-panneau-droite {
+  flex-shrink: 0;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 1.4px;
+  color: var(--nexus-text-dimmer);
+  font-variant-numeric: tabular-nums;
+}
+.ana-vide {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 2.25rem 0;
+  margin: 0;
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--nexus-text-dimmer);
+}
+.ana-pied {
+  margin: 0.6rem 0 0;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--nexus-text-dimmer);
+}
+.ana-pied-gauche { text-align: left; margin-bottom: 0.9rem; }
+
+/* ── Bandeau de compteurs ── */
+.ana-bandeau {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+@media (min-width: 640px) {
+  .ana-bandeau { grid-template-columns: repeat(3, 1fr); }
+}
+.ana-compteur { display: flex; align-items: center; gap: 0.8rem; min-width: 0; }
+.ana-compteur-txt { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.ana-compteur-val {
+  font-size: 1.4rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+/* max() et pas 0.7rem seul : la racine du projet est a 15px, donc 0.7rem
+   tombe a 10,5px — sous le plancher de 11px pose sur toute l'app. La forme
+   max() suit la preference de taille de l'utilisateur vers le haut tout en
+   tenant ce plancher. */
+.ana-compteur-unite {
+  font-size: max(11px, 0.7rem);
+  margin-left: 3px;
+  opacity: 0.7;
+  font-style: normal;
+}
+.ana-compteur-lib {
+  font-family: 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--nexus-text-dimmer);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Jauge annulaire. closest-side est obligatoire : par defaut un masque
+   radial vise farthest-corner, et le disque se coupe a 70,7 % du degrade
+   — d'ou un bord franc au lieu d'un fondu. */
+.ana-jauge {
+  flex-shrink: 0;
+  width: 2.7rem;
+  height: 2.7rem;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg,
+    var(--c) 0%, var(--c) var(--p),
+    hsl(var(--primary) / 0.12) var(--p));
+  -webkit-mask-image: radial-gradient(circle closest-side,
+    transparent 63%, #000 66%, #000 100%);
+  mask-image: radial-gradient(circle closest-side,
+    transparent 63%, #000 66%, #000 100%);
+}
+
+/* ── Bascule de vue ── */
+.ana-vues { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.ana-vue {
+  flex: 1 1 13rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  border-left: 2px solid hsl(var(--primary) / 0.25);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+.ana-vue:hover { border-left-color: hsl(var(--primary) / 0.7); transform: translateY(-1px); }
+.ana-vue:focus-visible {
+  outline: 2px solid hsl(var(--primary) / 0.85);
+  outline-offset: 2px;
+}
+.ana-vue[data-actif="true"] {
+  border-left-color: hsl(var(--primary));
+  background: linear-gradient(90deg, hsl(var(--primary) / 0.1), var(--nexus-bg) 55%);
+  box-shadow: var(--nexus-shadow);
+}
+.ana-vue-nom {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--nexus-text-dim);
+}
+.ana-vue[data-actif="true"] .ana-vue-nom {
+  color: hsl(var(--primary));
+  text-shadow: 0 0 12px hsl(var(--primary) / 0.5);
+}
+.ana-vue-sous {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.5px;
+  color: var(--nexus-text-dimmer);
+}
+
+/* ── Grilles ── */
+.ana-grille { display: flex; flex-direction: column; gap: 0.75rem; }
+.ana-duo { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+@media (min-width: 1100px) {
+  .ana-duo { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── Anneau de progression ──
+   Le chiffre central est FRERE de l'anneau, jamais enfant : un masque
+   s'applique a tout le sous-arbre rendu, et le centre de ce masque est
+   transparent. Un chiffre place a l'interieur y serait efface. */
+.ana-anneau-box { flex: 1; display: grid; place-items: center; padding: 0.9rem 0; }
+.ana-anneau-cadre {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 8.5rem;
+  height: 8.5rem;
+}
+.ana-anneau-val {
+  position: relative;
+  font-size: 1.6rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.ana-anneau {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from -90deg,
+    var(--c) 0%, var(--c) var(--p),
+    hsl(var(--primary) / 0.12) var(--p));
+  -webkit-mask-image: radial-gradient(circle closest-side,
+    transparent 71%, #000 74%, #000 100%);
+  mask-image: radial-gradient(circle closest-side,
+    transparent 71%, #000 74%, #000 100%);
+}
+/* ── Barre de cout ── */
+.ana-barre {
+  position: relative;
+  overflow: hidden;
+  height: 10px;
+  border-radius: 2px;
+  background: hsl(var(--primary) / 0.1);
+}
+.ana-barre i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg,
+    hsl(var(--primary) / 0.45), hsl(var(--primary)));
+  box-shadow: 0 0 12px hsl(var(--primary) / 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ana-vue { transition: none; }
+  .ana-vue:hover { transform: none; }
+}

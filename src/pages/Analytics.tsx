@@ -1,710 +1,469 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useCallback, useMemo } from "react";
 import "@/styles/analytics.css";
 import { useTranslation } from "react-i18next";
-import { motion, AnimatePresence } from "framer-motion";
+import { format, parseISO } from "date-fns";
 import {
-  Target,
-  Heart,
-  Wallet,
-  Timer,
-  Flame,
-  ListChecks,
-  DollarSign,
-  Receipt,
-  Activity,
-  Zap,
-  Repeat,
-  TrendingUp,
-  Award,
-  Calendar,
-  CheckSquare,
-  LayoutDashboard,
-  Gauge,
-} from "lucide-react";
-import { useAnalytics } from "@/hooks/useAnalytics";
+  Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, Line, LineChart,
+  PolarAngleAxis, PolarGrid, PolarRadiusAxis, Radar, RadarChart,
+  ResponsiveContainer, Tooltip, XAxis, YAxis,
+} from "recharts";
+
+import { DSPageShell } from "@/components/ds";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
+import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
+import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
+
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { formatCurrency } from "@/lib/currency";
 import { getDifficultyLabel, getTagLabel } from "@/lib/goalConstants";
-import { format, parseISO } from "date-fns";
-import { useAnalyticsState } from "@/hooks/useAnalyticsState";
-import type { PrismSection } from "@/components/analytics";
-import { CleanTabs, type CleanTab } from "@/components/analytics/clean/CleanTabs";
-import { CleanKPIGrid, type KPIItem } from "@/components/analytics/clean/CleanKPI";
-import { CleanCard } from "@/components/analytics/clean/CleanCard";
-import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
-import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
-import { AnalyticsDecor } from "@/components/analytics/clean/AnalyticsDecor";
-import { GoalShowcase } from "@/components/analytics/clean/GoalShowcase";
-import { GoalPodium } from "@/components/analytics/clean/GoalPodium";
-import { DSPageShell, DSPageHeader } from "@/components/ds";
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
 
-const AXIS_TICK = { fontSize: "max(11px, 0.6875rem)", fill: "hsl(var(--muted-foreground))" };
-const AXIS_STROKE = "hsl(var(--border))";
-const GRID_STROKE = "hsl(var(--border) / 0.5)";
+/* ─────────────────────────────────────────────────────────────
+   STATISTIQUES
 
-// Single accent + 3 muted derivatives (used only when distinguishing series).
+   La page etait organisee par SOURCE de donnees : six onglets —
+   apercu, objectifs, focus, sante, finance, habitudes — repondant
+   chacun "voici tout ce que je sais sur X", jamais "ou en es-tu".
+   Elle comptait 24 tuiles de KPI, 13 cartes et 27 graphiques, dans un
+   systeme visuel etranger au tableau de bord : coins a 12px contre 4,
+   jetons generiques au lieu des jetons nexus, et backdrop-blur — le
+   filtre meme qui grisait le champ d'etoiles et qu'on a retire de
+   onze panneaux du tableau de bord.
+
+   Elle est desormais organisee par QUESTION, en trois vues :
+
+     TRAJECTOIRE  comment j'avance dans le temps
+     REPARTITION  ou va l'effort
+     RYTHME       a quelle cadence je tiens
+
+   Le tableau de bord dit ou vous en etes maintenant ; cette page dit
+   comment vous y etes arrive. C'est sa seule raison d'exister a cote.
+
+   Trois compteurs en tete, fixes d'une vue a l'autre : on ne les
+   apprend qu'une fois.
+   ───────────────────────────────────────────────────────────── */
+
+const AXE = { fontSize: 11, fill: "var(--nexus-text-dimmer)" } as const;
+const TRAIT = "hsl(var(--primary) / 0.16)";
 const ACCENT = "hsl(var(--primary))";
-const ACCENT_SOFT = "hsl(var(--primary) / 0.5)";
-const NEUTRAL = "hsl(var(--muted-foreground))";
-const NEUTRAL_SOFT = "hsl(var(--muted-foreground) / 0.45)";
+const AMBRE = "#ffab00";
+const VERT = "#00ff88";
+const ROUGE = "#ff6b4a";
+const LEGENDE = { fontSize: 11, fontFamily: "'Share Tech Mono', monospace" } as const;
+
+const VUES: { id: PrismSection; nom: string; sous: string }[] = [
+  { id: "trajectoire", nom: "Trajectoire", sous: "Comment j'avance dans le temps" },
+  { id: "repartition", nom: "Répartition", sous: "Où va l'effort" },
+  { id: "rythme", nom: "Rythme", sous: "À quelle cadence je tiens" },
+];
+
+/** Panneau, dans le langage exact du tableau de bord : fond opaque,
+ *  bord cyan, coins a 4px, aucun backdrop-filter. */
+function Panneau({
+  titre, droite, children, vide, messageVide,
+}: {
+  titre: string;
+  droite?: string;
+  children?: React.ReactNode;
+  vide?: boolean;
+  messageVide?: string;
+}) {
+  return (
+    <section className="ana-panneau">
+      <div className="ana-panneau-liseret" />
+      <header className="ana-panneau-tete">
+        <h2 className="ana-panneau-titre ds-t-label">// {titre}</h2>
+        <span className="ana-panneau-fil" />
+        {droite && <span className="ana-panneau-droite ds-t-label">{droite}</span>}
+      </header>
+      {vide
+        ? <p className="ana-vide ds-t-label">{messageVide || "Aucune donnée"}</p>
+        : children}
+    </section>
+  );
+}
+
+function Compteur({ valeur, unite, libelle, teinte, pct }: {
+  valeur: string | number; unite?: string; libelle: string; teinte: string; pct?: number;
+}) {
+  return (
+    <div className="ana-compteur">
+      {pct !== undefined && (
+        <span
+          className="ana-jauge"
+          style={{
+            ["--c" as string]: teinte,
+            ["--p" as string]: `${Math.min(100, Math.max(0, pct))}%`,
+          }}
+        />
+      )}
+      <span className="ana-compteur-txt">
+        <span
+          className="ana-compteur-val font-orbitron"
+          style={{ color: teinte, textShadow: `0 0 14px ${teinte}55` }}
+        >
+          {valeur}{unite && <i className="ana-compteur-unite">{unite}</i>}
+        </span>
+        <span className="ana-compteur-lib ds-t-label">{libelle}</span>
+      </span>
+    </div>
+  );
+}
 
 export default function Analytics() {
   const { t } = useTranslation();
-  const { section, period, setSection, setPeriod, cyclePeriod } = useAnalyticsState({
-    section: "overview",
+  const { section, period, setSection, setPeriod } = useAnalyticsState({
+    section: "trajectoire",
     period: "all",
   });
   const { data, isLoading } = useAnalytics(period);
   const { currency } = useCurrency();
   const locale = useDateFnsLocale();
 
-  const handleSectionChange = useCallback(
-    (s: PrismSection) => {
-      if (s !== section) setSection(s);
-    },
-    [section, setSection],
-  );
+  const changerVue = useCallback((s: PrismSection) => setSection(s), [setSection]);
 
-  // Keyboard shortcuts: ←/→ period
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement)?.isContentEditable) return;
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (e.key === "ArrowLeft") cyclePeriod(-1);
-      else if (e.key === "ArrowRight") cyclePeriod(1);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [cyclePeriod]);
+  const moisCourt = useCallback((m: string) => {
+    try { return format(parseISO(`${m}-01`), "MMM yy", { locale }); } catch { return m; }
+  }, [locale]);
+  const jourCourt = useCallback((d: string) => {
+    try { return format(parseISO(d), "d MMM", { locale }); } catch { return d; }
+  }, [locale]);
 
-  const formatMonth = (m: string) => {
-    try {
-      return format(parseISO(`${m}-01`), "MMM yy", { locale });
-    } catch {
-      return m;
-    }
-  };
-  const formatDate = (d: string) => {
-    try {
-      return format(parseISO(d), "d MMM", { locale });
-    } catch {
-      return d;
-    }
-  };
+  const radarDiff = useMemo(() => (data?.goalsByDifficulty ?? []).map((d) => ({
+    palier: getDifficultyLabel(d.difficulty, t),
+    valeur: d.count,
+  })), [data, t]);
 
-  const healthRadarData = useMemo(() => {
-    if (!data || data.healthTrend.length === 0) return [];
-    const avg = data.healthTrend.reduce((a, h) => a + h.score, 0) / data.healthTrend.length / 20;
-    return [
-      { axis: "Sommeil", value: Math.min(5, avg * 1.05) },
-      { axis: "Humeur", value: Math.min(5, avg * 1.0) },
-      { axis: "Activité", value: Math.min(5, avg * 0.95) },
-      { axis: "Hydratation", value: Math.min(5, avg * 0.9) },
-      { axis: "Repas", value: Math.min(5, avg * 1.1) },
-      { axis: "Calme", value: Math.min(5, avg * 1.0) },
-    ];
-  }, [data]);
+  const tags = useMemo(() => (data?.goalsByTag ?? [])
+    .map((d) => ({ nom: getTagLabel(d.tag, t), valeur: d.count }))
+    .sort((a, b) => b.valeur - a.valeur)
+    .slice(0, 8), [data, t]);
 
   if (isLoading || !data) {
     return (
-      <DSPageShell width="xl" background={<AnalyticsDecor />}>
-        <div className="space-y-6">
-          <Skeleton className="h-12 w-72 rounded-lg" />
-          <Skeleton className="h-10 w-full rounded-lg" />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-28 rounded-xl" />
-            ))}
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Skeleton key={i} className="h-72 rounded-xl" />
-            ))}
-          </div>
+      <DSPageShell width="xl" background={<SpaceBackdrop />}>
+        <div className="ana-page">
+          <Skeleton className="h-28 w-full rounded" />
+          <Skeleton className="h-14 w-full rounded" />
+          <Skeleton className="h-80 w-full rounded" />
         </div>
       </DSPageShell>
     );
   }
 
   const {
-    summary,
-    goalsOverTime,
-    healthTrend,
-    financeTrend,
-    todoStats,
-    goalsByDifficulty,
-    goalsByTag,
-    pomodoroTrend,
-    goalVelocity,
-    habitStreak,
-    trends,
-    goalShowcase,
-    topGoals,
+    goalsOverTime, healthTrend, financeTrend, habitStreak, todoStats,
+    pomodoroTrend, goalVelocity, summary,
   } = data;
 
-  const completionRate =
-    summary.totalGoals > 0
-      ? Math.round((summary.completedGoals / summary.totalGoals) * 100)
-      : 0;
-  const focusHours = Math.round(summary.pomodoroMinutes / 60);
-  const totalTodos = todoStats.reduce((a, t) => a + t.completed, 0);
-  const habitTotalLogs = habitStreak.reduce((a, h) => a + h.completed, 0);
+  const pctObjectifs = summary.totalGoals > 0
+    ? Math.round((summary.completedGoals / summary.totalGoals) * 100) : 0;
+  const pctEtapes = summary.totalSteps > 0
+    ? Math.round((summary.completedSteps / summary.totalSteps) * 100) : 0;
+  const pctPaye = summary.totalCost > 0
+    ? Math.min(100, (summary.paidCost / summary.totalCost) * 100) : 0;
 
-  const difficultyData = goalsByDifficulty.map((d) => ({
-    name: getDifficultyLabel(d.difficulty, t),
-    value: d.count,
-  }));
-  const tagData = goalsByTag
-    .map((d) => ({ name: getTagLabel(d.tag, t), value: d.count }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 8);
-
-  const showTrend = period !== "all";
-
-  // ───── Tabs definition ─────
-  const tabs: CleanTab<PrismSection>[] = [
-    { value: "overview", label: t("analytics.tabs.overview", "Aperçu") },
-    { value: "goals", label: t("analytics.tabs.goals", "Objectifs"), count: summary.activeGoals },
-    { value: "focus", label: t("analytics.tabs.focus", "Focus"), count: pomodoroTrend.length },
-    { value: "health", label: t("analytics.tabs.health", "Santé"), count: healthTrend.length },
-    { value: "finance", label: t("analytics.tabs.finance", "Finance"), count: financeTrend.length },
-    { value: "habits", label: t("analytics.tabs.habits", "Habitudes"), count: habitStreak.length },
-  ];
-
-  // ───── KPI sets per section ─────
-  const overviewKPIs: KPIItem[] = [
-    {
-      icon: Target,
-      label: "Taux de réussite",
-      value: `${completionRate}%`,
-      delta: showTrend ? trends.goalsCompleted.percentChange : undefined,
-    },
-    { icon: Zap, label: "XP totale", value: summary.totalXP.toLocaleString() },
-    {
-      icon: Timer,
-      label: "Focus",
-      value: `${focusHours}h`,
-      delta: showTrend ? trends.focusMinutes.percentChange : undefined,
-    },
-    {
-      icon: Heart,
-      label: "Score santé",
-      value: `${summary.avgHealthScore}%`,
-      delta: showTrend ? trends.healthScore.percentChange : undefined,
-    },
-  ];
-
-  const goalsKPIs: KPIItem[] = [
-    { icon: Flame, label: "Actifs", value: summary.activeGoals },
-    {
-      icon: Award,
-      label: "Complétés",
-      value: summary.completedGoals,
-      delta: showTrend ? trends.goalsCompleted.percentChange : undefined,
-    },
-    {
-      icon: ListChecks,
-      label: "Étapes validées",
-      value: summary.completedSteps,
-      delta: showTrend ? trends.stepsCompleted.percentChange : undefined,
-    },
-    {
-      icon: DollarSign,
-      label: "Coût restant",
-      value: formatCurrency(summary.remainingCost, currency),
-    },
-  ];
-
-  const focusKPIs: KPIItem[] = [
-    {
-      icon: Timer,
-      label: "Heures totales",
-      value: `${focusHours}h`,
-      delta: showTrend ? trends.focusMinutes.percentChange : undefined,
-    },
-    { icon: Activity, label: "Sessions", value: pomodoroTrend.length },
-    {
-      icon: TrendingUp,
-      label: "Moyenne / jour",
-      value: pomodoroTrend.length
-        ? `${Math.round(summary.pomodoroMinutes / pomodoroTrend.length)} min`
-        : "—",
-    },
-    {
-      icon: Calendar,
-      label: "Meilleur jour",
-      value: pomodoroTrend.length
-        ? `${Math.max(...pomodoroTrend.map((p) => p.minutes))} min`
-        : "—",
-    },
-  ];
-
-  const healthKPIs: KPIItem[] = [
-    {
-      icon: Heart,
-      label: "Score moyen",
-      value: `${summary.avgHealthScore}%`,
-      delta: showTrend ? trends.healthScore.percentChange : undefined,
-    },
-    {
-      icon: TrendingUp,
-      label: "Pic",
-      value: healthTrend.length
-        ? `${Math.max(...healthTrend.map((h) => h.score))}%`
-        : "—",
-    },
-    {
-      icon: Activity,
-      label: "Creux",
-      value: healthTrend.length
-        ? `${Math.min(...healthTrend.map((h) => h.score))}%`
-        : "—",
-    },
-    { icon: Calendar, label: "Relevés", value: healthTrend.length },
-  ];
-
-  const financeKPIs: KPIItem[] = [
-    {
-      icon: Wallet,
-      label: "Total épargné",
-      value: formatCurrency(summary.totalSaved, currency),
-    },
-    {
-      icon: Receipt,
-      label: "Dépenses / mois",
-      value: formatCurrency(summary.monthlyBurnRate, currency),
-    },
-    {
-      icon: TrendingUp,
-      label: "Revenu moyen",
-      value: financeTrend.length
-        ? formatCurrency(
-            financeTrend.reduce((a, f) => a + f.income, 0) / financeTrend.length,
-            currency,
-          )
-        : "—",
-    },
-    {
-      icon: DollarSign,
-      label: "Dépenses moyennes",
-      value: financeTrend.length
-        ? formatCurrency(
-            financeTrend.reduce((a, f) => a + f.expenses, 0) / financeTrend.length,
-            currency,
-          )
-        : "—",
-    },
-  ];
-
-  const habitsKPIs: KPIItem[] = [
-    { icon: Repeat, label: "Logs totaux", value: habitTotalLogs },
-    { icon: Calendar, label: "Jours suivis", value: habitStreak.length },
-    {
-      icon: Activity,
-      label: "Meilleur jour",
-      value: habitStreak.length ? Math.max(...habitStreak.map((h) => h.completed)) : 0,
-    },
-    { icon: CheckSquare, label: "Tâches faites", value: totalTodos },
-  ];
-
-  // ───── Render ─────
   return (
-    <DSPageShell width="xl" background={<AnalyticsDecor />}>
-      <DSPageHeader
-        variant="sober"
-        systemLabel="Analytics"
-        icon={LayoutDashboard}
-        title="Vue d'ensemble"
-        subtitle="Suivi de tes signaux à travers les six modules."
-        actions={<CleanPeriodSelector value={period} onChange={setPeriod} />}
-      />
+    <DSPageShell width="xl" background={<SpaceBackdrop />}>
+      <div className="ana-page">
 
-      {/* Tabs */}
-      <div className="mb-6">
-        <CleanTabs<PrismSection>
-          value={section}
-          onChange={handleSectionChange}
-          tabs={tabs}
-          ariaLabel="Sections analytics"
-        />
-      </div>
+        {/* ── Bandeau : trois compteurs, fixes d'une vue a l'autre ── */}
+        <section className="ana-panneau">
+          <div className="ana-panneau-liseret" />
+          <header className="ana-panneau-tete">
+            <h1 className="ana-panneau-titre ds-t-label">// Statistiques</h1>
+            <span className="ana-panneau-fil" />
+            <CleanPeriodSelector value={period} onChange={setPeriod} />
+          </header>
+          <div className="ana-bandeau">
+            <Compteur
+              valeur={pctObjectifs} unite="%" libelle="Objectifs franchis"
+              teinte={ACCENT} pct={pctObjectifs}
+            />
+            <Compteur
+              valeur={pctEtapes} unite="%" libelle="Étapes validées"
+              teinte={AMBRE} pct={pctEtapes}
+            />
+            <Compteur
+              valeur={summary.totalXP.toLocaleString("fr-FR")}
+              libelle="XP accumulé" teinte={VERT}
+            />
+          </div>
+        </section>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={section}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.2 }}
-          className="space-y-6"
-        >
-          {/* OVERVIEW */}
-          {section === "overview" && (
-            <>
-              <CleanKPIGrid items={overviewKPIs} />
-              <GoalShowcase goals={goalShowcase} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <CleanCard
-                  title="Évolution des objectifs"
-                  subtitle="Créés vs complétés par mois"
-                  isEmpty={goalsOverTime.length === 0}
-                  emptyContent="Aucun objectif suivi"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={goalsOverTime}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                      <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <Tooltip content={<CleanTooltip labelFormatter={formatMonth} />} />
-                      <Line type="monotone" dataKey="created" stroke={NEUTRAL_SOFT} strokeWidth={2} dot={false} name="Créés" />
-                      <Line type="monotone" dataKey="completed" stroke={ACCENT} strokeWidth={2} dot={false} name="Complétés" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CleanCard>
+        {/* ── Bascule de vue ── */}
+        <nav className="ana-vues" aria-label="Vues des statistiques">
+          {VUES.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => changerVue(v.id)}
+              aria-pressed={section === v.id}
+              className="ana-vue"
+              data-actif={section === v.id}
+            >
+              <span className="ana-vue-nom">{v.nom}</span>
+              <span className="ana-vue-sous">{v.sous}</span>
+            </button>
+          ))}
+        </nav>
 
-                <CleanCard
-                  title="Score de santé"
-                  subtitle="Tendance sur la période"
-                  isEmpty={healthTrend.length === 0}
-                  emptyContent="Aucun relevé"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={healthTrend.slice(-60)}>
-                      <defs>
-                        <linearGradient id="ovHealth" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={ACCENT} stopOpacity={0.3} />
-                          <stop offset="100%" stopColor={ACCENT} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                      <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <YAxis domain={[0, 100]} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <Tooltip content={<CleanTooltip labelFormatter={formatDate} valueFormatter={(v) => `${v}%`} />} />
-                      <Area type="monotone" dataKey="score" stroke={ACCENT} strokeWidth={2} fill="url(#ovHealth)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CleanCard>
-              </div>
-            </>
-          )}
+        {/* ══ TRAJECTOIRE ══ */}
+        {section === "trajectoire" && (
+          <div className="ana-grille">
+            <Panneau
+              titre="Objectifs dans le temps"
+              droite={`${summary.completedGoals} / ${summary.totalGoals}`}
+              vide={goalsOverTime.length === 0}
+              messageVide="Aucun objectif sur la période"
+            >
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={goalsOverTime}>
+                  <defs>
+                    <linearGradient id="ana-cree" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={ACCENT} stopOpacity={0.34} />
+                      <stop offset="100%" stopColor={ACCENT} stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="ana-fait" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={VERT} stopOpacity={0.34} />
+                      <stop offset="100%" stopColor={VERT} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis dataKey="month" tickFormatter={moisCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={28} allowDecimals={false} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Legend wrapperStyle={LEGENDE} />
+                  <Area
+                    type="monotone" dataKey="created" name="Créés"
+                    stroke={ACCENT} fill="url(#ana-cree)" strokeWidth={1.8}
+                  />
+                  <Area
+                    type="monotone" dataKey="completed" name="Franchis"
+                    stroke={VERT} fill="url(#ana-fait)" strokeWidth={1.8}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Panneau>
 
-          {/* GOALS */}
-          {section === "goals" && (
-            <>
-              <CleanKPIGrid items={goalsKPIs} />
-              <GoalPodium goals={topGoals} />
-              <GoalShowcase goals={goalShowcase} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <CleanCard
-                  title="Répartition par difficulté"
-                  isEmpty={difficultyData.length === 0}
-                  emptyContent="Aucun objectif à classer"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={difficultyData}
-                        dataKey="value"
-                        nameKey="name"
-                        innerRadius="55%"
-                        outerRadius="80%"
-                        paddingAngle={2}
-                        stroke="hsl(var(--background))"
-                        strokeWidth={2}
-                      >
-                        {difficultyData.map((_, i) => (
-                          <Cell
-                            key={i}
-                            fill={`hsl(var(--primary) / ${1 - i * 0.13})`}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip content={<CleanTooltip />} />
-                      <Legend
-                        iconType="circle"
-                        wrapperStyle={{ fontSize: "max(11px, 0.6875rem)", color: "hsl(var(--muted-foreground))" }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CleanCard>
-
-                <CleanCard
-                  title="Tags les plus utilisés"
-                  subtitle="Top 8"
-                  isEmpty={tagData.length === 0}
-                  emptyContent="Aucun tag"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={tagData} layout="vertical" margin={{ left: 8, right: 16 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} horizontal={false} />
-                      <XAxis type="number" tick={AXIS_TICK} stroke={AXIS_STROKE} allowDecimals={false} />
-                      <YAxis dataKey="name" type="category" tick={AXIS_TICK} stroke={AXIS_STROKE} width={90} />
-                      <Tooltip content={<CleanTooltip />} />
-                      <Bar dataKey="value" fill={ACCENT} radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CleanCard>
-              </div>
-
-              <CleanCard
-                title="Vitesse de complétion"
-                subtitle="Créés vs complétés par mois"
-                isEmpty={goalsOverTime.length === 0}
-                emptyContent="Pas assez de données"
+            <div className="ana-duo">
+              <Panneau
+                titre="Durée moyenne d'un objectif"
+                droite={goalVelocity.length
+                  ? `${Math.round(goalVelocity[goalVelocity.length - 1].avgDays)} j`
+                  : undefined}
+                vide={goalVelocity.length === 0}
+                messageVide="Pas encore d'objectif franchi"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={goalsOverTime}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                    <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <Tooltip content={<CleanTooltip labelFormatter={formatMonth} />} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: "max(11px, 0.6875rem)" }} />
-                    <Bar dataKey="created" fill={NEUTRAL_SOFT} radius={[3, 3, 0, 0]} name="Créés" />
-                    <Bar dataKey="completed" fill={ACCENT} radius={[3, 3, 0, 0]} name="Complétés" />
-                  </BarChart>
+                <ResponsiveContainer width="100%" height={195}>
+                  <LineChart data={goalVelocity}>
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                    <XAxis dataKey="month" tickFormatter={moisCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                    <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={30} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Line
+                      type="monotone" dataKey="avgDays" name="Jours"
+                      stroke={AMBRE} strokeWidth={1.8} dot={{ r: 2.5, fill: AMBRE }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
-              </CleanCard>
+              </Panneau>
 
-              {goalVelocity.length > 0 && (
-                <CleanCard
-                  title="Délai moyen de complétion"
-                  subtitle="Jours entre création et finalisation"
-                  height="md"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={goalVelocity}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                      <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <Tooltip content={<CleanTooltip labelFormatter={formatMonth} valueFormatter={(v) => `${v} j`} />} />
-                      <Line
-                        type="monotone"
-                        dataKey="avgDays"
-                        stroke={ACCENT}
-                        strokeWidth={2}
-                        dot={{ fill: ACCENT, r: 3 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CleanCard>
-              )}
-            </>
-          )}
-
-          {/* FOCUS */}
-          {section === "focus" && (
-            <>
-              <CleanKPIGrid items={focusKPIs} />
-              <CleanCard
-                title="Temps de focus"
-                subtitle="Minutes par jour"
-                height="xl"
-                isEmpty={pomodoroTrend.length === 0}
-                emptyContent="Aucune session lancée"
+              <Panneau
+                titre="Étapes validées"
+                droite={`${summary.completedSteps} / ${summary.totalSteps}`}
+                vide={summary.totalSteps === 0}
+                messageVide="Aucune étape"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={pomodoroTrend.slice(-60)}>
-                    <defs>
-                      <linearGradient id="focusG" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor={ACCENT} stopOpacity={0.3} />
-                        <stop offset="100%" stopColor={ACCENT} stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                    <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <Tooltip content={<CleanTooltip labelFormatter={formatDate} valueFormatter={(v) => `${v} min`} />} />
-                    <Area type="monotone" dataKey="minutes" stroke={ACCENT} strokeWidth={2} fill="url(#focusG)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CleanCard>
-            </>
-          )}
-
-          {/* HEALTH */}
-          {section === "health" && (
-            <>
-              <CleanKPIGrid items={healthKPIs} />
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <CleanCard
-                  title="Score santé"
-                  subtitle="90 derniers jours"
-                  className="lg:col-span-2"
-                  height="xl"
-                  isEmpty={healthTrend.length === 0}
-                  emptyContent="Aucun relevé"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={healthTrend.slice(-90)}>
-                      <defs>
-                        <linearGradient id="hG" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={ACCENT} stopOpacity={0.3} />
-                          <stop offset="100%" stopColor={ACCENT} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                      <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <YAxis domain={[0, 100]} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <Tooltip content={<CleanTooltip labelFormatter={formatDate} valueFormatter={(v) => `${v}%`} />} />
-                      <Area type="monotone" dataKey="score" stroke={ACCENT} strokeWidth={2} fill="url(#hG)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CleanCard>
-
-                <CleanCard
-                  title="Équilibre vital"
-                  subtitle="6 axes biométriques"
-                  height="xl"
-                  isEmpty={healthRadarData.length === 0}
-                  emptyContent="Aucun relevé"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart data={healthRadarData} outerRadius="78%">
-                      <PolarGrid stroke={GRID_STROKE} />
-                      <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                      <PolarRadiusAxis angle={90} domain={[0, 5]} tick={false} axisLine={false} />
-                      <Radar
-                        dataKey="value"
-                        stroke={ACCENT}
-                        fill={ACCENT}
-                        fillOpacity={0.25}
-                        strokeWidth={2}
-                      />
-                      <Tooltip content={<CleanTooltip />} />
-                    </RadarChart>
-                  </ResponsiveContainer>
-                </CleanCard>
-              </div>
-            </>
-          )}
-
-          {/* FINANCE */}
-          {section === "finance" && (
-            <>
-              <CleanKPIGrid items={financeKPIs} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <CleanCard
-                  title="Revenus vs dépenses"
-                  subtitle="Vue mensuelle"
-                  isEmpty={financeTrend.length === 0}
-                  emptyContent="Pas de données financières"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={financeTrend}>
-                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                      <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <Tooltip content={<CleanTooltip labelFormatter={formatMonth} valueFormatter={(v) => formatCurrency(v, currency)} />} />
-                      <Legend iconType="circle" wrapperStyle={{ fontSize: "max(11px, 0.6875rem)" }} />
-                      <Line type="monotone" dataKey="income" stroke={ACCENT} strokeWidth={2} dot={false} name="Revenus" />
-                      <Line type="monotone" dataKey="expenses" stroke={NEUTRAL} strokeWidth={2} dot={false} name="Dépenses" />
-                      <Line type="monotone" dataKey="savings" stroke={ACCENT_SOFT} strokeWidth={2} strokeDasharray="4 4" dot={false} name="Épargne" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CleanCard>
-
-                <CleanCard
-                  title="Épargne cumulée"
-                  subtitle="Croissance dans le temps"
-                  isEmpty={financeTrend.length === 0}
-                  emptyContent="Pas de données"
-                >
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={financeTrend.reduce<{ month: string; total: number }[]>((acc, f) => {
-                        const last = acc[acc.length - 1]?.total || 0;
-                        acc.push({ month: f.month, total: last + f.savings });
-                        return acc;
-                      }, [])}
+                {/* Le chiffre est frere de l'anneau, pas enfant : un masque
+                    s'applique aussi aux descendants, et le centre de celui-ci
+                    est transparent — le pourcentage y disparaitrait. */}
+                <div className="ana-anneau-box">
+                  <div className="ana-anneau-cadre">
+                    <span
+                      className="ana-anneau"
+                      style={{ ["--c" as string]: AMBRE, ["--p" as string]: `${pctEtapes}%` }}
+                    />
+                    <b
+                      className="ana-anneau-val font-orbitron"
+                      style={{ color: AMBRE, textShadow: `0 0 16px ${AMBRE}88` }}
                     >
-                      <defs>
-                        <linearGradient id="savG" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={ACCENT} stopOpacity={0.3} />
-                          <stop offset="100%" stopColor={ACCENT} stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                      <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                      <Tooltip content={<CleanTooltip labelFormatter={formatMonth} valueFormatter={(v) => formatCurrency(v, currency)} />} />
-                      <Area type="monotone" dataKey="total" stroke={ACCENT} strokeWidth={2} fill="url(#savG)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </CleanCard>
+                      {pctEtapes}%
+                    </b>
+                  </div>
+                </div>
+                <p className="ana-pied ds-t-label">
+                  {summary.totalSteps - summary.completedSteps} étapes restantes
+                </p>
+              </Panneau>
+            </div>
+          </div>
+        )}
+
+        {/* ══ REPARTITION ══ */}
+        {section === "repartition" && (
+          <div className="ana-grille">
+            <div className="ana-duo">
+              <Panneau
+                titre="Par difficulté"
+                droite={`${summary.totalGoals} objectifs`}
+                vide={radarDiff.length === 0}
+                messageVide="Aucun objectif à classer"
+              >
+                <ResponsiveContainer width="100%" height={262}>
+                  <RadarChart data={radarDiff}>
+                    <PolarGrid stroke={TRAIT} />
+                    <PolarAngleAxis dataKey="palier" tick={AXE} />
+                    <PolarRadiusAxis tick={AXE} stroke={TRAIT} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Radar
+                      name="Objectifs" dataKey="valeur" stroke={ACCENT}
+                      fill={ACCENT} fillOpacity={0.22} strokeWidth={1.8}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+              </Panneau>
+
+              <Panneau
+                titre="Par domaine"
+                droite={tags.length ? `${tags.length} étiquettes` : undefined}
+                vide={tags.length === 0}
+                messageVide="Aucune étiquette posée"
+              >
+                <ResponsiveContainer width="100%" height={262}>
+                  <BarChart data={tags} layout="vertical" margin={{ left: 4 }}>
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" horizontal={false} />
+                    <XAxis type="number" tick={AXE} stroke={TRAIT} tickLine={false} allowDecimals={false} />
+                    <YAxis type="category" dataKey="nom" tick={AXE} stroke={TRAIT} tickLine={false} width={96} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Bar dataKey="valeur" name="Objectifs" fill={ACCENT} radius={[0, 2, 2, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Panneau>
+            </div>
+
+            <Panneau
+              titre="Coût du pacte"
+              droite={`${formatCurrency(summary.paidCost, currency)} / ${formatCurrency(summary.totalCost, currency)}`}
+              vide={summary.totalCost === 0}
+              messageVide="Aucun coût estimé"
+            >
+              <div className="ana-barre">
+                <i style={{ width: `${pctPaye}%` }} />
               </div>
-            </>
-          )}
+              <p className="ana-pied ana-pied-gauche ds-t-label">
+                Reste {formatCurrency(summary.remainingCost, currency)}
+              </p>
+              {financeTrend.length > 0 && (
+                <ResponsiveContainer width="100%" height={175}>
+                  <BarChart data={financeTrend}>
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                    <XAxis dataKey="month" tickFormatter={moisCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                    <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={42} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Legend wrapperStyle={LEGENDE} />
+                    <Bar dataKey="income" name="Revenus" fill={VERT} radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="expenses" name="Dépenses" fill={ROUGE} radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="savings" name="Épargne" fill={ACCENT} radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </Panneau>
+          </div>
+        )}
 
-          {/* HABITS */}
-          {section === "habits" && (
-            <>
-              <CleanKPIGrid items={habitsKPIs} />
-              <CleanCard
-                title="Activité des habitudes"
-                subtitle="60 derniers jours"
-                isEmpty={habitStreak.length === 0}
-                emptyContent="Aucune habitude suivie"
+        {/* ══ RYTHME ══ */}
+        {section === "rythme" && (
+          <div className="ana-grille">
+            <Panneau
+              titre="Focus"
+              droite={`${Math.round(summary.pomodoroMinutes / 60)} h cumulées`}
+              vide={pomodoroTrend.length === 0}
+              messageVide="Aucune session lancée"
+            >
+              <ResponsiveContainer width="100%" height={215}>
+                <AreaChart data={pomodoroTrend}>
+                  <defs>
+                    <linearGradient id="ana-focus" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={ACCENT} stopOpacity={0.4} />
+                      <stop offset="100%" stopColor={ACCENT} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis dataKey="date" tickFormatter={jourCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={34} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Area
+                    type="monotone" dataKey="minutes" name="Minutes"
+                    stroke={ACCENT} fill="url(#ana-focus)" strokeWidth={1.8}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Panneau>
+
+            <div className="ana-duo">
+              <Panneau
+                titre="Habitudes"
+                droite={habitStreak.length
+                  ? `${habitStreak.reduce((a, h) => a + h.completed, 0)} / ${habitStreak.length} jours`
+                  : undefined}
+                vide={habitStreak.length === 0}
+                messageVide="Aucune habitude suivie"
               >
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height={195}>
                   <BarChart data={habitStreak.slice(-60)}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                    <XAxis dataKey="date" tickFormatter={formatDate} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <Tooltip content={<CleanTooltip labelFormatter={formatDate} />} />
-                    <Bar dataKey="completed" fill={ACCENT} radius={[3, 3, 0, 0]} />
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                    <XAxis dataKey="date" tickFormatter={jourCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                    <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={28} allowDecimals={false} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Bar dataKey="completed" name="Tenues" fill={VERT} radius={[2, 2, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              </CleanCard>
+              </Panneau>
 
-              <CleanCard
-                title="Tâches complétées"
-                subtitle="Par mois"
-                height="md"
-                isEmpty={todoStats.length === 0}
-                emptyContent="Aucune tâche"
+              <Panneau
+                titre="Santé"
+                droite={healthTrend.length ? `${healthTrend.length} relevés` : undefined}
+                vide={healthTrend.length === 0}
+                messageVide="Aucun relevé"
               >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={todoStats}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={GRID_STROKE} vertical={false} />
-                    <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
-                    <Tooltip content={<CleanTooltip labelFormatter={formatMonth} />} />
-                    <Bar dataKey="completed" fill={ACCENT_SOFT} radius={[3, 3, 0, 0]} />
-                  </BarChart>
+                <ResponsiveContainer width="100%" height={195}>
+                  <LineChart data={healthTrend}>
+                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                    <XAxis dataKey="date" tickFormatter={jourCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                    <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={30} domain={[0, 100]} />
+                    <Tooltip content={<CleanTooltip />} />
+                    <Line
+                      type="monotone" dataKey="score" name="Score"
+                      stroke={VERT} strokeWidth={1.8} dot={{ r: 2.5, fill: VERT }}
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
-              </CleanCard>
-            </>
-          )}
-        </motion.div>
-      </AnimatePresence>
+              </Panneau>
+            </div>
+
+            <Panneau
+              titre="Tâches accomplies"
+              droite={`${todoStats.reduce((a, x) => a + x.completed, 0)} au total`}
+              vide={todoStats.length === 0}
+              messageVide="Aucune tâche terminée"
+            >
+              <ResponsiveContainer width="100%" height={175}>
+                <BarChart data={todoStats}>
+                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
+                  <XAxis dataKey="month" tickFormatter={moisCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
+                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={28} allowDecimals={false} />
+                  <Tooltip content={<CleanTooltip />} />
+                  <Bar dataKey="completed" name="Terminées" fill={AMBRE} radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </Panneau>
+          </div>
+        )}
+      </div>
     </DSPageShell>
   );
 }
-
-// Suppress unused import warnings (kept for clarity)
-void Gauge;

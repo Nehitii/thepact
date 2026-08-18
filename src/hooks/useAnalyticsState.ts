@@ -1,18 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { AnalyticsPeriod } from "@/components/analytics/PeriodSelector";
-import type { PrismSection } from "@/components/analytics/PrismRail";
+/** Les trois vues de la page. Voir le commentaire sur SECTIONS. */
+export type PrismSection = "trajectoire" | "repartition" | "rythme";
 
 const STORAGE_KEY = "pacte:analytics:state";
 
-const SECTIONS: PrismSection[] = [
-  "overview",
-  "goals",
-  "focus",
-  "health",
-  "finance",
-  "habits",
-];
+/* Trois vues au lieu de six onglets. La page etait organisee par SOURCE
+   de donnees — objectifs, focus, sante, finance, habitudes — et repondait
+   donc six fois a "voici tout ce que je sais sur X", jamais a "ou en
+   es-tu". Elle est desormais organisee par QUESTION. */
+const SECTIONS: PrismSection[] = ["trajectoire", "repartition", "rythme"];
 const PERIODS: AnalyticsPeriod[] = ["30d", "90d", "6m", "all"];
 
 function isSection(s: string | null): s is PrismSection {
