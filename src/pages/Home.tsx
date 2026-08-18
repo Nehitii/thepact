@@ -235,23 +235,24 @@ export default function Home() {
           <Skeleton className="h-48 w-full rounded-xl" />
         )}
 
-        {/* RANK + QUICK ACCESS */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-          <RankPanel rankData={safeRankData} className="md:col-span-7" />
-          {isShopReady ? (
-            <QuickAccessPanel
-              ownedModules={{
-                "todo-list": ownedModules["todo-list"],
-                journal: ownedModules["journal"],
-                "track-health": ownedModules["track-health"],
-              }}
-              onWeeklyReview={() => setWeeklyReviewOpen(true)}
-              className="md:col-span-5"
-            />
-          ) : (
-            <Skeleton className="md:col-span-5 h-40 rounded-xl" />
-          )}
-        </div>
+        {/* ACCES RAPIDE — barre pleine largeur, juste sous le hub.
+            Occupait auparavant cinq douziemes de la rangee suivante pour
+            six raccourcis, en face du panneau de rang. */}
+        {isShopReady ? (
+          <QuickAccessPanel
+            ownedModules={{
+              "todo-list": ownedModules["todo-list"],
+              journal: ownedModules["journal"],
+              "track-health": ownedModules["track-health"],
+            }}
+            onWeeklyReview={() => setWeeklyReviewOpen(true)}
+          />
+        ) : (
+          <Skeleton className="h-14 w-full rounded" />
+        )}
+
+        {/* RANG — pleine largeur depuis que l'acces rapide a quitte la rangee */}
+        <RankPanel rankData={safeRankData} />
 
         {/* COUNTDOWN */}
         {pact ? (

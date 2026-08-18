@@ -142,11 +142,11 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
       <div className="absolute top-0 left-0 right-0 h-px" style={{ background: `linear-gradient(90deg, transparent, rgba(${c.rgb},0.4), transparent)` }} />
       <div className="absolute top-0 bottom-0 left-0" style={{ width: 3, background: `linear-gradient(180deg, rgba(${c.rgb},0.8), rgba(${c.rgb},0.1))`, boxShadow: `0 0 12px rgba(${c.rgb},0.6)` }} />
 
-      <div className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] items-center" style={{ minHeight: 100 }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[auto_1fr_minmax(215px,auto)] items-center" style={{ minHeight: 100 }}>
         {/* Left: Alert status */}
         <div
-          className="flex flex-col items-center justify-center gap-2 md:border-r border-b md:border-b-0"
-          style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.15)`, background: `rgba(${c.rgb},0.04)` }}
+          className="flex flex-col items-center justify-center gap-2 lg:border-r border-b lg:border-b-0"
+          style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.28)`, background: `rgba(${c.rgb},0.11)` }}
         >
           <div className="relative" style={{ width: 44, height: 44 }}>
             <svg viewBox="0 0 44 44" style={{ width: 44, height: 44, animation: "ringRotate 8s linear infinite" }}>
@@ -217,8 +217,8 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
 
         {/* Right: Info rows */}
         <div
-          className="flex flex-col justify-center gap-[14px] md:border-l border-t md:border-t-0"
-          style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.12)`, background: `rgba(${c.rgb},0.02)`, minWidth: 180 }}
+          className="flex flex-col justify-center gap-[14px] lg:border-l border-t lg:border-t-0"
+          style={{ padding: "20px 28px", borderColor: `rgba(${c.rgb},0.22)`, background: `rgba(${c.rgb},0.05)`, minWidth: 215 }}
         >
           {[
             { key: "NOM DU PACTE", val: pactName, critical: false },
@@ -227,10 +227,10 @@ export function CountdownPanel({ projectStartDate, projectEndDate, goalsComplete
             { key: "COMPLÉTION OBJ.", val: `${goalsCompleted} / ${totalGoals}`, critical: false },
           ].map((row) => (
             <div key={row.key} className="flex flex-col gap-0.5">
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: `rgba(${c.rgb},0.75)`, textTransform: "uppercase" as const }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 1.6, color: `rgba(${c.rgb},0.85)`, textTransform: "uppercase" as const, whiteSpace: "nowrap" as const }}>
                 {row.key}
               </span>
-              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: row.critical ? 12 : 11, letterSpacing: 1, color: row.critical ? c.primary : `rgba(${c.rgb},0.7)`, textShadow: row.critical ? `0 0 6px rgba(${c.rgb},0.5)` : "none" }}>
+              <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: row.critical ? 13 : 12, letterSpacing: 0.8, color: row.critical ? c.primary : `rgba(${c.rgb},0.92)`, textShadow: row.critical ? `0 0 6px rgba(${c.rgb},0.5)` : "none" }}>
                 {row.val}
               </span>
             </div>

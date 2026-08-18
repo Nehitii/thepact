@@ -60,6 +60,50 @@ const buttons = [
   },
 ];
 
+/* Les deux actions qui vivaient en boutons larges separes rejoignent la
+   meme liste : six accès, un seul rythme. */
+const EXTRA = [
+  {
+    key: "todo", label: "TO-DO LIST", color: "#ffd700", hotkey: "F5",
+    moduleKey: "todo-list" as const, route: "/todo",
+    icon: (c: string) => (
+      <svg width={22} height={22} viewBox="0 0 26 26" fill="none" stroke={c} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="20" height="20" rx="2" strokeOpacity="0.45" />
+        <polyline points="7,9 10,12 19,7" strokeOpacity="0.95" />
+        <line x1="7" y1="14" x2="19" y2="14" strokeOpacity="0.55" />
+        <line x1="7" y1="18" x2="14" y2="18" strokeOpacity="0.45" />
+      </svg>
+    ),
+  },
+  {
+    key: "weekly", label: "WEEKLY REVIEW", color: "#818cf8", hotkey: "F6",
+    moduleKey: null, route: null,
+    icon: (c: string) => (
+      <svg width={22} height={22} viewBox="0 0 26 26" fill="none" stroke={c} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="2" width="18" height="22" rx="2" strokeOpacity="0.55" />
+        <line x1="8" y1="7" x2="18" y2="7" strokeOpacity="0.75" />
+        <line x1="8" y1="11" x2="18" y2="11" strokeOpacity="0.55" />
+        <line x1="8" y1="15" x2="14" y2="15" strokeOpacity="0.45" />
+        <path d="M15 18 L17 20 L21 16" strokeOpacity="0.95" strokeWidth="1.6" />
+      </svg>
+    ),
+  },
+];
+
+/**
+ * Barre d'acces rapide.
+ *
+ * Etait un panneau en colonne : une grille 2x2 plus deux boutons larges,
+ * occupant cinq douziemes de la rangee pour six raccourcis. Trois defauts
+ * s'y cumulaient — le fond --nexus-inner-bg a rgba(0,0,0,0.2) rendait les
+ * tuiles illisibles, un triangle de 10px en bas a droite de chaque tuile
+ * salissait le bord, et le volume occupe etait sans rapport avec le
+ * contenu.
+ *
+ * En barre horizontale sous le hub : les six accès sur une rangee, la
+ * colonne de droite liberee, et les coins supprimes. Sous 900px la rangee
+ * defile lateralement plutot que de comprimer les libelles.
+ */
 export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" }: QuickAccessPanelProps) {
   const navigate = useNavigate();
 
@@ -67,6 +111,8 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
     if (!moduleKey) return false;
     return !ownedModules[moduleKey as keyof typeof ownedModules];
   };
+
+  const actions = [...buttons, ...EXTRA];
 
   return (
     <div
@@ -76,186 +122,88 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
         border: "1px solid var(--nexus-border)",
         borderRadius: 4,
         boxShadow: "var(--nexus-shadow)",
-        padding: 22,
+        padding: "10px 12px",
       }}
     >
-      <CornerBrackets color="rgba(120,130,80,0.4)" />
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      <p
-        className="mb-4"
-        style={{
-          fontFamily: "'Share Tech Mono', monospace",
-          fontSize: "max(11px, 0.6875rem)", letterSpacing: 3,
-          color: "var(--nexus-text-dim)",
-          textTransform: "uppercase" as const,
-        }}
-      >
-        // ACCÈS RAPIDE
-      </p>
+      <div className="flex items-stretch gap-2 overflow-x-auto scrollbar-thin-x">
+        <span
+          className="hidden lg:flex items-center shrink-0 pr-3 mr-1"
+          style={{
+            fontFamily: "'Share Tech Mono', monospace",
+            fontSize: "max(11px, 0.6875rem)", letterSpacing: 3,
+            color: "var(--nexus-text-dim)",
+            textTransform: "uppercase" as const,
+            borderRight: "1px solid var(--nexus-separator)",
+          }}
+        >
+          // ACCÈS RAPIDE
+        </span>
 
-      {/* 2x2 grid */}
-      <div className="grid grid-cols-2 gap-[10px] mb-[10px]">
-        {buttons.map((btn) => {
+        {actions.map((btn) => {
           const locked = isLocked(btn.moduleKey);
           return (
             <button
               key={btn.key}
-              onClick={() => navigate(locked ? "/shop" : btn.route)}
-              className="relative flex flex-col items-center gap-[9px] cursor-pointer overflow-hidden group"
+              onClick={() => {
+                if (btn.key === "weekly") { onWeeklyReview?.(); return; }
+                navigate(locked ? "/shop" : (btn.route as string));
+              }}
+              title={locked ? `${btn.label} — verrouille` : btn.label}
+              className="relative flex items-center gap-2.5 shrink-0 cursor-pointer group"
               style={{
-                padding: "16px 14px 13px",
-                background: "var(--nexus-inner-bg)",
+                padding: "9px 14px 9px 12px",
+                /* Fond eclairci : --nexus-inner-bg a 0.2 d'opacite laissait
+                   les tuiles quasi noires sur un panneau deja sombre. */
+                background: "rgba(255,255,255,0.035)",
                 border: "1px solid var(--nexus-border)",
                 borderRadius: 4,
-                opacity: locked ? 0.4 : 1,
-                transition: "all 0.22s cubic-bezier(0.2, 0, 0, 1)",
-                ["--pc" as string]: btn.color,
+                opacity: locked ? 0.45 : 1,
+                transition: "background 0.2s, border-color 0.2s, transform 0.2s",
               }}
               onMouseEnter={(e) => {
-                if (!locked) {
-                  e.currentTarget.style.borderColor = btn.color;
-                  e.currentTarget.style.background = "var(--nexus-hover-bg)";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = `0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px ${btn.color}`;
-                }
+                if (locked) return;
+                e.currentTarget.style.borderColor = btn.color;
+                e.currentTarget.style.background = "rgba(255,255,255,0.075)";
+                e.currentTarget.style.transform = "translateY(-1px)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = "var(--nexus-border)";
-                e.currentTarget.style.background = "var(--nexus-inner-bg)";
+                e.currentTarget.style.background = "rgba(255,255,255,0.035)";
                 e.currentTarget.style.transform = "none";
-                e.currentTarget.style.boxShadow = "none";
               }}
             >
-              {/* Top accent line */}
-              <div
-                className="absolute top-0 left-0 right-0 h-px"
-                style={{
-                  background: `linear-gradient(90deg, transparent, ${btn.color}, transparent)`,
-                  opacity: 0.3,
-                }}
-              />
-              {/* Corner notch */}
-              <div
-                className="absolute bottom-0 right-0"
-                style={{
-                  width: 10, height: 10,
-                  background: btn.color,
-                  clipPath: "polygon(100% 0, 100% 100%, 0 100%)",
-                  opacity: 0.25,
-                }}
-              />
-              {/* Hotkey */}
-              <span
-                className="absolute"
-                style={{
-                  top: 5, right: 7,
-                  fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: "max(11px, 0.6875rem)", color: btn.color,
-                  opacity: 0.9, letterSpacing: 1,
-                }}
-              >
-                {btn.hotkey}
-              </span>
-
               {locked && (
-                <Lock size={10} className="absolute top-1.5 left-1.5" style={{ color: "var(--nexus-text-dimmer)" }} />
+                <Lock size={11} className="shrink-0" style={{ color: "var(--nexus-text-dimmer)" }} />
               )}
-              {btn.icon(btn.color)}
+              <span className="shrink-0 flex items-center">{btn.icon(btn.color)}</span>
               <span
+                className="whitespace-nowrap"
                 style={{
                   fontFamily: "'Share Tech Mono', monospace",
-                  fontSize: "max(11px, 0.6875rem)", letterSpacing: 2.5,
-                  color: "var(--nexus-text-dim)",
+                  fontSize: "max(11px, 0.6875rem)", letterSpacing: 2,
+                  color: "var(--nexus-text-label)",
                   textTransform: "uppercase" as const,
-                  textAlign: "center",
-                  lineHeight: 1.2,
                 }}
               >
                 {btn.label}
+              </span>
+              <span
+                className="shrink-0 hidden xl:inline"
+                style={{
+                  fontFamily: "'Share Tech Mono', monospace",
+                  fontSize: "max(11px, 0.6875rem)",
+                  color: btn.color, opacity: 0.85, letterSpacing: 1,
+                  marginLeft: 2,
+                }}
+              >
+                {btn.hotkey}
               </span>
             </button>
           );
         })}
       </div>
-
-      {/* TO-DO wide button */}
-      <button
-        onClick={() => navigate(ownedModules["todo-list"] ? "/todo" : "/shop")}
-        className="w-full relative flex items-center justify-center gap-[14px] cursor-pointer overflow-hidden"
-        style={{
-          padding: "12px 20px",
-          background: "var(--nexus-inner-bg)",
-          border: "1px solid var(--nexus-border)",
-          borderRadius: 4,
-          opacity: ownedModules["todo-list"] ? 1 : 0.4,
-          transition: "all 0.22s cubic-bezier(0.2, 0, 0, 1)",
-        }}
-        onMouseEnter={(e) => {
-          if (ownedModules["todo-list"]) {
-            e.currentTarget.style.borderColor = "#ffd700";
-            e.currentTarget.style.background = "var(--nexus-hover-bg)";
-            e.currentTarget.style.transform = "translateY(-2px)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "var(--nexus-border)";
-          e.currentTarget.style.background = "var(--nexus-inner-bg)";
-          e.currentTarget.style.transform = "none";
-        }}
-      >
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #ffd700, transparent)", opacity: 0.3 }} />
-        <div className="absolute bottom-0 right-0" style={{ width: 10, height: 10, background: "#ffd700", clipPath: "polygon(100% 0, 100% 100%, 0 100%)", opacity: 0.25 }} />
-        <span className="absolute" style={{ top: 5, right: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "#ffd700", opacity: 0.9, letterSpacing: 1 }}>F5</span>
-        <svg width={20} height={20} viewBox="0 0 26 26" fill="none" stroke="#ffd700" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.75 }}>
-          <rect x="3" y="3" width="20" height="20" rx="2" strokeOpacity="0.4" />
-          <polyline points="7,9 10,12 19,7" strokeOpacity="0.9" />
-          <line x1="7" y1="14" x2="19" y2="14" strokeOpacity="0.5" />
-          <line x1="7" y1="18" x2="14" y2="18" strokeOpacity="0.4" />
-        </svg>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2.5, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
-          TO-DO LIST
-        </span>
-      </button>
-
-      {/* WEEKLY REVIEW wide button */}
-      <button
-        onClick={() => onWeeklyReview?.()}
-        className="w-full relative flex items-center justify-center gap-[14px] cursor-pointer overflow-hidden mt-[10px]"
-        style={{
-          padding: "12px 20px",
-          background: "var(--nexus-inner-bg)",
-          border: "1px solid var(--nexus-border)",
-          borderRadius: 4,
-          transition: "all 0.22s cubic-bezier(0.2, 0, 0, 1)",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = "#6366f1";
-          e.currentTarget.style.background = "var(--nexus-hover-bg)";
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.15), 0 0 0 1px #6366f1";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = "var(--nexus-border)";
-          e.currentTarget.style.background = "var(--nexus-inner-bg)";
-          e.currentTarget.style.transform = "none";
-          e.currentTarget.style.boxShadow = "none";
-        }}
-      >
-        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "linear-gradient(90deg, transparent, #6366f1, transparent)", opacity: 0.3 }} />
-        <div className="absolute bottom-0 right-0" style={{ width: 10, height: 10, background: "#6366f1", clipPath: "polygon(100% 0, 100% 100%, 0 100%)", opacity: 0.25 }} />
-        <span className="absolute" style={{ top: 5, right: 10, fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "#818cf8", opacity: 0.9, letterSpacing: 1 }}>F6</span>
-        <svg width={20} height={20} viewBox="0 0 26 26" fill="none" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.75 }}>
-          <rect x="4" y="2" width="18" height="22" rx="2" strokeOpacity="0.5" />
-          <line x1="8" y1="7" x2="18" y2="7" strokeOpacity="0.7" />
-          <line x1="8" y1="11" x2="18" y2="11" strokeOpacity="0.5" />
-          <line x1="8" y1="15" x2="14" y2="15" strokeOpacity="0.4" />
-          <path d="M15 18 L17 20 L21 16" strokeOpacity="0.9" strokeWidth="1.6" />
-        </svg>
-        <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2.5, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
-          WEEKLY REVIEW
-        </span>
-      </button>
     </div>
   );
 }
