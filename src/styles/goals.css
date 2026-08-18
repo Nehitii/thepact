@@ -1734,3 +1734,90 @@
   -webkit-backdrop-filter: none !important;
   background-color: var(--nexus-bg) !important;
 }
+
+/* ── Titre de page ──
+   Le nom de la page etait un libelle mono de 11px perdu dans l'en-tete.
+   Il redevient un titre : Orbitron, 2rem, avec la barre d'accent qui
+   l'ancre a gauche. Il ne reprend pas pour autant le logotype centre
+   sur quatre lignes de haut qu'il remplace. */
+.gl-tete {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.gl-titre {
+  position: relative;
+  margin: 0;
+  padding-left: 14px;
+  font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.1rem);
+  font-weight: 900;
+  letter-spacing: 5px;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #eaf6ff;
+  white-space: nowrap;
+}
+.gl-titre::before {
+  content: "";
+  position: absolute;
+  inset: 2px auto 2px 0;
+  width: 4px;
+  background: var(--cp-jaune);
+  box-shadow: 0 0 14px -1px var(--cp-jaune);
+}
+.gl-titre-accent {
+  color: hsl(var(--primary));
+  text-shadow: 0 0 18px hsl(var(--primary) / 0.65);
+}
+.gl-titre-tag { align-self: center; }
+
+/* ── Bouton d'appel ──
+   Deux effets lents et de faible amplitude. Un clignotement rapide se
+   lirait comme une alerte ; ici c'est une invitation. */
+@keyframes gl-souffle {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(252 238 10 / 0.42); }
+  55%      { box-shadow: 0 0 22px 3px rgb(252 238 10 / 0.28); }
+}
+@keyframes gl-reflet {
+  0%       { transform: translateX(-140%) skewX(-18deg); }
+  58%,100% { transform: translateX(320%) skewX(-18deg); }
+}
+.gl-btn-appel {
+  position: relative;
+  overflow: hidden;
+  padding: 8px 15px;
+  animation: gl-souffle 3.4s ease-in-out infinite;
+}
+.gl-btn-reflet {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 34%;
+  background: linear-gradient(90deg,
+    rgb(255 255 255 / 0), rgb(255 255 255 / 0.5), rgb(255 255 255 / 0));
+  animation: gl-reflet 3.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.gl-btn-appel:hover { animation-play-state: paused; }
+
+/* ── Onglets centres ── */
+.gl-onglets { justify-content: center; }
+
+/* ── Correction : la case a cocher ne s'allumait jamais ──
+   L'override qui neutralisait backdrop-filter et border-radius sur les
+   primitives de la barre forcait aussi background-color en !important.
+   Radix peint l'etat coche par le fond : la case basculait bien a
+   data-state="checked" — filtre applique, indicateur present — mais
+   restait visuellement eteinte. On ne force plus que ce qu'on voulait
+   corriger. */
+.gl-barre button[role="checkbox"] { background-color: revert !important; }
+.gl-barre button[role="checkbox"][data-state="checked"] {
+  background-color: hsl(var(--primary)) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-btn-appel { animation: none; }
+  .gl-btn-reflet { animation: none; opacity: 0; }
+}

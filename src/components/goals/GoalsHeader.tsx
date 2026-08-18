@@ -35,9 +35,15 @@ export function GoalsHeader({ total, actifs, franchis }: Props) {
         <span className="cp-equerre cp-equerre-hg" />
         <span className="cp-equerre cp-equerre-bd" />
 
-        <header className="ana-panneau-tete">
-          <h1 className="ana-panneau-titre ds-t-label">{t("goals.title")}</h1>
-          <span className="cp-tag">{pct}% ACQUIS</span>
+        <header className="gl-tete">
+          {/* Titre volontairement en dur, et non t("goals.title") : la page
+              doit s'appeler "Goals" pour l'instant, quelle que soit la
+              langue de l'interface. A repasser par la traduction le jour
+              ou le nom se stabilise. */}
+          <h1 className="gl-titre font-orbitron">
+            Goal<span className="gl-titre-accent">s</span>
+          </h1>
+          <span className="cp-tag gl-titre-tag">{pct}% ACQUIS</span>
           <span className="ana-panneau-fil" />
           <div className="gl-actions">
             <button
@@ -49,11 +55,16 @@ export function GoalsHeader({ total, actifs, franchis }: Props) {
               <Network className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="hidden md:inline">{t("goals.graph")}</span>
             </button>
+            {/* Le bouton porte l'action principale de la page : il respire,
+                et un reflet le traverse. Les deux effets sont lents et de
+                faible amplitude — un clignotement rapide se lit comme une
+                alerte, pas comme une invitation. */}
             <button
               type="button"
               onClick={() => navigate("/goals/new")}
-              className="gl-btn gl-btn-primaire"
+              className="gl-btn gl-btn-primaire gl-btn-appel"
             >
+              <span className="gl-btn-reflet" aria-hidden="true" />
               <Plus className="h-4 w-4" aria-hidden="true" />
               <span>{t("goals.createGoal")}</span>
             </button>

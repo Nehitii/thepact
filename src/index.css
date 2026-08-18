@@ -1340,3 +1340,23 @@ All colors MUST be HSL.
 @media (prefers-reduced-motion: reduce) {
   .mon-sweep, .mon-crt::after, .mon-dl.crit, .mon-curseur { animation: none; }
 }
+
+/* ── La barre de defilement ne doit jamais disparaitre ──
+   A l ouverture d un menu Radix (Select, Dialog, Dropdown), le verrou de
+   defilement pose overflow:hidden sur body. La barre disparait alors —
+   mesure : 11px a 0 — sans compensation en padding-right, et toute la
+   page saute de 11px. C etait visible en choisissant un tri sur la page
+   Objectifs.
+
+   scrollbar-gutter: stable ne suffit pas, verifie a l execution : la
+   gouttiere n est pas retenue quand l overflow de body passe a hidden,
+   la mesure retombe a 0. overflow-y: scroll fait de html lui-meme le
+   conteneur de defilement, avec une barre permanente que l overflow de
+   body ne propage plus — mesure : 11px dans les deux cas.
+
+   Le correctif est global parce que le defaut l est : il concerne
+   chaque surimpression de l application, pas seulement ce tri. */
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
