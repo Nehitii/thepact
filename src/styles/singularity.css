@@ -399,14 +399,23 @@
 /* Etoiles proches : rares, franches, avec une croix de diffraction —
    le signe qui distingue une etoile brillante d'un point blanc. */
 .space-near {
+  /* Les croix de diffraction dessinees en linear-gradient tuile ont ete
+     retirees : leur tuile faisait 1px de haut, donc les arrets a
+     calc(50% +- 0.5px) couvraient toute la tuile, et background-repeat
+     la repetait sur tout l ecran. Au lieu de deux traits fins, cela
+     posait un voile bleu a 0.55 d alpha sur la totalite du fond — le
+     gris que l utilisateur voyait entre les panneaux.
+     Les croix sont refaites en radial-gradient etires, qui restent
+     locaux a leur etoile. */
   background-image:
     radial-gradient(2.2px 2.2px at 108px 162px, rgba(255,255,255,1), transparent),
     radial-gradient(1.8px 1.8px at 452px 384px, rgba(224,240,255,0.95), transparent),
     radial-gradient(1.8px 1.8px at 296px 78px,  rgba(255,232,198,0.9), transparent),
-    linear-gradient(0deg,  transparent calc(50% - 0.5px), hsl(200 100% 90% / 0.55) 50%, transparent calc(50% + 0.5px)),
-    linear-gradient(90deg, transparent calc(50% - 0.5px), hsl(200 100% 90% / 0.55) 50%, transparent calc(50% + 0.5px));
-  background-size: 560px 560px, 560px 560px, 560px 560px, 30px 1px, 1px 30px;
-  background-position: 0 0, 0 0, 0 0, 93px 161px, 107px 147px;
+    radial-gradient(14px 0.6px at 108px 162px, hsl(200 100% 90% / 0.45), transparent),
+    radial-gradient(0.6px 14px at 108px 162px, hsl(200 100% 90% / 0.45), transparent),
+    radial-gradient(10px 0.5px at 452px 384px, hsl(205 100% 92% / 0.35), transparent),
+    radial-gradient(0.5px 10px at 452px 384px, hsl(205 100% 92% / 0.35), transparent);
+  background-size: 560px 560px;
   animation: space-twinkle-b 10s ease-in-out infinite reverse;
 }
 
