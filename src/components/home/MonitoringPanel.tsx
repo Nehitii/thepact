@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface MonitoringData {
   goalsCompleted: number;
@@ -14,6 +14,11 @@ interface DifficultyProgress {
   completed: number;
   total: number;
   percentage: number;
+  /** Volume d'etapes du palier. C'est lui qui fait le radar : compter les
+   *  objectifs termines ment — MEDIUM affiche 0/5 alors que 21 de ses 27
+   *  etapes sont faites. */
+  totalSteps?: number;
+  completedSteps?: number;
 }
 
 interface MonitoringPanelProps {
@@ -35,59 +40,23 @@ const NOMS: Record<string, string> = {
   extreme: "EXTREME", impossible: "IMPOSSIBLE", custom: "ANANTA",
 };
 
-/** Jauge annulaire. Meme construction que l'anneau d'accretion du hub :
- *  conic-gradient arrete au pourcentage reel, masque en couronne. */
-function Jauge({ valeur, total, libelle, couleur }: {
-  valeur: number; total: number; libelle: string; couleur: string;
-}) {
-  const pct = total > 0 ? Math.round((valeur / total) * 100) : 0;
-  return (
-    <div className="flex items-center gap-3 min-w-0">
-      <span
-        className="quest-ring shrink-0"
-        style={{
-          ["--q-c" as string]: couleur,
-          ["--q-pct" as string]: `${pct}%`,
-          width: "2.9rem",
-          height: "2.9rem",
-        }}
-      >
-        <span
-          className="font-mono"
-          style={{ fontSize: "max(11px, 0.6875rem)", color: couleur, fontVariantNumeric: "tabular-nums" }}
-        >
-          {pct}%
-        </span>
-      </span>
-      <span className="flex flex-col leading-tight min-w-0">
-        <span
-          className="ds-t-label font-orbitron uppercase truncate"
-          style={{ letterSpacing: 2, color: "var(--nexus-text-label)" }}
-        >
-          {libelle}
-        </span>
-        <span
-          className="ds-t-label font-mono"
-          style={{ color: "var(--nexus-text-dimmer)", fontVariantNumeric: "tabular-nums" }}
-        >
-          {valeur} / {total}
-        </span>
-      </span>
-    </div>
-  );
-}
+const CLE_VUE = "vowpact.monitoring.vue";
+type Vue = "radar" | "diagnostic";
 
 /**
- * Monitoring — carte unique.
+ * Monitoring — deux vues d'une meme lecture.
  *
- * Fusionne "Monitoring Global" (714px) et "L'Echelle Ananta" (442px),
- * soit 1156px pour deux coupes des MEMES 38 objectifs : l'une par type
- * (objectifs, etapes, habitudes), l'autre par difficulte. Deux panneaux
- * separes obligeaient a faire le rapprochement de tete.
+ * RADAR : une signature en toile d'araignee sur un axe par difficulte,
+ * mesuree en ETAPES et non en objectifs termines. La difference n'est
+ * pas cosmetique : compter les objectifs finis fait passer MEDIUM pour
+ * 0 % alors que 21 de ses 27 etapes sont validees. La forme du polygone
+ * dit d'un coup ou l'effort porte et ou il manque.
  *
- * Ici les trois jauges donnent l'avancement, la rangee de difficultes
- * donne sa repartition, et la frise donne le temps. Une seule carte,
- * trois lectures, qui se completent au lieu de se repeter.
+ * DIAGNOSTIC : le meme etat en vidage systeme, ligne a ligne, avec les
+ * ecarts chiffres. Ce que le radar montre, le diagnostic l'enonce.
+ *
+ * La vue choisie est gardee en localStorage : c'est une preference de
+ * lecture, elle n'a pas a etre reprise a chaque visite.
  */
 export function MonitoringPanel({
   data,
@@ -97,6 +66,16 @@ export function MonitoringPanel({
   customDifficultyName,
   customDifficultyColor,
 }: MonitoringPanelProps) {
+  const [vue, setVue] = useState<Vue>(() => {
+    if (typeof window === "undefined") return "radar";
+    return (localStorage.getItem(CLE_VUE) as Vue) || "radar";
+  });
+
+  const changerVue = (v: Vue) => {
+    setVue(v);
+    try { localStorage.setItem(CLE_VUE, v); } catch { /* mode prive */ }
+  };
+
   const frise = useMemo(() => {
     if (!projectStartDate || !projectEndDate) return null;
     const debut = new Date(projectStartDate).getTime();
@@ -104,37 +83,55 @@ export function MonitoringPanel({
     if (!(fin > debut)) return null;
     const total = Math.round((fin - debut) / 86400000);
     const ecoule = Math.max(0, Math.min(total, Math.round((Date.now() - debut) / 86400000)));
-    const pct = Math.round((ecoule / total) * 100);
-    const phase =
-      pct < 25 ? "PHASE INITIALE" : pct < 50 ? "PHASE DE CROISIÈRE"
-      : pct < 75 ? "PHASE AVANCÉE" : "PHASE FINALE";
-    return { total, ecoule, pct, phase };
+    return { total, ecoule, pct: (ecoule / total) * 100 };
   }, [projectStartDate, projectEndDate]);
 
-  const difficultes = useMemo(
+  const axes = useMemo(
     () =>
       ORDRE.map((d) => difficultyProgress.find((p) => p.difficulty === d))
-        .filter((p): p is DifficultyProgress => !!p && p.total > 0),
-    [difficultyProgress],
+        .filter((p): p is DifficultyProgress => !!p && (p.totalSteps ?? 0) > 0)
+        .map((p) => {
+          const etapes = p.totalSteps ?? 0;
+          const faites = p.completedSteps ?? 0;
+          return {
+            cle: p.difficulty,
+            nom: p.difficulty === "custom" ? (customDifficultyName || NOMS.custom) : NOMS[p.difficulty],
+            couleur: p.difficulty === "custom" ? (customDifficultyColor || COULEURS.custom) : COULEURS[p.difficulty],
+            pct: etapes > 0 ? Math.round((faites / etapes) * 100) : 0,
+            faites, etapes,
+            objectifs: `${p.completed}/${p.total}`,
+          };
+        }),
+    [difficultyProgress, customDifficultyName, customDifficultyColor],
   );
+
+  const pctObjectifs = data.totalGoals > 0 ? (data.goalsCompleted / data.totalGoals) * 100 : 0;
+  const pctEtapes = data.totalSteps > 0 ? (data.totalStepsCompleted / data.totalSteps) * 100 : 0;
+  const pctHabitudes = data.totalHabitChecks > 0 ? (data.completedHabitChecks / data.totalHabitChecks) * 100 : 0;
+  const ecart = frise ? pctObjectifs - frise.pct : null;
+
+  /* Le palier qui porte le plus de volume restant : c'est la ou se joue
+     la suite, et rien dans l'ancien panneau ne le disait. */
+  const critique = useMemo(() => {
+    if (!axes.length) return null;
+    return axes.reduce((a, b) => (b.etapes - b.faites > a.etapes - a.faites ? b : a));
+  }, [axes]);
+  const volumeTotal = axes.reduce((s, a) => s + a.etapes, 0);
 
   return (
     <div
-      /* h-full + colonne repartie : place cote a cote avec le compte a
-         rebours, ce panneau doit remplir la meme hauteur, et son contenu
-         se distribuer plutot que de s.entasser en haut. */
       className="relative overflow-hidden h-full flex flex-col"
       style={{
         background: "var(--nexus-bg)",
         border: "1px solid var(--nexus-border)",
         borderRadius: 4,
         boxShadow: "var(--nexus-shadow)",
-        padding: "18px 20px",
+        padding: "16px 18px",
       }}
     >
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 mb-3">
         <span
           className="ds-t-label font-mono uppercase shrink-0"
           style={{ letterSpacing: 3, color: "var(--nexus-text-dim)" }}
@@ -142,108 +139,167 @@ export function MonitoringPanel({
           // Monitoring
         </span>
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg, var(--nexus-separator), transparent)" }} />
-        {frise && (
-          <span
-            className="ds-t-label font-mono shrink-0"
-            style={{ letterSpacing: 1.5, color: "hsl(var(--primary))" }}
-          >
-            JOUR {frise.ecoule} / {frise.total} — {frise.phase}
-          </span>
-        )}
+
+        {/* Bascule de vue */}
+        <span className="mon-switch shrink-0">
+          {(["radar", "diagnostic"] as Vue[]).map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => changerVue(v)}
+              aria-pressed={vue === v}
+              className="mon-switch-btn"
+              data-actif={vue === v}
+            >
+              {v === "radar" ? "Radar" : "Diag"}
+            </button>
+          ))}
+        </span>
       </div>
 
-      {/* Avancement, par type d objet */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5 flex-1 content-center">
-        <Jauge valeur={data.goalsCompleted} total={data.totalGoals} libelle="Objectifs" couleur="#00d4ff" />
-        <Jauge valeur={data.totalStepsCompleted} total={data.totalSteps} libelle="Étapes" couleur="#ffab00" />
-        <Jauge valeur={data.completedHabitChecks} total={data.totalHabitChecks} libelle="Habitudes" couleur="#00ff88" />
-      </div>
+      {vue === "radar" ? (
+        <RadarView axes={axes} frise={frise} critique={critique} volumeTotal={volumeTotal} />
+      ) : (
+        <DiagnosticView
+          axes={axes}
+          frise={frise}
+          pctObjectifs={pctObjectifs}
+          pctEtapes={pctEtapes}
+          pctHabitudes={pctHabitudes}
+          ecart={ecart}
+          critique={critique}
+          volumeTotal={volumeTotal}
+          data={data}
+        />
+      )}
+    </div>
+  );
+}
 
-      {/* Repartition, par difficulte. Une rangee de barres verticales
-          plutot que six cartes : c'est une distribution, elle se lit
-          d'un coup ou pas du tout. */}
-      {difficultes.length > 0 && (
-        <div className="flex items-end gap-1.5 mb-5" style={{ height: 58 }}>
-          {difficultes.map((d) => {
-            const couleur = d.difficulty === "custom" ? (customDifficultyColor || COULEURS.custom) : COULEURS[d.difficulty];
-            const nom = d.difficulty === "custom" ? (customDifficultyName || NOMS.custom) : NOMS[d.difficulty];
-            const max = Math.max(...difficultes.map((x) => x.total));
-            const hauteur = Math.max(12, (d.total / max) * 100);
-            const remplie = d.total > 0 ? (d.completed / d.total) * 100 : 0;
+/* ── Vue radar ─────────────────────────────────────────────────── */
+function RadarView({ axes, frise, critique, volumeTotal }: {
+  axes: ReturnType<typeof Object> & any[];
+  frise: { total: number; ecoule: number; pct: number } | null;
+  critique: any;
+  volumeTotal: number;
+}) {
+  const C = 150, R = 96, n = axes.length;
+  const pt = (i: number, r: number) => {
+    const a = (Math.PI * 2 * i) / n - Math.PI / 2;
+    return [C + Math.cos(a) * r, C + Math.sin(a) * r] as const;
+  };
+  const chemin = (r: (i: number) => number) =>
+    axes.map((_, i) => pt(i, r(i)).map((v) => v.toFixed(1)).join(",")).join(" ");
+
+  if (!n) {
+    return (
+      <p className="ds-t-label font-mono flex-1 grid place-items-center" style={{ color: "var(--nexus-text-dimmer)" }}>
+        Aucune étape enregistrée.
+      </p>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex-1 grid place-items-center min-h-0">
+        <svg viewBox="0 0 300 300" className="mon-radar w-full h-full" style={{ maxHeight: 330 }} role="img"
+             aria-label={`Avancement par difficulté : ${axes.map((a) => `${a.nom} ${a.pct}%`).join(", ")}`}>
+          <defs>
+            <linearGradient id="mon-sweep" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+            </linearGradient>
+          </defs>
+
+          {[0.25, 0.5, 0.75, 1].map((k) => (
+            <polygon key={k} className="mon-grid" points={chemin(() => R * k)} />
+          ))}
+          {axes.map((_, i) => {
+            const p = pt(i, R);
+            return <line key={i} className="mon-axe" x1={C} y1={C} x2={p[0]} y2={p[1]} />;
+          })}
+
+          <g className="mon-sweep">
+            <path d={`M${C} ${C} L${C + R + 22} ${C} A${R + 22} ${R + 22} 0 0 0 ${(C + Math.cos(-Math.PI / 3) * (R + 22)).toFixed(1)} ${(C + Math.sin(-Math.PI / 3) * (R + 22)).toFixed(1)} Z`}
+                  fill="url(#mon-sweep)" />
+          </g>
+
+          <polygon className="mon-poly" points={chemin((i) => R * Math.max(0.03, axes[i].pct / 100))} />
+
+          {axes.map((a, i) => {
+            const p = pt(i, R * Math.max(0.03, a.pct / 100));
+            return <circle key={a.cle} className="mon-pt" cx={p[0]} cy={p[1]} r={3} style={{ ["--c" as string]: a.couleur }} />;
+          })}
+
+          {/* Etiquettes : nom du palier et POURCENTAGE, demande explicite. */}
+          {axes.map((a, i) => {
+            const p = pt(i, R + 30);
+            const ancre = Math.abs(p[0] - C) < 6 ? "middle" : p[0] > C ? "start" : "end";
             return (
-              <div
-                key={d.difficulty}
-                className="flex-1 flex flex-col items-center justify-end gap-1 min-w-0"
-                title={`${nom} — ${d.completed} / ${d.total}`}
-              >
-                <span
-                  className="ds-t-label font-mono"
-                  style={{ color: couleur, fontVariantNumeric: "tabular-nums" }}
-                >
-                  {d.completed}/{d.total}
-                </span>
-                <span
-                  className="w-full relative overflow-hidden"
-                  style={{
-                    height: `${hauteur}%`,
-                    minHeight: 10,
-                    background: `color-mix(in srgb, ${couleur} 14%, transparent)`,
-                    borderTop: `1px solid color-mix(in srgb, ${couleur} 45%, transparent)`,
-                    borderRadius: 1,
-                  }}
-                >
-                  <span
-                    className="absolute inset-x-0 bottom-0"
-                    style={{
-                      height: `${remplie}%`,
-                      background: `linear-gradient(180deg, ${couleur}, color-mix(in srgb, ${couleur} 45%, transparent))`,
-                      boxShadow: `0 0 8px color-mix(in srgb, ${couleur} 55%, transparent)`,
-                      transition: "height 900ms cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
-                  />
-                </span>
-                <span
-                  className="ds-t-label font-mono truncate w-full text-center"
-                  style={{ letterSpacing: 0.5, color: "var(--nexus-text-dimmer)" }}
-                >
-                  {nom}
-                </span>
-              </div>
+              <g key={a.cle}>
+                <text className="mon-lab" x={p[0]} y={p[1] - 4} fill={a.couleur} textAnchor={ancre}
+                      style={{ filter: `drop-shadow(0 0 6px ${a.couleur})` }}>
+                  {a.nom}
+                </text>
+                <text className="mon-pct" x={p[0]} y={p[1] + 9} fill={a.couleur} textAnchor={ancre}>
+                  {a.pct}%
+                </text>
+              </g>
             );
           })}
-        </div>
-      )}
+        </svg>
+      </div>
 
-      {/* La frise du cycle */}
-      {frise && (
-        <div>
-          <div
-            className="relative overflow-hidden"
-            style={{ height: 5, background: "hsl(var(--primary) / 0.1)", borderRadius: 2 }}
-          >
-            <div
-              className="absolute inset-y-0 left-0"
-              style={{
-                width: `${frise.pct}%`,
-                background: "linear-gradient(90deg, hsl(var(--primary) / 0.35), hsl(var(--primary)))",
-                boxShadow: "0 0 10px hsl(var(--primary) / 0.6)",
-                borderRadius: 2,
-              }}
-            />
-          </div>
-          <div className="flex justify-between mt-1.5">
-            {[`J.1`, `J.${Math.round(frise.total * 0.5)}`, `▶ J.${frise.ecoule}`, `J.${frise.total}`].map((m, i) => (
-              <span
-                key={m}
-                className="ds-t-label font-mono"
-                style={{ letterSpacing: 1, color: i === 2 ? "hsl(var(--primary))" : "var(--nexus-marker-dim)" }}
-              >
-                {m}
-              </span>
-            ))}
-          </div>
-        </div>
+      {critique && (
+        <p className="mon-note">
+          <b>{critique.nom}</b> porte {Math.round((critique.etapes / Math.max(1, volumeTotal)) * 100)} % du volume
+          et n'est avancé qu'à {critique.pct} %.
+          {frise && ` Jour ${frise.ecoule} / ${frise.total}.`}
+        </p>
       )}
+    </>
+  );
+}
+
+/* ── Vue diagnostic ────────────────────────────────────────────── */
+function DiagnosticView({ axes, frise, pctObjectifs, pctEtapes, pctHabitudes, ecart, critique, volumeTotal, data }: any) {
+  const rang = (p: number) => (p >= 70 ? "" : p >= 30 ? "warn" : "crit");
+  const L = ({ t, v, c }: { t: string; v: string; c?: string }) => (
+    <div className={`mon-dl ${c || ""}`}>
+      <em>{t}</em>
+      <span className="mon-pts" />
+      <b>{v}</b>
+    </div>
+  );
+
+  return (
+    <div className="mon-crt flex-1 min-h-0">
+      <div className="mon-diag">
+        <p className="mon-dhead">&gt; ANALYSE DU CYCLE</p>
+        {frise && <L t="TEMPS ÉCOULÉ" v={`${frise.pct.toFixed(1)} %`} />}
+        <L t="OBJECTIFS FAITS" v={`${pctObjectifs.toFixed(1)} %`} c={rang(pctObjectifs)} />
+        <L t="ÉTAPES VALIDÉES" v={`${pctEtapes.toFixed(1)} %`} c={rang(pctEtapes)} />
+        <L t="HABITUDES" v={`${pctHabitudes.toFixed(1)} %`} c={rang(pctHabitudes)} />
+        {ecart !== null && (
+          <L t="ÉCART / TEMPS" v={`${ecart >= 0 ? "+" : "−"} ${Math.abs(ecart).toFixed(1)} pts`}
+             c={ecart >= 0 ? "" : "crit"} />
+        )}
+
+        <div className="mon-dsep" />
+        <p className="mon-dhead">&gt; CHARGE PAR PALIER</p>
+        {axes.map((a: any) => (
+          <L key={a.cle} t={a.nom} v={`${a.faites}/${a.etapes} · ${a.pct} %`} c={rang(a.pct)} />
+        ))}
+
+        <div className="mon-dsep" />
+        <p className="mon-dhead">&gt; VOLUME</p>
+        <L t="ÉTAPES TOTALES" v={`${data.totalStepsCompleted} / ${data.totalSteps}`} />
+        {critique && (
+          <L t={`${critique.nom} · ${Math.round((critique.etapes / Math.max(1, volumeTotal)) * 100)} % DU VOLUME`}
+             v={`${critique.pct} %`} c="crit" />
+        )}
+        <p className="mon-dhead mt-2">&gt; FIN DE RAPPORT<span className="mon-curseur" /></p>
+      </div>
     </div>
   );
 }

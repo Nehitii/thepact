@@ -1199,3 +1199,144 @@ All colors MUST be HSL.
   letter-spacing: 0.14em;
   color: var(--nexus-text-dimmer);
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Monitoring — radar et diagnostic
+
+   Deux vues d'une meme lecture, avec bascule. Le radar mesure les
+   ETAPES et non les objectifs termines : compter les objectifs finis
+   fait passer MEDIUM pour 0 % alors que 21 de ses 27 etapes sont
+   validees. La forme du polygone dit ou l'effort porte.
+   ───────────────────────────────────────────────────────────── */
+
+.mon-switch {
+  display: inline-flex;
+  border: 1px solid var(--nexus-border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.mon-switch-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  color: var(--nexus-text-dimmer);
+  background: transparent;
+  cursor: pointer;
+  transition: color 200ms, background 200ms, box-shadow 200ms;
+}
+.mon-switch-btn + .mon-switch-btn { border-left: 1px solid var(--nexus-border); }
+.mon-switch-btn:hover { color: var(--nexus-text-label); }
+.mon-switch-btn[data-actif="true"] {
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.14);
+  box-shadow: inset 0 0 12px hsl(var(--primary) / 0.22);
+}
+
+/* ── Radar ── */
+.mon-grid { fill: none; stroke: hsl(var(--primary) / 0.16); }
+.mon-axe { stroke: hsl(var(--primary) / 0.13); }
+.mon-poly {
+  fill: hsl(var(--primary) / 0.16);
+  stroke: hsl(var(--primary));
+  stroke-width: 1.6;
+  filter: drop-shadow(0 0 8px hsl(var(--primary)));
+  transition: all 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.mon-pt { fill: #fff; filter: drop-shadow(0 0 7px var(--c, hsl(var(--primary)))); }
+.mon-lab {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+}
+.mon-pct {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+}
+/* Le balayage : deux tours par cycle de respiration du c(oe)ur, pour
+   que les deux mouvements de la page ne se calent pas l'un sur l'autre. */
+.mon-sweep { transform-origin: 150px 150px; animation: mon-tourne 6s linear infinite; }
+@keyframes mon-tourne { to { transform: rotate(360deg); } }
+
+.mon-note {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--nexus-text-dim);
+  border-left: 2px solid hsl(var(--primary) / 0.5);
+  padding: 7px 10px;
+  margin-top: 10px;
+  background: hsl(var(--primary) / 0.06);
+}
+.mon-note b { color: hsl(var(--primary)); }
+
+/* ── Diagnostic ── */
+.mon-crt { position: relative; overflow: hidden; }
+.mon-crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.26) 0 1px, transparent 1px 3px);
+  animation: mon-roule 9s linear infinite;
+}
+@keyframes mon-roule { to { background-position: 0 300px; } }
+.mon-crt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(ellipse 125% 105% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.5) 100%);
+}
+.mon-diag {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+}
+.mon-dl {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: baseline;
+  padding: 2px 0;
+  color: #7dffc4;
+  text-shadow: 0 0 7px rgba(60, 255, 180, 0.6);
+}
+.mon-dl.warn { color: #ff9a5e; text-shadow: 0 0 8px rgba(255, 130, 70, 0.65); }
+.mon-dl.crit { color: #ff5f7a; text-shadow: 0 0 9px rgba(255, 70, 110, 0.7); animation: mon-blip 3.4s steps(1) infinite; }
+@keyframes mon-blip { 0%, 93%, 100% { opacity: 1; } 95%, 99% { opacity: 0.6; } }
+.mon-dl em { font-style: normal; letter-spacing: 0.06em; }
+.mon-dl b { font-variant-numeric: tabular-nums; }
+.mon-pts { border-bottom: 1px dotted currentColor; opacity: 0.32; transform: translateY(-3px); }
+.mon-dsep { height: 1px; margin: 7px 0; background: linear-gradient(90deg, rgba(125, 255, 196, 0.32), transparent); }
+.mon-dhead {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.14em;
+  color: #7dffc4;
+  opacity: 0.75;
+  text-shadow: 0 0 7px rgba(60, 255, 180, 0.45);
+  margin-bottom: 3px;
+}
+.mon-curseur {
+  display: inline-block;
+  width: 7px;
+  height: 0.85em;
+  margin-left: 4px;
+  vertical-align: -1px;
+  background: #7dffc4;
+  box-shadow: 0 0 8px #7dffc4;
+  animation: mon-cur 1.05s steps(1) infinite;
+}
+@keyframes mon-cur { 50% { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mon-sweep, .mon-crt::after, .mon-dl.crit, .mon-curseur { animation: none; }
+}
