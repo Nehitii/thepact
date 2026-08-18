@@ -86,7 +86,7 @@ export function PrismMicroDrawer({
 
             <header className="relative flex items-start justify-between gap-3 mb-5">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[9px] font-mono uppercase tracking-[0.25em] text-muted-foreground/70 mb-1">
+                <div className="flex items-center gap-2 ds-t-label font-mono uppercase tracking-[0.25em] text-muted-foreground/70 mb-1">
                   <sign.icon className="h-3 w-3" style={{ color: `hsl(${colorVar})` }} />
                   KPI INSPECTOR
                 </div>
@@ -135,7 +135,7 @@ export function PrismMicroDrawer({
               {spark.length >= 2 && (
                 <div className="prism-panel--muted p-3 rounded-sm">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/70">
+                    <span className="font-mono ds-t-label uppercase tracking-wider text-muted-foreground/70">
                       LAST {spark.length} POINTS
                     </span>
                   </div>
@@ -154,7 +154,7 @@ export function PrismMicroDrawer({
                     onJumpToSection();
                     onClose();
                   }}
-                  className="touch-target w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-cyan))]/[0.05] hover:bg-[hsl(var(--prism-cyan))]/[0.12] hover:border-[hsl(var(--prism-cyan))]/55 transition-colors font-mono text-[11px] uppercase tracking-[0.2em] prism-text-cyan"
+                  className="touch-target w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-cyan))]/[0.05] hover:bg-[hsl(var(--prism-cyan))]/[0.12] hover:border-[hsl(var(--prism-cyan))]/55 transition-colors font-mono ds-t-label uppercase tracking-[0.2em] prism-text-cyan"
                 >
                   Inspect {jumpLabel ?? "section"}
                   <ArrowRight className="h-3 w-3" />
@@ -172,7 +172,7 @@ export function PrismMicroDrawer({
 function Stat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
     <div>
-      <div className="font-mono text-[8px] uppercase tracking-[0.22em] text-muted-foreground/60 mb-0.5">
+      <div className="font-mono ds-t-label uppercase tracking-[0.22em] text-muted-foreground/60 mb-0.5">
         {label}
       </div>
       <div

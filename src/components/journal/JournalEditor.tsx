@@ -55,7 +55,7 @@ export function JournalEditor({ content, onChange, placeholder }: JournalEditorP
     editorProps: {
       attributes: {
         class:
-          "min-h-[200px] max-h-[400px] overflow-y-auto px-4 py-3 text-foreground/90 leading-[1.8] text-[15px] font-light focus:outline-none prose prose-invert prose-sm max-w-none",
+          "min-h-[200px] max-h-[400px] overflow-y-auto px-4 py-3 text-foreground/90 leading-[1.8] text-[0.9375rem] font-light focus:outline-none prose prose-invert prose-sm max-w-none",
         style: "font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;",
       },
     },
@@ -106,7 +106,7 @@ export function JournalEditor({ content, onChange, placeholder }: JournalEditorP
         >
           <Strikethrough className="h-3.5 w-3.5" />
         </ToolbarButton>
-        <div className="ml-auto text-[10px] font-mono text-muted-foreground/40 tracking-wider uppercase">
+        <div className="ml-auto ds-t-label font-mono text-muted-foreground/40 tracking-wider uppercase">
           NEURAL_INPUT
         </div>
       </div>
@@ -116,7 +116,7 @@ export function JournalEditor({ content, onChange, placeholder }: JournalEditorP
         <EditorContent editor={editor} />
         {editor.isEmpty && placeholder && (
           <div
-            className="absolute top-0 left-0 pointer-events-none px-4 py-3 text-muted-foreground/30 text-[15px] font-light"
+            className="absolute top-0 left-0 pointer-events-none px-4 py-3 text-muted-foreground/30 text-[0.9375rem] font-light"
             style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
           >
             {placeholder}

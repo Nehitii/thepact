@@ -69,7 +69,7 @@ export function SinkingFundsPanel() {
                     <div className="min-w-0">
                       <div className="font-medium truncate">{f.name}</div>
                       {f.target_date && (
-                        <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+                        <div className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground/60">
                           Cible {format(parseISO(f.target_date), "MMM yyyy")}
                         </div>
                       )}
@@ -93,7 +93,7 @@ export function SinkingFundsPanel() {
                   </div>
                   <Progress value={pct} className="h-1.5" />
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground/70">
+                <div className="flex items-center justify-between ds-t-label text-muted-foreground/70">
                   <span>
                     Contrib. mensuelle: <span className="text-foreground tabular-nums">{formatCurrency(Number(f.monthly_contribution), currency)}</span>
                   </span>

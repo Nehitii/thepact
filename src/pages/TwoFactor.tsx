@@ -81,7 +81,7 @@ export default function TwoFactor() {
             <CardTitle className="font-mono uppercase tracking-widest text-sm">
               Verification requise
             </CardTitle>
-            <CardDescription className="font-mono text-[11px]">
+            <CardDescription className="font-mono ds-t-label">
               Saisis le code a six chiffres affiche par ton application d'authentification.
             </CardDescription>
           </CardHeader>
@@ -98,12 +98,12 @@ export default function TwoFactor() {
             <Button
               onClick={submit}
               disabled={busy || code.length !== 6}
-              className="w-full font-mono text-[11px] uppercase tracking-widest"
+              className="w-full font-mono ds-t-label uppercase tracking-widest"
             >
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Valider"}
             </Button>
 
-            <p className="text-center font-mono text-[10px] leading-relaxed text-muted-foreground">
+            <p className="text-center font-mono ds-t-label leading-relaxed text-muted-foreground">
               Appareil perdu&nbsp;? Le facteur se supprime depuis le tableau de bord Supabase,
               rubrique Authentication → Users. C'est le seul recours&nbsp;: aucun code de
               secours n'est conserve par l'application.

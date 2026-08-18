@@ -52,7 +52,7 @@ export function GuildActivityFeedPanel({ guildId }: Props) {
                 <Icon className="h-3.5 w-3.5 mt-0.5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-foreground">{getLabel(a)}</p>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="ds-t-label text-muted-foreground">
                     {formatDistanceToNow(new Date(a.created_at), { addSuffix: true, locale })}
                   </span>
                 </div>

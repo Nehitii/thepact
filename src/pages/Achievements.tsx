@@ -155,7 +155,7 @@ export default function Achievements() {
           <motion.h1 initial={{ letterSpacing: "0.1em", opacity: 0 }} animate={{ letterSpacing: "0.3em", opacity: 1 }} className="text-2xl sm:text-4xl md:text-7xl font-black uppercase font-orbitron mb-4 text-white break-words">
             {t("achievements.hallTitle")} <span className="text-primary">{t("achievements.eternity")}</span>
           </motion.h1>
-          <p className="text-primary/60 tracking-[0.25em] md:tracking-[0.4em] uppercase text-[9px] md:text-[10px] font-bold mb-8 md:mb-14 italic">
+          <p className="text-primary/60 tracking-[0.25em] md:tracking-[0.4em] uppercase ds-t-label md:ds-t-label font-bold mb-8 md:mb-14 italic">
             "{t("achievements.tagline")}"
           </p>
 
@@ -171,14 +171,14 @@ export default function Achievements() {
               { label: t("achievements.expedition"), val: totalPoints.toLocaleString(), sub: t("achievements.totalScore") },
             ].map((s, i) => (
               <motion.div key={i} initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }} className="stat-monument p-4 md:p-8 rounded-t-2xl transition-transform hover:-translate-y-1 duration-500">
-                <div className="text-[10px] text-primary font-black uppercase tracking-[0.25em] md:tracking-[0.4em] mb-2 md:mb-3">{s.label}</div>
+                <div className="ds-t-label text-primary font-black uppercase tracking-[0.25em] md:tracking-[0.4em] mb-2 md:mb-3">{s.label}</div>
                 <div
                   className="stat-value text-3xl md:text-5xl font-black font-orbitron mb-2"
                   style={{ color: (s as { color?: string }).color ?? "#fff" }}
                 >
                   {s.val}
                 </div>
-                <div className="text-[11px] text-muted-foreground font-mono border-l-2 border-primary/40 pl-3 text-left opacity-70">{s.sub}</div>
+                <div className="ds-t-label text-muted-foreground font-mono border-l-2 border-primary/40 pl-3 text-left opacity-70">{s.sub}</div>
               </motion.div>
             ))}
           </div>
@@ -198,7 +198,7 @@ export default function Achievements() {
                     onClick={() => setSelectedCategory(cat)}
                     aria-pressed={isActive}
                     className={cn(
-                      "flex items-center gap-1.5 px-4 py-2 rounded-full text-[10px] font-orbitron uppercase tracking-wider whitespace-nowrap transition-all border",
+                      "flex items-center gap-1.5 px-4 py-2 rounded-full ds-t-label font-orbitron uppercase tracking-wider whitespace-nowrap transition-all border",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#04050a]",
                       isActive
                         ? "bg-primary/20 border-primary/50 text-primary"
@@ -208,7 +208,7 @@ export default function Achievements() {
                     <DynamicLucideIcon name={iconKey} fallback="circle" size={12} />
                     <span>{categoryLabels[cat] || cat}</span>
                     {count && (
-                      <span className="text-[8px] opacity-50">{count.unlocked}/{count.total}</span>
+                      <span className="ds-t-label opacity-50">{count.unlocked}/{count.total}</span>
                     )}
                   </button>
                 );
@@ -225,7 +225,7 @@ export default function Achievements() {
             <Tabs value={filter} onValueChange={(v) => setFilter(v as any)}>
               <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl">
                 {(["all", "unlocked", "locked"] as const).map((v) => (
-                  <TabsTrigger key={v} value={v} className="font-orbitron text-[10px] uppercase px-4 md:px-8 py-2 md:py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-lg">
+                  <TabsTrigger key={v} value={v} className="font-orbitron ds-t-label uppercase px-4 md:px-8 py-2 md:py-2.5 data-[state=active]:bg-primary data-[state=active]:text-white transition-all rounded-lg">
                     {t(`achievements.${v}`)}
                   </TabsTrigger>
                 ))}
@@ -236,23 +236,23 @@ export default function Achievements() {
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-3 md:gap-4 bg-white/5 border border-white/10 px-4 md:px-8 py-2.5 md:py-3 rounded-full hover:bg-white/10 transition-all outline-none touch-target self-start md:self-auto">
               <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px_currentColor]" style={{ backgroundColor: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity], color: selectedRarity === "all" ? "#fff" : rarityColors[selectedRarity] }} />
-              <span className="font-orbitron text-[10px] md:text-xs uppercase tracking-[0.15em] md:tracking-[0.2em] text-white font-bold">
+              <span className="font-orbitron ds-t-label md:text-xs uppercase tracking-[0.15em] md:tracking-[0.2em] text-white font-bold">
                 {selectedRarity === "all" ? t("achievements.allRarities") : rarityLabels[selectedRarity]}
               </span>
               <ChevronDown size={16} className="text-muted-foreground" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="bg-[#0f0f0f] border border-white/10 text-white min-w-[240px] p-2 rounded-2xl shadow-3xl">
-              <DropdownMenuItem onClick={() => setSelectedRarity("all")} className="font-orbitron text-[10px] uppercase tracking-widest p-4 cursor-pointer focus:bg-white/10 rounded-xl mb-1">
+              <DropdownMenuItem onClick={() => setSelectedRarity("all")} className="font-orbitron ds-t-label uppercase tracking-widest p-4 cursor-pointer focus:bg-white/10 rounded-xl mb-1">
                 <Check className={cn("mr-3 h-4 w-4 text-primary", selectedRarity === "all" ? "opacity-100" : "opacity-0")} />
                 {t("achievements.showAll")}
               </DropdownMenuItem>
               {rarityOrder.map((r) => (
-                <DropdownMenuItem key={r} onClick={() => setSelectedRarity(r)} className="flex justify-between font-orbitron text-[10px] uppercase tracking-widest p-4 cursor-pointer focus:bg-white/10 rounded-xl mb-1">
+                <DropdownMenuItem key={r} onClick={() => setSelectedRarity(r)} className="flex justify-between font-orbitron ds-t-label uppercase tracking-widest p-4 cursor-pointer focus:bg-white/10 rounded-xl mb-1">
                   <div className="flex items-center">
                     <Check className={cn("mr-3 h-4 w-4 text-primary", selectedRarity === r ? "opacity-100" : "opacity-0")} />
                     <span style={{ color: rarityColors[r] }}>{r}</span>
                   </div>
-                  <span className="opacity-30 text-[9px]">{rarityCounts[r]?.unlocked || 0}/{rarityCounts[r]?.total || 0}</span>
+                  <span className="opacity-30 ds-t-label">{rarityCounts[r]?.unlocked || 0}/{rarityCounts[r]?.total || 0}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -289,7 +289,7 @@ export default function Achievements() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24 bg-white/[0.02] border border-dashed border-white/15 rounded-3xl mt-8">
             <Sparkles className="w-12 h-12 text-primary/40 mx-auto mb-5" />
             <h3 className="font-orbitron uppercase text-slate-200 tracking-[0.35em] text-sm">{t("achievements.noResults")}</h3>
-            <p className="mt-3 text-[11px] font-mono text-slate-400">{t("achievements.noResultsHint")}</p>
+            <p className="mt-3 ds-t-label font-mono text-slate-400">{t("achievements.noResultsHint")}</p>
           </motion.div>
         )}
       </div>

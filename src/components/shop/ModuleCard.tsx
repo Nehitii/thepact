@@ -70,16 +70,16 @@ export function ModuleCard({ module, owned, canAfford, onPurchaseClick, index = 
           <div className="flex-1 min-w-0">
             <h3 className="font-orbitron text-base font-bold text-foreground tracking-wide">{module.name}</h3>
             <div className="flex items-center gap-2 mt-1">
-              <span className={cn("text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md border", r.badgeBg, r.badgeText, r.badgeBorder)}>
+              <span className={cn("ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md border", r.badgeBg, r.badgeText, r.badgeBorder)}>
                 {module.rarity}
               </span>
               {module.is_coming_soon && (
-                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/25">
+                <span className="ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 border border-amber-500/25">
                   Coming Soon
                 </span>
               )}
               {owned && (
-                <span className="text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1"
+                <span className="ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md flex items-center gap-1"
                   style={{ background: "hsl(142 70% 50% / 0.12)", color: "hsl(142 70% 50%)", border: "1px solid hsl(142 70% 50% / 0.25)" }}>
                   <Check className="w-3 h-3" /> Owned
                 </span>

@@ -347,7 +347,7 @@ export default function TheCall() {
           <div className="pt-12 sm:pt-16 pb-2 sm:pb-4 text-center">
             <div className="flex items-center justify-center gap-3 mb-3">
               <div className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-transparent to-primary/20" />
-              <span className="font-mono text-[9px] text-primary/40 tracking-[0.25em]">
+              <span className="font-mono ds-t-label text-primary/40 tracking-[0.25em]">
                 RITUAL_ENGINE
               </span>
               <div className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-primary/20 to-transparent" />
@@ -359,10 +359,10 @@ export default function TheCall() {
             {/* Streak / Total — visible in idle */}
             {isIdle && pactData && (
               <div className="flex items-center justify-center gap-4 mt-3">
-                <span className="font-mono text-[10px] text-muted-foreground/60 tracking-wider">
+                <span className="font-mono ds-t-label text-muted-foreground/60 tracking-wider">
                   <Flame className="w-3 h-3 inline mr-1 text-orange-400/70" />{streak} streak
                 </span>
-                <span className="font-mono text-[10px] text-muted-foreground/60 tracking-wider">
+                <span className="font-mono ds-t-label text-muted-foreground/60 tracking-wider">
                   {totalCalls} calls
                 </span>
               </div>
@@ -504,14 +504,14 @@ export default function TheCall() {
                   {completedToday ? (
                     <div className="flex flex-col items-center text-green-500">
                       <Lock className="w-14 h-14 mb-3 drop-shadow-[0_0_15px_currentColor]" />
-                      <span className="font-mono text-[10px] tracking-[0.3em] uppercase opacity-70">Protocol Locked</span>
+                      <span className="font-mono ds-t-label tracking-[0.3em] uppercase opacity-70">Protocol Locked</span>
                       {/* Stats in locked state */}
                       {pactData && (
                         <div className="flex items-center gap-3 mt-4 text-muted-foreground/50">
-                          <span className="font-mono text-[10px] tracking-wider">
+                          <span className="font-mono ds-t-label tracking-wider">
                             <Flame className="w-3 h-3 inline mr-1 text-orange-400/60" />{streak}
                           </span>
-                          <span className="font-mono text-[10px] tracking-wider">
+                          <span className="font-mono ds-t-label tracking-wider">
                             {totalCalls + 1} calls
                           </span>
                         </div>
@@ -555,12 +555,12 @@ export default function TheCall() {
             {!completedToday && isIdle && (
               <div className="mt-8 text-center overflow-hidden">
                 {earlyReleaseMsg ? (
-                  <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground/60 animate-fade-in">
+                  <p className="font-mono ds-t-label uppercase tracking-[0.3em] text-muted-foreground/60 animate-fade-in">
                     Signal fading...
                   </p>
                 ) : (
                   <p
-                    className="font-mono text-[11px] uppercase tracking-[0.3em] transition-all duration-200"
+                    className="font-mono ds-t-label uppercase tracking-[0.3em] transition-all duration-200"
                     style={{
                       color: isCritical ? "white" : p > 0 ? currentColor : undefined,
                       opacity: p > 0 ? 0.7 + p * 0.3 : 0.5,

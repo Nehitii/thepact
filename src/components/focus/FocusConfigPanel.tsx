@@ -23,7 +23,7 @@ export function FocusConfigPanel({
 
   return (
     <div className="w-full max-w-lg space-y-3 p-4 bg-card/40 backdrop-blur border border-border/50" style={{ clipPath: cyberClip }}>
-      <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground text-center mb-3" aria-hidden="true">
+      <p className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground text-center mb-3" aria-hidden="true">
         {t("focus.config.title")}
       </p>
       <DurationRow
@@ -75,7 +75,7 @@ function DurationRow({
           <button
             key={m}
             onClick={() => onChange(m)}
-            className={`px-3 py-1 text-[10px] font-mono transition-all focus-visible:ring-2 focus-visible:ring-primary ${
+            className={`px-3 py-1 ds-t-label font-mono transition-all focus-visible:ring-2 focus-visible:ring-primary ${
               value === m
                 ? color === "primary"
                   ? "bg-primary text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.3)]"

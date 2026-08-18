@@ -32,7 +32,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   const m = map[status] ?? map.not_started;
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border ${m.cls}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full ds-t-label font-medium border ${m.cls}`}>
       {m.label}
     </span>
   );
@@ -60,11 +60,11 @@ export function GoalShowcase({ goals }: { goals: GoalItem[] }) {
             <Sparkles className="h-4 w-4 text-primary" />
             Tes objectifs en images
           </h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="ds-t-label text-muted-foreground mt-0.5">
             Galerie défilante — clique pour ouvrir
           </p>
         </div>
-        <span className="text-[11px] text-muted-foreground tabular-nums">{items.length}</span>
+        <span className="ds-t-label text-muted-foreground tabular-nums">{items.length}</span>
       </header>
 
       <div className="relative -mx-5 px-5 overflow-x-auto scrollbar-thin">
@@ -132,7 +132,7 @@ export function GoalShowcase({ goals }: { goals: GoalItem[] }) {
                 <div className="p-3 space-y-2">
                   <div className="flex items-center justify-between gap-2">
                     <StatusBadge status={g.status} />
-                    <span className="text-[10px] tabular-nums text-muted-foreground">
+                    <span className="ds-t-label tabular-nums text-muted-foreground">
                       {g.potential_score} XP
                     </span>
                   </div>

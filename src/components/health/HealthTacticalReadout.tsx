@@ -57,7 +57,7 @@ export function HealthTacticalReadout({
                     : "none",
                 }}
               />
-              <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/70">
+              <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/70">
                 {ind.label}
               </span>
             </div>
@@ -70,14 +70,14 @@ export function HealthTacticalReadout({
           <span className="font-orbitron font-bold text-sm text-hud-amber tabular-nums">
             {currentStreak}
           </span>
-          <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/70">
+          <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/70">
             DAY{currentStreak !== 1 ? "S" : ""}
           </span>
         </div>
 
         {/* Right: actions + last sync */}
         <div className="flex items-center gap-2">
-          <span className="hidden md:inline text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mr-2">
+          <span className="hidden md:inline ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mr-2">
             SYNC {lastSync}
           </span>
           <TooltipProvider delayDuration={200}>

@@ -28,7 +28,7 @@ const CY_INPUT = [
 const CY_BTN = [
   "relative rounded-none bg-primary/10 border border-primary/35",
   "hover:bg-primary/18 hover:border-primary/65",
-  "text-primary font-mono text-[10px] tracking-[0.22em] uppercase",
+  "text-primary font-mono ds-t-label tracking-[0.22em] uppercase",
   "shadow-[0_0_14px_hsl(var(--primary)/0.12)] hover:shadow-[0_0_24px_hsl(var(--primary)/0.28)]",
   "disabled:opacity-30 disabled:cursor-not-allowed",
   "transition-all duration-200 h-10",
@@ -82,7 +82,7 @@ export function CustomDifficultyCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Difficulty Name</label>
+            <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Difficulty Name</label>
           </div>
           <Input placeholder="Enter custom difficulty name" value={customDifficultyName} onChange={(e) => onCustomDifficultyNameChange(e.target.value)} maxLength={50} className={CY_INPUT} />
         </div>
@@ -91,7 +91,7 @@ export function CustomDifficultyCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold flex items-center gap-1.5">
+            <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold flex items-center gap-1.5">
               <Palette className="h-3 w-3 text-primary/60" />Difficulty Color
             </label>
           </div>
@@ -116,7 +116,7 @@ export function CustomDifficultyCard({
         {/* Preview */}
         {customDifficultyName && (
           <div className="border border-dashed border-primary/25 bg-primary/[0.03] p-3">
-            <p className="text-[9px] text-primary/40 font-mono tracking-[0.15em] mb-2">PREVIEW //</p>
+            <p className="ds-t-label text-primary/40 font-mono tracking-[0.15em] mb-2">PREVIEW //</p>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: customDifficultyColor }} />
               <span className="font-orbitron uppercase tracking-wide text-sm font-semibold" style={{ color: customDifficultyColor }}>{customDifficultyName}</span>

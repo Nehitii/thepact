@@ -48,10 +48,10 @@ export function DailyPromptBanner({ onUse }: Props) {
         <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" aria-hidden />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-primary/70">
+            <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-primary/70">
               PROMPT_DU_JOUR
             </span>
-            <span className="text-[8px] font-mono px-1.5 py-0.5 border border-primary/30 text-primary/80">
+            <span className="ds-t-label font-mono px-1.5 py-0.5 border border-primary/30 text-primary/80">
               {tag}
             </span>
           </div>
@@ -59,7 +59,7 @@ export function DailyPromptBanner({ onUse }: Props) {
           {onUse && (
             <button
               onClick={() => onUse(prompt.prompt)}
-              className="mt-2 text-[10px] font-mono uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
+              className="mt-2 ds-t-label font-mono uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
             >
               {">> UTILISER"}
             </button>

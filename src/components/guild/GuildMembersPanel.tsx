@@ -87,12 +87,12 @@ export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) 
         <div className="border border-border/50 rounded-lg p-3 space-y-2 bg-card/30">
           <Input value={inviteSearch} onChange={(e) => setInviteSearch(e.target.value)} placeholder={t("friends.searchFriendsInvite")} className="h-7 text-xs" />
           {invitableFriends.length === 0 ? (
-            <p className="text-[10px] text-muted-foreground">{t("friends.noFriendsToInvite")}</p>
+            <p className="ds-t-label text-muted-foreground">{t("friends.noFriendsToInvite")}</p>
           ) : (
             invitableFriends.slice(0, 10).map((f) => (
               <div key={f.friend_id} className="flex items-center justify-between">
                 <span className="text-xs">{f.display_name}</span>
-                <Button size="sm" variant="ghost" className="h-6 text-[10px]" onClick={() => handleInvite(f.friend_id)}>
+                <Button size="sm" variant="ghost" className="h-6 ds-t-label" onClick={() => handleInvite(f.friend_id)}>
                   {t("friends.invite")}
                 </Button>
               </div>
@@ -114,17 +114,17 @@ export function GuildMembersPanel({ guild, userId, isOfficer, isOwner }: Props) 
               <div key={m.id} className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-muted/30 transition-colors">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={m.avatar_url || undefined} />
-                  <AvatarFallback className="text-[10px]">{(m.display_name || "?")[0]}</AvatarFallback>
+                  <AvatarFallback className="ds-t-label">{(m.display_name || "?")[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold truncate">{m.display_name}</span>
-                    {isSelf && <Badge variant="outline" className="text-[8px] px-1 py-0">YOU</Badge>}
+                    {isSelf && <Badge variant="outline" className="ds-t-label px-1 py-0">YOU</Badge>}
                   </div>
                 </div>
                 <div className={`flex items-center gap-1 ${roleColor[m.role]}`}>
                   <RoleIcon className="h-3.5 w-3.5" />
-                  <span className="text-[10px] font-bold uppercase">{m.role}</span>
+                  <span className="ds-t-label font-bold uppercase">{m.role}</span>
                 </div>
                 {canManage && !isSelf && (
                   <DropdownMenu>

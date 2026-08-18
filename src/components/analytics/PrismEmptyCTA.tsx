@@ -21,7 +21,7 @@ export function PrismEmptyCTA({
   return (
     <div className="w-full h-full flex flex-col items-center justify-center gap-3 px-4 text-center">
       <Visual variant={visual} />
-      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+      <span className="font-mono ds-t-label uppercase tracking-[0.3em] text-muted-foreground/70">
         {message}
       </span>
       {ctaLabel && (
@@ -30,7 +30,7 @@ export function PrismEmptyCTA({
             to={to}
             onClick={onClick}
             className={cn(
-              "touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-cyan))]/[0.05] hover:bg-[hsl(var(--prism-cyan))]/[0.12] hover:border-[hsl(var(--prism-cyan))]/55 transition-colors font-mono text-[10px] uppercase tracking-[0.2em] prism-text-cyan",
+              "touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-cyan))]/[0.05] hover:bg-[hsl(var(--prism-cyan))]/[0.12] hover:border-[hsl(var(--prism-cyan))]/55 transition-colors font-mono ds-t-label uppercase tracking-[0.2em] prism-text-cyan",
             )}
           >
             {ctaLabel}
@@ -40,7 +40,7 @@ export function PrismEmptyCTA({
           <button
             type="button"
             onClick={onClick}
-            className="touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-cyan))]/[0.05] hover:bg-[hsl(var(--prism-cyan))]/[0.12] hover:border-[hsl(var(--prism-cyan))]/55 transition-colors font-mono text-[10px] uppercase tracking-[0.2em] prism-text-cyan"
+            className="touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-cyan))]/[0.05] hover:bg-[hsl(var(--prism-cyan))]/[0.12] hover:border-[hsl(var(--prism-cyan))]/55 transition-colors font-mono ds-t-label uppercase tracking-[0.2em] prism-text-cyan"
           >
             {ctaLabel}
             <ArrowRight className="h-3 w-3" />

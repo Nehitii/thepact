@@ -20,7 +20,7 @@ export function WishlistBulkBar({ count, onMarkAcquired, onDelete, onCancel }: W
       className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-3 bg-slate-950/95 backdrop-blur-2xl border border-cyan-500/25 shadow-[0_0_30px_rgba(0,200,255,0.1)]"
       style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))" }}
     >
-      <span className="font-mono text-[10px] tracking-[0.15em] text-cyan-400 font-bold">
+      <span className="font-mono ds-t-label tracking-[0.15em] text-cyan-400 font-bold">
         {count} SELECTED
       </span>
       <div className="w-px h-6 bg-cyan-500/20" />
@@ -28,7 +28,7 @@ export function WishlistBulkBar({ count, onMarkAcquired, onDelete, onCancel }: W
         size="sm"
         variant="outline"
         onClick={onMarkAcquired}
-        className="font-mono text-[10px] tracking-wider border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 rounded-sm"
+        className="font-mono ds-t-label tracking-wider border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 rounded-sm"
       >
         <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
         Acquire ({count})
@@ -37,7 +37,7 @@ export function WishlistBulkBar({ count, onMarkAcquired, onDelete, onCancel }: W
         size="sm"
         variant="outline"
         onClick={onDelete}
-        className="font-mono text-[10px] tracking-wider border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-sm"
+        className="font-mono ds-t-label tracking-wider border-orange-500/30 text-orange-400 hover:bg-orange-500/10 rounded-sm"
       >
         <Trash2 className="h-3.5 w-3.5 mr-1.5" />
         Delete ({count})

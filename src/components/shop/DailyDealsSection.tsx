@@ -62,7 +62,7 @@ export function DailyDealsSection() {
         <h2 className="font-orbitron text-lg text-foreground tracking-wide">Daily Deals</h2>
         <div className="flex items-center gap-1.5 ml-2">
           <motion.div className="w-2 h-2 rounded-full" style={{ background: "hsl(0 80% 55%)" }} animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
-          <span className="text-[10px] font-orbitron tracking-[0.2em] uppercase" style={{ color: "hsl(0 80% 55%)" }}>Live</span>
+          <span className="ds-t-label font-orbitron tracking-[0.2em] uppercase" style={{ color: "hsl(0 80% 55%)" }}>Live</span>
         </div>
       </div>
 

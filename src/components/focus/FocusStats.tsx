@@ -28,12 +28,12 @@ export function FocusStats({ todayCount, todayMinutes, streak, bestSession, week
         className="p-4 bg-card/40 backdrop-blur border border-border/50"
         style={{ clipPath: cyberClip }}
       >
-        <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground mb-3">{t("focus.stats.weeklyFocus")}</p>
+        <p className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground mb-3">{t("focus.stats.weeklyFocus")}</p>
         <ResponsiveContainer width="100%" height={60}>
           <BarChart data={weeklyData} barSize={14}>
-            <XAxis dataKey="label" tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} axisLine={false} tickLine={false} />
             <Tooltip
-              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 11 }}
+              contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: "max(11px, 0.6875rem)" }}
               formatter={(v: number) => [`${v}m`, "Focus"]}
             />
             <Bar dataKey="minutes" fill="hsl(var(--primary))" radius={[2, 2, 0, 0]} />
@@ -52,7 +52,7 @@ function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string
     >
       <div className="flex justify-center mb-1.5">{icon}</div>
       <p className="text-lg font-orbitron font-bold text-foreground">{value}</p>
-      <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">{label}</p>
     </div>
   );
 }

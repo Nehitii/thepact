@@ -126,7 +126,7 @@ export const SuperGoalChildList = memo(function SuperGoalChildList({
                   {!child.isMissing && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 font-bold uppercase"
+                      className="ds-t-label px-1.5 py-0 font-bold uppercase"
                       style={{
                         borderColor: diffColor,
                         color: diffColor,
@@ -163,7 +163,7 @@ export const SuperGoalChildList = memo(function SuperGoalChildList({
                 <Badge
                   variant="outline"
                   className={cn(
-                    "text-[10px] uppercase font-bold",
+                    "ds-t-label uppercase font-bold",
                     child.isCompleted
                       ? "border-green-500/30 text-green-400 bg-green-500/10"
                       : child.status === "in_progress"

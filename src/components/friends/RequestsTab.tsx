@@ -34,7 +34,7 @@ export function RequestsTab({ pendingRequests, sentRequests, loading, onAccept, 
       <div className="p-4 sm:p-6 max-w-3xl mx-auto">
         {/* Section label */}
         <div className="flex items-center gap-3 mb-4">
-          <h4 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-special))] shrink-0">
+          <h4 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-special))] shrink-0">
             [ INCOMING SIGNALS ]
           </h4>
           <DSDivider accent="special" />
@@ -78,7 +78,7 @@ export function RequestsTab({ pendingRequests, sentRequests, loading, onAccept, 
         {sentRequests.length > 0 && (
           <>
             <div className="flex items-center gap-3 mb-4 mt-8">
-              <h4 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-text-muted))] shrink-0">
+              <h4 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-text-muted))] shrink-0">
                 [ TRANSMITTED ]
               </h4>
               <DSDivider accent="primary" />

@@ -66,7 +66,7 @@ export function StreakFreezePanel({ goalId }: StreakFreezePanelProps) {
       id="HBT.FRZ"
       accent="special"
       headerAction={
-        <span className="text-[11px] font-mono text-muted-foreground">
+        <span className="ds-t-label font-mono text-muted-foreground">
           {price} ⛓ / day · Balance {balance}
         </span>
       }
@@ -88,7 +88,7 @@ export function StreakFreezePanel({ goalId }: StreakFreezePanelProps) {
               disabled={disabled}
               onClick={() => handleFreeze(d.key)}
               className={cn(
-                "flex flex-col items-center justify-center gap-1 rounded-md border px-1 py-2 text-[10px] font-mono transition-colors",
+                "flex flex-col items-center justify-center gap-1 rounded-md border px-1 py-2 ds-t-label font-mono transition-colors",
                 d.counted && d.isFreeze
                   ? "border-cyan-400/50 bg-cyan-400/10 text-cyan-200"
                   : d.counted

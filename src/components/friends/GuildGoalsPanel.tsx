@@ -82,7 +82,7 @@ export function GuildGoalsPanel({ guildId, canManage }: Props) {
                 <div key={goal.id} className="p-3 rounded-lg border border-border bg-card/50 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold truncate">{goal.title}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono">{goal.current_value}/{goal.target_value}</span>
+                    <span className="ds-t-label text-muted-foreground font-mono">{goal.current_value}/{goal.target_value}</span>
                   </div>
                   <Progress value={pct} className="h-2" />
                   {contributeId === goal.id ? (

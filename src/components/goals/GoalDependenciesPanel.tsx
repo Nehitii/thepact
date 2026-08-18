@@ -53,16 +53,16 @@ export function GoalDependenciesPanel({ goalId }: Props) {
         <>
           {data?.outgoing.length ? (
             <div className="space-y-1.5">
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Cet objectif dépend de</div>
+              <div className="ds-t-label uppercase tracking-widest text-muted-foreground">Cet objectif dépend de</div>
               {data.outgoing.map(d => (
                 <div key={d.id} className="flex items-center gap-2 rounded-md bg-background/60 border border-border/30 px-2 py-1.5 text-xs">
                   <ArrowRight className="h-3 w-3 text-primary/70" />
                   <Link to={`/goals/${d.depends_on_goal_id}`} className="flex-1 truncate hover:text-primary">
                     {d.depends_on_name ?? "?"}
                   </Link>
-                  <span className="text-[9px] uppercase text-muted-foreground/70">{d.kind}</span>
+                  <span className="ds-t-label uppercase text-muted-foreground/70">{d.kind}</span>
                   {d.depends_on_status && (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
+                    <span className="ds-t-label px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground">
                       {d.depends_on_status}
                     </span>
                   )}
@@ -80,14 +80,14 @@ export function GoalDependenciesPanel({ goalId }: Props) {
 
           {data?.incoming.length ? (
             <div className="space-y-1.5">
-              <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Bloque / lié à</div>
+              <div className="ds-t-label uppercase tracking-widest text-muted-foreground">Bloque / lié à</div>
               {data.incoming.map(d => (
                 <div key={d.id} className="flex items-center gap-2 rounded-md bg-background/40 border border-border/20 px-2 py-1.5 text-xs">
                   <Link2 className="h-3 w-3 text-muted-foreground" />
                   <Link to={`/goals/${d.goal_id}`} className="flex-1 truncate hover:text-primary">
                     {d.depends_on_name ?? "?"}
                   </Link>
-                  <span className="text-[9px] uppercase text-muted-foreground/70">{d.kind}</span>
+                  <span className="ds-t-label uppercase text-muted-foreground/70">{d.kind}</span>
                 </div>
               ))}
             </div>

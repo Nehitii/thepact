@@ -29,7 +29,7 @@ export function DSTooltip({ active, payload, label, labelFormatter, valueFormatt
 
   return (
     <div
-      className="relative font-mono text-[11px] backdrop-blur-md"
+      className="relative font-mono ds-t-label backdrop-blur-md"
       style={{
         background: "hsl(var(--ds-surface-3) / 0.9)",
         border: "1px solid hsl(var(--ds-accent-primary) / 0.35)",
@@ -63,7 +63,7 @@ export function DSTooltip({ active, payload, label, labelFormatter, valueFormatt
                   boxShadow: `0 0 5px hsl(${colorVar} / 0.7)`,
                 }}
               />
-              <span className="text-[9px] uppercase tracking-wider text-ds-text-muted/80">
+              <span className="ds-t-label uppercase tracking-wider text-ds-text-muted/80">
                 {String(p.name ?? p.dataKey ?? "")}
               </span>
               <span className="ml-auto tabular-nums font-bold" style={{ color: `hsl(${colorVar})` }}>

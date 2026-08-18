@@ -58,7 +58,7 @@ function MiniMonth({ month, events, onClick, locale }: {
             <div
               key={d.toISOString()}
               className={cn(
-                "w-4 h-4 flex flex-col items-center justify-center text-[8px] rounded-sm relative",
+                "w-4 h-4 flex flex-col items-center justify-center ds-t-label rounded-sm relative",
                 !inMonth && "opacity-20",
                 today && "bg-primary text-primary-foreground font-bold",
               )}

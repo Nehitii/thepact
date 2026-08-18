@@ -36,10 +36,10 @@ export function GuildLeaderboard({ guildId }: Props) {
               </span>
               <Avatar className="h-7 w-7">
                 <AvatarImage src={m.avatar_url || undefined} />
-                <AvatarFallback className="text-[10px] bg-muted">{(m.display_name || "?")[0]}</AvatarFallback>
+                <AvatarFallback className="ds-t-label bg-muted">{(m.display_name || "?")[0]}</AvatarFallback>
               </Avatar>
               <span className="text-sm font-bold flex-1 truncate">{m.display_name}</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{m.role}</span>
+              <span className="ds-t-label text-muted-foreground uppercase tracking-wider">{m.role}</span>
             </div>
           ))}
         </div>

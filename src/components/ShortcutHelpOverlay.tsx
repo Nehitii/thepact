@@ -46,7 +46,7 @@ const GROUPS: ShortcutGroup[] = [
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded border border-primary/30 bg-primary/10 text-[10px] font-mono font-bold text-primary tracking-wider uppercase">
+    <kbd className="inline-flex items-center justify-center min-w-[28px] px-1.5 h-6 rounded border border-primary/30 bg-primary/10 ds-t-label font-mono font-bold text-primary tracking-wider uppercase">
       {children}
     </kbd>
   );
@@ -81,7 +81,7 @@ export function ShortcutHelpOverlay({ open, onClose }: Props) {
                     <div className="flex items-center gap-1 shrink-0">
                       {item.keys.map((k, i) => (
                         <span key={i} className="flex items-center gap-1">
-                          {i > 0 && <span className="text-[10px] text-muted-foreground">+</span>}
+                          {i > 0 && <span className="ds-t-label text-muted-foreground">+</span>}
                           <Kbd>{k}</Kbd>
                         </span>
                       ))}

@@ -121,12 +121,12 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
           )}
           <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-sm ${prio.bgClass} ${prio.borderClass} border`}>
             <PrioIcon className={`h-3 w-3 ${prio.colorClass}`} />
-            <span className={`font-mono text-[9px] font-bold tracking-[0.15em] ${prio.colorClass}`}>
+            <span className={`font-mono ds-t-label font-bold tracking-[0.15em] ${prio.colorClass}`}>
               {prio.label}
             </span>
           </div>
         </div>
-        <Badge className={`font-mono text-[9px] font-bold tracking-[0.12em] uppercase border backdrop-blur-md px-2 py-0.5 ${classBg} ${classText} ${classBorder}`}>
+        <Badge className={`font-mono ds-t-label font-bold tracking-[0.12em] uppercase border backdrop-blur-md px-2 py-0.5 ${classBg} ${classText} ${classBorder}`}>
           {classLabel}
         </Badge>
       </div>
@@ -154,7 +154,7 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
 
         {/* Synced badge */}
         {isSynced && (
-          <Badge className="absolute top-3 left-3 font-mono text-[8px] font-bold tracking-[0.15em] bg-amber-500/15 text-amber-400 border border-amber-500/30 backdrop-blur-md uppercase">
+          <Badge className="absolute top-3 left-3 font-mono ds-t-label font-bold tracking-[0.15em] bg-amber-500/15 text-amber-400 border border-amber-500/30 backdrop-blur-md uppercase">
             ◈ SYNCED
           </Badge>
         )}
@@ -229,7 +229,7 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
         {/* Tags */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {category && (
-            <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-800/60 border border-slate-700/50 text-[11px] font-mono text-slate-400 rounded-sm">
+            <div className="flex items-center gap-1 px-2 py-0.5 bg-slate-800/60 border border-slate-700/50 ds-t-label font-mono text-slate-400 rounded-sm">
               <Tag className="h-2.5 w-2.5 opacity-50" />
               {category}
             </div>
@@ -237,7 +237,7 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
           {goal?.name && (
             <button
               onClick={(e) => { e.stopPropagation(); navigate(`/goals/${goal.id}`); }}
-              className="flex items-center gap-1 px-2 py-0.5 bg-primary/5 border border-primary/20 text-[11px] font-mono text-primary/80 hover:bg-primary/10 transition-colors rounded-sm"
+              className="flex items-center gap-1 px-2 py-0.5 bg-primary/5 border border-primary/20 ds-t-label font-mono text-primary/80 hover:bg-primary/10 transition-colors rounded-sm"
             >
               <Target className="h-2.5 w-2.5" />
               <span className="max-w-[120px] truncate">{goal.name}</span>
@@ -254,7 +254,7 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
         {/* Data grid */}
         <div className="mt-auto grid grid-cols-2 gap-0 border border-cyan-500/10 bg-slate-900/50 overflow-hidden" style={{ clipPath: "polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px))" }}>
           <div className="p-3 border-r border-cyan-500/10">
-            <span className="text-[8px] font-mono text-cyan-500/50 tracking-[0.2em] uppercase block mb-1">
+            <span className="ds-t-label font-mono text-cyan-500/50 tracking-[0.2em] uppercase block mb-1">
               EST.VALUE
             </span>
             <span className={`font-mono text-lg font-black tracking-tight ${isExiting ? "text-emerald-400" : classText}`}>
@@ -262,7 +262,7 @@ export const WishlistItemCard = forwardRef<HTMLDivElement, WishlistItemCardProps
             </span>
           </div>
           <div className="p-3 flex flex-col items-end justify-center">
-            <span className={`text-[8px] font-mono tracking-[0.2em] uppercase mb-1.5 ${isExiting ? "text-emerald-400" : "text-cyan-500/50"}`}>
+            <span className={`ds-t-label font-mono tracking-[0.2em] uppercase mb-1.5 ${isExiting ? "text-emerald-400" : "text-cyan-500/50"}`}>
               {isExiting ? "SECURING…" : acquired ? "SECURED" : "PENDING"}
             </span>
             <div className="flex items-center gap-2">

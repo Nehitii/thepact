@@ -152,7 +152,7 @@ export default function DisplaySound() {
               disabled={isPending}
               className="flex-1"
             />
-            <span className="font-mono text-[9px] text-primary tracking-wider min-w-[36px] text-right">{displayFontSize}px</span>
+            <span className="font-mono ds-t-label text-primary tracking-wider min-w-[36px] text-right">{displayFontSize}px</span>
           </div>
         </SettingContentRow>
       </CyberPanel>
@@ -171,7 +171,7 @@ export default function DisplaySound() {
               disabled={!effective.masterEnabled}
               className="flex-1"
             />
-            <span className="font-mono text-[9px] text-primary tracking-wider min-w-[36px] text-right">{Math.round(displayVolume * 100)}%</span>
+            <span className="font-mono ds-t-label text-primary tracking-wider min-w-[36px] text-right">{Math.round(displayVolume * 100)}%</span>
           </div>
         </SettingContentRow>
 
@@ -194,7 +194,7 @@ export default function DisplaySound() {
               disabled={isPending || !(profile?.particles_enabled ?? true)}
               className="flex-1"
             />
-            <span className="font-mono text-[9px] text-primary tracking-wider min-w-[36px] text-right">{Math.round(displayParticleIntensity * 100)}%</span>
+            <span className="font-mono ds-t-label text-primary tracking-wider min-w-[36px] text-right">{Math.round(displayParticleIntensity * 100)}%</span>
           </div>
         </SettingContentRow>
       </CyberPanel>
@@ -226,7 +226,7 @@ export default function DisplaySound() {
                     className={cn("w-8 h-8 rounded-full border-2 transition-all", selected ? "border-foreground scale-110" : "border-transparent")}
                     style={{ backgroundColor: color.hex, boxShadow: selected ? `0 0 12px ${color.hex}80` : "none" }}
                   />
-                  <span className={cn("text-[8px] font-mono tracking-wider uppercase", selected ? "text-primary" : "text-muted-foreground")}>
+                  <span className={cn("ds-t-label font-mono tracking-wider uppercase", selected ? "text-primary" : "text-muted-foreground")}>
                     {color.label}
                   </span>
                 </button>
@@ -259,7 +259,7 @@ function SoundRowWithPreview({
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-rajdhani text-sm font-bold tracking-wider uppercase leading-none mb-1 text-foreground">{label}</div>
-          <div className="text-[11px] text-muted-foreground tracking-wide leading-snug hidden sm:block">{description}</div>
+          <div className="ds-t-label text-muted-foreground tracking-wide leading-snug hidden sm:block">{description}</div>
         </div>
       </div>
       <button
@@ -274,7 +274,7 @@ function SoundRowWithPreview({
       >
         <Play className="h-3 w-3 text-primary" />
       </button>
-      <span className={cn("font-mono text-[9px] tracking-widest min-w-[50px] text-right hidden sm:block transition-colors", checked ? "text-primary" : "text-muted-foreground")}>
+      <span className={cn("font-mono ds-t-label tracking-widest min-w-[50px] text-right hidden sm:block transition-colors", checked ? "text-primary" : "text-muted-foreground")}>
         {checked ? "ENABLED" : "DISABLED"}
       </span>
       <div onClick={(e) => e.stopPropagation()}>

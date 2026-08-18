@@ -126,7 +126,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
 
         {/* Top Bar - Difficulty only */}
         <div className="absolute top-0 left-0 right-0 p-3.5 flex justify-between items-start z-10">
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black/60 backdrop-blur-lg border border-white/10 rounded-full text-[10px] font-bold tracking-wider text-gray-100 uppercase">
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black/60 backdrop-blur-lg border border-white/10 rounded-full ds-t-label font-bold tracking-wider text-gray-100 uppercase">
             <span
               className="w-1.5 h-1.5 rounded-full"
               style={{ background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
@@ -148,7 +148,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
           {/* Header Row with SUPER tag */}
           <div className="flex justify-between items-center mb-1.5">
             <div
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full ds-t-label font-bold tracking-wider uppercase"
               style={{
                 background: "linear-gradient(135deg, #b8860b, #fbbf24, #b8860b)",
                 color: "#fff",
@@ -159,7 +159,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
               SUPER
             </div>
             {isDynamic && (
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-purple-500/30 text-purple-400 bg-black/40 uppercase">
+              <span className="ds-t-label font-bold px-1.5 py-0.5 rounded-md border border-purple-500/30 text-purple-400 bg-black/40 uppercase">
                 <Zap className="w-2.5 h-2.5 inline mr-0.5" />Dynamic
               </span>
             )}
@@ -172,7 +172,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
 
           {/* Progress */}
           <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between items-center text-[11px] font-semibold">
+            <div className="flex justify-between items-center ds-t-label font-semibold">
               <span className={cn("uppercase tracking-wider", isComplete ? "text-green-400" : "text-gray-400")}>
                 {isComplete ? "Complete" : "In Progress"}
               </span>
@@ -189,7 +189,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
               />
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[10px] text-gray-500">
+              <span className="ds-t-label text-gray-500">
                 {completedCount} / {childCount} goals
               </span>
             </div>
@@ -198,7 +198,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
           {/* Rule label */}
           {ruleLabel && (
             <div className="pt-1 border-t border-white/[0.06]">
-              <span className="text-[9px] text-gray-500 font-mono truncate block">{ruleLabel}</span>
+              <span className="ds-t-label text-gray-500 font-mono truncate block">{ruleLabel}</span>
             </div>
           )}
         </div>

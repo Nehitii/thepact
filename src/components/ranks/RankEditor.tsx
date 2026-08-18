@@ -167,7 +167,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                       <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
                         <div className="flex items-center gap-1.5">
                           <Sparkles className="h-3 w-3 text-amber-400" />
-                          <span className="text-[10px] font-orbitron text-amber-400 uppercase tracking-wider">
+                          <span className="ds-t-label font-orbitron text-amber-400 uppercase tracking-wider">
                             Max XP from Goals: {globalMaxXP.toLocaleString()}
                           </span>
                         </div>
@@ -196,7 +196,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                     <div className="space-y-2">
                       <Label className="text-xs font-orbitron text-primary/70 uppercase tracking-wider">Logo / Icon URL</Label>
                       <Input value={editedRank.logo_url || ""} onChange={(e) => updateRank({ logo_url: e.target.value || null })} placeholder="https://example.com/icon.png" className="bg-card/50 border-primary/30 text-primary text-sm" />
-                      <p className="text-[10px] text-muted-foreground">Leave empty to use a default icon</p>
+                      <p className="ds-t-label text-muted-foreground">Leave empty to use a default icon</p>
                     </div>
 
                     <div className="space-y-2">
@@ -230,7 +230,7 @@ export function RankEditor({ rank, open, onClose, onSave, isNew, globalMaxXP = 0
                             )}
                           >
                             <div className="w-6 h-6 rounded-full" style={{ backgroundColor: preset.frame, boxShadow: `0 0 10px ${preset.glow}` }} />
-                            <span className="text-[10px] text-muted-foreground">{preset.name}</span>
+                            <span className="ds-t-label text-muted-foreground">{preset.name}</span>
                           </button>
                         ))}
                       </div>

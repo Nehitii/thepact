@@ -149,7 +149,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
           >
             <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),1)]")} />
             {badge != null && badge > 0 && (
-              <span className="absolute top-1 right-1 text-[11px] leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
+              <span className="absolute top-1 right-1 ds-t-label leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
                 {badge > 99 ? "99" : badge}
               </span>
             )}
@@ -214,13 +214,13 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
           </span>
 
           {isActive && (
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-mono text-primary/80 tracking-widest">
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 ds-t-label font-mono text-primary/80 tracking-widest">
               ACTV
             </span>
           )}
 
           {badge != null && badge > 0 && (
-            <span className="relative z-20 ml-auto text-[11px] bg-destructive text-destructive-foreground min-w-[16px] h-[16px] flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
+            <span className="relative z-20 ml-auto ds-t-label bg-destructive text-destructive-foreground min-w-[16px] h-[16px] flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
               {badge > 99 ? "99+" : badge}
             </span>
           )}
@@ -234,7 +234,7 @@ function SectionLabel({ label }: { label: string }) {
   return (
     <div className="flex items-center gap-2 mb-2 mt-5 px-3">
       <Hexagon size={10} className="text-primary/80 fill-primary/20" />
-      <p className="text-[11px] font-black uppercase tracking-[0.25em] text-primary/80 font-orbitron">{label}</p>
+      <p className="ds-t-label font-black uppercase tracking-[0.25em] text-primary/80 font-orbitron">{label}</p>
       <div className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
     </div>
   );
@@ -414,7 +414,7 @@ export const AppSidebar = memo(function AppSidebar() {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75" />
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_5px_#10b981]" />
                 </div>
-                <span className="text-[11px] uppercase font-bold tracking-[0.2em] text-emerald-400 font-mono">
+                <span className="ds-t-label uppercase font-bold tracking-[0.2em] text-emerald-400 font-mono">
                   SYS.ONLINE // v4.0.1
                 </span>
               </div>
@@ -599,7 +599,7 @@ export const AppSidebar = memo(function AppSidebar() {
             >
               {/* Header du dropdown */}
               <div className="px-3 py-2 bg-primary/10 border-b border-primary/30 flex items-center justify-between">
-                <span className="text-[11px] uppercase font-black tracking-[0.2em] font-orbitron drop-shadow-[0_0_5px_rgba(var(--primary),0.5)]">
+                <span className="ds-t-label uppercase font-black tracking-[0.2em] font-orbitron drop-shadow-[0_0_5px_rgba(var(--primary),0.5)]">
                   System_Config
                 </span>
                 <div className="w-1.5 h-1.5 bg-primary animate-pulse shadow-[0_0_5px_rgba(var(--primary),1)]" />
@@ -619,7 +619,7 @@ export const AppSidebar = memo(function AppSidebar() {
                       className="p-2 focus:bg-primary/20 focus:text-primary cursor-pointer group rounded-none border border-transparent hover:border-primary/30 transition-all flex items-center h-10"
                     >
                       <ItemIcon className="mr-2 h-3.5 w-3.5 opacity-60 group-hover:opacity-100 group-hover:text-primary" />
-                      <span className="text-[11px] font-bold tracking-wider uppercase truncate">{item.label}</span>
+                      <span className="ds-t-label font-bold tracking-wider uppercase truncate">{item.label}</span>
                     </DropdownMenuItem>
                   );
                 })}
@@ -645,7 +645,7 @@ export const AppSidebar = memo(function AppSidebar() {
                       <span className="text-xs font-bold tracking-widest uppercase">Inbox</span>
                     </div>
                     {totalUnread > 0 && (
-                      <span className="bg-primary text-[#050508] text-[11px] px-1.5 py-0.5 font-bold rounded-sm">
+                      <span className="bg-primary text-[#050508] ds-t-label px-1.5 py-0.5 font-bold rounded-sm">
                         {totalUnread}
                       </span>
                     )}

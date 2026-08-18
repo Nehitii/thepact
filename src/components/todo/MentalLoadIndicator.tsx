@@ -67,20 +67,20 @@ export function MentalLoadIndicator({ tasks }: MentalLoadIndicatorProps) {
       </div>
 
       <div className="flex flex-col">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">SYS_LOAD</span>
+        <span className="ds-t-label font-mono uppercase tracking-widest text-muted-foreground">SYS_LOAD</span>
         <div className="flex items-center gap-2">
           <span className={cn("text-sm font-mono font-bold", load.color)}>{load.percent}%</span>
           {load.percent > 70 && (
             <motion.span
               animate={{ opacity: [1, 0.4, 1] }}
               transition={{ repeat: Infinity, duration: 0.8 }}
-              className="text-[10px] font-mono text-red-400"
+              className="ds-t-label font-mono text-red-400"
             >
               {load.label}
             </motion.span>
           )}
           {load.percent <= 70 && (
-            <span className={cn("text-[10px] font-mono", load.color)}>{load.label}</span>
+            <span className={cn("ds-t-label font-mono", load.color)}>{load.label}</span>
           )}
         </div>
       </div>

@@ -75,7 +75,7 @@ export function ShopItemCard({
         {/* Rarity badge */}
         {rarity !== "common" && (
           <div className={cn(
-            "absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-orbitron font-bold tracking-wider uppercase",
+            "absolute top-2 right-2 px-2 py-0.5 rounded-full ds-t-label font-orbitron font-bold tracking-wider uppercase",
             styles.bg,
             styles.label
           )}>
@@ -98,7 +98,7 @@ export function ShopItemCard({
         {status === "owned" && (
           <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/20 border border-green-400/40">
             <Check className="w-3 h-3 text-green-400" />
-            <span className="text-[10px] font-orbitron text-green-400 tracking-wider">
+            <span className="ds-t-label font-orbitron text-green-400 tracking-wider">
               Owned
             </span>
           </div>

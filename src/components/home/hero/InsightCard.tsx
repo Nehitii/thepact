@@ -119,7 +119,7 @@ export function InsightCard({ insight, index }: InsightCardProps) {
           <div className="flex items-center gap-2">
             <span
               className={cn(
-                "text-[11px] font-orbitron font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 rounded border",
+                "ds-t-label font-orbitron font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 rounded border",
                 cfg.badge,
                 cfg.badgeText,
               )}
@@ -132,7 +132,7 @@ export function InsightCard({ insight, index }: InsightCardProps) {
           </div>
 
           {/* Body — typewriter-style monospace feel */}
-          <p className="text-[11px] font-rajdhani text-muted-foreground/80 leading-relaxed">
+          <p className="ds-t-label font-rajdhani text-muted-foreground/80 leading-relaxed">
             {insight.body}
           </p>
 
@@ -142,7 +142,7 @@ export function InsightCard({ insight, index }: InsightCardProps) {
               onClick={() => navigate(insight.actionRoute!)}
               className={cn(
                 "inline-flex items-center gap-1 mt-1",
-                "text-[11px] font-orbitron font-bold uppercase tracking-[0.12em]",
+                "ds-t-label font-orbitron font-bold uppercase tracking-[0.12em]",
                 "px-2.5 py-1 rounded-md border",
                 "transition-all duration-200",
                 "hover:scale-[1.03] active:scale-[0.97]",

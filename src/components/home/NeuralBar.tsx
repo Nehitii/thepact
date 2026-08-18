@@ -43,7 +43,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
 
         {/* Left: SYS + progress + coords */}
         <div className="flex items-center gap-3 flex-1">
-          <span className="uppercase font-mono text-[11px] tracking-[2px] text-muted-foreground">
+          <span className="uppercase font-mono ds-t-label tracking-[2px] text-muted-foreground">
             SYS
           </span>
 
@@ -59,17 +59,17 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           </div>
 
           {/* Pact name + ID */}
-          <span className="hidden sm:inline truncate max-w-[200px] font-mono text-[11px] tracking-[1px] text-primary/70">
+          <span className="hidden sm:inline truncate max-w-[200px] font-mono ds-t-label tracking-[1px] text-primary/70">
             {pact.name}
           </span>
         </div>
 
         {/* Center: Clock */}
         <div className="flex-1 text-center">
-          <div className="font-mono text-[15px] tracking-[3px] text-primary neural-bar-clock">
+          <div className="font-mono text-[0.9375rem] tracking-[3px] text-primary neural-bar-clock">
             {timeStr}
           </div>
-          <div className="font-mono text-[11px] tracking-[2px] uppercase mt-px text-muted-foreground">
+          <div className="font-mono ds-t-label tracking-[2px] uppercase mt-px text-muted-foreground">
             {dateStr}
           </div>
         </div>
@@ -98,7 +98,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           <div className="hidden sm:flex items-center gap-1.5">
             <BondIcon size={14} />
             <span
-              className="font-mono text-[11px] tracking-[1px]"
+              className="font-mono ds-t-label tracking-[1px]"
               style={{ color: "#ffcc00", textShadow: "0 0 6px rgba(255,204,0,0.4)" }}
             >
               {bondBalance.toLocaleString("fr-FR")}
@@ -108,7 +108,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
           {/* Customize button */}
           <button
             onClick={() => navigate("/profile")}
-            className="neural-bar-btn flex items-center gap-2 cursor-pointer uppercase transition-all font-mono text-[11px] tracking-[2px] text-primary rounded-[4px]"
+            className="neural-bar-btn flex items-center gap-2 cursor-pointer uppercase transition-all font-mono ds-t-label tracking-[2px] text-primary rounded-[4px]"
             style={{
               padding: "6px 14px",
               clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)",

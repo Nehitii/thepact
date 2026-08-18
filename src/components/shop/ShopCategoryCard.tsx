@@ -57,7 +57,7 @@ export function ShopCategoryCard({
             {isComingSoon && (
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/50 border border-muted-foreground/30">
                 <Lock className="w-3 h-3 text-muted-foreground" />
-                <span className="text-[10px] font-orbitron text-muted-foreground tracking-wider">
+                <span className="ds-t-label font-orbitron text-muted-foreground tracking-wider">
                   Soon
                 </span>
               </div>

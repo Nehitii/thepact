@@ -242,7 +242,7 @@ export default function Inbox() {
                                   >
                                     {conv.other_user_name || t("inbox.unknownUser")}
                                   </h3>
-                                   <span className="text-[10px] text-slate-500 font-mono">
+                                   <span className="ds-t-label text-slate-500 font-mono">
                                     {conv.last_message_at
                                       ? formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true })
                                       : ""}
@@ -294,7 +294,7 @@ const TabItem = ({ value, icon: Icon, label, count, active, color = "primary" }:
     {count > 0 && (
       <span
         className={cn(
-          "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded-sm min-w-[20px]",
+          "ml-1 ds-t-label font-bold px-1.5 py-0.5 rounded-sm min-w-[20px]",
           active ? `bg-${color} text-black` : "bg-slate-800 text-slate-400",
         )}
       >

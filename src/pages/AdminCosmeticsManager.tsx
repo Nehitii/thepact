@@ -433,7 +433,7 @@ export default function AdminCosmeticsManager() {
                         
                         {/* WYSIWYG Previews */}
                         <div className="space-y-3">
-                          <div className="flex items-center gap-1 text-[10px] text-primary/50 uppercase tracking-wider">
+                          <div className="flex items-center gap-1 ds-t-label text-primary/50 uppercase tracking-wider">
                             <Eye className="h-3 w-3" />
                             In-Context Previews (WYSIWYG)
                           </div>

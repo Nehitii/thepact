@@ -38,7 +38,7 @@ export function ReactionButton({ type, count, isActive, onToggle, size = 'md' }:
       whileTap={{ scale: 0.9 }}
       className={cn(
         "flex items-center gap-1.5 rounded-full transition-all border font-medium",
-        size === 'sm' ? "px-2 py-1 gap-1 text-[10px]" : "px-3.5 py-1.5 text-xs",
+        size === 'sm' ? "px-2 py-1 gap-1 ds-t-label" : "px-3.5 py-1.5 text-xs",
         isActive
           ? config.activeClasses
           : "bg-muted border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground hover:bg-primary/8"

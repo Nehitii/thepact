@@ -29,7 +29,7 @@ export function PrismPanelToolbar({ onExpand, info, className }: PrismPanelToolb
             <Info className="h-3 w-3" />
           </span>
           <span
-            className="pointer-events-none absolute right-0 top-full mt-1 max-w-[200px] rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-panel-bg))]/95 backdrop-blur-md px-2 py-1.5 text-[10px] font-mono leading-snug text-muted-foreground opacity-0 group-hover/info:opacity-100 focus-within:opacity-100 transition-opacity z-20"
+            className="pointer-events-none absolute right-0 top-full mt-1 max-w-[200px] rounded-sm border border-[hsl(var(--prism-cyan))]/30 bg-[hsl(var(--prism-panel-bg))]/95 backdrop-blur-md px-2 py-1.5 ds-t-label font-mono leading-snug text-muted-foreground opacity-0 group-hover/info:opacity-100 focus-within:opacity-100 transition-opacity z-20"
             style={{ boxShadow: "0 4px 18px -6px hsl(var(--prism-cyan) / 0.4)" }}
           >
             {info}

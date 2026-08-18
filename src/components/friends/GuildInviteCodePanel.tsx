@@ -68,9 +68,9 @@ export function GuildInviteCodePanel({ guildId, canManage }: Props) {
             {activeCodes.map((c: GuildInviteCode) => (
               <div key={c.id} className="flex items-center gap-2 p-2 rounded-lg border border-border bg-card/50">
                 <code className="text-sm font-mono font-bold text-primary flex-1 tracking-wider">{c.code}</code>
-                <span className="text-[10px] text-muted-foreground">{c.current_uses}{c.max_uses ? `/${c.max_uses}` : ""}</span>
+                <span className="ds-t-label text-muted-foreground">{c.current_uses}{c.max_uses ? `/${c.max_uses}` : ""}</span>
                 {c.expires_at && (
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="ds-t-label text-muted-foreground">
                     {formatDistanceToNow(new Date(c.expires_at), { addSuffix: true, locale })}
                   </span>
                 )}

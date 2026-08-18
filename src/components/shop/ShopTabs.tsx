@@ -33,7 +33,7 @@ export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabs
             onClick={() => onTabChange(tab.id)}
             whileTap={{ scale: 0.96 }}
             className={cn(
-              "relative flex items-center gap-2.5 py-3 px-5 rounded-xl font-orbitron text-[11px] font-semibold tracking-wider uppercase transition-all duration-200 whitespace-nowrap border",
+              "relative flex items-center gap-2.5 py-3 px-5 rounded-xl font-orbitron ds-t-label font-semibold tracking-wider uppercase transition-all duration-200 whitespace-nowrap border",
               isActive
                 ? "text-primary border-primary/30"
                 : "text-muted-foreground border-transparent hover:text-foreground hover:border-primary/10 hover:bg-card/40"
@@ -65,7 +65,7 @@ export function ShopTabs({ activeTab, onTabChange, wishlistCount = 0 }: ShopTabs
 
             {isWishlistFull && (
               <motion.span
-                className="relative z-10 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full text-[9px] font-bold"
+                className="relative z-10 min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full ds-t-label font-bold"
                 style={{
                   background: "hsl(350 80% 55% / 0.2)",
                   color: "hsl(350 80% 55%)",

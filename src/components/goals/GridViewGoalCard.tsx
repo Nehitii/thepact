@@ -194,7 +194,7 @@ export function GridViewGoalCard({
               aria-label={`Difficulty: ${getDifficultyLabel(difficulty, customDifficultyName)}`}
               title={getDifficultyLabel(difficulty, customDifficultyName)}
             />
-            <span className="hidden sm:inline-flex items-center px-2 py-1 bg-black/55 backdrop-blur-md border border-white/10 rounded-md text-[10px] font-bold tracking-[0.12em] text-white/90 uppercase font-orbitron">
+            <span className="hidden sm:inline-flex items-center px-2 py-1 bg-black/55 backdrop-blur-md border border-white/10 rounded-md ds-t-label font-bold tracking-[0.12em] text-white/90 uppercase font-orbitron">
               {getDifficultyLabel(difficulty, customDifficultyName)}
             </span>
           </div>
@@ -202,7 +202,7 @@ export function GridViewGoalCard({
           <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Progress mini gem (desktop) */}
             <div
-              className="tcg-gem-mini hidden sm:flex items-center justify-center text-[10px] font-bold text-white tabular-nums shrink-0"
+              className="tcg-gem-mini hidden sm:flex items-center justify-center ds-t-label font-bold text-white tabular-nums shrink-0"
               aria-label={`Progress ${progress}%`}
               title={`${progress}%`}
             >
@@ -256,14 +256,14 @@ export function GridViewGoalCard({
               {displayTags.map((tag, i) => (
                 <span
                   key={i}
-                  className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border bg-black/40 uppercase tracking-wider font-orbitron"
+                  className="ds-t-label font-bold px-1.5 py-0.5 rounded-md border bg-black/40 uppercase tracking-wider font-orbitron"
                   style={{ borderColor: getTagColor(tag), color: getTagColor(tag) }}
                 >
                   {getTagLabel(tag)}
                 </span>
               ))}
               {remainingTagsCount > 0 && (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-dashed border-gray-600 text-gray-400 bg-black/40 uppercase">
+                <span className="ds-t-label font-bold px-1.5 py-0.5 rounded-md border border-dashed border-gray-600 text-gray-400 bg-black/40 uppercase">
                   +{remainingTagsCount}
                 </span>
               )}
@@ -271,14 +271,14 @@ export function GridViewGoalCard({
           </div>
 
           {/* Title */}
-          <h3 className="text-[13px] sm:text-[17px] font-bold leading-tight text-white line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.9)] font-orbitron tracking-wide">
+          <h3 className="text-[0.8125rem] sm:text-[1.0625rem] font-bold leading-tight text-white line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.9)] font-orbitron tracking-wide">
             {goal.name}
           </h3>
           {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1" />}
 
           {/* Progress */}
           <div className="flex flex-col gap-1 sm:gap-1.5">
-            <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-semibold">
+            <div className="flex justify-between items-center ds-t-label sm:ds-t-label font-semibold">
               <span className={cn("inline-flex items-center gap-1 uppercase tracking-wider truncate", isCompleted ? "text-[var(--accent)]" : "text-gray-400")}>
                 {(() => {
                   const Icon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
@@ -293,7 +293,7 @@ export function GridViewGoalCard({
               <div className="tcg-progress-ticks" />
             </div>
             <div className="hidden sm:flex justify-end">
-              <span className="text-[10px] text-gray-500">
+              <span className="ds-t-label text-gray-500">
                 {completedSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"}
               </span>
             </div>

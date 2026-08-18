@@ -24,7 +24,7 @@ const SparklineTooltip = ({ active, payload, currency }: any) => {
         animate={{ opacity: 1, y: 0 }}
         className="glass-modal rounded-lg px-3 py-2 shadow-xl"
       >
-        <p className="text-[10px] text-muted-foreground font-medium">{data.label}</p>
+        <p className="ds-t-label text-muted-foreground font-medium">{data.label}</p>
         <p className={`text-sm font-bold tabular-nums ${data.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
           {data.balance >= 0 ? '+' : ''}{formatCurrency(data.balance, currency)}
         </p>
@@ -128,7 +128,7 @@ export function BalanceTrendSparkline({ data, currency }: BalanceTrendSparklineP
 
           <div className="flex justify-between mt-2 px-1">
             {data.map((point, i) => (
-              <span key={i} className="text-[10px] text-muted-foreground/60 font-medium">{point.label}</span>
+              <span key={i} className="ds-t-label text-muted-foreground/60 font-medium">{point.label}</span>
             ))}
           </div>
         </div>

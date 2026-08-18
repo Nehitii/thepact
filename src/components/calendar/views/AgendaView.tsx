@@ -61,7 +61,7 @@ export function AgendaView({ events, onEventClick }: AgendaViewProps) {
             </span>
             <div>
               <p className="text-xs font-medium capitalize">{format(group.date, "EEEE", { locale })}</p>
-              <p className="text-[10px] text-muted-foreground">{format(group.date, "d MMMM yyyy", { locale })}</p>
+              <p className="ds-t-label text-muted-foreground">{format(group.date, "d MMMM yyyy", { locale })}</p>
             </div>
           </div>
 
@@ -91,7 +91,7 @@ export function AgendaView({ events, onEventClick }: AgendaViewProps) {
                       <SourceIcon className="h-3 w-3 shrink-0 opacity-60" style={{ color: ev.color }} />
                       {ev.title}
                     </p>
-                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground mt-0.5">
+                    <div className="flex items-center gap-3 ds-t-label text-muted-foreground mt-0.5">
                       <span className="flex items-center gap-0.5">
                         <Clock className="h-2.5 w-2.5" />
                         {ev.all_day ? t("calendar.allDay", "All day") : `${format(start, "HH:mm")} – ${format(end, "HH:mm")}`}
@@ -104,7 +104,7 @@ export function AgendaView({ events, onEventClick }: AgendaViewProps) {
                       )}
                       {ev.recurrence_rule && <Repeat className="h-2.5 w-2.5" />}
                       {isExternal && (
-                        <span className="text-[9px] px-1 rounded bg-muted/50 capitalize">{source}</span>
+                        <span className="ds-t-label px-1 rounded bg-muted/50 capitalize">{source}</span>
                       )}
                     </div>
                   </div>

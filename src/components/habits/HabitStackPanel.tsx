@@ -97,7 +97,7 @@ export function HabitStackPanel({ goalId, pactId, prerequisiteHabitId }: HabitSt
         </SelectContent>
       </Select>
       {currentName && (
-        <p className="mt-2 text-[11px] font-mono text-muted-foreground">
+        <p className="mt-2 ds-t-label font-mono text-muted-foreground">
           Trigger: <span className="text-foreground">{currentName}</span>
         </p>
       )}

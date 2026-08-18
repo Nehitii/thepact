@@ -78,7 +78,7 @@ export function CategoryTrendsChart({ validations, currency }: CategoryTrendsCha
             <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" strokeOpacity={0.4} vertical={false} />
               <XAxis dataKey="label" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+              <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
               <Tooltip content={<CustomTooltip />} cursor={false} />
               <Line type="monotone" dataKey="income" name={t('finance.monthly.income')} stroke="#34d399" strokeWidth={2.5} dot={{ r: 3, fill: '#34d399' }} />
               <Line type="monotone" dataKey="expenses" name={t('finance.monthly.expenses')} stroke="#fb7185" strokeWidth={2.5} dot={{ r: 3, fill: '#fb7185' }} />

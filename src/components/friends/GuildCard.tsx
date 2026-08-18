@@ -50,7 +50,7 @@ export function GuildCard({ guild, isOwner, onClick }: GuildCardProps) {
             {isOwner && <Crown className="h-3 w-3 text-amber-400 shrink-0" />}
             {guild.is_public && <Globe className="h-3 w-3 text-primary shrink-0" />}
           </div>
-          <p className="text-[10px] text-muted-foreground font-mono flex items-center gap-1.5">
+          <p className="ds-t-label text-muted-foreground font-mono flex items-center gap-1.5">
             <Users className="h-3 w-3" /> {t("friends.membersCount", { count: guild.member_count || 1 })}/{guild.max_members || 25}
           </p>
         </div>

@@ -52,14 +52,14 @@ export function GuildHeader({ guild, memberCount }: Props) {
           {/* Top row: faction id + back */}
           <div className="flex items-center justify-between mb-3 gap-2">
             <span
-              className="font-mono text-[9px] uppercase tracking-[0.22em] truncate"
+              className="font-mono ds-t-label uppercase tracking-[0.22em] truncate"
               style={{ color: `hsl(${colorVar} / 0.85)` }}
             >
               [ FACTION · {factionId} ]
             </span>
             <button
               onClick={() => navigate("/friends")}
-              className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-primary))] transition-colors shrink-0"
+              className="inline-flex items-center gap-1 font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-primary))] transition-colors shrink-0"
               aria-label={t("common.back")}
             >
               <ArrowLeft className="h-3 w-3" />
@@ -88,7 +88,7 @@ export function GuildHeader({ guild, memberCount }: Props) {
 
                 {guild.is_public && (
                   <span
-                    className="inline-flex items-center gap-1 font-mono text-[8px] uppercase tracking-[0.2em] px-1.5 py-0.5 rounded-[2px] border"
+                    className="inline-flex items-center gap-1 font-mono ds-t-label uppercase tracking-[0.2em] px-1.5 py-0.5 rounded-[2px] border"
                     style={{
                       color: "hsl(var(--ds-accent-primary))",
                       borderColor: "hsl(var(--ds-accent-primary) / 0.45)",
@@ -101,7 +101,7 @@ export function GuildHeader({ guild, memberCount }: Props) {
                 )}
 
                 <span
-                  className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-[2px] border tabular-nums"
+                  className="inline-flex items-center gap-1.5 font-mono ds-t-label uppercase tracking-[0.18em] px-1.5 py-0.5 rounded-[2px] border tabular-nums"
                   style={{
                     color: "hsl(var(--ds-text-muted))",
                     borderColor: "hsl(var(--ds-border-default) / 0.4)",

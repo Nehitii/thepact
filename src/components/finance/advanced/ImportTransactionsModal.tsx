@@ -198,7 +198,7 @@ export function ImportTransactionsModal({ open, onOpenChange }: Props) {
           <Button onClick={() => inputRef.current?.click()} variant="secondary">
             <Upload className="w-4 h-4 mr-1" /> Choisir un CSV
           </Button>
-          <p className="text-[11px] text-muted-foreground/70">
+          <p className="ds-t-label text-muted-foreground/70">
             Colonnes attendues : <code>date, description, amount</code> (et optionnellement <code>category</code>).
           </p>
         </div>
@@ -213,7 +213,7 @@ export function ImportTransactionsModal({ open, onOpenChange }: Props) {
               </div>
             </div>
             <div className="max-h-72 overflow-auto rounded-lg border border-white/[0.06]">
-              <table className="w-full text-[11px]">
+              <table className="w-full ds-t-label">
                 <thead className="sticky top-0 bg-background/95 backdrop-blur">
                   <tr className="text-left text-muted-foreground/70">
                     <th className="px-2 py-1.5">Date</th>
@@ -234,7 +234,7 @@ export function ImportTransactionsModal({ open, onOpenChange }: Props) {
                 </tbody>
               </table>
               {rows.length > 100 && (
-                <div className="text-center py-1.5 text-[10px] text-muted-foreground/60">+ {rows.length - 100} autres lignes</div>
+                <div className="text-center py-1.5 ds-t-label text-muted-foreground/60">+ {rows.length - 100} autres lignes</div>
               )}
             </div>
             <div className="flex justify-end gap-2">

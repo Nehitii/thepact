@@ -405,7 +405,7 @@ export default function Wishlist() {
   // Priority selector component
   const PrioritySelector = ({ value, onChange }: { value: WishlistPriority; onChange: (v: WishlistPriority) => void }) => (
     <div className="space-y-2">
-      <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Priority</Label>
+      <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Priority</Label>
       <div className="flex gap-1.5">
         {PRIORITY_OPTIONS.map((opt) => {
           const Icon = opt.icon;
@@ -460,7 +460,7 @@ export default function Wishlist() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">
+              <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">
                 Name <span className="text-cyan-400">*</span>
               </Label>
               <Input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="e.g. Running shoes"
@@ -468,26 +468,26 @@ export default function Wishlist() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Est. cost</Label>
+                <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Est. cost</Label>
                 <Input value={editCost} onChange={(e) => setEditCost(e.target.value)} placeholder="0" inputMode="decimal"
                   className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-mono" />
               </div>
               <div className="space-y-2">
-                <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Category</Label>
+                <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Category</Label>
                 <Input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} placeholder="e.g. Equipment"
                   className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-rajdhani" />
               </div>
             </div>
             <PrioritySelector value={editPriority} onChange={setEditPriority} />
             <div className="space-y-2">
-              <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
+              <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
                 <Link className="h-3 w-3" /> URL
               </Label>
               <Input value={editUrl} onChange={(e) => setEditUrl(e.target.value)} placeholder="https://..."
                 className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-mono text-xs" />
             </div>
             <div className="space-y-2">
-              <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
+              <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
                 <ImageIcon className="h-3 w-3" /> Image URL
               </Label>
               <Input value={editImageUrl} onChange={(e) => setEditImageUrl(e.target.value)} placeholder="https://image..."
@@ -506,7 +506,7 @@ export default function Wishlist() {
               <Switch checked={editType === "required"} onCheckedChange={(v) => setEditType(v ? "required" : "optional")} />
             </div>
             <div className="space-y-2">
-              <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Link to Goal</Label>
+              <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Link to Goal</Label>
               <Select value={editGoalId} onValueChange={setEditGoalId}>
                 <SelectTrigger className="bg-slate-900/60 border-cyan-500/15"><SelectValue placeholder="Select a goal" /></SelectTrigger>
                 <SelectContent>
@@ -516,7 +516,7 @@ export default function Wishlist() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Notes</Label>
+              <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Notes</Label>
               <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} placeholder="Why is this needed?" rows={3}
                 className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-rajdhani" />
             </div>
@@ -542,20 +542,20 @@ export default function Wishlist() {
             <Button
               variant="outline"
               onClick={() => { setBulkMode(!bulkMode); setBulkSelected(new Set()); }}
-              className={`font-mono text-[10px] tracking-[0.12em] border-cyan-500/20 hover:border-cyan-400/40 hover:bg-cyan-500/5 rounded-sm ${bulkMode ? "bg-cyan-500/10 border-cyan-400/40 text-cyan-400" : "text-slate-400"}`}
+              className={`font-mono ds-t-label tracking-[0.12em] border-cyan-500/20 hover:border-cyan-400/40 hover:bg-cyan-500/5 rounded-sm ${bulkMode ? "bg-cyan-500/10 border-cyan-400/40 text-cyan-400" : "text-slate-400"}`}
             >
               <ListChecks className="h-4 w-4 mr-2" /> {bulkMode ? "EXIT BULK" : "BULK"}
             </Button>
             <Button
               variant="outline"
               onClick={() => setImportOpen(true)}
-              className="font-mono text-[10px] tracking-[0.12em] border-cyan-500/20 hover:border-cyan-400/40 hover:bg-cyan-500/5 text-slate-400 rounded-sm"
+              className="font-mono ds-t-label tracking-[0.12em] border-cyan-500/20 hover:border-cyan-400/40 hover:bg-cyan-500/5 text-slate-400 rounded-sm"
             >
               <Globe className="h-4 w-4 mr-2" /> IMPORT
             </Button>
             <Dialog open={newOpen} onOpenChange={setNewOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25 font-mono text-[10px] tracking-[0.12em] rounded-sm">
+                <Button className="bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25 font-mono ds-t-label tracking-[0.12em] rounded-sm">
                   <Plus className="h-4 w-4 mr-2" /> ADD ITEM
                 </Button>
               </DialogTrigger>
@@ -565,7 +565,7 @@ export default function Wishlist() {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">
+                    <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">
                       Name <span className="text-cyan-400">*</span>
                     </Label>
                     <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g. Running shoes"
@@ -573,19 +573,19 @@ export default function Wishlist() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Est. cost</Label>
+                      <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Est. cost</Label>
                       <Input value={newCost} onChange={(e) => setNewCost(e.target.value)} placeholder="0" inputMode="decimal"
                         className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-mono" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Category</Label>
+                      <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Category</Label>
                       <Input value={newCategory} onChange={(e) => setNewCategory(e.target.value)} placeholder="e.g. Equipment"
                         className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-rajdhani" />
                     </div>
                   </div>
                   <PrioritySelector value={newPriority} onChange={setNewPriority} />
                   <div className="space-y-2">
-                    <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60">Link to Goal</Label>
+                    <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60">Link to Goal</Label>
                     <Select value={newGoalId} onValueChange={setNewGoalId}>
                       <SelectTrigger className="bg-slate-900/60 border-cyan-500/15"><SelectValue placeholder="Select a goal" /></SelectTrigger>
                       <SelectContent>
@@ -595,14 +595,14 @@ export default function Wishlist() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
+                    <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
                       <Link className="h-3 w-3" /> URL
                     </Label>
                     <Input value={newUrl} onChange={(e) => setNewUrl(e.target.value)} placeholder="https://..."
                       className="bg-slate-900/60 border-cyan-500/15 focus:border-cyan-400/50 font-mono text-xs" />
                   </div>
                   <div className="space-y-2">
-                    <Label className="font-mono uppercase text-[10px] tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
+                    <Label className="font-mono uppercase ds-t-label tracking-[0.15em] text-cyan-500/60 flex items-center gap-1.5">
                       <ImageIcon className="h-3 w-3" /> Image URL
                     </Label>
                     <Input value={newImageUrl} onChange={(e) => setNewImageUrl(e.target.value)} placeholder="https://image..."
@@ -621,7 +621,7 @@ export default function Wishlist() {
                     <Switch checked={newType === "required"} onCheckedChange={(v) => setNewType(v ? "required" : "optional")} />
                   </div>
                   <Button onClick={() => createNew()} disabled={!newName.trim() || createItem.isPending}
-                    className="w-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25 font-mono text-[10px] tracking-[0.12em]">
+                    className="w-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/25 font-mono ds-t-label tracking-[0.12em]">
                     <Plus className="h-4 w-4 mr-2" /> ADD TO WISHLIST
                   </Button>
                 </div>
@@ -649,7 +649,7 @@ export default function Wishlist() {
             >
               <div className="flex items-center gap-2 mb-1">
                 <stat.icon className="h-3.5 w-3.5 text-cyan-500/50" />
-                <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-cyan-500/50">{stat.label}</p>
+                <p className="ds-t-label font-mono uppercase tracking-[0.15em] text-cyan-500/50">{stat.label}</p>
               </div>
               <p className="font-mono text-lg font-bold text-foreground">{stat.value}</p>
             </motion.div>

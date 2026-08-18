@@ -152,7 +152,7 @@ export function FocusTimerRing({
               style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }}
             >
               <Target className="h-8 w-8 text-primary group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
-              <span className="mt-2 text-[9px] font-mono uppercase tracking-[0.3em] text-primary">{t("focus.initSync")}</span>
+              <span className="mt-2 ds-t-label font-mono uppercase tracking-[0.3em] text-primary">{t("focus.initSync")}</span>
             </motion.button>
           ) : showControls ? (
             <motion.div
@@ -187,7 +187,7 @@ export function FocusTimerRing({
                 style={{ clipPath: "polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%, 0 10px)" }}
               >
                 <Square className="h-3 w-3 text-destructive" />
-                <span className="text-[10px] font-mono font-bold tracking-widest text-destructive uppercase">
+                <span className="ds-t-label font-mono font-bold tracking-widest text-destructive uppercase">
                   {t("focus.terminate")}
                 </span>
               </button>
@@ -207,7 +207,7 @@ export function FocusTimerRing({
                 className="mb-1 border border-current bg-background px-2 py-0.5"
                 style={{ color: colorHsl, clipPath: "polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px)" }}
               >
-                <span className="text-[9px] font-mono uppercase tracking-[0.2em]">
+                <span className="ds-t-label font-mono uppercase tracking-[0.2em]">
                   {isPaused
                     ? t("focus.ring.halted")
                     : isWork

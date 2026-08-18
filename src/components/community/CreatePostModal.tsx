@@ -141,7 +141,7 @@ export function CreatePostModal({ isOpen, onClose }: CreatePostModalProps) {
                   <SelectItem key={goal.id} value={goal.id}>
                     <div className="flex items-center gap-2">
                       {goal.name}
-                      <Badge variant={goal.status === 'fully_completed' ? 'default' : 'secondary'} className="text-[10px] px-1.5 py-0">
+                      <Badge variant={goal.status === 'fully_completed' ? 'default' : 'secondary'} className="ds-t-label px-1.5 py-0">
                         {goal.status === 'fully_completed' ? '✓ Done' : 'Active'}
                       </Badge>
                     </div>

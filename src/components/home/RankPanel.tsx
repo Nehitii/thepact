@@ -73,7 +73,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
             <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 900, color: "hsl(var(--ds-accent-primary))", lineHeight: 1 }}>
               {level}
             </span>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 2, color: "rgba(0,212,255,0.8)", textTransform: "uppercase" as const }}>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: "rgba(0,212,255,0.8)", textTransform: "uppercase" as const }}>
               LEVEL
             </span>
           </div>
@@ -83,7 +83,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
         <div className="flex-1" style={{ paddingTop: 6 }}>
           <div
             className="flex items-center gap-1.5"
-            style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const, marginBottom: 6 }}
+            style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const, marginBottom: 6 }}
           >
             <span style={{ width: 16, height: 1, background: "var(--nexus-text-dimmer)", display: "inline-block" }} />
             TIER {Math.ceil(level / 10)} · CLASSE {level}
@@ -95,9 +95,9 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
 
           <div style={{ width: "100%", height: 1, background: "linear-gradient(90deg, var(--nexus-glow), transparent)", margin: "14px 0" }} />
 
-          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "var(--nexus-text-dim)", letterSpacing: 2, lineHeight: 1.8 }}>
+          <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "var(--nexus-text-dim)", letterSpacing: 2, lineHeight: 1.8 }}>
             RANG ACTUEL<br />
-            <span style={{ color: "var(--nexus-heading)", fontSize: 11 }}>{rankName} · Classe Neurale {level}</span>
+            <span style={{ color: "var(--nexus-heading)", fontSize: "max(11px, 0.6875rem)" }}>{rankName} · Classe Neurale {level}</span>
           </div>
         </div>
       </div>
@@ -111,15 +111,15 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
             <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 28, fontWeight: 700, color: "hsl(var(--ds-accent-primary))", textShadow: "0 0 8px rgba(0,212,255,0.7), 0 0 30px rgba(0,212,255,0.25)", lineHeight: 1 }}>
               {formatNum(currentXP)}
             </span>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "var(--nexus-text-dim)", letterSpacing: 2, marginLeft: 4 }}>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "var(--nexus-text-dim)", letterSpacing: 2, marginLeft: 4 }}>
               XP
             </span>
           </div>
           <div className="text-right">
-            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "rgba(255,140,0,0.7)", letterSpacing: 1 }}>
+            <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(255,140,0,0.7)", letterSpacing: 1 }}>
               − {formatNum(xpToNextRank)} XP
             </div>
-            <div style={{ fontSize: 11, color: "var(--nexus-text-dim)", letterSpacing: 2, textTransform: "uppercase" as const, marginTop: 2 }}>
+            <div style={{ fontSize: "max(11px, 0.6875rem)", color: "var(--nexus-text-dim)", letterSpacing: 2, textTransform: "uppercase" as const, marginTop: 2 }}>
               RESTANT
             </div>
           </div>
@@ -139,13 +139,13 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
               <div className="absolute top-0 left-0 right-0" style={{ height: "40%", background: "linear-gradient(180deg, rgba(255,255,255,0.12), transparent)", borderRadius: 1 }} />
               <div className="absolute top-0 right-0" style={{ width: 3, height: "100%", background: "hsl(var(--ds-accent-primary))", boxShadow: "0 0 8px rgba(0,212,255,1), 0 0 16px rgba(0,212,255,0.6)", borderRadius: 1, animation: "edgePulse 1.5s ease-in-out infinite" }} />
             </div>
-            <span className="absolute" style={{ top: "50%", right: 8, transform: "translateY(-50%)", fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "var(--nexus-text-dim)", letterSpacing: 1 }}>
+            <span className="absolute" style={{ top: "50%", right: 8, transform: "translateY(-50%)", fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "var(--nexus-text-dim)", letterSpacing: 1 }}>
               {Math.round(progressInCurrentRank)}%
             </span>
           </div>
         </div>
 
-        <div className="flex justify-between" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "var(--nexus-text-dim)", letterSpacing: 1 }}>
+        <div className="flex justify-between" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "var(--nexus-text-dim)", letterSpacing: 1 }}>
           <span>0</span>
           <span>{formatNum(nextMin)} XP</span>
         </div>
@@ -157,7 +157,7 @@ export function RankPanel({ rankData, className = "" }: RankPanelProps) {
           >
             <div className="absolute top-0 left-0 bottom-0" style={{ width: 3, background: "linear-gradient(180deg, #ff8c00, rgba(255,140,0,0.2))", boxShadow: "0 0 6px rgba(255,140,0,0.5)" }} />
             <div style={{ paddingLeft: 10 }}>
-              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const, marginBottom: 3 }}>
+              <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const, marginBottom: 3 }}>
                 PROCHAIN RANG
               </div>
               <div style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 12, fontWeight: 700, letterSpacing: 3, color: "#ff8c00", textShadow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)", textTransform: "uppercase" as const }}>

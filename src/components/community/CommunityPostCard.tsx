@@ -195,17 +195,17 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
             {/* Name + time */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-semibold text-foreground">{displayName}</span>
-              <span className="font-mono text-[11px] text-muted-foreground/60">
+              <span className="font-mono ds-t-label text-muted-foreground/60">
                 · {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
               </span>
               {post.updated_at !== post.created_at && (
-                <span className="font-mono text-[10px] text-muted-foreground/40 italic">(edited)</span>
+                <span className="font-mono ds-t-label text-muted-foreground/40 italic">(edited)</span>
               )}
             </div>
 
             {/* Type badge */}
             <div
-              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-semibold tracking-[0.06em] uppercase mt-1 border"
+              className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full font-mono ds-t-label font-semibold tracking-[0.06em] uppercase mt-1 border"
               style={{
                 background: cfg.badgeBg,
                 color: cfg.badgeText,
@@ -274,7 +274,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
             <span className="text-xs font-medium text-foreground/80 group-hover:text-primary transition-colors flex-1 truncate">
               {post.goal_name}
             </span>
-            <span className="ml-auto text-[11px] font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
+            <span className="ml-auto ds-t-label font-mono text-primary bg-primary/10 px-2 py-0.5 rounded-full shrink-0">
               Active
             </span>
           </div>
@@ -304,7 +304,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
           {/* Reply toggle */}
           <button
             onClick={() => setShowReplies((v) => !v)}
-            className="ml-auto flex items-center gap-1.5 text-[12px] text-muted-foreground/60 hover:text-muted-foreground font-mono px-2 py-1.5 rounded-lg transition-colors"
+            className="ml-auto flex items-center gap-1.5 text-[0.75rem] text-muted-foreground/60 hover:text-muted-foreground font-mono px-2 py-1.5 rounded-lg transition-colors"
           >
             <MessageCircle className="w-3.5 h-3.5" />
             {post.replies_count ?? 0}
@@ -339,14 +339,14 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
                       <div key={reply.id} className="flex gap-2.5 group">
                         <Avatar className="w-7 h-7 shrink-0 ring-1 ring-primary/15">
                           <AvatarImage src={rAvatar} />
-                          <AvatarFallback className="bg-muted text-muted-foreground text-[10px] font-bold font-orbitron">
+                          <AvatarFallback className="bg-muted text-muted-foreground ds-t-label font-bold font-orbitron">
                             {rInitials}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0 bg-muted/30 rounded-xl px-3 py-2">
                           <div className="flex items-center gap-2 mb-0.5">
                             <span className="text-xs font-semibold text-foreground">{rName}</span>
-                            <span className="font-mono text-[10px] text-muted-foreground/50">
+                            <span className="font-mono ds-t-label text-muted-foreground/50">
                               {formatDistanceToNow(new Date(reply.created_at), { addSuffix: true })}
                             </span>
                             {isOwnReply && (
@@ -369,7 +369,7 @@ export function CommunityPostCard({ post }: CommunityPostCardProps) {
                 {user && (
                   <div className="flex gap-2.5 pt-1">
                     <Avatar className="w-7 h-7 shrink-0 ring-1 ring-primary/15">
-                      <AvatarFallback className="bg-gradient-to-br from-indigo-950 to-indigo-900 text-indigo-300 text-[10px] font-bold font-orbitron">
+                      <AvatarFallback className="bg-gradient-to-br from-indigo-950 to-indigo-900 text-indigo-300 ds-t-label font-bold font-orbitron">
                         ME
                       </AvatarFallback>
                     </Avatar>

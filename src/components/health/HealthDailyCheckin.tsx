@@ -338,7 +338,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
                   style={{ boxShadow: "0 0 8px hsl(var(--hud-phosphor))" }}
                 />
               </div>
-              <p className="font-mono text-[10px] text-muted-foreground/50 mt-3 uppercase tracking-wider">
+              <p className="font-mono ds-t-label text-muted-foreground/50 mt-3 uppercase tracking-wider">
                 LOADING SUBSYSTEMS · CALIBRATING SENSORS
               </p>
             </motion.div>
@@ -354,7 +354,7 @@ export function HealthDailyCheckin({ open, onOpenChange }: HealthDailyCheckinPro
               </DialogHeader>
               
               {/* System boot bar */}
-              <div className="flex items-center gap-3 mb-4 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              <div className="flex items-center gap-3 mb-4 font-mono ds-t-label uppercase tracking-wider text-muted-foreground">
                 <span className="text-hud-phosphor">STEP {String(currentStep + 1).padStart(2, "0")}/{String(steps.length).padStart(2, "0")}</span>
                 <span className="text-muted-foreground/40">::</span>
                 <span>{currentStepData.label}</span>

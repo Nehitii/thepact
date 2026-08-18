@@ -40,7 +40,7 @@ export function AchievementsWidget({
 
   const recentAchievements = (
     <div className="space-y-2">
-      <h4 className="text-[10px] font-orbitron text-[rgba(160,210,255,0.35)] uppercase tracking-wider">Recent Unlocks</h4>
+      <h4 className="ds-t-label font-orbitron text-[rgba(160,210,255,0.35)] uppercase tracking-wider">Recent Unlocks</h4>
       {stats?.recent?.slice(0, 3).map((achievement: any) => (
         <AchievementCard key={achievement.key} achievement={achievement} compact />
       ))}
@@ -61,7 +61,7 @@ export function AchievementsWidget({
           variant="ghost" 
           size="sm" 
           onClick={() => navigate("/achievements")} 
-          className="h-6 px-2 gap-1 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[rgba(160,210,255,0.4)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron text-[9px] uppercase tracking-wider rounded-sm"
+          className="h-6 px-2 gap-1 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[rgba(160,210,255,0.4)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron ds-t-label uppercase tracking-wider rounded-sm"
         >
           View <ChevronRight className="w-3 h-3" />
         </Button>
@@ -79,7 +79,7 @@ export function AchievementsWidget({
       ) : (
         <div className="flex-1 flex flex-col">
           <div className="mb-3">
-            <div className="flex justify-between text-[10px] mb-1">
+            <div className="flex justify-between ds-t-label mb-1">
               <span className="text-[rgba(160,210,255,0.3)] font-rajdhani uppercase">Progress</span>
               <span className="font-mono text-primary tabular-nums">{stats.percentage}%</span>
             </div>
@@ -92,7 +92,7 @@ export function AchievementsWidget({
           </div>
           {stats.recent?.length > 0 && (
             <div className="flex-1">
-              <h3 className="text-[10px] font-rajdhani text-[rgba(160,210,255,0.3)] uppercase tracking-wider mb-2">Latest</h3>
+              <h3 className="ds-t-label font-rajdhani text-[rgba(160,210,255,0.3)] uppercase tracking-wider mb-2">Latest</h3>
               <AchievementCard achievement={stats.recent[0]} compact />
             </div>
           )}

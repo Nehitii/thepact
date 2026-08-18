@@ -31,7 +31,7 @@ function XPTimeline({ ranks, currentXP, totalMaxXP }: { ranks: Rank[]; currentXP
   return (
     <TooltipProvider delayDuration={200}>
       <div className="mb-4">
-        <div className="text-[9px] font-mono text-primary/40 tracking-[0.15em] mb-1.5">XP_TIMELINE</div>
+        <div className="ds-t-label font-mono text-primary/40 tracking-[0.15em] mb-1.5">XP_TIMELINE</div>
         <div className="relative h-3 w-full rounded-full overflow-hidden bg-primary/10 flex">
           {ranks.map((rank, i) => {
             const nextMin = ranks[i + 1]?.min_points ?? maxVal;
@@ -146,20 +146,20 @@ export function RanksCard({ userId }: RanksCardProps) {
           <div className="mb-4 border border-primary/25 bg-primary/[0.04] p-4">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-[9px] font-mono text-primary/40 tracking-[0.15em]">CURRENT_RANK</span>
+              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em]">CURRENT_RANK</span>
             </div>
             <div className="flex justify-center">
               <RankCard rank={rankData.currentRank} currentXP={rankData.currentXP} nextRankMinXP={rankData.nextRank?.min_points} totalMaxXP={rankData.totalMaxXP} isActive={true} size="sm" />
             </div>
             <div className="mt-4 space-y-2">
-              <div className="flex justify-between text-[9px] font-mono text-primary/40">
+              <div className="flex justify-between ds-t-label font-mono text-primary/40">
                 <span className="flex items-center gap-1"><Target className="h-3 w-3" />GLOBAL_PROGRESS</span>
                 <span>{Math.round(rankData.globalProgress)}%</span>
               </div>
               <div className="h-1.5 bg-primary/10 overflow-hidden">
                 <motion.div initial={{ width: 0 }} animate={{ width: `${rankData.globalProgress}%` }} className="h-full bg-gradient-to-r from-primary/50 to-primary" />
               </div>
-              <div className="text-[9px] text-primary/25 font-mono text-center">{rankData.currentXP.toLocaleString()} / {rankData.totalMaxXP.toLocaleString()} XP</div>
+              <div className="ds-t-label text-primary/25 font-mono text-center">{rankData.currentXP.toLocaleString()} / {rankData.totalMaxXP.toLocaleString()} XP</div>
             </div>
           </div>
         )}
@@ -169,7 +169,7 @@ export function RanksCard({ userId }: RanksCardProps) {
           <div className="mb-3 border border-primary/15 bg-primary/[0.02] p-2.5 flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Info className="h-3 w-3 text-[hsl(40,100%,50%)]" />
-              <span className="text-[9px] font-mono text-primary/40 tracking-[0.15em]">MAX_XP_FROM_GOALS</span>
+              <span className="ds-t-label font-mono text-primary/40 tracking-[0.15em]">MAX_XP_FROM_GOALS</span>
             </div>
             <span className="text-xs font-mono text-[hsl(40,100%,50%)] font-bold">{rankData.totalMaxXP.toLocaleString()} XP</span>
           </div>
@@ -215,12 +215,12 @@ export function RanksCard({ userId }: RanksCardProps) {
                           <div className="flex items-center gap-2">
                             <span className="font-orbitron font-semibold text-sm uppercase tracking-wide truncate" style={{ color: frameColor, textShadow: `0 0 8px ${rank.glow_color || 'rgba(91,180,255,0.3)'}` }}>{rank.name}</span>
                             {isCurrentRank && (
-                              <span className="flex-shrink-0 px-1.5 py-0.5 text-[8px] font-mono font-bold uppercase tracking-wider rounded-sm" style={{ backgroundColor: `${frameColor}20`, color: frameColor, border: `1px solid ${frameColor}40` }}>
+                              <span className="flex-shrink-0 px-1.5 py-0.5 ds-t-label font-mono font-bold uppercase tracking-wider rounded-sm" style={{ backgroundColor: `${frameColor}20`, color: frameColor, border: `1px solid ${frameColor}40` }}>
                                 Current
                               </span>
                             )}
                           </div>
-                          <div className="text-[9px] text-muted-foreground font-mono tracking-wider">
+                          <div className="ds-t-label text-muted-foreground font-mono tracking-wider">
                             {rank.min_points.toLocaleString()}+ XP
                           </div>
                         </div>
@@ -253,7 +253,7 @@ export function RanksCard({ userId }: RanksCardProps) {
 
         <button onClick={handleAddRank}
           className={cn(
-            "w-full h-10 mt-4 font-mono text-[10px] tracking-[0.22em] uppercase",
+            "w-full h-10 mt-4 font-mono ds-t-label tracking-[0.22em] uppercase",
             "border border-dashed border-primary/30 bg-transparent",
             "text-primary/50 hover:text-primary hover:border-primary/60 hover:bg-primary/[0.05]",
             "transition-all duration-200 flex items-center justify-center gap-2",

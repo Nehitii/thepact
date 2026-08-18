@@ -203,7 +203,7 @@ export default function DataPortability() {
           {statItems.map((s) => (
             <div key={s.label} className="border border-primary/15 bg-primary/[0.03] p-4 text-center" style={{ clipPath: "polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px)" }}>
               <div className="text-2xl font-orbitron font-bold text-primary">{s.value}</div>
-              <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-widest mt-1">{s.label}</div>
+              <div className="ds-t-label text-muted-foreground font-mono uppercase tracking-widest mt-1">{s.label}</div>
             </div>
           ))}
         </div>
@@ -212,7 +212,7 @@ export default function DataPortability() {
       {/* ── Export ── */}
       <CyberPanel title="EXPORT DE DONNÉES">
         <div className="space-y-4">
-          <p className="text-[11px] text-muted-foreground tracking-wide">{t("profile.data.exportDesc")}</p>
+          <p className="ds-t-label text-muted-foreground tracking-wide">{t("profile.data.exportDesc")}</p>
           <RadioGroup value={exportCategory} onValueChange={(v) => setExportCategory(v as ExportCategory)} className="grid grid-cols-2 gap-3">
             {exportOptions.map((opt) => (
               <Label key={opt.value} htmlFor={opt.value} className={cn(
@@ -225,7 +225,7 @@ export default function DataPortability() {
                   <span className={cn("text-xs font-orbitron uppercase tracking-wide", exportCategory === opt.value ? "text-primary" : "text-primary/70")}>{opt.label}</span>
                   <span className={cn("ml-auto", exportCategory === opt.value ? "text-primary" : "text-primary/60")}>{opt.icon}</span>
                 </div>
-                <span className="text-[10px] text-muted-foreground font-mono pl-6">{opt.desc}</span>
+                <span className="ds-t-label text-muted-foreground font-mono pl-6">{opt.desc}</span>
               </Label>
             ))}
           </RadioGroup>
@@ -239,16 +239,16 @@ export default function DataPortability() {
       {/* ── Import ── */}
       <CyberPanel title="IMPORT DE DONNÉES">
         <div className="space-y-4">
-          <p className="text-[11px] text-muted-foreground tracking-wide">Restaure tes données à partir d'un fichier JSON exporté précédemment.</p>
+          <p className="ds-t-label text-muted-foreground tracking-wide">Restaure tes données à partir d'un fichier JSON exporté précédemment.</p>
           <input ref={fileInputRef} type="file" accept=".json" className="hidden" onChange={handleFileSelect} />
-          <button onClick={() => fileInputRef.current?.click()} className={cn("w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors", "border-primary/25 hover:border-primary/50 bg-primary/[0.03] hover:bg-primary/[0.06]", "font-mono text-[10px] tracking-[0.18em] uppercase text-primary/60 hover:text-primary")} style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
+          <button onClick={() => fileInputRef.current?.click()} className={cn("w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors", "border-primary/25 hover:border-primary/50 bg-primary/[0.03] hover:bg-primary/[0.06]", "font-mono ds-t-label tracking-[0.18em] uppercase text-primary/60 hover:text-primary")} style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
             <Upload className="h-4 w-4" />
             {importFile ? importFile.name : "SÉLECTIONNER UN FICHIER .JSON"}
           </button>
           {importPreview && (
             <div className="border border-primary/15 bg-primary/[0.03] p-3 space-y-2" style={{ clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
-              <p className="text-[9px] text-primary/40 font-mono tracking-wider uppercase">APERÇU DE L'IMPORT</p>
-              <div className="grid grid-cols-3 gap-2 text-[10px] font-mono">
+              <p className="ds-t-label text-primary/40 font-mono tracking-wider uppercase">APERÇU DE L'IMPORT</p>
+              <div className="grid grid-cols-3 gap-2 ds-t-label font-mono">
                 <div className="text-center"><span className="text-primary font-bold">{importPreview.goals}</span><br /><span className="text-muted-foreground">Goals</span></div>
                 <div className="text-center"><span className="text-primary font-bold">{importPreview.steps}</span><br /><span className="text-muted-foreground">Steps</span></div>
                 <div className="text-center"><span className="text-primary font-bold">{importPreview.journalEntries}</span><br /><span className="text-muted-foreground">Journal</span></div>
@@ -264,7 +264,7 @@ export default function DataPortability() {
       {/* ── Legal ── */}
       <CyberPanel title="MENTIONS LÉGALES">
         <div className="space-y-3">
-          <p className="text-[11px] text-muted-foreground tracking-wide">{t("profile.data.termsDesc")}</p>
+          <p className="ds-t-label text-muted-foreground tracking-wide">{t("profile.data.termsDesc")}</p>
           <Link to="/legal">
             <Button className="w-full bg-primary/20 border border-primary/30 hover:border-primary/50 hover:bg-primary/30 text-primary font-orbitron uppercase tracking-wider" style={{ clipPath: "polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%)" }}>
               <Scale className="mr-2 h-4 w-4" /> {t("profile.data.viewTerms")}
@@ -280,8 +280,8 @@ export default function DataPortability() {
             <Trash2 className="h-5 w-5 text-destructive/60 shrink-0 mt-0.5" />
             <div className="flex-1 space-y-2">
               <p className="text-xs font-mono text-destructive/80 tracking-wider uppercase font-bold">Supprimer toutes les données</p>
-              <p className="text-[10px] text-destructive/50 font-mono leading-relaxed">Supprime tous tes objectifs, pacts, journal, finances et historiques. Ton compte reste actif mais vide.</p>
-              <button onClick={() => setShowResetModal(true)} className={cn("px-4 py-2 border border-destructive/30 bg-destructive/10 text-destructive", "hover:bg-destructive/20 hover:border-destructive/50", "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors")} style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
+              <p className="ds-t-label text-destructive/50 font-mono leading-relaxed">Supprime tous tes objectifs, pacts, journal, finances et historiques. Ton compte reste actif mais vide.</p>
+              <button onClick={() => setShowResetModal(true)} className={cn("px-4 py-2 border border-destructive/30 bg-destructive/10 text-destructive", "hover:bg-destructive/20 hover:border-destructive/50", "font-mono ds-t-label tracking-[0.2em] uppercase transition-colors")} style={{ clipPath: "polygon(6px 0%, 100% 0%, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0% 100%, 0% 6px)" }}>
                 RÉINITIALISER MES DONNÉES
               </button>
             </div>
@@ -299,8 +299,8 @@ export default function DataPortability() {
             <Input value={resetConfirm} onChange={(e) => setResetConfirm(e.target.value)} placeholder='Tape "RESET" pour confirmer' className="font-mono text-sm border-destructive/25 bg-destructive/5 text-destructive rounded-none" />
           </div>
           <DialogFooter className="gap-2">
-            <button onClick={() => { setShowResetModal(false); setResetConfirm(""); }} className="px-4 py-2 border border-primary/12 text-primary/35 hover:text-primary/65 font-mono text-[10px] tracking-[0.22em] uppercase transition-all">ANNULER</button>
-            <button onClick={handleDeleteAllData} disabled={resetConfirm !== "RESET" || isResetting} className={cn("px-4 py-2 border border-destructive/40 bg-destructive/20 text-destructive", "hover:bg-destructive/30 hover:border-destructive/60", "font-mono text-[10px] tracking-[0.2em] uppercase transition-colors", "disabled:opacity-30 disabled:cursor-not-allowed")}>
+            <button onClick={() => { setShowResetModal(false); setResetConfirm(""); }} className="px-4 py-2 border border-primary/12 text-primary/35 hover:text-primary/65 font-mono ds-t-label tracking-[0.22em] uppercase transition-all">ANNULER</button>
+            <button onClick={handleDeleteAllData} disabled={resetConfirm !== "RESET" || isResetting} className={cn("px-4 py-2 border border-destructive/40 bg-destructive/20 text-destructive", "hover:bg-destructive/30 hover:border-destructive/60", "font-mono ds-t-label tracking-[0.2em] uppercase transition-colors", "disabled:opacity-30 disabled:cursor-not-allowed")}>
               {isResetting ? <><Loader2 className="inline h-3 w-3 animate-spin mr-1.5" /> SUPPRESSION...</> : "CONFIRMER"}
             </button>
           </DialogFooter>

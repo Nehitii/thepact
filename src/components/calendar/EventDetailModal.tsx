@@ -135,22 +135,22 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
           {/* Date / Time */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-[10px]">{t("calendar.startDate", "Start")}</Label>
+              <Label className="ds-t-label">{t("calendar.startDate", "Start")}</Label>
               <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="h-9 text-xs" />
             </div>
             {!allDay && (
               <div>
-                <Label className="text-[10px]">{t("calendar.startTime", "Time")}</Label>
+                <Label className="ds-t-label">{t("calendar.startTime", "Time")}</Label>
                 <Input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} className="h-9 text-xs" />
               </div>
             )}
             <div>
-              <Label className="text-[10px]">{t("calendar.endDate", "End")}</Label>
+              <Label className="ds-t-label">{t("calendar.endDate", "End")}</Label>
               <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="h-9 text-xs" />
             </div>
             {!allDay && (
               <div>
-                <Label className="text-[10px]">{t("calendar.endTime", "Time")}</Label>
+                <Label className="ds-t-label">{t("calendar.endTime", "Time")}</Label>
                 <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} className="h-9 text-xs" />
               </div>
             )}
@@ -158,7 +158,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
           {/* Color picker */}
           <div>
-            <Label className="text-[10px] mb-1.5 block">{t("calendar.color", "Color")}</Label>
+            <Label className="ds-t-label mb-1.5 block">{t("calendar.color", "Color")}</Label>
             <div className="flex gap-1.5 flex-wrap">
               {COLORS.map((c) => (
                 <button
@@ -176,7 +176,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
           {/* Location */}
           <div>
-            <Label className="text-[10px] flex items-center gap-1 mb-1">
+            <Label className="ds-t-label flex items-center gap-1 mb-1">
               <MapPin className="h-3 w-3" /> {t("calendar.location", "Location")}
             </Label>
             <Input value={location} onChange={(e) => setLocation(e.target.value)} className="h-9 text-xs" placeholder="Optional" />
@@ -184,7 +184,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
           {/* Description */}
           <div>
-            <Label className="text-[10px] mb-1 block">{t("calendar.description", "Description")}</Label>
+            <Label className="ds-t-label mb-1 block">{t("calendar.description", "Description")}</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="text-xs min-h-[60px]" />
           </div>
 

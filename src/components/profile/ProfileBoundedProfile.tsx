@@ -345,13 +345,13 @@ export function ProfileBoundedProfile({
             <div className="absolute inset-0 z-20 flex flex-col justify-end pb-8 px-6">
               {/* HUD Top Label */}
               <div className="absolute top-4 left-4 right-4 flex justify-between items-start opacity-70">
-                <div className="px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded text-[10px] text-white/80 font-mono tracking-widest">
+                <div className="px-2 py-0.5 bg-black/40 backdrop-blur-md border border-white/10 rounded ds-t-label text-white/80 font-mono tracking-widest">
                   // {pact?.name || "INITIATE"}
                 </div>
                 {/* Rarity/Theme Badge (Optional) */}
                 {activeBanner?.rarity && activeBanner.rarity !== "common" && (
                   <div
-                    className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border ${rarityColors[activeBanner.rarity].bg} ${rarityColors[activeBanner.rarity].text} ${rarityColors[activeBanner.rarity].border}`}
+                    className={`px-2 py-0.5 rounded ds-t-label uppercase font-bold tracking-wider border ${rarityColors[activeBanner.rarity].bg} ${rarityColors[activeBanner.rarity].text} ${rarityColors[activeBanner.rarity].border}`}
                   >
                     {activeBanner.rarity}
                   </div>
@@ -430,7 +430,7 @@ export function ProfileBoundedProfile({
                 {/* Footer Stats / Rank */}
                 <div className="w-full mt-8 pt-4 border-t border-white/10 flex items-center justify-between">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-white/30 uppercase tracking-widest font-mono mb-1">
+                    <span className="ds-t-label text-white/30 uppercase tracking-widest font-mono mb-1">
                       Current Rank
                     </span>
                     <div className="flex items-center gap-2 text-white/90 font-rajdhani font-semibold text-sm">
@@ -554,7 +554,7 @@ export function ProfileBoundedProfile({
                     frameOffsetY={frame.frame_offset_y}
                   />
                 </div>
-                <div className="text-[10px] text-center truncate px-1 mt-1 opacity-70 font-rajdhani uppercase">
+                <div className="ds-t-label text-center truncate px-1 mt-1 opacity-70 font-rajdhani uppercase">
                   {frame.name}
                 </div>
               </InventorySlot>
@@ -585,7 +585,7 @@ export function ProfileBoundedProfile({
                       : `linear-gradient(135deg, ${banner.gradient_start}, ${banner.gradient_end})`,
                   }}
                 />
-                <div className="text-[10px] text-center font-rajdhani uppercase">{banner.name}</div>
+                <div className="ds-t-label text-center font-rajdhani uppercase">{banner.name}</div>
               </InventorySlot>
             );
           })}
@@ -714,7 +714,7 @@ function InventorySlot({
       {children}
 
       {active && (
-        <div className="absolute top-0 right-0 bg-primary text-black text-[9px] font-bold px-1.5 py-0.5 rounded-bl font-mono">
+        <div className="absolute top-0 right-0 bg-primary text-black ds-t-label font-bold px-1.5 py-0.5 rounded-bl font-mono">
           EQP
         </div>
       )}

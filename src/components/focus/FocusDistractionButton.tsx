@@ -38,7 +38,7 @@ export function FocusDistractionButton() {
             style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-primary/70">
+              <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-primary/70">
                 LOG_DISTRACTION
               </span>
               <button onClick={() => setOpen(false)} aria-label="Close">
@@ -60,7 +60,7 @@ export function FocusDistractionButton() {
               <button
                 onClick={submit}
                 disabled={!note.trim() || log.isPending}
-                className="text-[10px] font-mono uppercase tracking-widest text-primary border border-primary/40 px-3 py-1 hover:bg-primary/10 disabled:opacity-40"
+                className="ds-t-label font-mono uppercase tracking-widest text-primary border border-primary/40 px-3 py-1 hover:bg-primary/10 disabled:opacity-40"
               >
                 {">> NOTER"}
               </button>

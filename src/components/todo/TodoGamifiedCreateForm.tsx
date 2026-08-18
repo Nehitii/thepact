@@ -187,7 +187,7 @@ export function TodoGamifiedCreateForm({ onSubmit, onCancel, isLoading }: TodoGa
                 <span className={cn("text-xs font-medium", isSelected ? "" : "text-muted-foreground")}>
                   {t(`todo.taskTypes.${type.id}`)}
                 </span>
-                <span className="text-[10px] text-muted-foreground/70">{t(`todo.taskTypeHints.${type.id}`)}</span>
+                <span className="ds-t-label text-muted-foreground/70">{t(`todo.taskTypeHints.${type.id}`)}</span>
               </motion.button>
             );
           })}

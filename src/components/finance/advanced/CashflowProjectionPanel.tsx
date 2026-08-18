@@ -69,7 +69,7 @@ export function CashflowProjectionPanel() {
               { label: "Optimiste", value: lastBest, color: "text-emerald-300" },
             ].map((c) => (
               <div key={c.label} className="rounded-xl bg-white/[0.02] border border-white/[0.05] px-4 py-3">
-                <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+                <div className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground/60">
                   {c.label}
                 </div>
                 <div className={`mt-1 text-lg font-semibold tabular-nums ${c.color}`}>
@@ -93,7 +93,7 @@ export function CashflowProjectionPanel() {
                   }}
                   formatter={(v: number) => formatCurrency(v, currency)}
                 />
-                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Legend wrapperStyle={{ fontSize: "max(11px, 0.6875rem)" }} />
                 <Line type="monotone" dataKey="worst" stroke="#fb7185" strokeWidth={1.5} strokeDasharray="4 4" dot={false} name="Pessimiste" />
                 <Line type="monotone" dataKey="realistic" stroke="hsl(var(--primary))" strokeWidth={2.2} dot={false} name="Réaliste" />
                 <Line type="monotone" dataKey="best" stroke="#34d399" strokeWidth={1.5} strokeDasharray="4 4" dot={false} name="Optimiste" />

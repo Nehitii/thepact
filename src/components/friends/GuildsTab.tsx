@@ -63,7 +63,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
         {/* Action bar */}
         <div className="flex items-center justify-between mb-5 gap-2 flex-wrap">
           <div className="flex items-center gap-3 min-w-0 flex-1">
-            <h3 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-warning))] shrink-0">
+            <h3 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-warning))] shrink-0">
               [ ACTIVE FACTIONS ]
             </h3>
             <DSDivider accent="warning" />
@@ -91,7 +91,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
 
         {/* Join via code */}
         <div className="mb-5 flex flex-col gap-2">
-          <span className="font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
+          <span className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
             [ JACK_IN VIA CODE ]
           </span>
           <DSPanel tier="muted" hideBrackets className="!p-3">
@@ -119,7 +119,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
         {invites.length > 0 && (
           <div className="space-y-2 mb-6">
             <div className="flex items-center gap-3 mb-2">
-              <h4 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-special))] shrink-0">
+              <h4 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-special))] shrink-0">
                 [ PENDING INVITES ]
               </h4>
               <DSDivider accent="special" />
@@ -161,7 +161,7 @@ export function GuildsTab({ guilds, guildsLoading, invites, userId, createGuild,
         {showDiscover && discoverGuilds.length > 0 && (
           <div className="mt-8">
             <div className="flex items-center gap-3 mb-3">
-              <h4 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] shrink-0">
+              <h4 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] shrink-0">
                 [ PUBLIC NETWORK ]
               </h4>
               <DSDivider accent="primary" />

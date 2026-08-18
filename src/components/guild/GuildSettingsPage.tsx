@@ -94,7 +94,7 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
         <Textarea placeholder={t("friends.guildDescription")} value={description} onChange={(e) => setDescription(e.target.value)} maxLength={200} className="resize-none h-16 text-xs" />
 
         <div>
-          <p className="text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.icon")}</p>
+          <p className="ds-t-label font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.icon")}</p>
           <div className="flex gap-2">
             {iconOptions.map((opt) => (
               <button key={opt.key} onClick={() => setIcon(opt.key)} className={cn("w-10 h-10 rounded-lg border flex items-center justify-center", icon === opt.key ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground")}>
@@ -105,7 +105,7 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
         </div>
 
         <div>
-          <p className="text-[10px] font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.color")}</p>
+          <p className="ds-t-label font-bold text-muted-foreground mb-2 uppercase tracking-wider">{t("friends.color")}</p>
           <div className="flex gap-2">
             {colorOptions.map((c) => (
               <button key={c} onClick={() => setColor(c)} className={cn("w-8 h-8 rounded-full", colorClasses[c], color === c ? "ring-2 ring-offset-2 ring-offset-background ring-primary scale-110" : "opacity-60 hover:opacity-100")} />
@@ -158,7 +158,7 @@ export function GuildSettingsPage({ guild, userId, isOwner }: Props) {
             <h4 className="text-xs font-bold uppercase text-destructive flex items-center gap-2">
               <Trash2 className="h-3.5 w-3.5" /> {t("friends.deleteGuild")}
             </h4>
-            <p className="text-[10px] text-muted-foreground">{t("friends.deleteGuildConfirm")}</p>
+            <p className="ds-t-label text-muted-foreground">{t("friends.deleteGuildConfirm")}</p>
             <Input
               value={deleteConfirm}
               onChange={(e) => setDeleteConfirm(e.target.value)}

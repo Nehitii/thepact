@@ -17,7 +17,7 @@ export interface RankBadgeProps {
 
 export function RankBadge({ rank, size = "md", className }: RankBadgeProps) {
   const sizeClasses = {
-    sm: "h-8 w-8 text-[10px]",
+    sm: "h-8 w-8 ds-t-label",
     md: "h-12 w-12 text-xs",
     lg: "h-16 w-16 text-sm",
   };
@@ -96,7 +96,7 @@ export function RankCard({ rank, currentRank: currentRankProp, nextRank, current
             </div>
             {nextRank && (
               <div className="text-right">
-                <span className="text-[10px] text-muted-foreground">Next Rank: {nextRank.name}</span>
+                <span className="ds-t-label text-muted-foreground">Next Rank: {nextRank.name}</span>
                 <div className="text-xs font-mono text-primary/80">
                   {Math.floor(nextRankMin - currentXP).toLocaleString()} XP left
                 </div>

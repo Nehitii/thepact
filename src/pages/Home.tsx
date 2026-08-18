@@ -293,12 +293,12 @@ export default function Home() {
         {/* ADVANCED PANELS — Collapsible */}
         <details className="group">
           <summary className="flex items-center gap-2 cursor-pointer list-none select-none py-2 px-1">
-            <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-muted-foreground group-open:text-primary transition-colors">
+            <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-muted-foreground group-open:text-primary transition-colors">
               Advanced Monitoring
             </span>
             <span className="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent" />
-            <span className="text-[11px] font-mono text-muted-foreground group-open:hidden">▸ EXPAND</span>
-            <span className="text-[11px] font-mono text-primary/50 hidden group-open:inline">▾ COLLAPSE</span>
+            <span className="ds-t-label font-mono text-muted-foreground group-open:hidden">▸ EXPAND</span>
+            <span className="ds-t-label font-mono text-primary/50 hidden group-open:inline">▾ COLLAPSE</span>
           </summary>
           <div className="space-y-4 pt-2">
             {pact && isGoalsReady ? (
@@ -327,7 +327,7 @@ export default function Home() {
         {/* LOCKED MODULES */}
         {isShopReady && lockedModules.length > 0 && (
           <section className="pt-6 border-t border-[rgba(0,180,255,0.06)]">
-            <h3 className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dim)] mb-4">
+            <h3 className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dim)] mb-4">
               Available Modules
             </h3>
             <LockedModulesTeaser lockedModules={lockedModules} />

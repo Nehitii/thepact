@@ -38,7 +38,7 @@ export function DSPageHeader({
       <header className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between mb-6 md:mb-8">
         <div className="flex flex-col gap-1.5">
           {systemLabel && (
-            <div className="flex items-center gap-2 text-[10px] font-orbitron uppercase tracking-[0.3em] text-muted-foreground/60">
+            <div className="flex items-center gap-2 ds-t-label font-orbitron uppercase tracking-[0.3em] text-muted-foreground/60">
               {Icon && <Icon className="h-3.5 w-3.5" />}
               <span>{systemLabel}</span>
             </div>
@@ -61,7 +61,7 @@ export function DSPageHeader({
                     className="px-2.5 py-1 rounded-md border border-border/60 bg-card/50 text-xs"
                     style={b.color ? { color: b.color, borderColor: `${b.color}40` } : undefined}
                   >
-                    <span className="text-muted-foreground mr-1.5 uppercase tracking-wider text-[10px]">
+                    <span className="text-muted-foreground mr-1.5 uppercase tracking-wider ds-t-label">
                       {b.label}
                     </span>
                     <span className="font-medium tabular-nums">{b.value}</span>

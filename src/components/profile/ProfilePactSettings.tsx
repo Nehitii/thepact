@@ -250,7 +250,7 @@ export function ProfilePactSettings({
             <button
               onClick={handleRemoveUnlockCode}
               disabled={savingCode}
-              className="text-[10px] text-destructive/70 hover:text-destructive font-mono uppercase tracking-wider transition-colors"
+              className="ds-t-label text-destructive/70 hover:text-destructive font-mono uppercase tracking-wider transition-colors"
             >
               [ REMOVE CODE ]
             </button>
@@ -266,7 +266,7 @@ export function ProfilePactSettings({
           statusText={<span className="text-destructive">DESTRUCTIVE</span>}
         >
           <div className="py-4 space-y-4">
-            <p className="text-[10px] text-destructive/60 font-mono tracking-wider">
+            <p className="ds-t-label text-destructive/60 font-mono tracking-wider">
               This action is irreversible. All your goals, steps, missions and progress counters will be permanently deleted.
             </p>
 
@@ -274,7 +274,7 @@ export function ProfilePactSettings({
               <AlertDialogTrigger asChild>
                 <button
                   className={cn(
-                    "w-full h-10 font-mono text-[10px] tracking-[0.22em] uppercase",
+                    "w-full h-10 font-mono ds-t-label tracking-[0.22em] uppercase",
                     "bg-red-950/20 border border-red-500/25",
                     "hover:bg-red-900/25 hover:border-red-400/45",
                     "text-red-400/70 hover:text-red-400",
@@ -311,7 +311,7 @@ export function ProfilePactSettings({
                     disabled={confirmName !== pactName || resetPact.isPending}
                     onClick={handleReset}
                     className={cn(
-                      "h-10 px-4 font-mono text-[10px] tracking-[0.22em] uppercase",
+                      "h-10 px-4 font-mono ds-t-label tracking-[0.22em] uppercase",
                       "bg-red-950/40 border border-red-500/40",
                       "text-red-400 hover:bg-red-900/40",
                       "disabled:opacity-30 disabled:cursor-not-allowed",

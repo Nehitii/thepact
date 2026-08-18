@@ -28,7 +28,7 @@ export const EventCard = memo(({ event, compact, onClick }: EventCardProps) => {
       className={cn(
         "group w-full max-w-full text-left rounded-md px-1.5 py-0.5 text-xs font-medium truncate transition-all overflow-hidden",
         "hover:ring-1 hover:ring-white/30 hover:brightness-110 cursor-pointer",
-        compact && "text-[10px] leading-tight"
+        compact && "ds-t-label leading-tight"
       )}
       style={{
         backgroundColor: event.color + "30",

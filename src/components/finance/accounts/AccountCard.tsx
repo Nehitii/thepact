@@ -87,7 +87,7 @@ export function AccountCard({ account, currency, onEdit, onDelete, onSelect, com
           {formatCurrency(displayBalance, currency)}
         </p>
         {txCount != null && txCount > 0 && (
-          <p className="text-[10px] text-muted-foreground/60 mt-1">
+          <p className="ds-t-label text-muted-foreground/60 mt-1">
             {t('finance.accounts.linkedTransactions', { count: txCount })}
           </p>
         )}

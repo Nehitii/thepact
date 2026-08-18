@@ -71,7 +71,7 @@ export function HealthChallengeCard({ challenge, onDelete }: HealthChallengeCard
             {/* Bond reward */}
             <div className="flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-full">
               <span className="text-amber-500 text-xs font-bold">+{challenge.bond_reward}</span>
-              <span className="text-[10px] text-amber-500/70">B</span>
+              <span className="ds-t-label text-amber-500/70">B</span>
             </div>
           </div>
           

@@ -109,7 +109,7 @@ export default function GuildPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full h-8 font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--ds-accent-critical))] hover:text-[hsl(var(--ds-accent-critical))] hover:bg-[hsl(var(--ds-accent-critical)/0.08)]"
+                      className="w-full h-8 font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-accent-critical))] hover:text-[hsl(var(--ds-accent-critical))] hover:bg-[hsl(var(--ds-accent-critical)/0.08)]"
                       onClick={handleLeave}
                       disabled={leaveGuild.isPending}
                     >

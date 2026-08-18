@@ -49,15 +49,15 @@ function CircularGauge({
           <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 16, fontWeight: 700, color: textColor, textShadow: textGlow }}>
             {Math.round(pct)}%
           </span>
-          <span style={{ fontSize: 11, letterSpacing: 1, color: "var(--nexus-text-dim)", marginTop: 2 }}>
+          <span style={{ fontSize: "max(11px, 0.6875rem)", letterSpacing: 1, color: "var(--nexus-text-dim)", marginTop: 2 }}>
             {label}
           </span>
         </div>
       </div>
-      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
+      <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
         {sublabel}
       </span>
-      <span style={{ fontSize: 11, color: "var(--nexus-text-dim)", fontFamily: "'Share Tech Mono', monospace" }}>
+      <span style={{ fontSize: "max(11px, 0.6875rem)", color: "var(--nexus-text-dim)", fontFamily: "'Share Tech Mono', monospace" }}>
         {completed}/{total} complétés
       </span>
     </div>
@@ -92,7 +92,7 @@ export function MonitoringGlobalPanel({ data, projectStartDate, projectEndDate }
       <CornerBrackets />
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      <div className="flex items-center gap-2 mb-4" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
+      <div className="flex items-center gap-2 mb-4" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
         <span className="text-primary/60">//</span>
         Monitoring Global — Cycle Actuel
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg, var(--nexus-separator), transparent)" }} />
@@ -107,10 +107,10 @@ export function MonitoringGlobalPanel({ data, projectStartDate, projectEndDate }
       {timeline && (
         <div>
           <div className="flex justify-between items-center mb-[10px]">
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
               Timeline du Cycle
             </span>
-            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, color: "hsl(var(--ds-accent-primary))" }}>
+            <span style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "hsl(var(--ds-accent-primary))" }}>
               JOUR {timeline.elapsed}/{timeline.totalDays} — {timeline.phase}
             </span>
           </div>
@@ -123,7 +123,7 @@ export function MonitoringGlobalPanel({ data, projectStartDate, projectEndDate }
 
           <div className="flex justify-between mt-1.5">
             {[`J.1`, `J.${Math.round(timeline.totalDays * 0.25)}`, `▶ J.${timeline.elapsed}`, `J.${Math.round(timeline.totalDays * 0.75)}`, `J.${timeline.totalDays}`].map((m, i) => (
-              <span key={m} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 1, color: i === 2 ? "hsl(var(--ds-accent-primary))" : "var(--nexus-marker-dim)" }}>
+              <span key={m} style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 1, color: i === 2 ? "hsl(var(--ds-accent-primary))" : "var(--nexus-marker-dim)" }}>
                 {m}
               </span>
             ))}

@@ -194,7 +194,7 @@ export function BudgetProgressPanel({
                     }}
                   />
                 </div>
-                <p className={`text-[10px] mt-1.5 font-medium ${isOver ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-muted-foreground'}`}>
+                <p className={`ds-t-label mt-1.5 font-medium ${isOver ? 'text-rose-400' : isWarning ? 'text-amber-400' : 'text-muted-foreground'}`}>
                   {isOver
                     ? t('finance.budgets.exceeded', { amount: formatCurrency(spent - budget.monthly_limit, currency) })
                     : `${percentage.toFixed(0)}% ${t('finance.budgets.used')}`}

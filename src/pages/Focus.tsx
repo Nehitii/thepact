@@ -267,12 +267,12 @@ export default function Focus() {
         {!isMobile && (
           <>
             <div className="absolute left-1 top-12 bottom-12 flex items-center justify-center w-6">
-              <span className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 transition-colors duration-1000 ${textColor}`}>
+              <span className={`ds-t-label font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 transition-colors duration-1000 ${textColor}`}>
                 {t("focus.sideData.uplink")} {isBreak ? "B-RK" : "F-CS"}
               </span>
             </div>
             <div className="absolute right-1 top-12 bottom-12 flex items-center justify-center w-6">
-              <span className={`text-[8px] font-mono tracking-[0.3em] uppercase whitespace-nowrap rotate-90 transition-colors duration-1000 ${textColor}`}>
+              <span className={`ds-t-label font-mono tracking-[0.3em] uppercase whitespace-nowrap rotate-90 transition-colors duration-1000 ${textColor}`}>
                 {t("focus.sideData.vitals")} {Math.round(timer.progress * 100)}%
               </span>
             </div>
@@ -304,13 +304,13 @@ export default function Focus() {
                       className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-primary/30"
                       style={{ clipPath: "polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}
                     >
-                      <span className="text-[9px] font-mono text-primary/60 uppercase tracking-widest">{t("focus.target")}:</span>
-                      <span className="text-[10px] font-mono text-primary font-bold tracking-wider truncate max-w-[200px] uppercase">
+                      <span className="ds-t-label font-mono text-primary/60 uppercase tracking-widest">{t("focus.target")}:</span>
+                      <span className="ds-t-label font-mono text-primary font-bold tracking-wider truncate max-w-[200px] uppercase">
                         {linkedName}
                       </span>
                     </div>
                   )}
-                  <div className="px-2 py-0.5 bg-black/40 border border-accent/30 text-accent text-[9px] font-mono uppercase tracking-widest">
+                  <div className="px-2 py-0.5 bg-black/40 border border-accent/30 text-accent ds-t-label font-mono uppercase tracking-widest">
                     {t("focus.session")} {(timer.sessionsCompleted % 4) + 1}/4
                   </div>
                 </motion.div>
@@ -384,7 +384,7 @@ export default function Focus() {
                 >
                   <div className="flex items-center gap-2 mb-3 border-b border-primary/20 pb-2" aria-hidden="true">
                     <div className="w-1 h-3 bg-primary" />
-                    <span className="text-[10px] font-mono text-primary uppercase tracking-[0.2em]">
+                    <span className="ds-t-label font-mono text-primary uppercase tracking-[0.2em]">
                       {" >> "}{" "}
                       {activePanel === "spotify" ? "AUDIO_LINK_ESTABLISHED" : `${activePanel.toUpperCase()}_SYS`}
                     </span>

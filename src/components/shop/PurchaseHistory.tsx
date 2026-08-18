@@ -86,7 +86,7 @@ export function PurchaseHistory() {
           <Terminal className="w-5 h-5 text-primary" />
           <h2 className="font-orbitron text-lg text-foreground tracking-wide">Transaction Ledger</h2>
         </div>
-        <span className="text-[10px] font-mono text-muted-foreground">{transactions.length} records</span>
+        <span className="ds-t-label font-mono text-muted-foreground">{transactions.length} records</span>
       </div>
 
       {/* Ledger */}
@@ -104,7 +104,7 @@ export function PurchaseHistory() {
                 className="flex items-center gap-3 px-4 py-3 border-b hover:bg-primary/[0.02] transition-colors"
                 style={{ borderColor: "hsl(var(--primary) / 0.05)" }}>
                 {/* Timestamp */}
-                <span className="text-[9px] font-mono text-muted-foreground/50 w-[70px] shrink-0 tabular-nums">
+                <span className="ds-t-label font-mono text-muted-foreground/50 w-[70px] shrink-0 tabular-nums">
                   {format(new Date(tx.created_at), "dd/MM HH:mm")}
                 </span>
 
@@ -120,7 +120,7 @@ export function PurchaseHistory() {
                 </div>
 
                 {/* Type tag */}
-                <span className="shrink-0 px-2 py-0.5 rounded-md text-[8px] font-orbitron font-bold tracking-widest uppercase"
+                <span className="shrink-0 px-2 py-0.5 rounded-md ds-t-label font-orbitron font-bold tracking-widest uppercase"
                   style={{ color, background: color + "10" }}>
                   {isCredit ? "Credit" : "Debit"}
                 </span>
@@ -139,13 +139,13 @@ export function PurchaseHistory() {
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 rounded-xl" style={{ background: "hsl(142 70% 50% / 0.04)", border: "1px solid hsl(142 70% 50% / 0.12)" }}>
-          <div className="text-[9px] font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(142 70% 50% / 0.6)" }}>Total Earned</div>
+          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(142 70% 50% / 0.6)" }}>Total Earned</div>
           <div className="flex items-center gap-1.5 text-xl font-orbitron font-bold" style={{ color: "hsl(142 70% 50%)" }}>
             <BondIcon size={18} /> <AnimatedCounter value={totalEarned} />
           </div>
         </div>
         <div className="p-4 rounded-xl" style={{ background: "hsl(350 80% 55% / 0.04)", border: "1px solid hsl(350 80% 55% / 0.12)" }}>
-          <div className="text-[9px] font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(350 80% 55% / 0.6)" }}>Total Spent</div>
+          <div className="ds-t-label font-orbitron tracking-[0.15em] uppercase mb-1.5" style={{ color: "hsl(350 80% 55% / 0.6)" }}>Total Spent</div>
           <div className="flex items-center gap-1.5 text-xl font-orbitron font-bold" style={{ color: "hsl(350 80% 55%)" }}>
             <BondIcon size={18} /> <AnimatedCounter value={totalSpent} />
           </div>

@@ -79,7 +79,7 @@ export function PrismFullscreenPanel({
             <header className="relative flex items-center justify-between gap-3 mb-4 flex-shrink-0">
               <div className="flex items-center gap-2 min-w-0">
                 {id && (
-                  <span className="font-mono text-[9px] tabular-nums text-muted-foreground/50">
+                  <span className="font-mono ds-t-label tabular-nums text-muted-foreground/50">
                     [{id}]
                   </span>
                 )}
@@ -87,7 +87,7 @@ export function PrismFullscreenPanel({
                   {title}
                 </h2>
                 {unit && (
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                  <span className="font-mono ds-t-label uppercase tracking-wider text-muted-foreground/60">
                     · {unit}
                   </span>
                 )}
@@ -95,7 +95,7 @@ export function PrismFullscreenPanel({
               <button
                 onClick={onClose}
                 aria-label="Close fullscreen"
-                className="touch-target inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-[hsl(var(--prism-cyan))]/20 hover:border-[hsl(var(--prism-cyan))]/55 text-muted-foreground hover:text-foreground transition-colors text-[10px] font-mono uppercase tracking-wider"
+                className="touch-target inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-sm border border-[hsl(var(--prism-cyan))]/20 hover:border-[hsl(var(--prism-cyan))]/55 text-muted-foreground hover:text-foreground transition-colors ds-t-label font-mono uppercase tracking-wider"
               >
                 <X className="h-3 w-3" />
                 ESC

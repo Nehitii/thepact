@@ -105,7 +105,7 @@ export default function NotificationSettings() {
             <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden -mx-5">
               <div className="flex items-center gap-2.5 px-5 py-3 bg-[hsl(40,100%,50%)]/[0.07] border-t border-[hsl(40,100%,50%)]/20">
                 <AlertCircle className="h-4 w-4 text-[hsl(40,100%,50%)] animate-pulse flex-shrink-0" />
-                <span className="font-mono text-[10px] text-[hsl(40,100%,50%)] tracking-[0.1em]">⚠ FOCUS MODE ACTIF — TOUTES LES ALERTES SONT SILENCIÉES</span>
+                <span className="font-mono ds-t-label text-[hsl(40,100%,50%)] tracking-[0.1em]">⚠ FOCUS MODE ACTIF — TOUTES LES ALERTES SONT SILENCIÉES</span>
               </div>
             </motion.div>
           )}
@@ -117,7 +117,7 @@ export default function NotificationSettings() {
         <SettingContentRow icon={<Clock className="h-4 w-4 text-primary" />} label="Mode Ne Pas Déranger" description="Désactive les notifications push pendant une plage horaire définie">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <span className="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Début</span>
+              <span className="ds-t-label uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Début</span>
               <Select value={quietStart || "none"} onValueChange={(v) => handleQuietHoursChange("quiet_hours_start", v === "none" ? null : v)}>
                 <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5 rounded-none">
                   <SelectValue placeholder="—" />
@@ -129,7 +129,7 @@ export default function NotificationSettings() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <span className="text-[9px] uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Fin</span>
+              <span className="ds-t-label uppercase tracking-[0.2em] text-primary/40 font-mono font-semibold">Fin</span>
               <Select value={quietEnd || "none"} onValueChange={(v) => handleQuietHoursChange("quiet_hours_end", v === "none" ? null : v)}>
                 <SelectTrigger className="h-9 font-mono text-xs border-primary/20 bg-primary/5 rounded-none">
                   <SelectValue placeholder="—" />

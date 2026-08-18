@@ -53,7 +53,7 @@ export function DeadlineSelector({ onSelect, onCancel, isLoading }: DeadlineSele
           >
             <option.icon className="w-4 h-4 mb-1 text-primary" />
             <span className="text-xs font-orbitron">{option.label}</span>
-            <span className="text-[11px] text-muted-foreground">{option.description}</span>
+            <span className="ds-t-label text-muted-foreground">{option.description}</span>
           </Button>
         ))}
       </div>
@@ -70,7 +70,7 @@ export function DeadlineSelector({ onSelect, onCancel, isLoading }: DeadlineSele
       >
         <CalendarRange className="w-4 h-4 text-primary" />
         <span className="text-xs font-orbitron">1 Month</span>
-        <span className="text-[11px] text-muted-foreground">(Long haul)</span>
+        <span className="ds-t-label text-muted-foreground">(Long haul)</span>
       </Button>
 
       <Button

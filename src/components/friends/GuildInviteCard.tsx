@@ -21,7 +21,7 @@ export function GuildInviteCard({ invite, onAccept, onDecline }: GuildInviteCard
         <h3 className="text-sm font-bold font-orbitron tracking-wide truncate text-foreground">
           {invite.guild_name || t("friends.tabGuilds")}
         </h3>
-        <p className="text-[10px] text-muted-foreground font-mono">
+        <p className="ds-t-label text-muted-foreground font-mono">
           {t("friends.invitedBy", { name: invite.inviter_name || "?" })}
         </p>
       </div>

@@ -40,7 +40,7 @@ export function DSSkeleton({ className, label = "ACQUIRING SIGNAL...", compact =
       />
       {!compact && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--ds-accent-primary)/0.7)]">
+          <span className="font-mono ds-t-label uppercase tracking-[0.3em] text-[hsl(var(--ds-accent-primary)/0.7)]">
             [ {label} ]
           </span>
         </div>

@@ -49,7 +49,7 @@ export function GuildOverview({ guild, userId, isOfficer }: Props) {
       {/* Post Announcement (Officer only) */}
       {isOfficer && (
         <div className="flex flex-col gap-2">
-          <span className="font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
+          <span className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
             [ POST ANNOUNCEMENT ]
           </span>
           <DSPanel tier="muted" hideBrackets className="!p-3">
@@ -65,7 +65,7 @@ export function GuildOverview({ guild, userId, isOfficer }: Props) {
                 size="sm"
                 onClick={handlePostAnnouncement}
                 disabled={!motd.trim() || createAnnouncement.isPending}
-                className="self-end h-9 px-3 font-orbitron text-[11px] tracking-[0.2em] uppercase border"
+                className="self-end h-9 px-3 font-orbitron ds-t-label tracking-[0.2em] uppercase border"
                 style={{
                   color: "hsl(var(--ds-accent-primary))",
                   background: "hsl(var(--ds-accent-primary) / 0.1)",
@@ -82,7 +82,7 @@ export function GuildOverview({ guild, userId, isOfficer }: Props) {
       {/* Announcements */}
       <div>
         <div className="flex items-center gap-3 mb-3">
-          <h3 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-warning))] shrink-0">
+          <h3 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-warning))] shrink-0">
             [ ANNOUNCEMENTS ]
           </h3>
           <DSDivider accent="warning" />
@@ -94,7 +94,7 @@ export function GuildOverview({ guild, userId, isOfficer }: Props) {
             {announcements.slice(0, 5).map((a: GuildAnnouncement) => (
               <DSPanel key={a.id} tier="secondary" accent="warning" hideBrackets className="!p-3">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))] flex items-center gap-1.5">
+                  <span className="font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))] flex items-center gap-1.5">
                     {a.pinned && <Pin className="h-3 w-3" style={{ color: "hsl(var(--ds-accent-warning))" }} />}
                     [ {a.author_name?.toUpperCase() || "?"} · {formatDistanceToNow(new Date(a.created_at), { addSuffix: true }).toUpperCase()} ]
                   </span>
@@ -118,14 +118,14 @@ export function GuildOverview({ guild, userId, isOfficer }: Props) {
       {/* Recent Activity */}
       <div>
         <div className="flex items-center gap-3 mb-3">
-          <h3 className="font-mono text-[10px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] shrink-0">
+          <h3 className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))] shrink-0">
             [ RECENT ACTIVITY ]
           </h3>
           <DSDivider accent="primary" />
         </div>
         {activity.length === 0 ? (
           <DSPanel tier="muted" hideBrackets className="!p-3">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))]">
+            <p className="font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-text-muted))]">
               // {t("friends.noActivity")}
             </p>
           </DSPanel>
@@ -133,7 +133,7 @@ export function GuildOverview({ guild, userId, isOfficer }: Props) {
           <DSPanel tier="muted" hideBrackets className="!p-3">
             <div className="space-y-1.5">
               {activity.slice(0, 8).map((a) => (
-                <div key={a.id} className="flex items-center gap-2 text-[11px]">
+                <div key={a.id} className="flex items-center gap-2 ds-t-label">
                   <span
                     className="w-1.5 h-1.5 rounded-full shrink-0"
                     style={{
@@ -145,7 +145,7 @@ export function GuildOverview({ guild, userId, isOfficer }: Props) {
                   <span className="flex-1 text-[hsl(var(--ds-text-secondary))] font-rajdhani truncate">
                     {activityLabel(a)}
                   </span>
-                  <span className="font-mono text-[9px] tabular-nums uppercase tracking-wider text-[hsl(var(--ds-text-muted)/0.7)] shrink-0">
+                  <span className="font-mono ds-t-label tabular-nums uppercase tracking-wider text-[hsl(var(--ds-text-muted)/0.7)] shrink-0">
                     {formatDistanceToNow(new Date(a.created_at), { addSuffix: true })}
                   </span>
                 </div>

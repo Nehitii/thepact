@@ -39,7 +39,7 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
       {enabled && rule && (
         <div className="space-y-2 pl-2 border-l-2 border-primary/30 ml-2">
           <div className="flex items-center gap-2">
-            <Label className="text-[10px] shrink-0">{t("calendar.every", "Every")}</Label>
+            <Label className="ds-t-label shrink-0">{t("calendar.every", "Every")}</Label>
             <Input
               type="number"
               min={1}
@@ -63,7 +63,7 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
 
           {rule.freq === "weekly" && (
             <div>
-              <Label className="text-[10px] mb-1 block">{t("calendar.onDays", "On days")}</Label>
+              <Label className="ds-t-label mb-1 block">{t("calendar.onDays", "On days")}</Label>
               <div className="flex gap-1">
                 {DAYS.map((d) => {
                   const active = rule.byDay?.includes(d);
@@ -75,7 +75,7 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
                         const next = active ? current.filter((x) => x !== d) : [...current, d];
                         update({ byDay: next.length > 0 ? next : undefined });
                       }}
-                      className={`w-7 h-7 rounded-md text-[10px] font-bold transition-all ${
+                      className={`w-7 h-7 rounded-md ds-t-label font-bold transition-all ${
                         active
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted/50 text-muted-foreground hover:bg-muted"
@@ -90,7 +90,7 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
           )}
 
           <div>
-            <Label className="text-[10px]">{t("calendar.until", "Until (optional)")}</Label>
+            <Label className="ds-t-label">{t("calendar.until", "Until (optional)")}</Label>
             <Input
               type="date"
               value={rule.until ?? ""}

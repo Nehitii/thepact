@@ -34,7 +34,7 @@ export function PrismSkeleton({ className, label = "ACQUIRING SIGNAL..." }: Pris
       {/* Center label */}
       <div className="absolute inset-0 flex items-center justify-center">
         <span
-          className="font-mono text-[10px] uppercase tracking-[0.3em] text-[hsl(var(--prism-cyan)/0.7)]"
+          className="font-mono ds-t-label uppercase tracking-[0.3em] text-[hsl(var(--prism-cyan)/0.7)]"
           style={{ animation: "prism-pulse-cyan 2s ease-in-out infinite" }}
         >
           [ {label} ]

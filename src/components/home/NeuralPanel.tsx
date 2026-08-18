@@ -77,11 +77,11 @@ export function NeuralPanel({
       <div className="relative z-10 flex-shrink-0 px-5 pt-4 pb-2 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5 min-w-0">
           <Icon className="w-4 h-4 text-primary/60 shrink-0" />
-          <h3 className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-label)] truncate">
+          <h3 className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-label)] truncate">
             {title}
           </h3>
           {subtitle && (
-            <span className="text-[11px] font-mono text-[var(--nexus-text-dimmer)] truncate hidden sm:inline tracking-tight">
+            <span className="ds-t-label font-mono text-[var(--nexus-text-dimmer)] truncate hidden sm:inline tracking-tight">
               {subtitle}
             </span>
           )}

@@ -23,7 +23,7 @@ export function PrismFrame() {
 
       {/* Top-right horizontal bar + tag */}
       <div className="absolute -top-2 -right-2 flex items-center gap-2">
-        <span className="font-mono text-[8px] uppercase tracking-[0.25em] text-[hsl(var(--prism-cyan))]/60">
+        <span className="font-mono ds-t-label uppercase tracking-[0.25em] text-[hsl(var(--prism-cyan))]/60">
           [ OBSERVATORY // ACTIVE ]
         </span>
         <span className="block h-px w-[80px] bg-gradient-to-l from-[hsl(var(--prism-cyan))]/50 to-transparent" />
@@ -42,7 +42,7 @@ export function PrismFrame() {
         <div className="flex flex-col gap-2 items-end">
           {[100, 75, 50, 25, 0].map((tick) => (
             <div key={tick} className="flex items-center gap-1">
-              <span className="font-mono text-[7px] tabular-nums text-[hsl(var(--prism-cyan))]/40">
+              <span className="font-mono ds-t-label tabular-nums text-[hsl(var(--prism-cyan))]/40">
                 {String(tick).padStart(3, "0")}
               </span>
               <span className="block h-px w-2 bg-[hsl(var(--prism-cyan))]/40" />

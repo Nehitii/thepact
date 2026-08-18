@@ -151,7 +151,7 @@ export function FinancialHealthScore({
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="text-2xl font-black tabular-nums" style={{ color: scoreColor }}>{totalScore}</span>
-            <span className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider">/100</span>
+            <span className="ds-t-label text-muted-foreground font-medium uppercase tracking-wider">/100</span>
           </div>
         </div>
 
@@ -161,8 +161,8 @@ export function FinancialHealthScore({
             {breakdown.map(item => (
               <div key={item.label} className="flex items-center gap-2">
                 <item.icon className="w-3 h-3 shrink-0" style={{ color: item.color }} />
-                <span className="text-[11px] text-muted-foreground flex-1 truncate">{item.label}</span>
-                <span className="text-[11px] font-bold tabular-nums text-foreground">{item.score}/{item.max}</span>
+                <span className="ds-t-label text-muted-foreground flex-1 truncate">{item.label}</span>
+                <span className="ds-t-label font-bold tabular-nums text-foreground">{item.score}/{item.max}</span>
               </div>
             ))}
           </div>

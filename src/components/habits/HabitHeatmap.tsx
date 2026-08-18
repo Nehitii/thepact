@@ -81,7 +81,7 @@ export function HabitHeatmap({ data, weeks = 20, className }: HabitHeatmapProps)
         {months.map((m, i) => (
           <div
             key={i}
-            className="text-[10px] text-muted-foreground font-mono"
+            className="ds-t-label text-muted-foreground font-mono"
             style={{ marginLeft: i === 0 ? m.weekIndex * 14 : (m.weekIndex - (months[i - 1]?.weekIndex || 0)) * 14 - 20 }}
           >
             {m.label}
@@ -93,7 +93,7 @@ export function HabitHeatmap({ data, weeks = 20, className }: HabitHeatmapProps)
         {/* Day labels */}
         <div className="flex flex-col gap-0.5 mr-1">
           {dayLabels.map((label, i) => (
-            <div key={i} className="h-[12px] text-[9px] text-muted-foreground font-mono leading-[12px] w-6 text-right pr-1">
+            <div key={i} className="h-[12px] ds-t-label text-muted-foreground font-mono leading-[12px] w-6 text-right pr-1">
               {label}
             </div>
           ))}
@@ -135,11 +135,11 @@ export function HabitHeatmap({ data, weeks = 20, className }: HabitHeatmapProps)
 
       {/* Legend */}
       <div className="flex items-center gap-1 mt-2 ml-8">
-        <span className="text-[10px] text-muted-foreground mr-1">Less</span>
+        <span className="ds-t-label text-muted-foreground mr-1">Less</span>
         {INTENSITY_COLORS.map((color, i) => (
           <div key={i} className={cn("w-[12px] h-[12px] rounded-[2px]", color)} />
         ))}
-        <span className="text-[10px] text-muted-foreground ml-1">More</span>
+        <span className="ds-t-label text-muted-foreground ml-1">More</span>
       </div>
     </div>
   );

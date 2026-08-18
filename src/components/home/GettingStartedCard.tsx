@@ -58,7 +58,7 @@ export function GettingStartedCard({
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.15em] font-orbitron text-primary">
+              <h3 className="ds-t-label font-bold uppercase tracking-[0.15em] font-orbitron text-primary">
                 Getting Started
               </h3>
               <p className="text-xs text-[var(--nexus-text-dimmer)] font-rajdhani mt-1">

@@ -372,7 +372,7 @@ export default function Onboarding() {
                         <div className="flex-1">
                           <p className="font-semibold text-sm">{template.name}</p>
                           <p className="text-xs text-muted-foreground mt-1">{template.description}</p>
-                          <p className="text-[10px] font-mono uppercase tracking-wider text-primary/60 mt-2">
+                          <p className="ds-t-label font-mono uppercase tracking-wider text-primary/60 mt-2">
                             {template.steps} étapes · {template.difficulty}
                           </p>
                         </div>
@@ -431,7 +431,7 @@ export default function Onboarding() {
                   {symbols.map((s) => (
                     <button key={s.value} onClick={() => setSymbol(s.value)} className={`p-4 rounded-lg border-2 transition-all flex flex-col items-center gap-2 ${symbol === s.value ? "border-primary bg-primary/10 shadow-[0_0_15px_-5px_hsl(var(--primary)/0.4)]" : "border-border/50 bg-card hover:border-border"}`}>
                       <s.icon className={`h-6 w-6 ${symbol === s.value ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className="text-[10px] font-mono">{s.label}</span>
+                      <span className="ds-t-label font-mono">{s.label}</span>
                     </button>
                   ))}
                 </div>

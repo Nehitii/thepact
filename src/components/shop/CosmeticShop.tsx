@@ -82,7 +82,7 @@ export function CosmeticShop() {
       {/* Category nav */}
       <div className={cn(isMobile ? "flex gap-2 mb-4 overflow-x-auto hide-scrollbar" : "w-48 flex-shrink-0 space-y-2")}>
         {!isMobile && (
-          <h3 className="text-[10px] text-muted-foreground uppercase tracking-[0.15em] font-orbitron mb-4 px-2">Categories</h3>
+          <h3 className="ds-t-label text-muted-foreground uppercase tracking-[0.15em] font-orbitron mb-4 px-2">Categories</h3>
         )}
         {categories.map((cat) => {
           const isActive = activeCategory === cat.id;

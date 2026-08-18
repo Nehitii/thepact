@@ -82,7 +82,7 @@ export function DSPanel({
         <header className="relative flex items-center justify-between mb-3 gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {id && (
-              <span className="font-mono text-[9px] tabular-nums text-ds-text-muted/60">[{id}]</span>
+              <span className="font-mono ds-t-label tabular-nums text-ds-text-muted/60">[{id}]</span>
             )}
             {title && (
               <h3 className="ds-text-label text-ds-text-primary/90 truncate">
@@ -90,7 +90,7 @@ export function DSPanel({
               </h3>
             )}
             {unit && (
-              <span className="font-mono text-[9px] uppercase tracking-wider text-ds-text-muted/60 flex-shrink-0">
+              <span className="font-mono ds-t-label uppercase tracking-wider text-ds-text-muted/60 flex-shrink-0">
                 · {unit}
               </span>
             )}

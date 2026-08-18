@@ -118,7 +118,7 @@ export function SciFiDivider({
           className="block"
           style={{
             fontFamily: "'JetBrains Mono', monospace",
-            fontSize: "9px",
+            fontSize: "max(11px, 0.6875rem)",
             color,
             letterSpacing: "0.18em",
           }}
@@ -178,7 +178,7 @@ export function HexBadge({
       <span
         style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: "8px",
+          fontSize: "max(11px, 0.6875rem)",
           color,
           letterSpacing: "0.12em",
           opacity: 0.7,
@@ -203,7 +203,7 @@ export function HUDStatusLine({
   return (
     <div className="flex items-center gap-2.5 w-full">
       <span
-        className="font-mono text-[9px] tracking-[0.1em] shrink-0"
+        className="font-mono ds-t-label tracking-[0.1em] shrink-0"
         style={{ color: "var(--journal-text-dim)" }}
       >
         {label}
@@ -220,7 +220,7 @@ export function HUDStatusLine({
       <span
         style={{
           fontFamily: "'JetBrains Mono', monospace",
-          fontSize: "9px",
+          fontSize: "max(11px, 0.6875rem)",
           color,
           letterSpacing: "0.06em",
           flexShrink: 0,

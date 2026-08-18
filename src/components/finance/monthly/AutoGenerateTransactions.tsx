@@ -85,7 +85,7 @@ export function AutoGenerateTransactions({
         </div>
         <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground truncate">{t('finance.autoGenerate.title')}</p>
-          <p className="text-[11px] text-muted-foreground">{t('finance.autoGenerate.description', { count: totalItems })}</p>
+          <p className="ds-t-label text-muted-foreground">{t('finance.autoGenerate.description', { count: totalItems })}</p>
         </div>
       </div>
       <Button

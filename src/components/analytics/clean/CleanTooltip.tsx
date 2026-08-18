@@ -11,7 +11,7 @@ export function CleanTooltip({ active, payload, label, labelFormatter, valueForm
     labelFormatter && typeof label === "string" ? labelFormatter(label) : String(label ?? "");
   return (
     <div className="rounded-lg border border-border bg-popover/95 backdrop-blur-md shadow-lg px-3 py-2 text-xs min-w-[140px]">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">
+      <div className="ds-t-label uppercase tracking-wider text-muted-foreground mb-1.5">
         {formattedLabel}
       </div>
       <div className="flex flex-col gap-1">

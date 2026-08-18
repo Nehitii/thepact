@@ -121,13 +121,13 @@ export function ShopSpotlight({ onPreview, onPurchase }: ShopSpotlightProps) {
               transition={{ type: "spring", stiffness: 200, damping: 20 }}
             >
               <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-                <span className="text-[10px] uppercase tracking-[0.15em] font-orbitron font-bold px-3 py-1 rounded-lg border" style={{
+                <span className="ds-t-label uppercase tracking-[0.15em] font-orbitron font-bold px-3 py-1 rounded-lg border" style={{
                   color: r.accent, borderColor: r.border, background: r.glow,
                 }}>
                   {featured.rarity}
                 </span>
                 <motion.span
-                  className="text-[9px] uppercase tracking-[0.2em] font-orbitron px-2 py-0.5 rounded-md flex items-center gap-1"
+                  className="ds-t-label uppercase tracking-[0.2em] font-orbitron px-2 py-0.5 rounded-md flex items-center gap-1"
                   style={{ background: r.glow, color: r.accent }}
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}

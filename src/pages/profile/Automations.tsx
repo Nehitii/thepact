@@ -81,15 +81,15 @@ export default function Automations() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-orbitron font-bold text-sm uppercase tracking-wider">{r.name}</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/30">
+                  <span className="ds-t-label font-mono px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/30">
                     {TRIGGER_LABELS[r.trigger_type] ?? r.trigger_type}
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-accent/10 text-accent-foreground border border-accent/30">
+                  <span className="ds-t-label font-mono px-2 py-0.5 rounded bg-accent/10 text-accent-foreground border border-accent/30">
                     → {ACTION_LABELS[r.action_type] ?? r.action_type}
                   </span>
                 </div>
                 {r.description && <p className="text-xs text-muted-foreground mt-1.5">{r.description}</p>}
-                <div className="flex gap-3 mt-2 text-[10px] font-mono text-muted-foreground/70">
+                <div className="flex gap-3 mt-2 ds-t-label font-mono text-muted-foreground/70">
                   <span>Runs : {r.run_count}</span>
                   {r.last_run_at && (
                     <span>Dernier check : {formatDistanceToNow(new Date(r.last_run_at), { addSuffix: true, locale: fr })}</span>

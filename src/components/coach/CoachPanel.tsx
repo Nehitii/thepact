@@ -121,7 +121,7 @@ export function CoachPanel({ open, onClose }: Props) {
                 </div>
                 <div>
                   <p className="font-display text-sm uppercase tracking-wider">Pacte Coach</p>
-                  <p className="text-[11px] text-muted-foreground">Cmd+J</p>
+                  <p className="ds-t-label text-muted-foreground">Cmd+J</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -198,7 +198,7 @@ export function CoachPanel({ open, onClose }: Props) {
                 disabled={streaming}
               />
               <div className="flex justify-between items-center mt-2">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                <span className="ds-t-label text-muted-foreground uppercase tracking-wider">
                   Gemini 2.5 Flash
                 </span>
                 <Button size="sm" onClick={handleSend} disabled={streaming || !draft.trim()}>
@@ -274,7 +274,7 @@ function CitationStrip({ citations }: { citations: CoachCitation[] }) {
   };
   return (
     <div className="pt-2 border-t border-border/30">
-      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
+      <div className="flex items-center gap-1 ds-t-label uppercase tracking-wider text-muted-foreground mb-1">
         <BookOpen className="h-2.5 w-2.5" />
         Sources
       </div>
@@ -285,7 +285,7 @@ function CitationStrip({ citations }: { citations: CoachCitation[] }) {
             type="button"
             onClick={() => goTo(c)}
             title={c.snippet}
-            className="text-[10px] px-1.5 py-0.5 rounded border border-border/40 bg-background/40 hover:bg-background/70 transition-colors text-muted-foreground hover:text-foreground"
+            className="ds-t-label px-1.5 py-0.5 rounded border border-border/40 bg-background/40 hover:bg-background/70 transition-colors text-muted-foreground hover:text-foreground"
           >
             {SOURCE_LABELS[c.source_type] ?? c.source_type} · {Math.round((c.similarity ?? 0) * 100)}%
           </button>
@@ -322,7 +322,7 @@ function ActionChips({ actions }: { actions: CoachAction[] }) {
             onClick={onClick}
             disabled={!clickable}
             className={cn(
-              "text-[10px] px-2 py-0.5 rounded-full border flex items-center gap-1 transition-colors",
+              "ds-t-label px-2 py-0.5 rounded-full border flex items-center gap-1 transition-colors",
               a.status === "ok"
                 ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20"
                 : "border-destructive/40 bg-destructive/10 text-destructive",

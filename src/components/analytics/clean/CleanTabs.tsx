@@ -40,7 +40,7 @@ export function CleanTabs<T extends string>({ value, onChange, tabs, ariaLabel }
               {typeof tab.count === "number" && tab.count > 0 && (
                 <span
                   className={cn(
-                    "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold tabular-nums",
+                    "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full ds-t-label font-semibold tabular-nums",
                     isActive
                       ? "bg-primary/15 text-primary"
                       : "bg-muted text-muted-foreground",

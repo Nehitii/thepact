@@ -122,7 +122,7 @@ export function WeeklyReviewModal({ open, onClose }: WeeklyReviewModalProps) {
                     >
                       <stat.icon className={cn("h-4 w-4 mx-auto mb-1", stat.color)} />
                       <p className="text-lg font-bold font-orbitron text-foreground">{stat.value}</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                      <p className="ds-t-label text-muted-foreground uppercase tracking-wider">{stat.label}</p>
                     </div>
                   ))}
                 </div>

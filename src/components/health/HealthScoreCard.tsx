@@ -226,7 +226,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
             >
               {score}
             </motion.span>
-            <p className="text-[9px] text-muted-foreground/70 uppercase tracking-[0.25em] font-mono mt-1">
+            <p className="ds-t-label text-muted-foreground/70 uppercase tracking-[0.25em] font-mono mt-1">
               VITA INDEX
             </p>
             {/* Mini ECG inside */}
@@ -254,7 +254,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
               <span className={cn("font-orbitron font-bold text-lg tracking-widest", status.color)}>
                 {status.text}
               </span>
-              <span className={cn("font-mono text-[10px] tracking-widest", status.color, "opacity-70")}>
+              <span className={cn("font-mono ds-t-label tracking-widest", status.color, "opacity-70")}>
                 {status.code}
               </span>
             </div>
@@ -270,7 +270,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
           {/* Telemetry stats grid */}
           <div className="grid grid-cols-3 gap-2 text-left">
             <div className="border border-hud-phosphor/10 rounded-lg p-2 bg-background/40">
-              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-0.5">
+              <p className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-0.5">
                 BPM
               </p>
               <p
@@ -281,7 +281,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
               </p>
             </div>
             <div className="border border-hud-phosphor/10 rounded-lg p-2 bg-background/40">
-              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-0.5">
+              <p className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-0.5">
                 TREND
               </p>
               <p className="font-orbitron font-bold text-base text-foreground uppercase">
@@ -290,7 +290,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
               </p>
             </div>
             <div className="border border-hud-phosphor/10 rounded-lg p-2 bg-background/40">
-              <p className="text-[8px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-0.5">
+              <p className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-0.5">
                 FACTORS
               </p>
               <p className="font-orbitron font-bold text-base text-foreground tabular-nums">
@@ -308,7 +308,7 @@ export function HealthScoreCard({ score, trend, factors }: HealthScoreCardProps)
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + i * 0.08 }}
-                  className="px-2.5 py-1 text-[10px] font-medium font-mono uppercase tracking-wider bg-hud-phosphor/10 text-hud-phosphor border border-hud-phosphor/20 rounded-md"
+                  className="px-2.5 py-1 ds-t-label font-medium font-mono uppercase tracking-wider bg-hud-phosphor/10 text-hud-phosphor border border-hud-phosphor/20 rounded-md"
                 >
                   <Sparkles className="w-2.5 h-2.5 inline mr-1" />
                   {factor}

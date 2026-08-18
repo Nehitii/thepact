@@ -172,7 +172,7 @@ function AreaRow({
           onValueChange={(v) => setWeight(v[0])}
           onValueCommit={(v) => onUpdate({ id: area.id, name: area.name, weight: v[0] })}
         />
-        <span className="font-orbitron text-[10px] text-primary/60 tabular-nums w-8 text-right">
+        <span className="font-orbitron ds-t-label text-primary/60 tabular-nums w-8 text-right">
           {weight}
         </span>
       </div>

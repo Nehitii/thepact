@@ -48,7 +48,7 @@ export function AcquisitionArchive({ items, currency, onToggleAcquired, onEdit }
           </div>
         </div>
         <div className="text-right">
-          <p className="text-[9px] font-mono text-cyan-500/50 uppercase tracking-[0.2em]">Total spent</p>
+          <p className="ds-t-label font-mono text-cyan-500/50 uppercase tracking-[0.2em]">Total spent</p>
           <p className="font-mono text-lg font-bold text-amber-400">
             {formatCurrency(totalCost, currency)}
           </p>
@@ -136,13 +136,13 @@ export function AcquisitionArchive({ items, currency, onToggleAcquired, onEdit }
               </div>
 
               {item.acquired_at && (
-                <p className="text-[10px] text-cyan-500/40 font-mono">
+                <p className="ds-t-label text-cyan-500/40 font-mono">
                   {format(new Date(item.acquired_at), "dd MMM yyyy")}
                 </p>
               )}
 
               {item.goal?.name && (
-                <Badge variant="outline" className="text-[9px] font-mono border-amber-500/20 text-amber-500/60 truncate max-w-full rounded-sm">
+                <Badge variant="outline" className="ds-t-label font-mono border-amber-500/20 text-amber-500/60 truncate max-w-full rounded-sm">
                   {item.goal.name}
                 </Badge>
               )}

@@ -52,7 +52,7 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
                 )}
                 strokeWidth={1.5}
               />
-              <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dim)] group-hover:text-[var(--nexus-text-label)] transition-colors">
+              <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dim)] group-hover:text-[var(--nexus-text-label)] transition-colors">
                 {action.label}
               </span>
             </button>
@@ -62,7 +62,7 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
               className="flex items-center gap-2 px-3 py-2 opacity-30 cursor-not-allowed"
               style={{ borderRadius: "4px" }}
             >
-              <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)]">
+              <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)]">
                 {action.label}
               </span>
             </div>

@@ -150,11 +150,11 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
             <polygon points="8,1 15,4.5 15,11.5 8,15 1,11.5 1,4.5" />
             <circle cx="8" cy="8" r="2.5" />
           </svg>
-          <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: 4, color: "#ff8c00", textShadow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)", textTransform: "uppercase" as const }}>
+          <span style={{ fontFamily: "'Orbitron', sans-serif", fontSize: "max(11px, 0.6875rem)", fontWeight: 700, letterSpacing: 4, color: "#ff8c00", textShadow: "0 0 8px rgba(255,140,0,0.7), 0 0 30px rgba(255,140,0,0.25)", textTransform: "uppercase" as const }}>
             Mission Randomizer
           </span>
         </div>
-        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 2, padding: "3px 10px", border: "1px solid rgba(255,140,0,0.3)", color: "#ff8c00", background: "rgba(255,140,0,0.06)", clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
+        <div style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, padding: "3px 10px", border: "1px solid rgba(255,140,0,0.3)", color: "#ff8c00", background: "rgba(255,140,0,0.06)", clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}>
           STANDBY
         </div>
       </div>
@@ -165,7 +165,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
             <div className="flex gap-4 flex-col md:flex-row">
               <div className="flex-1 flex flex-col items-center justify-center py-10 rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] min-h-[180px]">
                 <Crosshair className="w-10 h-10 text-[var(--nexus-text-dimmer)] mb-4" />
-                <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)]">
+                <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)]">
                   INITIALISER LE SCAN DE MISSION
                 </span>
               </div>
@@ -176,8 +176,8 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
                 </Button>
 
                 <div className="rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] p-3">
-                  <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">STATISTIQUES</span>
-                  <div className="space-y-1.5 text-[11px] font-mono">
+                  <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">STATISTIQUES</span>
+                  <div className="space-y-1.5 ds-t-label font-mono">
                     <div className="flex justify-between text-[var(--nexus-text-dimmer)]">
                       <span>GÉNÉRÉES:</span>
                       <span className="text-primary tabular-nums">{scanCount}</span>
@@ -191,15 +191,15 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
                 </div>
 
                 <div className="rounded-sm border border-[var(--nexus-separator)] bg-[var(--nexus-inner-bg)] p-3">
-                  <span className="text-[11px] font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">FILTRE DIFF.</span>
+                  <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)] block mb-2">FILTRE DIFF.</span>
                   <div className="grid grid-cols-3 gap-1.5">
                     {DIFF_FILTERS.map((f) => (
                       <button key={f.key} onClick={() => setDiffFilter(diffFilter === f.key ? null : f.key)}
-                        className={cn("text-[11px] font-orbitron font-bold uppercase tracking-wider py-1 rounded-sm border transition-all", diffFilter === f.key ? "border-current bg-current/10" : "border-[var(--nexus-separator)] hover:border-current/30")}
+                        className={cn("ds-t-label font-orbitron font-bold uppercase tracking-wider py-1 rounded-sm border transition-all", diffFilter === f.key ? "border-current bg-current/10" : "border-[var(--nexus-separator)] hover:border-current/30")}
                         style={{ color: f.color }}
                       >{f.label}</button>
                     ))}
-                    <button onClick={() => setDiffFilter(null)} className="text-[11px] font-orbitron uppercase tracking-wider py-1 rounded-sm border border-[var(--nexus-separator)] text-[var(--nexus-text-dimmer)] hover:text-[var(--nexus-text-label)] transition-all">
+                    <button onClick={() => setDiffFilter(null)} className="ds-t-label font-orbitron uppercase tracking-wider py-1 rounded-sm border border-[var(--nexus-separator)] text-[var(--nexus-text-dimmer)] hover:text-[var(--nexus-text-label)] transition-all">
                       <RotateCw className="w-2.5 h-2.5 mx-auto" />
                     </button>
                   </div>
@@ -211,7 +211,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
 
         {viewState === "spinning" && tempWinner && (
           <motion.div key="spinning" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="p-6 flex flex-col items-center gap-4">
-            <div className="text-[11px] font-mono text-primary animate-pulse tracking-[0.3em] uppercase">Running Algorithm...</div>
+            <div className="ds-t-label font-mono text-primary animate-pulse tracking-[0.3em] uppercase">Running Algorithm...</div>
             <SlotReel candidates={eligibleGoals} winner={tempWinner} onSpinComplete={handleSpinEnd} />
             <div className="flex gap-2 mt-2">
               {[0, 1, 2].map((i) => (
@@ -226,17 +226,17 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
             <div className="flex items-center justify-between border-b border-amber-500/20 pb-3 mb-4">
               <div className="flex items-center gap-2">
                 <Lock className="w-4 h-4 text-amber-500 animate-pulse" />
-                <span className="text-[11px] font-orbitron font-bold text-amber-500 uppercase tracking-[0.15em]">Target Locked</span>
+                <span className="ds-t-label font-orbitron font-bold text-amber-500 uppercase tracking-[0.15em]">Target Locked</span>
               </div>
             </div>
             <div className="space-y-1 mb-4">
-              <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-mono flex items-center gap-1">
+              <span className="ds-t-label text-muted-foreground uppercase tracking-wider font-mono flex items-center gap-1">
                 <Target className="w-3 h-3" /> Mission Objective
               </span>
               <h2 className="text-xl font-bold text-foreground leading-tight tracking-wide">{targetMission.goal.name}</h2>
             </div>
             <div className="p-4 bg-[var(--nexus-inner-bg-deep)] border-l-2 border-amber-500 rounded-sm mb-4">
-              <span className="text-[11px] text-amber-400 uppercase tracking-wider font-mono block mb-1">{">"} Next Actionable Step</span>
+              <span className="ds-t-label text-amber-400 uppercase tracking-wider font-mono block mb-1">{">"} Next Actionable Step</span>
               <p className="text-sm font-medium text-foreground/80">{targetMission.stepTitle}</p>
             </div>
             <div className="grid grid-cols-2 gap-3">

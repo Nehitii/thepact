@@ -73,7 +73,7 @@ function CyberBirthdayPicker({ value, onChange, label }: { value: Date | undefin
 
   return (
     <div className="space-y-2 group">
-      <label className="text-[10px] font-mono tracking-[0.2em] text-muted-foreground uppercase group-focus-within:text-primary transition-colors flex items-center gap-2">
+      <label className="ds-t-label font-mono tracking-[0.2em] text-muted-foreground uppercase group-focus-within:text-primary transition-colors flex items-center gap-2">
         <span className="text-primary/40">{">"}</span> {label}
       </label>
       <div className="flex gap-2 w-full">
@@ -234,7 +234,7 @@ function ChangePasswordSection({ onLog }: { onLog: (text: string, type: "ok" | "
           <CyberInput label="Confirm Password" type={showPassword ? "text" : "password"} value={confirmPassword} onChange={(e: any) => setConfirmPassword(e.target.value)} placeholder="••••••••" className={mismatch ? "border-destructive focus-visible:border-destructive" : ""} />
         </div>
       </div>
-      <button onClick={handleChangePassword} disabled={isSaving || !newPassword || mismatch} className="mt-4 px-6 py-4 bg-foreground/5 hover:bg-primary/20 border border-primary/30 text-primary font-mono text-[10px] tracking-[0.2em] uppercase transition-colors disabled:opacity-30" style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}>
+      <button onClick={handleChangePassword} disabled={isSaving || !newPassword || mismatch} className="mt-4 px-6 py-4 bg-foreground/5 hover:bg-primary/20 border border-primary/30 text-primary font-mono ds-t-label tracking-[0.2em] uppercase transition-colors disabled:opacity-30" style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}>
         {isSaving ? "PROCESSING..." : "[ INITIALIZE KEY CHANGE ]"}
       </button>
     </CyberPanel>
@@ -251,10 +251,10 @@ function TwoFactorSection({ onLog }: { onLog: (text: string, type: "ok" | "warn"
             <Mail className="w-5 h-5 text-muted-foreground" />
             <div>
               <p className="font-mono text-xs text-foreground/80">Email Verification</p>
-              <p className="font-mono text-[10px] text-muted-foreground mt-1">Non configuré (aucun fournisseur d'envoi)</p>
+              <p className="font-mono ds-t-label text-muted-foreground mt-1">Non configuré (aucun fournisseur d'envoi)</p>
             </div>
           </div>
-          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest">{">"} INDISPONIBLE</span>
+          <span className="ds-t-label font-mono text-muted-foreground uppercase tracking-widest">{">"} INDISPONIBLE</span>
         </div>
       </div>
     </CyberPanel>
@@ -285,17 +285,17 @@ function SessionsSection({ userId, onLog }: { userId: string; onLog: (text: stri
   return (
     <CyberPanel title="Active Connections">
       <div className="space-y-6">
-        <button onClick={handleSignOutAll} disabled={signingOut} className="w-full flex items-center justify-center gap-3 p-4 border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground/80 font-mono text-[10px] tracking-[0.2em] uppercase transition-colors">
+        <button onClick={handleSignOutAll} disabled={signingOut} className="w-full flex items-center justify-center gap-3 p-4 border border-foreground/10 bg-foreground/5 hover:bg-foreground/10 text-foreground/80 font-mono ds-t-label tracking-[0.2em] uppercase transition-colors">
           <LogOut className="w-4 h-4" /> {signingOut ? "TERMINATING..." : "KILL ALL OTHER SESSIONS"}
         </button>
         <div className="space-y-2">
-          <p className="text-[10px] text-muted-foreground font-mono tracking-widest uppercase border-b border-foreground/5 pb-2">Connection Logs</p>
+          <p className="ds-t-label text-muted-foreground font-mono tracking-widest uppercase border-b border-foreground/5 pb-2">Connection Logs</p>
           {!loginHistory?.length ? (
             <p className="text-xs text-muted-foreground/40 font-mono py-4">NO RECENT ACTIVITY DETECTED.</p>
           ) : (
             <div className="space-y-1">
               {loginHistory.map((ev: any) => (
-                <div key={ev.id} className="flex justify-between items-center py-2 text-[10px] font-mono border-b border-foreground/5 last:border-0">
+                <div key={ev.id} className="flex justify-between items-center py-2 ds-t-label font-mono border-b border-foreground/5 last:border-0">
                   <span className="text-primary/60">{ev.event_type}</span>
                   <span className="text-muted-foreground/50">{new Date(ev.created_at).toLocaleString()}</span>
                 </div>
@@ -332,9 +332,9 @@ function DangerZoneSection({ onLog }: { onLog: (text: string, type: "ok" | "warn
         <div className="bg-destructive/10 border border-destructive/30 p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h4 className="font-orbitron text-destructive text-sm tracking-widest mb-1 flex items-center gap-2"><AlertTriangle className="w-4 h-4" /> PURGE ACCOUNT</h4>
-            <p className="font-mono text-[10px] text-destructive/60 uppercase">This action will permanently destroy all data. No recovery.</p>
+            <p className="font-mono ds-t-label text-destructive/60 uppercase">This action will permanently destroy all data. No recovery.</p>
           </div>
-          <button onClick={() => setShowDeleteModal(true)} className="px-6 py-3 bg-destructive/20 hover:bg-destructive/40 text-destructive font-mono text-[10px] tracking-[0.2em] font-bold uppercase transition-colors" style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}>
+          <button onClick={() => setShowDeleteModal(true)} className="px-6 py-3 bg-destructive/20 hover:bg-destructive/40 text-destructive font-mono ds-t-label tracking-[0.2em] font-bold uppercase transition-colors" style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}>
             INITIATE PURGE
           </button>
         </div>

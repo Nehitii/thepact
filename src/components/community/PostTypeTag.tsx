@@ -47,7 +47,7 @@ export function PostTypeTag({ type }: PostTypeTagProps) {
 
   return (
     <span className={cn(
-      "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider font-mono border",
+      "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full ds-t-label font-semibold uppercase tracking-wider font-mono border",
       config.className
     )}>
       {config.emoji} {config.label}

@@ -178,7 +178,7 @@ export function SavingsGoalTracker({ goals, accounts, currency, onAdd, onUpdate,
                     {daysLeft !== null && daysLeft >= 0 && (
                       <div className="flex items-center gap-1 mt-1">
                         <Calendar className="w-3 h-3 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">{t('finance.savings.daysLeft', { count: daysLeft })}</span>
+                        <span className="ds-t-label text-muted-foreground">{t('finance.savings.daysLeft', { count: daysLeft })}</span>
                       </div>
                     )}
                   </div>

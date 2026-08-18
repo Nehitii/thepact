@@ -72,7 +72,7 @@ export function ThemePreviewCard({
 
       {/* Theme name overlay */}
       <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent flex items-end justify-center pb-12">
-        <span className="font-orbitron text-[10px] text-white/80 tracking-wider uppercase">
+        <span className="font-orbitron ds-t-label text-white/80 tracking-wider uppercase">
           {name}
         </span>
       </div>

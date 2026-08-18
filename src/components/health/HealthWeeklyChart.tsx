@@ -49,7 +49,7 @@ export function HealthWeeklyChart() {
           <TrendingUp className="w-5 h-5 text-hud-phosphor" />
           {t("health.weeklyChart")}
         </h3>
-        <div className="flex gap-4 text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+        <div className="flex gap-4 ds-t-label text-muted-foreground font-mono uppercase tracking-wider">
           <span className="flex items-center gap-1">
             <div className="w-3 h-3 rounded-sm bg-blue-500" /> {t("health.metrics.sleep")}
           </span>
@@ -96,7 +96,7 @@ export function HealthWeeklyChart() {
               )}>
                 {day}
               </span>
-              {!data && <div className="text-[10px] text-muted-foreground/50 mt-1 font-mono">—</div>}
+              {!data && <div className="ds-t-label text-muted-foreground/50 mt-1 font-mono">—</div>}
             </div>
           );
         })}

@@ -154,7 +154,7 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
     <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="relative group">
       {/* Shortcuts hint tooltip */}
       <div className="flex items-center justify-end mb-1.5 gap-2 opacity-60 hover:opacity-100 transition-opacity">
-        <div className="flex items-center gap-3 text-[10px] font-mono text-muted-foreground">
+        <div className="flex items-center gap-3 ds-t-label font-mono text-muted-foreground">
           <span><span className="text-amber-400 font-bold">!high</span> {t('todo.neuralInput.priorityHint', { defaultValue: 'priority' })}</span>
           <span><span className="text-emerald-400 font-bold">#work</span> {t('todo.neuralInput.categoryHint', { defaultValue: 'category' })}</span>
           <span><span className="text-purple-400 font-bold">@today</span> {t('todo.neuralInput.deadlineHint', { defaultValue: 'deadline' })}</span>
@@ -239,7 +239,7 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
             {parsed.priority !== "medium" && (
               <span
                 className={cn(
-                  "px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider border",
+                  "px-2 py-0.5 rounded ds-t-label font-mono uppercase tracking-wider border",
                   parsed.priority === "high"
                     ? "bg-amber-500/20 text-amber-300 border-amber-500/30"
                     : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
@@ -249,12 +249,12 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
               </span>
             )}
             {parsed.category !== "general" && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="px-2 py-0.5 rounded ds-t-label font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 #{parsed.category}
               </span>
             )}
             {parsed.deadline && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
+              <span className="px-2 py-0.5 rounded ds-t-label font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">
                 @deadline
               </span>
             )}

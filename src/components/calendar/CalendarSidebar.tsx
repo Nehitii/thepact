@@ -57,7 +57,7 @@ export const CalendarSidebar = memo(({ events, onDayClick }: CalendarSidebarProp
                   <Icon className="h-3 w-3 shrink-0 opacity-60" />
                   {ev.title}
                 </p>
-                <p className={cn("text-[10px]", overdue ? "text-destructive" : "text-muted-foreground")}>
+                <p className={cn("ds-t-label", overdue ? "text-destructive" : "text-muted-foreground")}>
                   {format(start, "EEE d MMM", { locale })}
                   {!ev.all_day && ` · ${format(start, "HH:mm")}`}
                 </p>

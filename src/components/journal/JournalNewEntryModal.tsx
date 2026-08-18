@@ -28,7 +28,7 @@ function StyleSection({ label, accent, children }: { label: string; accent: { he
     <div>
       <div className="flex items-center gap-2 mb-3">
         <div className="w-[3px] h-[3px] rounded-full" style={{ background: accent.hex }} />
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "9px", color: accent.hex, opacity: 0.6, letterSpacing: "0.18em" }}>{label}</span>
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: accent.hex, opacity: 0.6, letterSpacing: "0.18em" }}>{label}</span>
         <div className="flex-1 h-px" style={{ background: `${accent.hex}18` }} />
       </div>
       {children}
@@ -58,7 +58,7 @@ function ToggleSwitch({ value, onChange, label, accent }: { value: boolean; onCh
           }}
         />
       </div>
-      <span className="font-mono text-[10px] tracking-[0.1em]" style={{ color: value ? accent.hex : "var(--journal-text-dim)" }}>{label}</span>
+      <span className="font-mono ds-t-label tracking-[0.1em]" style={{ color: value ? accent.hex : "var(--journal-text-dim)" }}>{label}</span>
     </button>
   );
 }
@@ -156,7 +156,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
         >
           <div className="flex items-center gap-2">
             <div className="w-[7px] h-[7px] rounded-full" style={{ background: accent.hex, boxShadow: `0 0 8px ${accent.hex}`, animation: "journal-pulse 2s infinite" }} />
-            <span className="font-mono text-[10px] tracking-[0.15em]" style={{ color: accent.hex, opacity: 0.7 }}>
+            <span className="font-mono ds-t-label tracking-[0.15em]" style={{ color: accent.hex, opacity: 0.7 }}>
               {isEditing ? "// EDIT_ENTRY" : "// NEW_ENTRY"}
             </span>
           </div>
@@ -166,7 +166,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
               <button
                 key={p}
                 onClick={() => setPanel(p)}
-                className="rounded-sm cursor-pointer transition-all duration-150 font-mono text-[10px] tracking-[0.1em]"
+                className="rounded-sm cursor-pointer transition-all duration-150 font-mono ds-t-label tracking-[0.1em]"
                 style={{
                   padding: "5px 14px",
                   background: panel === p ? accent.dim : "transparent",
@@ -181,13 +181,13 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
 
           <div className="flex-1" />
 
-          <span className="font-mono text-[9px] tracking-[0.08em]" style={{ color: "var(--journal-text-dimmer)" }}>
+          <span className="font-mono ds-t-label tracking-[0.08em]" style={{ color: "var(--journal-text-dimmer)" }}>
             {wordCount} <span style={{ opacity: 0.5 }}>WORDS</span>
           </span>
 
           <button
             onClick={() => onOpenChange(false)}
-            className="rounded cursor-pointer transition-colors font-mono text-[10px] tracking-[0.1em] bg-destructive/10 border border-destructive/20 text-destructive"
+            className="rounded cursor-pointer transition-colors font-mono ds-t-label tracking-[0.1em] bg-destructive/10 border border-destructive/20 text-destructive"
             style={{ padding: "6px 14px" }}
           >
             ESC
@@ -198,7 +198,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
             disabled={!canSave || isPending}
             whileHover={canSave ? { scale: 1.03 } : {}}
             whileTap={canSave ? { scale: 0.97 } : {}}
-            className="rounded transition-all duration-200 font-orbitron text-[10px] font-bold tracking-[0.12em]"
+            className="rounded transition-all duration-200 font-orbitron ds-t-label font-bold tracking-[0.12em]"
             style={{
               padding: "7px 20px",
               background: canSave ? accent.hex : "var(--journal-input-bg)",
@@ -246,7 +246,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                       <button
                         key={a.id}
                         onClick={() => setAccentId(a.id)}
-                        className="flex flex-col items-center gap-[7px] rounded-[5px] cursor-pointer transition-all duration-150 font-mono text-[9px] tracking-[0.1em]"
+                        className="flex flex-col items-center gap-[7px] rounded-[5px] cursor-pointer transition-all duration-150 font-mono ds-t-label tracking-[0.1em]"
                         style={{
                           padding: "10px 6px",
                           background: accentId === a.id ? a.dim : "var(--journal-input-bg)",
@@ -267,7 +267,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                       <button
                         key={m.id}
                         onClick={() => setMoodId(m.id)}
-                        className="flex items-center gap-2 rounded-[5px] cursor-pointer transition-all duration-150 font-mono text-[9px] tracking-[0.08em]"
+                        className="flex items-center gap-2 rounded-[5px] cursor-pointer transition-all duration-150 font-mono ds-t-label tracking-[0.08em]"
                         style={{
                           padding: "9px 10px",
                           background: moodId === m.id ? `${m.color}10` : "var(--journal-input-bg)",
@@ -287,7 +287,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                       <button
                         key={f.id}
                         onClick={() => setFontId(f.id)}
-                        className="text-left rounded-[5px] cursor-pointer transition-all duration-150 text-[13px]"
+                        className="text-left rounded-[5px] cursor-pointer transition-all duration-150 text-[0.8125rem]"
                         style={{
                           padding: "10px 12px",
                           background: fontId === f.id ? accent.dim : "var(--journal-input-bg)",
@@ -309,7 +309,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                         <button
                           key={s.id}
                           onClick={() => setSizeId(s.id)}
-                          className="flex-1 rounded cursor-pointer transition-all duration-150 font-mono text-[10px] tracking-[0.06em]"
+                          className="flex-1 rounded cursor-pointer transition-all duration-150 font-mono ds-t-label tracking-[0.06em]"
                           style={{
                             padding: "8px 4px",
                             background: sizeId === s.id ? accent.dim : "var(--journal-input-bg)",
@@ -329,7 +329,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                         <button
                           key={a.id}
                           onClick={() => setAlignId(a.id)}
-                          className="flex-1 rounded cursor-pointer transition-all duration-150 font-mono text-[9px] tracking-[0.08em]"
+                          className="flex-1 rounded cursor-pointer transition-all duration-150 font-mono ds-t-label tracking-[0.08em]"
                           style={{
                             padding: "8px 4px",
                             background: alignId === a.id ? accent.dim : "var(--journal-input-bg)",
@@ -372,9 +372,9 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                     ))}
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-mono text-[9px] tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>NEGATIVE</span>
-                    <span className="font-mono text-[11px] tracking-[0.06em]" style={{ color: accent.hex }}>{valence}/10</span>
-                    <span className="font-mono text-[9px] tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>POSITIVE</span>
+                    <span className="font-mono ds-t-label tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>NEGATIVE</span>
+                    <span className="font-mono ds-t-label tracking-[0.06em]" style={{ color: accent.hex }}>{valence}/10</span>
+                    <span className="font-mono ds-t-label tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>POSITIVE</span>
                   </div>
                 </StyleSection>
 
@@ -395,9 +395,9 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                     ))}
                   </div>
                   <div className="flex justify-between">
-                    <span className="font-mono text-[9px] tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>DEPLETED</span>
-                    <span className="font-mono text-[11px] tracking-[0.06em]" style={{ color: "#0a84ff" }}>{energy}/10</span>
-                    <span className="font-mono text-[9px] tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>SUPERCHARGED</span>
+                    <span className="font-mono ds-t-label tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>DEPLETED</span>
+                    <span className="font-mono ds-t-label tracking-[0.06em]" style={{ color: "#0a84ff" }}>{energy}/10</span>
+                    <span className="font-mono ds-t-label tracking-[0.1em]" style={{ color: "var(--journal-text-dimmer)" }}>SUPERCHARGED</span>
                   </div>
                 </StyleSection>
 
@@ -407,7 +407,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                       <span
                         key={t}
                         onClick={() => setTags((p) => p.filter((x) => x !== t))}
-                        className="cursor-pointer rounded-sm font-mono text-[10px] tracking-[0.06em]"
+                        className="cursor-pointer rounded-sm font-mono ds-t-label tracking-[0.06em]"
                         style={{ color: accent.hex, background: accent.dim, border: `1px solid ${accent.hex}25`, padding: "3px 8px" }}
                       >
                         /{t} ×
@@ -420,7 +420,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyDown={(e) => e.key === "Enter" && addTag()}
                       placeholder="/tag"
-                      className="flex-1 rounded outline-none font-mono text-[11px]"
+                      className="flex-1 rounded outline-none font-mono ds-t-label"
                       style={{
                         padding: "7px 10px",
                         background: "var(--journal-input-bg)",
@@ -431,7 +431,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                     />
                     <button
                       onClick={addTag}
-                      className="rounded cursor-pointer text-[13px]"
+                      className="rounded cursor-pointer text-[0.8125rem]"
                       style={{ padding: "7px 12px", background: accent.dim, border: `1px solid ${accent.hex}30`, color: accent.hex }}
                     >
                       +
@@ -445,14 +445,14 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                     <div className="rounded-[5px] relative overflow-hidden" style={{ padding: "14px", background: "var(--journal-input-bg)", border: `1px solid ${accent.hex}15` }}>
                       <HUDCorner pos="tl" size={7} color={accent.hex} />
                       <HUDCorner pos="br" size={7} color={accent.hex} />
-                      <p className="font-orbitron text-[11px] font-bold mb-1.5 truncate" style={{ color: "var(--journal-text-primary)" }}>
+                      <p className="font-orbitron ds-t-label font-bold mb-1.5 truncate" style={{ color: "var(--journal-text-primary)" }}>
                         {title || "Title..."}
                       </p>
                       <p style={{ fontFamily: getFont(fontId).css, fontStyle: getFont(fontId).style, fontSize: "11px", color: "var(--journal-text-dim)", lineHeight: 1.6, display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
                         {content.replace(/<[^>]+>/g, "") || "Content..."}
                       </p>
                       <div className="mt-2.5 flex items-center gap-2">
-                        <span style={{ color: getMood(moodId).color, fontSize: "10px" }}>{getMood(moodId).sym}</span>
+                        <span style={{ color: getMood(moodId).color, fontSize: "max(11px, 0.6875rem)" }}>{getMood(moodId).sym}</span>
                         <div className="flex-1 h-[2px] rounded-sm overflow-hidden bg-muted/30">
                           <div className="h-full rounded-sm" style={{ width: `${valence * 10}%`, background: accent.hex }} />
                         </div>
@@ -482,7 +482,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry 
                       value={lifeContext}
                       onChange={(e) => setLifeContext(e.target.value)}
                       placeholder="e.g., During a period of change..."
-                      className="w-full rounded outline-none font-mono text-[11px] italic"
+                      className="w-full rounded outline-none font-mono ds-t-label italic"
                       style={{
                         padding: "7px 10px",
                         background: "var(--journal-input-bg)",

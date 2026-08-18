@@ -108,7 +108,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
 
               {/* Inner Content */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">LVL</span>
+                <span className="ds-t-label uppercase font-bold text-muted-foreground tracking-widest">LVL</span>
                 <span className="text-3xl font-black text-foreground tabular-nums tracking-tighter">{level}</span>
               </div>
             </div>
@@ -230,7 +230,7 @@ function StatChip({ icon: Icon, label, value, color, borderColor, bgColor, anima
         <Icon className={cn("w-4 h-4", color, animate && "animate-bounce")} />
         {animate && <div className="absolute -top-1 -right-1 w-2 h-2 bg-orange-500 rounded-full animate-ping" />}
       </div>
-      <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider relative z-10">
+      <span className="ds-t-label uppercase text-muted-foreground font-bold tracking-wider relative z-10">
         {label}
       </span>
       <span className={cn("text-lg font-black tracking-tight relative z-10", color)}>{value}</span>

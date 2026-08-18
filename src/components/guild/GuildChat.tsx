@@ -106,10 +106,10 @@ export function GuildChat({ guildId, userId }: Props) {
             <div key={m.id} className={`flex gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
               <Avatar className="h-7 w-7 shrink-0">
                 <AvatarImage src={m.avatar_url || undefined} />
-                <AvatarFallback className="text-[9px]">{(m.display_name || "?")[0]}</AvatarFallback>
+                <AvatarFallback className="ds-t-label">{(m.display_name || "?")[0]}</AvatarFallback>
               </Avatar>
               <div className={`max-w-[70%] ${isOwn ? "items-end" : ""}`}>
-                <div className={`text-[9px] text-muted-foreground mb-0.5 ${isOwn ? "text-right" : ""}`}>
+                <div className={`ds-t-label text-muted-foreground mb-0.5 ${isOwn ? "text-right" : ""}`}>
                   {m.display_name} · {formatDistanceToNow(new Date(m.created_at), { addSuffix: true })}
                 </div>
                 <div className={`group relative rounded-lg px-3 py-1.5 text-xs ${isOwn ? "bg-primary/20 text-foreground" : "bg-card/80 border border-border/50"}`}>

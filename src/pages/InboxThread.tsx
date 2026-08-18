@@ -124,7 +124,7 @@ export default function InboxThread() {
               <h2 className="text-sm font-bold font-orbitron tracking-wide text-foreground">
                 {otherProfile?.display_name || "Unknown User"}
               </h2>
-              <p className="text-[10px] text-muted-foreground font-mono">Encrypted Channel</p>
+              <p className="ds-t-label text-muted-foreground font-mono">Encrypted Channel</p>
             </div>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function InboxThread() {
                   >
                     <p className="break-words">{msg.content}</p>
                     <div className={cn("flex items-center gap-1.5 mt-1", isMine ? "justify-end" : "justify-start")}>
-                      <span className="text-[10px] text-muted-foreground font-mono">
+                      <span className="ds-t-label text-muted-foreground font-mono">
                         {formatMsgTime(msg.created_at)}
                       </span>
                       {isMine && msg.is_read && (

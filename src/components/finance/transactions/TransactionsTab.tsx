@@ -354,7 +354,7 @@ export function TransactionsTab({ accountFilter, onClearAccountFilter, financeSe
                         )}
                         <span className="text-sm text-foreground truncate max-w-[200px]">{tx.description}</span>
                         {tx.source === 'csv_import' && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium shrink-0">CSV</span>
+                          <span className="ds-t-label px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium shrink-0">CSV</span>
                         )}
                       </div>
                     </td>

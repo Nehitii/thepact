@@ -67,7 +67,7 @@ export function VirtualCard({
         {/* Top row: label + chip */}
         <div className="absolute top-5 left-5 right-5 flex items-start justify-between [transform:translateZ(20px)]">
           <div>
-            <div className="text-[10px] font-mono uppercase tracking-[0.3em] text-white/50">
+            <div className="ds-t-label font-mono uppercase tracking-[0.3em] text-white/50">
               Virtual Card
             </div>
             <div className="text-base font-bold text-white tracking-wide mt-0.5">{label}</div>
@@ -101,14 +101,14 @@ export function VirtualCard({
         {/* Bottom row */}
         <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between [transform:translateZ(15px)]">
           <div>
-            <div className="text-[8px] font-mono uppercase tracking-[0.25em] text-white/40">
+            <div className="ds-t-label font-mono uppercase tracking-[0.25em] text-white/40">
               Holder
             </div>
-            <div className="text-[11px] font-medium text-white/90 tracking-wide mt-0.5 uppercase">
+            <div className="ds-t-label font-medium text-white/90 tracking-wide mt-0.5 uppercase">
               {holderName}
             </div>
           </div>
-          <div className="text-[10px] font-mono font-bold tracking-[0.2em] text-white/70">
+          <div className="ds-t-label font-mono font-bold tracking-[0.2em] text-white/70">
             {currency}
           </div>
         </div>

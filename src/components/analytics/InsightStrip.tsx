@@ -146,14 +146,14 @@ function KpiCard({ sign, index, onClick }: KpiCardProps) {
               )}
             />
           </span>
-          <span className="font-mono text-[9px] uppercase tracking-wider text-muted-foreground/80 truncate">
+          <span className="font-mono ds-t-label uppercase tracking-wider text-muted-foreground/80 truncate">
             {sign.label}
           </span>
         </div>
         {hasDelta && (
           <div className={cn("flex items-center gap-0.5 flex-shrink-0", trendColor)}>
             <TrendIcon className="h-2.5 w-2.5" />
-            <span className="font-mono text-[9px] tabular-nums">
+            <span className="font-mono ds-t-label tabular-nums">
               {sign.delta! > 0 ? "+" : ""}
               {sign.delta!.toFixed(0)}%
             </span>

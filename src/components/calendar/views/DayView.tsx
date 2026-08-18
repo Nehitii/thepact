@@ -89,7 +89,7 @@ export function DayView({ viewDate, events, onEventClick, onCellClick }: DayView
           {HOURS.map((h) => (
             <div key={h} className="contents">
               <div className="border-b border-border/20 flex items-start justify-end pr-2 pt-1" style={{ height: HOUR_HEIGHT }}>
-                <span className="text-[10px] text-muted-foreground">{String(h).padStart(2, "0")}:00</span>
+                <span className="ds-t-label text-muted-foreground">{String(h).padStart(2, "0")}:00</span>
               </div>
               <div
                 className="border-b border-l border-border/20 hover:bg-primary/5 cursor-pointer relative"
@@ -137,7 +137,7 @@ export function DayView({ viewDate, events, onEventClick, onCellClick }: DayView
                   {SourceIcon && <SourceIcon className="w-3 h-3 shrink-0" />}
                   {ev.title}
                 </p>
-                <p className="opacity-70 text-[10px]">{format(start, "HH:mm")} – {format(end, "HH:mm")}</p>
+                <p className="opacity-70 ds-t-label">{format(start, "HH:mm")} – {format(end, "HH:mm")}</p>
               </button>
             );
           })}

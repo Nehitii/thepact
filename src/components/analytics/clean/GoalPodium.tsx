@@ -42,7 +42,7 @@ export function GoalPodium({ goals }: { goals: TopGoal[] }) {
           <Trophy className="h-4 w-4 text-amber-500" />
           Hall of Fame
         </h3>
-        <p className="text-[11px] text-muted-foreground mt-0.5">
+        <p className="ds-t-label text-muted-foreground mt-0.5">
           Tes meilleures victoires par XP
         </p>
       </header>
@@ -104,10 +104,10 @@ export function GoalPodium({ goals }: { goals: TopGoal[] }) {
                   />
                 )}
               </div>
-              <p className="text-[11px] font-medium line-clamp-2 leading-tight px-1 mb-2 max-w-full">
+              <p className="ds-t-label font-medium line-clamp-2 leading-tight px-1 mb-2 max-w-full">
                 {g.name}
               </p>
-              <span className="text-[10px] tabular-nums text-muted-foreground mb-2">
+              <span className="ds-t-label tabular-nums text-muted-foreground mb-2">
                 {g.potential_score} XP
               </span>
               {/* podium block */}

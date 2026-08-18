@@ -61,7 +61,7 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
       {/* Discount badge */}
       <div className="absolute top-3 right-3 z-10">
         <motion.div
-          className="px-2.5 py-1 rounded-lg font-orbitron text-[11px] font-black"
+          className="px-2.5 py-1 rounded-lg font-orbitron ds-t-label font-black"
           style={{ background: "hsl(0 80% 50%)", color: "hsl(0 0% 100%)" }}
           animate={{ scale: [1, 1.06, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -90,10 +90,10 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
       {/* Info */}
       <div className="p-4 space-y-3">
         <div className="flex items-center gap-2">
-          <span className={`text-[9px] uppercase tracking-[0.15em] font-orbitron font-bold px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
+          <span className={`ds-t-label uppercase tracking-[0.15em] font-orbitron font-bold px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
             {rarity}
           </span>
-          <span className="text-[9px] uppercase tracking-wider font-orbitron text-amber-400/70">Daily Deal</span>
+          <span className="ds-t-label uppercase tracking-wider font-orbitron text-amber-400/70">Daily Deal</span>
         </div>
 
         <h3 className="font-orbitron text-sm font-bold text-foreground truncate">{deal.item.name}</h3>
@@ -119,7 +119,7 @@ export function DailyDealCard({ deal, onPurchase, isOwned, canAfford }: DailyDea
 
         {/* Action */}
         {isOwned ? (
-          <div className="flex items-center gap-1.5 text-[10px] font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)" }}>
+          <div className="flex items-center gap-1.5 ds-t-label font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)" }}>
             <Check className="w-3.5 h-3.5" /> Owned
           </div>
         ) : (

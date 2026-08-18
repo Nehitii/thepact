@@ -16,7 +16,7 @@ export function DSPageLoader({ variant = "minimal", message }: DSPageLoaderProps
           aria-label="Loading"
         />
         {variant === "verbose" && (
-          <span className="text-[10px] font-orbitron uppercase tracking-[0.3em] text-muted-foreground/40">
+          <span className="ds-t-label font-orbitron uppercase tracking-[0.3em] text-muted-foreground/40">
             {message ?? "Initializing..."}
           </span>
         )}

@@ -20,7 +20,7 @@ export function PrismBadge({ variant = "live", label, className }: PrismBadgePro
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] font-mono text-[8px] uppercase tracking-[0.18em] border",
+        "inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-[2px] font-mono ds-t-label uppercase tracking-[0.18em] border",
         className,
       )}
       style={{

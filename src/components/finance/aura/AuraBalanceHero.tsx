@@ -111,7 +111,7 @@ export function AuraBalanceHero({
           {/* Cash flow curve */}
           <div className="mt-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+              <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
                 {t('finance.aura.cashFlow30d', 'Cash flow · 30 days')}
               </span>
             </div>

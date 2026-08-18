@@ -43,7 +43,7 @@ export function GuildXPBar({ totalXp }: Props) {
         <span className="text-xs font-black font-orbitron">Lv.{level}</span>
       </div>
       <Progress value={progress} className="flex-1 h-2" />
-      <span className="text-[10px] text-muted-foreground font-mono">
+      <span className="ds-t-label text-muted-foreground font-mono">
         {totalXp}/{nextLevelXp} XP
       </span>
     </div>

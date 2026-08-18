@@ -112,17 +112,17 @@ export default function PrivacyControl() {
           {(!sharedData?.sharedGoals && !sharedData?.sharedPacts) ? (
             <div className="text-center py-6">
               <Share2 className="h-8 w-8 text-primary/20 mx-auto mb-2" />
-              <p className="text-[11px] text-muted-foreground font-mono tracking-wider">{t("settings.privacy.noSharedData") || "AUCUNE DONNÉE PARTAGÉE"}</p>
+              <p className="ds-t-label text-muted-foreground font-mono tracking-wider">{t("settings.privacy.noSharedData") || "AUCUNE DONNÉE PARTAGÉE"}</p>
             </div>
           ) : (
             <>
               {sharedData?.sharedGoalsList && sharedData.sharedGoalsList.length > 0 && (
                 <div className="space-y-1">
-                  <p className="text-[9px] text-primary/40 font-mono tracking-wider uppercase mb-1.5 flex items-center gap-1.5">
+                  <p className="ds-t-label text-primary/40 font-mono tracking-wider uppercase mb-1.5 flex items-center gap-1.5">
                     <Target className="h-3 w-3" /> OBJECTIFS PARTAGÉS ({sharedData.sharedGoals})
                   </p>
                   {sharedData.sharedGoalsList.map((sg: any) => (
-                    <div key={sg.id} className="flex items-center justify-between px-3 py-2 border border-primary/10 bg-primary/[0.02] text-[10px] font-mono">
+                    <div key={sg.id} className="flex items-center justify-between px-3 py-2 border border-primary/10 bg-primary/[0.02] ds-t-label font-mono">
                       <span className="text-primary/60 truncate flex-1">Goal #{sg.goal_id.slice(0, 8)}...</span>
                       <button onClick={() => revokeGoalShare.mutate(sg.id)} disabled={revokeGoalShare.isPending} className="text-destructive/60 hover:text-destructive transition-colors ml-2 uppercase tracking-wider">RÉVOQUER</button>
                     </div>
@@ -131,11 +131,11 @@ export default function PrivacyControl() {
               )}
               {sharedData?.sharedPactsList && sharedData.sharedPactsList.length > 0 && (
                 <div className="space-y-1">
-                  <p className="text-[9px] text-primary/40 font-mono tracking-wider uppercase mb-1.5 flex items-center gap-1.5">
+                  <p className="ds-t-label text-primary/40 font-mono tracking-wider uppercase mb-1.5 flex items-center gap-1.5">
                     <Link2 className="h-3 w-3" /> PACTS PARTAGÉS ({sharedData.sharedPacts})
                   </p>
                   {sharedData.sharedPactsList.map((sp: any) => (
-                    <div key={sp.id} className="flex items-center justify-between px-3 py-2 border border-primary/10 bg-primary/[0.02] text-[10px] font-mono">
+                    <div key={sp.id} className="flex items-center justify-between px-3 py-2 border border-primary/10 bg-primary/[0.02] ds-t-label font-mono">
                       <span className="text-primary/60 truncate flex-1">Pact #{sp.pact_id.slice(0, 8)}...</span>
                       <button onClick={() => revokePactShare.mutate(sp.id)} disabled={revokePactShare.isPending} className="text-destructive/60 hover:text-destructive transition-colors ml-2 uppercase tracking-wider">RÉVOQUER</button>
                     </div>

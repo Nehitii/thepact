@@ -39,7 +39,7 @@ export function HealthBMIIndicator({ bmi, category }: HealthBMIIndicatorProps) {
           </div>
           <div>
             <h3 className="font-medium text-foreground">{t("health.bmi.title")}</h3>
-            <p className="text-[10px] text-muted-foreground/70 font-mono uppercase tracking-wider">{t("health.bmi.title")}</p>
+            <p className="ds-t-label text-muted-foreground/70 font-mono uppercase tracking-wider">{t("health.bmi.title")}</p>
           </div>
         </div>
         <div className="text-right">
@@ -66,7 +66,7 @@ export function HealthBMIIndicator({ bmi, category }: HealthBMIIndicatorProps) {
         </motion.div>
       </div>
 
-      <div className="flex justify-between text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+      <div className="flex justify-between ds-t-label text-muted-foreground font-mono uppercase tracking-wider">
         <span>{t("health.bmi.underweight")}</span>
         <span>{t("health.bmi.normal")}</span>
         <span>{t("health.bmi.overweight")}</span>

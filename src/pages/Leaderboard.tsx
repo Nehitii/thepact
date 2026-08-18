@@ -45,21 +45,21 @@ function LeaderboardRow({ entry, position, isCurrentUser }: { entry: Leaderboard
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-foreground truncate font-rajdhani">
           {entry.display_name || t("leaderboard.anonymousAgent")}
-          {isCurrentUser && <span className="ml-2 text-[10px] text-primary font-mono">{t("leaderboard.you")}</span>}
+          {isCurrentUser && <span className="ml-2 ds-t-label text-primary font-mono">{t("leaderboard.you")}</span>}
         </p>
         {entry.rank_name && (
-          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{entry.rank_name}</p>
+          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">{entry.rank_name}</p>
         )}
       </div>
 
       <div className="flex items-center gap-6 text-right">
         <div>
           <p className="text-lg font-orbitron font-bold text-primary">{entry.points.toLocaleString()}</p>
-          <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{t("leaderboard.xp")}</p>
+          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">{t("leaderboard.xp")}</p>
         </div>
         <div className="hidden sm:block">
           <p className="text-sm font-mono text-foreground">{entry.goals_completed}</p>
-          <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">{t("leaderboard.goals")}</p>
+          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">{t("leaderboard.goals")}</p>
         </div>
       </div>
     </motion.div>

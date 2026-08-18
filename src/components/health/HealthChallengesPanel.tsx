@@ -114,7 +114,7 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
             <div className="space-y-4">
               {activeChallenges.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{t("health.challenges.active")}</h4>
+                  <h4 className="ds-t-label font-mono text-muted-foreground uppercase tracking-wider">{t("health.challenges.active")}</h4>
                   <AnimatePresence>
                     {activeChallenges.map((c) => (
                       <div key={c.id} className="flex items-center gap-3">
@@ -127,7 +127,7 @@ export function HealthChallengesPanel({ className }: HealthChallengesPanelProps)
               )}
               {completedChallenges.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">{t("health.challenges.recentlyCompleted")}</h4>
+                  <h4 className="ds-t-label font-mono text-muted-foreground uppercase tracking-wider">{t("health.challenges.recentlyCompleted")}</h4>
                   <AnimatePresence>{completedChallenges.slice(0, 2).map((c) => <HealthChallengeCard key={c.id} challenge={c} />)}</AnimatePresence>
                 </div>
               )}

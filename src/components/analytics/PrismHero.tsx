@@ -98,10 +98,10 @@ export function PrismHero({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <Radio className="h-3 w-3 prism-text-cyan animate-pulse motion-reduce:animate-none" />
-            <span className="font-orbitron text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+            <span className="font-orbitron ds-t-label uppercase tracking-[0.25em] text-muted-foreground">
               PRISM // OBSERVATORY
             </span>
-            <span className="hidden sm:inline text-[10px] font-mono text-muted-foreground/60">
+            <span className="hidden sm:inline ds-t-label font-mono text-muted-foreground/60">
               · v3.0
             </span>
           </div>
@@ -130,7 +130,7 @@ export function PrismHero({
           </div>
 
           {/* Telemetry strip */}
-          <div className="flex items-center gap-3 mt-3 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70 flex-wrap">
+          <div className="flex items-center gap-3 mt-3 ds-t-label font-mono uppercase tracking-wider text-muted-foreground/70 flex-wrap">
             <span className="flex items-center gap-1 text-[hsl(var(--prism-lime))]">
               <Activity className="h-2.5 w-2.5" />
               LIVE
@@ -144,7 +144,7 @@ export function PrismHero({
             <span className="text-muted-foreground/40 hidden md:inline">·</span>
             <span className="hidden md:inline-flex items-center gap-1.5">
               <Cpu className="h-2.5 w-2.5 prism-text-cyan" />
-              <span className="text-[9px]">DENSITY</span>
+              <span className="ds-t-label">DENSITY</span>
               <span className="inline-flex gap-[2px]">
                 {Array.from({ length: SEGMENTS }).map((_, i) => (
                   <span
@@ -165,7 +165,7 @@ export function PrismHero({
             {/* Active modules orbs */}
             <span className="text-muted-foreground/40 hidden lg:inline">·</span>
             <span className="hidden lg:inline-flex items-center gap-1.5">
-              <span className="text-[9px]">MODULES</span>
+              <span className="ds-t-label">MODULES</span>
               <span className="inline-flex gap-1">
                 {Array.from({ length: totalModules }).map((_, i) => {
                   const on = i < liveModules;

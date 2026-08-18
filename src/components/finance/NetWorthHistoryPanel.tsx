@@ -86,7 +86,7 @@ export function NetWorthHistoryPanel() {
             <path d={path} stroke="hsl(var(--primary))" strokeWidth="1.5" fill="none" />
           </svg>
 
-          <div className="flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground">
+          <div className="flex justify-between ds-t-label uppercase tracking-widest text-muted-foreground">
             <span>{snapshots[0].snapshot_date}</span>
             <span>{snapshots.length} pts</span>
             <span>{snapshots[snapshots.length - 1].snapshot_date}</span>

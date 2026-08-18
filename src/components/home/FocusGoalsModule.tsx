@@ -33,7 +33,7 @@ export function FocusGoalsModule({
           >
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-xs font-rajdhani text-[rgba(160,210,255,0.7)] truncate flex-1 mr-2">{goal.name}</span>
-              <span className="text-[11px] font-mono text-primary tabular-nums">{progressPercent}%</span>
+              <span className="ds-t-label font-mono text-primary tabular-nums">{progressPercent}%</span>
             </div>
             <div className="h-1 w-full bg-[rgba(0,180,255,0.06)] rounded-full overflow-hidden">
               <div className="h-full bg-primary/60 transition-all duration-500 rounded-full" style={{ width: `${progressPercent}%` }} />
@@ -56,7 +56,7 @@ export function FocusGoalsModule({
         <Button 
           size="sm" 
           onClick={() => navigate("/goals")}
-          className="h-6 px-2 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[var(--nexus-text-dim)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron text-[11px] uppercase tracking-wider rounded-sm"
+          className="h-6 px-2 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[var(--nexus-text-dim)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron ds-t-label uppercase tracking-wider rounded-sm"
         >
           View All
         </Button>
@@ -66,7 +66,7 @@ export function FocusGoalsModule({
         <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
           <TrendingUp className="w-8 h-8 text-[var(--nexus-text-dimmer)] mb-2" />
           <p className="text-xs text-[var(--nexus-text-dim)] font-rajdhani">No focus goals yet</p>
-          <p className="text-[11px] text-[var(--nexus-text-dimmer)] mt-0.5 font-rajdhani">Star goals to see them here</p>
+          <p className="ds-t-label text-[var(--nexus-text-dimmer)] mt-0.5 font-rajdhani">Star goals to see them here</p>
         </div>
       ) : (
         <div className="space-y-2 flex-1">
@@ -96,7 +96,7 @@ export function FocusGoalsModule({
                     <h3 className="font-rajdhani text-xs text-[rgba(160,210,255,0.75)] truncate mb-1">
                       {goal.name}
                     </h3>
-                    <div className="flex items-center justify-between text-[11px] mb-1">
+                    <div className="flex items-center justify-between ds-t-label mb-1">
                       <span className="text-[var(--nexus-text-dim)] font-rajdhani">
                         {remainingSteps > 0 ? `${remainingSteps} step${remainingSteps > 1 ? 's' : ''} left` : 'Complete!'}
                       </span>
@@ -111,7 +111,7 @@ export function FocusGoalsModule({
             );
           })}
           {isCompact && goals.length > 2 && (
-            <div className="text-center text-[11px] text-[var(--nexus-text-dimmer)] font-mono pt-1">
+            <div className="text-center ds-t-label text-[var(--nexus-text-dimmer)] font-mono pt-1">
               +{goals.length - 2} more
             </div>
           )}

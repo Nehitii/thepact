@@ -77,10 +77,10 @@ export function PrismHeadline({ insight, period, onPeriodChange, sessionId }: Pr
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <Radio className="h-3 w-3 prism-text-cyan animate-pulse motion-reduce:animate-none" />
-            <span className="font-orbitron text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+            <span className="font-orbitron ds-t-label uppercase tracking-[0.25em] text-muted-foreground">
               PRISM // OBSERVATORY
             </span>
-            <span className="hidden sm:inline text-[10px] font-mono text-muted-foreground/60">
+            <span className="hidden sm:inline ds-t-label font-mono text-muted-foreground/60">
               · v2.1
             </span>
           </div>
@@ -108,7 +108,7 @@ export function PrismHeadline({ insight, period, onPeriodChange, sessionId }: Pr
             </h1>
           </div>
 
-          <div className="flex items-center gap-3 mt-3 text-[10px] font-mono uppercase tracking-wider text-muted-foreground/70">
+          <div className="flex items-center gap-3 mt-3 ds-t-label font-mono uppercase tracking-wider text-muted-foreground/70">
             <span className="flex items-center gap-1 text-[hsl(var(--prism-lime))]">
               <Activity className="h-2.5 w-2.5" />
               LIVE

@@ -155,7 +155,7 @@ export function DevilNoteModal({ open, onOpenChange, showSecretSymbol = false }:
                 Once the pact is sealed, the path behind you dissolves.
               </p>
               <div className="h-[1px] w-8 bg-gradient-to-r from-transparent via-red-900/50 to-transparent mx-auto" />
-              <p className="text-[10px] uppercase tracking-[0.5em] text-red-950 font-bold opacity-80">Aeternum Vale</p>
+              <p className="ds-t-label uppercase tracking-[0.5em] text-red-950 font-bold opacity-80">Aeternum Vale</p>
             </div>
           </div>
 

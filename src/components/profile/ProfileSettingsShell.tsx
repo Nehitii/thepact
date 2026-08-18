@@ -55,7 +55,7 @@ export function ProfileSettingsShell({
           {/* Sous-titre (Label Système) avec lignes de visée */}
           <div className="flex items-center justify-center gap-4 mb-4 w-full">
             <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-r from-transparent to-primary/50" />
-            <span className="font-mono text-[10px] md:text-xs text-primary/70 tracking-[0.3em] uppercase">
+            <span className="font-mono ds-t-label md:text-xs text-primary/70 tracking-[0.3em] uppercase">
               {subtitle || "SYSTEM CONFIGURATION"}
             </span>
             <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-l from-transparent to-primary/50" />

@@ -31,7 +31,7 @@ export function HabitsModule({
 
   const expandedContent = !isCompact && completedHabits.length > 0 ? (
     <div className="space-y-2">
-      <div className="text-[11px] uppercase font-orbitron text-emerald-400/50 tracking-wider mb-2">Completed</div>
+      <div className="ds-t-label uppercase font-orbitron text-emerald-400/50 tracking-wider mb-2">Completed</div>
       {completedHabits.map(habit => (
         <button
           key={habit.id}
@@ -40,7 +40,7 @@ export function HabitsModule({
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-rajdhani text-emerald-400/70 truncate flex-1 mr-2">{habit.name}</span>
-            <span className="text-[11px] font-mono text-emerald-400">✓</span>
+            <span className="ds-t-label font-mono text-emerald-400">✓</span>
           </div>
         </button>
       ))}
@@ -59,7 +59,7 @@ export function HabitsModule({
         <Button
           size="sm"
           onClick={() => navigate("/goals")}
-          className="h-6 px-2 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[var(--nexus-text-dim)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron text-[11px] uppercase tracking-wider rounded-sm"
+          className="h-6 px-2 bg-transparent hover:bg-[rgba(0,180,255,0.05)] text-[var(--nexus-text-dim)] hover:text-[rgba(160,210,255,0.7)] border border-[rgba(0,180,255,0.1)] hover:border-[rgba(0,180,255,0.2)] font-orbitron ds-t-label uppercase tracking-wider rounded-sm"
         >
           View All
         </Button>
@@ -69,13 +69,13 @@ export function HabitsModule({
         <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
           <Sparkles className="w-8 h-8 text-[var(--nexus-text-dimmer)] mb-2" />
           <p className="text-xs text-[var(--nexus-text-dim)] font-rajdhani">No habits yet</p>
-          <p className="text-[11px] text-[var(--nexus-text-dimmer)] mt-0.5 font-rajdhani">Create a habit goal to track here</p>
+          <p className="ds-t-label text-[var(--nexus-text-dimmer)] mt-0.5 font-rajdhani">Create a habit goal to track here</p>
         </div>
       ) : (
         <div className="space-y-2.5 flex-1">
           {/* Overall bar */}
           <div className="space-y-1">
-            <div className="flex items-center justify-between text-[11px]">
+            <div className="flex items-center justify-between ds-t-label">
               <span className="text-[var(--nexus-text-dim)] font-rajdhani uppercase">Overall</span>
               <span className="text-primary font-mono tabular-nums">{overallPercent}%</span>
             </div>
@@ -101,7 +101,7 @@ export function HabitsModule({
                     <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: diffColor }} />
                     <span className="text-xs font-rajdhani text-[rgba(160,210,255,0.7)] truncate">{habit.name}</span>
                   </div>
-                  <span className="text-[11px] font-mono text-[var(--nexus-text-dim)] ml-2 flex-shrink-0 tabular-nums">
+                  <span className="ds-t-label font-mono text-[var(--nexus-text-dim)] ml-2 flex-shrink-0 tabular-nums">
                     {completed}/{total}d
                   </span>
                 </div>
@@ -116,7 +116,7 @@ export function HabitsModule({
           })}
 
           {isCompact && activeHabits.length > 3 && (
-            <div className="text-center text-[11px] text-[var(--nexus-text-dimmer)] font-mono pt-1">
+            <div className="text-center ds-t-label text-[var(--nexus-text-dimmer)] font-mono pt-1">
               +{activeHabits.length - 3} more
             </div>
           )}

@@ -54,7 +54,7 @@ export function CleanCard({
             {title}
           </h3>
           {subtitle && (
-            <p className="text-[11px] text-muted-foreground mt-0.5">{subtitle}</p>
+            <p className="ds-t-label text-muted-foreground mt-0.5">{subtitle}</p>
           )}
         </div>
         {action}

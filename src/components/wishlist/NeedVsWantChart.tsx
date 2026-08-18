@@ -18,7 +18,7 @@ export function NeedVsWantChart({ requiredTotal, optionalTotal, acquiredTotal, c
     <div className="p-5 border border-cyan-500/15 bg-slate-950/60 backdrop-blur-xl space-y-4"
       style={{ clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))" }}>
       <div className="flex items-center justify-between">
-        <h3 className="font-mono text-[10px] tracking-[0.2em] uppercase text-cyan-500/70">
+        <h3 className="font-mono ds-t-label tracking-[0.2em] uppercase text-cyan-500/70">
           Need vs Want Analysis
         </h3>
         <span className="font-mono text-sm text-foreground font-bold">
@@ -54,7 +54,7 @@ export function NeedVsWantChart({ requiredTotal, optionalTotal, acquiredTotal, c
           style={{ clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))" }}>
           <Shield className="h-5 w-5 text-amber-400 shrink-0" />
           <div className="min-w-0">
-            <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-cyan-500/50">Required</p>
+            <p className="ds-t-label font-mono uppercase tracking-[0.15em] text-cyan-500/50">Required</p>
             <p className="font-mono text-sm font-bold text-foreground truncate">
               {formatCurrency(requiredTotal, currency)}
             </p>
@@ -65,7 +65,7 @@ export function NeedVsWantChart({ requiredTotal, optionalTotal, acquiredTotal, c
           style={{ clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))" }}>
           <Sparkles className="h-5 w-5 text-cyan-400 shrink-0" />
           <div className="min-w-0">
-            <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-cyan-500/50">Optional</p>
+            <p className="ds-t-label font-mono uppercase tracking-[0.15em] text-cyan-500/50">Optional</p>
             <p className="font-mono text-sm font-bold text-foreground truncate">
               {formatCurrency(optionalTotal, currency)}
             </p>
@@ -76,7 +76,7 @@ export function NeedVsWantChart({ requiredTotal, optionalTotal, acquiredTotal, c
           style={{ clipPath: "polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))" }}>
           <Trophy className="h-5 w-5 text-amber-400 shrink-0" />
           <div className="min-w-0">
-            <p className="text-[9px] font-mono uppercase tracking-[0.15em] text-cyan-500/50">Acquired</p>
+            <p className="ds-t-label font-mono uppercase tracking-[0.15em] text-cyan-500/50">Acquired</p>
             <p className="font-mono text-sm font-bold text-foreground truncate">
               {formatCurrency(acquiredTotal, currency)}
             </p>

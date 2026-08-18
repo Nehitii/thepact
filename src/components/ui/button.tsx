@@ -22,11 +22,11 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline hover:text-primary-glow hover:drop-shadow-[0_0_8px_rgba(91,180,255,0.6)]",
         hud: "rounded-sm bg-transparent border border-primary/40 text-primary backdrop-blur-md shadow-[var(--ds-glow-sm),inset_0_1px_0_rgba(91,180,255,0.1)] hover:border-primary/70 hover:shadow-[var(--ds-glow-md),inset_0_1px_0_rgba(91,180,255,0.2)] hover:text-primary-glow active:scale-[0.98] before:absolute before:inset-0 before:rounded-sm before:bg-gradient-to-b before:from-primary/5 before:to-transparent before:pointer-events-none",
         "hud-primary":
-          "rounded-sm bg-[hsl(var(--ds-accent-primary)/0.08)] border border-[hsl(var(--ds-accent-primary)/0.5)] text-[hsl(var(--ds-accent-primary))] hover:bg-[hsl(var(--ds-accent-primary)/0.15)] hover:border-[hsl(var(--ds-accent-primary)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] text-[11px]",
+          "rounded-sm bg-[hsl(var(--ds-accent-primary)/0.08)] border border-[hsl(var(--ds-accent-primary)/0.5)] text-[hsl(var(--ds-accent-primary))] hover:bg-[hsl(var(--ds-accent-primary)/0.15)] hover:border-[hsl(var(--ds-accent-primary)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] ds-t-label",
         "hud-success":
-          "rounded-sm bg-[hsl(var(--ds-accent-success)/0.08)] border border-[hsl(var(--ds-accent-success)/0.5)] text-[hsl(var(--ds-accent-success))] [--ds-current-accent:var(--ds-accent-success)] hover:bg-[hsl(var(--ds-accent-success)/0.15)] hover:border-[hsl(var(--ds-accent-success)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] text-[11px]",
+          "rounded-sm bg-[hsl(var(--ds-accent-success)/0.08)] border border-[hsl(var(--ds-accent-success)/0.5)] text-[hsl(var(--ds-accent-success))] [--ds-current-accent:var(--ds-accent-success)] hover:bg-[hsl(var(--ds-accent-success)/0.15)] hover:border-[hsl(var(--ds-accent-success)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] ds-t-label",
         "hud-critical":
-          "rounded-sm bg-[hsl(var(--ds-accent-critical)/0.08)] border border-[hsl(var(--ds-accent-critical)/0.5)] text-[hsl(var(--ds-accent-critical))] [--ds-current-accent:var(--ds-accent-critical)] hover:bg-[hsl(var(--ds-accent-critical)/0.15)] hover:border-[hsl(var(--ds-accent-critical)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] text-[11px]",
+          "rounded-sm bg-[hsl(var(--ds-accent-critical)/0.08)] border border-[hsl(var(--ds-accent-critical)/0.5)] text-[hsl(var(--ds-accent-critical))] [--ds-current-accent:var(--ds-accent-critical)] hover:bg-[hsl(var(--ds-accent-critical)/0.15)] hover:border-[hsl(var(--ds-accent-critical)/0.75)] hover:shadow-[var(--ds-glow-sm)] active:scale-[0.98] tracking-[0.2em] ds-t-label",
       },
       size: {
         default: "h-10 px-6 py-2",

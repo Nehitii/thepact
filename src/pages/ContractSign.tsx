@@ -139,21 +139,21 @@ export default function ContractSign() {
 
         <div className="grid grid-cols-3 gap-3 text-center">
           <div className="rounded-lg border border-white/[0.06] p-3">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Mise</div>
+            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">Mise</div>
             <div className="flex items-center justify-center gap-1 mt-1">
               <BondIcon size={16} />
               <span className="text-lg font-mono">{contract.stake_bonds}</span>
             </div>
           </div>
           <div className="rounded-lg border border-white/[0.06] p-3">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Signatures</div>
+            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">Signatures</div>
             <div className="flex items-center justify-center gap-1 mt-1 text-lg font-mono tabular-nums">
               <Users className="w-3.5 h-3.5 text-muted-foreground" />
               {signedCount}/{required}
             </div>
           </div>
           <div className="rounded-lg border border-white/[0.06] p-3">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Échéance</div>
+            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">Échéance</div>
             <div className="flex items-center justify-center gap-1 mt-1 text-sm font-mono">
               <Clock className="w-3.5 h-3.5 text-muted-foreground" />
               {contract.deadline ? new Date(contract.deadline).toLocaleDateString() : "—"}
@@ -169,7 +169,7 @@ export default function ContractSign() {
 
         {/* Signatures list */}
         <div className="space-y-1.5">
-          <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">Témoins ayant signé</Label>
+          <Label className="ds-t-label uppercase tracking-wider text-muted-foreground">Témoins ayant signé</Label>
           {signatures.length === 0 ? (
             <p className="text-xs text-muted-foreground/60 italic">Personne n'a encore signé.</p>
           ) : (
@@ -253,7 +253,7 @@ export default function ContractSign() {
                 Maintenir pour signer
               </span>
             </button>
-            <p className="text-[10px] text-muted-foreground/60 text-center">
+            <p className="ds-t-label text-muted-foreground/60 text-center">
               Maintiens enfoncé pendant 1,5 seconde pour confirmer.
             </p>
           </div>

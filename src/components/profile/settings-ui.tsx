@@ -47,7 +47,7 @@ export function SettingsPageShell({
           </div>
           <div className="flex items-center justify-center gap-4 mb-4 w-full">
             <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-r from-transparent to-primary/50" />
-            <span className="font-mono text-[10px] md:text-xs text-primary/70 tracking-[0.3em] uppercase">
+            <span className="font-mono ds-t-label md:text-xs text-primary/70 tracking-[0.3em] uppercase">
               {subtitle || "SYSTEM CONFIGURATION"}
             </span>
             <div className="flex-1 max-w-[80px] md:max-w-[160px] h-px bg-gradient-to-l from-transparent to-primary/50" />
@@ -90,7 +90,7 @@ export function CyberPanel({
       <div className="flex items-center gap-3 mb-8 border-b border-foreground/5 pb-4">
         <span className={cn("w-2 h-2 rounded-none animate-pulse", dotColor)} />
         <h3 className={cn("font-orbitron tracking-[0.2em] text-sm uppercase flex-1", textColor)}>{title}</h3>
-        {statusText && <span className="font-mono text-[9px] text-muted-foreground tracking-[0.1em]">{statusText}</span>}
+        {statusText && <span className="font-mono ds-t-label text-muted-foreground tracking-[0.1em]">{statusText}</span>}
       </div>
       <div className="space-y-6">{children}</div>
     </div>
@@ -101,7 +101,7 @@ export function CyberPanel({
 export function CyberInput({ label, className, ...props }: any) {
   return (
     <div className="space-y-2 group">
-      <label className="text-[10px] font-mono tracking-[0.2em] text-muted-foreground uppercase group-focus-within:text-primary transition-colors flex items-center gap-2">
+      <label className="ds-t-label font-mono tracking-[0.2em] text-muted-foreground uppercase group-focus-within:text-primary transition-colors flex items-center gap-2">
         <span className="text-primary/40">{">"}</span> {label}
       </label>
       <div className="relative">
@@ -134,7 +134,7 @@ export function CyberSelect({
 }) {
   return (
     <div className="space-y-2">
-      <label className="text-[10px] font-mono tracking-[0.2em] text-muted-foreground uppercase flex items-center gap-2">
+      <label className="ds-t-label font-mono tracking-[0.2em] text-muted-foreground uppercase flex items-center gap-2">
         <span className="text-primary/40">{">"}</span> {label}
       </label>
       <Select value={value} onValueChange={onValueChange}>
@@ -220,7 +220,7 @@ export function StickyCommandBar({
                 latestLog.type === "warn" ? "bg-amber-500" : latestLog.type === "ok" ? "bg-primary" : "bg-muted-foreground/50",
               )} />
             </div>
-            <p className="font-mono text-[10px] tracking-widest uppercase truncate text-muted-foreground">
+            <p className="font-mono ds-t-label tracking-widest uppercase truncate text-muted-foreground">
               <span className="text-muted-foreground/50 mr-2">[{new Date().toLocaleTimeString()}]</span>
               {latestLog.text}
             </p>
@@ -254,7 +254,7 @@ export function StickyCommandBar({
 /* ── Breadcrumb ── */
 export function SettingsBreadcrumb({ code }: { code: string }) {
   return (
-    <div className="font-mono text-[10px] text-muted-foreground tracking-[0.15em] flex items-center gap-1.5 mb-7">
+    <div className="font-mono ds-t-label text-muted-foreground tracking-[0.15em] flex items-center gap-1.5 mb-7">
       ROOT <span className="opacity-40">//</span>
       USER_SETTINGS <span className="opacity-40">//</span>
       <span className="text-primary">{code}</span>
@@ -266,7 +266,7 @@ export function SettingsBreadcrumb({ code }: { code: string }) {
 export function CyberSeparator() {
   return (
     <div className="relative h-px mb-7 bg-gradient-to-r from-transparent via-primary to-primary/30 via-40%">
-      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary text-[8px] bg-background px-2">◆</span>
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-primary ds-t-label bg-background px-2">◆</span>
     </div>
   );
 }
@@ -292,8 +292,8 @@ export function DataPanel({
       <div>{children}</div>
       {(footerLeft || footerRight) && (
         <div className="flex items-center justify-between pt-4 mt-4 border-t border-primary/10">
-          <div className="font-mono text-[9px] text-muted-foreground tracking-[0.1em] flex gap-4">{footerLeft}</div>
-          <div className="font-mono text-[9px] text-muted-foreground tracking-[0.1em] flex items-center gap-1.5">{footerRight}</div>
+          <div className="font-mono ds-t-label text-muted-foreground tracking-[0.1em] flex gap-4">{footerLeft}</div>
+          <div className="font-mono ds-t-label text-muted-foreground tracking-[0.1em] flex items-center gap-1.5">{footerRight}</div>
         </div>
       )}
     </CyberPanel>
@@ -363,12 +363,12 @@ export function SettingRow({
           <div className={cn("font-rajdhani text-sm font-bold tracking-wider uppercase leading-none mb-1", v.label)}>
             {label}
           </div>
-          <div className="text-[11px] text-muted-foreground tracking-wide leading-snug hidden sm:block">
+          <div className="ds-t-label text-muted-foreground tracking-wide leading-snug hidden sm:block">
             {description}
           </div>
         </div>
       </div>
-      <span className={cn("font-mono text-[9px] tracking-widest min-w-[50px] text-right hidden sm:block transition-colors", checked ? v.statusOn : "text-muted-foreground")}>
+      <span className={cn("font-mono ds-t-label tracking-widest min-w-[50px] text-right hidden sm:block transition-colors", checked ? v.statusOn : "text-muted-foreground")}>
         {checked ? "ENABLED" : "DISABLED"}
       </span>
       <div onClick={(e) => e.stopPropagation()}>
@@ -405,7 +405,7 @@ export function SettingContentRow({
             {label}
           </div>
           {description && (
-            <div className="text-[11px] text-muted-foreground tracking-wide leading-snug">
+            <div className="ds-t-label text-muted-foreground tracking-wide leading-snug">
               {description}
             </div>
           )}
@@ -447,9 +447,9 @@ export function TerminalLog({ lines }: { lines: { text: string; type: "ok" | "wa
   return (
     <div
       ref={scrollRef}
-      className="border border-primary/20 bg-card/60 px-4 py-3.5 font-mono text-[10px] text-muted-foreground tracking-wider leading-[1.8] max-h-[100px] overflow-hidden relative"
+      className="border border-primary/20 bg-card/60 px-4 py-3.5 font-mono ds-t-label text-muted-foreground tracking-wider leading-[1.8] max-h-[100px] overflow-hidden relative"
     >
-      <div className="text-primary text-[9px] opacity-70 mb-1.5">SYSTEM LOG //</div>
+      <div className="text-primary ds-t-label opacity-70 mb-1.5">SYSTEM LOG //</div>
       {lines.map((line, i) => (
         <motion.div
           key={`${i}-${line.text}`}

@@ -63,7 +63,7 @@ export function HealthEnergyCurve() {
           <h3 className="font-semibold text-foreground">{t("health.energy.title")}</h3>
         </div>
         {isAvg && (
-          <span className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider bg-muted/50 px-2 py-1 rounded-md">
+          <span className="ds-t-label text-muted-foreground font-mono uppercase tracking-wider bg-muted/50 px-2 py-1 rounded-md">
             {t("health.energy.weekAvg")}
           </span>
         )}

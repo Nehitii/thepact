@@ -105,7 +105,7 @@ function PactCard({ name, mantra, color, icon, label, onClick }: {
           {icon}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono mb-0.5">{label}</p>
+          <p className="ds-t-label uppercase tracking-widest text-muted-foreground font-mono mb-0.5">{label}</p>
           <h3 className="text-lg font-black font-orbitron tracking-wide text-foreground truncate">{name}</h3>
           {mantra && <p className="text-xs text-muted-foreground italic truncate mt-0.5">{mantra}</p>}
         </div>

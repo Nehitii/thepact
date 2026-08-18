@@ -94,7 +94,7 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
               <text x="50%" y="48%" textAnchor="middle" dominantBaseline="central" className="fill-foreground" style={{ fontSize: '11px', fontWeight: 700 }}>
                 {formatCurrency(total, currency).replace(/\.00$/, '')}
               </text>
-              <text x="50%" y="62%" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground" style={{ fontSize: '8px' }}>
+              <text x="50%" y="62%" textAnchor="middle" dominantBaseline="central" className="fill-muted-foreground" style={{ fontSize: 'max(11px, 0.6875rem)' }}>
                 {title}
               </text>
             </PieChart>
@@ -114,7 +114,7 @@ export function CategoryDonut({ data, currency, title, total, colorAccent, maxLe
             </div>
           ))}
           {data.length > maxLegendItems && (
-            <p className="text-[10px] text-muted-foreground/60">+{data.length - maxLegendItems} {t('common.more')}</p>
+            <p className="ds-t-label text-muted-foreground/60">+{data.length - maxLegendItems} {t('common.more')}</p>
           )}
         </div>
       </div>

@@ -53,7 +53,7 @@ export function HealthVitalCoreHero({ score }: HealthVitalCoreHeroProps) {
       className="relative w-full"
     >
       {/* Top tactical bar */}
-      <div className="flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-2 px-1">
+      <div className="flex items-center justify-between ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mb-2 px-1">
         <div className="flex items-center gap-3">
           <span className="text-hud-phosphor/80">VITA_CORE</span>
           <span className="text-muted-foreground/40">::</span>
@@ -79,7 +79,7 @@ export function HealthVitalCoreHero({ score }: HealthVitalCoreHeroProps) {
         <div className="relative grid grid-cols-12 gap-0 items-stretch">
           {/* Left vital readout */}
           <div className="col-span-12 sm:col-span-3 lg:col-span-2 p-4 sm:border-r border-hud-phosphor/10 flex flex-col justify-center gap-1">
-            <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+            <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
               BIO_SIGN
             </span>
             <div className="flex items-center gap-2">
@@ -116,7 +116,7 @@ export function HealthVitalCoreHero({ score }: HealthVitalCoreHeroProps) {
           {/* Right BPM readout */}
           <div className="col-span-12 sm:col-span-3 p-4 sm:border-l border-hud-phosphor/10 flex flex-col justify-center gap-1">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
+              <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60">
                 BPM
               </span>
               <Activity className="w-3 h-3" style={{ color: ecgColor }} />
@@ -131,13 +131,13 @@ export function HealthVitalCoreHero({ score }: HealthVitalCoreHeroProps) {
               >
                 {bpm}
               </motion.span>
-              <span className="text-[10px] font-mono text-muted-foreground/50 uppercase">/min</span>
+              <span className="ds-t-label font-mono text-muted-foreground/50 uppercase">/min</span>
             </div>
           </div>
         </div>
 
         {/* Bottom telemetry strip */}
-        <div className="border-t border-hud-phosphor/10 px-4 py-1.5 flex items-center justify-between text-[9px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50">
+        <div className="border-t border-hud-phosphor/10 px-4 py-1.5 flex items-center justify-between ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/50">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-hud-phosphor animate-pulse" />

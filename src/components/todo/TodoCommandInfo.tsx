@@ -21,7 +21,7 @@ export function TodoCommandInfo() {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-72 p-3">
-        <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+        <p className="ds-t-label font-mono uppercase tracking-widest text-muted-foreground mb-2">
           Quick Commands
         </p>
         <div className="space-y-1.5">

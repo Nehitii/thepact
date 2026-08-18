@@ -38,7 +38,7 @@ function LiveTicker() {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
           </span>
-          <span className="font-mono text-[11px] font-medium tracking-widest uppercase text-primary">NETWORK</span>
+          <span className="font-mono ds-t-label font-medium tracking-widest uppercase text-primary">NETWORK</span>
         </div>
         <div className="overflow-hidden flex-1">
           <motion.div
@@ -47,7 +47,7 @@ function LiveTicker() {
             transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
           >
             {doubled.map((item, i) => (
-              <span key={i} className="inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+              <span key={i} className="inline-flex items-center gap-1.5 font-mono ds-t-label text-muted-foreground">
                 {item.emoji} {item.label} <b className="text-foreground font-medium">{item.value}</b>
               </span>
             ))}
@@ -70,7 +70,7 @@ function StatCard({ value, label, color }: { value: string | number; label: stri
       />
       <span
         className={cn(
-          "block font-orbitron text-[22px] font-bold",
+          "block font-orbitron text-[1.375rem] font-bold",
           color === "accent" && "text-primary",
           color === "violet" && "text-violet-400",
           !color && "text-foreground",
@@ -78,7 +78,7 @@ function StatCard({ value, label, color }: { value: string | number; label: stri
       >
         {value}
       </span>
-      <span className="block font-mono text-[10px] text-muted-foreground uppercase tracking-[0.08em] mt-1">
+      <span className="block font-mono ds-t-label text-muted-foreground uppercase tracking-[0.08em] mt-1">
         {label}
       </span>
     </div>
@@ -130,17 +130,17 @@ function ModeButton({
       <div className="relative z-10 min-w-0">
         <div
           className={cn(
-            "font-orbitron text-[13px] font-semibold tracking-[0.03em]",
+            "font-orbitron text-[0.8125rem] font-semibold tracking-[0.03em]",
             active ? "text-white" : "text-foreground",
           )}
         >
           {title}
         </div>
-        <div className="font-mono text-[11px] text-muted-foreground mt-0.5">{desc}</div>
+        <div className="font-mono ds-t-label text-muted-foreground mt-0.5">{desc}</div>
       </div>
       <div
         className={cn(
-          "absolute top-3 right-3.5 font-mono text-[10px] text-primary border border-primary/30 px-2 py-0.5 rounded-full",
+          "absolute top-3 right-3.5 font-mono ds-t-label text-primary border border-primary/30 px-2 py-0.5 rounded-full",
           active ? "bg-primary/25" : "bg-primary/8",
         )}
       >
@@ -184,20 +184,20 @@ function LeaderboardRow({ entry, position, isCurrentUser }: { entry: Leaderboard
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-foreground truncate font-rajdhani">
           {entry.display_name || "Anonymous Agent"}
-          {isCurrentUser && <span className="ml-2 text-[10px] text-primary font-mono">(YOU)</span>}
+          {isCurrentUser && <span className="ml-2 ds-t-label text-primary font-mono">(YOU)</span>}
         </p>
         {entry.rank_name && (
-          <p className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">{entry.rank_name}</p>
+          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">{entry.rank_name}</p>
         )}
       </div>
       <div className="flex items-center gap-6 text-right">
         <div>
           <p className="text-lg font-orbitron font-bold text-primary">{entry.points.toLocaleString()}</p>
-          <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">XP</p>
+          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">XP</p>
         </div>
         <div className="hidden sm:block">
           <p className="text-sm font-mono text-foreground">{entry.goals_completed}</p>
-          <p className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground">Goals</p>
+          <p className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">Goals</p>
         </div>
       </div>
     </motion.div>
@@ -268,7 +268,7 @@ export default function Community() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary" />
             </span>
-            <span className="font-mono text-[11px] font-medium text-primary tracking-[0.1em] uppercase">
+            <span className="font-mono ds-t-label font-medium text-primary tracking-[0.1em] uppercase">
               Neural Network · Live
             </span>
           </motion.div>

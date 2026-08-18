@@ -202,7 +202,7 @@ export function CommandPalette() {
           <span className="hidden sm:inline-block text-xs font-mono font-bold tracking-[0.15em] uppercase mt-0.5">
             SEARCH
           </span>
-          <kbd className="hidden sm:inline-flex ml-2 items-center gap-1 px-2 py-0.5 rounded bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary">
+          <kbd className="hidden sm:inline-flex ml-2 items-center gap-1 px-2 py-0.5 rounded bg-primary/10 border border-primary/20 ds-t-label font-bold text-primary">
             <span className="text-xs">⌘</span>K
           </kbd>
         </button>

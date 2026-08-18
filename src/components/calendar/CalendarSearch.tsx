@@ -51,7 +51,7 @@ export function CalendarSearch({ events, onEventClick, onClose }: CalendarSearch
             >
               <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: ev.color }} />
               <span className="text-xs font-medium truncate flex-1">{ev.title}</span>
-              <span className="text-[10px] text-muted-foreground shrink-0">
+              <span className="ds-t-label text-muted-foreground shrink-0">
                 {format(parseISO(ev.start_time), "d MMM HH:mm")}
               </span>
             </button>

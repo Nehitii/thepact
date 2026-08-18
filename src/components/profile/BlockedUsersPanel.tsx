@@ -72,7 +72,7 @@ export function BlockedUsersPanel() {
         ) : !blockedUsers || blockedUsers.length === 0 ? (
           <div className="text-center py-6">
             <UserX className="h-8 w-8 text-primary/20 mx-auto mb-2" />
-            <p className="text-[11px] text-muted-foreground font-mono tracking-wider">{t("friends.noBlockedUsers")}</p>
+            <p className="ds-t-label text-muted-foreground font-mono tracking-wider">{t("friends.noBlockedUsers")}</p>
           </div>
         ) : (
           <>
@@ -95,12 +95,12 @@ export function BlockedUsersPanel() {
                   style={{ clipPath: "polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%)" }}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-mono text-primary shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center ds-t-label font-mono text-primary shrink-0">
                       {b.display_name?.[0]?.toUpperCase() || "?"}
                     </div>
                     <div className="min-w-0">
                       <p className="text-xs font-mono text-foreground truncate">{b.display_name}</p>
-                      <p className="text-[9px] text-muted-foreground font-mono">
+                      <p className="ds-t-label text-muted-foreground font-mono">
                         {new Date(b.created_at).toLocaleDateString()}
                       </p>
                     </div>
@@ -109,7 +109,7 @@ export function BlockedUsersPanel() {
                     onClick={() => unblock.mutate(b.blocked_user_id)}
                     disabled={unblock.isPending}
                     className={cn(
-                      "px-2.5 py-1 text-[9px] font-mono tracking-wider uppercase border shrink-0",
+                      "px-2.5 py-1 ds-t-label font-mono tracking-wider uppercase border shrink-0",
                       "border-red-500/25 text-red-400/70 hover:text-red-400 hover:border-red-400/45 bg-red-950/20 hover:bg-red-900/25",
                       "transition-colors disabled:opacity-30"
                     )}

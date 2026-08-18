@@ -84,7 +84,7 @@ export function SharedPactCreateModal({ open, onClose }: SharedPactCreateModalPr
                       <Checkbox checked={selectedFriends.includes(f.friend_id)} onCheckedChange={() => toggleFriend(f.friend_id)} />
                       <Avatar className="h-7 w-7">
                         <AvatarImage src={f.avatar_url || undefined} />
-                        <AvatarFallback className="text-[10px] font-bold bg-muted">{(f.display_name || "?")[0]}</AvatarFallback>
+                        <AvatarFallback className="ds-t-label font-bold bg-muted">{(f.display_name || "?")[0]}</AvatarFallback>
                       </Avatar>
                       <span className="text-sm font-bold truncate">{f.display_name || "Unknown"}</span>
                     </label>

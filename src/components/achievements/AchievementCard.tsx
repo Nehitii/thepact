@@ -85,7 +85,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
               <div className="flex items-center gap-2">
                 <span
                   className={cn(
-                    "text-[10px] font-black uppercase tracking-widest font-mono",
+                    "ds-t-label font-black uppercase tracking-widest font-mono",
                     isLocked ? "text-slate-400" : "opacity-60",
                   )}
                   style={{ color: isLocked ? undefined : color }}
@@ -94,7 +94,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
                 </span>
                 {/* Bond reward badge */}
                 {(achievement.bond_reward || 0) > 0 && (
-                  <span className="text-[9px] font-mono text-amber-400/70 bg-amber-400/10 px-1.5 py-0.5 rounded">
+                  <span className="ds-t-label font-mono text-amber-400/70 bg-amber-400/10 px-1.5 py-0.5 rounded">
                     +{achievement.bond_reward}B
                   </span>
                 )}
@@ -102,7 +102,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
               <div className="flex items-center gap-1.5">
                 {/* Points */}
                 {(achievement.points || 0) > 0 && (
-                  <span className="text-[9px] font-mono text-primary/50">
+                  <span className="ds-t-label font-mono text-primary/50">
                     {achievement.points}pts
                   </span>
                 )}
@@ -130,7 +130,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
                 la place existe. */}
             <p
               className={cn(
-                "text-[11px] leading-snug line-clamp-2 italic",
+                "ds-t-label leading-snug line-clamp-2 italic",
                 isLocked ? "text-slate-400" : "text-slate-300",
               )}
             >
@@ -141,7 +141,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
             {hasModuleReq && isLocked && (
               <div className="flex items-center gap-1 mt-1">
                 <Lock size={9} className="text-amber-500/60" />
-                <span className="text-[9px] font-mono text-amber-500/60 truncate">
+                <span className="ds-t-label font-mono text-amber-500/60 truncate">
                   Requires: {achievement.required_module?.replace(/-/g, ' ')}
                 </span>
               </div>
@@ -150,7 +150,7 @@ export function AchievementCard({ achievement, compact = false }: AchievementCar
             {/* PROGRESS BAR */}
             {(isProgressBased || isLocked) && !hasModuleReq && (
               <div className="mt-1.5 relative">
-                <div className="flex justify-between text-[9px] mb-0.5 font-mono opacity-50">
+                <div className="flex justify-between ds-t-label mb-0.5 font-mono opacity-50">
                   <span>PROG_</span>
                   <span>
                     {isLocked && isHidden

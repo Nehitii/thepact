@@ -62,7 +62,7 @@ import {
   Legend,
 } from "recharts";
 
-const AXIS_TICK = { fontSize: 11, fill: "hsl(var(--muted-foreground))" };
+const AXIS_TICK = { fontSize: "max(11px, 0.6875rem)", fill: "hsl(var(--muted-foreground))" };
 const AXIS_STROKE = "hsl(var(--border))";
 const GRID_STROKE = "hsl(var(--border) / 0.5)";
 
@@ -447,7 +447,7 @@ export default function Analytics() {
                       <Tooltip content={<CleanTooltip />} />
                       <Legend
                         iconType="circle"
-                        wrapperStyle={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}
+                        wrapperStyle={{ fontSize: "max(11px, 0.6875rem)", color: "hsl(var(--muted-foreground))" }}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -483,7 +483,7 @@ export default function Analytics() {
                     <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                     <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
                     <Tooltip content={<CleanTooltip labelFormatter={formatMonth} />} />
-                    <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                    <Legend iconType="circle" wrapperStyle={{ fontSize: "max(11px, 0.6875rem)" }} />
                     <Bar dataKey="created" fill={NEUTRAL_SOFT} radius={[3, 3, 0, 0]} name="Créés" />
                     <Bar dataKey="completed" fill={ACCENT} radius={[3, 3, 0, 0]} name="Complétés" />
                   </BarChart>
@@ -620,7 +620,7 @@ export default function Analytics() {
                       <XAxis dataKey="month" tickFormatter={formatMonth} tick={AXIS_TICK} stroke={AXIS_STROKE} />
                       <YAxis tick={AXIS_TICK} stroke={AXIS_STROKE} />
                       <Tooltip content={<CleanTooltip labelFormatter={formatMonth} valueFormatter={(v) => formatCurrency(v, currency)} />} />
-                      <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
+                      <Legend iconType="circle" wrapperStyle={{ fontSize: "max(11px, 0.6875rem)" }} />
                       <Line type="monotone" dataKey="income" stroke={ACCENT} strokeWidth={2} dot={false} name="Revenus" />
                       <Line type="monotone" dataKey="expenses" stroke={NEUTRAL} strokeWidth={2} dot={false} name="Dépenses" />
                       <Line type="monotone" dataKey="savings" stroke={ACCENT_SOFT} strokeWidth={2} strokeDasharray="4 4" dot={false} name="Épargne" />

@@ -64,7 +64,7 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
         <div />
         {days.map((d) => (
           <div key={d.toISOString()} className={cn("text-center py-2", isToday(d) && "bg-primary/10")}>
-            <p className="text-[10px] uppercase text-muted-foreground">{format(d, "EEE", { locale })}</p>
+            <p className="ds-t-label uppercase text-muted-foreground">{format(d, "EEE", { locale })}</p>
             <p className={cn(
               "text-sm font-bold",
               isToday(d) && "text-primary"
@@ -76,7 +76,7 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
       {/* All-day row */}
       {allDayEvents.length > 0 && (
         <div className="grid grid-cols-[50px_repeat(7,1fr)] border-b border-border/30">
-          <div className="text-[9px] text-muted-foreground p-1">ALL</div>
+          <div className="ds-t-label text-muted-foreground p-1">ALL</div>
           {days.map((d) => {
             const dayAllDay = allDayEvents.filter((ev) => isSameDay(parseISO(ev.start_time), d));
             return (
@@ -88,7 +88,7 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
                     <button
                       key={ev.id}
                       onClick={() => onEventClick(ev)}
-                      className="w-full text-left text-[10px] rounded px-1 py-0.5 truncate flex items-center gap-0.5"
+                      className="w-full text-left ds-t-label rounded px-1 py-0.5 truncate flex items-center gap-0.5"
                       style={{
                         backgroundColor: ev.color + "30",
                         color: ev.color,
@@ -111,7 +111,7 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
         <div className="relative">
           {HOURS.map((h) => (
             <div key={h} className="border-b border-border/20" style={{ height: HOUR_HEIGHT }}>
-              <span className="text-[9px] text-muted-foreground pl-1">{String(h).padStart(2, "0")}:00</span>
+              <span className="ds-t-label text-muted-foreground pl-1">{String(h).padStart(2, "0")}:00</span>
             </div>
           ))}
         </div>
@@ -150,7 +150,7 @@ export function WeekView({ viewDate, events, onEventClick, onCellClick }: WeekVi
                   <button
                     key={ev.id}
                     onClick={(e) => { e.stopPropagation(); onEventClick(ev); }}
-                    className="absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 text-[10px] overflow-hidden cursor-pointer hover:brightness-110 transition-all"
+                    className="absolute left-0.5 right-0.5 rounded-md px-1.5 py-0.5 ds-t-label overflow-hidden cursor-pointer hover:brightness-110 transition-all"
                     style={{
                       top, height: Math.max(height, 18),
                       backgroundColor: ev.color + "40",

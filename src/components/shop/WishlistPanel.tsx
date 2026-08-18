@@ -83,7 +83,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
         <div className="flex items-center gap-3">
           <Heart className="w-5 h-5" style={{ color: "hsl(350 80% 55%)" }} />
           <h2 className="font-orbitron text-lg text-foreground tracking-wide">Wishlist</h2>
-          <span className="px-2 py-0.5 rounded-lg text-[10px] font-orbitron font-bold"
+          <span className="px-2 py-0.5 rounded-lg ds-t-label font-orbitron font-bold"
             style={{ background: "hsl(350 80% 55% / 0.12)", color: "hsl(350 80% 55%)" }}>
             {enrichedWishlist.length}
           </span>
@@ -142,13 +142,13 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
                 </div>
 
                 {/* Name */}
-                <div className="text-[13px] font-orbitron font-semibold text-foreground truncate text-center">
+                <div className="text-[0.8125rem] font-orbitron font-semibold text-foreground truncate text-center">
                   {wishlistItem.item?.name}
                 </div>
 
                 {/* Rarity badge */}
                 <div className="flex justify-center">
-                  <span className={`text-[8px] uppercase tracking-wider px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
+                  <span className={`ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
                     {wishlistItem.item?.rarity}
                   </span>
                 </div>
@@ -161,13 +161,13 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
 
                 {/* Action */}
                 {wishlistItem.isOwned ? (
-                  <div className="text-center text-[10px] font-orbitron tracking-wider py-1" style={{ color: "hsl(142 70% 50%)" }}>
+                  <div className="text-center ds-t-label font-orbitron tracking-wider py-1" style={{ color: "hsl(142 70% 50%)" }}>
                     Owned
                   </div>
                 ) : (
                   <Button size="sm" variant="outline" onClick={() => onPurchaseItem(wishlistItem.item, wishlistItem.item_type)}
                     disabled={!canAfford}
-                    className="w-full h-8 text-[10px] font-orbitron tracking-wider rounded-lg"
+                    className="w-full h-8 ds-t-label font-orbitron tracking-wider rounded-lg"
                     style={{ borderColor: r.border, color: canAfford ? r.accent : undefined, background: canAfford ? r.glow : undefined }}>
                     <ShoppingCart className="w-3 h-3 mr-1" /> Get
                   </Button>
@@ -182,7 +182,7 @@ export function WishlistPanel({ onPurchaseItem }: WishlistPanelProps) {
       <div className="flex items-center justify-between p-4 rounded-xl" style={{
         background: "hsl(var(--card) / 0.5)", border: "1px solid hsl(var(--primary) / 0.1)",
       }}>
-        <div className="text-[10px] font-orbitron tracking-wider text-muted-foreground uppercase">Total Loadout Cost</div>
+        <div className="ds-t-label font-orbitron tracking-wider text-muted-foreground uppercase">Total Loadout Cost</div>
         <div className="flex items-center gap-1.5 font-orbitron text-sm font-bold text-primary">
           <BondIcon size={15} /> {totalCost.toLocaleString()}
         </div>

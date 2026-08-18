@@ -109,7 +109,7 @@ function ToolbarIconButton({
     <button
       onClick={onClick}
       title={label}
-      className={`flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-mono uppercase tracking-[0.12em] rounded-md border transition-all focus-visible:ring-2 focus-visible:ring-primary ${
+      className={`flex items-center gap-1.5 px-3 py-1.5 ds-t-label font-mono uppercase tracking-[0.12em] rounded-md border transition-all focus-visible:ring-2 focus-visible:ring-primary ${
         isActive
           ? "bg-primary/20 border-primary/40 text-primary"
           : "bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground hover:border-border"

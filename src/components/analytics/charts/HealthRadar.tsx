@@ -22,12 +22,12 @@ export function HealthRadar({ data }: HealthRadarProps) {
         <PolarGrid stroke="hsl(var(--prism-cyan) / 0.18)" />
         <PolarAngleAxis
           dataKey="axis"
-          tick={{ fontSize: 9, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }}
+          tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }}
         />
         <PolarRadiusAxis
           angle={90}
           domain={[0, 5]}
-          tick={{ fontSize: 8, fontFamily: "monospace", fill: "hsl(var(--muted-foreground) / 0.5)" }}
+          tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground) / 0.5)" }}
           stroke="hsl(var(--prism-cyan) / 0.1)"
         />
         <Radar
@@ -72,7 +72,7 @@ function HealthRadarEmpty() {
         />
         <circle cx={cx} cy={cy} r="2" fill="hsl(var(--prism-cyan))" opacity="0.6" />
       </svg>
-      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+      <span className="font-mono ds-t-label uppercase tracking-[0.3em] text-muted-foreground/70">
         BIOMETRICS OFFLINE
       </span>
     </div>

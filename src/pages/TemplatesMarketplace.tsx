@@ -72,7 +72,7 @@ export default function TemplatesMarketplace() {
                 <DSBadge variant={t.is_featured ? "new" : "live"} label={t.difficulty} />
               </div>
               {t.description && <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>}
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground pt-1">
+              <div className="flex items-center justify-between ds-t-label text-muted-foreground pt-1">
                 <span className="flex items-center gap-1">
                   <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                   <span className="tabular-nums">{Number(t.rating_avg).toFixed(1)}</span>
@@ -132,22 +132,22 @@ function TemplateDetailModal({ template, onClose }: { template: GoalTemplate | n
 
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="rounded border border-white/[0.06] p-2">
-              <div className="text-[10px] text-muted-foreground uppercase">Note</div>
-              <div className="font-mono">{Number(template.rating_avg).toFixed(1)} <span className="text-[10px] text-muted-foreground">/5</span></div>
+              <div className="ds-t-label text-muted-foreground uppercase">Note</div>
+              <div className="font-mono">{Number(template.rating_avg).toFixed(1)} <span className="ds-t-label text-muted-foreground">/5</span></div>
             </div>
             <div className="rounded border border-white/[0.06] p-2">
-              <div className="text-[10px] text-muted-foreground uppercase">Avis</div>
+              <div className="ds-t-label text-muted-foreground uppercase">Avis</div>
               <div className="font-mono">{template.rating_count}</div>
             </div>
             <div className="rounded border border-white/[0.06] p-2">
-              <div className="text-[10px] text-muted-foreground uppercase">Étapes</div>
+              <div className="ds-t-label text-muted-foreground uppercase">Étapes</div>
               <div className="font-mono">{Array.isArray(template.steps) ? template.steps.length : 0}</div>
             </div>
           </div>
 
           {Array.isArray(template.steps) && template.steps.length > 0 && (
             <div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Étapes incluses</div>
+              <div className="ds-t-label uppercase tracking-wider text-muted-foreground mb-1.5">Étapes incluses</div>
               <ol className="space-y-1 list-decimal list-inside">
                 {template.steps.slice(0, 10).map((s, i) => (
                   <li key={i} className="text-sm">{s.title}</li>
@@ -157,7 +157,7 @@ function TemplateDetailModal({ template, onClose }: { template: GoalTemplate | n
           )}
 
           <div className="border-t border-white/[0.06] pt-3 space-y-2">
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            <div className="ds-t-label uppercase tracking-wider text-muted-foreground">
               {myRating ? "Modifier ta note" : "Noter ce modèle"}
             </div>
             <div className="flex items-center gap-1">
@@ -181,7 +181,7 @@ function TemplateDetailModal({ template, onClose }: { template: GoalTemplate | n
 
           {ratings.length > 0 && (
             <div className="border-t border-white/[0.06] pt-3 space-y-2 max-h-40 overflow-y-auto">
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Avis récents</div>
+              <div className="ds-t-label uppercase tracking-wider text-muted-foreground">Avis récents</div>
               {ratings.slice(0, 10).map((r) => (
                 <div key={r.id} className="text-xs space-y-0.5">
                   <div className="flex items-center gap-1">

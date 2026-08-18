@@ -101,7 +101,7 @@ export function PactIdentityCard({
       <div className="py-4 space-y-5">
         {/* Live Preview */}
         <div className="border border-dashed border-primary/25 bg-primary/[0.03] p-4">
-          <p className="text-[9px] text-primary/40 font-mono tracking-[0.15em] mb-3">PREVIEW //</p>
+          <p className="ds-t-label text-primary/40 font-mono tracking-[0.15em] mb-3">PREVIEW //</p>
           <div className="flex items-center gap-4">
             <PactVisual symbol={pactSymbol} size="sm" />
             <div className="min-w-0 flex-1">
@@ -122,12 +122,12 @@ export function PactIdentityCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Project Name</Label>
+            <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Project Name</Label>
           </div>
           <Input value={pactName} onChange={(e) => onPactNameChange(e.target.value)} placeholder="e.g., Project Phoenix" maxLength={50} className={CY_INPUT} />
           <div className="flex justify-between">
-            <p className="text-[9px] text-primary/20 font-mono tracking-wider">The name that represents your mission.</p>
-            <span className="text-[9px] text-primary/20 font-mono">{pactName.length}/50</span>
+            <p className="ds-t-label text-primary/20 font-mono tracking-wider">The name that represents your mission.</p>
+            <span className="ds-t-label text-primary/20 font-mono">{pactName.length}/50</span>
           </div>
         </div>
 
@@ -135,12 +135,12 @@ export function PactIdentityCard({
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">The "Why" Statement</Label>
+            <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">The "Why" Statement</Label>
           </div>
           <Textarea value={pactMantra} onChange={(e) => onPactMantraChange(e.target.value)} placeholder="e.g., To become the best version of myself…" maxLength={200} rows={3} className={cn(CY_INPUT, "h-auto resize-none")} />
           <div className="flex justify-between">
-            <p className="text-[9px] text-primary/20 font-mono tracking-wider">Your guiding mantra.</p>
-            <span className="text-[9px] text-primary/20 font-mono">{pactMantra.length}/200</span>
+            <p className="ds-t-label text-primary/20 font-mono tracking-wider">Your guiding mantra.</p>
+            <span className="ds-t-label text-primary/20 font-mono">{pactMantra.length}/200</span>
           </div>
         </div>
 
@@ -148,7 +148,7 @@ export function PactIdentityCard({
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Pact Symbol</Label>
+            <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Pact Symbol</Label>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {SYMBOL_OPTIONS.map(({ key, label }) => (
@@ -160,7 +160,7 @@ export function PactIdentityCard({
                     : "border-primary/15 bg-primary/[0.02] hover:border-primary/40"
                 )}>
                 <PactVisual symbol={key} size="sm" />
-                <span className="text-[9px] font-mono text-primary/50 tracking-wider uppercase">{label}</span>
+                <span className="ds-t-label font-mono text-primary/50 tracking-wider uppercase">{label}</span>
               </button>
             ))}
           </div>
@@ -171,7 +171,7 @@ export function PactIdentityCard({
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
             <Type className="h-3 w-3 text-primary/40" />
-            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Title Font</Label>
+            <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Title Font</Label>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {FONT_OPTIONS.map(({ key, label, family }) => (
@@ -192,7 +192,7 @@ export function PactIdentityCard({
                 >
                   {pactName || "Project"}
                 </span>
-                <span className="text-[8px] font-mono text-primary/30 tracking-wider uppercase ml-auto shrink-0">{label}</span>
+                <span className="ds-t-label font-mono text-primary/30 tracking-wider uppercase ml-auto shrink-0">{label}</span>
               </button>
             ))}
           </div>
@@ -203,7 +203,7 @@ export function PactIdentityCard({
           <div className="flex items-center gap-1.5">
             <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
             <Wand2 className="h-3 w-3 text-primary/40" />
-            <Label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Title Effect</Label>
+            <Label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Title Effect</Label>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {EFFECT_OPTIONS.map(({ key, label, style }) => (
@@ -224,7 +224,7 @@ export function PactIdentityCard({
                 >
                   Aa
                 </span>
-                <span className="text-[8px] font-mono text-primary/30 tracking-wider uppercase">{label}</span>
+                <span className="ds-t-label font-mono text-primary/30 tracking-wider uppercase">{label}</span>
               </button>
             ))}
           </div>
@@ -235,7 +235,7 @@ export function PactIdentityCard({
           onClick={handleSave}
           disabled={isSaving || !pactId}
           className={cn(
-            "w-full sm:w-auto relative h-10 px-6 font-mono text-[10px] tracking-[0.22em] uppercase",
+            "w-full sm:w-auto relative h-10 px-6 font-mono ds-t-label tracking-[0.22em] uppercase",
             "bg-primary/10 border border-primary/35",
             "hover:bg-primary/18 hover:border-primary/65",
             "text-primary shadow-[0_0_14px_hsl(var(--primary)/0.12)]",

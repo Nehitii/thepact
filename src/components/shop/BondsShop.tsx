@@ -45,7 +45,7 @@ export function BondsShop() {
           }}>
             <BondIcon size={40} className="drop-shadow-[0_0_10px_hsl(var(--primary)/0.3)]" />
             <div>
-              <p className="text-[10px] text-primary font-orbitron uppercase tracking-widest mb-0.5">Balance</p>
+              <p className="ds-t-label text-primary font-orbitron uppercase tracking-widest mb-0.5">Balance</p>
               {loadingBalance ? (
                 <Skeleton className="h-8 w-20 bg-primary/10" />
               ) : (
@@ -128,7 +128,7 @@ export function BondsShop() {
                   >
                     {pack.bonus_percentage > 0 && (
                       <div className={cn(
-                        "absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg text-[10px] font-black font-orbitron z-20",
+                        "absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-lg ds-t-label font-black font-orbitron z-20",
                         isEpic ? "bg-amber-500 text-black" : "bg-primary text-primary-foreground",
                       )}>
                         {isEpic && <Crown className="inline-block w-3 h-3 mr-1 mb-0.5" />}+{pack.bonus_percentage}% BONUS
@@ -170,7 +170,7 @@ export function BondsShop() {
         ].map((f, i) => (
           <div key={i} className="flex items-center gap-2 text-muted-foreground">
             <f.icon className={cn("w-4 h-4", f.color)} />
-            <span className="text-[10px] font-orbitron uppercase tracking-wider">{f.label}</span>
+            <span className="ds-t-label font-orbitron uppercase tracking-wider">{f.label}</span>
           </div>
         ))}
       </footer>

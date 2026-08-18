@@ -187,7 +187,7 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
                 <Icon className={cn("w-3.5 h-3.5", colors.icon)} />
               </div>
               <span className={cn(
-                "text-[8px] font-mono uppercase tracking-[0.2em] px-1.5 py-0.5 rounded border border-current/20 bg-current/5",
+                "ds-t-label font-mono uppercase tracking-[0.2em] px-1.5 py-0.5 rounded border border-current/20 bg-current/5",
                 colors.icon
               )}>
                 {colors.badge}
@@ -196,7 +196,7 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
             <h3 className="font-semibold text-foreground text-sm leading-tight">{title}</h3>
             <div className="flex items-center gap-1.5">
               <span className={cn("w-1.5 h-1.5 rounded-full", ledColors[statusLed])} />
-              <span className="text-[9px] font-mono uppercase tracking-wider text-muted-foreground/70">
+              <span className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground/70">
                 {statusLed === "off" ? "NO_DATA" : statusLed === "green" ? "NOMINAL" : statusLed === "amber" ? "WATCH" : "ALERT"}
               </span>
             </div>
@@ -204,7 +204,7 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
 
           {/* Center: sparkline */}
           <div className="flex-1 flex flex-col items-center min-w-0">
-            <div className="text-[8px] font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mb-1">
+            <div className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/50 mb-1">
               7-DAY TREND
             </div>
             <svg
@@ -247,7 +247,7 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
                 />
               )}
             </svg>
-            <div className="text-[8px] font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mt-1 tabular-nums">
+            <div className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground/60 mt-1 tabular-nums">
               AVG {weeklyAvg.toFixed(1)}/{max}
             </div>
           </div>
@@ -268,7 +268,7 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
               {hasData && Math.abs(delta) > 0.1 && (
                 <div
                   className={cn(
-                    "text-[9px] font-mono tabular-nums mt-0.5",
+                    "ds-t-label font-mono tabular-nums mt-0.5",
                     delta > 0 ? "text-emerald-400" : "text-destructive"
                   )}
                 >
@@ -295,7 +295,7 @@ export function HealthMetricCard({ icon: Icon, title, color, metricKey }: Health
                   style={{ filter: `drop-shadow(0 0 4px ${colors.glow})` }}
                 />
               </svg>
-              <span className={cn("absolute inset-0 flex items-center justify-center text-[8px] font-bold font-orbitron", colors.icon)}>
+              <span className={cn("absolute inset-0 flex items-center justify-center ds-t-label font-bold font-orbitron", colors.icon)}>
                 {Math.round(progressPct * 100)}
               </span>
             </div>

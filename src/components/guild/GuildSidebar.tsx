@@ -79,7 +79,7 @@ export function GuildSidebar({ active, onChange, isOfficer }: Props) {
 
             <span
               className={cn(
-                "hidden lg:inline font-orbitron text-[10px] uppercase tracking-[0.2em] truncate flex-1",
+                "hidden lg:inline font-orbitron ds-t-label uppercase tracking-[0.2em] truncate flex-1",
                 isActive && "font-bold",
               )}
             >
@@ -87,7 +87,7 @@ export function GuildSidebar({ active, onChange, isOfficer }: Props) {
             </span>
 
             <span
-              className="hidden lg:inline font-mono text-[8px] tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.5)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+              className="hidden lg:inline font-mono ds-t-label tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.5)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
               aria-hidden="true"
             >
               {navId}

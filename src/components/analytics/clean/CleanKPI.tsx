@@ -77,7 +77,7 @@ function CleanKPI({ item, index }: { item: KPIItem; index: number }) {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.06 + 0.3, duration: 0.3 }}
             className={cn(
-              "inline-flex items-center gap-0.5 text-[11px] font-medium tabular-nums px-1.5 py-0.5 rounded-md border",
+              "inline-flex items-center gap-0.5 ds-t-label font-medium tabular-nums px-1.5 py-0.5 rounded-md border",
               trend === "up" && "text-emerald-500",
               trend === "down" && "text-rose-500",
               trend === "flat" && "text-muted-foreground",
@@ -92,7 +92,7 @@ function CleanKPI({ item, index }: { item: KPIItem; index: number }) {
         )}
       </div>
       <div className="relative text-xs text-muted-foreground mb-1">{item.label}</div>
-      <div className="relative text-2xl md:text-[26px] font-semibold tabular-nums tracking-tight">
+      <div className="relative text-2xl md:text-[1.625rem] font-semibold tabular-nums tracking-tight">
         {numericMatch ? (
           <>
             {numericMatch.prefix}
@@ -111,7 +111,7 @@ function CleanKPI({ item, index }: { item: KPIItem; index: number }) {
         )}
       </div>
       {item.hint && (
-        <div className="relative text-[11px] text-muted-foreground/70 mt-1">{item.hint}</div>
+        <div className="relative ds-t-label text-muted-foreground/70 mt-1">{item.hint}</div>
       )}
     </motion.div>
   );

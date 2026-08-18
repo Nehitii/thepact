@@ -208,7 +208,7 @@ export function GoalSelectionList({
                     <div className="flex items-center gap-2 mt-1">
                       <Badge
                         variant="outline"
-                        className="text-[10px] px-1.5 py-0"
+                        className="ds-t-label px-1.5 py-0"
                         style={{
                           borderColor: diffColor,
                           color: diffColor,

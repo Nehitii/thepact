@@ -56,7 +56,7 @@ export function DifficultyScalePanel({ difficultyProgress, customDifficultyName,
       <CornerBrackets />
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      <div className="flex items-center gap-2 mb-4" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
+      <div className="flex items-center gap-2 mb-4" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 3, color: "var(--nexus-text-dim)", textTransform: "uppercase" as const }}>
         <span className="text-primary/60">//</span>
         L'Échelle Ananta — Progression par Difficulté
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg, var(--nexus-separator), transparent)" }} />
@@ -87,13 +87,13 @@ export function DifficultyScalePanel({ difficultyProgress, customDifficultyName,
               <div className="absolute bottom-0 left-0 right-0 transition-all duration-700" style={{ height: `${fillPct}%`, background: `${color}12` }} />
               <div className="absolute top-0 left-0 right-0" style={{ height: 2, background: color, boxShadow: `0 0 6px ${color}` }} />
 
-              <span className="relative z-[1]" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: 11, letterSpacing: 2, color: color, textTransform: "uppercase" as const, textShadow: `0 0 8px ${color}`, marginBottom: 12 }}>
+              <span className="relative z-[1]" style={{ fontFamily: "'Share Tech Mono', monospace", fontSize: "max(11px, 0.6875rem)", letterSpacing: 2, color: color, textTransform: "uppercase" as const, textShadow: `0 0 8px ${color}`, marginBottom: 12 }}>
                 {getLabel(diff)}
               </span>
               <span className="relative z-[1]" style={{ fontFamily: "'Orbitron', sans-serif", fontSize: 22, fontWeight: 700, color: color, textShadow: `0 0 10px ${color}b3`, lineHeight: 1 }}>
                 {count < 10 ? `0${count}` : count}
               </span>
-              <span className="relative z-[1]" style={{ fontSize: 11, letterSpacing: 1, color: "var(--nexus-marker-dim)", marginTop: 4 }}>
+              <span className="relative z-[1]" style={{ fontSize: "max(11px, 0.6875rem)", letterSpacing: 1, color: "var(--nexus-marker-dim)", marginTop: 4 }}>
                 {DIFFICULTY_SUBS[diff] || "missions"}
               </span>
             </div>

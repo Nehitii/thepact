@@ -9,7 +9,7 @@ interface SharedGoalBadgeProps {
 export function SharedGoalBadge({ ownerName, className }: SharedGoalBadgeProps) {
   return (
     <div className={cn(
-      "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+      "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full ds-t-label font-bold uppercase tracking-wider",
       "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30",
       className,
     )}>

@@ -152,12 +152,12 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
                 <div className="flex items-start justify-between mb-2">
                   <div>
                     <h4 className="text-sm font-bold">{ev.title}</h4>
-                    {ev.description && <p className="text-[10px] text-muted-foreground mt-0.5">{ev.description}</p>}
+                    {ev.description && <p className="ds-t-label text-muted-foreground mt-0.5">{ev.description}</p>}
                   </div>
-                  {past && <Badge variant="outline" className="text-[8px]">PAST</Badge>}
+                  {past && <Badge variant="outline" className="ds-t-label">PAST</Badge>}
                 </div>
 
-                <div className="flex items-center gap-4 text-[10px] text-muted-foreground mb-3">
+                <div className="flex items-center gap-4 ds-t-label text-muted-foreground mb-3">
                   <span className="flex items-center gap-1">
                     <CalendarDays className="h-3 w-3" /> {format(new Date(ev.event_date), "PPp")}
                   </span>
@@ -179,7 +179,7 @@ export function GuildEventsPanel({ guildId, userId, isOfficer }: Props) {
                           key={status}
                           size="sm"
                           variant={isActive ? "default" : "outline"}
-                          className="h-7 text-[10px] px-2"
+                          className="h-7 ds-t-label px-2"
                           onClick={() => rsvpMutation.mutate({ eventId: ev.id, status })}
                         >
                           <Icon className="h-3 w-3 mr-1" />

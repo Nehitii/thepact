@@ -94,7 +94,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
           <DraggableEvent key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); onEventClick(ev); }} />
         ))}
         {overflow > 0 && (
-          <p className="text-[10px] text-muted-foreground pl-1 truncate">+{overflow} more</p>
+          <p className="ds-t-label text-muted-foreground pl-1 truncate">+{overflow} more</p>
         )}
       </div>
     </div>
@@ -155,9 +155,9 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
       <div className="rounded-lg overflow-hidden border border-border/40">
         {/* Header */}
         <div className={cn("grid bg-muted/30", GRID_COLS)}>
-          <div className="text-center text-[9px] text-muted-foreground py-1.5 uppercase">W</div>
+          <div className="text-center ds-t-label text-muted-foreground py-1.5 uppercase">W</div>
           {dayHeaders.map((h) => (
-            <div key={h} className="text-center text-[10px] font-medium text-muted-foreground py-1.5 uppercase tracking-wider min-w-0">
+            <div key={h} className="text-center ds-t-label font-medium text-muted-foreground py-1.5 uppercase tracking-wider min-w-0">
               {h}
             </div>
           ))}
@@ -166,7 +166,7 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
         {/* Body */}
         {weeks.map((week, wi) => (
           <div key={wi} className={cn("grid", GRID_COLS)}>
-            <div className="flex items-start justify-center pt-2 text-[9px] text-muted-foreground font-mono border border-border/20 h-[110px] min-w-0">
+            <div className="flex items-start justify-center pt-2 ds-t-label text-muted-foreground font-mono border border-border/20 h-[110px] min-w-0">
               {getISOWeek(week[0])}
             </div>
             {week.map((day) => {

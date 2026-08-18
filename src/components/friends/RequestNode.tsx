@@ -42,7 +42,7 @@ export function RequestNode({
     >
       <div className="px-3 sm:px-4 pt-2 pb-1 flex items-center justify-between border-b border-[hsl(var(--ds-border-subtle)/0.1)]">
         <span
-          className="font-mono text-[8px] uppercase tracking-[0.22em]"
+          className="font-mono ds-t-label uppercase tracking-[0.22em]"
           style={{
             color: isIncoming
               ? "hsl(var(--ds-accent-special))"
@@ -51,7 +51,7 @@ export function RequestNode({
         >
           [{isIncoming ? "INCOMING SIGNAL" : "TRANSMITTED"}]
         </span>
-        <span className="font-mono text-[8px] uppercase tracking-wider text-[hsl(var(--ds-text-muted)/0.7)]">
+        <span className="font-mono ds-t-label uppercase tracking-wider text-[hsl(var(--ds-text-muted)/0.7)]">
           {isIncoming ? timeAgo : t("friends.awaiting", { defaultValue: "awaiting response" })}
         </span>
       </div>
@@ -69,7 +69,7 @@ export function RequestNode({
             {displayName || t("friends.unknownAgent")}
           </h3>
           {!isIncoming && (
-            <p className="text-[9px] font-mono uppercase tracking-wider text-[hsl(var(--ds-text-muted)/0.6)] mt-0.5">
+            <p className="ds-t-label font-mono uppercase tracking-wider text-[hsl(var(--ds-text-muted)/0.6)] mt-0.5">
               {t("friends.sentTo")} · {timeAgo}
             </p>
           )}
@@ -113,7 +113,7 @@ export function RequestNode({
               variant="ghost"
               onClick={onCancel}
               disabled={loading}
-              className="h-7 text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-critical))]"
+              className="h-7 ds-t-label font-mono uppercase tracking-wider text-[hsl(var(--ds-text-muted))] hover:text-[hsl(var(--ds-accent-critical))]"
               aria-label={t("friends.cancelRequest")}
             >
               {loading ? (

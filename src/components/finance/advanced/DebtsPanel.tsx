@@ -91,7 +91,7 @@ export function DebtsPanel() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="font-medium truncate">{d.name}</div>
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground/60">
+                    <div className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground/60">
                       {TYPES.find((t) => t.value === d.debt_type)?.label || d.debt_type} · {d.interest_rate}% / an
                     </div>
                   </div>
@@ -113,7 +113,7 @@ export function DebtsPanel() {
                   </div>
                   <Progress value={paidPct} className="h-1.5" />
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-muted-foreground/70">
+                <div className="flex items-center justify-between ds-t-label text-muted-foreground/70">
                   <span>
                     Mensualité: <span className="text-foreground tabular-nums">{formatCurrency(Number(d.monthly_payment), currency)}</span>
                   </span>
@@ -203,7 +203,7 @@ function DebtScheduleTable({ debtId }: { debtId: string }) {
   if (data.length === 0) return <div className="py-3 text-xs text-muted-foreground/70">Renseigne taux & mensualité pour voir l'échéancier.</div>;
   return (
     <div className="mt-2 max-h-64 overflow-auto rounded-lg border border-white/[0.05]">
-      <table className="w-full text-[11px]">
+      <table className="w-full ds-t-label">
         <thead className="sticky top-0 bg-background/95 backdrop-blur">
           <tr className="text-muted-foreground/70 text-left">
             <th className="px-2 py-1.5">#</th>

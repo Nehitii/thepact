@@ -122,7 +122,7 @@ function ReviewRow({ review }: { review: Review }) {
     <li className="border border-border/40 bg-card/40 rounded-sm p-4 hover:border-primary/40 transition-colors">
       <div className="flex items-start justify-between gap-4 mb-2">
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="font-orbitron text-[10px] uppercase">
+          <Badge variant="outline" className="font-orbitron ds-t-label uppercase">
             {review.type}
           </Badge>
           <span className="font-rajdhani text-sm text-muted-foreground flex items-center gap-1">
@@ -132,7 +132,7 @@ function ReviewRow({ review }: { review: Review }) {
           </span>
           <Badge
             variant={review.status === "completed" ? "default" : "secondary"}
-            className="text-[10px]"
+            className="ds-t-label"
           >
             {review.status}
           </Badge>

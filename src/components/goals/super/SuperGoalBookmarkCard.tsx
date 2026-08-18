@@ -123,7 +123,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
       >
         {/* Difficulty Badge */}
         <Badge
-          className="absolute top-1 left-2 z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
+          className="absolute top-1 left-2 z-10 ds-t-label uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
           style={{
             borderRadius: "999px",
             color: "white",
@@ -199,7 +199,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
           {/* SUPER tag below name */}
           <div className="flex justify-center mt-1 mb-1">
             <div
-              className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase"
+              className="flex items-center gap-1 px-2.5 py-0.5 rounded-full ds-t-label font-bold tracking-wider uppercase"
               style={{
                 background: "linear-gradient(135deg, #b8860b, #fbbf24, #b8860b)",
                 color: "#fff",
@@ -246,7 +246,7 @@ export const SuperGoalBookmarkCard = memo(function SuperGoalBookmarkCard({
             )}
 
             {ruleLabel && !isComplete && (
-              <div className="text-[8px] text-center text-gray-500 font-mono truncate mt-1">{ruleLabel}</div>
+              <div className="ds-t-label text-center text-gray-500 font-mono truncate mt-1">{ruleLabel}</div>
             )}
           </div>
         </div>

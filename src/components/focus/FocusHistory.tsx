@@ -25,7 +25,7 @@ export function FocusHistory({ sessions, goals = [], todos = [] }: FocusHistoryP
       <div className="w-full max-w-lg flex flex-col items-center justify-center py-8 text-center" style={{ clipPath: cyberClip }}>
         <History className="h-8 w-8 text-muted-foreground/40 mb-3" />
         <p className="text-sm font-mono text-muted-foreground">{t("focus.history.empty", "No sessions yet")}</p>
-        <p className="text-[10px] font-mono text-muted-foreground/60 mt-1">{t("focus.history.emptyHint", "Start your first focus session!")}</p>
+        <p className="ds-t-label font-mono text-muted-foreground/60 mt-1">{t("focus.history.emptyHint", "Start your first focus session!")}</p>
       </div>
     );
   }
@@ -48,7 +48,7 @@ export function FocusHistory({ sessions, goals = [], todos = [] }: FocusHistoryP
         className="flex items-center justify-between w-full p-3 bg-card/40 backdrop-blur border border-border/50 hover:bg-card/60 transition-colors group focus-visible:ring-2 focus-visible:ring-primary"
         style={{ clipPath: cyberClip }}
       >
-        <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-muted-foreground">
+        <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-muted-foreground">
           {t("focus.history.recentSessions")} ({sessions.length})
         </span>
         <ChevronDown className="h-3.5 w-3.5 text-muted-foreground group-data-[state=open]:rotate-180 transition-transform" />
@@ -69,7 +69,7 @@ export function FocusHistory({ sessions, goals = [], todos = [] }: FocusHistoryP
                   {s.completed_at ? format(new Date(s.completed_at), "MMM d, HH:mm") : format(new Date(s.started_at), "MMM d, HH:mm")}
                 </span>
                 {linked && (
-                  <span className="flex items-center gap-1 text-[10px] text-primary/70 truncate min-w-0">
+                  <span className="flex items-center gap-1 ds-t-label text-primary/70 truncate min-w-0">
                     {linked.type === "goal" ? <Target className="h-2.5 w-2.5 shrink-0" /> : <ListTodo className="h-2.5 w-2.5 shrink-0" />}
                     <span className="truncate">{linked.name}</span>
                   </span>
@@ -86,7 +86,7 @@ export function FocusHistory({ sessions, goals = [], todos = [] }: FocusHistoryP
         {sessions.length > 10 && (
           <button
             onClick={() => setShowAll(!showAll)}
-            className="w-full text-center text-[10px] font-mono text-primary hover:text-primary/80 py-2 focus-visible:ring-2 focus-visible:ring-primary"
+            className="w-full text-center ds-t-label font-mono text-primary hover:text-primary/80 py-2 focus-visible:ring-2 focus-visible:ring-primary"
           >
             {showAll ? t("focus.history.showLess") : t("focus.history.showAll", { count: sessions.length })}
           </button>

@@ -58,7 +58,7 @@ export function TagConstellation({ tags, size = 280 }: TagConstellationProps) {
             <circle cx={n.x} cy={n.y} r={n.size} fill={n.color} opacity={0.85}
               style={{ filter: `drop-shadow(0 0 6px ${n.color})` }} />
             <text x={n.x} y={n.y + n.size + 12} textAnchor="middle" className="font-mono"
-              fontSize={9} fill="currentColor" opacity={hovered === i ? 1 : 0.6}>
+              fontSize={11} fill="currentColor" opacity={hovered === i ? 1 : 0.6}>
               {n.label}
             </text>
             <text x={n.x} y={n.y + 3} textAnchor="middle" className="font-mono font-bold tabular-nums"
@@ -93,7 +93,7 @@ function TagConstellationEmpty() {
             stroke="hsl(var(--muted-foreground) / 0.35)" strokeWidth="1" />
         ))}
       </svg>
-      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+      <span className="font-mono ds-t-label uppercase tracking-[0.3em] text-muted-foreground/70">
         NO TAGS DETECTED
       </span>
     </div>

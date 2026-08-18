@@ -77,7 +77,7 @@ export function HealthStreakBadge({ size = "md", showLabel = true, className }: 
           {currentStreak}
         </span>
         {showLabel && (
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono">
+          <span className="ds-t-label text-muted-foreground uppercase tracking-wider font-mono">
             {currentStreak === 1 ? t("health.streak.day") : t("health.streak.days")}
           </span>
         )}

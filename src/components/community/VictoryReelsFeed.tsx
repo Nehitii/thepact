@@ -186,7 +186,7 @@ export function VictoryReelsFeed() {
                   />
 
                   {/* Trophy badge */}
-                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-mono font-semibold z-10">
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/20 border border-amber-500/30 text-amber-300 ds-t-label font-mono font-semibold z-10">
                     🏆 COMPLETED
                   </div>
 
@@ -197,7 +197,7 @@ export function VictoryReelsFeed() {
 
                   {/* Duration */}
                   {reel.duration_seconds > 0 && (
-                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-[11px] font-mono text-muted-foreground z-10">
+                    <div className="absolute bottom-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm ds-t-label font-mono text-muted-foreground z-10">
                       {Math.floor(reel.duration_seconds / 60)}:{(reel.duration_seconds % 60).toString().padStart(2, '0')}
                     </div>
                   )}
@@ -209,19 +209,19 @@ export function VictoryReelsFeed() {
                   <div className="flex items-center gap-2 mb-2">
                     <Avatar className="w-7 h-7">
                       <AvatarImage src={avatarUrl} />
-                      <AvatarFallback className="text-[10px] bg-gradient-to-br from-indigo-950 to-indigo-900 text-indigo-300 font-orbitron font-bold">
+                      <AvatarFallback className="ds-t-label bg-gradient-to-br from-indigo-950 to-indigo-900 text-indigo-300 font-orbitron font-bold">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-[13px] font-semibold text-foreground">{displayName}</span>
-                    <span className="text-[10px] text-muted-foreground font-mono ml-auto">
+                    <span className="text-[0.8125rem] font-semibold text-foreground">{displayName}</span>
+                    <span className="ds-t-label text-muted-foreground font-mono ml-auto">
                       {formatDistanceToNow(new Date(reel.created_at), { addSuffix: true })}
                     </span>
                   </div>
 
                   {/* Goal title */}
                   {reel.goal?.name && (
-                    <div className="text-[13px] font-semibold text-foreground mb-1 line-clamp-1">{reel.goal.name}</div>
+                    <div className="text-[0.8125rem] font-semibold text-foreground mb-1 line-clamp-1">{reel.goal.name}</div>
                   )}
 
                   {/* Caption */}
@@ -230,7 +230,7 @@ export function VictoryReelsFeed() {
                   )}
 
                   {/* Stats row */}
-                  <div className="flex gap-3 text-[11px] font-mono text-muted-foreground">
+                  <div className="flex gap-3 ds-t-label font-mono text-muted-foreground">
                     <span className="flex items-center gap-1">
                       👁 <span className="text-foreground/70">{reel.view_count}</span>
                     </span>

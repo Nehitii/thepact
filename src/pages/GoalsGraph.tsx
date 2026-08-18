@@ -87,8 +87,8 @@ export default function GoalsGraph() {
       data: {
         label: (
           <div className="px-2 py-1.5">
-            <div className="text-[11px] font-display tracking-wide line-clamp-2">{g.name}</div>
-            <div className="text-[9px] uppercase tracking-wider mt-0.5" style={{ color: STATUS_COLORS[g.status] || "#888" }}>
+            <div className="ds-t-label font-display tracking-wide line-clamp-2">{g.name}</div>
+            <div className="ds-t-label uppercase tracking-wider mt-0.5" style={{ color: STATUS_COLORS[g.status] || "#888" }}>
               {g.status} · {g.difficulty}
             </div>
           </div>
@@ -115,7 +115,7 @@ export default function GoalsGraph() {
         animated: d.kind === "blocks",
         style: { stroke: d.kind === "blocks" ? "#ef4444" : "#64748b", strokeWidth: 1.5 },
         label: d.kind === "blocks" ? "blocks" : undefined,
-        labelStyle: { fontSize: 9, fill: "#94a3b8" },
+        labelStyle: { fontSize: "max(11px, 0.6875rem)", fill: "#94a3b8" },
       }));
 
     return { nodes: layout(baseNodes, baseEdges), edges: baseEdges };

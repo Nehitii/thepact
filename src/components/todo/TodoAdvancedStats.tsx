@@ -245,7 +245,7 @@ export function TodoAdvancedStats() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.01 }}
               className={cn(
-                'w-7 h-7 rounded-md flex items-center justify-center text-[10px] transition-all cursor-default',
+                'w-7 h-7 rounded-md flex items-center justify-center ds-t-label transition-all cursor-default',
                 day.count === 0 && 'bg-card/30 text-muted-foreground/30',
                 day.count === 1 && 'bg-primary/20 text-primary/80',
                 day.count === 2 && 'bg-primary/40 text-primary',

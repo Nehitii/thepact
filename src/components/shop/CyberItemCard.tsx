@@ -123,11 +123,11 @@ export function CyberItemCard({
           {/* Info */}
           <div className="relative z-[2] px-4 pb-4 space-y-2.5 pt-3">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-orbitron text-[13px] font-semibold tracking-wide truncate flex-1 text-foreground">
+              <h3 className="font-orbitron text-[0.8125rem] font-semibold tracking-wide truncate flex-1 text-foreground">
                 {name}
               </h3>
               <span className={cn(
-                "flex items-center gap-1 text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-md border shrink-0",
+                "flex items-center gap-1 ds-t-label uppercase tracking-wider px-2 py-0.5 rounded-md border shrink-0",
                 r.badgeBg, r.badgeText, r.badgeBorder
               )}>
                 {r.animated && <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: r.accent }} />}

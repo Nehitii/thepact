@@ -28,7 +28,7 @@ export function PrismHUDFooter({
   return (
     <div
       className={cn(
-        "prism-hud-footer mt-6 px-4 h-9 flex items-center gap-4 text-[9px] font-mono uppercase tracking-[0.22em] text-muted-foreground/70 rounded-sm",
+        "prism-hud-footer mt-6 px-4 h-9 flex items-center gap-4 ds-t-label font-mono uppercase tracking-[0.22em] text-muted-foreground/70 rounded-sm",
         className,
       )}
       role="status"

@@ -182,23 +182,23 @@ function TemplateCard({
             {diffOption && (
               <Badge
                 variant="outline"
-                className="text-[10px] font-bold"
+                className="ds-t-label font-bold"
                 style={{ borderColor: diffOption.color, color: diffOption.color }}
               >
                 {getDifficultyLabel(template.difficulty, t)}
               </Badge>
             )}
             {template.tags?.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="secondary" className="text-[10px]">
+              <Badge key={tag} variant="secondary" className="ds-t-label">
                 {getTagLabel(tag, t)}
               </Badge>
             ))}
-            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+            <span className="ds-t-label text-muted-foreground flex items-center gap-1">
               <ListOrdered className="h-3 w-3" />
               {steps.length} steps
             </span>
             {template.use_count > 0 && (
-              <span className="text-[10px] text-muted-foreground">
+              <span className="ds-t-label text-muted-foreground">
                 Used {template.use_count}x
               </span>
             )}

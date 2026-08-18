@@ -52,7 +52,7 @@ export function FriendProfileDrawer({ open, onClose, friend, onRemove, onBlock, 
               })}
             </p>
             {/* Online status */}
-            <p className="text-[10px] font-mono mt-1">
+            <p className="ds-t-label font-mono mt-1">
               {status === "online" ? (
                 <span className="text-emerald-400">{t("friends.online")}</span>
               ) : lastSeenAt ? (
@@ -67,7 +67,7 @@ export function FriendProfileDrawer({ open, onClose, friend, onRemove, onBlock, 
             </p>
             {/* Mutual friends */}
             {mutualCount != null && mutualCount > 0 && (
-              <p className="text-[10px] text-muted-foreground font-mono mt-1 flex items-center justify-center gap-1">
+              <p className="ds-t-label text-muted-foreground font-mono mt-1 flex items-center justify-center gap-1">
                 <Users className="h-3 w-3" />
                 {t("friends.mutualFriends", { count: mutualCount })}
               </p>

@@ -60,7 +60,7 @@ export function AllianceModuleHeader({
           }}
           aria-hidden="true"
         />
-        <span className="ds-text-label text-[9px] tracking-[0.3em] opacity-75 truncate flex-1">
+        <span className="ds-text-label ds-t-label tracking-[0.3em] opacity-75 truncate flex-1">
           {systemLabel}
         </span>
         {toolbar && <div className="flex items-center gap-2 shrink-0">{toolbar}</div>}
@@ -89,7 +89,7 @@ export function AllianceModuleHeader({
                   >
                     {String(c.value).padStart(2, "0")}
                   </span>
-                  <span className="ds-text-label text-[8px] tracking-[0.24em] mt-1">
+                  <span className="ds-text-label ds-t-label tracking-[0.24em] mt-1">
                     {c.label}
                   </span>
                 </div>
@@ -100,7 +100,7 @@ export function AllianceModuleHeader({
       </div>
 
       {subtitle && (
-        <p className="ds-text-label text-[10px] tracking-[0.2em] mt-3">
+        <p className="ds-text-label ds-t-label tracking-[0.2em] mt-3">
           {subtitle}
         </p>
       )}

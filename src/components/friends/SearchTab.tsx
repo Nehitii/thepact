@@ -72,7 +72,7 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
       <div className="p-4 sm:p-6 max-w-3xl mx-auto">
         {/* Network Scanner Input */}
         <div className="mb-6 flex flex-col gap-2">
-          <span className="font-mono text-[9px] tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
+          <span className="font-mono ds-t-label tracking-[0.22em] uppercase text-[hsl(var(--ds-accent-primary))]">
             [ TARGET QUERY ]
           </span>
           <DSPanel tier="muted" hideBrackets className="!p-3">
@@ -103,7 +103,7 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
 
         {searching ? (
           <div className="space-y-2">
-            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[hsl(var(--ds-accent-primary)/0.7)] mb-3">
+            <p className="font-mono ds-t-label uppercase tracking-[0.22em] text-[hsl(var(--ds-accent-primary)/0.7)] mb-3">
               [ SCANNING NETWORK... ]
             </p>
             {Array.from({ length: 3 }).map((_, i) => (
@@ -150,7 +150,7 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
                           {profile.display_name || t("friends.unknownAgent")}
                         </h3>
                         {mc != null && mc > 0 && (
-                          <p className="text-[9px] text-[hsl(var(--ds-text-muted))] font-mono uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
+                          <p className="ds-t-label text-[hsl(var(--ds-text-muted))] font-mono uppercase tracking-wider flex items-center gap-1.5 mt-0.5">
                             <Users className="h-2.5 w-2.5" />
                             MUTUAL × {mc}
                           </p>
@@ -170,17 +170,17 @@ export function SearchTab({ onSearch, onSendRequest, sendingRequest, getFriendsh
                         </Button>
                       )}
                       {status === "pending_sent" && (
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--ds-text-muted))]">
+                        <span className="ds-t-label font-mono uppercase tracking-wider text-[hsl(var(--ds-text-muted))]">
                           {t("friends.requestSentStatus")}
                         </span>
                       )}
                       {status === "pending_received" && (
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--ds-accent-special))]">
+                        <span className="ds-t-label font-mono uppercase tracking-wider text-[hsl(var(--ds-accent-special))]">
                           {t("friends.wantsToBeFriends")}
                         </span>
                       )}
                       {status === "accepted" && (
-                        <span className="text-[10px] font-mono uppercase tracking-wider text-[hsl(var(--ds-accent-success))] flex items-center gap-1.5">
+                        <span className="ds-t-label font-mono uppercase tracking-wider text-[hsl(var(--ds-accent-success))] flex items-center gap-1.5">
                           <UserCheck className="h-3 w-3" /> {t("friends.alreadyFriends")}
                         </span>
                       )}

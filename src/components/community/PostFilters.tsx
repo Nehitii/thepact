@@ -78,7 +78,7 @@ export function PostFilters({ activeFilter, onFilterChange, activeSort, onSortCh
   return (
     <div className="space-y-3">
       {/* Section label */}
-      <div className="font-mono text-[10px] text-muted-foreground tracking-[0.1em] uppercase">Filter by type</div>
+      <div className="font-mono ds-t-label text-muted-foreground tracking-[0.1em] uppercase">Filter by type</div>
 
       {/* Filter chips */}
       <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 -mx-1 px-1">
@@ -113,13 +113,13 @@ export function PostFilters({ activeFilter, onFilterChange, activeSort, onSortCh
 
       {/* Sort row */}
       <div className="flex items-center gap-2">
-        <span className="font-mono text-[11px] text-muted-foreground">Sort:</span>
+        <span className="font-mono ds-t-label text-muted-foreground">Sort:</span>
         {(["recent", "popular"] as PostSortOption[]).map((s) => (
           <button
             key={s}
             onClick={() => onSortChange(s)}
             className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-[11px] font-medium border transition-all",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono ds-t-label font-medium border transition-all",
               activeSort === s
                 ? "bg-primary border-primary text-white shadow-[0_2px_12px_rgba(123,92,250,0.35)]"
                 : "bg-transparent border-border/50 text-muted-foreground hover:border-primary/25",

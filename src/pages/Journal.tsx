@@ -36,7 +36,7 @@ const LiveClock = memo(function LiveClock() {
   return (
     <>
       {clock.split(":").map((t, i) => (
-        <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" as const }}>
+        <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" as const }}>
           {t}
         </div>
       ))}
@@ -150,7 +150,7 @@ export default function Journal() {
         {["◈", "◉", "◎", "◐", "◯", "◆"].map((s, i) => (
           <div key={i} className="w-px h-5 relative" style={{ background: "rgba(0,255,224,0.1)" }}>
             {i === 2 && (
-              <span className="absolute left-2 -top-1 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "8px", color: "rgba(0,255,224,0.25)" }}>
+              <span className="absolute left-2 -top-1 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(0,255,224,0.25)" }}>
                 {s}
               </span>
             )}
@@ -180,14 +180,14 @@ export default function Journal() {
             onClick={() => setIsNewEntryOpen(true)}
             whileHover={{ scale: 1.04, boxShadow: "0 0 40px hsl(var(--primary) / 0.25), 0 0 80px hsl(var(--primary) / 0.1)" }}
             whileTap={{ scale: 0.97 }}
-            className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300 border border-primary text-primary rounded-[3px] font-orbitron text-[11px] font-semibold tracking-[0.2em]"
+            className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300 border border-primary text-primary rounded-[3px] font-orbitron ds-t-label font-semibold tracking-[0.2em]"
             style={{
               padding: "13px 36px",
               background: "transparent",
               boxShadow: "0 0 20px hsl(var(--primary) / 0.12), inset 0 0 20px hsl(var(--primary) / 0.03)",
             }}
           >
-            <span className="text-[16px] font-light font-mono">+</span>
+            <span className="text-[1rem] font-light font-mono">+</span>
             NEW ENTRY
           </motion.button>
         }
@@ -204,14 +204,14 @@ export default function Journal() {
         >
           {/* Search */}
           <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[12px] text-primary/35">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[0.75rem] text-primary/35">
               ◈
             </span>
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="SEARCH LOGS..."
-              className="w-full outline-none transition-colors duration-200 font-mono text-[11px] tracking-[0.08em] text-foreground/70 rounded-[3px]"
+              className="w-full outline-none transition-colors duration-200 font-mono ds-t-label tracking-[0.08em] text-foreground/70 rounded-[3px]"
               style={{
                 padding: "11px 16px 11px 36px",
                 background: "var(--journal-input-bg)",
@@ -229,7 +229,7 @@ export default function Journal() {
               <button
                 key={m.id}
                 onClick={() => setFilterMood(filterMood === m.id ? null : m.id)}
-                className="flex items-center gap-1.5 rounded-sm cursor-pointer transition-all duration-150 font-mono text-[10px] tracking-[0.1em]"
+                className="flex items-center gap-1.5 rounded-sm cursor-pointer transition-all duration-150 font-mono ds-t-label tracking-[0.1em]"
                 style={{
                   padding: "5px 12px",
                   background: filterMood === m.id ? `${m.color}12` : "var(--journal-input-bg)",
@@ -255,14 +255,14 @@ export default function Journal() {
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
                 />
-                <div className="font-mono text-[12px] text-muted-foreground/20 tracking-[0.15em]">
+                <div className="font-mono text-[0.75rem] text-muted-foreground/20 tracking-[0.15em]">
                   LOADING_LOGS...
                 </div>
               </div>
             </div>
           ) : entries.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
-              <div className="font-mono text-[12px] text-muted-foreground/20 tracking-[0.15em]">
+              <div className="font-mono text-[0.75rem] text-muted-foreground/20 tracking-[0.15em]">
                 // NO_ENTRIES_FOUND
               </div>
             </motion.div>
@@ -292,7 +292,7 @@ export default function Journal() {
           {/* Infinite scroll sentinel */}
           <div ref={sentinelRef} className="h-10 flex items-center justify-center">
             {isFetchingNextPage && (
-              <div className="font-mono text-[10px] text-muted-foreground/20 tracking-[0.15em]">
+              <div className="font-mono ds-t-label text-muted-foreground/20 tracking-[0.15em]">
                 LOADING_MORE...
               </div>
             )}
@@ -303,7 +303,7 @@ export default function Journal() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-8 text-center">
               <div className="flex items-center gap-3 justify-center">
                 <div className="h-px w-20 bg-gradient-to-r from-transparent to-primary/20" />
-                <span className="font-mono text-[9px] text-primary/25 tracking-[0.2em]">
+                <span className="font-mono ds-t-label text-primary/25 tracking-[0.2em]">
                   // END_OF_LOG
                 </span>
                 <div className="h-px w-20 bg-gradient-to-r from-primary/20 to-transparent" />

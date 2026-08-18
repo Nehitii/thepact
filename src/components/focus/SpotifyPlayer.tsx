@@ -125,8 +125,8 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
             <X className="h-4 w-4" />
           </Button>
         </div>
-        {error && <p className="text-[10px] text-destructive font-mono">{error}</p>}
-        <p className="text-[10px] text-muted-foreground font-mono">{t("focus.spotify.pasteHint")}</p>
+        {error && <p className="ds-t-label text-destructive font-mono">{error}</p>}
+        <p className="ds-t-label text-muted-foreground font-mono">{t("focus.spotify.pasteHint")}</p>
       </motion.div>
     );
   }
@@ -141,7 +141,7 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
       <div className="flex items-center justify-between px-3 py-2 border-b border-border/30">
         <div className="flex items-center gap-2">
           <Music className="h-3.5 w-3.5 text-[#1DB954]" />
-          <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">Spotify</span>
+          <span className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">Spotify</span>
         </div>
         <div className="flex items-center gap-1">
           <button onClick={() => setIsEditing(true)} className="p-1.5 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary" aria-label="Edit Spotify link">

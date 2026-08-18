@@ -58,7 +58,7 @@ export function AllianceTabs({ activeTab, items }: AllianceTabsProps) {
               />
               <span
                 className={cn(
-                  "font-orbitron text-[10px] uppercase tracking-[0.24em] hidden sm:inline",
+                  "font-orbitron ds-t-label uppercase tracking-[0.24em] hidden sm:inline",
                   active ? "font-semibold" : "font-light",
                 )}
               >

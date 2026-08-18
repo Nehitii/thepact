@@ -36,7 +36,7 @@ export function PeriodSelector({ value, onChange }: PeriodSelectorProps) {
             title={opt.full}
             onClick={() => onChange(opt.value)}
             className={cn(
-              "relative px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] transition-colors",
+              "relative px-3 py-1.5 font-mono ds-t-label uppercase tracking-[0.2em] transition-colors",
               isActive
                 ? "text-[hsl(var(--prism-cyan))]"
                 : "text-muted-foreground/70 hover:text-foreground",

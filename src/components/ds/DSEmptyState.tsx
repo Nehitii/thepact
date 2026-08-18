@@ -58,7 +58,7 @@ export function DSEmptyState({
       <Link
         to={to}
         onClick={onClick}
-        className="touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.30)] bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.05)] hover:bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.12)] hover:border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.55)] transition-colors font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--ds-current-accent,var(--ds-accent-primary)))]"
+        className="touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.30)] bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.05)] hover:bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.12)] hover:border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.55)] transition-colors font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-current-accent,var(--ds-accent-primary)))]"
       >
         {ctaLabel}
         <ArrowRight className="h-3 w-3" />
@@ -67,7 +67,7 @@ export function DSEmptyState({
       <button
         type="button"
         onClick={onClick}
-        className="touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.30)] bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.05)] hover:bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.12)] hover:border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.55)] transition-colors font-mono text-[10px] uppercase tracking-[0.2em] text-[hsl(var(--ds-current-accent,var(--ds-accent-primary)))]"
+        className="touch-target inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.30)] bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.05)] hover:bg-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.12)] hover:border-[hsl(var(--ds-current-accent,var(--ds-accent-primary))/0.55)] transition-colors font-mono ds-t-label uppercase tracking-[0.2em] text-[hsl(var(--ds-current-accent,var(--ds-accent-primary)))]"
       >
         {ctaLabel}
         <ArrowRight className="h-3 w-3" />

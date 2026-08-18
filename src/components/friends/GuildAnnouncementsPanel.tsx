@@ -77,11 +77,11 @@ export function GuildAnnouncementsPanel({ guildId, canWrite }: Props) {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-6 w-6">
                     <AvatarImage src={a.author_avatar || undefined} />
-                    <AvatarFallback className="text-[10px] bg-muted">{(a.author_name || "?")[0]}</AvatarFallback>
+                    <AvatarFallback className="ds-t-label bg-muted">{(a.author_name || "?")[0]}</AvatarFallback>
                   </Avatar>
                   <span className="text-xs font-bold truncate flex-1">{a.author_name}</span>
                   {a.pinned && <Pin className="h-3 w-3 text-amber-400" />}
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="ds-t-label text-muted-foreground">
                     {formatDistanceToNow(new Date(a.created_at), { addSuffix: true, locale })}
                   </span>
                   {canWrite && (

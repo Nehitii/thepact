@@ -20,7 +20,7 @@ export function CoachInsightsList() {
 
   return (
     <div className="border-b border-border/50 px-3 py-3 space-y-2">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground font-display">
+      <div className="flex items-center gap-1.5 ds-t-label uppercase tracking-wider text-muted-foreground font-display">
         <Sparkles className="h-3 w-3" />
         Insights proactifs
       </div>

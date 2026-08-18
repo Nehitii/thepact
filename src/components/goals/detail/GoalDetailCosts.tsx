@@ -70,12 +70,12 @@ export const GoalDetailCosts = React.memo(function GoalDetailCosts({
                         <span className="font-rajdhani text-foreground/90">{item.name}</span>
                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                           {item.category && (
-                            <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-primary/30 text-primary/70">
+                            <Badge variant="outline" className="ds-t-label px-1.5 py-0 border-primary/30 text-primary/70">
                               {getCostCategoryLabel(item.category, t)}
                             </Badge>
                           )}
                           {linkedStep && (
-                            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${linkedStep.status === "completed" ? "border-green-500/40 text-green-400" : "border-border text-muted-foreground"}`}>
+                            <Badge variant="outline" className={`ds-t-label px-1.5 py-0 ${linkedStep.status === "completed" ? "border-green-500/40 text-green-400" : "border-border text-muted-foreground"}`}>
                               ↳ {linkedStep.title}
                             </Badge>
                           )}

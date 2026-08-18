@@ -41,12 +41,12 @@ export function VelocityRiver({ data, formatMonth }: VelocityRiverProps) {
         <XAxis
           dataKey="month"
           tickFormatter={formatMonth}
-          tick={{ fontSize: 9, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }}
+          tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }}
           stroke="hsl(var(--prism-cyan) / 0.2)"
         />
         <YAxis
           tickFormatter={(v) => Math.abs(v).toString()}
-          tick={{ fontSize: 9, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }}
+          tick={{ fontSize: 11, fontFamily: "monospace", fill: "hsl(var(--muted-foreground))" }}
           stroke="hsl(var(--prism-cyan) / 0.2)"
         />
         <ReferenceLine y={0} stroke="hsl(var(--prism-cyan) / 0.4)" strokeWidth={1} />
@@ -77,7 +77,7 @@ function VelocityRiverEmpty() {
         />
         <line x1="0" y1="30" x2="180" y2="30" stroke="hsl(var(--prism-cyan))" strokeWidth="0.5" opacity="0.3" />
       </svg>
-      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+      <span className="font-mono ds-t-label uppercase tracking-[0.3em] text-muted-foreground/70">
         FLOW INACTIVE
       </span>
     </div>

@@ -84,7 +84,7 @@ export function MonthlyBalanceHero({ totalIncome, totalExpenses }: MonthlyBalanc
               transition={{ delay: 0.5, duration: 0.4 }}
               className="mt-8 max-w-2xl mx-auto"
             >
-              <div className="flex items-center justify-between mb-2 font-mono text-[10px] uppercase tracking-[0.18em]">
+              <div className="flex items-center justify-between mb-2 font-mono ds-t-label uppercase tracking-[0.18em]">
                 <span className="text-emerald-400 flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_currentColor]" />
                   {t('finance.monthly.income')} · {Math.round((totalIncome / Math.max(totalIncome + totalExpenses, 1)) * 100)}%

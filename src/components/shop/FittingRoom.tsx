@@ -110,7 +110,7 @@ export function FittingRoom({
               }}
             >
               {previewItem.type === "banner" && (
-                <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-[10px] font-orbitron text-primary">
+                <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-primary/20 border border-primary/40 ds-t-label font-orbitron text-primary">
                   PREVIEW
                 </div>
               )}
@@ -134,7 +134,7 @@ export function FittingRoom({
                       showBorder={(displayFrame as any).show_border !== false}
                     />
                     {previewItem.type === "frame" && (
-                      <div className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 text-[8px] font-orbitron text-primary">
+                      <div className="absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full bg-primary/20 border border-primary/40 ds-t-label font-orbitron text-primary">
                         NEW
                       </div>
                     )}
@@ -165,7 +165,7 @@ export function FittingRoom({
                   >
                     {displayTitle.title_text}
                     {previewItem.type === "title" && (
-                      <span className="ml-2 text-primary/60 text-[8px]">← PREVIEW</span>
+                      <span className="ml-2 text-primary/60 ds-t-label">← PREVIEW</span>
                     )}
                   </span>
                 )}

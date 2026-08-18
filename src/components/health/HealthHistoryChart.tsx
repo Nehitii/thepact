@@ -142,7 +142,7 @@ export function HealthHistoryChart({ className }: { className?: string }) {
                     <div key={metric.key} className="text-center flex items-center gap-1.5">
                       <div>
                         <p className="text-lg font-bold font-orbitron" style={{ color: metric.color }}>{avg}</p>
-                        <p className="text-[10px] text-muted-foreground font-mono uppercase tracking-wider">
+                        <p className="ds-t-label text-muted-foreground font-mono uppercase tracking-wider">
                           {t("health.history.avgPrefix")} {t(metric.label)}
                         </p>
                       </div>

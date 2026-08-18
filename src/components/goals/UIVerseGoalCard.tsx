@@ -180,7 +180,7 @@ export function UIVerseGoalCard({
         {goal.is_locked && <GoalLockOverlay className="rounded-[22px]" />}
         {/* Difficulty Badge */}
         <Badge
-          className="absolute top-1 left-2 z-10 text-[10px] uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
+          className="absolute top-1 left-2 z-10 ds-t-label uppercase tracking-wide font-semibold px-3 py-1 overflow-hidden"
           style={{
             borderRadius: "999px",
             color: "white",

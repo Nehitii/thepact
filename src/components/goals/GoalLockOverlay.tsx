@@ -22,7 +22,7 @@ export function GoalLockOverlay({ className }: GoalLockOverlayProps) {
         <div className="p-3 rounded-full bg-primary/10 border border-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.3)]">
           <Lock className="h-6 w-6 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
         </div>
-        <span className="text-[10px] font-orbitron uppercase tracking-widest text-primary/90 font-bold drop-shadow-md">
+        <span className="ds-t-label font-orbitron uppercase tracking-widest text-primary/90 font-bold drop-shadow-md">
           Locked
         </span>
       </div>

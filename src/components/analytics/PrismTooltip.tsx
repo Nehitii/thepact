@@ -37,7 +37,7 @@ export function PrismTooltip({
 
   return (
     <div
-      className="relative font-mono text-[11px] backdrop-blur-md"
+      className="relative font-mono ds-t-label backdrop-blur-md"
       style={{
         background: "hsl(var(--prism-panel-bg) / 0.9)",
         border: "1px solid hsl(var(--prism-cyan) / 0.35)",
@@ -79,7 +79,7 @@ export function PrismTooltip({
                   boxShadow: `0 0 5px hsl(${colorVar} / 0.7)`,
                 }}
               />
-              <span className="text-[9px] uppercase tracking-wider text-muted-foreground/80">
+              <span className="ds-t-label uppercase tracking-wider text-muted-foreground/80">
                 {String(p.name ?? p.dataKey ?? "")}
               </span>
               <span
@@ -90,7 +90,7 @@ export function PrismTooltip({
               </span>
               {deltaTxt && (
                 <span
-                  className="ml-1 inline-flex items-center gap-0.5 text-[9px] tabular-nums"
+                  className="ml-1 inline-flex items-center gap-0.5 ds-t-label tabular-nums"
                   style={{ color: deltaColor }}
                 >
                   <DeltaIcon className="h-2 w-2" />

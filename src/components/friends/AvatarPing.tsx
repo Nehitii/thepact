@@ -14,9 +14,9 @@ interface AvatarPingProps {
 }
 
 const SIZE_MAP = {
-  sm: { wrap: "h-9 w-9", avatar: "h-9 w-9", ring: 40, badge: "text-[7px] px-1 py-[1px]" },
-  md: { wrap: "h-12 w-12", avatar: "h-12 w-12", ring: 52, badge: "text-[8px] px-1 py-[1px]" },
-  lg: { wrap: "h-16 w-16", avatar: "h-16 w-16", ring: 68, badge: "text-[8px] px-1 py-[1px]" },
+  sm: { wrap: "h-9 w-9", avatar: "h-9 w-9", ring: 40, badge: "ds-t-label px-1 py-[1px]" },
+  md: { wrap: "h-12 w-12", avatar: "h-12 w-12", ring: 52, badge: "ds-t-label px-1 py-[1px]" },
+  lg: { wrap: "h-16 w-16", avatar: "h-16 w-16", ring: 68, badge: "ds-t-label px-1 py-[1px]" },
 };
 
 const STATE_COLOR: Record<PingState, string> = {

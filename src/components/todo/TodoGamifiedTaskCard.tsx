@@ -227,7 +227,7 @@ export function TodoGamifiedTaskCard({
                   {deadlineDate && (
                     <span
                       className={cn(
-                        "text-[10px] font-mono uppercase tracking-wider",
+                        "ds-t-label font-mono uppercase tracking-wider",
                         isOverdue ? "text-red-400" : "text-muted-foreground",
                       )}
                     >
@@ -377,7 +377,7 @@ export function TodoGamifiedTaskCard({
                       {/* Badges Row */}
                       <div className="flex items-center gap-2 flex-wrap pt-1">
                         {/* Category Chip */}
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-white/5 border border-white/10 ds-t-label uppercase font-bold tracking-wider text-muted-foreground">
                           <CategoryIcon className="w-3 h-3" />
                           {t(`todo.categories.${category}`)}
                         </div>
@@ -385,7 +385,7 @@ export function TodoGamifiedTaskCard({
                         {/* Type Chip */}
                         <div
                           className={cn(
-                            "flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border border-transparent bg-white/5",
+                            "flex items-center gap-1.5 px-2 py-0.5 rounded ds-t-label uppercase font-bold tracking-wider border border-transparent bg-white/5",
                             typeConfig.color,
                           )}
                         >
@@ -396,7 +396,7 @@ export function TodoGamifiedTaskCard({
                         {/* Priority Indicator */}
                         <div
                           className={cn(
-                            "px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border",
+                            "px-2 py-0.5 rounded ds-t-label uppercase font-bold tracking-wider border",
                             config.badge,
                           )}
                         >
@@ -405,7 +405,7 @@ export function TodoGamifiedTaskCard({
 
                         {/* Urgent Alert */}
                         {task.is_urgent && (
-                          <div className="flex items-center gap-1 text-[10px] font-bold text-red-400 animate-pulse">
+                          <div className="flex items-center gap-1 ds-t-label font-bold text-red-400 animate-pulse">
                             <AlertTriangle className="w-3 h-3" />
                             CRITICAL
                           </div>
@@ -415,7 +415,7 @@ export function TodoGamifiedTaskCard({
                         {deadlineDate && (
                           <div
                             className={cn(
-                              "flex items-center gap-1.5 px-2 py-0.5 rounded border text-[10px] font-mono",
+                              "flex items-center gap-1.5 px-2 py-0.5 rounded border ds-t-label font-mono",
                               isOverdue
                                 ? "bg-red-500/10 border-red-500/30 text-red-300"
                                 : "bg-black/30 border-white/10 text-slate-400",

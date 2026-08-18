@@ -97,13 +97,13 @@ export function MobileBottomNav() {
                   {badge > 0 && (
                     <span
                       aria-label={`${badge} unread`}
-                      className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-bold flex items-center justify-center bg-[hsl(var(--ds-accent-critical))] text-white"
+                      className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full ds-t-label font-bold flex items-center justify-center bg-[hsl(var(--ds-accent-critical))] text-white"
                     >
                       {badge > 9 ? "9+" : badge}
                     </span>
                   )}
                 </div>
-                <span className="text-[10px] font-mono uppercase tracking-wider">
+                <span className="ds-t-label font-mono uppercase tracking-wider">
                   {tab.label}
                 </span>
               </NavLink>

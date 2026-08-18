@@ -54,7 +54,7 @@ export function LifeAreasBalancePanel() {
       headerAction={
         <button
           onClick={() => navigate("/profile/life-areas")}
-          className="text-[11px] font-orbitron uppercase tracking-wider text-primary/60 hover:text-primary transition-colors"
+          className="ds-t-label font-orbitron uppercase tracking-wider text-primary/60 hover:text-primary transition-colors"
         >
           Gérer
         </button>
@@ -76,7 +76,7 @@ export function LifeAreasBalancePanel() {
                   <span className="truncate">{a.name}</span>
                   <span className="text-muted-foreground tabular-nums">· {count} goal{count !== 1 ? "s" : ""}</span>
                 </div>
-                <div className="flex items-center gap-2 font-orbitron text-[11px] tabular-nums">
+                <div className="flex items-center gap-2 font-orbitron ds-t-label tabular-nums">
                   <span className="text-primary/80">{actual}%</span>
                   <span className="text-muted-foreground">/ {a.weight}%</span>
                   {delta !== 0 && (

@@ -90,18 +90,18 @@ export function AuraWidget({
           >
             <Icon className="w-4 h-4" style={{ color: t.spark }} />
           </div>
-          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground/70">
+          <span className="ds-t-label font-mono uppercase tracking-[0.18em] text-muted-foreground/70">
             {label}
           </span>
         </div>
 
         {/* Value */}
-        <p className="font-mono tabular-nums text-2xl sm:text-[26px] font-semibold text-foreground leading-none break-all">
+        <p className="font-mono tabular-nums text-2xl sm:text-[1.625rem] font-semibold text-foreground leading-none break-all">
           {value}
         </p>
 
         {sublabel && (
-          <p className="mt-1.5 text-[11px] text-muted-foreground/70 truncate">{sublabel}</p>
+          <p className="mt-1.5 ds-t-label text-muted-foreground/70 truncate">{sublabel}</p>
         )}
 
         {/* Sparkline */}

@@ -39,7 +39,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
 
         {/* Savings badge */}
         {savings > 0 && (
-          <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg font-orbitron text-[10px] font-black"
+          <div className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-lg font-orbitron ds-t-label font-black"
             style={{ background: "hsl(142 70% 50% / 0.15)", color: "hsl(142 70% 50%)", border: "1px solid hsl(142 70% 50% / 0.25)" }}>
             SAVE {savings}
           </div>
@@ -65,7 +65,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1.5">
-                <span className={`text-[9px] uppercase tracking-[0.15em] font-orbitron px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
+                <span className={`ds-t-label uppercase tracking-[0.15em] font-orbitron px-2 py-0.5 rounded-md border ${r.badgeBg} ${r.badgeText} ${r.badgeBorder}`}>
                   {bundle.rarity}
                 </span>
               </div>
@@ -78,12 +78,12 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
 
           {/* Items grid */}
           <div className="space-y-2">
-            <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-orbitron">
+            <div className="ds-t-label text-muted-foreground uppercase tracking-wider font-orbitron">
               Contains {bundle.items.length} items
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               {bundle.items.slice(0, 4).map((item, idx) => (
-                <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px]"
+                <div key={idx} className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg ds-t-label"
                   style={{ background: "hsl(var(--card) / 0.8)", border: "1px solid hsl(var(--primary) / 0.1)" }}>
                   {item.item_type.includes("cosmetic") ? <Sparkles className="w-3 h-3 text-primary shrink-0" /> : <Star className="w-3 h-3 shrink-0" style={{ color: "hsl(45 100% 60%)" }} />}
                   <span className="text-muted-foreground truncate">{item.name || item.item_type.replace("cosmetic_", "")}</span>
@@ -91,7 +91,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
               ))}
             </div>
             {bundle.items.length > 4 && (
-              <div className="text-[10px] text-primary font-orbitron" style={{ background: "hsl(var(--primary) / 0.06)" }}>
+              <div className="ds-t-label text-primary font-orbitron" style={{ background: "hsl(var(--primary) / 0.06)" }}>
                 +{bundle.items.length - 4} more
               </div>
             )}
@@ -99,7 +99,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
 
           {/* Ownership */}
           {ownedItemCount > 0 && (
-            <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "hsl(142 70% 50%)" }}>
+            <div className="flex items-center gap-1.5 ds-t-label" style={{ color: "hsl(142 70% 50%)" }}>
               <Check className="w-3 h-3" /> {ownedItemCount}/{bundle.items.length} already owned
             </div>
           )}
@@ -120,7 +120,7 @@ export function BundleCard({ bundle, onPurchase, canAfford, ownedItemCount }: Bu
             </div>
 
             {allOwned ? (
-              <div className="w-full py-2.5 rounded-lg text-center text-[10px] font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)", background: "hsl(142 70% 50% / 0.1)" }}>
+              <div className="w-full py-2.5 rounded-lg text-center ds-t-label font-orbitron tracking-wider" style={{ color: "hsl(142 70% 50%)", background: "hsl(142 70% 50% / 0.1)" }}>
                 All Owned
               </div>
             ) : (

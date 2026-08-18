@@ -67,7 +67,7 @@ export function OrbitDistribution({ items, size = 280 }: OrbitDistributionProps)
 
       <div className="absolute right-0 top-0 flex flex-col gap-1.5 max-w-[140px]">
         {orbits.map((o) => (
-          <div key={o.label} className="flex items-center gap-2 font-mono text-[10px]">
+          <div key={o.label} className="flex items-center gap-2 font-mono ds-t-label">
             <span className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ background: o.color, boxShadow: `0 0 6px ${o.color}` }} />
             <span className="text-foreground/80 truncate">{o.label}</span>
@@ -91,7 +91,7 @@ function OrbitDistributionEmpty() {
           <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--prism-cyan))]" />
         </div>
       </div>
-      <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
+      <span className="font-mono ds-t-label uppercase tracking-[0.3em] text-muted-foreground/70">
         AWAITING TARGETS
       </span>
     </div>

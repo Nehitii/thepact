@@ -25,7 +25,7 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
       <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-primary/60" aria-hidden="true" />
       <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-primary/60" aria-hidden="true" />
 
-      <div className="text-[8px] font-mono text-primary/50 uppercase tracking-[0.2em] mb-1" aria-hidden="true">
+      <div className="ds-t-label font-mono text-primary/50 uppercase tracking-[0.2em] mb-1" aria-hidden="true">
         {t("focus.controls.overrideControls")}
       </div>
 
@@ -42,9 +42,9 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
             clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)",
           }}
         >
-          <span className="text-[10px] font-mono font-bold tracking-widest uppercase relative z-10">
+          <span className="ds-t-label font-mono font-bold tracking-widest uppercase relative z-10">
             {isPaused ? t("focus.controls.resume") : t("focus.controls.halt")}
-            <span className="text-[8px] text-primary/40 ml-1.5">(SPACE)</span>
+            <span className="ds-t-label text-primary/40 ml-1.5">(SPACE)</span>
           </span>
           {isPaused ? <Play className="h-4 w-4 relative z-10 ml-1" /> : <Pause className="h-4 w-4 relative z-10" />}
         </button>
@@ -56,7 +56,7 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
           title="Skip Phase (⇧+S)"
         >
           <SkipForward className="h-4 w-4 group-hover:text-foreground" />
-          <span className="text-[8px] font-mono text-muted-foreground/50 leading-none mt-0.5" aria-hidden="true">⇧+S</span>
+          <span className="ds-t-label font-mono text-muted-foreground/50 leading-none mt-0.5" aria-hidden="true">⇧+S</span>
         </button>
       </div>
 
@@ -66,10 +66,10 @@ export function FocusControls({ phase, isPaused, onStart, onPause, onResume, onS
         style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}
       >
         <Square className="h-3 w-3 group-hover:text-destructive" />
-        <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase group-hover:text-destructive">
+        <span className="ds-t-label font-mono font-bold tracking-[0.2em] uppercase group-hover:text-destructive">
           {t("focus.controls.abort")}
         </span>
-        <span className="text-[8px] font-mono text-destructive/40" aria-hidden="true">(ESC)</span>
+        <span className="ds-t-label font-mono text-destructive/40" aria-hidden="true">(ESC)</span>
       </button>
     </div>
   );

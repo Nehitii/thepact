@@ -159,7 +159,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                 )}>
                   {format(day, 'd')}
                   {isTodayDate && (
-                    <span className="ml-1 text-[10px] text-primary">({t('todo.calendarView.today')})</span>
+                    <span className="ml-1 ds-t-label text-primary">({t('todo.calendarView.today')})</span>
                   )}
                 </div>
 
@@ -173,7 +173,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                       <div
                         key={task.id}
                         className={cn(
-                          'flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] truncate',
+                          'flex items-center gap-1 px-1.5 py-0.5 rounded ds-t-label truncate',
                           config.bg,
                           config.color
                         )}
@@ -188,7 +188,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                     );
                   })}
                   {dayTasks.length > 3 && (
-                    <div className="text-[10px] text-muted-foreground px-1.5">
+                    <div className="ds-t-label text-muted-foreground px-1.5">
                       {t('todo.calendarView.more', { count: dayTasks.length - 3 })}
                     </div>
                   )}
@@ -264,7 +264,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                           <p className="text-sm font-medium text-foreground truncate">{task.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <span className={cn(
-                              'px-1.5 py-0.5 rounded text-[10px] font-medium',
+                              'px-1.5 py-0.5 rounded ds-t-label font-medium',
                               task.priority === 'high' && 'bg-amber-500/20 text-amber-300',
                               task.priority === 'medium' && 'bg-blue-500/20 text-blue-300',
                               task.priority === 'low' && 'bg-emerald-500/20 text-emerald-300'
@@ -272,7 +272,7 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
                               {task.priority.toUpperCase()}
                             </span>
                             {task.is_urgent && (
-                              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 text-[10px]">
+                              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 ds-t-label">
                                 <AlertTriangle className="w-2.5 h-2.5" />
                                 {t('todo.taskCard.urgent')}
                               </span>

@@ -71,7 +71,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
 
         {/* Entry index watermark */}
         <div
-          className="absolute select-none font-mono text-[9px] tracking-[0.2em]"
+          className="absolute select-none font-mono ds-t-label tracking-[0.2em]"
           style={{ right: "14px", top: "50%", transform: "translateY(-50%)", color: accent.hex, opacity: 0.13, writingMode: "vertical-rl" }}
         >
           {`ENTRY::${String(index + 1).padStart(3, "0")}`}
@@ -82,20 +82,20 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
           {/* Mood badge */}
           <div className="flex items-center gap-[7px] px-2.5 py-[3px] rounded-sm" style={{ border: `1px solid ${mood.color}28`, background: `${mood.color}08` }}>
             <div className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: mood.color }} />
-            <span className="font-mono text-[9px] tracking-[0.12em]" style={{ color: mood.color }}>
+            <span className="font-mono ds-t-label tracking-[0.12em]" style={{ color: mood.color }}>
               {mood.label}
             </span>
           </div>
 
           {/* Date */}
-          <span className="font-mono text-[9px] tracking-[0.12em]" style={{ color: "var(--journal-text-dim)" }}>
+          <span className="font-mono ds-t-label tracking-[0.12em]" style={{ color: "var(--journal-text-dim)" }}>
             {format(createdDate, "yyyy.MM.dd")}{" "}
             <span style={{ color: accent.hex, opacity: 0.6 }}>//</span>{" "}
             {format(createdDate, "HH:mm")}
           </span>
 
           {entry.is_favorite && (
-            <span className="font-mono text-[9px] tracking-[0.1em]" style={{ color: accent.hex, opacity: 0.6 }}>
+            <span className="font-mono ds-t-label tracking-[0.1em]" style={{ color: accent.hex, opacity: 0.6 }}>
               ◈ PIN
             </span>
           )}
@@ -106,7 +106,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
           <div className="relative">
             <button
               onClick={() => setMenu(!menu)}
-              className="flex items-center justify-center transition-all duration-150 cursor-pointer text-[13px] rounded-[4px]"
+              className="flex items-center justify-center transition-all duration-150 cursor-pointer text-[0.8125rem] rounded-[4px]"
               style={{
                 width: "28px", height: "28px",
                 background: menu ? accent.dim : "transparent",
@@ -138,7 +138,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
                     <button
                       key={a.label}
                       onClick={a.fn}
-                      className="w-full text-left flex items-center gap-2 transition-colors duration-150 cursor-pointer hover:bg-muted/50 font-mono text-[10px] tracking-[0.1em] border-none"
+                      className="w-full text-left flex items-center gap-2 transition-colors duration-150 cursor-pointer hover:bg-muted/50 font-mono ds-t-label tracking-[0.1em] border-none"
                       style={{
                         padding: "9px 14px",
                         background: "transparent",
@@ -174,7 +174,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
             <div className="flex gap-3.5">
               <div className="shrink-0 pt-px">
                 {sentences.map((_, i) => (
-                  <div key={i} className="select-none text-right font-mono text-[9px] leading-[1.9]" style={{ color: accent.hex, opacity: 0.2 }}>
+                  <div key={i} className="select-none text-right font-mono ds-t-label leading-[1.9]" style={{ color: accent.hex, opacity: 0.2 }}>
                     {String(i + 1).padStart(2, "0")}
                   </div>
                 ))}
@@ -206,7 +206,7 @@ export function JournalEntryCard({ entry, index, onEdit, onDelete }: JournalEntr
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-1.5 flex-wrap">
             {entry.tags?.map((t) => (
-              <span key={t} className="rounded-sm font-mono text-[9px] tracking-[0.08em]" style={{ color: accent.hex, opacity: 0.75, background: accent.dim, border: `1px solid ${accent.hex}22`, padding: "2px 8px" }}>
+              <span key={t} className="rounded-sm font-mono ds-t-label tracking-[0.08em]" style={{ color: accent.hex, opacity: 0.75, background: accent.dim, border: `1px solid ${accent.hex}22`, padding: "2px 8px" }}>
                 /{t}
               </span>
             ))}

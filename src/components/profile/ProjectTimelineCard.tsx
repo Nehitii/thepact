@@ -21,7 +21,7 @@ interface ProjectTimelineCardProps {
 const CY_BTN = [
   "relative rounded-none bg-primary/10 border border-primary/35",
   "hover:bg-primary/18 hover:border-primary/65",
-  "text-primary font-mono text-[10px] tracking-[0.22em] uppercase",
+  "text-primary font-mono ds-t-label tracking-[0.22em] uppercase",
   "shadow-[0_0_14px_hsl(var(--primary)/0.12)] hover:shadow-[0_0_24px_hsl(var(--primary)/0.28)]",
   "disabled:opacity-30 disabled:cursor-not-allowed",
   "transition-all duration-200 h-10",
@@ -91,7 +91,7 @@ export function ProjectTimelineCard({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-              <label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Start Date</label>
+              <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">Start Date</label>
             </div>
             <Popover>
               <PopoverTrigger asChild>
@@ -120,7 +120,7 @@ export function ProjectTimelineCard({
           <div className="space-y-1.5">
             <div className="flex items-center gap-1.5">
               <span className="w-1 h-1 bg-primary/40 rotate-45 inline-block shrink-0" />
-              <label className="text-[9px] uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">End Date</label>
+              <label className="ds-t-label uppercase tracking-[0.22em] text-primary/40 font-mono font-semibold">End Date</label>
             </div>
             <Popover>
               <PopoverTrigger asChild>
@@ -148,7 +148,7 @@ export function ProjectTimelineCard({
         </div>
 
         {dateValidationError && (
-          <p className="text-[9px] text-destructive font-mono tracking-wider flex items-center gap-1.5">
+          <p className="ds-t-label text-destructive font-mono tracking-wider flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-destructive" />{dateValidationError}
           </p>
         )}

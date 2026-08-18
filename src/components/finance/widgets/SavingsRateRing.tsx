@@ -44,7 +44,7 @@ export function SavingsRateRing({ rate, size = 80 }: SavingsRateRingProps) {
         <span className={`text-lg font-bold tabular-nums ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
           {Math.abs(rate)}%
         </span>
-        <span className="text-[10px] text-slate-500 uppercase tracking-wider">
+        <span className="ds-t-label text-slate-500 uppercase tracking-wider">
           {isPositive ? t('finance.monthly.saved') : t('finance.monthly.deficit')}
         </span>
       </div>

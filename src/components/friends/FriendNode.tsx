@@ -72,14 +72,14 @@ export function FriendNode({
         <h3
           className={cn(
             "font-medium font-orbitron tracking-wide truncate text-[hsl(var(--ds-text-primary))]",
-            isCompact ? "text-[13px]" : "text-[15px]"
+            isCompact ? "text-[0.8125rem]" : "text-[0.9375rem]"
           )}
         >
           {displayName || t("friends.unknownAgent")}
         </h3>
         <div className={cn("flex items-center gap-2", isCompact ? "mt-0.5" : "mt-1")}>
           <span
-            className="inline-flex items-center gap-1.5 font-mono text-[9px] uppercase tracking-[0.22em]"
+            className="inline-flex items-center gap-1.5 font-mono ds-t-label uppercase tracking-[0.22em]"
             style={{ color: `hsl(${PING_COLOR_VAR[ping]})` }}
           >
             <span
@@ -90,8 +90,8 @@ export function FriendNode({
           </span>
           {!isCompact && (
             <>
-              <span className="font-mono text-[9px] text-[hsl(var(--ds-text-muted)/0.4)]">/</span>
-              <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.7)]">
+              <span className="font-mono ds-t-label text-[hsl(var(--ds-text-muted)/0.4)]">/</span>
+              <span className="font-mono ds-t-label uppercase tracking-[0.18em] text-[hsl(var(--ds-text-muted)/0.7)]">
                 {since}
               </span>
             </>

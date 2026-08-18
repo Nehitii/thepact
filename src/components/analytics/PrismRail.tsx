@@ -74,7 +74,7 @@ export function PrismRail({ active, onChange, badges }: PrismRailProps) {
         className="hidden lg:flex flex-col gap-1 sticky top-6 self-start w-[180px] flex-shrink-0"
         onKeyDown={onKeyNav}
       >
-        <div className="font-orbitron text-[9px] uppercase tracking-[0.25em] text-muted-foreground/60 px-3 mb-2">
+        <div className="font-orbitron ds-t-label uppercase tracking-[0.25em] text-muted-foreground/60 px-3 mb-2">
           // SECTIONS
         </div>
         {ITEMS.map((it) => {
@@ -106,7 +106,7 @@ export function PrismRail({ active, onChange, badges }: PrismRailProps) {
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 />
               )}
-              <span className="relative text-[9px] opacity-50 tabular-nums">{it.num}</span>
+              <span className="relative ds-t-label opacity-50 tabular-nums">{it.num}</span>
               <Icon
                 className={cn(
                   "relative h-4 w-4 transition-all",
@@ -124,7 +124,7 @@ export function PrismRail({ active, onChange, badges }: PrismRailProps) {
               {typeof badge === "number" && badge > 0 && (
                 <span
                   className={cn(
-                    "relative ml-auto font-mono text-[9px] tabular-nums px-1 py-px rounded-[2px] border",
+                    "relative ml-auto font-mono ds-t-label tabular-nums px-1 py-px rounded-[2px] border",
                     isActive
                       ? "border-[hsl(var(--prism-cyan))]/40 bg-[hsl(var(--prism-cyan))]/[0.1] text-[hsl(var(--prism-cyan))]"
                       : "border-border/40 text-muted-foreground/70",
@@ -137,7 +137,7 @@ export function PrismRail({ active, onChange, badges }: PrismRailProps) {
             </button>
           );
         })}
-        <div className="px-3 mt-3 pt-3 border-t border-[hsl(var(--prism-cyan))]/10 font-mono text-[8px] uppercase tracking-[0.22em] text-muted-foreground/50">
+        <div className="px-3 mt-3 pt-3 border-t border-[hsl(var(--prism-cyan))]/10 font-mono ds-t-label uppercase tracking-[0.22em] text-muted-foreground/50">
           ↑↓ navigate
         </div>
       </nav>
@@ -162,7 +162,7 @@ export function PrismRail({ active, onChange, badges }: PrismRailProps) {
                 onClick={() => onChange(it.id)}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex items-center gap-2 px-3 py-2 rounded-sm font-mono text-[11px] uppercase tracking-wider whitespace-nowrap transition-colors snap-center touch-target",
+                  "relative flex items-center gap-2 px-3 py-2 rounded-sm font-mono ds-t-label uppercase tracking-wider whitespace-nowrap transition-colors snap-center touch-target",
                 )}
               >
                 {isActive && (
@@ -187,7 +187,7 @@ export function PrismRail({ active, onChange, badges }: PrismRailProps) {
                   {it.label}
                 </span>
                 {typeof badge === "number" && badge > 0 && (
-                  <span className="relative font-mono text-[9px] tabular-nums px-1 rounded-[2px] border border-border/40 text-muted-foreground/70">
+                  <span className="relative font-mono ds-t-label tabular-nums px-1 rounded-[2px] border border-border/40 text-muted-foreground/70">
                     {badge}
                   </span>
                 )}

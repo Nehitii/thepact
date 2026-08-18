@@ -181,14 +181,14 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
           )}
 
           <div className="flex items-center gap-3 pt-1">
-            <span className="text-[10px] text-muted-foreground/60 font-rajdhani">
+            <span className="ds-t-label text-muted-foreground/60 font-rajdhani">
               {timeAgo}
             </span>
 
             {hasReward && (
               <>
                 {isClaimed ? (
-                  <span className="text-[10px] text-emerald-400 font-semibold font-rajdhani flex items-center gap-1">
+                  <span className="ds-t-label text-emerald-400 font-semibold font-rajdhani flex items-center gap-1">
                     <Check className="h-3 w-3" />
                     Claimed
                   </span>
@@ -197,7 +197,7 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
                     size="sm"
                     onClick={handleClaim}
                     disabled={claiming}
-                    className="h-6 px-2 text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500/30"
+                    className="h-6 px-2 ds-t-label bg-amber-500/20 text-amber-400 border border-amber-500/50 hover:bg-amber-500/30"
                   >
                     {claiming ? (
                       <Loader2 className="h-3 w-3 animate-spin mr-1" />
@@ -211,7 +211,7 @@ export function NotificationCard({ notification, onMarkAsRead, onDelete }: Notif
             )}
 
             {notification.cta_label && (
-              <span className="text-[10px] text-primary font-rajdhani flex items-center gap-1">
+              <span className="ds-t-label text-primary font-rajdhani flex items-center gap-1">
                 {notification.cta_label}
                 <ExternalLink className="h-3 w-3" />
               </span>

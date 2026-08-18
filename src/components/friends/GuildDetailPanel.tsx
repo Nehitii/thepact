@@ -97,7 +97,7 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
           <DialogTitle className="font-orbitron tracking-wider text-lg flex items-center gap-2">
             {guild.name}
             {isOwner && <Crown className="h-4 w-4 text-amber-400" />}
-            {guild.is_public && <span className="text-[10px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-mono">{t("friends.public")}</span>}
+            {guild.is_public && <span className="ds-t-label bg-primary/20 text-primary px-1.5 py-0.5 rounded-full font-mono">{t("friends.public")}</span>}
           </DialogTitle>
         </DialogHeader>
 
@@ -105,12 +105,12 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 min-h-0">
           <TabsList className="w-full grid grid-cols-6 h-8">
-            <TabsTrigger value="members" className="text-[10px] px-1"><UserPlus className="h-3 w-3" /></TabsTrigger>
-            <TabsTrigger value="announcements" className="text-[10px] px-1"><Megaphone className="h-3 w-3" /></TabsTrigger>
-            <TabsTrigger value="goals" className="text-[10px] px-1"><Target className="h-3 w-3" /></TabsTrigger>
-            <TabsTrigger value="activity" className="text-[10px] px-1"><Activity className="h-3 w-3" /></TabsTrigger>
-            <TabsTrigger value="codes" className="text-[10px] px-1"><Link className="h-3 w-3" /></TabsTrigger>
-            {isOwner && <TabsTrigger value="settings" className="text-[10px] px-1"><Settings className="h-3 w-3" /></TabsTrigger>}
+            <TabsTrigger value="members" className="ds-t-label px-1"><UserPlus className="h-3 w-3" /></TabsTrigger>
+            <TabsTrigger value="announcements" className="ds-t-label px-1"><Megaphone className="h-3 w-3" /></TabsTrigger>
+            <TabsTrigger value="goals" className="ds-t-label px-1"><Target className="h-3 w-3" /></TabsTrigger>
+            <TabsTrigger value="activity" className="ds-t-label px-1"><Activity className="h-3 w-3" /></TabsTrigger>
+            <TabsTrigger value="codes" className="ds-t-label px-1"><Link className="h-3 w-3" /></TabsTrigger>
+            {isOwner && <TabsTrigger value="settings" className="ds-t-label px-1"><Settings className="h-3 w-3" /></TabsTrigger>}
           </TabsList>
 
           <TabsContent value="members" className="mt-3 space-y-3">
@@ -159,7 +159,7 @@ export function GuildDetailPanel({ open, onClose, guild, userId }: GuildDetailPa
                           <span className="text-sm font-bold truncate">{m.display_name}</span>
                           {roleIcon(m.role)}
                         </div>
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{m.role}</span>
+                        <span className="ds-t-label text-muted-foreground uppercase tracking-wider">{m.role}</span>
                       </div>
                       {isOwner && m.user_id !== userId && (
                         <DropdownMenu>

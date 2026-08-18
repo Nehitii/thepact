@@ -707,3 +707,30 @@ All colors MUST be HSL.
 }
 
 /* ───── Module-scoped styles are imported from src/main.tsx ───── */
+
+/* ─────────────────────────────────────────────────────────────
+   Role d'etiquette — une taille pour cinq
+
+   L'application comptait 750 tailles ecrites en dur entre 7 et 11px
+   (395 a 10px, 163 a 9px, 143 a 11px, 47 a 8px, 2 a 7px) pour un seul
+   et meme role : l'etiquette en capitales espacees. Cinq valeurs
+   indistinguables, dont trois sous le seuil lisible.
+
+   Elles etaient aussi figees en pixels, donc insensibles au reglage
+   "taille de police globale" du profil (curseur 12-24px, ecrit par
+   AccentColorSync sur documentElement). Sur le tableau de bord, 132
+   textes sur 160 ignoraient ce reglage : a 24px la page se disloquait,
+   28 textes grossissant et 132 restant sur place.
+
+   max() resout les deux d'un coup :
+     racine 16px -> max(11px, 0.6875rem) = 11px   (plancher lisible)
+     racine 24px -> max(11px, 1.031rem)  = 16.5px (suit la preference)
+     racine 12px -> max(11px, 0.516rem)  = 11px   (le plancher tient)
+
+   Dans @layer utilities pour qu'une classe Tailwind posee apres puisse
+   toujours l'emporter ponctuellement. */
+@layer utilities {
+  .ds-t-label {
+    font-size: max(11px, 0.6875rem);
+  }
+}

@@ -35,7 +35,7 @@ export const SourceFilterChips = memo(({ active, onToggle }: SourceFilterChipsPr
             key={key}
             onClick={() => onToggle(key)}
             className={cn(
-              "flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium border transition-all",
+              "flex items-center gap-1 px-2.5 py-1 rounded-full ds-t-label font-medium border transition-all",
               isActive ? colorClass : "text-muted-foreground border-border/30 bg-transparent opacity-50"
             )}
           >
