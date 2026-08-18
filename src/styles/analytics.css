@@ -762,3 +762,181 @@
     linear-gradient(90deg, var(--cp-jaune) 0 3px, transparent 3px),
     linear-gradient(100deg, rgb(24 28 22) 0%, var(--nexus-bg) 46%);
 }
+
+/* ── Contrats ────────────────────────────────────────────────────
+   L'image est le sujet, pas une texture. Premier jet : opacite 0,32
+   sous un voile couvrant toute la fiche — on ne distinguait plus rien
+   de l'objectif. Ici l'image est a pleine intensite et le voile ne
+   couvre que le tiers bas, exactement sous le texte.
+   ──────────────────────────────────────────────────────────────── */
+.cp-contrats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(238px, 1fr));
+  gap: 12px;
+}
+.cp-contrat {
+  --cp-chanfrein: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 170ms ease;
+}
+.cp-contrat:hover { transform: translateY(-3px); }
+.cp-contrat:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 3px; }
+.cp-contrat-in {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+}
+.cp-contrat-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* Pleine intensite. Une legere desaturation suffit a l'asseoir dans
+     la palette sans l'effacer. */
+  filter: saturate(0.88) contrast(1.06);
+  transition: transform 520ms ease, filter 260ms ease;
+}
+.cp-contrat:hover .cp-contrat-img { transform: scale(1.06); filter: saturate(1) contrast(1.1); }
+/* Sans image : une trame technique, jamais un trou noir. */
+.cp-contrat-trame {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(-45deg,
+      hsl(var(--primary) / 0.07) 0 9px, transparent 9px 18px),
+    var(--nexus-bg);
+}
+/* Le voile ne descend que sur le bas. Transparent sur les 42 premiers
+   pour-cent : l'image y respire. */
+.cp-contrat-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgb(3 7 14 / 0) 0%,
+    rgb(3 7 14 / 0) 34%,
+    rgb(3 7 14 / 0.62) 55%,
+    rgb(3 7 14 / 0.9) 74%,
+    rgb(3 7 14 / 0.97) 100%);
+}
+.cp-contrat-flanc {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--t);
+  box-shadow: 0 0 8px -1px var(--t);
+}
+.cp-contrat-haut {
+  position: absolute;
+  inset: 9px 10px auto 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+.cp-contrat-xp {
+  padding: 1px 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.2px;
+  color: var(--cp-cyan);
+  /* Fond plein derriere le XP : il se pose sur l'image, la ou aucun
+     voile ne garantit le contraste. */
+  background: rgb(3 7 14 / 0.82);
+  clip-path: polygon(4px 0, 100% 0, 100% 100%, 0 100%);
+  font-variant-numeric: tabular-nums;
+}
+.cp-contrat-bas {
+  position: absolute;
+  inset: auto 12px 11px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cp-contrat-palier {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2.4px;
+  color: var(--t);
+  filter: brightness(1.25);
+}
+.cp-contrat-nom {
+  font-family: 'Rajdhani', 'Orbitron', sans-serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  line-height: 1.14;
+  letter-spacing: 0.3px;
+  color: #f2f9ff;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.85);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cp-contrat-ligne { display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+.cp-contrat-barre { --c: var(--t); flex: 1; height: 8px; }
+.cp-contrat-barre > i { box-shadow: none; }
+.cp-contrat-pct {
+  flex-shrink: 0;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.2px;
+  color: #cfe4f5;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-contrat, .cp-contrat-img { transition: none; }
+  .cp-contrat:hover { transform: none; }
+  .cp-contrat:hover .cp-contrat-img { transform: none; }
+}
+
+/* Voile un cran plus dense dans la zone de texte : sur une image tres
+   claire (or, blanc) le palier colore passait tout juste. L'image garde
+   son tiers haut totalement libre. */
+.cp-contrat-scrim {
+  background: linear-gradient(180deg,
+    rgb(3 7 14 / 0) 0%,
+    rgb(3 7 14 / 0) 30%,
+    rgb(3 7 14 / 0.74) 52%,
+    rgb(3 7 14 / 0.93) 72%,
+    rgb(3 7 14 / 0.98) 100%);
+}
+
+/* ── Releve segmente ──
+   Un BarChart Recharts horizontal pour huit domaines demandait au
+   lecteur de suivre une barre jusqu'a un axe pour lire une valeur qu'on
+   peut simplement ecrire. Le releve met l'etiquette, la barre et le
+   nombre sur la meme ligne : plus rien a traverser des yeux. */
+.cp-releve { display: flex; flex-direction: column; gap: 7px; }
+.cp-releve-ligne {
+  display: grid;
+  grid-template-columns: minmax(84px, 118px) 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.cp-releve-nom {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cp-releve-barre { height: 11px; }
+.cp-releve-val {
+  min-width: 2.2rem;
+  text-align: right;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.2px;
+  color: #cfe4f5;
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-cout-barre { height: 13px; margin-bottom: 2px; }

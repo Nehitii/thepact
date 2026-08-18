@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
 import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
-import { GoalArchive } from "@/components/analytics/GoalArchive";
+import { GoalContrats } from "@/components/analytics/GoalContrats";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
@@ -86,6 +86,30 @@ function Panneau({
           ? <p className="ana-vide ds-t-label">{messageVide || "Aucune donnée"}</p>
           : children}
       </section>
+    </div>
+  );
+}
+
+/** Releve segmente : etiquette, barre en cellules, valeur — sur une ligne.
+ *  Remplace les BarChart horizontaux, ou il fallait suivre une barre
+ *  jusqu'a un axe pour lire un nombre qu'on peut simplement ecrire. */
+function Releve({ lignes, teinte = ACCENT, suffixe = "" }: {
+  lignes: { nom: string; valeur: number }[];
+  teinte?: string;
+  suffixe?: string;
+}) {
+  const max = Math.max(1, ...lignes.map((l) => l.valeur));
+  return (
+    <div className="cp-releve">
+      {lignes.map((l) => (
+        <div key={l.nom} className="cp-releve-ligne">
+          <span className="cp-releve-nom" title={l.nom}>{l.nom}</span>
+          <span className="cp-segments cp-releve-barre" style={{ ["--c" as string]: teinte }}>
+            <i style={{ width: `${(l.valeur / max) * 100}%` }} />
+          </span>
+          <span className="cp-releve-val">{l.valeur}{suffixe}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -169,6 +193,7 @@ export default function Analytics() {
     ? Math.round((summary.completedSteps / summary.totalSteps) * 100) : 0;
   const pctPaye = summary.totalCost > 0
     ? Math.min(100, (summary.paidCost / summary.totalCost) * 100) : 0;
+  const totalHabitudes = habitStreak.reduce((a, h) => a + h.completed, 0);
 
   return (
     <DSPageShell width="xl" background={<SpaceBackdrop />}>
@@ -318,12 +343,12 @@ export default function Analytics() {
 
             {/* La courbe dit combien ; l'archive dit lesquels. */}
             <Panneau
-              titre="Archive"
-              droite={`${goalShowcase.length} fiches`}
+              titre="Contrats"
+              droite={`${goalShowcase.length} ouverts`}
               vide={goalShowcase.length === 0}
-              messageVide="Aucun objectif à archiver"
+              messageVide="Aucun contrat ouvert"
             >
-              <GoalArchive goals={goalShowcase} />
+              <GoalContrats goals={goalShowcase} />
             </Panneau>
           </div>
         )}
@@ -358,15 +383,7 @@ export default function Analytics() {
                 vide={tags.length === 0}
                 messageVide="Aucune étiquette posée"
               >
-                <ResponsiveContainer width="100%" height={262}>
-                  <BarChart data={tags} layout="vertical" margin={{ left: 4 }}>
-                    <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" horizontal={false} />
-                    <XAxis type="number" tick={AXE} stroke={TRAIT} tickLine={false} allowDecimals={false} />
-                    <YAxis type="category" dataKey="nom" tick={AXE} stroke={TRAIT} tickLine={false} width={96} />
-                    <Tooltip content={<CleanTooltip />} />
-                    <Bar dataKey="valeur" name="Objectifs" fill={ACCENT} radius={[0, 2, 2, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <Releve lignes={tags} teinte={ACCENT} />
               </Panneau>
             </div>
 
@@ -376,7 +393,7 @@ export default function Analytics() {
               vide={summary.totalCost === 0}
               messageVide="Aucun coût estimé"
             >
-              <div className="ana-barre">
+              <div className="cp-segments cp-cout-barre" style={{ ["--c" as string]: AMBRE }}>
                 <i style={{ width: `${pctPaye}%` }} />
               </div>
               <p className="ana-pied ana-pied-gauche ds-t-label">
@@ -433,10 +450,16 @@ export default function Analytics() {
               <Panneau
                 titre="Habitudes"
                 droite={habitStreak.length
-                  ? `${habitStreak.reduce((a, h) => a + h.completed, 0)} / ${habitStreak.length} jours`
+                  ? `${totalHabitudes} / ${habitStreak.length} jours`
                   : undefined}
-                vide={habitStreak.length === 0}
-                messageVide="Aucune habitude suivie"
+                /* Un histogramme de soixante barres a zero ne dit pas
+                   "jamais tenue" — il ressemble a un graphique casse. Quand
+                   rien n'est coche, on l'ecrit. (Verifie en base : l'unique
+                   objectif d'habitude a 180 cases, toutes a false.) */
+                vide={habitStreak.length === 0 || totalHabitudes === 0}
+                messageVide={habitStreak.length === 0
+                  ? "Aucune habitude suivie"
+                  : `Aucun jour tenu sur ${habitStreak.length} suivis`}
               >
                 <ResponsiveContainer width="100%" height={195}>
                   <BarChart data={habitStreak.slice(-60)}>
@@ -476,15 +499,12 @@ export default function Analytics() {
               vide={todoStats.length === 0}
               messageVide="Aucune tâche terminée"
             >
-              <ResponsiveContainer width="100%" height={175}>
-                <BarChart data={todoStats}>
-                  <CartesianGrid stroke={TRAIT} strokeDasharray="3 6" vertical={false} />
-                  <XAxis dataKey="month" tickFormatter={moisCourt} tick={AXE} stroke={TRAIT} tickLine={false} />
-                  <YAxis tick={AXE} stroke={TRAIT} tickLine={false} width={28} allowDecimals={false} />
-                  <Tooltip content={<CleanTooltip />} />
-                  <Bar dataKey="completed" name="Terminées" fill={AMBRE} radius={[2, 2, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {/* Cinq mois, cinq nombres : un releve les donne directement,
+                  la ou un histogramme obligeait a estimer chaque hauteur. */}
+              <Releve
+                lignes={todoStats.map((x) => ({ nom: moisCourt(x.month), valeur: x.completed }))}
+                teinte={AMBRE}
+              />
             </Panneau>
           </div>
         )}
