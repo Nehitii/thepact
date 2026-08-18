@@ -63,7 +63,7 @@ export default function TwoFactor() {
   if (mfa.isLoading) {
     return (
       <DSPageShell>
-        <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="flex min-h-[100dvh] items-center justify-center">
           <Loader2 className="w-6 h-6 animate-spin text-primary" />
         </div>
       </DSPageShell>
@@ -72,7 +72,7 @@ export default function TwoFactor() {
 
   return (
     <DSPageShell>
-      <div className="flex min-h-[70vh] items-center justify-center px-4">
+      <div className="flex min-h-[100dvh] items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">

@@ -195,7 +195,7 @@
 .ds-text-label {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-weight: 500;
-  font-size: 0.625rem; /* 10px */
+  font-size: 0.75rem; /* 12px a racine 16px ; reste au-dessus du plancher de 11px meme si l'utilisateur reduit sa taille de police (AccentColorSync ecrit profile.font_size sur documentElement) */
   letter-spacing: 0.22em;
   line-height: 1.2;
   text-transform: uppercase;
