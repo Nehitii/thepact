@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
 import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
+import { GoalArchive } from "@/components/analytics/GoalArchive";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
@@ -72,17 +73,20 @@ function Panneau({
   messageVide?: string;
 }) {
   return (
-    <section className="ana-panneau">
-      <div className="ana-panneau-liseret" />
-      <header className="ana-panneau-tete">
-        <h2 className="ana-panneau-titre ds-t-label">// {titre}</h2>
-        <span className="ana-panneau-fil" />
-        {droite && <span className="ana-panneau-droite ds-t-label">{droite}</span>}
-      </header>
-      {vide
-        ? <p className="ana-vide ds-t-label">{messageVide || "Aucune donnée"}</p>
-        : children}
-    </section>
+    <div className="cp-cadre">
+      <section className="cp-fond ana-panneau">
+        <span className="cp-equerre cp-equerre-hg" />
+        <span className="cp-equerre cp-equerre-bd" />
+        <header className="ana-panneau-tete">
+          <h2 className="ana-panneau-titre ds-t-label">{titre}</h2>
+          <span className="ana-panneau-fil" />
+          {droite && <span className="ana-panneau-droite ds-t-label">{droite}</span>}
+        </header>
+        {vide
+          ? <p className="ana-vide ds-t-label">{messageVide || "Aucune donnée"}</p>
+          : children}
+      </section>
+    </div>
   );
 }
 
@@ -155,7 +159,7 @@ export default function Analytics() {
   }
 
   const {
-    goalsOverTime, healthTrend, financeTrend, habitStreak, todoStats,
+    goalsOverTime, healthTrend, financeTrend, habitStreak, todoStats, goalShowcase,
     pomodoroTrend, goalVelocity, summary,
   } = data;
 
@@ -171,13 +175,18 @@ export default function Analytics() {
       <div className="ana-page">
 
         {/* ── Bandeau : trois compteurs, fixes d'une vue a l'autre ── */}
-        <section className="ana-panneau">
-          <div className="ana-panneau-liseret" />
+        <div className="cp-cadre">
+        <section className="cp-fond ana-panneau ana-bandeau-panneau">
+          <span className="cp-balayage" />
+          <span className="cp-equerre cp-equerre-hg" />
+          <span className="cp-equerre cp-equerre-bd" />
           <header className="ana-panneau-tete">
-            <h1 className="ana-panneau-titre ds-t-label">// Statistiques</h1>
+            <h1 className="ana-panneau-titre ds-t-label">Statistiques</h1>
+            <span className="cp-tag">REL. {period.toUpperCase()}</span>
             <span className="ana-panneau-fil" />
             <CleanPeriodSelector value={period} onChange={setPeriod} />
           </header>
+          <div className="cp-danger ana-bandeau-rayure" />
           <div className="ana-bandeau">
             <Compteur
               valeur={pctObjectifs} unite="%" libelle="Objectifs franchis"
@@ -193,6 +202,7 @@ export default function Analytics() {
             />
           </div>
         </section>
+        </div>
 
         {/* ── Bascule de vue ── */}
         <nav className="ana-vues" aria-label="Vues des statistiques">
@@ -205,8 +215,13 @@ export default function Analytics() {
               className="ana-vue"
               data-actif={section === v.id}
             >
-              <span className="ana-vue-nom">{v.nom}</span>
-              <span className="ana-vue-sous">{v.sous}</span>
+              {/* Un seul conteneur interieur, et non deux enfants directs :
+                  c'est lui qui porte le fond opaque et le chanfrein. Sans
+                  lui, le liseré du cadre transparait entre les deux lignes. */}
+              <span className="ana-vue-in">
+                <span className="ana-vue-nom">{v.nom}</span>
+                <span className="ana-vue-sous">{v.sous}</span>
+              </span>
             </button>
           ))}
         </nav>
@@ -300,6 +315,16 @@ export default function Analytics() {
                 </p>
               </Panneau>
             </div>
+
+            {/* La courbe dit combien ; l'archive dit lesquels. */}
+            <Panneau
+              titre="Archive"
+              droite={`${goalShowcase.length} fiches`}
+              vide={goalShowcase.length === 0}
+              messageVide="Aucun objectif à archiver"
+            >
+              <GoalArchive goals={goalShowcase} />
+            </Panneau>
           </div>
         )}
 

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { subDays, subMonths, format, parseISO, differenceInDays } from "date-fns";
@@ -150,6 +150,11 @@ export function useAnalytics(period: AnalyticsPeriod = "all") {
 
   return useQuery({
     queryKey: ["analytics-dashboard", user?.id, period],
+    // Le changement de periode conserve les donnees precedentes pendant le
+    // chargement. Sans cela `data` repasse a undefined, la page entiere
+    // bascule en squelettes, et le selecteur de periode lui-meme est
+    // demonte puis remonte : c'est ce qui le faisait scintiller.
+    placeholderData: keepPreviousData,
     queryFn: async (): Promise<AnalyticsData> => {
       if (!user?.id) throw new Error("Not authenticated");
 

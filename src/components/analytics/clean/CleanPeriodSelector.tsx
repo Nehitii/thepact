@@ -1,52 +1,49 @@
-import { motion } from "framer-motion";
-import { useTranslation } from "react-i18next";
-import { cn } from "@/lib/utils";
 import type { AnalyticsPeriod } from "../PeriodSelector";
+
+/* Selecteur de periode.
+ *
+ * Deux choses ont ete corrigees ici.
+ *
+ * Le scintillement : la pastille active etait un motion.span porteur d'un
+ * layoutId. A chaque changement de periode la page repassait en chargement,
+ * le selecteur etait demonte, et l'animation partagee redemarrait de zero —
+ * d'ou le flash. La pastille est desormais un fond CSS : il n'y a plus rien
+ * a animer entre deux montages. L'autre moitie du correctif est dans
+ * useAnalytics, ou keepPreviousData empeche le demontage.
+ *
+ * Les libelles : "30 derniers jours" etalait le selecteur sur toute la
+ * largeur de l'en-tete. Un releve technique est terse.
+ */
 
 interface Props {
   value: AnalyticsPeriod;
   onChange: (v: AnalyticsPeriod) => void;
 }
 
+const OPTIONS: { value: AnalyticsPeriod; label: string; titre: string }[] = [
+  { value: "30d", label: "30J", titre: "30 derniers jours" },
+  { value: "90d", label: "90J", titre: "3 derniers mois" },
+  { value: "6m", label: "6M", titre: "6 derniers mois" },
+  { value: "all", label: "TOUT", titre: "Depuis le début" },
+];
+
 export function CleanPeriodSelector({ value, onChange }: Props) {
-  const { t } = useTranslation();
-  const options: { value: AnalyticsPeriod; label: string }[] = [
-    { value: "30d", label: t("analytics.period.30d", "30j") },
-    { value: "90d", label: t("analytics.period.90d", "90j") },
-    { value: "6m", label: t("analytics.period.6m", "6 mois") },
-    { value: "all", label: t("analytics.period.all", "Tout") },
-  ];
   return (
-    <div
-      role="tablist"
-      aria-label="Période"
-      className="inline-flex items-center gap-0 rounded-lg border border-border/60 bg-card/40 p-0.5"
-    >
-      {options.map((opt) => {
-        const isActive = opt.value === value;
-        return (
-          <button
-            key={opt.value}
-            type="button"
-            role="tab"
-            aria-selected={isActive}
-            onClick={() => onChange(opt.value)}
-            className={cn(
-              "relative px-3 py-1.5 text-xs font-medium rounded-md transition-colors",
-              isActive ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {isActive && (
-              <motion.span
-                layoutId="clean-period-active"
-                className="absolute inset-0 bg-primary rounded-md"
-                transition={{ type: "spring", stiffness: 380, damping: 32 }}
-              />
-            )}
-            <span className="relative">{opt.label}</span>
-          </button>
-        );
-      })}
+    <div role="tablist" aria-label="Période" className="cp-periode">
+      {OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          role="tab"
+          aria-selected={opt.value === value}
+          title={opt.titre}
+          onClick={() => onChange(opt.value)}
+          className="cp-periode-seg"
+          data-actif={opt.value === value}
+        >
+          {opt.label}
+        </button>
+      ))}
     </div>
   );
 }
