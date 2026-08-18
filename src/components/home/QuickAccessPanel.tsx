@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { CornerBrackets } from "./CornerBrackets";
@@ -107,6 +108,21 @@ const EXTRA = [
 export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" }: QuickAccessPanelProps) {
   const navigate = useNavigate();
 
+  // Le fondu de bord ne doit apparaitre que s il reste effectivement du
+  // contenu a droite : pose en permanence, il voilerait la derniere tuile
+  // sur un ecran large ou tout tient.
+  const railRef = useRef<HTMLDivElement>(null);
+  const [deborde, setDeborde] = useState(false);
+  useEffect(() => {
+    const el = railRef.current;
+    if (!el) return;
+    const mesurer = () => setDeborde(el.scrollWidth > el.clientWidth + 1);
+    mesurer();
+    const ro = new ResizeObserver(mesurer);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   const isLocked = (moduleKey: string | null) => {
     if (!moduleKey) return false;
     return !ownedModules[moduleKey as keyof typeof ownedModules];
@@ -127,7 +143,7 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
     >
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      <div className="flex items-stretch gap-2 overflow-x-auto scrollbar-thin-x">
+      <div ref={railRef} className="flex items-stretch gap-2 quick-bar-scroll">
         <span
           className="hidden lg:flex items-center shrink-0 pr-3 mr-1"
           style={{
@@ -204,6 +220,9 @@ export function QuickAccessPanel({ ownedModules, onWeeklyReview, className = "" 
           );
         })}
       </div>
+
+      {/* Indique qu il reste des elements a droite, a la place du rail gris. */}
+      {deborde && <div className="quick-bar-fade" aria-hidden="true" />}
     </div>
   );
 }

@@ -737,3 +737,44 @@ All colors MUST be HSL.
     font-size: max(11px, 0.6875rem);
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Barre d'acces rapide : conteneur defilant
+
+   Deux defauts se cumulaient. La barre de defilement etait visible
+   en permanence sous les tuiles, et surtout un conteneur en
+   overflow-x: auto etablit un contexte de rognage sur les DEUX
+   axes : le souleve de 1px au survol etait coupe net.
+
+   padding-block cree la place pour ce souleve, margin-block negatif
+   la reprend pour que la barre n'occupe pas plus de hauteur.
+
+   La barre de defilement native est masquee au profit d'un fondu sur
+   le bord droit, pose par le parent : il indique qu'il reste du
+   contenu sans imposer un rail gris a l'interface.
+   ───────────────────────────────────────────────────────────── */
+@layer utilities {
+  .quick-bar-scroll {
+    overflow-x: auto;
+    padding-block: 7px;
+    margin-block: -7px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .quick-bar-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Le fondu ne s'affiche que lorsqu'il y a effectivement a defiler :
+     anime par animation-timeline, il reste inerte la ou tout tient. */
+  .quick-bar-fade {
+    position: absolute;
+    top: 1px;
+    bottom: 1px;
+    right: 1px;
+    width: 3rem;
+    pointer-events: none;
+    border-radius: 0 4px 4px 0;
+    background: linear-gradient(90deg, transparent, var(--nexus-bg) 78%);
+  }
+}

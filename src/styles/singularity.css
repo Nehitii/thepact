@@ -145,8 +145,8 @@
     hsl(var(--ds-accent-hue, 200) 100% 72% / calc(0.13 * var(--sing-lum, 1))) 238deg,
     transparent 266deg,
     transparent 360deg);
-  mask-image: radial-gradient(circle, transparent 28%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.4) 74%, transparent 100%);
-  -webkit-mask-image: radial-gradient(circle, transparent 28%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.4) 74%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 28%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.4) 74%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 28%, rgba(0,0,0,0.85) 50%, rgba(0,0,0,0.4) 74%, transparent 100%);
   animation: sing-rotate calc(var(--sing-breath, 8s) * 7) linear infinite;
 }
 
@@ -187,8 +187,8 @@
     hsl(var(--ds-accent-hue, 200) 100% 68%) 0%,
     hsl(var(--ds-accent-hue, 200) 100% 68%) var(--sing-progress, 0%),
     transparent var(--sing-progress, 0%));
-  mask-image: radial-gradient(circle, transparent 78%, black 80%, black 84%, transparent 86%);
-  -webkit-mask-image: radial-gradient(circle, transparent 78%, black 80%, black 84%, transparent 86%);
+  mask-image: radial-gradient(circle closest-side, transparent 78%, black 80%, black 84%, transparent 86%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 78%, black 80%, black 84%, transparent 86%);
   filter: drop-shadow(0 0 4px hsl(var(--ds-accent-hue, 200) 100% 60% / 0.8));
   transition: background 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -243,8 +243,8 @@
     hsl(var(--ds-accent-hue, 200) 100% 72% / calc(0.13 * var(--sing-lum, 1))) 8deg,
     transparent 9deg,
     transparent 16deg);
-  mask-image: radial-gradient(circle, transparent 8%, rgba(0,0,0,0.9) 32%, rgba(0,0,0,0.35) 66%, transparent 100%);
-  -webkit-mask-image: radial-gradient(circle, transparent 8%, rgba(0,0,0,0.9) 32%, rgba(0,0,0,0.35) 66%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 8%, rgba(0,0,0,0.9) 32%, rgba(0,0,0,0.35) 66%, transparent 100%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 8%, rgba(0,0,0,0.9) 32%, rgba(0,0,0,0.35) 66%, transparent 100%);
   animation: sing-infall calc(var(--sing-breath, 8s) * 1.6) cubic-bezier(0.55, 0, 0.85, 0.35) infinite;
   will-change: transform, opacity;
 }
