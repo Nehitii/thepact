@@ -283,98 +283,132 @@
   overflow: hidden;
 }
 
+/* Le vide. Presque noir : l'espace n'est pas une couleur, c'est une
+   absence que des lumieres viennent trouer. La version precedente
+   posait un voile de bruit fractal par-dessus tout, ce qui eclaircissait
+   uniformement la page — l'exact contraire. */
 .space-void {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 90% 60% at 50% -10%, #071634 0%, transparent 60%),
-    linear-gradient(175deg, #03071a 0%, #050b22 38%, #02040e 78%, #010208 100%);
+  background: linear-gradient(178deg, #000106 0%, #01020c 42%, #000106 74%, #000004 100%);
 }
 
-.space-nebula {
+/* C(oe)ur de galaxie. Une concentration diffuse, tres large et
+   decentree, qui eclaire le champ de biais. Le blanc chaud au centre
+   vers le bleu froid sur les bords : c'est le degrade d'un bulbe
+   galactique reel, et c'est lui qui donne l'immensite — un champ
+   d'etoiles seul reste un ciel de nuit, pas une galaxie. */
+.space-galaxy {
   position: absolute;
-  inset: -8%;
-  width: 116%;
-  height: 116%;
-  mix-blend-mode: screen;
+  inset: -10%;
+  background:
+    radial-gradient(ellipse 34% 20% at 28% 22%,
+      hsl(38 70% 82% / 0.075) 0%,
+      hsl(28 60% 60% / 0.04) 26%,
+      transparent 62%),
+    radial-gradient(ellipse 62% 42% at 26% 20%,
+      hsl(205 90% 62% / 0.055) 0%,
+      hsl(220 85% 45% / 0.028) 45%,
+      transparent 75%),
+    radial-gradient(ellipse 48% 34% at 84% 78%,
+      hsl(268 75% 58% / 0.042) 0%,
+      transparent 68%);
+  filter: blur(22px);
 }
 
-/* La bande galactique. Deux traits superposes — un large et diffus,
-   un fin et dense — donnent l'epaisseur qu'un seul degrade n'a pas. */
+/* Bande galactique : la trainee dense qui traverse le champ. Trois
+   traits superposes — large et diffus, moyen, fin et clair — donnent
+   l'epaisseur qu'un seul degrade n'a pas. */
 .space-band {
   position: absolute;
-  inset: -30%;
-  transform: rotate(-24deg);
+  inset: -40%;
+  transform: rotate(-27deg);
   background:
-    linear-gradient(180deg, transparent 42%, hsl(215 60% 70% / 0.055) 50%, transparent 58%),
-    linear-gradient(180deg, transparent 46.5%, hsl(200 80% 82% / 0.085) 50%, transparent 53.5%);
-  filter: blur(1px);
+    linear-gradient(180deg, transparent 40%, hsl(220 70% 60% / 0.045) 50%, transparent 60%),
+    linear-gradient(180deg, transparent 45%, hsl(210 80% 72% / 0.055) 50%, transparent 55%),
+    linear-gradient(180deg, transparent 48.4%, hsl(200 90% 88% / 0.07) 50%, transparent 51.6%);
+  filter: blur(2px);
 }
 
 /* Couches d'etoiles. Tuilees : a l'echelle d'un viewport, des points
-   nommes un a un donnent un ciel vide ou une feuille interminable. */
+   nommes un a un donnent un ciel vide ou une feuille interminable.
+   Chaque couche melange trois temperatures — bleu-blanc, blanc pur,
+   ambre — parce qu'un ciel monochrome se lit comme une trame. */
 .space-layer {
   position: absolute;
-  inset: -25% -5%;
+  inset: -30% -8%;
   will-change: transform;
 }
 
-/* Poussiere lointaine : dense, minuscule, presque uniforme. */
+/* Poussiere lointaine : tres dense, sous le pixel, presque uniforme.
+   C'est elle qui empeche le noir d'etre plat. */
 .space-dust {
   background-image:
-    radial-gradient(0.5px 0.5px at 17px 29px,  rgba(210,230,255,0.55), transparent),
-    radial-gradient(0.5px 0.5px at 83px 61px,  rgba(255,255,255,0.45), transparent),
-    radial-gradient(0.5px 0.5px at 131px 17px, rgba(190,220,255,0.5), transparent),
-    radial-gradient(0.5px 0.5px at 47px 121px, rgba(255,255,255,0.4), transparent),
-    radial-gradient(0.5px 0.5px at 157px 97px, rgba(220,240,255,0.5), transparent),
-    radial-gradient(0.5px 0.5px at 103px 143px, rgba(255,255,255,0.35), transparent);
-  background-size: 190px 190px;
+    radial-gradient(0.6px 0.6px at 13px 21px,   rgba(200,222,255,0.55), transparent),
+    radial-gradient(0.6px 0.6px at 57px 44px,   rgba(255,255,255,0.45), transparent),
+    radial-gradient(0.6px 0.6px at 91px 12px,   rgba(180,210,255,0.5), transparent),
+    radial-gradient(0.6px 0.6px at 33px 78px,   rgba(255,244,228,0.4), transparent),
+    radial-gradient(0.6px 0.6px at 112px 66px,  rgba(215,235,255,0.5), transparent),
+    radial-gradient(0.6px 0.6px at 74px 103px,  rgba(255,255,255,0.35), transparent),
+    radial-gradient(0.6px 0.6px at 129px 92px,  rgba(190,216,255,0.45), transparent),
+    radial-gradient(0.6px 0.6px at 22px 118px,  rgba(255,250,240,0.3), transparent),
+    radial-gradient(0.6px 0.6px at 101px 131px, rgba(255,255,255,0.4), transparent),
+    radial-gradient(0.6px 0.6px at 141px 47px,  rgba(205,228,255,0.42), transparent);
+  background-size: 150px 150px;
 }
 
 .space-far {
   background-image:
-    radial-gradient(1px 1px at 41px 73px,   rgba(255,255,255,0.7), transparent),
-    radial-gradient(1px 1px at 168px 31px,  rgba(185,215,255,0.65), transparent),
-    radial-gradient(1px 1px at 243px 158px, rgba(255,255,255,0.6), transparent),
-    radial-gradient(1px 1px at 92px 211px,  rgba(215,235,255,0.7), transparent),
-    radial-gradient(1px 1px at 287px 96px,  rgba(255,255,255,0.5), transparent);
-  background-size: 330px 330px;
-  animation: space-twinkle-a 11s ease-in-out infinite;
+    radial-gradient(0.9px 0.9px at 29px 51px,   rgba(255,255,255,0.75), transparent),
+    radial-gradient(0.9px 0.9px at 148px 23px,  rgba(178,208,255,0.7), transparent),
+    radial-gradient(0.9px 0.9px at 213px 137px, rgba(255,255,255,0.65), transparent),
+    radial-gradient(0.9px 0.9px at 76px 189px,  rgba(255,238,214,0.6), transparent),
+    radial-gradient(0.9px 0.9px at 251px 82px,  rgba(255,255,255,0.55), transparent),
+    radial-gradient(1px 1px   at 121px 246px,   rgba(205,230,255,0.8), transparent),
+    radial-gradient(0.9px 0.9px at 279px 208px, rgba(255,255,255,0.5), transparent),
+    radial-gradient(0.9px 0.9px at 186px 66px,  rgba(190,218,255,0.62), transparent),
+    radial-gradient(0.9px 0.9px at 44px 268px,  rgba(255,247,232,0.5), transparent);
+  background-size: 300px 300px;
+  animation: space-twinkle-a 13s ease-in-out infinite;
 }
 
 .space-mid {
   background-image:
-    radial-gradient(1.4px 1.4px at 63px 118px,  rgba(255,255,255,0.9), transparent),
-    radial-gradient(1.4px 1.4px at 322px 47px,  rgba(200,228,255,0.85), transparent),
-    radial-gradient(1.4px 1.4px at 196px 287px, rgba(255,255,255,0.8), transparent),
-    radial-gradient(1.4px 1.4px at 411px 199px, rgba(230,244,255,0.75), transparent);
-  background-size: 470px 470px;
-  animation: space-twinkle-b 7s ease-in-out infinite;
+    radial-gradient(1.3px 1.3px at 58px 96px,   rgba(255,255,255,0.95), transparent),
+    radial-gradient(1.3px 1.3px at 287px 41px,  rgba(196,224,255,0.88), transparent),
+    radial-gradient(1.5px 1.5px at 171px 249px, rgba(255,255,255,0.9), transparent),
+    radial-gradient(1.3px 1.3px at 366px 174px, rgba(255,236,208,0.8), transparent),
+    radial-gradient(1.3px 1.3px at 96px 331px,  rgba(215,238,255,0.85), transparent),
+    radial-gradient(1.3px 1.3px at 331px 296px, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1.3px 1.3px at 231px 133px, rgba(184,214,255,0.75), transparent);
+  background-size: 420px 420px;
+  animation: space-twinkle-b 8s ease-in-out infinite;
 }
 
 /* Etoiles proches : rares, franches, avec une croix de diffraction —
    le signe qui distingue une etoile brillante d'un point blanc. */
 .space-near {
   background-image:
-    radial-gradient(2px 2px at 118px 176px, rgba(255,255,255,1), transparent),
-    linear-gradient(0deg,  transparent calc(50% - 0.5px), hsl(200 100% 88% / 0.5) 50%, transparent calc(50% + 0.5px)),
-    linear-gradient(90deg, transparent calc(50% - 0.5px), hsl(200 100% 88% / 0.5) 50%, transparent calc(50% + 0.5px));
-  background-size: 660px 660px, 26px 2px, 2px 26px;
-  background-position: 0 0, 108px 175px, 117px 165px;
-  background-repeat: repeat, repeat, repeat;
-  animation: space-twinkle-b 9s ease-in-out infinite reverse;
+    radial-gradient(2.2px 2.2px at 108px 162px, rgba(255,255,255,1), transparent),
+    radial-gradient(1.8px 1.8px at 452px 384px, rgba(224,240,255,0.95), transparent),
+    radial-gradient(1.8px 1.8px at 296px 78px,  rgba(255,232,198,0.9), transparent),
+    linear-gradient(0deg,  transparent calc(50% - 0.5px), hsl(200 100% 90% / 0.55) 50%, transparent calc(50% + 0.5px)),
+    linear-gradient(90deg, transparent calc(50% - 0.5px), hsl(200 100% 90% / 0.55) 50%, transparent calc(50% + 0.5px));
+  background-size: 560px 560px, 560px 560px, 560px 560px, 30px 1px, 1px 30px;
+  background-position: 0 0, 0 0, 0 0, 93px 161px, 107px 147px;
+  animation: space-twinkle-b 10s ease-in-out infinite reverse;
 }
 
-@keyframes space-twinkle-a { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
-@keyframes space-twinkle-b { 0%,100% { opacity: 0.7; }  50% { opacity: 1; } }
+@keyframes space-twinkle-a { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+@keyframes space-twinkle-b { 0%,100% { opacity: 0.75; } 50% { opacity: 1; } }
 
-/* Vignette : sans elle, le champ d'etoiles s'arrete net sur les bords
-   du viewport et trahit sa nature de calque. */
+/* Vignette : sans elle, le champ s'arrete net sur les bords du viewport
+   et trahit sa nature de calque. */
 .space-vignette {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 100% 80% at 50% 45%, transparent 42%, rgba(0,0,0,0.45) 88%, rgba(0,0,0,0.7) 100%);
+  background: radial-gradient(ellipse 105% 85% at 50% 42%,
+    transparent 45%, rgba(0,0,0,0.4) 86%, rgba(0,0,0,0.72) 100%);
 }
 
 @media (prefers-reduced-motion: reduce) {

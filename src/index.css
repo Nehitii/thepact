@@ -439,7 +439,7 @@ All colors MUST be HSL.
     /* Translucide : les panneaux flottent dans l espace du fond au lieu de
        le masquer. Le fond etant tres sombre (#01030a a #020610), le texte
        garde son contraste malgre la transparence. */
-    --nexus-bg: rgba(6, 11, 22, 0.66);
+    --nexus-bg: rgba(4, 8, 17, 0.82);
     --nexus-border: rgba(0, 180, 255, 0.12);
     --nexus-shadow: 0 8px 48px rgba(0,0,0,0.9), inset 0 1px 0 rgba(0,212,255,0.06);
     --nexus-glow: rgba(0, 210, 255, 0.4);

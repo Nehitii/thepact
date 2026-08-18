@@ -54,50 +54,9 @@ export function SpaceBackdrop() {
 
   return (
     <div className="space-backdrop" aria-hidden="true">
-      {/* Le vide. Trois teintes plutot qu'une : un noir uni lit comme
-          une absence de fond, pas comme de l'espace. */}
+      {/* Le vide, et le c(oe)ur de galaxie qui l eclaire de biais. */}
       <div className="space-void" />
-
-      {/* Nebuleuses fractales. La couche est en opacity plutot qu'en
-          alpha de couleur pour rester composable par le GPU. */}
-      <svg className="space-nebula" preserveAspectRatio="xMidYMid slice" viewBox="0 0 800 600">
-        <defs>
-          <filter id="neb-a" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.0022 0.0035" numOctaves="3" seed="7" result="bruit" />
-            <feColorMatrix
-              in="bruit"
-              type="matrix"
-              values="0 0 0 0 0.10
-                      0 0 0 0 0.42
-                      0 0 0 0 0.85
-                      0.9 0.5 0 0 -0.28"
-            />
-          </filter>
-          <filter id="neb-b" x="-20%" y="-20%" width="140%" height="140%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.0031 0.0018" numOctaves="4" seed="23" result="bruit" />
-            <feColorMatrix
-              in="bruit"
-              type="matrix"
-              values="0 0 0 0 0.42
-                      0 0 0 0 0.10
-                      0 0 0 0 0.72
-                      0.8 0.4 0 0 -0.34"
-            />
-          </filter>
-          <radialGradient id="conf-a" cx="26%" cy="18%" r="62%">
-            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-          </radialGradient>
-          <radialGradient id="conf-b" cx="80%" cy="72%" r="55%">
-            <stop offset="0%" stopColor="#fff" stopOpacity="1" />
-            <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-          </radialGradient>
-          <mask id="masque-a"><rect width="800" height="600" fill="url(#conf-a)" /></mask>
-          <mask id="masque-b"><rect width="800" height="600" fill="url(#conf-b)" /></mask>
-        </defs>
-        <rect width="800" height="600" filter="url(#neb-a)" mask="url(#masque-a)" opacity="0.55" />
-        <rect width="800" height="600" filter="url(#neb-b)" mask="url(#masque-b)" opacity="0.42" />
-      </svg>
+      <div className="space-galaxy" />
 
       {/* Bande galactique : une trainee dense en diagonale. C'est elle
           qui donne une orientation au ciel — sans elle, un champ
