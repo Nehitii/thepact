@@ -334,3 +334,97 @@
   .singularity-space::before,
   .singularity-space::after { animation: none; }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   NOYAU DE RANG
+
+   Variante retenue apres maquette. Reprend la construction du
+   c(oe)ur — lueur qui respire, graduations radiales, arc en
+   conic-gradient — a l'echelle d'un satellite pose dans le coin du
+   bandeau. L'XP y est un arc et non une barre : la page montre
+   toutes ses progressions de la meme facon, du c(oe)ur aux quetes.
+
+   La respiration tourne a 9s contre 5 a 13s pour le c(oe)ur, dont
+   la cadence depend des jours actifs. Les deux ne se synchronisent
+   donc jamais durablement — deux pulsations calees l'une sur
+   l'autre lisent comme un mecanisme, pas comme deux organismes.
+
+   Toutes les masques sont en closest-side : sans cela le degrade se
+   calerait sur le coin de la boite et laisserait un cercle dur
+   (voir le commentaire du c(oe)ur).
+   ───────────────────────────────────────────────────────────── */
+
+.rank-core {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 7rem;
+  height: 7rem;
+}
+
+.rank-core-glow {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    hsl(var(--primary) / 0.55) 0%,
+    hsl(var(--primary) / 0.14) 44%,
+    transparent 72%);
+  filter: blur(9px);
+  animation: rank-breathe 9s ease-in-out infinite;
+}
+
+@keyframes rank-breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.78; }
+  50%      { transform: scale(1.06); opacity: 1; }
+}
+
+/* Graduations : une couronne de traits fins, comme le cadran d'un
+   instrument. Elles donnent l'echelle que l'arc seul ne donne pas. */
+.rank-core-ticks {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    hsl(var(--primary) / 0.5) 0deg 0.7deg,
+    transparent 0.7deg 9deg);
+  mask-image: radial-gradient(circle closest-side, transparent 66%, black 71%, black 79%, transparent 82%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 66%, black 71%, black 79%, transparent 82%);
+}
+
+/* L'arc d'XP : le conic-gradient s'arrete au pourcentage reel. */
+.rank-core-arc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -90deg,
+    hsl(var(--primary)) 0%,
+    hsl(var(--primary)) var(--rank-pct, 0%),
+    hsl(var(--primary) / 0.12) var(--rank-pct, 0%));
+  mask-image: radial-gradient(circle closest-side, transparent 82%, black 85%, black 94%, transparent 98%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 82%, black 85%, black 94%, transparent 98%);
+  filter: drop-shadow(0 0 6px hsl(var(--primary) / 0.8));
+  transition: background 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rank-core-center {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  line-height: 0.9;
+}
+
+.rank-core-center b {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 900;
+  font-size: 2.1rem;
+  color: hsl(var(--nexus-heading, 210 40% 96%));
+  text-shadow: 0 0 16px hsl(var(--primary) / 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rank-core-glow { animation: none; opacity: 0.9; }
+}

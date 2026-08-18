@@ -236,7 +236,7 @@ export default function Home() {
             titleFont={pact.title_font}
             titleEffect={pact.title_effect}
             rankName={safeRankData.currentRank?.name}
-            rankTier={safeRankData.nextRank ? `PROCHAIN · ${safeRankData.nextRank.name}` : "RANG MAXIMAL"}
+            nextRankName={safeRankData.nextRank?.name ?? null}
             rankProgress={safeRankData.progressInCurrentRank}
             rankXP={safeRankData.currentXP}
             rankXPTarget={safeRankData.nextRank?.min_points ?? 0}

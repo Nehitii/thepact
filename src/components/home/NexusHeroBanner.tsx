@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { CornerBrackets } from "./CornerBrackets";
 import { PactVisual } from "@/components/PactVisual";
+import { RankCore } from "./RankCore";
 
 const FONT_MAP: Record<string, string> = {
   orbitron: "'Orbitron', sans-serif",
@@ -33,7 +34,7 @@ interface NexusHeroBannerProps {
    *  separe : il repetait le niveau deja affiche dans les statistiques,
    *  et son nom trois fois dans ses propres 355px. */
   rankName?: string;
-  rankTier?: string;
+  nextRankName?: string | null;
   rankProgress?: number;
   rankXP?: number;
   rankXPTarget?: number;
@@ -50,7 +51,7 @@ export function NexusHeroBanner({
   titleFont = "orbitron",
   titleEffect = "none",
   rankName,
-  rankTier,
+  nextRankName,
   rankProgress = 0,
   rankXP = 0,
   rankXPTarget = 0,
@@ -101,70 +102,20 @@ export function NexusHeroBanner({
       {/* Top gradient line */}
       <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top" />
 
-      {/* RANG — pose dans le coin, discret, plutot que dans un panneau de
-          355px qui repetait le nom du rang trois fois et le niveau deja
-          present dans les statistiques ci-dessous. Masque sous 640px :
-          la place y est prise par le c(oe)ur. */}
+      {/* NOYAU DE RANG — variante retenue apres maquette. Il occupait
+          355px en panneau separe, puis quatre lignes trop maigres dans ce
+          coin. Il devient un satellite du c(oe)ur : meme construction,
+          plus petite echelle. Masque sous 1024px, ou la place est prise. */}
       {rankName && (
-        <div
-          className="absolute top-4 right-5 z-20 hidden sm:flex flex-col items-end gap-1 text-right"
-          style={{ maxWidth: "12rem" }}
-        >
-          <span className="flex items-baseline gap-2">
-            <span
-              className="ds-t-label font-mono"
-              style={{ letterSpacing: 2, color: "var(--nexus-text-dimmer)" }}
-            >
-              LVL {level}
-            </span>
-            <span
-              className="font-orbitron uppercase truncate"
-              style={{
-                fontSize: "0.9375rem",
-                fontWeight: 700,
-                letterSpacing: 1.5,
-                color: "hsl(var(--primary))",
-                textShadow: "0 0 10px hsl(var(--primary) / 0.5)",
-              }}
-            >
-              {rankName}
-            </span>
-          </span>
-
-          {rankTier && (
-            <span
-              className="ds-t-label font-mono truncate w-full"
-              style={{ letterSpacing: 1.5, color: "var(--nexus-text-dim)" }}
-            >
-              {rankTier}
-            </span>
-          )}
-
-          {/* Jauge d'XP : meme lecture que l'anneau d'accretion, en barre.
-              Elle tient en 7rem pour ne jamais concurrencer le c(oe)ur. */}
-          <span className="flex items-center gap-2 mt-0.5">
-            <span
-              className="ds-t-label font-mono"
-              style={{ color: "var(--nexus-text-dimmer)", fontVariantNumeric: "tabular-nums" }}
-            >
-              {rankXP.toLocaleString("fr-FR")}
-              {rankXPTarget > 0 && ` / ${rankXPTarget.toLocaleString("fr-FR")}`}
-            </span>
-            <span
-              className="relative overflow-hidden shrink-0"
-              style={{ width: "7rem", height: 3, background: "hsl(var(--primary) / 0.12)", borderRadius: 1 }}
-            >
-              <span
-                className="absolute inset-y-0 left-0"
-                style={{
-                  width: `${Math.min(100, Math.max(0, rankProgress))}%`,
-                  background: "linear-gradient(90deg, hsl(var(--primary) / 0.5), hsl(var(--primary)))",
-                  boxShadow: "0 0 6px hsl(var(--primary) / 0.7)",
-                  transition: "width 900ms cubic-bezier(0.16, 1, 0.3, 1)",
-                }}
-              />
-            </span>
-          </span>
+        <div className="absolute top-5 right-6 z-20 hidden lg:block">
+          <RankCore
+            level={level}
+            rankName={rankName}
+            nextRankName={nextRankName}
+            progress={rankProgress}
+            currentXP={rankXP}
+            targetXP={rankXPTarget}
+          />
         </div>
       )}
 
