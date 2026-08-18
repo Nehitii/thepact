@@ -14,8 +14,7 @@ import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { QuickAccessPanel } from "@/components/home/QuickAccessPanel";
 import { CountdownPanel } from "@/components/home/CountdownPanel";
 import { MissionRandomizer } from "@/components/home/hero/MissionRandomizer";
-import { MonitoringGlobalPanel } from "@/components/home/MonitoringGlobalPanel";
-import { DifficultyScalePanel } from "@/components/home/DifficultyScalePanel";
+import { MonitoringPanel } from "@/components/home/MonitoringPanel";
 import { LifeAreasBalancePanel } from "@/components/home/LifeAreasBalancePanel";
 import { DailyQuestsPanel } from "@/components/quests/DailyQuestsPanel";
 import { WeeklyReviewModal } from "@/components/WeeklyReviewModal";
@@ -316,18 +315,16 @@ export default function Home() {
             <span className="ds-t-label font-mono text-primary/50 hidden group-open:inline">▾ COLLAPSE</span>
           </summary>
           <div className="space-y-4 pt-2">
+            {/* Une seule carte a la place de deux. "Monitoring Global" et
+                "L'Echelle Ananta" totalisaient 1156px pour deux coupes des
+                MEMES 38 objectifs — l'une par type, l'autre par difficulte —
+                ce qui obligeait a faire le rapprochement de tete. */}
             {pact && isGoalsReady ? (
-              <MonitoringGlobalPanel
+              <MonitoringPanel
                 data={dashboardData}
+                difficultyProgress={dashboardData.difficultyProgress}
                 projectStartDate={pact.project_start_date}
                 projectEndDate={pact.project_end_date}
-              />
-            ) : (
-              <Skeleton className="h-40 w-full rounded-xl" />
-            )}
-            {isGoalsReady ? (
-              <DifficultyScalePanel
-                difficultyProgress={dashboardData.difficultyProgress}
                 customDifficultyName={customDifficultyName}
                 customDifficultyColor={customDifficultyColor}
               />
