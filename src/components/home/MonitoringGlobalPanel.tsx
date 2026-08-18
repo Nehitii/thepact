@@ -85,7 +85,6 @@ export function MonitoringGlobalPanel({ data, projectStartDate, projectEndDate }
         background: "var(--nexus-bg)",
         border: "1px solid var(--nexus-border)",
         boxShadow: "var(--nexus-shadow)",
-        backdropFilter: "blur(16px)",
         padding: 28,
       }}
     >

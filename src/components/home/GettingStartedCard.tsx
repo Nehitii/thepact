@@ -48,7 +48,7 @@ export function GettingStartedCard({
       className={cn("relative", className)}
     >
       <div
-        className="relative bg-[var(--nexus-bg)] backdrop-blur-xl border border-[var(--nexus-border)] overflow-hidden nexus-shadow"
+        className="relative bg-[var(--nexus-bg)] border border-[var(--nexus-border)] overflow-hidden nexus-shadow"
         style={{ borderRadius: "4px" }}
       >
         {/* Permanent top highlight */}

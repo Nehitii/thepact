@@ -37,7 +37,7 @@ export function NeuralBar({ pact, rankData }: NeuralBarProps) {
   return (
     <div className="sticky top-0 z-[100] w-full">
       {/* Main bar */}
-      <header className="neural-bar h-12 flex items-center justify-between px-6 overflow-hidden relative backdrop-blur-xl">
+      <header className="neural-bar h-12 flex items-center justify-between px-6 overflow-hidden relative">
         {/* Scanline sweep */}
         <div className="neural-bar-scanline absolute bottom-0 h-px pointer-events-none" />
 

@@ -136,7 +136,7 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
 
   return (
     <div
-      className={cn("relative overflow-hidden backdrop-blur-xl", className)}
+      className={cn("relative overflow-hidden", className)}
       style={{ borderRadius: 4, border: "1px solid var(--nexus-mission-border)", background: "var(--nexus-mission-bg)", boxShadow: "var(--nexus-shadow)" }}
     >
       <CornerBrackets />

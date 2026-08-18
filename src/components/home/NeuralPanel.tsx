@@ -40,7 +40,7 @@ export function NeuralPanel({
     return (
       <div className={cn(
         "relative h-full w-full overflow-hidden",
-        "bg-[var(--nexus-bg)] backdrop-blur-xl",
+        "bg-[var(--nexus-bg)]",
         "border border-[var(--nexus-border)]",
         className,
       )} style={{ borderRadius: "4px" }}>
@@ -63,7 +63,7 @@ export function NeuralPanel({
       onClick={onClick}
       className={cn(
         "group relative h-full w-full flex flex-col overflow-hidden transition-all duration-300",
-        "bg-[var(--nexus-bg)] backdrop-blur-xl nexus-shadow",
+        "bg-[var(--nexus-bg)] nexus-shadow",
         "border border-[var(--nexus-border)] hover:border-[var(--nexus-hover-border)]",
         onClick && "cursor-pointer text-left",
         className,

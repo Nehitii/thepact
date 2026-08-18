@@ -45,7 +45,7 @@ export function LockedModulesTeaser({ lockedModules, className }: LockedModulesT
       className={cn("relative group", className)}
     >
       <div
-        className="relative bg-[var(--nexus-bg)] backdrop-blur-xl border border-[var(--nexus-border)] overflow-hidden hover:border-[var(--nexus-hover-border)] transition-all nexus-shadow"
+        className="relative bg-[var(--nexus-bg)] border border-[var(--nexus-border)] overflow-hidden hover:border-[var(--nexus-hover-border)] transition-all nexus-shadow"
         style={{ borderRadius: "4px" }}
       >
         <div className="absolute top-0 left-0 right-0 h-px nexus-glow-top-subtle" />

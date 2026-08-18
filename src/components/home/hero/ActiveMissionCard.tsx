@@ -63,7 +63,7 @@ export function ActiveMissionCard({ mission, onAbandon, onComplete, className }:
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className={cn(
-        "relative overflow-hidden border backdrop-blur-xl",
+        "relative overflow-hidden border",
         urgencyLevel === 'critical' && "border-destructive/50 bg-destructive/10",
         urgencyLevel === 'warning' && "border-amber-500/40 bg-amber-500/10",
         urgencyLevel === 'normal' && "border-[var(--nexus-border)] bg-[var(--nexus-bg)]",

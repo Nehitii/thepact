@@ -84,7 +84,7 @@ export function InsightCard({ insight, index }: InsightCardProps) {
       transition={{ delay: index * 0.15, type: "spring", stiffness: 80, damping: 14 }}
       className={cn(
         "relative group rounded-xl overflow-hidden",
-        "bg-gradient-to-r backdrop-blur-md",
+        "bg-gradient-to-r",
         "border transition-all duration-300",
         "hover:brightness-110",
         cfg.bg,

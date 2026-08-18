@@ -22,7 +22,7 @@ export function QuickActionsBar({ ownedModules, className, onNewGoalClick }: Qui
   return (
     <div
       className={cn(
-        "w-full bg-[var(--nexus-bg)] backdrop-blur-xl border border-[var(--nexus-border)] nexus-shadow",
+        "w-full bg-[var(--nexus-bg)] border border-[var(--nexus-border)] nexus-shadow",
         className,
       )}
       style={{ borderRadius: "4px" }}

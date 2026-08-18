@@ -99,7 +99,7 @@ export function SmartProjectHeader({
         initial={{ opacity: 0, y: -12, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ type: "spring", stiffness: 80, damping: 14 }}
-        className="relative overflow-hidden bg-[var(--nexus-bg)] backdrop-blur-xl border border-[var(--nexus-border)] nexus-shadow"
+        className="relative overflow-hidden bg-[var(--nexus-bg)] border border-[var(--nexus-border)] nexus-shadow"
         style={{ borderRadius: "4px" }}
       >
         {/* Permanent top highlight */}
