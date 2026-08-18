@@ -268,26 +268,41 @@ export default function Home() {
           <DailyQuestsPanel />
         </section>
 
-        {/* L'ETAT — ou j'en suis. Le panneau de rang a rejoint le coin du
-            bandeau : il occupait 355px pour repeter le niveau deja present
-            dans les statistiques du hub, et son propre nom trois fois. Le
-            compte a rebours reprend donc toute la largeur, ce qui lui rend
-            sa disposition en trois colonnes. */}
-        {pact ? (
-          <CountdownPanel
-            projectStartDate={pact.project_start_date}
-            projectEndDate={pact.project_end_date}
-            goalsCompleted={dashboardData.goalsCompleted}
-            totalGoals={dashboardData.totalGoals}
-            pactName={pact.name}
-          />
-        ) : (
-          <Skeleton className="h-24 w-full rounded-xl" />
-        )}
+        {/* L'ETAT — ou j'en suis. Le compte a rebours dit le temps qui
+            reste, le monitoring dit le chemin parcouru : les deux repondent
+            a la meme question et se lisent ensemble. Le monitoring sortait
+            d'un repli "Advanced Monitoring" ou il etait invisible par
+            defaut, alors qu'il porte l'avancement reel du pacte. */}
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-2 items-start">
+          {pact ? (
+            <CountdownPanel
+              projectStartDate={pact.project_start_date}
+              projectEndDate={pact.project_end_date}
+              goalsCompleted={dashboardData.goalsCompleted}
+              totalGoals={dashboardData.totalGoals}
+              pactName={pact.name}
+            />
+          ) : (
+            <Skeleton className="h-24 w-full rounded-xl" />
+          )}
 
-        {/* EXPLORER — ce qu'on ouvre quand on cherche. Le tirage de mission
-            et les panneaux d'analyse partagent ce dernier temps : on n'y va
-            pas tous les jours. */}
+          {pact && isGoalsReady ? (
+            <MonitoringPanel
+              data={dashboardData}
+              difficultyProgress={dashboardData.difficultyProgress}
+              projectStartDate={pact.project_start_date}
+              projectEndDate={pact.project_end_date}
+              customDifficultyName={customDifficultyName}
+              customDifficultyColor={customDifficultyColor}
+            />
+          ) : (
+            <Skeleton className="h-40 w-full rounded-xl" />
+          )}
+        </section>
+
+        {/* EXPLORER — ce qu on ouvre quand on cherche. Le repli "Advanced
+            Monitoring" est supprime : il ne contenait plus que le
+            monitoring, qui a rejoint le compte a rebours. */}
         <section className="space-y-2">
           {isGoalsReady ? (
             <MissionRandomizer allGoals={focusGoals.length ? focusGoals : allGoals} />
@@ -303,35 +318,6 @@ export default function Home() {
             />
           )}
 
-        {/* ADVANCED PANELS — Collapsible */}
-        <details className="group">
-          <summary className="flex items-center gap-2 cursor-pointer list-none select-none py-2 px-1">
-            <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-muted-foreground group-open:text-primary transition-colors">
-              Advanced Monitoring
-            </span>
-            <span className="flex-1 h-px bg-gradient-to-r from-primary/20 to-transparent" />
-            <span className="ds-t-label font-mono text-muted-foreground group-open:hidden">▸ EXPAND</span>
-            <span className="ds-t-label font-mono text-primary/50 hidden group-open:inline">▾ COLLAPSE</span>
-          </summary>
-          <div className="space-y-4 pt-2">
-            {/* Une seule carte a la place de deux. "Monitoring Global" et
-                "L'Echelle Ananta" totalisaient 1156px pour deux coupes des
-                MEMES 38 objectifs — l'une par type, l'autre par difficulte —
-                ce qui obligeait a faire le rapprochement de tete. */}
-            {pact && isGoalsReady ? (
-              <MonitoringPanel
-                data={dashboardData}
-                difficultyProgress={dashboardData.difficultyProgress}
-                projectStartDate={pact.project_start_date}
-                projectEndDate={pact.project_end_date}
-                customDifficultyName={customDifficultyName}
-                customDifficultyColor={customDifficultyColor}
-              />
-            ) : (
-              <Skeleton className="h-40 w-full rounded-xl" />
-            )}
-          </div>
-          </details>
 
           {/* LOCKED MODULES */}
           {isShopReady && lockedModules.length > 0 && (
