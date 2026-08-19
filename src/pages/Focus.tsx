@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { Maximize, Minimize } from "lucide-react";
+import { Maximize, Minimize, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { usePomodoroTimer, usePomodoroSessions, type CycleAcheve } from "@/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
@@ -33,7 +33,6 @@ import {
   FocusFond,
   type VarianteFond,
   FocusControls,
-  FocusDistractionButton,
   type FocusPanel,
 } from "@/components/focus";
 
@@ -617,18 +616,21 @@ export default function Focus() {
         </div>
       </div>
 
-      {timer.isRunning && <FocusDistractionButton />}
-
       {/* Abort Confirmation Dialog */}
       <AlertDialog open={showAbortConfirm} onOpenChange={setShowAbortConfirm}>
-        <AlertDialogContent className="bg-card border-destructive/30">
+        <AlertDialogContent className="sc-dialogue">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("focus.abort.title")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("focus.abort.message")}</AlertDialogDescription>
+            <AlertDialogTitle className="sc-dialogue-titre">
+              <AlertTriangle className="h-5 w-5 shrink-0" aria-hidden="true" />
+              {t("focus.abort.title")}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="sc-dialogue-texte">
+              {t("focus.abort.message")}
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("focus.abort.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmEnd} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+          <AlertDialogFooter className="sc-dialogue-pied">
+            <AlertDialogCancel className="cyb">{t("focus.abort.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmEnd} className="cyb cyb--danger">
               {t("focus.abort.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>

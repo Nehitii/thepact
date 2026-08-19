@@ -19,12 +19,26 @@ interface FocusToolbarProps {
   onPanelChange: (panel: FocusPanel) => void;
 }
 
-/* La clause se compose ici, et se lit au-dessus, dans le sceau. Les deux
-   champs designaient deja l objet de la session ; la duree les rejoint,
-   parce qu elle fait partie de l engagement enonce — « vingt-cinq
-   minutes, sans interruption » — et qu aller la chercher dans un panneau
-   repliable pour modifier une phrase affichee a l ecran n avait pas de
-   sens. */
+const PANNEAUX: { id: Exclude<FocusPanel, null>; cle: string; icone: typeof Settings }[] = [
+  { id: "config", cle: "focus.toolbar.config", icone: Settings },
+  { id: "media", cle: "focus.toolbar.audio", icone: Music },
+  { id: "stats", cle: "focus.toolbar.stats", icone: BarChart3 },
+  { id: "history", cle: "focus.toolbar.history", icone: History },
+];
+
+/* LE COMPOSEUR DE CLAUSE
+ *
+ * Les quatre rangees — intitule, objet, tache, duree — flottaient sans
+ * cadre ni alignement, et une classe destinee a UNE rangee de champs
+ * avait ete posee sur le conteneur DES rangees : elles etaient devenues
+ * des elements flex qui s enroulaient, d ou l intitule a gauche, les deux
+ * selecteurs a droite, et la quatrieme puce de duree seule sur sa ligne.
+ *
+ * C est maintenant une plaque : un en-tete, une grille libelle/champ ou
+ * tout s aligne sur une meme colonne, et les panneaux repartis en quatre
+ * parts egales. La clause se compose ici, et se lit au-dessus, dans le
+ * sceau.
+ */
 export function FocusToolbar({
   goals,
   todos,
@@ -38,22 +52,22 @@ export function FocusToolbar({
   onPanelChange,
 }: FocusToolbarProps) {
   const { t } = useTranslation();
-  const focusGoals = goals.filter((g) => g.status === "in_progress" || g.status === "not_started");
+  const objectifs = goals.filter((g) => g.status === "in_progress" || g.status === "not_started");
 
-  const togglePanel = (panel: FocusPanel) => {
-    onPanelChange(activePanel === panel ? null : panel);
-  };
+  const basculer = (panneau: Exclude<FocusPanel, null>) =>
+    onPanelChange(activePanel === panneau ? null : panneau);
 
   return (
-    <div className="w-full max-w-lg space-y-3 sc-champs">
-      <div className="sc-signature" aria-hidden="true">
-        <i />
-        <span>{t("focus.clause.compose")}</span>
-        <i />
-      </div>
+    <section className="sc-composeur" aria-label={t("focus.clause.compose")}>
+      <header className="sc-composeur-tete">
+        <span aria-hidden="true">◈</span>
+        <h2>{t("focus.clause.compose")}</h2>
+        <span className="sc-composeur-fil" aria-hidden="true" />
+      </header>
 
-      <div className="flex gap-2">
-        <div className="flex-1">
+      <div className="sc-composeur-corps">
+        <div className="sc-ligne">
+          <span className="sc-lab" id="lab-objet">{t("focus.field.target")}</span>
           <Select
             value={linkedGoalId || "none"}
             onValueChange={(v) => {
@@ -61,22 +75,21 @@ export function FocusToolbar({
               if (v !== "none") onLinkTodo(null);
             }}
           >
-            <SelectTrigger className="cyb-select">
-              <Target className="h-3.5 w-3.5 mr-1.5 text-primary shrink-0" />
+            <SelectTrigger className="cyb-select" aria-labelledby="lab-objet">
+              <Target className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <SelectValue placeholder={t("focus.linker.goal")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">{t("focus.linker.noGoal")}</SelectItem>
-              {focusGoals.map((g) => (
-                <SelectItem key={g.id} value={g.id} className="text-xs">
-                  {g.name}
-                </SelectItem>
+              {objectifs.map((g) => (
+                <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="flex-1">
+        <div className="sc-ligne">
+          <span className="sc-lab" id="lab-tache">{t("focus.field.task")}</span>
           <Select
             value={linkedTodoId || "none"}
             onValueChange={(v) => {
@@ -84,66 +97,51 @@ export function FocusToolbar({
               if (v !== "none") onLinkGoal(null);
             }}
           >
-            <SelectTrigger className="cyb-select">
-              <ListTodo className="h-3.5 w-3.5 mr-1.5 text-accent shrink-0" />
+            <SelectTrigger className="cyb-select" aria-labelledby="lab-tache">
+              <ListTodo className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <SelectValue placeholder={t("focus.linker.task")} />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">{t("focus.linker.noTask")}</SelectItem>
               {todos.map((td) => (
-                <SelectItem key={td.id} value={td.id} className="text-xs">
-                  {td.name}
-                </SelectItem>
+                <SelectItem key={td.id} value={td.id}>{td.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+
+        <div className="sc-ligne">
+          <span className="sc-lab">{t("focus.config.work")}</span>
+          <div className="sc-durees" role="group" aria-label={t("focus.config.work")}>
+            {[15, 25, 30, 45].map((m) => (
+              <button
+                key={m}
+                type="button"
+                className="cyb cyb--petit"
+                aria-pressed={workMin === m}
+                onClick={() => onWorkChange(m)}
+              >
+                {m}′
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      <div className="sc-duree">
-        <span className="sc-duree-titre">{t("focus.config.work")}</span>
-        {[15, 25, 30, 45].map((m) => (
+      <nav className="sc-panneaux" aria-label={t("focus.clause.compose")}>
+        {PANNEAUX.map(({ id, cle, icone: Icone }) => (
           <button
-            key={m}
+            key={id}
             type="button"
-            className="cyb cyb--petit"
-            aria-pressed={workMin === m}
-            onClick={() => onWorkChange(m)}
+            className={`cyb cyb--petit${activePanel === id ? " est-actif" : ""}`}
+            aria-pressed={activePanel === id}
+            onClick={() => basculer(id)}
           >
-            {m}′
+            <Icone className="h-3.5 w-3.5" aria-hidden="true" />
+            <span>{t(cle)}</span>
           </button>
         ))}
-      </div>
-
-      <div className="flex items-center justify-center gap-2">
-        <ToolbarIconButton icon={Settings} label={t("focus.toolbar.config")} isActive={activePanel === "config"} onClick={() => togglePanel("config")} />
-        <ToolbarIconButton icon={Music} label={t("focus.toolbar.audio")} isActive={activePanel === "media"} onClick={() => togglePanel("media")} />
-        <ToolbarIconButton icon={BarChart3} label={t("focus.toolbar.stats")} isActive={activePanel === "stats"} onClick={() => togglePanel("stats")} />
-        <ToolbarIconButton icon={History} label={t("focus.toolbar.history")} isActive={activePanel === "history"} onClick={() => togglePanel("history")} />
-      </div>
-    </div>
-  );
-}
-
-function ToolbarIconButton({
-  icon: Icon,
-  label,
-  isActive,
-  onClick,
-}: {
-  icon: React.ElementType;
-  label: string;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={label}
-      className={`cyb cyb--petit${isActive ? " est-actif" : ""}`}
-    >
-      <Icon className="h-3.5 w-3.5" />
-      <span>{label}</span>
-    </button>
+      </nav>
+    </section>
   );
 }

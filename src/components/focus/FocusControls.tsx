@@ -1,4 +1,5 @@
 import { Play, Pause, SkipForward, Square } from "lucide-react";
+import { FocusDistractionButton } from "./FocusDistractionButton";
 import { useTranslation } from "react-i18next";
 import type { PomodoroPhase } from "@/hooks/usePomodoro";
 import { cn } from "@/lib/utils";
@@ -33,7 +34,7 @@ export function FocusControls({ phase, isPaused, onPause, onResume, onSkip, onEn
         {t("focus.controls.overrideControls")}
       </div>
 
-      <div className="grid grid-cols-[1fr_auto] gap-2 sm:flex-1">
+      <div className="grid grid-cols-[1fr_auto_auto] gap-2 sm:flex-1">
         <button
           onClick={isPaused ? onResume : onPause}
           className={cn("cyb", isPaused && "cyb--or")}
@@ -47,6 +48,11 @@ export function FocusControls({ phase, isPaused, onPause, onResume, onSkip, onEn
           <SkipForward className="h-4 w-4" aria-hidden="true" />
           <kbd aria-hidden="true">⇧S</kbd>
         </button>
+
+        {/* Noter ce qui vous detourne fait partie du pilotage d une
+            seance : le carnet appartient a cette barre, pas a un coin
+            de l ecran deja occupe par le declencheur du Coach. */}
+        <FocusDistractionButton />
       </div>
 
       <button onClick={onEnd} className="cyb cyb--danger w-full sm:w-auto mt-1 sm:mt-0">

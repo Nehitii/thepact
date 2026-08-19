@@ -91,11 +91,17 @@ function initMycelium(e: Etat) {
   e.ctx.fillStyle = FOND;
   e.ctx.fillRect(0, 0, e.w, e.h);
   e.pointes = [];
-  for (let i = 0; i < 4; i++) {
+  /* Quatre germes tous poses sur les bords ne donnaient que de petites
+     touffes en peripherie : l ecran restait vide. Neuf germes, dont
+     quatre lances depuis l interieur, et l ecran est occupe des les
+     premieres secondes. */
+  for (let i = 0; i < 9; i++) {
+    const dedans = i >= 5;
     const bord = i % 4;
-    const x = bord === 0 ? 0 : bord === 1 ? e.w : Math.random() * e.w;
-    const y = bord === 2 ? 0 : bord === 3 ? e.h : Math.random() * e.h;
-    e.pointes.push({ x, y, a: Math.atan2(e.h / 2 - y, e.w / 2 - x), v: 0.9, vie: 0 });
+    const x = dedans ? e.w * (0.2 + Math.random() * 0.6) : bord === 0 ? 0 : bord === 1 ? e.w : Math.random() * e.w;
+    const y = dedans ? e.h * (0.2 + Math.random() * 0.6) : bord === 2 ? 0 : bord === 3 ? e.h : Math.random() * e.h;
+    const vers = dedans ? Math.random() * 6.283 : Math.atan2(e.h / 2 - y, e.w / 2 - x);
+    e.pointes.push({ x, y, a: vers, v: 1, vie: 0 });
   }
   e.dissipe = 0;
 }
@@ -110,7 +116,9 @@ function peindreMycelium(e: Etat, dt: number, eveil: number, prog: number) {
   }
   if (eveil < 0.02 || !e.pointes) return;
 
-  const vitesse = (0.55 + prog * 1.1) * eveil;
+  // La pousse mettait plusieurs minutes a couvrir un ecran. Doublee,
+  // elle occupe l espace en une trentaine de secondes.
+  const vitesse = (1.25 + prog * 1.5) * eveil;
   const neuves: typeof e.pointes = [];
   ctx.lineCap = "round";
   for (const p of e.pointes) {
@@ -119,16 +127,16 @@ function peindreMycelium(e: Etat, dt: number, eveil: number, prog: number) {
     const d = p.v * vitesse * (dt / 16.7);
     const nx = p.x + Math.cos(p.a) * d, ny = p.y + Math.sin(p.a) * d;
     const jeune = Math.min(1, p.vie / 120);
-    ctx.strokeStyle = rgba(e.teinte, 0.3 - jeune * 0.16);
-    ctx.lineWidth = 1.9 - jeune * 1.2;
+    ctx.strokeStyle = rgba(e.teinte, 0.42 - jeune * 0.2);
+    ctx.lineWidth = 2.8 - jeune * 1.8;
     ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(nx, ny); ctx.stroke();
     p.x = nx; p.y = ny; p.vie++;
 
     if (Math.random() < 0.012) {
       ctx.fillStyle = Math.random() < 0.22 ? rgba(e.or, 0.75) : rgba(e.teinte, 0.5);
-      ctx.beginPath(); ctx.arc(p.x, p.y, 1.3 + Math.random() * 1.4, 0, 6.284); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, 1.8 + Math.random() * 2.2, 0, 6.284); ctx.fill();
     }
-    if (p.vie > 26 && Math.random() < 0.02 && e.pointes.length + neuves.length < 70) {
+    if (p.vie > 22 && Math.random() < 0.03 && e.pointes.length + neuves.length < 120) {
       neuves.push({ x: p.x, y: p.y, a: p.a + (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.6), v: p.v * 0.86, vie: 0 });
     }
     if (p.x < -40 || p.x > e.w + 40 || p.y < -40 || p.y > e.h + 40 || p.vie > 900) {
@@ -326,8 +334,9 @@ export function FocusFond({ variante, actif, progress, isBreak = false }: FocusF
       // Au-dela de 1,5 la densite ne se voit pas sur un fond, et le cout
       // double. Ce n est pas une image, c est une ambiance.
       etat.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      etat.w = window.innerWidth;
-      etat.h = window.innerHeight;
+      const r = cv.getBoundingClientRect();
+      etat.w = Math.max(1, Math.round(r.width));
+      etat.h = Math.max(1, Math.round(r.height));
       cv.width = Math.round(etat.w * etat.dpr);
       cv.height = Math.round(etat.h * etat.dpr);
       ctx.setTransform(etat.dpr, 0, 0, etat.dpr, 0, 0);

@@ -1826,6 +1826,10 @@
       "maillage": "Maillage",
       "maree": "Marée",
       "aucun": "Aucun"
+    },
+    "field": {
+      "target": "Objet",
+      "task": "Tâche"
     }
   },
   "calendar": {
