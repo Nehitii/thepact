@@ -27,6 +27,7 @@ import {
   FocusStats,
   FocusHistory,
   FocusMedia,
+  FocusPanels,
   FocusToolbar,
   FocusConfigPanel,
   FocusAmbientEffects,
@@ -86,6 +87,19 @@ function ecrire(cle: string, valeur: unknown) {
   catch { /* stockage indisponible */ }
 }
 
+/** La plaque d un panneau : le meme cadre pour les quatre. */
+function PlaquePanneau({ titre, children }: { titre: string; children: React.ReactNode }) {
+  return (
+    <div className="sc-plaque">
+      <div className="sc-plaque-tete" aria-hidden="true">
+        <span className="sc-plaque-marque" />
+        <span>{">> "}{titre}</span>
+      </div>
+      <div className="sc-panneau-corps">{children}</div>
+    </div>
+  );
+}
+
 export default function Focus() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -130,11 +144,14 @@ export default function Focus() {
      clic au lieu dun effet de bord.
      block: "nearest" ne bouge rien si le panneau est deja visible. */
   const panneauRef = useRef<HTMLDivElement | null>(null);
+  const panneauOuvert = useRef(false);
   useEffect(() => {
-    if (!activePanel) return;
+    if (!activePanel) { panneauOuvert.current = false; return; }
+    if (panneauOuvert.current) return;   // deja ouvert : la piste glisse sur place
+    panneauOuvert.current = true;
     const t = setTimeout(() => {
       panneauRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }, 60);
+    }, 380);
     return () => clearTimeout(t);
   }, [activePanel]);
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
@@ -416,6 +433,60 @@ export default function Focus() {
     return `VW·${mm}${jj}·${rang}`;
   }, [timer.sessionsCompleted]);
 
+  /* Les quatre vues, dans l ordre des onglets : c est cet ordre qui donne
+     le sens du glissement. */
+  const vuesPanneaux = useMemo(
+    () => [
+      {
+        id: "config" as const,
+        contenu: (
+          <PlaquePanneau titre="CONFIG_SYS">
+            <FocusConfigPanel
+              fond={fond}
+              onFondChange={setFond}
+              breakMin={breakMin}
+              longBreakMin={longBreakMin}
+              onBreakChange={setBreakMin}
+              onLongBreakChange={setLongBreakMin}
+            />
+          </PlaquePanneau>
+        ),
+      },
+      {
+        id: "media" as const,
+        contenu: (
+          <PlaquePanneau titre="AUDIO_LINK_ESTABLISHED">
+            <FocusMedia userId={user?.id} />
+          </PlaquePanneau>
+        ),
+      },
+      {
+        id: "stats" as const,
+        contenu: (
+          <PlaquePanneau titre="STATS_SYS">
+            <FocusStats
+              todayCount={todayStats.count}
+              todayMinutes={todayStats.totalMinutes}
+              streak={streak}
+              bestSession={bestSession}
+              weeklyData={weeklyStats}
+            />
+          </PlaquePanneau>
+        ),
+      },
+      {
+        id: "history" as const,
+        contenu: (
+          <PlaquePanneau titre="HISTORY_SYS">
+            <FocusHistory sessions={sessions.data || []} goals={goals} todos={tasks} />
+          </PlaquePanneau>
+        ),
+      },
+    ],
+    [fond, breakMin, longBreakMin, user?.id, todayStats.count, todayStats.totalMinutes,
+     streak, bestSession, weeklyStats, sessions.data, goals, tasks],
+  );
+
   const isBreak = timer.phase === "break";
   const frameColor = timer.isRunning ? (isBreak ? "border-accent/40" : "border-primary/40") : "border-border/30";
   // 2,15 : 1 mesure sur ces libelles a 11 px, pour un plancher a 4,5.
@@ -595,64 +666,15 @@ export default function Focus() {
               navigateur ramenait le defilement dans les bornes, et il ne
               revenait pas. On ne fait plus varier la hauteur, et le
               remplacement est immediat — seule l opacite s anime. */}
-          <AnimatePresence initial={false}>
-            {activePanel && !timer.isRunning && (
-              <motion.div
-                key={activePanel}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.16 }}
-                ref={panneauRef}
-                className="w-full flex justify-center z-20 relative mt-4"
-              >
-                <div
-                  className="w-full max-w-lg relative bg-[#0a0a0c] border border-primary/20 p-2"
-                  style={{
-                    clipPath: "polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)",
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-3 border-b border-primary/20 pb-2" aria-hidden="true">
-                    <div className="w-1 h-3 bg-primary" />
-                    <span className="ds-t-label font-mono text-primary uppercase tracking-[0.2em]">
-                      {" >> "}{" "}
-                      {activePanel === "media" ? "AUDIO_LINK_ESTABLISHED" : `${activePanel.toUpperCase()}_SYS`}
-                    </span>
-                  </div>
-
-                  <div className="p-1 sc-panneau-corps">
-                    {activePanel === "config" && !timer.isRunning && (
-                      <FocusConfigPanel
-                        fond={fond}
-                        onFondChange={setFond}
-                        breakMin={breakMin}
-                        longBreakMin={longBreakMin}
-                        onBreakChange={setBreakMin}
-                        onLongBreakChange={setLongBreakMin}
-                      />
-                    )}
-                    {activePanel === "media" && <FocusMedia userId={user?.id} compact={timer.isRunning} />}
-                    {activePanel === "stats" && !timer.isRunning && (
-                      <FocusStats
-                        todayCount={todayStats.count}
-                        todayMinutes={todayStats.totalMinutes}
-                        streak={streak}
-                        bestSession={bestSession}
-                        weeklyData={weeklyStats}
-                      />
-                    )}
-                    {activePanel === "history" && !timer.isRunning && (
-                      <FocusHistory
-                        sessions={sessions.data || []}
-                        goals={goals}
-                        todos={tasks}
-                      />
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Les panneaux glissent au lieu de se remplacer. Le fondu croise
+              les montait tous les deux dans un conteneur en colonne : ils
+              s empilaient le temps de la bascule, la page s allongeait puis
+              se retractait, et le defilement sautait. */}
+          <div ref={panneauRef} className="w-full flex justify-center z-20 relative mt-4">
+            <div className="sc-hublot">
+              <FocusPanels actif={timer.isRunning ? null : activePanel} vues={vuesPanneaux} />
+            </div>
+          </div>
         </div>
       </div>
 

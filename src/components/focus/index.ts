@@ -4,6 +4,7 @@ export { FocusControls } from "./FocusControls";
 export { FocusStats } from "./FocusStats";
 export { FocusHistory } from "./FocusHistory";
 export { FocusMedia } from "./FocusMedia";
+export { FocusPanels } from "./FocusPanels";
 export { FocusToolbar } from "./FocusToolbar";
 export { FocusConfigPanel } from "./FocusConfigPanel";
 export { FocusAmbientEffects } from "./FocusAmbientEffects";

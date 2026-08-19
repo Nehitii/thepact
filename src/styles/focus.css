@@ -1136,3 +1136,63 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 @media (min-width: 640px) {
   .sc-dialogue-pied .cyb { flex: 0 0 auto; min-width: 168px; }
 }
+
+
+/* ── La piste de panneaux ────────────────────────────────────────
+ *
+ * Le fondu croise montait les deux panneaux dans un conteneur en
+ * colonne : ils s empilaient le temps de la bascule, la page s allongeait
+ * puis se retractait, et le defilement sautait.
+ *
+ * Ici le mouvement porte sur une TRANSFORMATION — le compositeur la
+ * traite sans repeindre ni recalculer la mise en page. Seule la hauteur
+ * du hublot suit celle du panneau actif, et c est la seule propriete de
+ * mise en page animee de tout l ecran.
+ * ────────────────────────────────────────────────────────────── */
+
+.sc-hublot { width: 100%; max-width: 520px; }
+
+.sc-diapo {
+  overflow: hidden;
+  transition: height 340ms cubic-bezier(0.3, 0.85, 0.25, 1);
+}
+.sc-diapo-piste {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  transition: transform 380ms cubic-bezier(0.3, 0.85, 0.25, 1);
+}
+.sc-diapo-vue { flex: 0 0 100%; min-width: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-diapo, .sc-diapo-piste { transition: none; }
+}
+
+/* La plaque commune aux quatre panneaux. */
+.sc-plaque {
+  position: relative;
+  background: linear-gradient(180deg, var(--n1, rgba(15, 25, 37, 0.92)), var(--n0, rgba(8, 13, 20, 0.88)));
+  border: 1px solid var(--bord, hsl(var(--primary) / 0.34));
+  padding: 10px;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  --n0: rgba(8, 13, 20, 0.88);
+  --n1: rgba(15, 25, 37, 0.92);
+  --n2: rgba(24, 39, 56, 0.95);
+  --bord: hsl(var(--primary) / 0.34);
+  --bord-vif: hsl(var(--primary) / 0.72);
+  --or: var(--cp-jaune, #fcee0a);
+}
+.sc-plaque-tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid hsl(var(--primary) / 0.2);
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+}
+.sc-plaque-marque { width: 4px; height: 12px; background: var(--or); flex-shrink: 0; }
