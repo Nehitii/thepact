@@ -1830,6 +1830,12 @@
     "field": {
       "target": "Objet",
       "task": "Tâche"
+    },
+    "panneau": {
+      "config": "Réglages",
+      "media": "Lien audio",
+      "stats": "Statistiques",
+      "history": "Historique"
     }
   },
   "calendar": {

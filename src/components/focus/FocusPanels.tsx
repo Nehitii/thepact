@@ -1,7 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useReducedMotion } from "framer-motion";
-import type { FocusPanel } from "./FocusToolbar";
-
 /* LA PISTE DE PANNEAUX
  *
  * Le fondu croise montait les deux panneaux en meme temps dans un
@@ -22,12 +20,13 @@ import type { FocusPanel } from "./FocusToolbar";
  */
 
 export interface Vue {
-  id: Exclude<FocusPanel, null>;
+  id: string;
   contenu: ReactNode;
 }
 
 interface FocusPanelsProps {
-  actif: FocusPanel;
+  /** L identifiant de la vue montree. Null replie la piste. */
+  actif: string | null;
   vues: Vue[];
 }
 

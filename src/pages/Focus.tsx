@@ -27,7 +27,6 @@ import {
   FocusStats,
   FocusHistory,
   FocusMedia,
-  FocusPanels,
   FocusToolbar,
   FocusConfigPanel,
   FocusAmbientEffects,
@@ -87,19 +86,6 @@ function ecrire(cle: string, valeur: unknown) {
   catch { /* stockage indisponible */ }
 }
 
-/** La plaque d un panneau : le meme cadre pour les quatre. */
-function PlaquePanneau({ titre, children }: { titre: string; children: React.ReactNode }) {
-  return (
-    <div className="sc-plaque">
-      <div className="sc-plaque-tete" aria-hidden="true">
-        <span className="sc-plaque-marque" />
-        <span>{">> "}{titre}</span>
-      </div>
-      <div className="sc-panneau-corps">{children}</div>
-    </div>
-  );
-}
-
 export default function Focus() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -144,14 +130,16 @@ export default function Focus() {
      clic au lieu dun effet de bord.
      block: "nearest" ne bouge rien si le panneau est deja visible. */
   const panneauRef = useRef<HTMLDivElement | null>(null);
-  const panneauOuvert = useRef(false);
+  /* La plaque ne grandit plus que de la difference entre deux vues, mais
+     une vue plus haute que les autres peut encore depasser le bas de
+     l ecran. On l amene dans le champ APRES le glissement, et seulement
+     si besoin : block "nearest" ne bouge rien quand la plaque tient deja
+     entierement. Conditionner au besoin plutot qu a l ouverture evite un
+     defilement gratuit a chaque bascule. */
   useEffect(() => {
-    if (!activePanel) { panneauOuvert.current = false; return; }
-    if (panneauOuvert.current) return;   // deja ouvert : la piste glisse sur place
-    panneauOuvert.current = true;
     const t = setTimeout(() => {
       panneauRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }, 380);
+    }, 420);
     return () => clearTimeout(t);
   }, [activePanel]);
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
@@ -440,7 +428,7 @@ export default function Focus() {
       {
         id: "config" as const,
         contenu: (
-          <PlaquePanneau titre="CONFIG_SYS">
+          <div className="sc-panneau-corps">
             <FocusConfigPanel
               fond={fond}
               onFondChange={setFond}
@@ -449,21 +437,21 @@ export default function Focus() {
               onBreakChange={setBreakMin}
               onLongBreakChange={setLongBreakMin}
             />
-          </PlaquePanneau>
+          </div>
         ),
       },
       {
         id: "media" as const,
         contenu: (
-          <PlaquePanneau titre="AUDIO_LINK_ESTABLISHED">
+          <div className="sc-panneau-corps">
             <FocusMedia userId={user?.id} />
-          </PlaquePanneau>
+          </div>
         ),
       },
       {
         id: "stats" as const,
         contenu: (
-          <PlaquePanneau titre="STATS_SYS">
+          <div className="sc-panneau-corps">
             <FocusStats
               todayCount={todayStats.count}
               todayMinutes={todayStats.totalMinutes}
@@ -471,15 +459,15 @@ export default function Focus() {
               bestSession={bestSession}
               weeklyData={weeklyStats}
             />
-          </PlaquePanneau>
+          </div>
         ),
       },
       {
         id: "history" as const,
         contenu: (
-          <PlaquePanneau titre="HISTORY_SYS">
+          <div className="sc-panneau-corps">
             <FocusHistory sessions={sessions.data || []} goals={goals} todos={tasks} />
-          </PlaquePanneau>
+          </div>
         ),
       },
     ],
@@ -622,7 +610,7 @@ export default function Focus() {
           )}
 
           {!timer.isRunning && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex justify-center mt-4">
+            <motion.div ref={panneauRef} initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex justify-center mt-4">
               <FocusToolbar
                 goals={goals}
                 todos={tasks}
@@ -632,6 +620,7 @@ export default function Focus() {
                 onObjetChange={setObjet}
                 activePanel={activePanel}
                 onPanelChange={setActivePanel}
+                panneaux={vuesPanneaux}
               />
             </motion.div>
           )}
@@ -659,22 +648,6 @@ export default function Focus() {
             </div>
           )}
 
-          {/* Passer d un panneau a l autre remontait la page.
-              mode="wait" demontait le panneau courant AVANT de monter le
-              suivant, et sa hauteur etait animee jusqu a zero : le
-              document raccourcissait le temps de la bascule, le
-              navigateur ramenait le defilement dans les bornes, et il ne
-              revenait pas. On ne fait plus varier la hauteur, et le
-              remplacement est immediat — seule l opacite s anime. */}
-          {/* Les panneaux glissent au lieu de se remplacer. Le fondu croise
-              les montait tous les deux dans un conteneur en colonne : ils
-              s empilaient le temps de la bascule, la page s allongeait puis
-              se retractait, et le defilement sautait. */}
-          <div ref={panneauRef} className="w-full flex justify-center z-20 relative mt-4">
-            <div className="sc-hublot">
-              <FocusPanels actif={timer.isRunning ? null : activePanel} vues={vuesPanneaux} />
-            </div>
-          </div>
         </div>
       </div>
 
