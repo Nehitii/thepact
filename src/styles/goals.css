@@ -2523,17 +2523,70 @@
   box-shadow: 0 0 16px -1px var(--accent);
 }
 
-/* Bande inclinee. Elle deborde de chaque cote pour qu'aucune extremite
-   ne soit visible : une bande qui commence et finit dans le cadre se
-   lirait comme une etiquette posee, pas comme une bande qui traverse. */
+/* ── La jointure ──
+ *
+ * Premiere version : la bande flottait au milieu de l'image, et le socle
+ * commencait plus bas avec sa propre cassure. Entre les deux, une bande
+ * d'image reapparaissait — deux lignes de rupture pour une seule idee,
+ * et un morceau de photo coince au milieu.
+ *
+ * La bande EST desormais la jointure. Le bord haut du socle est une
+ * droite inclinee du meme angle, et la bande se pose dessus a cheval :
+ * elle scelle la cassure au lieu de la doubler. Plus rien ne depasse
+ * entre les deux.
+ *
+ * Le calcul de l'inclinaison : sur une carte de 253px de large, une
+ * rotation de 3,5 degres cree 253 x tan(3,5) = 15,5px de denivele. Sur
+ * un socle de 142px de haut, cela fait 11 %. D'ou le polygone.
+ */
+.verre-socle {
+  position: absolute;
+  inset: 55% 0 0 0;
+  isolation: isolate;
+  padding: 30px 14px 13px 16px;
+  clip-path: polygon(0 11%, 100% 0, 100% 100%, 0 100%);
+  /* Trois couches : une lueur diagonale a la couleur du palier, un fond
+     qui s'assombrit vers le bas, et un socle presque noir. Un aplat
+     unique donnait ce gris lavande delave — c'est le degrade qui rend la
+     teinte lisible sans l'eclaircir. */
+  background:
+    linear-gradient(152deg,
+      color-mix(in srgb, var(--accent) 34%, transparent) 0%,
+      transparent 52%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent) 20%, rgb(5 8 15)) 0%,
+      rgb(4 7 13) 76%);
+}
+/* Le lisere suit la cassure : une bordure CSS resterait rectangulaire et
+   passerait au travers. On le dessine en calque, decale d'un pixel sous
+   le socle et clippe sur le meme polygone. */
+.verre-socle::before {
+  content: "";
+  position: absolute;
+  inset: -1px 0 0 0;
+  background: color-mix(in srgb, var(--accent) 78%, transparent);
+  clip-path: polygon(0 11%, 100% 0, 100% 100%, 0 100%);
+  z-index: -1;
+}
+
+/* La bande se pose a cheval sur la jointure, au meme angle qu'elle. Elle
+   deborde de chaque cote : une bande dont on voit les extremites se lit
+   comme une etiquette posee, pas comme une bande qui traverse.
+   translateY(-50%) la centre sur la ligne — c'est ce chevauchement qui
+   fait disparaitre la transition. */
 .verre-bande {
   position: absolute;
-  left: -6px;
-  right: -6px;
-  top: 50%;
-  padding: 3px 16px;
-  transform: rotate(-3.5deg);
-  background: color-mix(in srgb, var(--accent) 88%, black);
+  left: -8px;
+  right: -8px;
+  top: 55%;
+  z-index: 2;
+  padding: 4px 16px;
+  transform: translateY(-52%) rotate(-3.5deg);
+  background: linear-gradient(96deg,
+    color-mix(in srgb, var(--accent) 96%, black) 0%,
+    color-mix(in srgb, var(--accent) 68%, black) 62%,
+    color-mix(in srgb, var(--accent) 92%, white) 100%);
+  box-shadow: 0 3px 14px -4px rgb(0 0 0 / .85);
   font-family: 'Share Tech Mono', monospace;
   font-size: max(11px, 0.6875rem);
   font-weight: 700;
@@ -2542,32 +2595,6 @@
   color: #05080f;
 }
 
-/* ── Socle ── */
-/* Le socle porte la fracture sur son bord HAUT, et reste plein jusqu'en
-   bas. Trois sommets a des hauteurs differentes : c'est l'asymetrie qui
-   fait lire une cassure plutot qu'un simple biseau.
-
-   Le padding haut degage 26px : sans lui le nom viendrait buter contre
-   la pointe la plus basse de la brisure. */
-.verre-socle {
-  position: absolute;
-  inset: auto 0 0 0;
-  isolation: isolate;
-  padding: 26px 14px 13px 16px;
-  background: color-mix(in srgb, var(--accent) 13%, rgb(5 9 17));
-  clip-path: polygon(0 30%, 58% 0, 100% 19%, 100% 100%, 0 100%);
-}
-/* Le liseré suit la cassure : une bordure CSS resterait rectangulaire et
-   passerait au travers. On le dessine donc en calque, decale d'un pixel
-   sous le socle. */
-.verre-socle::before {
-  content: "";
-  position: absolute;
-  inset: -1px 0 0 0;
-  background: color-mix(in srgb, var(--accent) 70%, transparent);
-  clip-path: polygon(0 30%, 58% 0, 100% 19%, 100% 100%, 0 100%);
-  z-index: -1;
-}
 .verre-lettre {
   position: absolute;
   right: -6px;
@@ -2657,4 +2684,62 @@
   .verre, .verre-img { transition: none; }
   .verre:hover { transform: none; }
   .verre:hover .verre-img { transform: none; }
+}
+
+/* ── Couleurs travaillees ──
+ *
+ * Le premier jet posait un bord d'un seul ton et un voile gris uniforme :
+ * a l'ecran cela donnait ce lavande delave, la meme valeur partout, sans
+ * relief. Trois corrections.
+ *
+ * Le bord devient un degrade : vif en haut a gauche, eteint en bas a
+ * droite. Un liseré de valeur constante aplatit la carte ; celui-ci lui
+ * donne une direction de lumiere.
+ *
+ * Le voile prend la teinte du palier au lieu du gris neutre. Un gris pose
+ * sur une image coloree la desature ; une teinte parente l'assombrit sans
+ * la ternir.
+ *
+ * Et une lueur d'angle, en haut a gauche, d'ou vient la lumiere.
+ */
+.verre-in {
+  border-color: transparent;
+  background:
+    linear-gradient(var(--nexus-bg), var(--nexus-bg)) padding-box,
+    linear-gradient(148deg,
+      color-mix(in srgb, var(--accent) 92%, white) 0%,
+      var(--accent) 34%,
+      color-mix(in srgb, var(--accent) 45%, transparent) 78%,
+      color-mix(in srgb, var(--accent) 22%, transparent) 100%) border-box;
+}
+.verre-voile {
+  background:
+    /* lueur d'angle : la source de lumiere */
+    radial-gradient(120% 80% at 8% 4%,
+      color-mix(in srgb, var(--accent) 26%, transparent) 0%,
+      transparent 46%),
+    /* assombrissement teinte, pas gris */
+    linear-gradient(180deg,
+      transparent 18%,
+      color-mix(in srgb, var(--accent) 12%, rgb(3 7 14 / .5)) 46%,
+      color-mix(in srgb, var(--accent) 8%, rgb(3 7 14 / .84)) 68%);
+}
+/* Le flanc s'eteint vers le bas : il plonge dans le socle au lieu de
+   s'arreter net dessus. */
+.verre-flanc {
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--accent) 96%, white) 0%,
+    var(--accent) 40%,
+    color-mix(in srgb, var(--accent) 55%, transparent) 100%);
+}
+/* La lettre en filigrane prend un degrade : pleine en haut, evanouie en
+   bas, pour qu'elle ne fasse pas tache uniforme derriere le texte. */
+.verre-lettre {
+  background: linear-gradient(170deg,
+    color-mix(in srgb, var(--accent) 100%, transparent) 0%,
+    color-mix(in srgb, var(--accent) 18%, transparent) 82%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  opacity: .3;
 }
