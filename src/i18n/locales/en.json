@@ -1770,13 +1770,25 @@
     },
     "distraction": {
       "open": "Log a distraction",
-      "title": "LOG_DISTRACTION",
-      "placeholder": "What pulled you away?",
-      "submit": ">> LOG",
+      "title": "Distraction log",
+      "placeholder": "Something else?",
+      "submit": "Log it",
       "saved": "Distraction logged",
-      "error": "Could not save",
+      "error": "Could not save. Try again.",
       "short": "Distraction",
-      "explain": "Note what just pulled you away. These notes show up in your statistics."
+      "explain": "Note what just pulled you away. These notes show up in your statistics.",
+      "saving": "Saving…",
+      "errorAuth": "Session expired. Sign in again to save.",
+      "orWrite": "or in a word",
+      "quickLabel": "Common causes",
+      "quick": {
+        "phone": "Phone",
+        "message": "Message",
+        "person": "Someone",
+        "thought": "A thought",
+        "body": "Hunger, thirst",
+        "web": "The web"
+      }
     },
     "clause": {
       "toSeal": "Clause to seal",

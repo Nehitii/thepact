@@ -1770,13 +1770,25 @@
     },
     "distraction": {
       "open": "Noter une distraction",
-      "title": "NOTER_DISTRACTION",
-      "placeholder": "Qu'est-ce qui t'a distrait ?",
-      "submit": ">> NOTER",
+      "title": "Carnet de distractions",
+      "placeholder": "Autre chose ?",
+      "submit": "Noter",
       "saved": "Distraction notée",
-      "error": "Échec de l'enregistrement",
+      "error": "Impossible d’enregistrer. Réessayez.",
       "short": "Distraction",
-      "explain": "Notez ce qui vient de vous détourner. Vous retrouverez ces notes dans vos statistiques."
+      "explain": "Notez ce qui vient de vous détourner. Vous retrouverez ces notes dans vos statistiques.",
+      "saving": "Enregistrement…",
+      "errorAuth": "Session expirée. Reconnectez-vous pour enregistrer.",
+      "orWrite": "ou en un mot",
+      "quickLabel": "Causes courantes",
+      "quick": {
+        "phone": "Téléphone",
+        "message": "Message",
+        "person": "Quelqu’un",
+        "thought": "Une pensée",
+        "body": "Faim, soif",
+        "web": "Le web"
+      }
     },
     "clause": {
       "toSeal": "Clause à sceller",

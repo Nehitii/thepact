@@ -1069,43 +1069,6 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   .sc-panneaux .cyb span { display: inline; }
 }
 
-/* ── Le carnet de distractions ───────────────────────────────────
-   Il etait pose en bas a droite, exactement sous le declencheur du
-   Coach : invisible. Il rejoint la barre de commandes, ou il est vu et
-   ou il appartient. */
-
-.dst { position: relative; }
-.dst-note {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  right: 0;
-  width: min(300px, 78vw);
-  z-index: 40;
-  padding: 12px;
-  background: linear-gradient(180deg, rgba(24, 39, 56, 0.97), rgba(8, 13, 20, 0.97));
-  border: 1px solid hsl(var(--primary) / 0.4);
-  backdrop-filter: blur(10px);
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-}
-.dst-titre {
-  font-family: 'Share Tech Mono', ui-monospace, monospace;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--cp-jaune, #fcee0a);
-}
-.dst-champ {
-  width: 100%;
-  padding: 9px;
-  font-family: 'Share Tech Mono', ui-monospace, monospace;
-  font-size: max(12px, 0.75rem);
-  color: hsl(var(--foreground));
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid hsl(var(--primary) / 0.28);
-  resize: none;
-}
-.dst-champ:focus { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: -1px; }
-
 /* ── Le dialogue d abandon ───────────────────────────────────────
  *
  * Il sortait tel quel de la bibliotheque : coins arrondis, boutons
@@ -1324,4 +1287,137 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   line-height: 1.55;
   letter-spacing: 0.06em;
   color: var(--cp-texte-doux, #7089a0);
+}
+
+
+/* ── Le carnet de distractions ───────────────────────────────────
+ *
+ * Le billet etait ancre dans la barre de commandes, qui porte un
+ * clip-path — et un clip-path DECOUPE SES DESCENDANTS. Il etait donc
+ * monte, mesure, et parfaitement invisible. Il vit maintenant a la
+ * racine du document, ou rien ne peut le rogner.
+ * ────────────────────────────────────────────────────────────── */
+
+.dst-bouton { gap: 7px; position: relative; }
+.dst-libelle { display: none; }
+@media (min-width: 720px) { .dst-libelle { display: inline; } }
+
+/* Le compte de la seance : le voir monter est en soi un rappel. */
+.dst-compte {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 1;
+  color: #05070b;
+  background: var(--cp-jaune, #fcee0a);
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+}
+
+.dst-billet {
+  position: fixed;
+  z-index: 90;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(24, 39, 56, 0.98), rgba(8, 13, 20, 0.98));
+  border: 1px solid hsl(var(--primary) / 0.45);
+  box-shadow: 0 18px 50px -12px rgba(0, 0, 0, 0.75), 0 0 30px hsl(var(--primary) / 0.14);
+  backdrop-filter: blur(10px);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  --n0: rgba(8, 13, 20, 0.88);
+  --n1: rgba(15, 25, 37, 0.92);
+  --n2: rgba(24, 39, 56, 0.95);
+  --bord: hsl(var(--primary) / 0.34);
+  --bord-vif: hsl(var(--primary) / 0.72);
+  --or: var(--cp-jaune, #fcee0a);
+}
+
+.dst-tete { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.dst-titre {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cp-jaune, #fcee0a);
+}
+.dst-fermer {
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  min-height: 28px;
+  color: var(--cp-texte-doux, #7089a0);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.dst-fermer:hover { color: hsl(var(--foreground)); }
+.dst-fermer:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 1px; }
+
+.dst-aide {
+  margin: 0 0 10px;
+  font-size: max(11px, 0.6875rem);
+  line-height: 1.55;
+  letter-spacing: 0.05em;
+  color: var(--cp-texte-doux, #7089a0);
+}
+
+/* Six causes qui reviennent tout le temps, un clic chacune : ecrire
+   pendant qu on essaie de se concentrer est un comble. */
+.dst-rapides { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
+.dst-rapides .cyb { justify-content: flex-start; padding: 0 8px; letter-spacing: 0.1em; }
+
+.dst-separateur {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 8px;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+}
+.dst-separateur::before, .dst-separateur::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: hsl(var(--primary) / 0.22);
+}
+
+.dst-champ {
+  width: 100%;
+  padding: 9px;
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: max(12px, 0.75rem);
+  line-height: 1.5;
+  color: hsl(var(--foreground));
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid hsl(var(--primary) / 0.28);
+  resize: none;
+}
+.dst-champ:focus { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: -1px; }
+
+.dst-erreur {
+  margin: 8px 0 0;
+  font-size: max(11px, 0.6875rem);
+  line-height: 1.5;
+  color: hsl(var(--destructive));
+}
+
+.dst-pied { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.dst-reste {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.1em;
+  color: var(--cp-texte-doux, #7089a0);
+  font-variant-numeric: tabular-nums;
+}
+.dst-reste.est-court { color: var(--cp-jaune, #fcee0a); }
+.dst-pied .cyb { gap: 8px; }
+
+@media (max-width: 380px) {
+  .dst-rapides { grid-template-columns: 1fr; }
 }
