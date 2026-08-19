@@ -378,6 +378,10 @@ export default function GoalsGraph() {
               title="Retour aux objectifs"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              {/* Le mot revient. Une icone seule dans un carre se remarque
+                  toujours moins qu'un bouton libelle — et a cote d'un titre
+                  en Orbitron de 26px, un carre vide de 36px disparait. */}
+              <span className="gr-retour-mot">Retour</span>
             </button>
             <h1 className="gr-titre font-orbitron">
               Constellation
