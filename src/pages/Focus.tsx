@@ -130,18 +130,11 @@ export default function Focus() {
      clic au lieu dun effet de bord.
      block: "nearest" ne bouge rien si le panneau est deja visible. */
   const panneauRef = useRef<HTMLDivElement | null>(null);
-  /* La plaque ne grandit plus que de la difference entre deux vues, mais
-     une vue plus haute que les autres peut encore depasser le bas de
-     l ecran. On l amene dans le champ APRES le glissement, et seulement
-     si besoin : block "nearest" ne bouge rien quand la plaque tient deja
-     entierement. Conditionner au besoin plutot qu a l ouverture evite un
-     defilement gratuit a chaque bascule. */
-  useEffect(() => {
-    const t = setTimeout(() => {
-      panneauRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
-    }, 420);
-    return () => clearTimeout(t);
-  }, [activePanel]);
+  /* Le defilement ne vit plus ici : il se faisait « en deux temps »,
+     la hauteur en CSS puis un scrollIntoView de son cote quatre cents
+     millisecondes plus tard. La piste interpole maintenant hauteur,
+     glissement et defilement dans une seule boucle, avec la meme duree et
+     la meme courbe — la page n avance que de ce que le menu s elargit. */
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
 
   useEffect(() => { ecrire(CLE_CONFIG, { work: workMin, pause: breakMin, longue: longBreakMin }); },

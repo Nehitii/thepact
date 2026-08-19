@@ -1,22 +1,23 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useReducedMotion } from "framer-motion";
+
 /* LA PISTE DE PANNEAUX
  *
  * Le fondu croise montait les deux panneaux en meme temps dans un
  * conteneur en colonne : le temps de la bascule ils s empilaient, la page
- * s allongeait puis se retractait, et le defilement sautait. C est ce qui
- * « buguait parfois » — pas parfois, a chaque fois que les deux panneaux
- * n avaient pas la meme hauteur.
+ * s allongeait puis se retractait, et le defilement sautait. Ils sont
+ * maintenant cote a cote sur une piste qu on fait glisser.
  *
- * Ici les panneaux sont cote a cote sur une piste qu on FAIT GLISSER. Le
- * mouvement porte sur une transformation, que le compositeur traite sans
- * repeindre ni recalculer la mise en page. La hauteur du hublot suit
- * celle du panneau actif, mesuree par un observateur de redimensionnement
- * plutot que devinee.
+ * ET LE DEFILEMENT SUIT LA MEME ANIMATION.
  *
- * Un panneau n est monte qu a sa premiere ouverture, et il reste ensuite :
- * monter les quatre d emblee ferait tourner un graphique, un historique et
- * une iframe pour rien.
+ * Il se faisait « en deux temps » : la hauteur s animait en CSS, puis un
+ * scrollIntoView partait de son cote quatre cents millisecondes plus
+ * tard. Deux mouvements pour un geste, chacun avec sa courbe.
+ *
+ * Ici une seule boucle interpole les trois valeurs — hauteur du hublot,
+ * glissement de la piste, position de defilement — avec la meme duree et
+ * la meme courbe. La page n avance donc que de ce que le menu s elargit,
+ * exactement au meme rythme.
  */
 
 export interface Vue {
@@ -30,13 +31,31 @@ interface FocusPanelsProps {
   vues: Vue[];
 }
 
+const DUREE = 420;
+/** Deceleration franche : la valeur arrive et se pose, elle ne derive pas. */
+const adoucir = (t: number) => 1 - Math.pow(1 - t, 4);
+
+/** Le premier ancetre qui defile vraiment. Dans cette application c est
+ *  le <main> de la coque, pas le document. */
+function ascenseur(el: HTMLElement | null): HTMLElement {
+  let n = el?.parentElement ?? null;
+  while (n) {
+    const d = getComputedStyle(n).overflowY;
+    if ((d === "auto" || d === "scroll") && n.scrollHeight > n.clientHeight + 1) return n;
+    n = n.parentElement;
+  }
+  return (document.scrollingElement as HTMLElement) ?? document.documentElement;
+}
+
 export function FocusPanels({ actif, vues }: FocusPanelsProps) {
   const mouvementReduit = useReducedMotion();
   const hublotRef = useRef<HTMLDivElement | null>(null);
+  const pisteRef = useRef<HTMLDivElement | null>(null);
   const vueRefs = useRef(new Map<string, HTMLDivElement>());
-  const [hauteur, setHauteur] = useState(0);
+  const animRef = useRef(0);
 
-  // Ce qui a deja ete ouvert reste monte.
+  // Ce qui a deja ete ouvert reste monte : monter les quatre d emblee
+  // ferait tourner un graphique, un historique et une iframe pour rien.
   const [montees, setMontees] = useState<Set<string>>(() => new Set());
   useEffect(() => {
     if (!actif) return;
@@ -45,17 +64,101 @@ export function FocusPanels({ actif, vues }: FocusPanelsProps) {
 
   const index = actif ? vues.findIndex((v) => v.id === actif) : -1;
 
-  /* La hauteur du hublot suit le panneau actif. Mesuree, jamais devinee :
-     figer une hauteur commune reviderait la page pour les panneaux
-     courts, et la deviner la ferait sauter des qu un contenu change. */
+  /* Une seule animation pour les trois valeurs. */
   useLayoutEffect(() => {
-    if (!actif) { setHauteur(0); return; }
-    const el = vueRefs.current.get(actif);
-    if (!el) return;
-    const mesurer = () => setHauteur(el.offsetHeight);
-    mesurer();
-    const obs = new ResizeObserver(mesurer);
-    obs.observe(el);
+    const hublot = hublotRef.current;
+    const piste = pisteRef.current;
+    if (!hublot || !piste) return;
+
+    const vue = actif ? vueRefs.current.get(actif) : null;
+    const h0 = hublot.getBoundingClientRect().height;
+    const h1 = actif && vue ? vue.offsetHeight : 0;
+    const x0 = -(parseFloat(piste.dataset.x || "0"));
+    const x1 = index < 0 ? 0 : index * 100;
+
+    const sc = ascenseur(hublot);
+    const s0 = sc.scrollTop;
+
+    /* De combien la page doit-elle avancer ? De la difference entre ce
+       que la plaque va occuper et la place qui lui reste — pas plus. */
+    const plaque = hublot.closest(".sc-composeur") as HTMLElement | null;
+    const cible = plaque ?? hublot;
+    const marge = 16;
+    const rect = cible.getBoundingClientRect();
+    const hauteurVisible = sc === document.documentElement || sc === document.body
+      ? window.innerHeight
+      : sc.getBoundingClientRect().height;
+    const hautVisible = sc === document.documentElement || sc === document.body
+      ? 0
+      : sc.getBoundingClientRect().top;
+    const basApres = rect.bottom + (h1 - h0);
+    let ds = 0;
+    if (basApres > hautVisible + hauteurVisible - marge) {
+      ds = basApres - (hautVisible + hauteurVisible - marge);
+      // Jamais au point de faire sortir le haut de la plaque.
+      ds = Math.min(ds, rect.top - hautVisible - marge);
+    }
+    /* Pas de bornage ici : la page n est pas encore scrollable, elle le
+       devient EN grandissant. Borner sur la plage d avant reduisait le
+       deplacement a zero — la plaque debordait de 150 px sans que la page
+       bouge d un pixel. La borne est recalculee a chaque image. */
+    ds = Math.max(0, ds);
+
+    cancelAnimationFrame(animRef.current);
+
+    if (mouvementReduit) {
+      hublot.style.height = `${h1}px`;
+      piste.style.transform = `translate3d(${-x1}%, 0, 0)`;
+      piste.dataset.x = String(x1);
+      sc.scrollTop = Math.min(s0 + ds, sc.scrollHeight - sc.clientHeight);
+      return;
+    }
+
+    let annule = false;
+    const stop = () => { annule = true; };
+    // Un geste de l utilisateur reprend la main : on ne se bat pas avec lui.
+    sc.addEventListener("wheel", stop, { passive: true, once: true });
+    sc.addEventListener("touchstart", stop, { passive: true, once: true });
+
+    const t0 = performance.now();
+    const pas = (now: number) => {
+      const t = Math.min(1, (now - t0) / DUREE);
+      const e = adoucir(t);
+      hublot.style.height = `${h0 + (h1 - h0) * e}px`;
+      piste.style.transform = `translate3d(${-(x0 + (x1 - x0) * e)}%, 0, 0)`;
+      if (!annule && ds !== 0) {
+        const max = sc.scrollHeight - sc.clientHeight;
+        sc.scrollTop = Math.min(s0 + ds * e, max);
+      }
+      if (t < 1) animRef.current = requestAnimationFrame(pas);
+      else {
+        piste.dataset.x = String(x1);
+        sc.removeEventListener("wheel", stop);
+        sc.removeEventListener("touchstart", stop);
+      }
+    };
+    animRef.current = requestAnimationFrame(pas);
+
+    return () => {
+      cancelAnimationFrame(animRef.current);
+      sc.removeEventListener("wheel", stop);
+      sc.removeEventListener("touchstart", stop);
+    };
+  }, [actif, index, mouvementReduit, montees]);
+
+  /* La hauteur suit aussi les changements de contenu d une vue deja
+     ouverte — un historique qu on deplie, par exemple. */
+  useEffect(() => {
+    if (!actif) return;
+    const vue = vueRefs.current.get(actif);
+    const hublot = hublotRef.current;
+    if (!vue || !hublot) return;
+    const obs = new ResizeObserver(() => {
+      // Pendant l animation, c est elle qui commande.
+      if (animRef.current) return;
+      hublot.style.height = `${vue.offsetHeight}px`;
+    });
+    obs.observe(vue);
     return () => obs.disconnect();
   }, [actif, montees]);
 
@@ -72,21 +175,8 @@ export function FocusPanels({ actif, vues }: FocusPanelsProps) {
   }, [actif, vues, montees]);
 
   return (
-    <div
-      ref={hublotRef}
-      className="sc-diapo"
-      style={{
-        height: hauteur,
-        transitionDuration: mouvementReduit ? "0ms" : undefined,
-      }}
-    >
-      <div
-        className="sc-diapo-piste"
-        style={{
-          transform: `translate3d(${index < 0 ? 0 : -index * 100}%, 0, 0)`,
-          transitionDuration: mouvementReduit ? "0ms" : undefined,
-        }}
-      >
+    <div ref={hublotRef} className="sc-diapo" style={{ height: 0 }}>
+      <div ref={pisteRef} className="sc-diapo-piste" data-x="0">
         {vues.map((v) => (
           <div
             key={v.id}
