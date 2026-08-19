@@ -1747,6 +1747,11 @@
     "sideData": {
       "uplink": "Uplink :: Secure // Latency 12ms // Protocol",
       "vitals": "Vitals :: Nominal // Neural Sync"
+    },
+    "resumed_one": "{{count}} cycle caught up while you were away",
+    "resumed_other": "{{count}} cycles caught up while you were away",
+    "notifications": {
+      "blocked": "Notifications blocked. The end-of-phase alert will be visual and audible."
     }
   },
   "calendar": {

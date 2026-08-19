@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Maximize, Minimize } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { usePomodoroTimer, usePomodoroSessions } from "@/hooks/usePomodoro";
+import { usePomodoroTimer, usePomodoroSessions, type CycleAcheve } from "@/hooks/usePomodoro";
 import { useGoals } from "@/hooks/useGoals";
 import { useTodoList } from "@/hooks/useTodoList";
 import { usePact } from "@/hooks/usePact";
@@ -33,6 +33,26 @@ import {
   type FocusPanel,
 } from "@/components/focus";
 
+/* Reglages et objectif lie survivent au demontage, comme la session
+   elle-meme : revenir sur la page avec un minuteur de 45 minutes remis a
+   25 serait aussi surprenant que de perdre le compte a rebours. */
+const CLE_CONFIG = "vowpact.focus.config";
+const CLE_LIEN = "vowpact.focus.lien";
+
+function lire<T>(cle: string, defaut: T): T {
+  try {
+    const brut = localStorage.getItem(cle);
+    return brut ? ({ ...defaut, ...(JSON.parse(brut) as object) } as T) : defaut;
+  } catch {
+    return defaut;
+  }
+}
+
+function ecrire(cle: string, valeur: unknown) {
+  try { localStorage.setItem(cle, JSON.stringify(valeur)); }
+  catch { /* stockage indisponible */ }
+}
+
 export default function Focus() {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -42,17 +62,53 @@ export default function Focus() {
   const { play } = useSound();
   const isMobile = useIsMobile();
 
-  const [workMin, setWorkMin] = useState(25);
-  const [breakMin, setBreakMin] = useState(5);
-  const [longBreakMin, setLongBreakMin] = useState(15);
-  const [linkedGoalId, setLinkedGoalId] = useState<string | null>(null);
-  const [linkedTodoId, setLinkedTodoId] = useState<string | null>(null);
+  const config0 = useRef(lire(CLE_CONFIG, { work: 25, pause: 5, longue: 15 })).current;
+  const lien0 = useRef(lire(CLE_LIEN, { goal: null as string | null, todo: null as string | null })).current;
+
+  const [workMin, setWorkMin] = useState(config0.work);
+  const [breakMin, setBreakMin] = useState(config0.pause);
+  const [longBreakMin, setLongBreakMin] = useState(config0.longue);
+  const [linkedGoalId, setLinkedGoalId] = useState<string | null>(lien0.goal);
+  const [linkedTodoId, setLinkedTodoId] = useState<string | null>(lien0.todo);
   const [activePanel, setActivePanel] = useState<FocusPanel>(null);
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
-  const startTimeRef = useRef<string | null>(null);
 
-  const timer = usePomodoroTimer(workMin, breakMin, longBreakMin);
+  useEffect(() => { ecrire(CLE_CONFIG, { work: workMin, pause: breakMin, longue: longBreakMin }); },
+    [workMin, breakMin, longBreakMin]);
+  useEffect(() => { ecrire(CLE_LIEN, { goal: linkedGoalId, todo: linkedTodoId }); },
+    [linkedGoalId, linkedTodoId]);
+
   const { saveSession, todayStats, weeklyStats, streak, bestSession, sessions } = usePomodoroSessions();
+
+  /* Un cycle acheve = une ligne, ecrite au moment ou il s acheve.
+   *
+   * Avant, une seule ligne etait ecrite a la main sur TERMINER, avec la
+   * duree CONFIGUREE : quatre pomodoros de 25 minutes enregistraient 25
+   * minutes, et une session menee a son terme mais quittee sans clic
+   * n enregistrait rien du tout. */
+  const enregistrerCycle = useCallback((c: CycleAcheve) => {
+    saveSession.mutate({
+      duration_minutes: c.minutes,
+      break_minutes: breakMin,
+      completed: c.complet,
+      linked_goal_id: linkedGoalId,
+      linked_todo_id: linkedTodoId,
+      started_at: c.debutISO,
+    });
+  }, [saveSession, breakMin, linkedGoalId, linkedTodoId]);
+
+  const timer = usePomodoroTimer(workMin, breakMin, longBreakMin, enregistrerCycle);
+
+  // Cycles franchis pendant que la page n etait pas montee.
+  const cyclesFlushes = useRef(false);
+  useEffect(() => {
+    if (cyclesFlushes.current) return;
+    cyclesFlushes.current = true;
+    const rattrapes = timer.prendreCyclesRattrapes();
+    if (rattrapes.length === 0) return;
+    rattrapes.forEach(enregistrerCycle);
+    toast(t("focus.resumed", { count: rattrapes.length }), { duration: 3000 });
+  }, [timer, enregistrerCycle, t]);
 
   // ── Fullscreen (manual only) ──
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -80,11 +136,21 @@ export default function Focus() {
     else enterFullscreen();
   }, [isFullscreen, enterFullscreen, exitFullscreen]);
 
-  // ── Notifications ──
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
+  /* ── Notifications ──
+   *
+   * La permission etait demandee au chargement, sans geste utilisateur :
+   * les navigateurs refusent ou penalisent ces demandes, et rien
+   * n indiquait ensuite que l alerte de fin n arriverait jamais. On la
+   * demande au premier demarrage — un geste explicite — et on dit
+   * clairement ce qu il se passe quand elle est refusee. */
+  const [permNotif, setPermNotif] = useState<NotificationPermission | "absent">(
+    () => ("Notification" in window ? Notification.permission : "absent"),
+  );
+
+  const demanderNotifications = useCallback(async () => {
+    if (!("Notification" in window) || Notification.permission !== "default") return;
+    try { setPermNotif(await Notification.requestPermission()); }
+    catch { /* refus silencieux du navigateur */ }
   }, []);
 
   // ── Session completion sound ──
@@ -124,10 +190,9 @@ export default function Focus() {
   // ── Handlers (memoized) ──
   const handleStart = useCallback(() => {
     play("ui");
-    startTimeRef.current = new Date().toISOString();
+    void demanderNotifications();
     timer.start();
-    // No auto-fullscreen — user can toggle manually
-  }, [play, timer]);
+  }, [play, timer, demanderNotifications]);
 
   const handlePause = useCallback(() => {
     play("ui");
@@ -141,20 +206,13 @@ export default function Focus() {
 
   const confirmEnd = useCallback(() => {
     play("ui");
-    if (timer.sessionsCompleted > 0 || timer.phase === "work") {
-      saveSession.mutate({
-        duration_minutes: workMin,
-        break_minutes: breakMin,
-        completed: timer.sessionsCompleted > 0,
-        linked_goal_id: linkedGoalId,
-        linked_todo_id: linkedTodoId,
-        started_at: startTimeRef.current || new Date().toISOString(),
-      });
-    }
+    // Les cycles acheves sont deja enregistres. Reste le cycle entame,
+    // dont on garde la duree reellement ecoulee, marquee incomplete.
+    const partiel = timer.cycleEnCours();
+    if (partiel) enregistrerCycle(partiel);
     timer.reset();
-    startTimeRef.current = null;
     setShowAbortConfirm(false);
-  }, [play, timer, saveSession, workMin, breakMin, linkedGoalId, linkedTodoId]);
+  }, [play, timer, enregistrerCycle]);
 
   const handleEnd = useCallback(() => {
     setShowAbortConfirm(true);
@@ -332,6 +390,15 @@ export default function Focus() {
             onSkip={handleSkip}
             onEnd={handleEnd}
           />
+
+          {/* Une alerte qui n arrivera pas doit se dire. Sans ce repli,
+              l utilisateur attend une notification que le navigateur a
+              refusee, et il ne l apprend qu a ses depens. */}
+          {timer.isRunning && permNotif === "denied" && (
+            <p className="ds-t-label font-mono uppercase tracking-[0.14em] text-amber-300/70 text-center max-w-xs">
+              {t("focus.notifications.blocked")}
+            </p>
+          )}
 
           {!timer.isRunning && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full flex justify-center mt-4">

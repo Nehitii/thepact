@@ -1747,6 +1747,11 @@
     "sideData": {
       "uplink": "Uplink :: Sécurisé // Latence 12ms // Protocole",
       "vitals": "Vitals :: Nominal // Sync neurale"
+    },
+    "resumed_one": "{{count}} cycle rattrapé pendant votre absence",
+    "resumed_other": "{{count}} cycles rattrapés pendant votre absence",
+    "notifications": {
+      "blocked": "Notifications bloquées. L'alerte de fin sera visuelle et sonore."
     }
   },
   "calendar": {
