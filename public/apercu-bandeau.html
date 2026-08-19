@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bandeau — six propositions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nexus-bg:rgb(7,12,23);
+  --nexus-border:rgba(0,190,255,.22);
+  --nexus-separator:rgba(0,190,255,.18);
+  --nexus-text-dim:#9fb6c9;
+  --nexus-text-dimmer:#7089a0;
+  --cp-jaune:#fcee0a;
+  --cp-cyan:#00f0ff;
+  --cp-texte-doux:#7089a0;
+  --primary:207 100% 68%;
+  --cp-chanfrein:14px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:26px 20px 70px;
+  background:
+    radial-gradient(circle at 22% 12%, rgba(0,120,255,.07), transparent 45%),
+    radial-gradient(circle at 78% 70%, rgba(160,0,255,.06), transparent 40%),
+    #000308;
+  color:#eaf6ff;font-family:'Rajdhani',sans-serif;
+  min-height:100vh;
+}
+/* champ d'etoiles, pour juger l'effet sur le vrai fond */
+body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    radial-gradient(1px 1px at 12% 22%, #fff, transparent),
+    radial-gradient(1px 1px at 47% 8%, #cfe8ff, transparent),
+    radial-gradient(1px 1px at 73% 34%, #fff, transparent),
+    radial-gradient(1px 1px at 88% 61%, #b9d9ff, transparent),
+    radial-gradient(1px 1px at 31% 76%, #fff, transparent),
+    radial-gradient(1px 1px at 62% 88%, #d8ecff, transparent);
+  opacity:.55;
+}
+.enveloppe{position:relative;z-index:1;max-width:1080px;margin:0 auto}
+h1{font-family:'Orbitron',sans-serif;font-size:1.4rem;letter-spacing:5px;margin:0 0 6px}
+.intro{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cp-texte-doux);
+  letter-spacing:1px;margin:0 0 30px;line-height:1.7;max-width:70ch}
+.intro b{color:var(--cp-jaune);font-weight:400}
+
+.bloc{margin-bottom:34px}
+.etiquette{display:flex;align-items:baseline;gap:12px;margin-bottom:9px}
+.lettre{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:900;color:var(--cp-jaune);
+  text-shadow:0 0 16px rgba(252,238,10,.45);line-height:1}
+.nom{font-family:'Orbitron',sans-serif;font-size:.95rem;letter-spacing:2.6px;text-transform:uppercase}
+.desc{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--cp-texte-doux);
+  letter-spacing:.8px;margin-top:3px;line-height:1.6}
+
+/* ── le bandeau, identique a l'application ── */
+.cadre{position:relative;padding:1px;
+  background:linear-gradient(135deg,hsl(var(--primary)/.55) 0%,hsl(var(--primary)/.18) 35%,
+    hsl(var(--primary)/.18) 65%,hsl(var(--primary)/.45) 100%);
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+.fond{position:relative;overflow:hidden;background:var(--nexus-bg);padding:18px 20px 16px;
+  clip-path:polygon(0 0,calc(100% - 14px) 0,100% 14px,100% 100%,14px 100%,0 calc(100% - 14px))}
+.equerre{position:absolute;width:15px;height:15px;pointer-events:none}
+.eq-hg{top:6px;left:6px;border-top:2px solid var(--cp-jaune);border-left:2px solid var(--cp-jaune)}
+.eq-bd{bottom:6px;right:6px;border-bottom:2px solid var(--cp-jaune);border-right:2px solid var(--cp-jaune)}
+.tete{display:flex;align-items:center;gap:14px;margin-bottom:14px;position:relative}
+.titre{position:relative;margin:0;padding-left:14px;font-family:'Orbitron',sans-serif;
+  font-size:1.7rem;font-weight:900;letter-spacing:5px;text-transform:uppercase;line-height:1}
+.titre::before{content:"";position:absolute;inset:2px auto 2px 0;width:4px;background:var(--cp-jaune);
+  box-shadow:0 0 14px -1px var(--cp-jaune)}
+.accent{color:hsl(var(--primary));text-shadow:0 0 18px hsl(var(--primary)/.65)}
+.tag{padding:2px 7px;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1.6px;
+  color:#0a0a00;background:var(--cp-jaune);clip-path:polygon(0 0,100% 0,calc(100% - 5px) 100%,0 100%)}
+.fil{flex:1;height:1px;background:linear-gradient(90deg,var(--nexus-separator),transparent)}
+.danger{height:3px;width:170px;margin-bottom:14px;opacity:.85;
+  background-image:repeating-linear-gradient(-45deg,var(--cp-jaune) 0 6px,#0a0a00 6px 12px)}
+.compteurs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;position:relative}
+.compteur{display:flex;flex-direction:column;line-height:1.15}
+.val{font-family:'Orbitron',sans-serif;font-size:1.4rem;font-weight:900;font-variant-numeric:tabular-nums}
+.lib{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;
+  text-transform:uppercase;color:var(--nexus-text-dimmer)}
+
+/* ═══════ A — ACTUEL : ligne de balayage ═══════ */
+@keyframes a-balayage{0%{transform:translateY(-100%);opacity:0}12%{opacity:1}88%{opacity:1}100%{transform:translateY(2000%);opacity:0}}
+.a-effet{position:absolute;inset:0 0 auto 0;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,hsl(var(--primary)/.6) 25%,var(--cp-cyan) 50%,hsl(var(--primary)/.6) 75%,transparent);
+  animation:a-balayage 9s linear infinite}
+
+/* ═══════ B — LISERÉ QUI SE CHARGE ═══════ */
+@keyframes b-charge{
+  0%,4%{transform:scaleX(0);opacity:0}
+  8%{opacity:1}
+  46%{transform:scaleX(1);opacity:1}
+  62%{transform:scaleX(1);opacity:1}
+  76%,100%{transform:scaleX(1);opacity:0}
+}
+.b-effet{position:absolute;inset:0 0 auto 0;height:1px;pointer-events:none;transform-origin:left;
+  background:linear-gradient(90deg,hsl(var(--primary)/.9),var(--cp-cyan) 60%,var(--cp-jaune));
+  box-shadow:0 0 10px -1px var(--cp-cyan);
+  animation:b-charge 7s cubic-bezier(.22,.9,.24,1) infinite}
+
+/* ═══════ C — ÉQUERRES QUI RESPIRENT ═══════ */
+@keyframes c-respire{
+  0%,100%{opacity:.42;box-shadow:none}
+  46%{opacity:1;box-shadow:0 0 12px -2px var(--cp-jaune)}
+}
+.c .eq-hg{animation:c-respire 5.5s ease-in-out infinite}
+.c .eq-bd{animation:c-respire 5.5s ease-in-out infinite;animation-delay:2.75s}
+
+/* ═══════ D — RELEVÉ TÉLÉMÉTRIQUE ═══════ */
+@keyframes d-defile{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.d-effet{position:absolute;right:0;bottom:0;left:0;height:14px;overflow:hidden;pointer-events:none;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.d-piste{display:flex;width:200%;animation:d-defile 34s linear infinite}
+.d-piste span{flex:0 0 50%;font-family:'Share Tech Mono',monospace;font-size:10px;
+  letter-spacing:2.5px;color:hsl(var(--primary)/.42);white-space:nowrap}
+
+/* ═══════ E — POUSSIÈRE D'ÉTOILES ═══════ */
+@keyframes e-derive{
+  0%{transform:translate(0,0);opacity:0}
+  14%{opacity:.9}
+  86%{opacity:.9}
+  100%{transform:translate(var(--dx),var(--dy));opacity:0}
+}
+.e-effet{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.e-effet i{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--cp-cyan);
+  box-shadow:0 0 6px var(--cp-cyan);animation:e-derive linear infinite}
+
+/* ═══════ F — PULSATION DU CŒUR ═══════ */
+@keyframes f-onde{
+  0%,58%{stroke-dashoffset:240}
+  70%{stroke-dashoffset:0}
+  86%,100%{stroke-dashoffset:-240}
+}
+.f-effet{position:absolute;top:50%;right:18px;transform:translateY(-50%);
+  width:150px;height:34px;pointer-events:none;opacity:.75}
+.f-effet path{fill:none;stroke:var(--cp-cyan);stroke-width:1.6;stroke-linecap:round;
+  stroke-dasharray:240;filter:drop-shadow(0 0 4px var(--cp-cyan));
+  animation:f-onde 6s cubic-bezier(.4,0,.6,1) infinite}
+
+/* ═══════ G — AUCUN ═══════ */
+
+.pied{margin-top:44px;padding-top:18px;border-top:1px solid var(--nexus-separator);
+  font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--cp-texte-doux);
+  letter-spacing:1px;line-height:1.8}
+@media(prefers-reduced-motion:reduce){*{animation:none !important}}
+@media(max-width:640px){.compteurs{grid-template-columns:1fr}.f-effet{display:none}}
+</style>
+</head>
+<body>
+<div class="enveloppe">
+
+<h1>BANDEAU — SIX PROPOSITIONS</h1>
+<p class="intro">
+La ligne de balayage actuelle est <b>A</b>. Chaque proposition remplace uniquement le signe de vie du bandeau ;
+tout le reste — chanfrein, équerres, rayure de danger, compteurs — est identique à l'application.
+Le fond porte un champ d'étoiles pour juger l'effet sur le vrai décor.
+</p>
+
+<!-- A -->
+<div class="bloc">
+  <div class="etiquette"><span class="lettre">A</span><span><span class="nom">Ligne de balayage</span>
+    <div class="desc">L'actuelle. Une barre traverse le panneau de haut en bas toutes les 9 s.</div></span></div>
+  <div class="cadre"><div class="fond">
+    <span class="a-effet"></span>
+    <span class="equerre eq-hg"></span><span class="equerre eq-bd"></span>
+    <div class="tete"><h2 class="titre">Goal<span class="accent">s</span></h2><span class="tag">34% ACQUIS</span><span class="fil"></span></div>
+    <div class="danger"></div>
+    <div class="compteurs">
+      <div class="compteur"><span class="val" style="color:hsl(var(--primary))">38</span><span class="lib">Objectifs</span></div>
+      <div class="compteur"><span class="val" style="color:#ffab00">25</span><span class="lib">En cours</span></div>
+      <div class="compteur"><span class="val" style="color:#00ff88">13</span><span class="lib">Franchis</span></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- B -->
+<div class="bloc">
+  <div class="etiquette"><span class="lettre">B</span><span><span class="nom">Liseré qui se charge</span>
+    <div class="desc">Le trait du haut se remplit de gauche à droite, marque un temps, puis s'efface. Une jauge, pas un passage.</div></span></div>
+  <div class="cadre"><div class="fond">
+    <span class="b-effet"></span>
+    <span class="equerre eq-hg"></span><span class="equerre eq-bd"></span>
+    <div class="tete"><h2 class="titre">Goal<span class="accent">s</span></h2><span class="tag">34% ACQUIS</span><span class="fil"></span></div>
+    <div class="danger"></div>
+    <div class="compteurs">
+      <div class="compteur"><span class="val" style="color:hsl(var(--primary))">38</span><span class="lib">Objectifs</span></div>
+      <div class="compteur"><span class="val" style="color:#ffab00">25</span><span class="lib">En cours</span></div>
+      <div class="compteur"><span class="val" style="color:#00ff88">13</span><span class="lib">Franchis</span></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- C -->
+<div class="bloc c">
+  <div class="etiquette"><span class="lettre">C</span><span><span class="nom">Équerres qui respirent</span>
+    <div class="desc">Aucun élément ajouté. Les deux équerres d'angle s'allument tour à tour, en alternance lente.</div></span></div>
+  <div class="cadre"><div class="fond">
+    <span class="equerre eq-hg"></span><span class="equerre eq-bd"></span>
+    <div class="tete"><h2 class="titre">Goal<span class="accent">s</span></h2><span class="tag">34% ACQUIS</span><span class="fil"></span></div>
+    <div class="danger"></div>
+    <div class="compteurs">
+      <div class="compteur"><span class="val" style="color:hsl(var(--primary))">38</span><span class="lib">Objectifs</span></div>
+      <div class="compteur"><span class="val" style="color:#ffab00">25</span><span class="lib">En cours</span></div>
+      <div class="compteur"><span class="val" style="color:#00ff88">13</span><span class="lib">Franchis</span></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- D -->
+<div class="bloc">
+  <div class="etiquette"><span class="lettre">D</span><span><span class="nom">Relevé télémétrique</span>
+    <div class="desc">Une ligne de données défile très lentement en bas du panneau. Elle dit quelque chose de vrai plutôt que de décorer.</div></span></div>
+  <div class="cadre"><div class="fond" style="padding-bottom:26px">
+    <span class="equerre eq-hg"></span><span class="equerre eq-bd"></span>
+    <div class="tete"><h2 class="titre">Goal<span class="accent">s</span></h2><span class="tag">34% ACQUIS</span><span class="fil"></span></div>
+    <div class="danger"></div>
+    <div class="compteurs">
+      <div class="compteur"><span class="val" style="color:hsl(var(--primary))">38</span><span class="lib">Objectifs</span></div>
+      <div class="compteur"><span class="val" style="color:#ffab00">25</span><span class="lib">En cours</span></div>
+      <div class="compteur"><span class="val" style="color:#00ff88">13</span><span class="lib">Franchis</span></div>
+    </div>
+    <div class="d-effet"><div class="d-piste">
+      <span>PACTE · JOUR 1022/2252 · ÉCART −11.2 PTS · EXTREME 21% · ANANTA 7% · DERNIER FRANCHI IL Y A 6 J · </span>
+      <span>PACTE · JOUR 1022/2252 · ÉCART −11.2 PTS · EXTREME 21% · ANANTA 7% · DERNIER FRANCHI IL Y A 6 J · </span>
+    </div></div>
+  </div></div>
+</div>
+
+<!-- E -->
+<div class="bloc">
+  <div class="etiquette"><span class="lettre">E</span><span><span class="nom">Poussière d'étoiles</span>
+    <div class="desc">Quelques points dérivent lentement dans le panneau, comme si le fond spatial le traversait.</div></span></div>
+  <div class="cadre"><div class="fond">
+    <span class="e-effet" id="poussiere"></span>
+    <span class="equerre eq-hg"></span><span class="equerre eq-bd"></span>
+    <div class="tete"><h2 class="titre">Goal<span class="accent">s</span></h2><span class="tag">34% ACQUIS</span><span class="fil"></span></div>
+    <div class="danger"></div>
+    <div class="compteurs">
+      <div class="compteur"><span class="val" style="color:hsl(var(--primary))">38</span><span class="lib">Objectifs</span></div>
+      <div class="compteur"><span class="val" style="color:#ffab00">25</span><span class="lib">En cours</span></div>
+      <div class="compteur"><span class="val" style="color:#00ff88">13</span><span class="lib">Franchis</span></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- F -->
+<div class="bloc">
+  <div class="etiquette"><span class="lettre">F</span><span><span class="nom">Pulsation</span>
+    <div class="desc">Un tracé d'électrocardiogramme se dessine à droite du panneau, puis s'efface. Le pacte bat.</div></span></div>
+  <div class="cadre"><div class="fond">
+    <svg class="f-effet" viewBox="0 0 150 34" aria-hidden="true">
+      <path d="M0 17 H38 l5 -11 l6 22 l5 -17 l4 8 l4 -8 H150" />
+    </svg>
+    <span class="equerre eq-hg"></span><span class="equerre eq-bd"></span>
+    <div class="tete"><h2 class="titre">Goal<span class="accent">s</span></h2><span class="tag">34% ACQUIS</span><span class="fil"></span></div>
+    <div class="danger"></div>
+    <div class="compteurs">
+      <div class="compteur"><span class="val" style="color:hsl(var(--primary))">38</span><span class="lib">Objectifs</span></div>
+      <div class="compteur"><span class="val" style="color:#ffab00">25</span><span class="lib">En cours</span></div>
+      <div class="compteur"><span class="val" style="color:#00ff88">13</span><span class="lib">Franchis</span></div>
+    </div>
+  </div></div>
+</div>
+
+<!-- G -->
+<div class="bloc">
+  <div class="etiquette"><span class="lettre">G</span><span><span class="nom">Aucun</span>
+    <div class="desc">On retire l'effet. Le chanfrein, les équerres, la rayure et les compteurs suffisent-ils ?</div></span></div>
+  <div class="cadre"><div class="fond">
+    <span class="equerre eq-hg"></span><span class="equerre eq-bd"></span>
+    <div class="tete"><h2 class="titre">Goal<span class="accent">s</span></h2><span class="tag">34% ACQUIS</span><span class="fil"></span></div>
+    <div class="danger"></div>
+    <div class="compteurs">
+      <div class="compteur"><span class="val" style="color:hsl(var(--primary))">38</span><span class="lib">Objectifs</span></div>
+      <div class="compteur"><span class="val" style="color:#ffab00">25</span><span class="lib">En cours</span></div>
+      <div class="compteur"><span class="val" style="color:#00ff88">13</span><span class="lib">Franchis</span></div>
+    </div>
+  </div></div>
+</div>
+
+<p class="pied">
+Donne-moi une lettre. Les combinaisons marchent aussi — <b>C + F</b> par exemple, ou <b>B</b> seul si tu veux
+que le bandeau reste sobre. Je peux aussi ajuster une proposition avant de l'intégrer.
+</p>
+
+</div>
+
+<script>
+// E : les points sont generes ici pour varier trajectoires et durees.
+(function(){
+  const zone=document.getElementById('poussiere');
+  const N=9;
+  for(let i=0;i<N;i++){
+    const p=document.createElement('i');
+    p.style.left=(6+Math.random()*88)+'%';
+    p.style.top=(10+Math.random()*80)+'%';
+    p.style.setProperty('--dx',(Math.random()*50-25).toFixed(0)+'px');
+    p.style.setProperty('--dy',(-30-Math.random()*40).toFixed(0)+'px');
+    p.style.animationDuration=(11+Math.random()*9).toFixed(1)+'s';
+    p.style.animationDelay=(-Math.random()*14).toFixed(1)+'s';
+    if(i%3===0){p.style.background='#fff';p.style.boxShadow='0 0 6px #cfe8ff';}
+    zone.appendChild(p);
+  }
+})();
+</script>
+</body>
+</html>

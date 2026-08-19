@@ -1,6 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Plus, Network } from "lucide-react";
+import { differenceInCalendarDays, parseISO } from "date-fns";
+import { Telemetrie } from "@/components/ds/Telemetrie";
 
 /* EN-TETE DES OBJECTIFS
  *
@@ -20,18 +22,57 @@ interface Props {
   total: number;
   actifs: number;
   franchis: number;
+  /** Bornes du pacte. Absentes tant qu'il n'est pas chargé. */
+  debutPacte?: string | null;
+  finPacte?: string | null;
+  /** Date du dernier objectif franchi, si elle existe. */
+  dernierFranchi?: string | null;
 }
 
-export function GoalsHeader({ total, actifs, franchis }: Props) {
+export function GoalsHeader({
+  total, actifs, franchis, debutPacte, finPacte, dernierFranchi,
+}: Props) {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const pct = total > 0 ? Math.round((franchis / total) * 100) : 0;
 
+  /* Segments du relevé — uniquement des valeurs derivees de l'etat reel.
+     Chacun n'est ajoute que si sa donnee existe : mieux vaut un releve
+     court qu'un segment invente pour meubler. */
+  const segments: string[] = [];
+  if (debutPacte && finPacte) {
+    try {
+      const debut = parseISO(debutPacte);
+      const fin = parseISO(finPacte);
+      const total_j = differenceInCalendarDays(fin, debut);
+      const ecoules = differenceInCalendarDays(new Date(), debut);
+      if (total_j > 0 && ecoules >= 0) {
+        segments.push(`JOUR ${Math.min(ecoules, total_j)}/${total_j}`);
+        const pctTemps = Math.round((Math.min(ecoules, total_j) / total_j) * 100);
+        segments.push(`TEMPS ${pctTemps}%`);
+        // L'ecart entre l'avancement et le temps consomme : la seule
+        // valeur du releve qui ne se lit nulle part ailleurs.
+        const ecart = pct - pctTemps;
+        segments.push(`ÉCART ${ecart >= 0 ? "+" : "−"}${Math.abs(ecart)} PTS`);
+      }
+    } catch { /* dates illisibles : on n'affiche rien plutot qu'un faux */ }
+  }
+  segments.push(`${franchis}/${total} FRANCHIS`);
+  segments.push(`${actifs} EN COURS`);
+  if (dernierFranchi) {
+    try {
+      const j = differenceInCalendarDays(new Date(), parseISO(dernierFranchi));
+      if (j >= 0) {
+        segments.push(j === 0 ? "DERNIER FRANCHI AUJOURD'HUI" : `DERNIER FRANCHI IL Y A ${j} J`);
+      }
+    } catch { /* idem */ }
+  }
+
   return (
     <div className="cp-cadre">
-      <section className="cp-fond ana-panneau ana-bandeau-panneau">
-        <span className="cp-balayage" />
+      <section className="cp-fond ana-panneau ana-bandeau-panneau cp-avec-telemetrie">
+        <span className="cp-charge" />
         <span className="cp-equerre cp-equerre-hg" />
         <span className="cp-equerre cp-equerre-bd" />
 
@@ -92,6 +133,8 @@ export function GoalsHeader({ total, actifs, franchis }: Props) {
           <Compteur valeur={actifs} libelle={t("goals.activeLabel")} teinte="#ffab00" />
           <Compteur valeur={franchis} libelle={t("goals.doneLabel")} teinte="#00ff88" pct={pct} />
         </div>
+
+        <Telemetrie segments={segments} />
       </section>
     </div>
   );

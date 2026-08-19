@@ -253,22 +253,83 @@
 /* ── Balayage ──
    Une ligne claire qui descend lentement. Discrete : c'est un signe
    de vie, pas un effet. */
-@keyframes cp-balayage {
-  0%   { transform: translateY(-100%); opacity: 0; }
-  12%  { opacity: 1; }
-  88%  { opacity: 1; }
-  100% { transform: translateY(2000%); opacity: 0; }
+/* ── Signes de vie du bandeau ──
+ *
+ * Une barre traversait le panneau de haut en bas toutes les neuf
+ * secondes. Un balayage d'ecran cathodique : lu mille fois, et surtout
+ * une couche posee PAR-DESSUS le panneau, sans rapport avec lui.
+ *
+ * Les deux effets qui suivent ne se superposent pas, ils animent ce qui
+ * existe deja et disent quelque chose de vrai.
+ */
+
+/* ── Le lisere se charge ──
+ *  Le trait du haut se remplit de gauche a droite, marque un temps, puis
+ *  s'efface. Ce n'est pas un passage, c'est une jauge — et la page parle
+ *  justement d'avancement. */
+@keyframes cp-charge {
+  0%, 4%    { transform: scaleX(0); opacity: 0; }
+  8%        { opacity: 1; }
+  46%, 62%  { transform: scaleX(1); opacity: 1; }
+  76%, 100% { transform: scaleX(1); opacity: 0; }
 }
-.cp-balayage {
+.cp-charge {
   position: absolute;
   inset: 0 0 auto 0;
-  height: 2px;
-  background: linear-gradient(90deg,
-    transparent, hsl(var(--primary) / 0.6) 25%,
-    var(--cp-cyan) 50%, hsl(var(--primary) / 0.6) 75%, transparent);
-  animation: cp-balayage 9s linear infinite;
+  height: 1px;
+  transform-origin: left;
   pointer-events: none;
+  background: linear-gradient(90deg,
+    hsl(var(--primary) / 0.9), var(--cp-cyan) 60%, var(--cp-jaune));
+  box-shadow: 0 0 10px -1px var(--cp-cyan);
+  animation: cp-charge 7s cubic-bezier(.22, .9, .24, 1) infinite;
 }
+
+/* ── Releve telemetrique ──
+ *  Une ligne de donnees defile en bas du panneau. Elle ne contient que
+ *  des valeurs calculees a partir de l'etat reel — jamais de faux
+ *  releve, ce serait de la decoration deguisee en information.
+ *
+ *  Le defilement dure une demi-minute : assez lent pour se laisser lire
+ *  si on s'y arrete, assez discret pour ne pas happer le regard. */
+@keyframes cp-telemetrie {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.cp-telemetrie {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 15px;
+  overflow: hidden;
+  pointer-events: none;
+  /* Les extremites s'estompent : la ligne ne bute pas contre le bord. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 11%, #000 89%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 11%, #000 89%, transparent);
+}
+.cp-telemetrie-piste {
+  display: flex;
+  width: 200%;
+  animation: cp-telemetrie 34s linear infinite;
+}
+.cp-telemetrie-piste > span {
+  flex: 0 0 50%;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2.4px;
+  color: hsl(var(--primary) / 0.42);
+  white-space: nowrap;
+}
+/* Le panneau doit reserver la place, sinon le releve chevauche les
+   compteurs. */
+.cp-avec-telemetrie { padding-bottom: 28px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cp-charge { animation: none; transform: scaleX(1); opacity: 0.5; }
+  .cp-telemetrie-piste { animation: none; }
+}
+
 
 /* ── Selecteur de periode, en segments usines ── */
 .cp-periode {
@@ -635,7 +696,6 @@
   .ana-bandeau { grid-template-columns: repeat(3, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cp-balayage { animation: none; opacity: 0; }
   .cp-contrat, .cp-contrat-img { transition: none; }
   .cp-contrat:hover { transform: none; }
   .cp-contrat:hover .cp-contrat-img { transform: none; }

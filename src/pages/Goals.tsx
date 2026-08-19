@@ -84,11 +84,27 @@ export default function Goals() {
   ).length;
   const actifs = goals.length - franchis;
 
+  /* Date du dernier objectif franchi, pour le releve du bandeau. On prend
+     le maximum des completion_date plutot que le premier trouve : la liste
+     n est pas triee par date. */
+  const dernierFranchi = goals
+    .map((g) => g.completion_date)
+    .filter(Boolean)
+    .sort()
+    .pop() ?? null;
+
   if (loading) {
     return (
       <DSPageShell width="xl" background={<SpaceBackdrop />}>
         <div className="space-y-6">
-          <GoalsHeader total={goals.length} actifs={actifs} franchis={franchis} />
+          <GoalsHeader
+                        total={goals.length}
+                        actifs={actifs}
+                        franchis={franchis}
+                        debutPacte={pact?.project_start_date}
+                        finPacte={pact?.project_end_date}
+                        dernierFranchi={dernierFranchi}
+                      />
           <GoalsSkeleton mode={filters.displayMode} count={4} />
         </div>
       </DSPageShell>
@@ -105,7 +121,14 @@ export default function Goals() {
         className="space-y-6"
       >
         <motion.div variants={itemVariants}>
-          <GoalsHeader total={goals.length} actifs={actifs} franchis={franchis} />
+          <GoalsHeader
+                        total={goals.length}
+                        actifs={actifs}
+                        franchis={franchis}
+                        debutPacte={pact?.project_start_date}
+                        finPacte={pact?.project_end_date}
+                        dernierFranchi={dernierFranchi}
+                      />
         </motion.div>
 
         {goals.length > 0 && (

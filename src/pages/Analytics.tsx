@@ -15,6 +15,7 @@ import { SpaceBackdrop } from "@/components/home/SpaceBackdrop";
 import { CleanPeriodSelector } from "@/components/analytics/clean/CleanPeriodSelector";
 import { CleanTooltip } from "@/components/analytics/clean/CleanTooltip";
 import { GoalContrats } from "@/components/analytics/GoalContrats";
+import { Telemetrie } from "@/components/ds/Telemetrie";
 
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAnalyticsState, type PrismSection } from "@/hooks/useAnalyticsState";
@@ -202,8 +203,8 @@ export default function Analytics() {
 
         {/* ── Bandeau : trois compteurs, fixes d'une vue a l'autre ── */}
         <div className="cp-cadre">
-        <section className="cp-fond ana-panneau ana-bandeau-panneau">
-          <span className="cp-balayage" />
+        <section className="cp-fond ana-panneau ana-bandeau-panneau cp-avec-telemetrie">
+          <span className="cp-charge" />
           <span className="cp-equerre cp-equerre-hg" />
           <span className="cp-equerre cp-equerre-bd" />
           <header className="ana-panneau-tete">
@@ -227,6 +228,19 @@ export default function Analytics() {
               libelle="XP accumulé" teinte={VERT}
             />
           </div>
+
+          {/* Releve : uniquement des valeurs deja calculees plus haut. Rien
+              n est invente pour meubler la ligne. */}
+          <Telemetrie
+            segments={[
+              `${summary.totalGoals} OBJECTIFS`,
+              `${summary.activeGoals} EN COURS`,
+              `${summary.completedSteps}/${summary.totalSteps} ÉTAPES`,
+              `${Math.round(summary.pomodoroMinutes / 60)} H DE FOCUS`,
+              `${summary.totalXP.toLocaleString("fr-FR")} XP`,
+              `${formatCurrency(summary.paidCost, currency)} ENGAGÉ`,
+            ]}
+          />
         </section>
         </div>
 
