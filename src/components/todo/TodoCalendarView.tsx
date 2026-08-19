@@ -100,9 +100,10 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
             variant="ghost"
             size="icon"
             onClick={() => navigateMonth('prev')}
-            className="h-8 w-8 rounded-lg"
+            aria-label={t('calendar.prevPeriod', { period: t('calendar.viewMonth').toLowerCase() })}
+            className="tsk-outil est-icone"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-4 h-4" aria-hidden="true" />
           </Button>
           <span className="text-sm font-medium text-foreground min-w-[120px] text-center">
             {format(currentMonth, 'MMMM yyyy', { locale: dateLocale })}
@@ -111,9 +112,10 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
             variant="ghost"
             size="icon"
             onClick={() => navigateMonth('next')}
-            className="h-8 w-8 rounded-lg"
+            aria-label={t('calendar.nextPeriod', { period: t('calendar.viewMonth').toLowerCase() })}
+            className="tsk-outil est-icone"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

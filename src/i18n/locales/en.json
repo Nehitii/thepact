@@ -214,7 +214,7 @@
   },
   "todo": {
     "title": "To-Do List",
-    "subtitle": "Execute with clarity",
+    "subtitle": "What there is to do, and where to start.",
     "score": "pts",
     "streak": "streak",
     "active": "active",
@@ -339,7 +339,9 @@
       "postpone": "Postpone: {{name}}",
       "overdue": "Overdue",
       "critical": "Critical",
-      "location": "Location"
+      "location": "Location",
+      "postponedTimes_one": "postponed once",
+      "postponedTimes_other": "postponed {{count}} times"
     },
     "calendarView": {
       "title": "Task calendar",
@@ -411,8 +413,13 @@
       "high": "High priority"
     },
     "views": {
-      "expanded": "Detailed view",
-      "compact": "Compact view"
+      "liste": "List",
+      "detaillee": "Detailed",
+      "calendrier": "Calendar",
+      "stats": "Statistics",
+      "historique": "History",
+      "switcher": "List density",
+      "panels": "Panels"
     },
     "panels": {
       "calendar": "Task calendar"
@@ -432,6 +439,23 @@
       "category": "Set category",
       "deadline": "Set deadline",
       "nextWeek": "Deadline next week"
+    },
+    "rail": {
+      "nominal": "SYS.NOMINAL",
+      "alert": "{{count}} OVERDUE"
+    },
+    "tel": {
+      "next": "Next",
+      "noDeadline": "No deadline set",
+      "overdue": "Overdue",
+      "overdueNote": "Deal with these first",
+      "worstPostponed": "One has been postponed {{count}} times",
+      "level": "Level",
+      "levelNote": "{{score}} points · {{reste}} to the next",
+      "streak": "Streak",
+      "bestStreak": "Best: {{count}} days",
+      "load": "Load",
+      "activeCount": "{{count}} / {{max}} ACTIVE"
     }
   },
   "goals": {

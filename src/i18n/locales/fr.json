@@ -214,7 +214,7 @@
   },
   "todo": {
     "title": "To-Do List",
-    "subtitle": "Exécute avec clarté",
+    "subtitle": "Ce qu’il y a à faire, et par quoi commencer.",
     "score": "pts",
     "streak": "série",
     "active": "actives",
@@ -339,7 +339,9 @@
       "postpone": "Reporter : {{name}}",
       "overdue": "En retard",
       "critical": "Critique",
-      "location": "Lieu"
+      "location": "Lieu",
+      "postponedTimes_one": "reportée 1 fois",
+      "postponedTimes_other": "reportée {{count}} fois"
     },
     "calendarView": {
       "title": "Calendrier des tâches",
@@ -411,8 +413,13 @@
       "high": "Priorité haute"
     },
     "views": {
-      "expanded": "Vue détaillée",
-      "compact": "Vue compacte"
+      "liste": "Liste",
+      "detaillee": "Détaillée",
+      "calendrier": "Calendrier",
+      "stats": "Statistiques",
+      "historique": "Historique",
+      "switcher": "Densité de la liste",
+      "panels": "Panneaux"
     },
     "panels": {
       "calendar": "Calendrier des tâches"
@@ -432,6 +439,23 @@
       "category": "Définir la catégorie",
       "deadline": "Définir l’échéance",
       "nextWeek": "Échéance la semaine prochaine"
+    },
+    "rail": {
+      "nominal": "SYS.NOMINAL",
+      "alert": "{{count}} EN RETARD"
+    },
+    "tel": {
+      "next": "Prochaine",
+      "noDeadline": "Aucune échéance posée",
+      "overdue": "En retard",
+      "overdueNote": "À traiter en premier",
+      "worstPostponed": "Une a été reportée {{count}} fois",
+      "level": "Niveau",
+      "levelNote": "{{score}} points · {{reste}} avant le suivant",
+      "streak": "Série",
+      "bestStreak": "Record : {{count}} jours",
+      "load": "Charge",
+      "activeCount": "{{count}} / {{max}} ACTIVES"
     }
   },
   "goals": {

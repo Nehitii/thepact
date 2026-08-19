@@ -1,0 +1,533 @@
+/* TSK.01 — LA CONSOLE D OPERATIONS
+ *
+ * La page disait ce qu il y a. Elle ne disait pas ce qu il y a a faire :
+ * une liste plate, un menu de tri, et cinq de ses fonctions derriere des
+ * fenetres modales.
+ *
+ * Elle devient un RELEVE. Une ligne par tache, quarante-quatre pixels :
+ * une lampe de priorite, une reference, le nom et sa metadonnee, les
+ * actions a droite. Plus de carte de cent pixels pour dire trois choses.
+ *
+ * Les panneaux — calendrier, statistiques, historique — cessent d etre
+ * des fenetres qui recouvrent tout : ce sont des VUES de la plaque, qui
+ * se changent par le rail, comme sur CAL.01. Seuls les formulaires
+ * restent modaux, parce qu un formulaire doit tenir la main.
+ *
+ * Le cyberpunk n est pas du decor : la lampe dit la priorite, elle bat
+ * quand c est en retard ; le balayage suit le pointeur pour montrer ce
+ * qu on vise ; la trame et les equerres disent « instrument ». Tout ce
+ * qui bouge s arrete sous « prefers-reduced-motion ».
+ */
+
+.tsk {
+  --tsk-plaque:  hsl(var(--ds-surface-1));
+  --tsk-creux:   hsl(var(--ds-surface-2));
+  --tsk-trait:   hsl(var(--ds-border-default) / 0.16);
+  --tsk-trait-fort: hsl(var(--ds-border-default) / 0.32);
+  --tsk-signal:  hsl(var(--ds-accent-primary));
+  --tsk-texte:   hsl(var(--ds-text-primary));
+  --tsk-doux:    hsl(var(--ds-text-secondary));
+  --tsk-faible:  hsl(var(--ds-text-muted) / 0.85);
+  --tsk-mono: "JetBrains Mono", ui-monospace, monospace;
+  --tsk-titre: "Orbitron", sans-serif;
+  --tsk-corps: "Rajdhani", system-ui, sans-serif;
+
+  /* Les teintes de priorite. Le retard prime sur tout. */
+  --tsk-haute:  #f59e0b;
+  --tsk-moy:    #3b82f6;
+  --tsk-basse:  #10b981;
+  --tsk-retard: #ff4d5e;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LE LISERET DES BISEAUX
+   Un clip-path decoupe l element AVEC sa bordure : les coins
+   coupes n auraient aucun trait. On le dessine.
+   ═══════════════════════════════════════════════════════════ */
+.tsk-plaque, .tsk-bloc, .tsk-outil, .tsk-groupe, .tsk-dlg, .tsk-vide {
+  position: relative;
+  border: 0;
+  clip-path: var(--tsk-biseau);
+}
+.tsk-plaque::after, .tsk-bloc::after, .tsk-outil::after,
+.tsk-groupe::after, .tsk-dlg::after, .tsk-vide::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 6; pointer-events: none;
+  clip-path: var(--tsk-biseau);
+  background: var(--tsk-liseret, var(--tsk-trait));
+  padding: var(--tsk-liseret-ep, 1px);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: background 140ms var(--ds-ease-out);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LA PLAQUE
+   ═══════════════════════════════════════════════════════════ */
+.tsk-corps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  container-type: inline-size;
+  container-name: taches;
+}
+.tsk-flanc { display: none; }
+@container taches (min-width: 900px) {
+  .tsk-corps { grid-template-columns: minmax(0, 1fr) 210px; }
+  .tsk-flanc { display: block; }
+}
+
+.tsk-plaque {
+  --tsk-biseau: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  --tsk-liseret: hsl(var(--ds-accent-primary) / 0.22);
+  background:
+    /* La trame : une grille technique a peine visible, qui donne du
+       grain a une surface autrement plate. */
+    linear-gradient(hsl(var(--ds-accent-primary) / 0.035) 1px, transparent 1px) 0 0 / 100% 28px,
+    linear-gradient(90deg, hsl(var(--ds-accent-primary) / 0.035) 1px, transparent 1px) 0 0 / 34px 100%,
+    var(--tsk-plaque);
+  overflow: hidden;
+}
+/* Les equerres : quatre angles, pas un cadre. */
+.tsk-plaque::before {
+  content: "";
+  position: absolute; inset: 7px; pointer-events: none; z-index: 5;
+  background:
+    linear-gradient(var(--tsk-signal), var(--tsk-signal)) 0 0 / 14px 1px no-repeat,
+    linear-gradient(var(--tsk-signal), var(--tsk-signal)) 0 0 / 1px 14px no-repeat,
+    linear-gradient(var(--tsk-signal), var(--tsk-signal)) 100% 100% / 14px 1px no-repeat,
+    linear-gradient(var(--tsk-signal), var(--tsk-signal)) 100% 100% / 1px 14px no-repeat;
+  opacity: 0.5;
+}
+
+.tsk-rail {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px 8px;
+  border-bottom: 1px solid var(--tsk-trait);
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--tsk-faible);
+  white-space: nowrap; overflow: hidden;
+}
+.tsk-rail b { color: var(--tsk-signal); font-weight: 400; }
+.tsk-rail i { flex: 1; min-width: 8px; height: 1px; background: var(--tsk-trait); }
+.tsk-rail .tsk-alerte {
+  color: var(--tsk-retard);
+  text-shadow: 0 0 10px color-mix(in oklab, var(--tsk-retard) 60%, transparent);
+}
+.tsk-rail-option { display: none; }
+@container taches (min-width: 620px) { .tsk-rail-option { display: inline; } }
+
+/* Le balayage : une seule passe lente sur la plaque, tres discrete. */
+.tsk-plaque .tsk-scan {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(180deg, transparent, hsl(var(--ds-accent-primary) / 0.05), transparent);
+  height: 90px;
+  animation: tsk-descend 9s linear infinite;
+}
+@keyframes tsk-descend {
+  0%   { transform: translateY(-100px); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(1000px); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LA LIGNE — l objet « tache »
+   ═══════════════════════════════════════════════════════════ */
+.tsk-liste { position: relative; z-index: 2; }
+
+.tsk-ligne {
+  position: relative;
+  display: grid;
+  grid-template-columns: 3px var(--tsk-col-lampe, 26px) minmax(0, 1fr) auto;
+  grid-template-areas: "filet lampe corps actions";
+  align-items: center; gap: 10px;
+  padding-right: 10px;
+  min-height: 44px;
+  border-bottom: 1px solid var(--tsk-trait);
+  transition: background 140ms var(--ds-ease-out);
+}
+.tsk-ligne:hover,
+.tsk-ligne:focus-within { background: hsl(var(--ds-surface-2) / 0.7); }
+/* Le balayage au survol : il suit ce qu on vise. */
+.tsk-ligne::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--tsk-teinte) 12%, transparent), transparent);
+  opacity: 0; transform: translateX(-40%);
+  transition: opacity 220ms var(--ds-ease-out), transform 520ms var(--ds-ease-out);
+}
+.tsk-ligne:hover::before { opacity: 1; transform: translateX(40%); }
+.tsk-ligne.est-en-vol { opacity: 0.3; }
+
+.tsk-filet { grid-area: filet; align-self: stretch; background: var(--tsk-teinte); }
+.tsk-ligne[data-retard="true"] .tsk-filet {
+  background: repeating-linear-gradient(180deg, var(--tsk-teinte) 0 4px, transparent 4px 8px);
+}
+
+/* La lampe : elle DIT la priorite, et bat quand c est en retard. */
+.tsk-lampe {
+  grid-area: lampe;
+  justify-self: center;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; min-height: 44px;
+  color: var(--tsk-teinte);
+  transition: color 140ms var(--ds-ease-out);
+}
+.tsk-lampe span {
+  width: 11px; height: 11px;
+  border: 1px solid currentColor;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  transition: background 160ms var(--ds-ease-out), box-shadow 160ms var(--ds-ease-out);
+}
+.tsk-lampe:hover span,
+.tsk-lampe:focus-visible span {
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+}
+.tsk-ligne[data-retard="true"] .tsk-lampe span { animation: tsk-bat 1.6s ease-in-out infinite; }
+@keyframes tsk-bat {
+  0%, 100% { box-shadow: 0 0 0 currentColor; }
+  50%      { box-shadow: 0 0 10px currentColor; }
+}
+
+.tsk-corps-ligne { grid-area: corps; min-width: 0; padding: 5px 0; text-align: left; }
+.tsk-nom {
+  display: block;
+  font-family: var(--tsk-corps); font-size: max(15px, 0.9375rem); font-weight: 600;
+  line-height: 1.2; color: var(--tsk-texte);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.tsk-ligne[data-urgent="true"] .tsk-nom {
+  text-shadow: 0 0 12px color-mix(in oklab, var(--tsk-teinte) 55%, transparent);
+}
+.tsk-meta {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  margin-top: 2px;
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--tsk-faible);
+}
+/* La reference etait a 3,66 de rapport : discrete ne veut pas dire
+   illisible — c est elle qu on cite quand on parle d une tache. */
+.tsk-meta .tsk-ref { color: hsl(var(--ds-text-muted) / 0.9); font-variant-numeric: tabular-nums; }
+.tsk-meta .tsk-sep { color: var(--tsk-trait-fort); }
+.tsk-meta .tsk-quand { color: color-mix(in oklab, var(--tsk-teinte) 70%, white); }
+.tsk-meta .tsk-reports { color: hsl(var(--ds-accent-warning)); }
+
+/* La rangee de badges, en vue detaillee. */
+.tsk-badges { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.tsk-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 7px;
+  font-family: var(--tsk-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--tsk-faible);
+  background: hsl(var(--ds-surface-3) / 0.5);
+  border-left: 2px solid var(--tsk-trait-fort);
+}
+.tsk-badge.est-teinte {
+  color: color-mix(in oklab, var(--tsk-teinte) 76%, white);
+  background: color-mix(in oklab, var(--tsk-teinte) 12%, transparent);
+  border-left-color: var(--tsk-teinte);
+}
+
+.tsk-actions {
+  grid-area: actions;
+  display: flex; align-items: center; gap: 3px;
+  opacity: 0.4;
+  transition: opacity 160ms var(--ds-ease-out);
+}
+.tsk-ligne:hover .tsk-actions,
+.tsk-ligne:focus-within .tsk-actions { opacity: 1; }
+/* Un doigt ne survole rien. */
+@media (pointer: coarse) { .tsk-actions { opacity: 1; } }
+
+/* Sous 560 px de conteneur, six actions de 44 px et un nom ne tiennent
+   pas sur une ligne : le nom se retrouvait ecrase a vingt-six pixels de
+   large sur deux cent vingt-neuf de haut. Les actions passent dessous. */
+@container taches (max-width: 560px) {
+  .tsk-ligne {
+    grid-template-columns: 3px var(--tsk-col-lampe, 26px) minmax(0, 1fr);
+    grid-template-areas: "filet lampe corps" "filet actions actions";
+    row-gap: 0; padding-bottom: 2px;
+  }
+  .tsk-actions { justify-content: flex-start; margin-left: -6px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LES COMMANDES
+   ═══════════════════════════════════════════════════════════ */
+.tsk-outil {
+  --tsk-biseau: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 32px; padding: 0 11px;
+  font-family: var(--tsk-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--tsk-faible);
+  background: hsl(var(--ds-surface-1) / 0.7);
+  transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.tsk-outil:hover {
+  color: var(--tsk-texte);
+  --tsk-liseret: hsl(var(--ds-accent-primary) / 0.55);
+  background: hsl(var(--ds-surface-2) / 0.9);
+}
+.tsk-outil.est-icone { width: 32px; min-width: 32px; padding: 0; }
+.tsk-outil.est-primaire {
+  color: hsl(var(--ds-bg-base)); background: var(--tsk-signal); --tsk-liseret: var(--tsk-signal);
+}
+.tsk-outil.est-primaire:hover { background: var(--tsk-signal); filter: brightness(1.12); }
+.tsk-outil.est-danger {
+  color: hsl(var(--ds-accent-critical));
+  --tsk-liseret: hsl(var(--ds-accent-critical) / 0.55);
+  background: hsl(var(--ds-accent-critical) / 0.1);
+}
+.tsk-outil.est-danger:hover {
+  color: hsl(var(--ds-bg-base)); background: hsl(var(--ds-accent-critical));
+  --tsk-liseret: hsl(var(--ds-accent-critical));
+}
+.tsk-outil.est-inerte {
+  opacity: 0.5; cursor: default;
+  color: var(--tsk-faible); --tsk-liseret: var(--tsk-trait);
+  background: hsl(var(--ds-surface-1) / 0.7);
+}
+/* Une action de ligne : plus discrete, mais aussi grande. */
+.tsk-action {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 32px; min-height: 32px;
+  color: hsl(var(--ds-text-muted) / 0.8);
+  transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.tsk-action:hover { color: var(--tsk-texte); background: hsl(var(--ds-surface-3) / 0.7); }
+.tsk-action.est-danger:hover { color: hsl(var(--ds-accent-critical)); background: hsl(var(--ds-accent-critical) / 0.12); }
+.tsk-action.est-signal:hover { color: var(--tsk-signal); background: hsl(var(--ds-accent-primary) / 0.12); }
+.tsk-poignee { cursor: grab; touch-action: none; }
+.tsk-poignee:active { cursor: grabbing; }
+
+.tsk-groupe {
+  --tsk-biseau: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  display: flex; align-items: stretch;
+  background: hsl(var(--ds-surface-1) / 0.7);
+}
+.tsk-onglet {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 6px 11px; min-height: 32px;
+  font-family: var(--tsk-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--tsk-faible);
+  border-right: 1px solid var(--tsk-trait);
+  transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.tsk-onglet:last-child { border-right: 0; }
+.tsk-onglet:hover { color: var(--tsk-texte); background: hsl(var(--ds-surface-2) / 0.8); }
+.tsk-onglet[aria-pressed="true"], .tsk-onglet[aria-selected="true"] {
+  color: hsl(var(--ds-bg-base)); background: var(--tsk-signal);
+}
+
+.tsk-barre { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.tsk-barre .tsk-espace { flex: 1 1 auto; min-width: 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   LA SAISIE — l invite
+   ═══════════════════════════════════════════════════════════ */
+.tsk-invite {
+  --tsk-biseau: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  --tsk-liseret: hsl(var(--ds-accent-primary) / 0.35);
+  position: relative;
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 10px 0 14px;
+  background: hsl(210 80% 5% / 0.92);
+  transition: background 160ms var(--ds-ease-out);
+}
+.tsk-invite:focus-within { --tsk-liseret: var(--tsk-signal); background: hsl(210 80% 6% / 0.98); }
+.tsk-invite .tsk-sigle {
+  font-family: var(--tsk-mono); font-size: max(12px, 0.75rem);
+  color: var(--tsk-signal); letter-spacing: 0.06em; flex-shrink: 0;
+  text-shadow: 0 0 12px hsl(var(--ds-accent-primary) / 0.5);
+}
+.tsk-invite-champ { position: relative; flex: 1; min-width: 0; }
+.tsk-invite-ombre {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  font-family: var(--tsk-mono); font-size: max(13px, 0.8125rem);
+  white-space: pre; overflow: hidden; pointer-events: none;
+}
+.tsk-invite input {
+  width: 100%; min-height: 46px;
+  background: transparent; border: 0; outline: none;
+  font-family: var(--tsk-mono); font-size: max(13px, 0.8125rem);
+  color: transparent; caret-color: var(--tsk-signal);
+  position: relative; z-index: 1;
+}
+.tsk-invite input::placeholder { color: hsl(var(--ds-text-muted) / 0.55); }
+.tsk-invite input::selection { background: hsl(var(--ds-accent-primary) / 0.35); }
+.tsk-jeton-prio { color: var(--tsk-haute); font-weight: 700; }
+.tsk-jeton-cat  { color: var(--tsk-basse); font-weight: 700; }
+.tsk-jeton-ech  { color: hsl(var(--ds-accent-special)); font-weight: 700; }
+.tsk-invite-texte { color: var(--tsk-texte); }
+.tsk-indices {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 6px;
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.1em; text-transform: uppercase; color: hsl(var(--ds-text-muted) / 0.8);
+}
+.tsk-indices b { font-weight: 700; }
+.tsk-apercu { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+/* ═══════════════════════════════════════════════════════════
+   LA TELEMETRIE
+   ═══════════════════════════════════════════════════════════ */
+.tsk-tel { display: flex; flex-direction: column; gap: 8px; }
+.tsk-bloc {
+  --tsk-biseau: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  background: var(--tsk-plaque);
+  padding: 11px 13px 10px;
+}
+.tsk-bloc .tsk-tel-nom {
+  display: block; font-family: var(--tsk-mono);
+  font-size: max(9px, 0.5625rem); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--tsk-faible);
+}
+.tsk-bloc .tsk-tel-val {
+  display: block; margin-top: 5px;
+  font-family: var(--tsk-titre); font-weight: 900; font-size: max(24px, 1.5rem); line-height: 1;
+  color: var(--tsk-texte); font-variant-numeric: tabular-nums;
+}
+.tsk-bloc.est-signal .tsk-tel-val {
+  color: var(--tsk-signal); text-shadow: 0 0 18px hsl(var(--ds-accent-primary) / 0.45);
+}
+.tsk-bloc.est-alerte { --tsk-liseret: hsl(var(--ds-accent-critical) / 0.45); }
+.tsk-bloc.est-alerte .tsk-tel-val {
+  color: var(--tsk-retard); text-shadow: 0 0 18px color-mix(in oklab, var(--tsk-retard) 45%, transparent);
+}
+.tsk-bloc .tsk-tel-note {
+  display: block; margin-top: 5px;
+  font-family: var(--tsk-corps); font-size: max(12.5px, 0.78rem); line-height: 1.35;
+  color: var(--tsk-doux);
+}
+.tsk-jauge { display: flex; gap: 2px; margin-top: 9px; }
+.tsk-jauge i { flex: 1; height: 3px; background: var(--tsk-trait-fort); }
+.tsk-jauge i.est-plein { background: var(--tsk-signal); box-shadow: 0 0 6px hsl(var(--ds-accent-primary) / 0.5); }
+
+/* ═══════════════════════════════════════════════════════════
+   LES ETATS
+   ═══════════════════════════════════════════════════════════ */
+.tsk-vide {
+  --tsk-biseau: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  margin: 18px; padding: 42px 24px; text-align: center;
+  background: hsl(var(--ds-surface-2) / 0.35);
+}
+.tsk-vide h3 {
+  margin: 0 0 8px; font-family: var(--tsk-titre); font-weight: 900;
+  font-size: max(15px, 0.9375rem); letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--tsk-doux);
+}
+.tsk-vide p {
+  margin: 0 auto; max-width: 42ch;
+  font-family: var(--tsk-corps); font-size: max(14px, 0.875rem); color: var(--tsk-faible);
+}
+.tsk-analyse {
+  position: relative; z-index: 2;
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 16px;
+  border-bottom: 1px solid var(--tsk-trait);
+  background: hsl(var(--ds-accent-primary) / 0.045);
+  font-family: var(--tsk-corps); font-size: max(13.5px, 0.84rem); color: var(--tsk-doux);
+}
+.tsk-analyse::before {
+  content: "//"; font-family: var(--tsk-mono); font-size: 11px;
+  color: var(--tsk-signal); flex-shrink: 0; padding-top: 2px;
+}
+.tsk-avertissement {
+  position: relative; z-index: 2;
+  padding: 10px 16px; border-bottom: 1px solid hsl(var(--ds-accent-warning) / 0.3);
+  background: hsl(var(--ds-accent-warning) / 0.08);
+  font-family: var(--tsk-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.08em; color: hsl(var(--ds-accent-warning));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LES DIALOGUES — seuls les formulaires restent modaux
+   ═══════════════════════════════════════════════════════════ */
+.tsk-dlg {
+  --tsk-biseau: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  --tsk-liseret: hsl(var(--ds-accent-primary) / 0.55);
+  background: var(--tsk-plaque);
+  filter: drop-shadow(0 18px 36px hsl(var(--ds-bg-base) / 0.85));
+  display: flex; flex-direction: column; overflow: hidden;
+  margin-left: var(--tsk-dlg-decalage, 0px);
+}
+.tsk-dlg-rail {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 10px; padding: 9px 14px 8px;
+  border-bottom: 1px solid var(--tsk-trait);
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.24em; text-transform: uppercase; color: var(--tsk-faible);
+  white-space: nowrap; overflow: hidden;
+}
+.tsk-dlg-rail b { color: var(--tsk-signal); font-weight: 400; }
+.tsk-dlg-rail i { flex: 1; min-width: 8px; height: 1px; background: var(--tsk-trait); }
+.tsk-dlg-contenu {
+  padding: 14px; min-height: 0; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 13px;
+  scrollbar-width: none; -ms-overflow-style: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 26px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 26px), transparent 100%);
+}
+.tsk-dlg-contenu::-webkit-scrollbar { width: 0; height: 0; display: none; }
+.tsk-dlg-contenu.est-entier { -webkit-mask-image: none; mask-image: none; }
+.tsk-dlg-pied {
+  flex: 0 0 auto;
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--tsk-trait);
+  background: var(--tsk-plaque);
+}
+.tsk-dlg-pied .tsk-outil { min-height: 36px; }
+.tsk-dlg-pied .tsk-outil.est-large { flex: 1; }
+
+/* Les champs des formulaires suivent le meme metal. */
+.tsk-dlg input, .tsk-dlg textarea, .tsk-dlg button[role="combobox"],
+.tsk-form input, .tsk-form textarea, .tsk-form button[role="combobox"] {
+  border-radius: 0;
+  border: 1px solid var(--tsk-trait);
+  background: hsl(var(--ds-bg-canvas) / 0.85);
+  color: var(--tsk-texte);
+  font-family: var(--tsk-corps); font-size: max(14px, 0.875rem);
+  box-shadow: none;
+  transition: border-color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.tsk-dlg input:focus-visible, .tsk-dlg textarea:focus-visible, .tsk-dlg button[role="combobox"]:focus-visible,
+.tsk-form input:focus-visible, .tsk-form textarea:focus-visible, .tsk-form button[role="combobox"]:focus-visible {
+  outline: none; border-color: var(--tsk-signal);
+  box-shadow: 0 0 0 1px hsl(var(--ds-accent-primary) / 0.35);
+}
+.tsk-etiq {
+  display: block; margin-bottom: 5px;
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--tsk-faible);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LE DOIGT
+   ═══════════════════════════════════════════════════════════ */
+@media (pointer: coarse) {
+  .tsk-outil, .tsk-onglet, .tsk-action, .tsk-lampe { min-height: 44px; }
+  .tsk-outil.est-icone, .tsk-action, .tsk-onglet { min-width: 44px; }
+  .tsk-onglet { padding-inline: 12px; }
+  /* La colonne de la lampe s elargit avec elle : sinon le bouton
+     deborde de sa case ou reste a vingt-six pixels. */
+  .tsk-ligne { --tsk-col-lampe: 44px; }
+  .tsk-dlg input, .tsk-dlg textarea, .tsk-dlg button[role="combobox"],
+  .tsk-form input, .tsk-form textarea, .tsk-form button[role="combobox"] { min-height: 44px; }
+  .tsk-dlg-pied .tsk-outil { min-height: 44px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tsk *, .tsk *::before, .tsk *::after { animation: none !important; transition: none !important; }
+  .tsk-plaque .tsk-scan { display: none; }
+}
