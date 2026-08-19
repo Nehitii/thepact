@@ -1707,9 +1707,9 @@
       "emptyHint": "Lance ta première session de concentration"
     },
     "controls": {
-      "resume": "[ > EXE.REPRISE ]",
-      "halt": "[ || SYS.HALT ]",
-      "abort": "Abandonner l'opération",
+      "resume": "EXE.REPRISE",
+      "halt": "SYS.HALT",
+      "abort": "Abandonner",
       "overrideControls": "Contrôles manuels"
     },
     "ring": {
@@ -1723,9 +1723,9 @@
     },
     "toolbar": {
       "config": "Config",
-      "spotify": "Spotify",
       "stats": "Stats",
-      "history": "Historique"
+      "history": "Historique",
+      "audio": "Son"
     },
     "linker": {
       "goal": "Objectif...",

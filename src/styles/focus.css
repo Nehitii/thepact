@@ -32,6 +32,26 @@
 
 /* ── Le document ─────────────────────────────────────────────── */
 
+/* ── Le systeme ──────────────────────────────────────────────────
+ *
+ * La page paraissait eteinte parce que tout etait pose sur le meme
+ * presque-noir : aucun niveau de surface, aucune arete eclairee. Un
+ * ecran cyberpunk est sombre, mais ses surfaces sont ECLAIREES — c est
+ * le contraste entre le fond et les aretes qui fait la lumiere, pas la
+ * clarte du fond.
+ *
+ * Trois niveaux, une arete, une arete vive, et le jaune comme accent
+ * structurel plutot que comme detail.
+ * ────────────────────────────────────────────────────────────── */
+.sc, .md, .sc-bandeau, .cyb {
+  --n0: rgba(8, 13, 20, 0.88);
+  --n1: rgba(15, 25, 37, 0.92);
+  --n2: rgba(24, 39, 56, 0.95);
+  --bord: hsl(var(--primary) / 0.34);
+  --bord-vif: hsl(var(--primary) / 0.72);
+  --or: var(--cp-jaune, #fcee0a);
+}
+
 .sc {
   --sc-teinte: hsl(var(--primary));
   --sc-doux: hsl(var(--primary) / 0.55);
@@ -358,27 +378,9 @@
   color: var(--cp-texte-doux, #7089a0);
   margin-right: 4px;
 }
-.sc-duree button {
-  min-width: 44px;
-  min-height: 36px;
-  padding: 6px 10px;
-  font-family: 'Share Tech Mono', ui-monospace, monospace;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 0.1em;
-  color: var(--cp-texte-doux, #7089a0);
-  background: hsl(var(--muted) / 0.3);
-  border: 1px solid hsl(var(--border));
-  cursor: pointer;
-  transition: color 160ms, border-color 160ms, background 160ms;
-  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
-}
-.sc-duree button:hover { color: hsl(var(--foreground)); border-color: hsl(var(--primary) / 0.5); }
-.sc-duree button[aria-pressed="true"] {
-  color: hsl(var(--primary-foreground));
-  background: hsl(var(--primary));
-  border-color: hsl(var(--primary));
-}
-.sc-duree button:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 2px; }
+/* Les puces de duree portent .cyb : plus aucune regle locale, sinon
+   .sc-duree button (0,1,1) battrait .cyb (0,1,0) et rendrait le systeme
+   inoperant sur elles. */
 
 @media (max-width: 640px) {
   .sc-sceau::before, .sc-sceau::after { display: none; }
@@ -442,9 +444,9 @@
   justify-content: center;
   gap: 6px;
   padding: 0 10px;
-  color: hsl(var(--primary) / 0.75);
-  background: hsl(var(--primary) / 0.08);
-  border: 1px solid hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary) / 0.85);
+  background: linear-gradient(180deg, rgba(24, 39, 56, 0.95), rgba(15, 25, 37, 0.92));
+  border: 1px solid hsl(var(--primary) / 0.34);
   cursor: pointer;
   transition: color 180ms, border-color 180ms, background 180ms;
   clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
@@ -621,11 +623,21 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 .md-tete button.md-retirer:hover { color: hsl(var(--destructive)); }
 .md-tete button:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 1px; }
 
+/* Le fond doit etre sombre AVANT que l embed ne reponde : sans lui,
+   une iframe qui charge est un rectangle blanc en pleine page noire.
+   color-scheme dit au navigateur quel fond par defaut peindre. */
 .md-cadre {
   overflow: hidden;
+  background: #0a0f16;
   transition: height 260ms cubic-bezier(0.3, 0.8, 0.3, 1);
 }
-.md-cadre iframe { display: block; width: 100%; height: 100%; border: 0; }
+.md-cadre iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  color-scheme: dark;
+}
 
 .md-replie {
   margin: 0;
@@ -637,31 +649,9 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 }
 
 /* L appel : ce qu on voit quand aucun lien n est pose. */
-.md-appel {
-  width: 100%;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 14px;
-  font-family: 'Share Tech Mono', ui-monospace, monospace;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: hsl(var(--primary) / 0.85);
-  background: hsl(var(--primary) / 0.07);
-  border: 1px dashed hsl(var(--primary) / 0.3);
-  cursor: pointer;
-  transition: color 180ms, border-color 180ms, background 180ms;
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-}
-.md-appel:hover {
-  color: var(--cp-jaune, #fcee0a);
-  border-color: var(--cp-jaune, #fcee0a);
-  background: rgba(252, 238, 10, 0.07);
-}
-.md-appel:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 2px; }
+/* .md-appel ne fait plus que la largeur : le reste vient de .cyb, qui
+   arrive avant lui a specificite egale et se ferait sinon ecraser. */
+.md-appel { width: 100%; border-style: dashed; }
 
 .md-edition { padding-bottom: 10px; }
 .md-champ { display: flex; gap: 6px; padding: 10px 10px 0; }
@@ -700,3 +690,254 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 }
 .md-erreur { color: hsl(var(--destructive)); }
 .md-aide { color: var(--cp-texte-doux, #7089a0); }
+
+
+/* ── Un seul systeme de boutons ──────────────────────────────────
+ *
+ * La page melangeait quatre grammaires : des Select arrondis venus de la
+ * bibliotheque, des puces chanfreinees, des commandes stylees a la main
+ * et des icones en rounded-md. Rien ne semblait appartenir au meme
+ * appareil.
+ *
+ * Un bouton cyberpunk n est pas discret : il a une arete eclairee, une
+ * surface qui se souleve au survol, et un liseré qui court quand on
+ * l approche. C est ce qui invite au clic.
+ * ────────────────────────────────────────────────────────────── */
+
+.cyb {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--primary) / 0.92);
+  background: linear-gradient(180deg, var(--n1), var(--n0));
+  border: 1px solid var(--bord);
+  cursor: pointer;
+  overflow: hidden;
+  transition: color 180ms, border-color 180ms, box-shadow 220ms, background 180ms, transform 140ms;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+}
+/* L arete eclairee : une ligne haute qui court sur toute la largeur. */
+.cyb::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.75), transparent);
+  opacity: 0.6;
+  transition: opacity 220ms;
+}
+/* Le liseré qui court au survol. */
+.cyb::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: var(--or);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+.cyb:hover {
+  color: #fff;
+  background: linear-gradient(180deg, var(--n2), var(--n1));
+  border-color: var(--bord-vif);
+  box-shadow: 0 0 22px hsl(var(--primary) / 0.28), inset 0 0 22px hsl(var(--primary) / 0.1);
+}
+.cyb:hover::before { opacity: 1; }
+.cyb:hover::after { transform: scaleX(1); }
+.cyb:active { transform: translateY(1px); }
+.cyb:focus-visible { outline: 2px solid var(--or); outline-offset: 2px; }
+.cyb:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Actif : la surface est allumee, pas juste teintee. */
+.cyb.est-actif,
+.cyb[aria-pressed="true"] {
+  color: #05070b;
+  background: linear-gradient(180deg, hsl(var(--primary)), hsl(var(--primary) / 0.82));
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 26px hsl(var(--primary) / 0.45);
+  font-weight: 700;
+}
+.cyb.est-actif::before, .cyb[aria-pressed="true"]::before { background: rgba(255, 255, 255, 0.6); opacity: 1; }
+.cyb.est-actif::after, .cyb[aria-pressed="true"]::after { transform: scaleX(1); background: #05070b; }
+
+/* Le geste principal porte le jaune. */
+.cyb--or {
+  color: var(--or);
+  border-color: rgba(252, 238, 10, 0.55);
+  background: linear-gradient(180deg, rgba(252, 238, 10, 0.12), rgba(252, 238, 10, 0.04));
+}
+.cyb--or::before { background: linear-gradient(90deg, transparent, var(--or), transparent); }
+.cyb--or:hover {
+  color: #05070b;
+  background: linear-gradient(180deg, var(--or), rgba(252, 238, 10, 0.82));
+  border-color: var(--or);
+  box-shadow: 0 0 30px rgba(252, 238, 10, 0.45);
+}
+.cyb--or:hover::after { background: #05070b; }
+
+/* L arret est rouge, et il doit se distinguer sans crier. */
+.cyb--danger {
+  color: hsl(var(--destructive));
+  border-color: hsl(var(--destructive) / 0.5);
+  background: linear-gradient(180deg, hsl(var(--destructive) / 0.16), hsl(var(--destructive) / 0.05));
+}
+.cyb--danger::before { background: linear-gradient(90deg, transparent, hsl(var(--destructive) / 0.8), transparent); }
+.cyb--danger::after { background: hsl(var(--destructive)); }
+.cyb--danger:hover {
+  color: #fff;
+  border-color: hsl(var(--destructive));
+  background: linear-gradient(180deg, hsl(var(--destructive) / 0.4), hsl(var(--destructive) / 0.18));
+  box-shadow: 0 0 26px hsl(var(--destructive) / 0.4);
+}
+
+.cyb--icone { min-width: 42px; padding: 0 10px; gap: 6px; }
+.cyb--petit { min-height: 36px; padding: 0 12px; font-size: max(11px, 0.6875rem); letter-spacing: 0.14em; }
+
+/* Les rappels de raccourci portes par les commandes. */
+.cyb kbd {
+  font-family: inherit;
+  font-size: 0.85em;
+  letter-spacing: 0.1em;
+  opacity: 0.72;
+  border: 0;
+  background: none;
+  padding: 0;
+}
+
+/* ── Les champs de la clause suivent la meme grammaire ─────────── */
+
+.sc-champs .cyb-select {
+  width: 100%;
+  min-height: 42px;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(12px, 0.75rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: hsl(var(--primary) / 0.92);
+  background: linear-gradient(180deg, var(--n1), var(--n0));
+  border: 1px solid var(--bord);
+  border-radius: 0;
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  transition: border-color 180ms, box-shadow 220ms, color 180ms;
+}
+.sc-champs .cyb-select:hover {
+  color: #fff;
+  border-color: var(--bord-vif);
+  box-shadow: 0 0 20px hsl(var(--primary) / 0.24);
+}
+.sc-champs .cyb-select:focus { outline: 2px solid var(--or); outline-offset: 1px; }
+
+/* ── Le geste principal : apposer le sceau ──────────────────────
+   Il etait pose la sans rien qui appelle. Il respire, son arete
+   s eclaire, et le survol le remplit. */
+.sc-depart {
+  background: linear-gradient(180deg, rgba(252, 238, 10, 0.14), rgba(252, 238, 10, 0.03));
+  border: 1px solid rgba(252, 238, 10, 0.55);
+  color: var(--cp-jaune, #fcee0a);
+}
+.sc-depart:hover {
+  color: #05070b;
+  background: linear-gradient(180deg, var(--cp-jaune, #fcee0a), rgba(252, 238, 10, 0.85));
+  border-color: var(--cp-jaune, #fcee0a);
+  box-shadow: 0 0 48px rgba(252, 238, 10, 0.45);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sc-depart { animation: sc-appelle 2.8s ease-in-out infinite; }
+  .sc-depart:hover { animation: none; }
+}
+@keyframes sc-appelle {
+  0%, 100% { box-shadow: 0 0 0 rgba(252, 238, 10, 0); }
+  50% { box-shadow: 0 0 34px rgba(252, 238, 10, 0.34); }
+}
+
+/* ── Le decompte, vivant ─────────────────────────────────────────
+ *
+ * Le trace se remplissait, et c etait tout : rien ne signalait qu une
+ * machine tournait derriere. Trois ajouts, tous cales sur la seconde,
+ * parce que c est l unite que la page mesure.
+ * ────────────────────────────────────────────────────────────── */
+
+/* A chaque seconde, les chiffres se rafraichissent : les franges
+   s ecartent, la ligne saute d un pixel, et tout revient en 90 ms. */
+@media (prefers-reduced-motion: no-preference) {
+  .sc-temps.est-rafraichie { animation: sc-rafraichit 90ms steps(2, end); }
+  /* L etincelle du burin. */
+  .sc-etincelle line { animation: sc-etincelle 1s steps(2, end) infinite; }
+  .sc-etincelle line:nth-child(2) { animation-delay: 0.14s; }
+  .sc-etincelle line:nth-child(3) { animation-delay: 0.31s; }
+  /* Le sceau respire : la lueur suit la seconde, pas un rythme etranger. */
+  .sc-sceau { animation: sc-respire 4s ease-in-out infinite; }
+}
+@keyframes sc-rafraichit {
+  0% { transform: translateY(-1px); text-shadow: 4px 0 0 rgba(255, 0, 96, 0.7), -4px 0 0 rgba(0, 236, 255, 0.66), 0 0 30px var(--sc-doux); }
+  100% { transform: translateY(0); }
+}
+@keyframes sc-etincelle {
+  0%, 100% { opacity: 0; }
+  6% { opacity: 1; }
+  16% { opacity: 0.2; }
+  26% { opacity: 0.85; }
+  40% { opacity: 0; }
+}
+@keyframes sc-respire {
+  0%, 100% { filter: drop-shadow(0 0 12px hsl(var(--primary) / 0.18)); }
+  50% { filter: drop-shadow(0 0 30px hsl(var(--primary) / 0.4)); }
+}
+.sc-etincelle line { stroke: var(--cp-jaune, #fcee0a); stroke-width: 1.6; stroke-linecap: round; opacity: 0; }
+
+/* ── De la lumiere ──────────────────────────────────────────────
+   Les panneaux etaient transparents sur un presque-noir. Ils prennent
+   une surface, une arete haute eclairee, et le bandeau porte le jaune
+   sur toute sa longueur. */
+
+.sc-tele { background: var(--bord); }
+.sc-tele div { background: linear-gradient(180deg, var(--n1), var(--n0)); }
+.sc-tele b { text-shadow: 0 0 14px hsl(var(--primary) / 0.5); }
+
+.md { background: linear-gradient(180deg, var(--n1), var(--n0)); border-color: var(--bord); }
+.md-tete { background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent); }
+
+.sc-bandeau {
+  background: linear-gradient(90deg, rgba(252, 238, 10, 0.11), var(--n1) 38%, var(--n0));
+  border-color: var(--bord);
+}
+
+/* Le sceau se detache d un halo, au lieu de flotter sur du noir. */
+.sc-sceau::marker { content: ""; }
+.sc-halo {
+  position: absolute;
+  inset: -18%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.17) 0%, hsl(var(--primary) / 0.05) 42%, transparent 68%);
+}
+
+
+/* Le panneau des commandes : une plaque, pas un contour. */
+.sc-commandes {
+  background: linear-gradient(180deg, var(--n1), var(--n0));
+  border: 1px solid var(--bord);
+  backdrop-filter: blur(8px);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  --n0: rgba(8, 13, 20, 0.88);
+  --n1: rgba(15, 25, 37, 0.92);
+  --bord: hsl(var(--primary) / 0.34);
+}
+
+
+/* Un panneau ne doit pas pousser toute la page : au-dela de la moitie de
+   la fenetre, il defile dans son propre cadre. */
+.sc-panneau-corps {
+  max-height: 46vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

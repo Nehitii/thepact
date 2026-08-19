@@ -45,7 +45,7 @@ export function FocusToolbar({
   };
 
   return (
-    <div className="w-full max-w-lg space-y-3">
+    <div className="w-full max-w-lg space-y-3 sc-champs">
       <div className="sc-signature" aria-hidden="true">
         <i />
         <span>{t("focus.clause.compose")}</span>
@@ -61,7 +61,7 @@ export function FocusToolbar({
               if (v !== "none") onLinkTodo(null);
             }}
           >
-            <SelectTrigger className="bg-card/60 backdrop-blur border-border/60 text-xs h-10">
+            <SelectTrigger className="cyb-select">
               <Target className="h-3.5 w-3.5 mr-1.5 text-primary shrink-0" />
               <SelectValue placeholder={t("focus.linker.goal")} />
             </SelectTrigger>
@@ -84,7 +84,7 @@ export function FocusToolbar({
               if (v !== "none") onLinkGoal(null);
             }}
           >
-            <SelectTrigger className="bg-card/60 backdrop-blur border-border/60 text-xs h-10">
+            <SelectTrigger className="cyb-select">
               <ListTodo className="h-3.5 w-3.5 mr-1.5 text-accent shrink-0" />
               <SelectValue placeholder={t("focus.linker.task")} />
             </SelectTrigger>
@@ -106,6 +106,7 @@ export function FocusToolbar({
           <button
             key={m}
             type="button"
+            className="cyb cyb--petit"
             aria-pressed={workMin === m}
             onClick={() => onWorkChange(m)}
           >
@@ -139,11 +140,7 @@ function ToolbarIconButton({
     <button
       onClick={onClick}
       title={label}
-      className={`flex items-center gap-1.5 px-3 py-1.5 ds-t-label font-mono uppercase tracking-[0.12em] rounded-md border transition-all focus-visible:ring-2 focus-visible:ring-primary ${
-        isActive
-          ? "bg-primary/20 border-primary/40 text-primary"
-          : "bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
-      }`}
+      className={`cyb cyb--petit${isActive ? " est-actif" : ""}`}
     >
       <Icon className="h-3.5 w-3.5" />
       <span>{label}</span>

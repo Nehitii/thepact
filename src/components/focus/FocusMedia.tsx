@@ -117,7 +117,7 @@ export function FocusMedia({ userId, compact = false }: FocusMediaProps) {
 
   if (!lien && !edition) {
     return (
-      <button type="button" className="md-appel" onClick={() => setEdition(true)}>
+      <button type="button" className="cyb cyb--or md-appel" onClick={() => setEdition(true)}>
         <Music className="h-3.5 w-3.5" aria-hidden="true" />
         <span>{t("focus.media.add")}</span>
       </button>

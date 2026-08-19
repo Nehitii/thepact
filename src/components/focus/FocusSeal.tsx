@@ -100,6 +100,17 @@ export function FocusSeal({
     cyclesPrecedents.current = sessionsCompleted;
   }, [sessionsCompleted, mouvementReduit]);
 
+  /* Les chiffres se rafraichissent a chaque seconde : c est l unite que
+     la page mesure, et rien ne signalait jusqu ici qu une machine
+     tournait derriere le trace. */
+  const [rafraichie, setRafraichie] = useState(false);
+  useEffect(() => {
+    if (auRepos || mouvementReduit) return;
+    setRafraichie(true);
+    const fin = setTimeout(() => setRafraichie(false), 95);
+    return () => clearTimeout(fin);
+  }, [secondsLeft, auRepos, mouvementReduit]);
+
   const [derangee, setDerangee] = useState(false);
   const phasePrecedente = useRef(phase);
   useEffect(() => {
@@ -141,6 +152,7 @@ export function FocusSeal({
         style={{ ["--p" as string]: auRepos ? 0 : progress, ["--circ" as string]: CIRC }}
       >
         <span className={`sc-frappe${frappe ? " est-lancee" : ""}`} aria-hidden="true" />
+        <span className="sc-halo" aria-hidden="true" />
         <span className="sc-balayage" aria-hidden="true" />
         <span className="sc-grain" aria-hidden="true" />
 
@@ -199,6 +211,11 @@ export function FocusSeal({
           {enTravail && !isPaused && (
             <g className="sc-burin" aria-hidden="true">
               <line x1={C} y1={C - 158} x2={C} y2={C - 130} />
+              <g className="sc-etincelle">
+                <line x1={C - 3} y1={C - 146} x2={C - 12} y2={C - 152} />
+                <line x1={C + 4} y1={C - 143} x2={C + 13} y2={C - 137} />
+                <line x1={C - 2} y1={C - 140} x2={C - 9} y2={C - 131} />
+              </g>
             </g>
           )}
 
@@ -247,7 +264,9 @@ export function FocusSeal({
           </button>
         ) : (
           <div className="sc-noyau">
-            <div className="sc-temps">{formatTime(secondsLeft)}</div>
+            <div className={`sc-temps${rafraichie ? " est-rafraichie" : ""}`}>
+              {formatTime(secondsLeft)}
+            </div>
             <div className="sc-sous">
               {isPaused
                 ? t("focus.ring.halted")

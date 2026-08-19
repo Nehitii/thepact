@@ -74,6 +74,22 @@ export default function Focus() {
   const [linkedGoalId, setLinkedGoalId] = useState<string | null>(lien0.goal);
   const [linkedTodoId, setLinkedTodoId] = useState<string | null>(lien0.todo);
   const [activePanel, setActivePanel] = useState<FocusPanel>(null);
+
+  /* Les panneaux nont pas la meme hauteur : passer de Stats a Historique
+     raccourcit le document, le navigateur ramene le defilement dans les
+     bornes, et il ne revient pas. Plutot que de figer une hauteur — ce
+     qui rendrait la page vide a nouveau — on amene deliberement le
+     panneau ouvert dans le champ. Le mouvement devient une reponse au
+     clic au lieu dun effet de bord.
+     block: "nearest" ne bouge rien si le panneau est deja visible. */
+  const panneauRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!activePanel) return;
+    const t = setTimeout(() => {
+      panneauRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }, 60);
+    return () => clearTimeout(t);
+  }, [activePanel]);
   const [showAbortConfirm, setShowAbortConfirm] = useState(false);
 
   useEffect(() => { ecrire(CLE_CONFIG, { work: workMin, pause: breakMin, longue: longBreakMin }); },
@@ -368,16 +384,15 @@ export default function Focus() {
             initial={{ backgroundColor: "#050508" }}
             transition={{ duration: 1.2, ease: "easeInOut" }}
           />
-          {timer.isRunning && (
-            // Quantifie : l intensite du halo suit l avancement, mais par
-            // paliers de 5 % au lieu de changer chaque seconde. Le
-            // degrade et le flou ne sont donc rasterises que vingt fois
-            // par session, pas mille cinq cents.
-            <FocusAmbientEffects
-              progress={Math.round(timer.progress * 20) / 20}
-              isBreak={isBreak}
-            />
-          )}
+          {/* Quantifie : l intensite du halo suit l avancement, mais par
+              paliers de 5 % au lieu de changer chaque seconde. Le degrade
+              et le flou ne sont donc rasterises que vingt fois par
+              session, pas mille cinq cents. */}
+          <FocusAmbientEffects
+            progress={timer.isRunning ? Math.round(timer.progress * 20) / 20 : 0}
+            isBreak={isBreak}
+            statique={!timer.isRunning}
+          />
         </>
       }
       className="flex flex-col"
@@ -511,14 +526,22 @@ export default function Focus() {
             </div>
           )}
 
-          <AnimatePresence mode="wait">
+          {/* Passer d un panneau a l autre remontait la page.
+              mode="wait" demontait le panneau courant AVANT de monter le
+              suivant, et sa hauteur etait animee jusqu a zero : le
+              document raccourcissait le temps de la bascule, le
+              navigateur ramenait le defilement dans les bornes, et il ne
+              revenait pas. On ne fait plus varier la hauteur, et le
+              remplacement est immediat — seule l opacite s anime. */}
+          <AnimatePresence initial={false}>
             {activePanel && !timer.isRunning && (
               <motion.div
                 key={activePanel}
-                initial={{ opacity: 0, height: 0, scale: 0.95 }}
-                animate={{ opacity: 1, height: "auto", scale: 1 }}
-                exit={{ opacity: 0, height: 0, scale: 0.95 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.16 }}
+                ref={panneauRef}
                 className="w-full flex justify-center z-20 relative mt-4"
               >
                 <div
@@ -535,13 +558,11 @@ export default function Focus() {
                     </span>
                   </div>
 
-                  <div className="p-1">
+                  <div className="p-1 sc-panneau-corps">
                     {activePanel === "config" && !timer.isRunning && (
                       <FocusConfigPanel
-                        workMin={workMin}
                         breakMin={breakMin}
                         longBreakMin={longBreakMin}
-                        onWorkChange={setWorkMin}
                         onBreakChange={setBreakMin}
                         onLongBreakChange={setLongBreakMin}
                       />

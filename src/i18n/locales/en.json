@@ -1707,9 +1707,9 @@
       "emptyHint": "Start your first focus session"
     },
     "controls": {
-      "resume": "[ > EXE.RESUME ]",
-      "halt": "[ || SYS.HALT ]",
-      "abort": "Abort Operation",
+      "resume": "EXE.RESUME",
+      "halt": "SYS.HALT",
+      "abort": "Abort",
       "overrideControls": "Manual Override controls"
     },
     "ring": {
@@ -1723,9 +1723,9 @@
     },
     "toolbar": {
       "config": "Config",
-      "spotify": "Spotify",
       "stats": "Stats",
-      "history": "History"
+      "history": "History",
+      "audio": "Audio"
     },
     "linker": {
       "goal": "Goal...",

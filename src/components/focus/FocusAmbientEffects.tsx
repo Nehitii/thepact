@@ -5,6 +5,8 @@ import { useProfileSettings } from "@/hooks/useProfileSettings";
 interface FocusAmbientEffectsProps {
   progress: number;
   isBreak?: boolean;
+  /** Au repos, l ambiance reste — mais elle ne bouge pas. */
+  statique?: boolean;
 }
 
 /* Cette couche reste a l ecran pendant vingt-cinq minutes : c est le
@@ -14,6 +16,7 @@ interface FocusAmbientEffectsProps {
 export const FocusAmbientEffects = memo(function FocusAmbientEffects({
   progress,
   isBreak = false,
+  statique = false,
 }: FocusAmbientEffectsProps) {
   const { profile } = useProfileSettings();
   const particlesEnabled = profile?.particles_enabled ?? true;
@@ -27,8 +30,11 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
   const jeton = isBreak ? "--accent" : "--primary";
   const teinte = (alpha: number) => `hsl(var(${jeton}) / ${alpha})`;
 
-  // If user prefers reduced motion, show only static ambient glow
-  if (reducedMotion) {
+  /* La page paraissait eteinte au repos : cette couche n existait que
+     pendant une session. Elle reste maintenant en permanence — figee tant
+     qu aucune clause ne s execute, ce qui donne du fond a l ecran sans
+     rien faire bouger pour rien. */
+  if (reducedMotion || statique) {
     return (
       <div
         className="fixed inset-0 pointer-events-none overflow-hidden"
