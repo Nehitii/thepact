@@ -1859,7 +1859,7 @@
     "subtitle": "Plan, organize, conquer.",
     "today": "Today",
     "newEvent": "Event",
-    "editEvent": "Edit Event",
+    "editEvent": "Edit event",
     "eventTitle": "Event title",
     "allDay": "All day",
     "startDate": "Start",
@@ -1946,10 +1946,18 @@
       "breakdown": "{{events}} events, {{deadlines}} deadlines",
       "busyDays": "Busy days",
       "busiest": "Busiest: {{date}}",
-      "upcoming": "Upcoming"
+      "upcoming": "Upcoming",
+      "ongoing": "Ongoing",
+      "until": "until {{date}}"
     },
     "entries_one": "{{count}} entry",
-    "entries_other": "{{count}} entries"
+    "entries_other": "{{count}} entries",
+    "allDayShort": "Day",
+    "addAtHour": "New event on {{date}} at {{hour}}",
+    "openMonth": "Open {{month}}",
+    "alreadyToday": "You are already there",
+    "quickAddHint": "09:00 – 10:00 · adjust it afterwards",
+    "newEventTitle": "New event"
   },
   "friends": {
     "networkActive": "Social Network Active",

@@ -1859,7 +1859,7 @@
     "subtitle": "Planifie, organise, conquiers.",
     "today": "Aujourd'hui",
     "newEvent": "Événement",
-    "editEvent": "Modifier l'événement",
+    "editEvent": "Modifier l’événement",
     "eventTitle": "Titre de l'événement",
     "allDay": "Toute la journée",
     "startDate": "Début",
@@ -1946,10 +1946,18 @@
       "breakdown": "{{events}} événements, {{deadlines}} échéances",
       "busyDays": "Jours occupés",
       "busiest": "Le plus chargé : {{date}}",
-      "upcoming": "À venir"
+      "upcoming": "À venir",
+      "ongoing": "En cours",
+      "until": "jusqu’au {{date}}"
     },
     "entries_one": "{{count}} entrée",
-    "entries_other": "{{count}} entrées"
+    "entries_other": "{{count}} entrées",
+    "allDayShort": "Jour",
+    "addAtHour": "Nouvel événement le {{date}} à {{hour}}",
+    "openMonth": "Ouvrir {{month}}",
+    "alreadyToday": "Vous y êtes déjà",
+    "quickAddHint": "09:00 – 10:00 · ajustable ensuite",
+    "newEventTitle": "Nouvel événement"
   },
   "friends": {
     "networkActive": "Réseau Social Actif",

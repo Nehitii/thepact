@@ -59,10 +59,9 @@
    LA PLAQUE — le cadre commun aux cinq vues
    ═══════════════════════════════════════════════════════════ */
 .cal-plaque {
-  position: relative;
+  --cal-biseau: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+  --cal-liseret: hsl(var(--ds-accent-primary) / 0.22);
   background: var(--cal-plaque);
-  border: 1px solid hsl(var(--ds-accent-primary) / 0.16);
-  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
 }
 /* Quatre angles, pas un cadre : l equerre suffit a dire « instrument ». */
 .cal-plaque::before {
@@ -283,9 +282,17 @@
 .cal-coord { display: block; font-size: max(9px, 0.5625rem); letter-spacing: 0.18em; color: hsl(var(--ds-text-muted) / 0.55); }
 .cal-abrev { display: block; font-size: max(10.5px, 0.656rem); letter-spacing: 0.2em; color: var(--cal-doux); text-transform: uppercase; }
 .cal-semaine {
+  position: relative;
   border-bottom: 1px solid var(--cal-trait); border-right: 1px solid var(--cal-trait);
   display: flex; align-items: flex-start; justify-content: center; padding-top: 8px;
-  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem); color: hsl(var(--ds-text-muted) / 0.5);
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem); color: hsl(var(--ds-text-muted) / 0.72);
+}
+/* La semaine en cours se perdait parmi cinq autres nombres gris. */
+.cal-semaine.est-semaine-courante {
+  color: hsl(var(--ds-bg-base));
+  font-weight: 700;
+  background: var(--cal-signal);
+  box-shadow: 0 0 14px hsl(var(--ds-accent-primary) / 0.45);
 }
 .cal-case {
   position: relative; height: var(--cal-hauteur-case, 112px);
@@ -295,7 +302,67 @@
   overflow: hidden;
 }
 .cal-case.hors-mois { opacity: 0.32; }
-.cal-case.est-survolee { background: hsl(var(--ds-accent-primary) / 0.12); }
+
+/* UN EVENEMENT DE PLUSIEURS JOURS EST UNE BARRE, PAS UN POINT
+   Des vacances du 16 au 31 s affichaient le 16 et nulle part ailleurs :
+   la grille indexait chaque entree sur sa seule date de debut. Les
+   entrees qui couvrent plusieurs jours sont desormais tracees au-dessus
+   des cases, sur toute leur longueur, et les cases reservent la hauteur
+   correspondante. */
+.cal-mois-rangee { position: relative; }
+.cal-mois-barres {
+  position: absolute; left: 0; right: 0; top: var(--cal-barres-haut, 26px); z-index: 3;
+  display: grid; grid-auto-rows: calc(var(--cal-etage-h, 21px) - 3px); row-gap: 3px;
+  pointer-events: none;
+}
+.cal-barre-evt {
+  pointer-events: auto;
+  margin: 0 3px; min-width: 0;
+  display: flex; align-items: center; gap: 5px; padding: 0 6px;
+  background: color-mix(in oklab, var(--cal-teinte) 20%, transparent);
+  border-left: 3px solid var(--cal-teinte);
+  font-family: var(--cal-corps); font-size: max(12px, 0.75rem); font-weight: 600;
+  color: var(--cal-teinte);
+  white-space: nowrap; overflow: hidden; text-align: left;
+  transition: background 140ms var(--ds-ease-out);
+}
+@supports (color: color-mix(in oklab, red, white)) {
+  .cal-barre-evt { color: color-mix(in oklab, var(--cal-teinte) 75%, white); }
+}
+.cal-barre-evt[data-importe="true"] { border-left-style: dashed; }
+/* La barre continue : pas de bord a gauche, une fleche a la place. */
+.cal-barre-evt.vient-d-avant { border-left: 0; padding-left: 4px; margin-left: 0; }
+.cal-barre-evt.va-apres { margin-right: 0; }
+.cal-barre-evt:hover { background: color-mix(in oklab, var(--cal-teinte) 32%, transparent); }
+.cal-barre-evt .cal-barre-fleche { font-family: var(--cal-mono); opacity: 0.7; }
+.cal-barre-evt .cal-barre-titre { overflow: hidden; text-overflow: ellipsis; }
+
+/* Les entrees d un seul jour se rangent SOUS les barres. */
+.cal-case-evts { margin-top: calc(var(--cal-etages, 0) * var(--cal-etage-h, 21px)); }
+/* La case visee pendant un deplacement : un lisere, pas seulement un
+   fond — on doit voir OU l on depose, meme sous le curseur. */
+.cal-case.est-survolee {
+  background: hsl(var(--ds-accent-primary) / 0.14);
+  box-shadow: inset 0 0 0 1px hsl(var(--ds-accent-primary) / 0.55);
+}
+/* L original s efface quand il est en vol : on souleve, on ne pousse pas. */
+.cal-draggable { touch-action: none; cursor: grab; }
+.cal-draggable.est-en-vol { opacity: 0.28; }
+.cal-draggable:active { cursor: grabbing; }
+/* LA TRAINE
+   L element traine restait dans sa case — laquelle porte overflow:hidden
+   — et les cases suivantes se peignaient par-dessus : au bout de deux
+   colonnes on ne voyait plus ce qu on deplacait. Elle est desormais
+   montee en portail au-dessus de la page : plus rien ne peut la rogner. */
+.cal-traine {
+  cursor: grabbing;
+  animation: cal-souleve 140ms var(--ds-ease-out) forwards;
+}
+@keyframes cal-souleve {
+  from { transform: scale(1) rotate(0deg); filter: none; }
+  to   { transform: scale(1.05) rotate(-0.6deg);
+         filter: drop-shadow(0 8px 18px hsl(var(--ds-bg-base) / 0.8)); }
+}
 /* L en-tete de la colonne des semaines suit son sort. */
 .cal-semaine-tete { border-right: 1px solid var(--cal-trait); }
 @container calendrier (max-width: 640px) { .cal-semaine-tete { display: none; } }
@@ -331,13 +398,22 @@
 }
 .cal-plus:hover { color: var(--cal-signal); }
 
+@container calendrier (max-width: 720px) {
+  .cal-tg-cadre { overflow-x: auto; }
+  .cal-tg { --cal-tg-col-min: 76px; }
+}
+
 /* Sous 640 px de conteneur : la colonne des semaines part, la grille
    garde un plancher en defilant dans SON cadre — la page ne bouge pas. */
 @container calendrier (max-width: 640px) {
   .cal-mois-cadre { overflow-x: auto; }
   .cal-mois-piste { min-width: 532px; }
-  .cal-semaine { display: none; }
-  .cal-grille { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  /* Repliee, pas supprimee : les barres des evenements longs sont posees
+     par numero de colonne, et une colonne qui disparait les decalerait
+     toutes d un jour. */
+  .cal-semaine { width: 0; padding: 0; border-right: 0; overflow: hidden; }
+  .cal-semaine-tete { width: 0; padding: 0; border-right: 0; overflow: hidden; }
+  .cal-grille { grid-template-columns: 0 repeat(7, minmax(0, 1fr)); }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -345,9 +421,9 @@
    ═══════════════════════════════════════════════════════════ */
 .cal-tel { display: flex; flex-direction: column; gap: 8px; }
 .cal-tel-bloc {
-  background: var(--cal-plaque); border: 1px solid var(--cal-trait);
+  --cal-biseau: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+  background: var(--cal-plaque);
   padding: 11px 13px 10px;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
 }
 .cal-tel-nom {
   display: block; font-family: var(--cal-mono);
@@ -386,6 +462,213 @@
   font-size: max(9.5px, 0.594rem); letter-spacing: 0.06em; color: var(--cal-faible);
 }
 .cal-tel-quand.est-passe { color: hsl(var(--ds-accent-critical) / 0.9); }
+/* Ce qui court se lit autrement que ce qui arrive. */
+.cal-tel-quand.est-vive { color: var(--cal-signal); }
+
+/* ═══════════════════════════════════════════════════════════
+   LE BANDEAU DE PAGE
+   Il portait « CAL.01 » et « CALENDARPLAN » au-dessus d un rail
+   qui disait deja « CAL.01 » : deux fois la meme identite, et
+   aucune information. Il porte maintenant l identite ET l heure,
+   le rail gardant les coordonnees de la vue.
+   ═══════════════════════════════════════════════════════════ */
+.cal-entete {
+  --cal-liseret: hsl(var(--ds-accent-primary) / 0.3);
+  background:
+    linear-gradient(180deg, hsl(var(--ds-accent-primary) / 0.05), transparent 62%),
+    var(--cal-plaque);
+  padding: 0 0 16px;
+  margin-bottom: 12px;
+  --cal-biseau: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+/* Les quatre sources en liseré haut : c est la seule couleur de la page
+   qui ne soit pas le signal, et elle veut dire quelque chose — c est la
+   legende du calendrier, posee sur son titre. */
+.cal-entete::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 7;
+  background: linear-gradient(90deg,
+    #3b82f6 0 25%, #f97316 25% 50%, #a855f7 50% 75%, #14b8a6 75% 100%);
+}
+.cal-entete-rail {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px 7px;
+  border-bottom: 1px solid var(--cal-trait);
+  font-family: var(--cal-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase; color: var(--cal-faible);
+  white-space: nowrap; overflow: hidden;
+}
+.cal-entete-rail b { color: var(--cal-signal); font-weight: 400; }
+.cal-entete-rail i { flex: 1; min-width: 8px; height: 1px; background: var(--cal-trait); }
+.cal-entete-corps { padding: 16px 18px 0; }
+.cal-entete-titre {
+  margin: 0;
+  font-family: var(--cal-titre); font-weight: 900;
+  font-size: clamp(26px, 4.4vw, 42px); line-height: 0.98;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--cal-texte);
+}
+.cal-entete-titre em {
+  font-style: normal;
+  /* Un degrade du signal vers le violet : le titre cesse d etre du meme
+     cyan que tous les rails de la page. */
+  background: linear-gradient(96deg, hsl(var(--ds-accent-primary)), hsl(var(--ds-accent-special)));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 16px hsl(var(--ds-accent-primary) / 0.4));
+}
+.cal-entete-sous {
+  margin: 8px 0 0; max-width: 46ch;
+  font-family: var(--cal-corps); font-size: max(14px, 0.875rem);
+  color: var(--cal-doux);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LA GRILLE HORAIRE — le jour et la semaine, une seule fois
+   Les deux vues avaient chacune leur en-tete, leur hauteur
+   d heure (56 contre 48), leur ligne du moment (rouge) et leur
+   bloc d evenement — dont le texte reprenait la teinte brute,
+   c est-a-dire le defaut de contraste que la bande avait deja
+   corrige ailleurs.
+   ═══════════════════════════════════════════════════════════ */
+.cal-tg-cadre { max-width: 100%; }
+.cal-tg {
+  --cal-tg-rail: 54px;
+  --cal-h-heure: 52px;
+  /* Le plancher n existe que sous un conteneur etroit — a zero, il ne
+     force rien, et la vue « jour » ne defile jamais pour rien. */
+  min-width: calc(var(--cal-tg-rail) + var(--cal-tg-cols, 1) * var(--cal-tg-col-min, 0px));
+}
+.cal-tg-tetes,
+.cal-tg-journee,
+.cal-tg-corps {
+  display: grid;
+  grid-template-columns: var(--cal-tg-rail) repeat(var(--cal-tg-cols, 1), minmax(0, 1fr));
+}
+.cal-tg-tetes { border-bottom: 1px solid var(--cal-trait-fort); }
+.cal-tg-tete {
+  padding: 8px 0 7px; text-align: center; font-family: var(--cal-mono);
+  border-left: 1px solid var(--cal-trait);
+}
+.cal-tg-tete:first-child { border-left: 0; }
+.cal-tg-tete .cal-abrev { color: var(--cal-doux); }
+.cal-tg-tete .cal-num {
+  display: block; font-family: var(--cal-titre); font-weight: 900;
+  font-size: max(16px, 1rem); line-height: 1.15; color: var(--cal-texte);
+  font-variant-numeric: tabular-nums;
+}
+.cal-tg-tete.est-auj { background: hsl(var(--ds-accent-primary) / 0.055); }
+.cal-tg-tete.est-auj .cal-num {
+  color: var(--cal-signal); text-shadow: 0 0 12px hsl(var(--ds-accent-primary) / 0.5);
+}
+
+.cal-tg-journee { border-bottom: 1px solid var(--cal-trait); }
+.cal-tg-journee-nom {
+  display: flex; align-items: center; justify-content: flex-end; padding: 4px 8px;
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--cal-faible);
+}
+.cal-tg-journee-col {
+  border-left: 1px solid var(--cal-trait);
+  padding: 3px; display: flex; flex-direction: column; gap: 3px; min-width: 0;
+}
+
+.cal-tg-corps { overflow-y: auto; max-height: min(62vh, 620px); }
+.cal-tg-heures { border-right: 1px solid var(--cal-trait); }
+.cal-tg-heure {
+  height: var(--cal-h-heure);
+  display: flex; align-items: flex-start; justify-content: flex-end;
+  padding: 3px 8px 0;
+  border-bottom: 1px solid hsl(var(--ds-border-default) / 0.09);
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.06em; color: hsl(var(--ds-text-muted) / 0.88);
+  font-variant-numeric: tabular-nums;
+}
+.cal-tg-col { position: relative; border-left: 1px solid var(--cal-trait); min-width: 0; }
+.cal-tg-col.est-auj { background: hsl(var(--ds-accent-primary) / 0.035); }
+.cal-tg-creneau {
+  height: var(--cal-h-heure); width: 100%;
+  border-bottom: 1px solid hsl(var(--ds-border-default) / 0.09);
+  transition: background 120ms var(--ds-ease-out);
+}
+.cal-tg-creneau:hover { background: hsl(var(--ds-accent-primary) / 0.09); }
+
+.cal-tg-bloc {
+  position: absolute; left: 2px; right: 3px;
+  display: flex; flex-direction: column; justify-content: flex-start; gap: 1px;
+  padding: 2px 6px; overflow: hidden; text-align: left;
+  background: color-mix(in oklab, var(--cal-teinte) 22%, transparent);
+  border-left: 2px solid var(--cal-teinte);
+  color: var(--cal-teinte);
+  transition: background 140ms var(--ds-ease-out);
+}
+@supports (color: color-mix(in oklab, red, white)) {
+  .cal-tg-bloc { color: color-mix(in oklab, var(--cal-teinte) 75%, white); }
+}
+.cal-tg-bloc[data-importe="true"] { border-left-style: dashed; }
+.cal-tg-bloc:hover { background: color-mix(in oklab, var(--cal-teinte) 34%, transparent); z-index: 3; }
+.cal-tg-bloc .cal-tg-titre {
+  font-family: var(--cal-corps); font-size: max(12px, 0.75rem); font-weight: 600; line-height: 1.15;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cal-tg-bloc .cal-tg-h {
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  opacity: 0.82; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+/* La ligne du moment etait rouge — la couleur que l application reserve
+   a ce qui ne va pas. C est le meme signal que l aiguille du ruban. */
+.cal-tg-maintenant {
+  position: absolute; left: 0; right: 0; height: 1px; z-index: 4;
+  background: var(--cal-signal);
+  box-shadow: 0 0 8px hsl(var(--ds-accent-primary) / 0.8);
+  pointer-events: none;
+}
+.cal-tg-maintenant::before {
+  content: ""; position: absolute; left: -3px; top: -3px; width: 7px; height: 7px;
+  background: var(--cal-signal); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   L ANNEE — douze cartes du meme metal
+   ═══════════════════════════════════════════════════════════ */
+.cal-an {
+  display: grid; gap: 10px; padding: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(164px, 1fr));
+}
+.cal-an-tuile {
+  --cal-biseau: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+  padding: 10px 10px 12px; text-align: left;
+  background: hsl(var(--ds-surface-2) / 0.45);
+  transition: border-color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.cal-an-tuile:hover { --cal-liseret: hsl(var(--ds-accent-primary) / 0.5); background: hsl(var(--ds-surface-2) / 0.85); }
+.cal-an-tuile.est-mois-courant { --cal-liseret: hsl(var(--ds-accent-primary) / 0.6); }
+.cal-an-tete {
+  display: flex; align-items: baseline; gap: 7px; margin-bottom: 7px;
+  padding-bottom: 6px; border-bottom: 1px solid var(--cal-trait);
+}
+.cal-an-nom {
+  font-family: var(--cal-titre); font-weight: 900; font-size: max(12px, 0.75rem);
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--cal-texte);
+}
+.cal-an-tuile.est-mois-courant .cal-an-nom { color: var(--cal-signal); }
+.cal-an-compte {
+  margin-left: auto; font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.1em; color: var(--cal-faible); font-variant-numeric: tabular-nums;
+}
+.cal-an-grille { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; }
+.cal-an-jour {
+  position: relative; aspect-ratio: 1; min-height: 15px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  color: var(--cal-doux); font-variant-numeric: tabular-nums;
+}
+.cal-an-jour.hors-mois { opacity: 0.22; }
+.cal-an-jour.est-auj { color: hsl(var(--ds-bg-base)); background: var(--cal-signal); font-weight: 700; }
+.cal-an-points {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  display: flex; justify-content: center; gap: 1px;
+}
+.cal-an-points i { width: 3px; height: 2px; background: var(--cal-teinte); }
 
 /* ═══════════════════════════════════════════════════════════
    LES COMMANDES
@@ -393,10 +676,41 @@
 .cal-barre { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .cal-barre-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 
+/* Les boutons de la barre etaient des boutons de bibliotheque : coins
+   arrondis, fonds gris, trois variantes qui ne se ressemblaient pas.
+   Ils partagent desormais la meme grammaire que le selecteur de vue et
+   les pastilles de source — biseau, mono, filet. */
 .cal-outil {
-  font-family: var(--cal-mono);
-  border-radius: 0 !important;
-  letter-spacing: 0.1em;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 32px; padding: 0 11px;
+  font-family: var(--cal-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--cal-faible);
+  --cal-biseau: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  background: hsl(var(--ds-surface-1) / 0.7);
+  transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.cal-outil:hover {
+  color: var(--cal-texte);
+  --cal-liseret: hsl(var(--ds-accent-primary) / 0.55);
+  background: hsl(var(--ds-surface-2) / 0.85);
+}
+.cal-outil.est-icone { width: 32px; padding: 0; }
+/* L action principale porte le signal, une seule fois dans la barre. */
+.cal-outil.est-primaire {
+  color: hsl(var(--ds-bg-base));
+  background: var(--cal-signal);
+  --cal-liseret: var(--cal-signal);
+}
+.cal-outil.est-primaire:hover { background: var(--cal-signal); filter: brightness(1.12); }
+/* « Aujourd hui » n a rien a proposer quand on y est deja. */
+.cal-outil.est-inerte {
+  /* Inactif, pas efface : a 0,4 le libelle devenait illisible, et un
+     bouton qu on ne peut plus lire n explique pas pourquoi il ne fait
+     rien. */
+  opacity: 0.55; cursor: default;
+  color: var(--cal-faible); --cal-liseret: var(--cal-trait);
+  background: hsl(var(--ds-surface-1) / 0.7);
 }
 .cal-periode {
   font-family: var(--cal-titre); font-weight: 900;
@@ -408,10 +722,9 @@
 .cal-periode:hover { color: var(--cal-signal); border-color: hsl(var(--ds-accent-primary) / 0.3); }
 
 .cal-vues {
+  --cal-biseau: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
   display: flex; align-items: stretch;
-  border: 1px solid var(--cal-trait);
   background: hsl(var(--ds-surface-1) / 0.7);
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
 .cal-vue {
   padding: 6px 11px;
@@ -433,20 +746,188 @@
   padding: 4px 10px;
   font-family: var(--cal-mono); font-size: max(10px, 0.625rem);
   letter-spacing: 0.12em; text-transform: uppercase;
-  border: 1px solid color-mix(in oklab, var(--cal-teinte) 45%, transparent);
+  --cal-biseau: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  --cal-liseret: color-mix(in oklab, var(--cal-teinte) 55%, transparent);
   color: var(--cal-teinte);
   background: color-mix(in oklab, var(--cal-teinte) 10%, transparent);
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
   transition: opacity 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
 }
 @supports (color: color-mix(in oklab, red, white)) {
   .cal-source { color: color-mix(in oklab, var(--cal-teinte) 72%, white); }
 }
 .cal-source[aria-pressed="false"] {
-  border-color: var(--cal-trait); color: hsl(var(--ds-text-muted) / 0.6);
+  --cal-liseret: var(--cal-trait); color: hsl(var(--ds-text-muted) / 0.6);
   background: none;
 }
 .cal-source[aria-pressed="false"]:hover { color: hsl(var(--ds-text-secondary)); }
+
+/* ═══════════════════════════════════════════════════════════
+   LES DIALOGUES
+   La saisie rapide et le formulaire d evenement etaient restes
+   des composants de bibliotheque : coins arrondis, fonds gris,
+   champs a bord doux. Ils prennent le meme metal que la page.
+   ═══════════════════════════════════════════════════════════ */
+.cal-dlg {
+  --cal-biseau: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+  /* Un dialogue doit se detacher de ce qu il recouvre : liseret plus
+     franc, et une ombre portee qui suit la decoupe. */
+  --cal-liseret: hsl(var(--ds-accent-primary) / 0.55);
+  background: var(--cal-plaque);
+  filter: drop-shadow(0 18px 36px hsl(var(--ds-bg-base) / 0.85));
+}
+.cal-dlg-rail {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px 8px;
+  border-bottom: 1px solid var(--cal-trait);
+  font-family: var(--cal-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.24em; text-transform: uppercase; color: var(--cal-faible);
+  white-space: nowrap; overflow: hidden;
+}
+.cal-dlg-rail b { color: var(--cal-signal); font-weight: 400; }
+.cal-dlg-rail i { flex: 1; min-width: 8px; height: 1px; background: var(--cal-trait); }
+.cal-dlg-corps { padding: 14px; display: flex; flex-direction: column; gap: 13px; }
+
+/* Les champs : carres, sombres, un filet qui s allume au focus. */
+.cal-dlg input,
+.cal-dlg textarea,
+.cal-dlg button[role="combobox"] {
+  border-radius: 0;
+  border: 1px solid var(--cal-trait);
+  background: hsl(var(--ds-bg-canvas) / 0.85);
+  color: var(--cal-texte);
+  font-family: var(--cal-corps);
+  font-size: max(14px, 0.875rem);
+  box-shadow: none;
+  transition: border-color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.cal-dlg input:hover,
+.cal-dlg textarea:hover,
+.cal-dlg button[role="combobox"]:hover { border-color: hsl(var(--ds-accent-primary) / 0.4); }
+.cal-dlg input:focus-visible,
+.cal-dlg textarea:focus-visible,
+.cal-dlg button[role="combobox"]:focus-visible {
+  outline: none;
+  border-color: var(--cal-signal);
+  box-shadow: 0 0 0 1px hsl(var(--ds-accent-primary) / 0.35);
+}
+.cal-dlg input[type="date"],
+.cal-dlg input[type="time"] { font-family: var(--cal-mono); font-size: max(12.5px, 0.78rem); }
+.cal-dlg input[aria-invalid="true"],
+.cal-dlg textarea[aria-invalid="true"] { border-color: hsl(var(--ds-accent-critical) / 0.75); }
+.cal-dlg ::placeholder { color: hsl(var(--ds-text-muted) / 0.6); }
+
+.cal-dlg-etiq {
+  display: block;
+  font-family: var(--cal-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--cal-faible);
+  margin-bottom: 5px;
+}
+.cal-dlg-champ { min-width: 0; }
+.cal-dlg-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.cal-dlg-ligne {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 7px 0; border-top: 1px solid var(--cal-trait);
+}
+.cal-dlg-ligne .cal-dlg-etiq { margin-bottom: 0; }
+.cal-dlg-indice {
+  margin-top: 5px;
+  font-family: var(--cal-mono); font-size: max(10.5px, 0.656rem); letter-spacing: 0.06em;
+  color: hsl(var(--ds-text-muted) / 0.85);
+}
+.cal-dlg-erreur {
+  margin-top: 5px;
+  font-family: var(--cal-mono); font-size: max(10.5px, 0.656rem); letter-spacing: 0.06em;
+  color: hsl(var(--ds-accent-critical));
+}
+
+/* Les couleurs deviennent des carres : une pastille ronde est un
+   vocabulaire que cette page n emploie nulle part ailleurs. */
+.cal-dlg-couleurs { display: flex; flex-wrap: wrap; gap: 6px; }
+.cal-dlg-couleur {
+  --cal-biseau: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+  --cal-liseret: transparent;
+  width: 24px; height: 24px;
+  background: var(--cal-teinte);
+  transition: transform 140ms var(--ds-ease-out);
+}
+.cal-dlg-couleur:hover { transform: translateY(-1px); }
+/* Une ombre portee est DECOUPEE par le clip-path : la pastille retenue
+   n avait donc aucun marqueur visible. Le liseret, lui, suit la coupe. */
+.cal-dlg-couleur[aria-pressed="true"] {
+  --cal-liseret: hsl(var(--ds-text-primary));
+  --cal-liseret-ep: 2px;
+}
+
+.cal-dlg-actions {
+  display: flex; align-items: center; gap: 8px;
+  padding-top: 12px; border-top: 1px solid var(--cal-trait);
+}
+.cal-dlg-actions .cal-outil { height: 36px; }
+.cal-dlg-actions .cal-outil.est-large { flex: 1; }
+.cal-outil.est-danger {
+  color: hsl(var(--ds-accent-critical));
+  --cal-liseret: hsl(var(--ds-accent-critical) / 0.55);
+  background: hsl(var(--ds-accent-critical) / 0.1);
+}
+.cal-outil.est-danger:hover {
+  color: hsl(var(--ds-bg-base));
+  background: hsl(var(--ds-accent-critical));
+  --cal-liseret: hsl(var(--ds-accent-critical));
+}
+
+/* Les editeurs imbriques suivent le meme metal. */
+.cal-dlg-bloc {
+  --cal-biseau: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+  background: hsl(var(--ds-surface-2) / 0.4);
+  padding: 10px 11px;
+}
+.cal-dlg-jours { display: flex; flex-wrap: wrap; gap: 4px; }
+.cal-dlg-jour {
+  width: 30px; height: 28px;
+  font-family: var(--cal-mono); font-size: max(10px, 0.625rem); letter-spacing: 0.08em;
+  color: var(--cal-faible);
+  border: 1px solid var(--cal-trait);
+  background: none;
+  transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.cal-dlg-jour:hover { color: var(--cal-texte); background: hsl(var(--ds-surface-2) / 0.8); }
+.cal-dlg-jour[aria-pressed="true"] {
+  color: hsl(var(--ds-bg-base)); background: var(--cal-signal); border-color: var(--cal-signal);
+}
+
+/* La saisie rapide : la meme plaque, en plus petit. */
+.cal-qa { width: 272px; }
+.cal-qa .cal-dlg-corps { padding: 12px; gap: 10px; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   LE LISERET DES BISEAUX
+   Un clip-path decoupe l element AVEC sa bordure : les coins
+   coupes n avaient aucun trait, et les plaques avaient l air
+   dechirees plutot que taillees. Le liseret est donc DESSINE —
+   un anneau qui suit exactement la meme decoupe, obtenu en
+   soustrayant la boite de contenu de la boite de bordure.
+   ═══════════════════════════════════════════════════════════ */
+.cal-plaque, .cal-entete, .cal-dlg, .cal-tel-bloc, .cal-an-tuile,
+.cal-vues, .cal-outil, .cal-source, .cal-dlg-bloc, .cal-dlg-couleur {
+  position: relative;
+  border: 0;
+  clip-path: var(--cal-biseau);
+}
+.cal-plaque::after, .cal-entete::after, .cal-dlg::after, .cal-tel-bloc::after,
+.cal-an-tuile::after, .cal-vues::after, .cal-outil::after, .cal-source::after,
+.cal-dlg-bloc::after, .cal-dlg-couleur::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 6; pointer-events: none;
+  clip-path: var(--cal-biseau);
+  background: var(--cal-liseret, var(--cal-trait));
+  padding: var(--cal-liseret-ep, 1px);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  transition: background 140ms var(--ds-ease-out);
+}
 
 /* ═══════════════════════════════════════════════════════════
    LE DOIGT
@@ -458,12 +939,25 @@
   .cal-vue { padding-inline: 14px; }
   .cal-source { padding-inline: 12px; }
   .cal-jour { min-height: 44px; display: flex; align-items: center; }
-  .cal-case { --cal-hauteur-case: 138px; }
+  /* Dix-sept pixels de haut, c est une ligne de liste, pas une cible.
+     Trente ne fait toujours pas quarante-quatre — une case de mois qui
+     loge trois entrees ne le permet pas — mais le numero du jour, lui,
+     fait 44 px, et c est par la qu on ouvre la journee en grand. */
+  .cal-evt.est-compact { height: 30px; }
+  /* Les barres suivent les bandes : trente pixels, la meme main. */
+  .cal-case { --cal-hauteur-case: 172px; --cal-etage-h: 33px; --cal-barres-haut: 46px; }
+  .cal-mois-rangee { --cal-etage-h: 33px; --cal-barres-haut: 46px; }
   .cal-rb-timbre { min-height: 44px; }
   /* Sur un axe horaire, un bloc encode une DUREE : l epaissir a 44 px
      mentirait sur la journee. Le timbre du jour, lui, fait 44 px et
      ouvre la meme journee en grand — c est la cible de repli. */
   .cal-rb-bloc, .cal-rb-jourentier { min-height: 26px; }
+  .cal-tg { --cal-h-heure: 58px; }
+  .cal-tg-tete, .cal-an-tuile { min-height: 44px; }
+  .cal-dlg input, .cal-dlg textarea, .cal-dlg button[role="combobox"] { min-height: 44px; }
+  .cal-dlg-couleur { width: 40px; height: 40px; }
+  .cal-dlg-jour { width: 44px; height: 44px; }
+  .cal-dlg-actions .cal-outil { height: 44px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

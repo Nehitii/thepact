@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { aLHeure } from "./temps";
+
+/* LA SAISIE RAPIDE
+ *
+ * Elle etait restee un composant de bibliotheque au milieu d une page
+ * refaite : coins arrondis, fond gris, champ a bord doux. Elle prend le
+ * meme metal que le reste — la plaque, le rail, le biseau — en plus
+ * petit, parce qu elle ne demande qu une chose.
+ */
 
 interface EventQuickAddProps {
   date: Date;
@@ -21,6 +28,7 @@ interface EventQuickAddProps {
 
 export function EventQuickAdd({ date, open, onOpen, onClose, onSave, children }: EventQuickAddProps) {
   const { t } = useTranslation();
+  const locale = useDateFnsLocale();
   const [title, setTitle] = useState("");
 
   const handleSave = () => {
@@ -41,23 +49,48 @@ export function EventQuickAdd({ date, open, onOpen, onClose, onSave, children }:
   return (
     <Popover open={open} onOpenChange={(o) => (o ? onOpen() : onClose())}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
-      <PopoverContent className="w-64 p-3" align="start">
-        <p className="text-xs text-muted-foreground mb-2">{format(date, "EEEE d MMM")}</p>
-        <Input
-          placeholder={t("calendar.eventTitle", "Event title")}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleSave()}
-          className="h-8 text-xs mb-2"
-          autoFocus
-        />
-        <div className="flex gap-1.5">
-          <Button size="sm" className="h-7 text-xs flex-1" onClick={handleSave} disabled={!title.trim()}>
-            {t("common.create")}
-          </Button>
-          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={onClose}>
-            {t("common.cancel")}
-          </Button>
+      <PopoverContent
+        align="start"
+        className="w-auto border-0 bg-transparent p-0 shadow-none"
+      >
+        <div className="cal cal-dlg cal-qa">
+          <div className="cal-dlg-rail">
+            <b>{format(date, "dd.MM", { locale })}</b>
+            <i />
+            <span>{format(date, "EEEE", { locale })}</span>
+          </div>
+
+          <div className="cal-dlg-corps">
+            <div className="cal-dlg-champ">
+              <label className="cal-dlg-etiq" htmlFor="cal-qa-titre">
+                {t("calendar.eventTitle", "Event title")}
+              </label>
+              <input
+                id="cal-qa-titre"
+                className="h-9 w-full px-2.5"
+                placeholder={t("calendar.eventTitle", "Event title")}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+                autoFocus
+              />
+              <p className="cal-dlg-indice">{t("calendar.quickAddHint")}</p>
+            </div>
+
+            <div className="cal-dlg-actions">
+              <button
+                type="button"
+                className={"cal-outil est-large " + (title.trim() ? "est-primaire" : "est-inerte")}
+                onClick={handleSave}
+                aria-disabled={!title.trim()}
+              >
+                {t("common.create")}
+              </button>
+              <button type="button" className="cal-outil" onClick={onClose}>
+                {t("common.cancel")}
+              </button>
+            </div>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

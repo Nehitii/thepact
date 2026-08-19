@@ -167,7 +167,7 @@ export function CalendarPage() {
   );
 
   return (
-    <div className="cal max-w-7xl mx-auto">
+    <div>
       <CalendarToolbar
         viewDate={viewDate}
         view={view}

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   eachDayOfInterval, isSameMonth, isToday, format, parseISO, getISOWeek,
+  startOfDay, endOfDay, differenceInCalendarDays, isSameWeek,
 } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import type { Locale } from "date-fns";
@@ -10,8 +11,13 @@ import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
 import { EventCard } from "../EventCard";
 import { EventQuickAdd } from "../EventQuickAdd";
-import { DndContext, DragEndEvent, PointerSensor, KeyboardSensor, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  DndContext, DragOverlay, PointerSensor, KeyboardSensor, useSensor, useSensors,
+  defaultDropAnimationSideEffects,
+  type DragEndEvent, type DragStartEvent, type DropAnimation,
+} from "@dnd-kit/core";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
+import { estImportee } from "../sources";
 
 /* LA CARTE
  *
@@ -36,9 +42,68 @@ interface MonthViewProps {
 
 const MAX_VISIBLE = 3;
 
+/** Une entree qui ne tient pas dans une journee est une barre, pas un point. */
+const estLongue = (ev: CalendarEvent) =>
+  differenceInCalendarDays(parseISO(ev.end_time), parseISO(ev.start_time)) >= 1;
+
+interface Barre {
+  ev: CalendarEvent;
+  colonne: number;
+  portee: number;
+  vientDAvant: boolean;
+  vaApres: boolean;
+  etage: number;
+}
+
+/* Les vacances du 16 au 31 s affichaient le 16 et nulle part ailleurs :
+   chaque entree etait indexee sur sa seule date de debut. On calcule
+   donc, semaine par semaine, la portee reelle de ce qui deborde — et les
+   barres s empilent quand elles se croisent. */
+function barresDeLaSemaine(semaine: Date[], longues: CalendarEvent[]): Barre[] {
+  const debutSem = startOfDay(semaine[0]);
+  const finSem = endOfDay(semaine[6]);
+
+  const brutes = longues
+    .map((ev) => {
+      const d = parseISO(ev.start_time);
+      const f = parseISO(ev.end_time);
+      if (f < debutSem || d > finSem) return null;
+      const colonne = Math.max(0, differenceInCalendarDays(startOfDay(d), debutSem));
+      const derniere = Math.min(6, differenceInCalendarDays(startOfDay(f), debutSem));
+      return {
+        ev,
+        colonne,
+        portee: Math.max(1, derniere - colonne + 1),
+        vientDAvant: d < debutSem,
+        vaApres: f > finSem,
+      };
+    })
+    .filter((b): b is Omit<Barre, "etage"> => b !== null)
+    .sort((a, b) => a.colonne - b.colonne || b.portee - a.portee);
+
+  const finsParEtage: number[] = [];
+  return brutes.map((b) => {
+    let etage = finsParEtage.findIndex((fin) => fin <= b.colonne);
+    if (etage === -1) { etage = finsParEtage.length; finsParEtage.push(0); }
+    finsParEtage[etage] = b.colonne + b.portee;
+    return { ...b, etage };
+  });
+}
+
+/* La traine suit le pointeur au-dessus de la page entiere. L element
+   d origine reste en place, efface : c est ce qui donne le sentiment de
+   soulever quelque chose plutot que de le pousser. */
+const ANIMATION_DEPOT: DropAnimation = {
+  duration: 220,
+  easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+  sideEffects: defaultDropAnimationSideEffects({
+    styles: { active: { opacity: "0.35" } },
+  }),
+};
+
 function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
   const { t } = useTranslation();
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: event.id,
     data: { event },
     disabled: !!event._virtual,
@@ -51,12 +116,7 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
       {...attributes}
       role="button"
       aria-label={t("calendar.openEvent", "Open: {{title}}", { title: event.title })}
-      className="min-w-0 overflow-hidden"
-      style={{
-        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-        opacity: isDragging ? 0.5 : 1,
-        zIndex: isDragging ? 50 : undefined,
-      }}
+      className={cn("cal-draggable min-w-0 overflow-hidden", isDragging && "est-en-vol")}
     >
       <EventCard event={event} compact onClick={onClick} />
     </div>
@@ -106,7 +166,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd, onShowMore, 
         </button>
       </EventQuickAdd>
 
-      <div className="relative z-[2] flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden space-y-[3px] scrollbar-thin scrollbar-thumb-border/50">
+      <div className="cal-case-evts relative z-[2] flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden space-y-[3px] scrollbar-thin scrollbar-thumb-border/50">
         {visible.map((ev) => (
           <DraggableEvent key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); onEventClick(ev); }} />
         ))}
@@ -153,17 +213,28 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
     return result;
   }, [days]);
 
-  const eventsByDay = useMemo(() => {
+  /* Ce qui tient dans une journee va dans les cases ; ce qui deborde va
+     dans les barres, au-dessus. */
+  const { parJour, longues } = useMemo(() => {
     const map = new Map<string, CalendarEvent[]>();
+    const larges: CalendarEvent[] = [];
     for (const ev of events) {
+      if (estLongue(ev)) { larges.push(ev); continue; }
       const key = format(parseISO(ev.start_time), "yyyy-MM-dd");
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(ev);
     }
-    return map;
+    return { parJour: map, longues: larges };
   }, [events]);
 
+  const [enVol, setEnVol] = useState<CalendarEvent | null>(null);
+
+  const handleDragStart = useCallback((e: DragStartEvent) => {
+    setEnVol((e.active.data.current?.event as CalendarEvent) ?? null);
+  }, []);
+
   const handleDragEnd = useCallback((e: DragEndEvent) => {
+    setEnVol(null);
     const { active, over } = e;
     if (!over) return;
     const eventData = active.data.current?.event as CalendarEvent | undefined;
@@ -173,7 +244,12 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
   }, [onEventMove]);
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setEnVol(null)}
+    >
       {/* Sous 640 px de conteneur la grille defile dans SON cadre : la
           page, elle, ne part jamais en travers. */}
       <div className="cal-mois-cadre">
@@ -188,28 +264,72 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
             ))}
           </div>
 
-          {weeks.map((week, wi) => (
-            <div key={wi} className="cal-grille">
-              <div className="cal-semaine cal-case">{getISOWeek(week[0])}</div>
-              {week.map((day) => {
-                const key = format(day, "yyyy-MM-dd");
-                return (
-                  <DayCell
-                    key={key}
-                    day={day}
-                    viewDate={viewDate}
-                    events={eventsByDay.get(key) ?? []}
-                    onEventClick={onEventClick}
-                    onQuickAdd={onQuickAdd}
-                    onShowMore={onShowMore}
-                    locale={locale}
-                  />
-                );
-              })}
-            </div>
-          ))}
+          {weeks.map((week, wi) => {
+            const barres = barresDeLaSemaine(week, longues);
+            const etages = barres.length ? Math.max(...barres.map((b) => b.etage)) + 1 : 0;
+            return (
+              <div
+                key={wi}
+                className="cal-grille cal-mois-rangee"
+                style={{ ["--cal-etages" as string]: etages } as React.CSSProperties}
+              >
+                <div
+                  className={cn("cal-semaine cal-case", isSameWeek(week[0], new Date(), { weekStartsOn: 1 }) && "est-semaine-courante")}
+                >
+                  {getISOWeek(week[0])}
+                </div>
+                {week.map((day) => {
+                  const key = format(day, "yyyy-MM-dd");
+                  return (
+                    <DayCell
+                      key={key}
+                      day={day}
+                      viewDate={viewDate}
+                      events={parJour.get(key) ?? []}
+                      onEventClick={onEventClick}
+                      onQuickAdd={onQuickAdd}
+                      onShowMore={onShowMore}
+                      locale={locale}
+                    />
+                  );
+                })}
+
+                {barres.length > 0 && (
+                  <div className="cal-grille cal-mois-barres">
+                    {barres.map(({ ev, colonne, portee, vientDAvant, vaApres, etage }) => (
+                      <button
+                        key={ev.id + "-" + wi}
+                        type="button"
+                        onClick={() => onEventClick(ev)}
+                        className={cn("cal-barre-evt", vientDAvant && "vient-d-avant", vaApres && "va-apres")}
+                        data-importe={estImportee(ev._source)}
+                        title={ev.title}
+                        style={{
+                          ["--cal-teinte" as string]: ev.color,
+                          gridColumn: `${colonne + 2} / span ${portee}`,
+                          gridRow: etage + 1,
+                        } as React.CSSProperties}
+                      >
+                        {vientDAvant && <span className="cal-barre-fleche" aria-hidden="true">&#8592;</span>}
+                        <span className="cal-barre-titre">{ev.title}</span>
+                        {vaApres && <span className="cal-barre-fleche ml-auto" aria-hidden="true">&#8594;</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
+
+      <DragOverlay dropAnimation={ANIMATION_DEPOT}>
+        {enVol && (
+          <div className="cal-traine">
+            <EventCard event={enVol} compact />
+          </div>
+        )}
+      </DragOverlay>
     </DndContext>
   );
 }

@@ -1,7 +1,9 @@
-import { memo, useState } from "react";
-import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, addYears, subYears } from "date-fns";
+import { memo, useMemo, useState } from "react";
+import {
+  format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, addYears, subYears,
+  startOfWeek, endOfWeek, isSameMonth, isSameWeek, isSameYear, isToday,
+} from "date-fns";
 import { ChevronLeft, ChevronRight, Plus, Search, CalendarDays } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
@@ -58,25 +60,47 @@ export const CalendarToolbar = memo(({
     : view === "year" ? t("calendar.viewYear", "Year")
     : t("calendar.viewMonth", "Month");
 
-  const titleFormat = view === "day" ? "EEEE d MMMM yyyy"
-    : view === "week" ? "MMM yyyy"
-    : view === "year" ? "yyyy"
-    : "MMMM yyyy";
+  /* LE TITRE DISAIT AUTRE CHOSE DANS CHAQUE VUE
+     Le jour donnait une phrase en toutes lettres, la semaine un mois
+     abrege qui ne nommait meme pas la semaine, le mois un mois entier.
+     Ils suivent maintenant la meme grammaire, du plus large au plus
+     precis — et c est la seule chose qui change entre eux. */
+  const titre = useMemo(() => {
+    if (view === "year") return format(viewDate, "yyyy");
+    if (view === "day") return format(viewDate, "EEE d MMMM yyyy", { locale });
+    if (view === "week") {
+      const d = startOfWeek(viewDate, { weekStartsOn: 1 });
+      const f = endOfWeek(viewDate, { weekStartsOn: 1 });
+      return isSameMonth(d, f)
+        ? `${format(d, "d")} — ${format(f, "d MMMM yyyy", { locale })}`
+        : `${format(d, "d MMM", { locale })} — ${format(f, "d MMM yyyy", { locale })}`;
+    }
+    return format(viewDate, "MMMM yyyy", { locale });
+  }, [viewDate, view, locale]);
+
+  /* « Aujourd hui » restait offert alors qu on y etait deja : un bouton
+     qui ne fait rien est le pire des trois etats. */
+  const dejaAujourdHui = useMemo(() => {
+    const maintenant = new Date();
+    if (view === "day") return isToday(viewDate);
+    if (view === "week") return isSameWeek(viewDate, maintenant, { weekStartsOn: 1 });
+    if (view === "year") return isSameYear(viewDate, maintenant);
+    return isSameMonth(viewDate, maintenant);
+  }, [viewDate, view]);
 
   return (
     <div className="cal-barre">
       <div className="cal-barre-haut">
         {/* Gauche : la navigation */}
         <div className="flex items-center gap-1.5">
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
+            type="button"
             onClick={() => navigate(-1)}
-            className="cal-outil h-8 w-8"
+            className="cal-outil est-icone"
             aria-label={t("calendar.prevPeriod", "Previous {{period}}", { period: periode.toLowerCase() })}
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          </Button>
+          </button>
 
           <Popover open={datePickerOpen} onOpenChange={setDatePickerOpen}>
             <PopoverTrigger asChild>
@@ -84,12 +108,12 @@ export const CalendarToolbar = memo(({
                 type="button"
                 aria-haspopup="dialog"
                 aria-expanded={datePickerOpen}
-                /* Pas d aria-label ici : il remplacerait « aout 2026 » par
-                   un texte qui ne le contient pas, et le nom annonce ne
-                   correspondrait plus au libelle visible. */
+                /* Pas d aria-label ici : il remplacerait le titre visible
+                   par un texte qui ne le contient pas, et le nom annonce
+                   ne correspondrait plus au libelle. */
                 className="cal-periode"
               >
-                {format(viewDate, titleFormat, { locale })}
+                {titre}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="center">
@@ -104,19 +128,28 @@ export const CalendarToolbar = memo(({
             </PopoverContent>
           </Popover>
 
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
+            type="button"
             onClick={() => navigate(1)}
-            className="cal-outil h-8 w-8"
+            className="cal-outil est-icone"
             aria-label={t("calendar.nextPeriod", "Next {{period}}", { period: periode.toLowerCase() })}
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          </Button>
-          <Button variant="outline" size="sm" onClick={onToday} className="cal-outil h-8 text-xs ml-1">
-            <CalendarDays className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
+          </button>
+
+          {/* aria-disabled plutot que disabled : un bouton desactive sort de
+              l ordre de tabulation, et l utilisateur au clavier perd a la
+              fois l action ET l explication de son absence. */}
+          <button
+            type="button"
+            onClick={() => { if (!dejaAujourdHui) onToday(); }}
+            aria-disabled={dejaAujourdHui}
+            className={cn("cal-outil ml-1", dejaAujourdHui && "est-inerte")}
+            title={dejaAujourdHui ? t("calendar.alreadyToday", "You are already there") : undefined}
+          >
+            <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
             {t("calendar.today", "Today")}
-          </Button>
+          </button>
         </div>
 
         {/* Centre : le selecteur de vue */}
@@ -128,7 +161,7 @@ export const CalendarToolbar = memo(({
               onClick={() => onViewChange(v.key)}
               /* La vue courante ne se lisait qu a la couleur du fond. */
               aria-pressed={view === v.key}
-              className={cn("cal-vue", view === v.key && "est-active")}
+              className="cal-vue"
             >
               {v.label}
             </button>
@@ -138,20 +171,19 @@ export const CalendarToolbar = memo(({
         {/* Droite : les actions */}
         <div className="flex items-center gap-1.5">
           {onSearchToggle && (
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
+              type="button"
               onClick={onSearchToggle}
-              className="cal-outil h-8 w-8"
+              className="cal-outil est-icone"
               aria-label={t("calendar.search", "Search events")}
             >
               <Search className="h-4 w-4" aria-hidden="true" />
-            </Button>
+            </button>
           )}
-          <Button size="sm" onClick={onNewEvent} className="cal-outil h-8 gap-1.5">
+          <button type="button" onClick={onNewEvent} className="cal-outil est-primaire">
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             {t("calendar.newEvent", "Event")}
-          </Button>
+          </button>
         </div>
       </div>
 

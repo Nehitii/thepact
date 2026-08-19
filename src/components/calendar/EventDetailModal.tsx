@@ -1,20 +1,24 @@
 import { useState, useEffect, useMemo, useRef, useId } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Trash2, MapPin, Clock } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
+import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import type { CalendarEvent, CalendarEventInsert } from "@/hooks/useCalendarEvents";
 import { RecurrenceEditor } from "./RecurrenceEditor";
 import { ReminderEditor } from "./ReminderEditor";
 import { composerInstant, debutDeJournee, finDeJournee } from "./temps";
 
-/* Les couleurs portent un nom : une pastille ronde sans libelle n annonce
-   que « bouton », dix fois de suite. */
+/* LE FORMULAIRE D EVENEMENT
+ *
+ * Il etait reste un dialogue de bibliotheque au milieu d une page
+ * refaite : coins arrondis, champs a bord doux, pastilles rondes — un
+ * vocabulaire que cette page n emploie nulle part ailleurs. Il prend le
+ * meme metal : plaque biseautee, rail de coordonnees, champs carres, et
+ * des couleurs qui sont des carres comme le reste.
+ */
+
 const COLORS: { hex: string; key: string }[] = [
   { hex: "#3b82f6", key: "blue" },
   { hex: "#ef4444", key: "red" },
@@ -41,6 +45,7 @@ interface EventDetailModalProps {
 
 export function EventDetailModal({ open, onClose, event, defaultDate, onSave, onDelete }: EventDetailModalProps) {
   const { t } = useTranslation();
+  const locale = useDateFnsLocale();
   const isEdit = !!event && !event._virtual;
 
   /* Un prefixe unique par instance : deux dialogues ouverts ne peuvent
@@ -183,100 +188,101 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
     onClose();
   };
 
+  const reference = bornes.debut ? format(bornes.debut, "yyyy.MM.dd", { locale }) : "————.——.——";
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto bg-card border-border/60">
-        <DialogHeader>
-          <DialogTitle className="font-orbitron text-sm">
-            {isEdit ? t("calendar.editEvent", "Edit Event") : t("calendar.newEvent", "New Event")}
+      <DialogContent className="cal cal-dlg sm:max-w-lg max-h-[92vh] overflow-y-auto border-0 bg-transparent p-0 shadow-none [&>button]:hidden">
+        <div className="cal-dlg-rail">
+          <b>CAL.01</b>
+          <i />
+          <DialogTitle asChild>
+            {/* « Event » nomme le BOUTON de la barre ; le dialogue, lui,
+                doit dire ce qu il ouvre. */}
+            <span>{isEdit ? t("calendar.editEvent", "Edit event") : t("calendar.newEventTitle", "New event")}</span>
           </DialogTitle>
-        </DialogHeader>
+          <i />
+          <span>{reference}</span>
+        </div>
 
-        <div className="space-y-4 mt-2">
-          {/* Title — une invite n est pas un libelle : elle s efface des
-              qu on tape, et n a jamais ete annoncee comme un nom. */}
-          <div>
-            <Label htmlFor={id("titre")} className="ds-t-label mb-1 block">
+        <div className="cal-dlg-corps">
+          {/* Une invite n est pas un libelle : elle s efface des qu on tape. */}
+          <div className="cal-dlg-champ">
+            <label className="cal-dlg-etiq" htmlFor={id("titre")}>
               {t("calendar.eventTitle", "Event title")}
-            </Label>
-            <Input
+            </label>
+            <input
               id={id("titre")}
               ref={titreRef}
+              className="h-10 w-full px-3 text-base font-medium"
               placeholder={t("calendar.eventTitle", "Event title")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-base font-medium"
               aria-invalid={!!erreurTitre}
               aria-describedby={erreurTitre ? id("err-titre") : undefined}
               autoFocus
             />
             {erreurTitre && (
-              <p id={id("err-titre")} role="alert" className="mt-1.5 text-xs text-destructive">
-                {erreurTitre.texte}
-              </p>
+              <p id={id("err-titre")} role="alert" className="cal-dlg-erreur">{erreurTitre.texte}</p>
             )}
           </div>
 
-          {/* All day toggle — un <label for> ne mord pas sur un bouton :
-              l interrupteur se nomme donc par aria-labelledby. */}
-          <div className="flex items-center justify-between">
-            <Label id={id("lbl-journee")} className="flex items-center gap-2 text-xs">
-              <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-              {t("calendar.allDay", "All day")}
-            </Label>
+          {/* Un <label for> ne mord pas sur un bouton : l interrupteur se
+              nomme donc par aria-labelledby. */}
+          <div className="cal-dlg-ligne" style={{ borderTop: 0, paddingTop: 0 }}>
+            <span id={id("lbl-journee")} className="cal-dlg-etiq">{t("calendar.allDay", "All day")}</span>
             <Switch checked={allDay} onCheckedChange={setAllDay} aria-labelledby={id("lbl-journee")} />
           </div>
 
-          {/* Date / Time */}
           <div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor={id("debut-date")} className="ds-t-label">{t("calendar.startDate", "Start")}</Label>
-                <Input
+            <div className="cal-dlg-duo">
+              <div className="cal-dlg-champ">
+                <label className="cal-dlg-etiq" htmlFor={id("debut-date")}>{t("calendar.startDate", "Start")}</label>
+                <input
                   id={id("debut-date")}
                   type="date"
+                  className="h-9 w-full px-2.5"
                   value={startDate}
                   onChange={(e) => deplacerDebut(e.target.value, startTime)}
-                  className="h-9 text-xs"
                 />
               </div>
               {!allDay && (
-                <div>
-                  <Label htmlFor={id("debut-heure")} className="ds-t-label">{t("calendar.startTime", "Time")}</Label>
-                  <Input
+                <div className="cal-dlg-champ">
+                  <label className="cal-dlg-etiq" htmlFor={id("debut-heure")}>{t("calendar.startTime", "Time")}</label>
+                  <input
                     id={id("debut-heure")}
+                    type="time"
                     /* Deux champs nommes « Heure » dans le meme formulaire :
                        la mise en page les distingue, l annonce non. */
                     aria-label={t("calendar.startTimeFull", "Start time")}
-                    type="time"
+                    className="h-9 w-full px-2.5"
                     value={startTime}
                     onChange={(e) => deplacerDebut(startDate, e.target.value)}
-                    className="h-9 text-xs"
                   />
                 </div>
               )}
-              <div>
-                <Label htmlFor={id("fin-date")} className="ds-t-label">{t("calendar.endDate", "End")}</Label>
-                <Input
+              <div className="cal-dlg-champ">
+                <label className="cal-dlg-etiq" htmlFor={id("fin-date")}>{t("calendar.endDate", "End")}</label>
+                <input
                   id={id("fin-date")}
                   type="date"
+                  className="h-9 w-full px-2.5"
                   value={endDate}
                   onChange={(e) => reglerFin(e.target.value, endTime)}
-                  className="h-9 text-xs"
                   aria-invalid={!!erreurDates}
                   aria-describedby={erreurDates ? id("err-dates") : undefined}
                 />
               </div>
               {!allDay && (
-                <div>
-                  <Label htmlFor={id("fin-heure")} className="ds-t-label">{t("calendar.endTime", "Time")}</Label>
-                  <Input
+                <div className="cal-dlg-champ">
+                  <label className="cal-dlg-etiq" htmlFor={id("fin-heure")}>{t("calendar.endTime", "Time")}</label>
+                  <input
                     id={id("fin-heure")}
-                    aria-label={t("calendar.endTimeFull", "End time")}
                     type="time"
+                    aria-label={t("calendar.endTimeFull", "End time")}
+                    className="h-9 w-full px-2.5"
                     value={endTime}
                     onChange={(e) => reglerFin(endDate, e.target.value)}
-                    className="h-9 text-xs"
                     aria-invalid={!!erreurDates}
                     aria-describedby={erreurDates ? id("err-dates") : undefined}
                   />
@@ -284,18 +290,13 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
               )}
             </div>
             {erreurDates && (
-              <p id={id("err-dates")} role="alert" className="mt-1.5 text-xs text-destructive">
-                {erreurDates.texte}
-              </p>
+              <p id={id("err-dates")} role="alert" className="cal-dlg-erreur">{erreurDates.texte}</p>
             )}
           </div>
 
-          {/* Color picker */}
           <div>
-            <span id={id("lbl-couleur")} className="ds-t-label mb-1.5 block text-muted-foreground">
-              {t("calendar.color", "Color")}
-            </span>
-            <div className="flex gap-1.5 flex-wrap" role="group" aria-labelledby={id("lbl-couleur")}>
+            <span id={id("lbl-couleur")} className="cal-dlg-etiq">{t("calendar.color", "Color")}</span>
+            <div className="cal-dlg-couleurs" role="group" aria-labelledby={id("lbl-couleur")}>
               {COLORS.map(({ hex, key }) => (
                 <button
                   key={hex}
@@ -303,69 +304,58 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
                   onClick={() => setColor(hex)}
                   aria-label={t(`calendar.colors.${key}`, key)}
                   aria-pressed={color === hex}
-                  className="w-6 h-6 rounded-full transition-all ring-offset-background"
-                  style={{
-                    backgroundColor: hex,
-                    boxShadow: color === hex ? `0 0 0 2px var(--background), 0 0 0 4px ${hex}` : "none",
-                  }}
+                  className="cal-dlg-couleur"
+                  style={{ ["--cal-teinte" as string]: hex } as React.CSSProperties}
                 />
               ))}
             </div>
           </div>
 
-          {/* Location */}
-          <div>
-            <Label htmlFor={id("lieu")} className="ds-t-label flex items-center gap-1 mb-1">
-              <MapPin className="h-3 w-3" aria-hidden="true" /> {t("calendar.location", "Location")}
-            </Label>
-            <Input
+          <div className="cal-dlg-champ">
+            <label className="cal-dlg-etiq" htmlFor={id("lieu")}>{t("calendar.location", "Location")}</label>
+            <input
               id={id("lieu")}
+              className="h-9 w-full px-2.5 text-sm"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              className="h-9 text-xs"
               placeholder={t("common.optional", "Optional")}
             />
           </div>
 
-          {/* Description */}
-          <div>
-            <Label htmlFor={id("description")} className="ds-t-label mb-1 block">
-              {t("calendar.description", "Description")}
-            </Label>
-            <Textarea
+          <div className="cal-dlg-champ">
+            <label className="cal-dlg-etiq" htmlFor={id("description")}>{t("calendar.description", "Description")}</label>
+            <textarea
               id={id("description")}
+              className="w-full min-h-[68px] px-2.5 py-2 text-sm"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="text-xs min-h-[60px]"
             />
           </div>
 
-          {/* Recurrence */}
           <RecurrenceEditor rule={recurrenceRule} onChange={setRecurrenceRule} />
-
-          {/* Reminders */}
           <ReminderEditor reminders={reminders} onChange={setReminders} />
 
-          {/* Busy */}
-          <div className="flex items-center justify-between">
-            <Label id={id("lbl-occupe")} className="text-xs">{t("calendar.markBusy", "Mark as busy")}</Label>
+          <div className="cal-dlg-ligne">
+            <span id={id("lbl-occupe")} className="cal-dlg-etiq">{t("calendar.markBusy", "Mark as busy")}</span>
             <Switch checked={isBusy} onCheckedChange={setIsBusy} aria-labelledby={id("lbl-occupe")} />
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-2 pt-2">
-            <Button onClick={handleSave} className="flex-1">
+          <div className="cal-dlg-actions">
+            <button type="button" onClick={handleSave} className="cal-outil est-primaire est-large">
               {isEdit ? t("common.saveChanges") : t("common.create")}
-            </Button>
+            </button>
+            <button type="button" onClick={onClose} className="cal-outil">
+              {t("common.cancel")}
+            </button>
             {isEdit && onDelete && event && (
-              <Button
-                variant="destructive"
-                size="icon"
+              <button
+                type="button"
                 onClick={() => { onDelete(event.id); onClose(); }}
+                className="cal-outil est-danger est-icone"
                 aria-label={t("calendar.deleteEvent", "Delete event")}
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </Button>
+              </button>
             )}
           </div>
         </div>

@@ -1,6 +1,4 @@
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useTranslation } from "react-i18next";
 import { Repeat } from "lucide-react";
@@ -27,29 +25,32 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label id="cal-lbl-repeat" className="text-xs flex items-center gap-1.5">
-          <Repeat className="h-3.5 w-3.5" aria-hidden="true" />
+    <div className="cal-dlg-bloc">
+      <div className="flex items-center justify-between gap-3">
+        <span id="cal-lbl-repeat" className="cal-dlg-etiq" style={{ marginBottom: 0 }}>
+          <Repeat className="inline-block h-3 w-3 mr-1.5 -mt-0.5" aria-hidden="true" />
           {t("calendar.recurrence", "Repeat")}
-        </Label>
+        </span>
         <Switch checked={enabled} onCheckedChange={toggleEnabled} aria-labelledby="cal-lbl-repeat" />
       </div>
 
       {enabled && rule && (
-        <div className="space-y-2 pl-2 border-l-2 border-primary/30 ml-2">
+        <div className="mt-3 space-y-3">
           <div className="flex items-center gap-2">
-            <Label className="ds-t-label shrink-0">{t("calendar.every", "Every")}</Label>
-            <Input
+            <span className="cal-dlg-etiq shrink-0" style={{ marginBottom: 0 }}>
+              {t("calendar.every", "Every")}
+            </span>
+            <input
               type="number"
               min={1}
               max={99}
+              aria-label={t("calendar.every", "Every")}
               value={rule.interval || 1}
               onChange={(e) => update({ interval: Number(e.target.value) || 1 })}
-              className="h-8 w-16 text-xs"
+              className="h-8 w-16 px-2 text-center"
             />
-            <Select value={rule.freq} onValueChange={(v) => update({ freq: v as any })}>
-              <SelectTrigger className="h-8 text-xs flex-1">
+            <Select value={rule.freq} onValueChange={(v) => update({ freq: v as RecurrenceRule["freq"] })}>
+              <SelectTrigger className="h-8 flex-1 text-xs">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -63,8 +64,8 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
 
           {rule.freq === "weekly" && (
             <div>
-              <Label className="ds-t-label mb-1 block">{t("calendar.onDays", "On days")}</Label>
-              <div className="flex gap-1">
+              <span className="cal-dlg-etiq">{t("calendar.onDays", "On days")}</span>
+              <div className="cal-dlg-jours" role="group" aria-label={t("calendar.onDays", "On days")}>
                 {DAYS.map((d) => {
                   const active = rule.byDay?.includes(d);
                   return (
@@ -73,16 +74,12 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
                       type="button"
                       aria-label={t("calendar.days." + d, d)}
                       aria-pressed={!!active}
+                      className="cal-dlg-jour"
                       onClick={() => {
                         const current = rule.byDay ?? [];
                         const next = active ? current.filter((x) => x !== d) : [...current, d];
                         update({ byDay: next.length > 0 ? next : undefined });
                       }}
-                      className={`w-7 h-7 rounded-md ds-t-label font-bold transition-all ${
-                        active
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted/50 text-muted-foreground hover:bg-muted"
-                      }`}
                     >
                       {d.slice(0, 2)}
                     </button>
@@ -92,13 +89,16 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
             </div>
           )}
 
-          <div>
-            <Label className="ds-t-label">{t("calendar.until", "Until (optional)")}</Label>
-            <Input
+          <div className="cal-dlg-champ">
+            <label className="cal-dlg-etiq" htmlFor="cal-recurrence-until">
+              {t("calendar.until", "Until (optional)")}
+            </label>
+            <input
+              id="cal-recurrence-until"
               type="date"
               value={rule.until ?? ""}
               onChange={(e) => update({ until: e.target.value || undefined })}
-              className="h-8 text-xs"
+              className="h-8 w-full px-2.5"
             />
           </div>
         </div>

@@ -1,12 +1,13 @@
 import { memo, useMemo } from "react";
 import {
-  format, parseISO, getDaysInMonth, isSameMonth,
+  format, parseISO, getDaysInMonth, isSameMonth, isSameDay,
   formatDistanceToNowStrict, isBefore,
 } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
+import { estImportee } from "./sources";
 
 /* LA TELEMETRIE
  *
@@ -34,10 +35,15 @@ export const CalendarSidebar = memo(({ events, viewDate, onEventClick, onDayClic
     const maintenant = new Date();
     const tries = [...events].sort((a, b) => a.start_time.localeCompare(b.start_time));
 
-    const aVenir = tries.filter((e) => !isBefore(parseISO(e.end_time), maintenant));
+    /* « A venir » englobait ce qui avait DEJA COMMENCE : des vacances du
+       16 au 31 s annoncaient encore comme a venir le 19. Ce qui court
+       n est pas ce qui arrive — on separe les deux. */
+    const vivants = tries.filter((e) => !isBefore(parseISO(e.end_time), maintenant));
+    const enCours = vivants.filter((e) => !isBefore(maintenant, parseISO(e.start_time)));
+    const aVenir = vivants.filter((e) => isBefore(maintenant, parseISO(e.start_time)));
     const prochain = aVenir[0] ?? tries[0] ?? null;
 
-    const evenements = tries.filter((e) => !e._source || e._source === "event").length;
+    const evenements = tries.filter((e) => !estImportee(e._source)).length;
     const echeances = tries.length - evenements;
 
     const parJour = new Map<string, number>();
@@ -54,6 +60,7 @@ export const CalendarSidebar = memo(({ events, viewDate, onEventClick, onDayClic
     return {
       prochain,
       prochainEstAVenir: aVenir.length > 0,
+      enCours,
       total: tries.length,
       evenements,
       echeances,
@@ -68,6 +75,39 @@ export const CalendarSidebar = memo(({ events, viewDate, onEventClick, onDayClic
 
   return (
     <div className="cal-tel">
+      {mesures.enCours.length > 0 && (
+        <div className="cal-tel-bloc est-signal">
+          <span className="cal-tel-nom">{t("calendar.tel.ongoing", "Ongoing")}</span>
+          <span className="cal-tel-val">{mesures.enCours.length}</span>
+          <div className="cal-tel-liste">
+            {mesures.enCours.slice(0, 3).map((ev) => {
+              const fin = parseISO(ev.end_time);
+              return (
+                <button
+                  key={ev.id}
+                  type="button"
+                  className="cal-tel-item"
+                  style={{ ["--cal-teinte" as string]: ev.color } as React.CSSProperties}
+                  onClick={() => onEventClick(ev)}
+                >
+                  <em aria-hidden="true" />
+                  <span>
+                    <span className="cal-tel-titre">{ev.title}</span>
+                    <span className="cal-tel-quand est-vive">
+                      {t("calendar.tel.until", "until {{date}}", {
+                        date: ev.all_day || !isSameDay(fin, new Date())
+                          ? format(fin, "EEE d MMM", { locale })
+                          : format(fin, "HH:mm"),
+                      })}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="cal-tel-bloc est-signal">
         <span className="cal-tel-nom">
           {mesures.prochainEstAVenir ? t("calendar.tel.next", "Next") : t("calendar.tel.first", "First")}

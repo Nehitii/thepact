@@ -1,11 +1,19 @@
 import { useMemo } from "react";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, isSameMonth, format, parseISO, isSameDay, isToday,
+  eachDayOfInterval, isSameMonth, format, parseISO, isToday, type Locale,
 } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent, CalendarSourceType } from "@/hooks/useCalendarEvents";
+import { SOURCES, ORDRE_SOURCES, sourceDe } from "../sources";
+
+/* L annee : douze cartes du meme metal que le reste. Elles etaient des
+   tuiles arrondies, et leurs points de couleur venaient de classes
+   Tailwind — bg-blue-400, bg-purple-400 — qui n avaient rien a voir avec
+   les teintes reellement employees sur les bandes du calendrier. La
+   legende ne parlait pas la meme langue que la carte. */
 
 interface YearViewProps {
   viewDate: Date;
@@ -13,86 +21,89 @@ interface YearViewProps {
   onMonthClick: (month: Date) => void;
 }
 
-const SOURCE_COLORS: Record<CalendarSourceType, string> = {
-  event: "bg-blue-400",
-  todo: "bg-orange-400",
-  goal: "bg-purple-400",
-  step: "bg-teal-400",
-};
-
-function MiniMonth({ month, events, onClick, locale }: {
-  month: Date;
+function MiniMois({ mois, events, courant, onClick, locale, t }: {
+  mois: Date;
   events: CalendarEvent[];
+  courant: boolean;
   onClick: () => void;
-  locale: any;
+  locale?: Locale;
+  t: (k: string, d?: string, o?: Record<string, unknown>) => string;
 }) {
-  const days = useMemo(() => {
-    const ms = startOfWeek(startOfMonth(month), { weekStartsOn: 1 });
-    const me = endOfWeek(endOfMonth(month), { weekStartsOn: 1 });
-    return eachDayOfInterval({ start: ms, end: me });
-  }, [month]);
+  const jours = useMemo(() => eachDayOfInterval({
+    start: startOfWeek(startOfMonth(mois), { weekStartsOn: 1 }),
+    end: endOfWeek(endOfMonth(mois), { weekStartsOn: 1 }),
+  }), [mois]);
 
-  const eventsByDay = useMemo(() => {
-    const map = new Map<string, Set<CalendarSourceType>>();
-    events.forEach((ev) => {
-      const key = format(parseISO(ev.start_time), "yyyy-MM-dd");
-      if (!map.has(key)) map.set(key, new Set());
-      map.get(key)!.add(ev._source || "event");
-    });
-    return map;
-  }, [events]);
+  const { parJour, total } = useMemo(() => {
+    const m = new Map<string, Set<CalendarSourceType>>();
+    let n = 0;
+    for (const ev of events) {
+      const d = parseISO(ev.start_time);
+      if (!isSameMonth(d, mois)) continue;
+      n++;
+      const cle = format(d, "yyyy-MM-dd");
+      if (!m.has(cle)) m.set(cle, new Set());
+      m.get(cle)!.add(sourceDe(ev._source));
+    }
+    return { parJour: m, total: n };
+  }, [events, mois]);
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className="p-2 rounded-lg border border-border/30 hover:border-primary/40 hover:bg-primary/5 transition-all text-left"
+      className={cn("cal-an-tuile", courant && "est-mois-courant")}
+      aria-label={t("calendar.openMonth", "Open {{month}}", { month: format(mois, "MMMM yyyy", { locale }) })}
     >
-      <p className="text-xs font-bold font-orbitron mb-1 capitalize">{format(month, "MMM", { locale })}</p>
-      <div className="grid grid-cols-7 gap-px">
-        {days.map((d) => {
-          const inMonth = isSameMonth(d, month);
-          const dayKey = format(d, "yyyy-MM-dd");
-          const sources = eventsByDay.get(dayKey);
-          const today = isToday(d);
+      <span className="cal-an-tete">
+        <span className="cal-an-nom">{format(mois, "MMM", { locale })}</span>
+        {total > 0 && <span className="cal-an-compte">{total}</span>}
+      </span>
+
+      <span className="cal-an-grille">
+        {jours.map((d) => {
+          const dedans = isSameMonth(d, mois);
+          const sources = parJour.get(format(d, "yyyy-MM-dd"));
+          const auj = isToday(d);
           return (
-            <div
+            <span
               key={d.toISOString()}
-              className={cn(
-                "w-4 h-4 flex flex-col items-center justify-center ds-t-label rounded-sm relative",
-                !inMonth && "opacity-20",
-                today && "bg-primary text-primary-foreground font-bold",
-              )}
+              className={cn("cal-an-jour", !dedans && "hors-mois", auj && "est-auj")}
             >
               {format(d, "d")}
-              {sources && sources.size > 0 && !today && (
-                <div className="flex gap-px absolute -bottom-0.5">
-                  {Array.from(sources).slice(0, 3).map(s => (
-                    <span key={s} className={cn("w-1 h-1 rounded-full", SOURCE_COLORS[s])} />
+              {sources && sources.size > 0 && !auj && (
+                <span className="cal-an-points" aria-hidden="true">
+                  {ORDRE_SOURCES.filter((s) => sources.has(s)).slice(0, 3).map((s) => (
+                    <i key={s} style={{ ["--cal-teinte" as string]: SOURCES[s].teinte } as React.CSSProperties} />
                   ))}
-                </div>
+                </span>
               )}
-            </div>
+            </span>
           );
         })}
-      </div>
+      </span>
     </button>
   );
 }
 
 export function YearView({ viewDate, events, onMonthClick }: YearViewProps) {
   const locale = useDateFnsLocale();
-  const year = viewDate.getFullYear();
-  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => new Date(year, i, 1)), [year]);
+  const { t } = useTranslation();
+  const annee = viewDate.getFullYear();
+  const mois = useMemo(() => Array.from({ length: 12 }, (_, i) => new Date(annee, i, 1)), [annee]);
+  const moisCourant = new Date();
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-      {months.map((m) => (
-        <MiniMonth
+    <div className="cal-an">
+      {mois.map((m) => (
+        <MiniMois
           key={m.getMonth()}
-          month={m}
+          mois={m}
           events={events}
+          courant={isSameMonth(m, moisCourant)}
           onClick={() => onMonthClick(m)}
           locale={locale}
+          t={t as never}
         />
       ))}
     </div>

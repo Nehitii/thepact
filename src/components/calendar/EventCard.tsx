@@ -3,6 +3,7 @@ import { format, parseISO } from "date-fns";
 import { Repeat } from "lucide-react";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
 import { cn } from "@/lib/utils";
+import { estImportee } from "./sources";
 
 /* LA BANDE
  *
@@ -23,7 +24,7 @@ interface EventCardProps {
 
 export const EventCard = memo(({ event, compact, onClick }: EventCardProps) => {
   const debut = parseISO(event.start_time);
-  const importe = !!event._source && event._source !== "event";
+  const importe = estImportee(event._source);
   const heure = event.all_day ? null : format(debut, "HH:mm");
 
   return (
