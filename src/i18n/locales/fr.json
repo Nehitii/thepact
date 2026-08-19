@@ -1702,7 +1702,9 @@
     "history": {
       "recentSessions": "Sessions récentes",
       "showAll": "Voir les {{count}} sessions",
-      "showLess": "Voir moins"
+      "showLess": "Voir moins",
+      "empty": "Aucune session pour l'instant",
+      "emptyHint": "Lancez votre première session de concentration"
     },
     "spotify": {
       "add": "Ajouter Spotify",
@@ -1720,7 +1722,8 @@
       "standby": "[ SYS::VEILLE ]",
       "halted": "[ SYS::PAUSE ]",
       "focused": "[ SYS::FOCUS ]",
-      "cooling": "[ SYS::REPOS ]"
+      "cooling": "[ SYS::REPOS ]",
+      "progress": "Avancement de la phase"
     },
     "toolbar": {
       "config": "Config",
@@ -1752,7 +1755,13 @@
     "resumed_other": "{{count}} cycles rattrapés pendant votre absence",
     "notifications": {
       "blocked": "Notifications bloquées. L'alerte de fin sera visuelle et sonore."
-    }
+    },
+    "fullscreen": {
+      "enter": "Passer en plein écran",
+      "exit": "Quitter le plein écran (Échap)"
+    },
+    "skipPhase": "Passer la phase (⇧+S)",
+    "phaseSkipped": "Phase passée"
   },
   "calendar": {
     "title": "Calendrier",

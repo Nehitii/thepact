@@ -311,16 +311,6 @@ export default function Focus() {
         <div className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
         <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
 
-        {/* Fullscreen toggle */}
-          <button
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen"}
-            className="absolute top-1 right-10 pointer-events-auto w-9 h-9 flex items-center justify-center bg-transparent border border-primary/30 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/60 hover:text-primary z-10 focus-visible:ring-2 focus-visible:ring-primary"
-            style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
-          >
-            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-          </button>
-
         {/* Vertical Data Streams */}
         {!isMobile && (
           <>
@@ -338,7 +328,22 @@ export default function Focus() {
         )}
       </div>
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative">
+        {/* Le bouton vivait dans la couche des equerres, en z-0, tandis que
+            l en-tete est en z-10 : des que le titre s elargissait par
+            rapport a la fenetre, il passait par-dessus et le bouton
+            devenait inatteignable au doigt. Mesure a 320 et 375 px :
+            elementFromPoint renvoyait le titre, pas le bouton. Il vit
+            maintenant dans le meme contexte d empilement que l en-tete. */}
+        <button
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? t("focus.fullscreen.exit") : t("focus.fullscreen.enter")}
+          className="absolute top-0 right-0 z-20 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/40 border border-primary/30 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/60 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary"
+          style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
+        >
+          {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+        </button>
+
         <DSPageHeader
           variant="hud"
           title={t("focus.title")}
@@ -380,15 +385,9 @@ export default function Focus() {
             phase={timer.phase}
             progress={timer.progress}
             secondsLeft={timer.secondsLeft}
-            sessionsCompleted={timer.sessionsCompleted}
             isPaused={timer.isPaused}
             goalImageUrl={linkedImageUrl}
-            disableHoverControls={isMobile}
             onStart={handleStart}
-            onPause={handlePause}
-            onResume={handleResume}
-            onSkip={handleSkip}
-            onEnd={handleEnd}
           />
 
           {/* Une alerte qui n arrivera pas doit se dire. Sans ce repli,
@@ -415,16 +414,15 @@ export default function Focus() {
             </motion.div>
           )}
 
-          {timer.isRunning && isMobile && (
+          {timer.isRunning && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full max-w-[280px] mx-auto mt-4 z-20 relative"
+              className="w-full max-w-[280px] sm:max-w-none sm:w-auto mx-auto mt-4 z-20 relative"
             >
               <FocusControls
                 phase={timer.phase}
                 isPaused={timer.isPaused}
-                onStart={handleStart}
                 onPause={handlePause}
                 onResume={handleResume}
                 onSkip={handleSkip}

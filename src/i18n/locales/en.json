@@ -1702,7 +1702,9 @@
     "history": {
       "recentSessions": "Recent Sessions",
       "showAll": "Show all {{count}} sessions",
-      "showLess": "Show less"
+      "showLess": "Show less",
+      "empty": "No sessions yet",
+      "emptyHint": "Start your first focus session"
     },
     "spotify": {
       "add": "Add Spotify",
@@ -1720,7 +1722,8 @@
       "standby": "[ SYS::STANDBY ]",
       "halted": "[ SYS::HALTED ]",
       "focused": "[ SYS::FOCUSED ]",
-      "cooling": "[ SYS::COOLING ]"
+      "cooling": "[ SYS::COOLING ]",
+      "progress": "Phase progress"
     },
     "toolbar": {
       "config": "Config",
@@ -1752,7 +1755,13 @@
     "resumed_other": "{{count}} cycles caught up while you were away",
     "notifications": {
       "blocked": "Notifications blocked. The end-of-phase alert will be visual and audible."
-    }
+    },
+    "fullscreen": {
+      "enter": "Enter fullscreen",
+      "exit": "Exit fullscreen (Esc)"
+    },
+    "skipPhase": "Skip phase (⇧+S)",
+    "phaseSkipped": "Phase skipped"
   },
   "calendar": {
     "title": "Calendar",

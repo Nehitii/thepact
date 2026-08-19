@@ -1,6 +1,5 @@
-import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, SkipForward, Square, Target } from "lucide-react";
+import { Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { PomodoroPhase } from "@/hooks/usePomodoro";
 
@@ -8,15 +7,9 @@ interface FocusTimerRingProps {
   phase: PomodoroPhase;
   progress: number;
   secondsLeft: number;
-  sessionsCompleted: number;
   isPaused: boolean;
   goalImageUrl?: string | null;
-  disableHoverControls?: boolean;
   onStart?: () => void;
-  onPause?: () => void;
-  onResume?: () => void;
-  onSkip?: () => void;
-  onEnd?: () => void;
 }
 
 function formatTime(seconds: number) {
@@ -25,28 +18,29 @@ function formatTime(seconds: number) {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
+/* L anneau ne montre plus qu une chose a la fois, et toujours la bonne :
+   le bouton de depart au repos, le temps restant pendant une session.
+   Les commandes vivent sous l anneau, jamais a sa place.
+
+   Elles n apparaissaient qu au survol, a moins de 130 px du centre. Cela
+   coutait trois choses d un coup : au clavier on ne pouvait ni suspendre
+   ni arreter puisque les boutons n existaient pas dans le DOM ; sur
+   tablette tactile il n y a pas de survol du tout ; et approcher la
+   souris — le geste le plus naturel pour agir — effacait le compte a
+   rebours, la seule information que cette page existe pour montrer. */
 export function FocusTimerRing({
   phase,
   progress,
   secondsLeft,
-  sessionsCompleted,
   isPaused,
   goalImageUrl,
-  disableHoverControls = false,
   onStart,
-  onPause,
-  onResume,
-  onSkip,
-  onEnd,
 }: FocusTimerRingProps) {
   const { t } = useTranslation();
-  const [hovered, setHovered] = useState(false);
 
   const isWork = phase === "work";
   const isBreak = phase === "break";
   const isIdle = phase === "idle";
-  // In idle: always show start button. During run: show controls on hover (desktop only)
-  const showControls = hovered && !isIdle && !disableHoverControls;
 
   const colorHsl = isBreak ? "hsl(var(--accent))" : "hsl(var(--primary))";
 
@@ -57,16 +51,13 @@ export function FocusTimerRing({
   return (
     <div
       className="relative inline-flex items-center justify-center mb-2 sm:mb-4 p-4 border border-primary/20 bg-black/40"
-      style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)" }}
-      onMouseMove={(event) => {
-        if (disableHoverControls) return;
-        const rect = event.currentTarget.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
-        setHovered(distance <= 130);
+      style={{
+        // Le SVG etait fige a 320 px : sous 360 px de fenetre, il debordait
+        // des deux cotes, et la coque de page portant overflow:hidden, il
+        // etait rogne sans meme ouvrir un defilement.
+        ["--anneau" as string]: "min(320px, 78vw)",
+        clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%)",
       }}
-      onMouseLeave={() => setHovered(false)}
     >
       <AnimatePresence>
         {goalImageUrl && (
@@ -79,8 +70,10 @@ export function FocusTimerRing({
             aria-hidden="true"
           >
             <div
-              className="w-[280px] h-[280px] opacity-50"
+              className="opacity-50"
               style={{
+                width: "calc(var(--anneau) * 0.875)",
+                height: "calc(var(--anneau) * 0.875)",
                 clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
                 filter: `drop-shadow(0 0 15px ${colorHsl})`,
               }}
@@ -100,12 +93,17 @@ export function FocusTimerRing({
       </div>
 
       <svg
-        width="320"
-        height="320"
         viewBox="0 0 320 320"
-        className="transform -rotate-90 relative z-10"
-        style={!isIdle && !isPaused ? { animation: "spin 60s linear infinite", willChange: "transform" } : undefined}
+        className="transform -rotate-90 relative z-10 block"
+        style={{
+          width: "var(--anneau)",
+          height: "var(--anneau)",
+          ...(!isIdle && !isPaused
+            ? { animation: "spin 60s linear infinite", willChange: "transform" as const }
+            : {}),
+        }}
         role="progressbar"
+        aria-label={t("focus.ring.progress")}
         aria-valuenow={Math.round(progress * 100)}
         aria-valuemin={0}
         aria-valuemax={100}
@@ -148,50 +146,13 @@ export function FocusTimerRing({
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.2 }}
               onClick={onStart}
+              aria-label={t("focus.initSync")}
               className="group relative flex flex-col items-center justify-center w-32 h-32 bg-primary/10 border border-primary/40 hover:bg-primary/20 hover:border-primary hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }}
             >
               <Target className="h-8 w-8 text-primary group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
               <span className="mt-2 ds-t-label font-mono uppercase tracking-[0.3em] text-primary">{t("focus.initSync")}</span>
             </motion.button>
-          ) : showControls ? (
-            <motion.div
-              key="controls"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="flex flex-col items-center gap-2"
-            >
-              <div className="flex gap-2">
-                <button
-                  onClick={isPaused ? onResume : onPause}
-                  aria-label={isPaused ? t("focus.controls.resume") : t("focus.controls.halt")}
-                  className="w-16 h-12 bg-primary/15 border border-primary/40 flex items-center justify-center hover:bg-primary/30 hover:border-primary transition-all focus-visible:ring-2 focus-visible:ring-primary"
-                  style={{ clipPath: "polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px)" }}
-                >
-                  {isPaused ? <Play className="h-5 w-5 text-primary ml-1" /> : <Pause className="h-5 w-5 text-primary" />}
-                </button>
-                <button
-                  onClick={onSkip}
-                  aria-label={t("focus.skipPhase", "Skip phase")}
-                  className="w-16 h-12 bg-muted/20 border border-muted-foreground/40 flex items-center justify-center hover:bg-muted/40 hover:border-muted-foreground transition-all focus-visible:ring-2 focus-visible:ring-primary"
-                  style={{ clipPath: "polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%)" }}
-                >
-                  <SkipForward className="h-5 w-5 text-muted-foreground" />
-                </button>
-              </div>
-              <button
-                onClick={onEnd}
-                aria-label={t("focus.terminate")}
-                className="w-[136px] h-8 bg-destructive/20 border border-destructive/50 flex items-center justify-center hover:bg-destructive/40 hover:border-destructive transition-all gap-2 focus-visible:ring-2 focus-visible:ring-primary"
-                style={{ clipPath: "polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%, 0 10px)" }}
-              >
-                <Square className="h-3 w-3 text-destructive" />
-                <span className="ds-t-label font-mono font-bold tracking-widest text-destructive uppercase">
-                  {t("focus.terminate")}
-                </span>
-              </button>
-            </motion.div>
           ) : !isIdle ? (
             <motion.div
               key="timer-data"
