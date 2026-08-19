@@ -111,6 +111,7 @@ interface Props {
 }
 
 const CLE_GROUPE = "vowpact.registre.groupe";
+const CLE_CONSTELLATIONS = "vowpact.registre.constellations";
 
 export const GoalsRegistre = memo(function GoalsRegistre({
   goals,
@@ -132,7 +133,51 @@ export const GoalsRegistre = memo(function GoalsRegistre({
    * quitte jamais la colonne qu il suivait.
    */
   const [ouvert, setOuvert] = useState<string | null>(null);
-  const ouvrir = (id: string) => setOuvert((o) => (o === id ? null : id));
+
+  /* Ce qui a deja ete ouvert reste monte.
+   *
+   * Le contenu n etait rendu que pendant l ouverture : a la fermeture il
+   * disparaissait d un coup, le volet passait de 1fr a 0fr avec un
+   * contenu vide — donc de sa hauteur a zero instantanement. L ouverture
+   * s animait, la fermeture claquait. En gardant monte ce qui a servi,
+   * les deux sens s animent, et la requete reste paresseuse : elle ne
+   * part toujours qu a la premiere ouverture. */
+  const [rendus, setRendus] = useState<Set<string>>(() => new Set());
+
+  const ouvrir = (id: string) => {
+    setRendus((r) => (r.has(id) ? r : new Set(r).add(id)));
+    setOuvert((o) => (o === id ? null : id));
+  };
+
+  /* Les constellations se replient independamment les unes des autres.
+   *
+   * Le volet d une ligne et le pli d une section ne repondent pas a la
+   * meme question : l un montre le detail d un objectif, l autre range
+   * une partie du pacte. N en garder qu une ouverte reviendrait a
+   * n afficher qu une constellation a la fois, ce qui viderait le mode
+   * de son objet.
+   *
+   * Repliees par defaut : une constellation de dix-neuf objectifs
+   * remplissait l ecran a elle seule et enterrait sa propre entete. On
+   * memorise celles que l utilisateur ouvre — son rangement lui
+   * survit d une visite a l autre. */
+  const [constellations, setConstellations] = useState<Set<string>>(() => {
+    try {
+      const brut = localStorage.getItem(CLE_CONSTELLATIONS);
+      const lu = brut ? JSON.parse(brut) : [];
+      return new Set<string>(Array.isArray(lu) ? (lu as string[]) : []);
+    } catch { return new Set<string>(); }
+  });
+
+  const basculerConstellation = (cle: string) => {
+    setConstellations((s) => {
+      const n = new Set(s);
+      if (n.has(cle)) n.delete(cle); else n.add(cle);
+      try { localStorage.setItem(CLE_CONSTELLATIONS, JSON.stringify([...n])); }
+      catch { /* stockage indisponible */ }
+      return n;
+    });
+  };
 
   const basculer = () => {
     setGrouper((v) => {
@@ -242,7 +287,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
             d'animer sa hauteur sans la mesurer en JavaScript. */}
         <div className="rg-volet" style={{ ["--t" as string]: t }}>
           <div className="rg-volet-in">
-            {estOuvert && (
+            {(estOuvert || rendus.has(g.id)) && (
               g.goal_type === "super"
                 ? <MembresDuGroupe membres={membres || []} onNavigate={onNavigate}
                     customDifficultyName={customDifficultyName}
@@ -250,6 +295,46 @@ export const GoalsRegistre = memo(function GoalsRegistre({
                 : <EtapesDeLObjectif goalId={g.id} />
             )}
           </div>
+        </div>
+      </div>
+    );
+  };
+
+  /* Une constellation : son entete, et le pli qui contient ses lignes.
+     Le chevron replie, l entete ouvre le groupe — le meme partage des
+     gestes que sur les lignes. */
+  const constellation = (
+    cle: string,
+    lignes: Goal[],
+    entete: React.ReactNode,
+    opts: { libres?: boolean; onNavigate?: () => void } = {},
+  ) => {
+    const deplie = constellations.has(cle);
+    const nav = opts.onNavigate;
+    return (
+      <div key={cle} className={`rg-section${deplie ? " est-ouvert" : ""}`}>
+        <div
+          className={`rg-groupe${opts.libres ? " rg-groupe--libres" : ""}`}
+          role={nav ? "button" : undefined}
+          tabIndex={nav ? 0 : undefined}
+          onClick={nav}
+          onKeyDown={nav ? (e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); nav(); }
+          } : undefined}
+        >
+          <button
+            type="button"
+            className="rg-chevron rg-chevron--groupe"
+            aria-expanded={deplie}
+            aria-label={deplie ? "Replier la constellation" : "Déplier la constellation"}
+            onClick={(e) => { e.stopPropagation(); basculerConstellation(cle); }}
+          >
+            <ChevronRight size={13} aria-hidden="true" />
+          </button>
+          {entete}
+        </div>
+        <div className="rg-pli">
+          <div className="rg-pli-in">{lignes.map((g) => ligne(g, true))}</div>
         </div>
       </div>
     );
@@ -277,6 +362,11 @@ export const GoalsRegistre = memo(function GoalsRegistre({
       </div>
 
       <div className="rg-tete" aria-hidden="true">
+        {/* La colonne du chevron a besoin de sa cellule : sans elle, chaque
+            libelle glisse d une colonne vers la gauche et mord sur le
+            suivant. L en-tete et les lignes partagent la meme grille, ils
+            doivent donc avoir le meme nombre de cellules. */}
+        <span />
         <span>Palier</span>
         <span>Objectif</span>
         <span>Étapes</span>
@@ -290,43 +380,45 @@ export const GoalsRegistre = memo(function GoalsRegistre({
         <>
           {sections.parGroupe.map(({ groupe, membres }) => {
             const faits = membres.filter((m) => etatDe(m) === "honore").length;
-            return (
-              <div key={groupe.id} className="rg-section">
-                <div
-                  className="rg-groupe"
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => onNavigate(groupe.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate(groupe.id); }
-                  }}
-                >
-                  <Crown size={11} aria-hidden="true" />
-                  <b>{nomSansPrefixeGroupe(groupe.name)}</b>
-                  <span className="rg-fil" />
-                  {membres.length <= 12 && (
-                    <span className="rg-pastilles" aria-hidden="true">
-                      {membres.map((m) => (
-                        <u key={m.id} className={etatDe(m) === "honore" ? "on" : ""} />
-                      ))}
-                    </span>
-                  )}
-                  <span className="rg-compte">{faits}/{membres.length}</span>
-                </div>
-                {membres.map((m) => ligne(m, true))}
-              </div>
+            return constellation(
+              groupe.id,
+              membres,
+              <>
+                <Crown size={11} aria-hidden="true" />
+                <b>{nomSansPrefixeGroupe(groupe.name)}</b>
+                <span className="rg-fil" />
+                {/* Une constellation repliee doit suffire a decider si on
+                    l ouvre. Au-dela de douze membres, une pastille par
+                    objectif devient illisible : on passe a une jauge, qui
+                    dit la meme chose a taille constante. */}
+                {membres.length <= 12 ? (
+                  <span className="rg-pastilles" aria-hidden="true">
+                    {membres.map((m) => (
+                      <u key={m.id} className={etatDe(m) === "honore" ? "on" : ""} />
+                    ))}
+                  </span>
+                ) : (
+                  <span className="rg-groupe-jauge" aria-hidden="true">
+                    {Array.from({ length: 14 }, (_, i) => (
+                      <u key={i} className={i < Math.round((faits / membres.length) * 14) ? "on" : ""} />
+                    ))}
+                  </span>
+                )}
+                <span className="rg-compte">{faits}/{membres.length}</span>
+              </>,
+              { onNavigate: () => onNavigate(groupe.id) },
             );
           })}
 
-          {sections.libres.length > 0 && (
-            <div className="rg-section">
-              <div className="rg-groupe rg-groupe--libres">
-                <b>Sans groupe</b>
-                <span className="rg-fil" />
-                <span className="rg-compte">{sections.libres.length}</span>
-              </div>
-              {sections.libres.map((g) => ligne(g, true))}
-            </div>
+          {sections.libres.length > 0 && constellation(
+            "__libres",
+            sections.libres,
+            <>
+              <b>Sans groupe</b>
+              <span className="rg-fil" />
+              <span className="rg-compte">{sections.libres.length}</span>
+            </>,
+            { libres: true },
           )}
         </>
       ) : (

@@ -3113,7 +3113,9 @@
   /* On sacrifie XP et etat avant les etapes : sur un ecran etroit, savoir
      ou en est un objectif prime sur ce qu'il rapporte. */
   .rg-tete, .rg-l { grid-template-columns: 76px 1fr 58px 84px 26px; gap: 9px; }
-  .rg-tete span:nth-child(5), .rg-tete span:nth-child(6),
+  /* Les rangs comptent depuis la cellule du chevron : XP est la
+     sixieme, l etat la septieme. */
+  .rg-tete span:nth-child(6), .rg-tete span:nth-child(7),
   .rg-xp, .rg-etat { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -3266,4 +3268,51 @@
   max-height: 320px;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+
+
+/* ── Registre : replier une constellation ─────────────────────
+ *
+ * Dix-neuf objectifs sous une meme entete remplissaient l ecran a eux
+ * seuls : la constellation enterrait sa propre entete, et le mode cense
+ * montrer la STRUCTURE du pacte n en montrait qu une branche.
+ *
+ * Les sections se replient donc, et independamment les unes des autres.
+ * Contrairement aux volets des lignes, il n y a aucune raison de n en
+ * garder qu une ouverte : le volet d une ligne montre un detail, le pli
+ * d une section range une partie du pacte. Limiter a une seule
+ * reviendrait a n afficher qu une constellation a la fois.
+ * ────────────────────────────────────────────────────────────── */
+
+.rg-pli {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms cubic-bezier(.3, .8, .3, 1);
+}
+.rg-section.est-ouvert .rg-pli { grid-template-rows: 1fr; }
+.rg-pli-in { min-height: 0; overflow: hidden; }
+
+/* Le chevron d une section ne suit pas la meme regle que celui d une
+   ligne : il depend de sa section, pas du volet ouvert. */
+.rg-chevron--groupe { color: rgb(252 238 10 / 0.75); }
+.rg-chevron--groupe:hover { color: var(--cp-jaune); }
+.rg-section.est-ouvert .rg-chevron--groupe { transform: rotate(90deg); color: var(--cp-jaune); }
+
+/* Une constellation repliee doit se lire sans etre ouverte. Au-dela de
+   douze membres les pastilles deviennent illisibles ; la jauge dit la
+   meme chose a taille constante. */
+.rg-groupe-jauge { display: flex; gap: 2px; width: 92px; flex-shrink: 0; }
+.rg-groupe-jauge u {
+  flex: 1;
+  height: 5px;
+  background: rgb(255 255 255 / 0.14);
+  text-decoration: none;
+}
+.rg-groupe-jauge u.on { background: var(--cp-jaune); }
+
+@media (max-width: 900px) {
+  .rg-groupe-jauge { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rg-pli { transition: none; }
 }
