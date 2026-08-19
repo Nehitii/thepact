@@ -696,6 +696,8 @@
   background: hsl(var(--ds-surface-2) / 0.85);
 }
 .cal-outil.est-icone { width: 32px; padding: 0; }
+/* Un bouton pose dans un bloc de dialogue reste plus discret que la barre. */
+.cal-outil.est-menu { height: 26px; padding: 0 8px; }
 /* L action principale porte le signal, une seule fois dans la barre. */
 .cal-outil.est-primaire {
   color: hsl(var(--ds-bg-base));
@@ -774,9 +776,21 @@
   --cal-liseret: hsl(var(--ds-accent-primary) / 0.55);
   background: var(--cal-plaque);
   filter: drop-shadow(0 18px 36px hsl(var(--ds-bg-base) / 0.85));
+  /* Le rail et les actions restent en place ; seul le corps defile. Sans
+     quoi le bouton « Creer » se trouvait sous le pli d un formulaire qui
+     en fait huit cents. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  /* Centre sur la ZONE DE CONTENU, pas sur la fenetre : la navigation de
+     l application occupe 280 px a gauche, et un dialogue centre sur la
+     fenetre parait pousse vers elle. Le decalage est mesure a l ouverture
+     et suit le repliement de la navigation. */
+  margin-left: var(--cal-dlg-decalage, 0px);
 }
 .cal-dlg-rail {
   display: flex; align-items: center; gap: 10px;
+  flex: 0 0 auto;
   padding: 9px 14px 8px;
   border-bottom: 1px solid var(--cal-trait);
   font-family: var(--cal-mono); font-size: max(9.5px, 0.594rem);
@@ -785,7 +799,20 @@
 }
 .cal-dlg-rail b { color: var(--cal-signal); font-weight: 400; }
 .cal-dlg-rail i { flex: 1; min-width: 8px; height: 1px; background: var(--cal-trait); }
-.cal-dlg-corps { padding: 14px; display: flex; flex-direction: column; gap: 13px; }
+.cal-dlg-corps {
+  padding: 14px; display: flex; flex-direction: column; gap: 13px;
+  min-height: 0; overflow-y: auto;
+  /* La barre de defilement du navigateur au milieu d une plaque
+     d instrument : on la retire, et un degrade en bas dit qu il reste
+     quelque chose a lire. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 26px), transparent 100%);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 26px), transparent 100%);
+}
+.cal-dlg-corps::-webkit-scrollbar { width: 0; height: 0; display: none; }
+/* Rien a estomper quand rien ne depasse. */
+.cal-dlg-corps.est-entier { -webkit-mask-image: none; mask-image: none; }
 
 /* Les champs : carres, sombres, un filet qui s allume au focus. */
 .cal-dlg input,
@@ -860,7 +887,10 @@
 
 .cal-dlg-actions {
   display: flex; align-items: center; gap: 8px;
-  padding-top: 12px; border-top: 1px solid var(--cal-trait);
+  flex: 0 0 auto;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--cal-trait);
+  background: var(--cal-plaque);
 }
 .cal-dlg-actions .cal-outil { height: 36px; }
 .cal-dlg-actions .cal-outil.est-large { flex: 1; }
@@ -897,7 +927,11 @@
 
 /* La saisie rapide : la meme plaque, en plus petit. */
 .cal-qa { width: 272px; }
-.cal-qa .cal-dlg-corps { padding: 12px; gap: 10px; }
+.cal-qa .cal-dlg-corps {
+  padding: 12px; gap: 10px; overflow: visible;
+  -webkit-mask-image: none; mask-image: none;
+}
+.cal-qa .cal-dlg-actions { padding: 12px 0 0; background: none; }
 
 
 /* ═══════════════════════════════════════════════════════════
@@ -910,9 +944,16 @@
    ═══════════════════════════════════════════════════════════ */
 .cal-plaque, .cal-entete, .cal-dlg, .cal-tel-bloc, .cal-an-tuile,
 .cal-vues, .cal-outil, .cal-source, .cal-dlg-bloc, .cal-dlg-couleur {
-  position: relative;
   border: 0;
   clip-path: var(--cal-biseau);
+}
+/* Le dialogue est deja place — en position FIXE — par Radix : lui imposer
+   « relative » le faisait retomber dans le flux, a moitie sous le pli, et
+   la page ne pouvait pas defiler jusqu a lui. Les autres plaques, elles,
+   ont besoin d un ancrage pour leur liseret. */
+.cal-plaque, .cal-entete, .cal-tel-bloc, .cal-an-tuile,
+.cal-vues, .cal-outil, .cal-source, .cal-dlg-bloc, .cal-dlg-couleur {
+  position: relative;
 }
 .cal-plaque::after, .cal-entete::after, .cal-dlg::after, .cal-tel-bloc::after,
 .cal-an-tuile::after, .cal-vues::after, .cal-outil::after, .cal-source::after,
@@ -955,7 +996,12 @@
   .cal-tg { --cal-h-heure: 58px; }
   .cal-tg-tete, .cal-an-tuile { min-height: 44px; }
   .cal-dlg input, .cal-dlg textarea, .cal-dlg button[role="combobox"] { min-height: 44px; }
-  .cal-dlg-couleur { width: 40px; height: 40px; }
+  .cal-dlg-couleur { width: 44px; height: 44px; }
+  .cal-outil.est-menu { height: 44px; padding-inline: 12px; }
+  /* L interrupteur garde sa taille — l elargir le deformerait — mais sa
+     zone de contact monte a 44 px.*/
+  .cal-dlg [role="switch"] { position: relative; }
+  .cal-dlg [role="switch"]::after { content: ""; position: absolute; inset: -11px -6px; }
   .cal-dlg-jour { width: 44px; height: 44px; }
   .cal-dlg-actions .cal-outil { height: 44px; }
 }

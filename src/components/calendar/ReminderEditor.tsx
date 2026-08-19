@@ -39,7 +39,7 @@ export function ReminderEditor({ reminders, onChange }: ReminderEditorProps) {
           <Bell className="inline-block h-3 w-3 mr-1.5 -mt-0.5" aria-hidden="true" />
           {t("calendar.reminders", "Reminders")}
         </span>
-        <button type="button" onClick={add} className="cal-outil" style={{ height: 26 }}>
+        <button type="button" onClick={add} className="cal-outil est-menu">
           <Plus className="h-3 w-3" aria-hidden="true" />
           {t("common.add")}
         </button>
@@ -65,7 +65,6 @@ export function ReminderEditor({ reminders, onChange }: ReminderEditorProps) {
                 type="button"
                 onClick={() => remove(i)}
                 className="cal-outil est-icone"
-                style={{ height: 32 }}
                 aria-label={t("calendar.removeReminder", "Remove reminder")}
               >
                 <X className="h-3 w-3" aria-hidden="true" />

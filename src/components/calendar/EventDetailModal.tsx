@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useId } from "react";
+import { useState, useEffect, useLayoutEffect, useMemo, useRef, useId } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Trash2 } from "lucide-react";
@@ -79,6 +79,53 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
   /* Ce que l utilisateur a voulu, c est une DUREE — pas un instant de fin
      fige. On la garde pour la reporter quand il deplace le debut. */
   const dureeRef = useRef(DUREE_DEFAUT);
+
+  /* LE DIALOGUE SE CENTRE SUR LA ZONE DE CONTENU
+     Radix centre sur la fenetre. Avec 280 px de navigation a gauche, le
+     dialogue parait alors pousse vers elle. On mesure l ecart entre le
+     centre de la zone de travail et celui de la fenetre — et on le suit,
+     car la navigation se replie. */
+  const [decalage, setDecalage] = useState(0);
+  useLayoutEffect(() => {
+    if (!open) return;
+    const zone = document.querySelector("main");
+    if (!zone) return;
+    const mesurer = () => {
+      const r = zone.getBoundingClientRect();
+      setDecalage(Math.round(r.left + r.width / 2 - window.innerWidth / 2));
+    };
+    mesurer();
+    const obs = new ResizeObserver(mesurer);
+    obs.observe(zone);
+    window.addEventListener("resize", mesurer);
+    return () => { obs.disconnect(); window.removeEventListener("resize", mesurer); };
+  }, [open]);
+
+  /* Le degrade du bas ne sert que s il reste quelque chose a lire — et
+     il disparait des qu on est arrive en bas. Un observateur de taille ne
+     suffit pas : la boite garde sa hauteur maximale pendant que son
+     contenu grandit, et ne declenche donc rien. */
+  const corpsRef = useRef<HTMLDivElement>(null);
+  const [entier, setEntier] = useState(true);
+  useLayoutEffect(() => {
+    const el = corpsRef.current;
+    if (!open || !el) return;
+    const mesurer = () => {
+      const reste = el.scrollHeight - el.clientHeight - el.scrollTop;
+      setEntier(reste <= 1);
+    };
+    mesurer();
+    const image = requestAnimationFrame(mesurer);
+    const obs = new ResizeObserver(mesurer);
+    obs.observe(el);
+    for (const enfant of Array.from(el.children)) obs.observe(enfant);
+    el.addEventListener("scroll", mesurer, { passive: true });
+    return () => {
+      cancelAnimationFrame(image);
+      obs.disconnect();
+      el.removeEventListener("scroll", mesurer);
+    };
+  }, [open, allDay, recurrenceRule, reminders.length, soumis]);
 
   useEffect(() => {
     if (event) {
@@ -192,7 +239,10 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="cal cal-dlg sm:max-w-lg max-h-[92vh] overflow-y-auto border-0 bg-transparent p-0 shadow-none [&>button]:hidden">
+      <DialogContent
+        className="cal cal-dlg sm:max-w-lg max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden"
+        style={{ ["--cal-dlg-decalage" as string]: `${decalage}px` } as React.CSSProperties}
+      >
         <div className="cal-dlg-rail">
           <b>CAL.01</b>
           <i />
@@ -205,7 +255,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
           <span>{reference}</span>
         </div>
 
-        <div className="cal-dlg-corps">
+        <div ref={corpsRef} className={`cal-dlg-corps${entier ? " est-entier" : ""}`}>
           {/* Une invite n est pas un libelle : elle s efface des qu on tape. */}
           <div className="cal-dlg-champ">
             <label className="cal-dlg-etiq" htmlFor={id("titre")}>
@@ -339,8 +389,11 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
             <span id={id("lbl-occupe")} className="cal-dlg-etiq">{t("calendar.markBusy", "Mark as busy")}</span>
             <Switch checked={isBusy} onCheckedChange={setIsBusy} aria-labelledby={id("lbl-occupe")} />
           </div>
+        </div>
 
-          <div className="cal-dlg-actions">
+        {/* Hors du corps qui defile : « Creer » ne doit pas se trouver sous
+            le pli d un formulaire qui fait huit cents pixels. */}
+        <div className="cal-dlg-actions">
             <button type="button" onClick={handleSave} className="cal-outil est-primaire est-large">
               {isEdit ? t("common.saveChanges") : t("common.create")}
             </button>
@@ -355,9 +408,8 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
                 aria-label={t("calendar.deleteEvent", "Delete event")}
               >
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
-          </div>
+            </button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
