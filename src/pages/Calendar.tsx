@@ -1,6 +1,7 @@
 import { CalendarPage } from "@/components/calendar";
 import { DSPageShell, DSPageHeader, DSBackground } from "@/components/ds";
 import { useTranslation } from "react-i18next";
+import "@/styles/calendar.css";
 
 export default function Calendar() {
   const { t } = useTranslation();

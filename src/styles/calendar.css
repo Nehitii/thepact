@@ -1,0 +1,69 @@
+/* CAL.01 — adaptation
+ *
+ * Deux mesures de l audit tiennent ce fichier.
+ *
+ * 1. La barre laterale se montrait parce que la FENETRE faisait 1080 px,
+ *    alors que la grille, elle, n en avait que 473. La navigation de
+ *    l application prend 280 px : le point de rupture « lg » regardait
+ *    donc une largeur que le calendrier n a jamais eue. On mesure
+ *    desormais le conteneur, pas la fenetre.
+ *
+ * 2. Cinquante-sept cibles sous 44 px sur telephone. Le seuil ne depend
+ *    pas de la largeur mais du doigt : c est « pointer: coarse » qui le
+ *    decide, pas un point de rupture.
+ */
+
+/* ── Le conteneur qui decide ────────────────────────────────── */
+.cal-corps {
+  container-type: inline-size;
+  container-name: calendrier;
+}
+
+/* Cachee par defaut : elle ne revient que si la grille a de quoi
+   respirer une fois ses 256 px preleves. */
+.cal-flanc {
+  display: none;
+}
+
+@container calendrier (min-width: 980px) {
+  .cal-flanc { display: block; }
+}
+
+/* ── La grille du mois ──────────────────────────────────────── */
+.cal-grille {
+  display: grid;
+  grid-template-columns: 32px repeat(7, minmax(0, 1fr));
+}
+
+.cal-case {
+  height: var(--cal-hauteur-case, 110px);
+}
+
+/* Sous 640 px de conteneur, sept colonnes de 45 px ne portent plus rien.
+   La colonne des numeros de semaine part, et la grille garde un plancher
+   en defilant dans SON cadre — la page, elle, ne bouge pas. */
+@container calendrier (max-width: 640px) {
+  .cal-mois-cadre { overflow-x: auto; }
+  .cal-mois-piste { min-width: 532px; }
+  .cal-semaine { display: none; }
+  .cal-grille { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+}
+
+/* ── Le doigt ───────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  .cal-outil,
+  .cal-vue,
+  .cal-source {
+    min-height: 44px;
+  }
+
+  .cal-outil { min-width: 44px; }
+  .cal-vue { padding-inline: 14px; }
+  .cal-source { padding-inline: 12px; }
+
+  /* Le numero du jour est la porte d entree de la saisie rapide : elle
+     merite la meme surface que le reste. La case s agrandit d autant,
+     pour ne pas prendre la place des evenements. */
+  .cal-jour { min-height: 44px; display: flex; align-items: center; }
+  .cal-case { --cal-hauteur-case: 136px; }
+}

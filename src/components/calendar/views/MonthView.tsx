@@ -5,6 +5,7 @@ import {
   eachDayOfInterval, isSameMonth, isToday, format, parseISO, getISOWeek,
 } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
+import type { Locale } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { CalendarEvent } from "@/hooks/useCalendarEvents";
 import { EventCard } from "../EventCard";
@@ -23,7 +24,6 @@ interface MonthViewProps {
 }
 
 const MAX_VISIBLE = 3;
-const GRID_COLS = "grid-cols-[32px_repeat(7,minmax(0,1fr))]";
 
 function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
   const { t } = useTranslation();
@@ -52,13 +52,14 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
   );
 }
 
-function DayCell({ day, viewDate, events, onEventClick, onQuickAdd, onShowMore }: {
+function DayCell({ day, viewDate, events, onEventClick, onQuickAdd, onShowMore, locale }: {
   day: Date;
   viewDate: Date;
   events: CalendarEvent[];
   onEventClick: (ev: CalendarEvent) => void;
   onQuickAdd: MonthViewProps["onQuickAdd"];
   onShowMore?: (day: Date) => void;
+  locale?: Locale;
 }) {
   const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: day.toISOString() });
@@ -72,16 +73,28 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd, onShowMore }
     <div
       ref={setNodeRef}
       className={cn(
-        "h-[110px] border border-border/30 p-1 transition-colors relative flex flex-col min-w-0 min-h-0 overflow-hidden",
+        "cal-case border border-border/30 p-1 transition-colors relative flex flex-col min-w-0 min-h-0 overflow-hidden",
         !inMonth && "opacity-40",
         isOver && "bg-primary/10",
         today && "bg-primary/5 ring-1 ring-inset ring-primary/40"
       )}
     >
-      <EventQuickAdd date={day} open={quickAddOpen} onClose={() => setQuickAddOpen(false)} onSave={onQuickAdd}>
+      <EventQuickAdd
+        date={day}
+        open={quickAddOpen}
+        onOpen={() => setQuickAddOpen(true)}
+        onClose={() => setQuickAddOpen(false)}
+        onSave={onQuickAdd}
+      >
+        {/* Le seul gestionnaire etait onDoubleClick : un clic simple ne
+            faisait rien, et la touche Entree produit un clic — au clavier,
+            on ne pouvait pas creer d evenement depuis une case. */}
         <button
-          className="w-full text-left shrink-0 min-w-0"
-          onDoubleClick={(e) => { e.stopPropagation(); setQuickAddOpen(true); }}
+          type="button"
+          className="cal-jour w-full text-left shrink-0 min-w-0"
+          aria-label={t("calendar.addOnDay", "New event on {{date}}", {
+            date: format(day, "EEEE d MMMM", { locale }),
+          })}
         >
           <span className={cn(
             "text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full",
@@ -167,10 +180,13 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="rounded-lg overflow-hidden border border-border/40">
+      {/* Sous 640 px de conteneur la grille defile dans SON cadre : la
+          page, elle, ne part jamais en travers. */}
+      <div className="cal-mois-cadre rounded-lg overflow-hidden border border-border/40">
+        <div className="cal-mois-piste">
         {/* Header */}
-        <div className={cn("grid bg-muted/30", GRID_COLS)}>
-          <div className="text-center ds-t-label text-muted-foreground py-1.5 uppercase">W</div>
+        <div className="cal-grille bg-muted/30">
+          <div className="cal-semaine text-center ds-t-label text-muted-foreground py-1.5 uppercase">W</div>
           {dayHeaders.map((h) => (
             <div key={h} className="text-center ds-t-label font-medium text-muted-foreground py-1.5 uppercase tracking-wider min-w-0">
               {h}
@@ -180,8 +196,8 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
 
         {/* Body */}
         {weeks.map((week, wi) => (
-          <div key={wi} className={cn("grid", GRID_COLS)}>
-            <div className="flex items-start justify-center pt-2 ds-t-label text-muted-foreground font-mono border border-border/20 h-[110px] min-w-0">
+          <div key={wi} className="cal-grille">
+            <div className="cal-semaine cal-case flex items-start justify-center pt-2 ds-t-label text-muted-foreground font-mono border border-border/20 min-w-0">
               {getISOWeek(week[0])}
             </div>
             {week.map((day) => {
@@ -195,11 +211,13 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
                   onEventClick={onEventClick}
                   onQuickAdd={onQuickAdd}
                   onShowMore={onShowMore}
+                  locale={locale}
                 />
               );
             })}
           </div>
         ))}
+        </div>
       </div>
     </DndContext>
   );

@@ -1934,7 +1934,8 @@
     "removeReminder": "Remove reminder",
     "oneDay": "1 day",
     "startTimeFull": "Start time",
-    "endTimeFull": "End time"
+    "endTimeFull": "End time",
+    "addOnDay": "New event on {{date}}"
   },
   "friends": {
     "networkActive": "Social Network Active",

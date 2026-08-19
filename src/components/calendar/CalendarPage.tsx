@@ -162,7 +162,9 @@ export function CalendarPage() {
         />
       )}
 
-      <div className={cn("flex gap-4", !isMobile && "flex-row")}>
+      {/* Le conteneur porte la mesure : « lg » regardait la fenetre, qui
+          compte 280 px de navigation que le calendrier n a jamais eus. */}
+      <div className="cal-corps flex gap-4">
         <div className="flex-1 min-w-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
@@ -206,12 +208,11 @@ export function CalendarPage() {
           )}
         </div>
 
-        {/* Sidebar - desktop only */}
-        {!isMobile && (
-          <div className="w-64 shrink-0 hidden lg:block">
-            <CalendarSidebar events={filteredEvents} onDayClick={handleDayClick} />
-          </div>
-        )}
+        {/* Elle ne revient que si la grille a de quoi respirer une fois
+            ses 256 px preleves — voir calendar.css. */}
+        <div className="cal-flanc w-64 shrink-0">
+          <CalendarSidebar events={filteredEvents} onDayClick={handleDayClick} />
+        </div>
       </div>
 
       <EventDetailModal

@@ -68,7 +68,7 @@ export const CalendarToolbar = memo(({
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="h-8 w-8"
+            className="cal-outil h-8 w-8"
             aria-label={t("calendar.prevPeriod", "Previous {{period}}", { period: periode.toLowerCase() })}
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
@@ -83,7 +83,7 @@ export const CalendarToolbar = memo(({
                 /* Pas d aria-label ici : il remplacerait « August 2026 »
                    par un texte qui ne le contient pas, et le nom annonce
                    ne correspondrait plus au libelle visible. */
-                className="text-lg font-orbitron font-bold capitalize min-w-[140px] text-center hover:text-primary transition-colors cursor-pointer"
+                className="cal-outil text-lg font-orbitron font-bold capitalize min-w-[140px] text-center hover:text-primary transition-colors cursor-pointer"
               >
                 {format(viewDate, titleFormat, { locale })}
               </button>
@@ -104,12 +104,12 @@ export const CalendarToolbar = memo(({
             variant="ghost"
             size="icon"
             onClick={() => navigate(1)}
-            className="h-8 w-8"
+            className="cal-outil h-8 w-8"
             aria-label={t("calendar.nextPeriod", "Next {{period}}", { period: periode.toLowerCase() })}
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
-          <Button variant="outline" size="sm" onClick={onToday} className="h-8 text-xs ml-1">
+          <Button variant="outline" size="sm" onClick={onToday} className="cal-outil h-8 text-xs ml-1">
             <CalendarDays className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
             {t("calendar.today", "Today")}
           </Button>
@@ -129,7 +129,7 @@ export const CalendarToolbar = memo(({
               /* La vue courante ne se lisait qu a la couleur du fond. */
               aria-pressed={view === v.key}
               className={cn(
-                "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
+                "cal-vue px-3 py-1.5 text-xs font-medium rounded-md transition-all",
                 view === v.key
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -147,13 +147,13 @@ export const CalendarToolbar = memo(({
               variant="ghost"
               size="icon"
               onClick={onSearchToggle}
-              className="h-8 w-8"
+              className="cal-outil h-8 w-8"
               aria-label={t("calendar.search", "Search events")}
             >
               <Search className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
-          <Button size="sm" onClick={onNewEvent} className="h-8 gap-1">
+          <Button size="sm" onClick={onNewEvent} className="cal-outil h-8 gap-1">
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             {t("calendar.newEvent", "Event")}
           </Button>

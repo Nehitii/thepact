@@ -1934,7 +1934,8 @@
     "removeReminder": "Retirer ce rappel",
     "oneDay": "1 jour",
     "startTimeFull": "Heure de début",
-    "endTimeFull": "Heure de fin"
+    "endTimeFull": "Heure de fin",
+    "addOnDay": "Nouvel événement le {{date}}"
   },
   "friends": {
     "networkActive": "Réseau Social Actif",

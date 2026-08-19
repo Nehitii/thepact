@@ -38,7 +38,7 @@ export const SourceFilterChips = memo(({ active, onToggle }: SourceFilterChipsPr
             /* Une source active ne se distinguait que par l opacite. */
             aria-pressed={isActive}
             className={cn(
-              "flex items-center gap-1 px-2.5 py-1 rounded-full ds-t-label font-medium border transition-all",
+              "cal-source flex items-center gap-1 px-2.5 py-1 rounded-full ds-t-label font-medium border transition-all",
               isActive ? colorClass : "text-muted-foreground border-border/30 bg-transparent opacity-50"
             )}
           >

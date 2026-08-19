@@ -9,12 +9,17 @@ import { aLHeure } from "./temps";
 interface EventQuickAddProps {
   date: Date;
   open: boolean;
+  /* Le declencheur de Radix appelle onOpenChange(true) au clic ET a la
+     touche Entree. Faute de recevoir cette ouverture, la case avait du
+     poser un onDoubleClick a la main — un chemin que le clavier ne peut
+     pas emprunter, puisque Entree produit un clic, jamais un double. */
+  onOpen: () => void;
   onClose: () => void;
   onSave: (data: { title: string; start_time: string; end_time: string; all_day: boolean }) => void;
   children: React.ReactNode;
 }
 
-export function EventQuickAdd({ date, open, onClose, onSave, children }: EventQuickAddProps) {
+export function EventQuickAdd({ date, open, onOpen, onClose, onSave, children }: EventQuickAddProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
 
@@ -34,7 +39,7 @@ export function EventQuickAdd({ date, open, onClose, onSave, children }: EventQu
   };
 
   return (
-    <Popover open={open} onOpenChange={(o) => !o && onClose()}>
+    <Popover open={open} onOpenChange={(o) => (o ? onOpen() : onClose())}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-64 p-3" align="start">
         <p className="text-xs text-muted-foreground mb-2">{format(date, "EEEE d MMM")}</p>
