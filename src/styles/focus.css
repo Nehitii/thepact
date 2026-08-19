@@ -157,19 +157,41 @@
 }
 .sc-couche.est-posee { opacity: 1; transform: scale(1); }
 
-/* L image de l objectif, au fond du sceau. */
+/* L image de l objectif. Elle etait tombee a 20 % derriere un masque
+   radial — autant dire absente. Elle occupe maintenant le disque interne
+   du sceau, decoupee en hexagone comme le reste du vocabulaire, traitee
+   en bichromie pour ne pas concurrencer les chiffres. */
 .sc-vignette {
   position: absolute;
-  width: 54%;
-  height: 54%;
-  border-radius: 50%;
+  width: 66%;
+  height: 66%;
   overflow: hidden;
-  opacity: 0.2;
-  filter: saturate(0.55) contrast(1.1);
+  opacity: 0.78;
   pointer-events: none;
-  mask-image: radial-gradient(circle, #000 42%, transparent 76%);
+  clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
 }
-.sc-vignette img { width: 100%; height: 100%; object-fit: cover; }
+.sc-vignette img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(0.55) contrast(1.2) brightness(0.92);
+}
+/* Bichromie : cyan dans les ombres, jaune dans les hautes lumieres. */
+.sc-vignette::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(150deg, hsl(var(--primary) / 0.45), transparent 55%, rgba(252, 238, 10, 0.2));
+  mix-blend-mode: color;
+}
+/* Trame de balayage : la texture d un ecran, pas d une photographie. */
+.sc-vignette::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.34) 0 1px, transparent 1px 3px);
+}
 
 .sc-noyau {
   position: relative;
@@ -181,15 +203,31 @@
   gap: 8px;
 }
 
+/* Un creux sombre derriere le texte : sans lui, l image de l objectif
+   avale les chiffres. */
+.sc-noyau::before {
+  content: "";
+  position: absolute;
+  inset: -34px -46px;
+  z-index: -1;
+  background: radial-gradient(ellipse 66% 72% at 50% 50%, rgba(2, 4, 8, 0.92), rgba(2, 4, 8, 0.5) 58%, transparent 78%);
+}
+
+/* Aberration chromatique. Deux franges, une magenta et une cyan, decalees
+   d un pixel et demi de part et d autre : c est la signature de l ecran
+   mal converge, et elle ne coute qu une ombre portee. */
 .sc-temps {
   font-family: 'Orbitron', 'Arial Black', sans-serif;
   font-weight: 900;
   font-size: clamp(38px, 11vw, 56px);
   line-height: 1;
-  color: hsl(var(--foreground));
+  color: #fff;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
-  text-shadow: 0 0 22px var(--sc-doux);
+  text-shadow:
+    1.5px 0 0 rgba(255, 0, 96, 0.42),
+    -1.5px 0 0 rgba(0, 236, 255, 0.4),
+    0 0 26px var(--sc-doux);
 }
 
 .sc-sous {
@@ -345,3 +383,320 @@
 @media (max-width: 640px) {
   .sc-sceau::before, .sc-sceau::after { display: none; }
 }
+
+
+/* ── Le bandeau de document ──────────────────────────────────────
+ *
+ * L ancien en-tete etait celui de toutes les pages : un grand titre
+ * FOCUS_CORE et une etiquette systeme, sans rapport avec le document que
+ * la page est devenue. Ici l en-tete est celui d un registre : une
+ * marque, un intitule, une reference et une date. Le bouton d immersion
+ * y trouve enfin une place — il flottait en haut a droite sans rien a
+ * quoi se rattacher.
+ * ────────────────────────────────────────────────────────────── */
+
+.sc-bandeau {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 14px;
+  margin-bottom: 6px;
+  background: linear-gradient(90deg, rgba(252, 238, 10, 0.07), rgba(4, 6, 10, 0.75) 42%);
+  border: 1px solid hsl(var(--primary) / 0.22);
+  border-left: 3px solid var(--cp-jaune, #fcee0a);
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+.sc-bandeau-marque { color: var(--cp-jaune, #fcee0a); flex-shrink: 0; }
+.sc-bandeau-titre {
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  font-weight: 400;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground));
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sc-bandeau-fil {
+  flex: 1;
+  height: 1px;
+  min-width: 12px;
+  background: repeating-linear-gradient(90deg, hsl(var(--primary) / 0.4) 0 4px, transparent 4px 8px);
+}
+.sc-bandeau-ref { font-variant-numeric: tabular-nums; flex-shrink: 0; color: hsl(var(--primary) / 0.8); }
+
+.sc-immersion {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  color: hsl(var(--primary) / 0.75);
+  background: hsl(var(--primary) / 0.08);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  cursor: pointer;
+  transition: color 180ms, border-color 180ms, background 180ms;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+.sc-immersion:hover { color: var(--cp-jaune, #fcee0a); border-color: var(--cp-jaune, #fcee0a); background: rgba(252, 238, 10, 0.1); }
+.sc-immersion:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 2px; }
+.sc-immersion span { font-size: max(11px, 0.6875rem); letter-spacing: 0.16em; }
+@media (max-width: 560px) {
+  .sc-bandeau-titre { display: none; }
+  .sc-immersion span { display: none; }
+}
+
+/* ── Couches cyberpunk du sceau ──────────────────────────────── */
+
+/* Balayage : une ligne claire descend lentement sur le sceau. Huit
+   secondes, pas deux : ce qui doit rester a l ecran vingt-cinq minutes
+   ne peut pas battre vite. */
+.sc-balayage {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+.sc-balayage::after {
+  content: "";
+  position: absolute;
+  left: -10%;
+  right: -10%;
+  height: 16%;
+  background: linear-gradient(180deg, transparent, hsl(var(--primary) / 0.16), transparent);
+  top: -20%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sc-balayage::after { animation: sc-balaye 8s linear infinite; }
+  .sc-dents { animation: sc-rot 90s linear infinite; transform-box: view-box; transform-origin: 170px 170px; }
+  .sc-anneau-ext { animation: sc-rot-inv 140s linear infinite; transform-box: view-box; transform-origin: 170px 170px; }
+}
+@keyframes sc-balaye { from { top: -20%; } to { top: 104%; } }
+@keyframes sc-rot { to { transform: rotate(360deg); } }
+@keyframes sc-rot-inv { to { transform: rotate(-360deg); } }
+
+.sc-anneau-ext line { stroke: hsl(var(--primary) / 0.3); stroke-width: 2; }
+
+/* Grain : la texture d une dalle, pas d un aplat. Sur son propre
+   element — ::after porte deja l equerre en bas a droite. */
+.sc-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.5;
+  border-radius: 50%;
+  background-image: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 2px);
+  mask-image: radial-gradient(circle, #000 62%, transparent 88%);
+}
+
+/* ── Le pepin : l enonce se derange au changement de phase ────── */
+
+.sc-enonce { position: relative; }
+@media (prefers-reduced-motion: no-preference) {
+  .sc-enonce.est-derangee { animation: sc-pepin 420ms steps(2, end) 3; }
+}
+@keyframes sc-pepin {
+  0% { transform: translateX(0); text-shadow: none; clip-path: inset(0 0 0 0); }
+  25% { transform: translateX(-3px); text-shadow: 3px 0 rgba(255, 0, 96, 0.75), -3px 0 rgba(0, 236, 255, 0.7); clip-path: inset(18% 0 46% 0); }
+  50% { transform: translateX(4px); text-shadow: -4px 0 rgba(255, 0, 96, 0.6), 4px 0 rgba(0, 236, 255, 0.6); clip-path: inset(58% 0 12% 0); }
+  75% { transform: translateX(-2px); text-shadow: 2px 0 rgba(0, 236, 255, 0.5); clip-path: inset(0 0 0 0); }
+  100% { transform: translateX(0); text-shadow: none; clip-path: inset(0 0 0 0); }
+}
+
+/* ── La bande de telemetrie ──────────────────────────────────── */
+
+.sc-tele {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px;
+  width: min(460px, 96%);
+  border: 1px solid hsl(var(--primary) / 0.18);
+  background: hsl(var(--primary) / 0.18);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.sc-tele div {
+  flex: 1 1 92px;
+  padding: 7px 8px 8px;
+  background: rgba(4, 6, 10, 0.9);
+  text-align: center;
+}
+.sc-tele b {
+  display: block;
+  font-family: 'Orbitron', 'Arial Black', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  color: hsl(var(--foreground));
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.sc-tele span {
+  display: block;
+  margin-top: 3px;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+}
+.sc-tele div.est-vive b { color: var(--cp-jaune, #fcee0a); }
+
+/* ── Immersion ───────────────────────────────────────────────── *
+ *
+ * Le plein ecran ne faisait qu agrandir la fenetre : barre laterale,
+ * declencheur de recherche et bouton du coach restaient la. Le mode
+ * efface le chrome de l application — c est ce qui lui donne une raison
+ * d exister.
+ * ────────────────────────────────────────────────────────────── */
+
+html[data-immersion] [data-chrome] { display: none !important; }
+html[data-immersion] body { background: #030407; }
+/* Le document respire : c est le seul objet a l ecran. */
+html[data-immersion] .sc { gap: clamp(20px, 4vw, 38px); }
+html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74vh); }
+
+
+/* ── Le lien audio ───────────────────────────────────────────────
+ *
+ * Le lecteur precedent n acceptait que Spotify, et surtout replier le
+ * lecteur DEMONTAIT l iframe : la musique s arretait. C est ce qui
+ * donnait l impression qu il ne fonctionnait pas. L iframe reste montee
+ * quoi qu il arrive — seule sa hauteur change.
+ * ────────────────────────────────────────────────────────────── */
+
+.md {
+  width: 100%;
+  background: rgba(4, 6, 10, 0.86);
+  border: 1px solid hsl(var(--primary) / 0.24);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+}
+.md[data-source="spotify"] { border-left: 3px solid #1db954; }
+.md[data-source="youtube"] { border-left: 3px solid #ff3d3d; }
+
+.md-tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-bottom: 1px solid hsl(var(--primary) / 0.16);
+  color: var(--cp-texte-doux, #7089a0);
+}
+.md-titre {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground));
+}
+.md-fil {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, hsl(var(--primary) / 0.3) 0 3px, transparent 3px 7px);
+}
+.md-tete button {
+  min-width: 26px;
+  min-height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--cp-texte-doux, #7089a0);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: color 150ms;
+}
+.md-tete button:hover { color: hsl(var(--foreground)); }
+.md-tete button.md-retirer:hover { color: hsl(var(--destructive)); }
+.md-tete button:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 1px; }
+
+.md-cadre {
+  overflow: hidden;
+  transition: height 260ms cubic-bezier(0.3, 0.8, 0.3, 1);
+}
+.md-cadre iframe { display: block; width: 100%; height: 100%; border: 0; }
+
+.md-replie {
+  margin: 0;
+  padding: 6px 10px 8px;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+}
+
+/* L appel : ce qu on voit quand aucun lien n est pose. */
+.md-appel {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: hsl(var(--primary) / 0.85);
+  background: hsl(var(--primary) / 0.07);
+  border: 1px dashed hsl(var(--primary) / 0.3);
+  cursor: pointer;
+  transition: color 180ms, border-color 180ms, background 180ms;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+.md-appel:hover {
+  color: var(--cp-jaune, #fcee0a);
+  border-color: var(--cp-jaune, #fcee0a);
+  background: rgba(252, 238, 10, 0.07);
+}
+.md-appel:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 2px; }
+
+.md-edition { padding-bottom: 10px; }
+.md-champ { display: flex; gap: 6px; padding: 10px 10px 0; }
+.md-champ input {
+  flex: 1;
+  min-width: 0;
+  min-height: 38px;
+  padding: 8px 10px;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(12px, 0.75rem);
+  color: hsl(var(--foreground));
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid hsl(var(--primary) / 0.28);
+}
+.md-champ input:focus { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: -1px; }
+.md-champ button {
+  min-width: 44px;
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+  color: var(--cp-texte-doux, #7089a0);
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+  transition: color 150ms, border-color 150ms;
+}
+.md-champ button:hover { color: hsl(var(--foreground)); border-color: hsl(var(--primary) / 0.5); }
+.md-champ button.md-ok { color: #00ff88; border-color: rgba(0, 255, 136, 0.4); }
+.md-champ button:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 1px; }
+
+.md-erreur, .md-aide {
+  margin: 8px 10px 0;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.1em;
+  line-height: 1.5;
+}
+.md-erreur { color: hsl(var(--destructive)); }
+.md-aide { color: var(--cp-texte-doux, #7089a0); }

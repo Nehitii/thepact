@@ -1706,14 +1706,6 @@
       "empty": "Aucune session pour l'instant",
       "emptyHint": "Lance ta première session de concentration"
     },
-    "spotify": {
-      "add": "Ajouter Spotify",
-      "paste": "Coller l'URL Spotify...",
-      "invalid": "URL Spotify invalide",
-      "pasteHint": "Colle l'URL d'une playlist, album ou track Spotify",
-      "edit": "Modifier le lien Spotify",
-      "remove": "Retirer le lien Spotify"
-    },
     "controls": {
       "resume": "[ > EXE.REPRISE ]",
       "halt": "[ || SYS.HALT ]",
@@ -1798,6 +1790,34 @@
       "sealedOf": "{{count}} sceau apposé sur 4",
       "sealedOf_other": "{{count}} sceaux apposés sur 4",
       "ready": "Aucun sceau apposé"
+    },
+    "doc": {
+      "mark": "Pacte",
+      "title": "Registre d'exécution"
+    },
+    "immersion": {
+      "enter": "Passer en mode immersion",
+      "exit": "Quitter le mode immersion",
+      "enterShort": "Immersion",
+      "exitShort": "Sortir"
+    },
+    "tele": {
+      "elapsed": "écoulé",
+      "left": "restant",
+      "seals": "sceaux",
+      "engraved": "gravé"
+    },
+    "media": {
+      "add": "Lier une musique",
+      "link": "Lien audio",
+      "paste": "Coller une adresse Spotify ou YouTube…",
+      "hint": "Playlist, album ou piste Spotify — vidéo ou playlist YouTube.",
+      "invalid": "Adresse non reconnue. Spotify ou YouTube uniquement.",
+      "edit": "Changer le lien",
+      "remove": "Retirer le lien",
+      "collapse": "Replier le lecteur",
+      "expand": "Déplier le lecteur",
+      "stillPlaying": "Lecteur replié — la lecture continue"
     }
   },
   "calendar": {

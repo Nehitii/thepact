@@ -2,7 +2,7 @@ export { FocusSeal } from "./FocusSeal";
 export { FocusControls } from "./FocusControls";
 export { FocusStats } from "./FocusStats";
 export { FocusHistory } from "./FocusHistory";
-export { SpotifyPlayer } from "./SpotifyPlayer";
+export { FocusMedia } from "./FocusMedia";
 export { FocusToolbar } from "./FocusToolbar";
 export { FocusConfigPanel } from "./FocusConfigPanel";
 export { FocusAmbientEffects } from "./FocusAmbientEffects";

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Maximize, Minimize } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
-import { DSPageShell, DSPageHeader } from "@/components/ds";
+import { DSPageShell } from "@/components/ds";
 import "@/styles/focus.css";
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import {
   FocusSeal,
   FocusStats,
   FocusHistory,
-  SpotifyPlayer,
+  FocusMedia,
   FocusToolbar,
   FocusConfigPanel,
   FocusAmbientEffects,
@@ -125,10 +125,27 @@ export default function Focus() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
-    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onChange = () => {
+      const actif = !!document.fullscreenElement;
+      setIsFullscreen(actif);
+      if (!actif) setImmersion(false);
+    };
     document.addEventListener("fullscreenchange", onChange);
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
+
+  /* Mode immersion : le chrome de l application disparait.
+     L attribut est pose sur la racine du document plutot que passe en
+     propriete, parce que ce qu il faut cacher — barre laterale, palette,
+     coach — vit hors de cette page. Il est retire au demontage : quitter
+     Focus en immersion laisserait sinon l application sans navigation. */
+  const [immersion, setImmersion] = useState(false);
+  useEffect(() => {
+    const racine = document.documentElement;
+    if (immersion) racine.setAttribute("data-immersion", "");
+    else racine.removeAttribute("data-immersion");
+    return () => racine.removeAttribute("data-immersion");
+  }, [immersion]);
 
   const enterFullscreen = useCallback(async () => {
     try {
@@ -142,10 +159,13 @@ export default function Focus() {
     } catch { /* ignored */ }
   }, []);
 
+  /* L immersion ne depend pas du plein ecran : un navigateur peut le
+     refuser, et le bouton doit alors faire quelque chose quand meme. On
+     bascule l immersion, et on demande le plein ecran par-dessus. */
   const toggleFullscreen = useCallback(() => {
-    if (isFullscreen) exitFullscreen();
-    else enterFullscreen();
-  }, [isFullscreen, enterFullscreen, exitFullscreen]);
+    if (immersion) { setImmersion(false); exitFullscreen(); }
+    else { setImmersion(true); enterFullscreen(); }
+  }, [immersion, enterFullscreen, exitFullscreen]);
 
   /* ── Notifications ──
    *
@@ -176,23 +196,42 @@ export default function Focus() {
   // ── Phase-change flash + notification ──
   const [showFlash, setShowFlash] = useState(false);
   const prevPhaseRef = useRef(timer.phase);
+  /* Leve avant tout changement de phase provoque a la main. */
+  const changementVoulu = useRef(false);
+  const derniereNotif = useRef(0);
 
   useEffect(() => {
     if (timer.phase !== prevPhaseRef.current && timer.phase !== "idle") {
+      const voulu = changementVoulu.current;
+      changementVoulu.current = false;
+      prevPhaseRef.current = timer.phase;
+
+      if (voulu) return;
+
       if (!mouvementReduit) setShowFlash(true);
       const timeout = setTimeout(() => setShowFlash(false), 500);
 
-      if ("Notification" in window && Notification.permission === "granted") {
+      // Deuxieme filet : deux notifications a moins de dix secondes
+      // d intervalle n apportent rien, elles s empilent.
+      const maintenant = Date.now();
+      if (
+        "Notification" in window &&
+        Notification.permission === "granted" &&
+        maintenant - derniereNotif.current > 10_000
+      ) {
+        derniereNotif.current = maintenant;
         new Notification("THE PACT // Focus System", {
           body:
             timer.phase === "break"
               ? t("focus.notification.breakStart")
               : t("focus.notification.workResume"),
           icon: "/favicon.ico",
+          // Une seule notification a l ecran : la suivante remplace la
+          // precedente au lieu de s ajouter a la pile.
+          tag: "vowpact-focus",
         });
       }
 
-      prevPhaseRef.current = timer.phase;
       return () => clearTimeout(timeout);
     }
     prevPhaseRef.current = timer.phase;
@@ -202,6 +241,7 @@ export default function Focus() {
   const handleStart = useCallback(() => {
     play("ui");
     void demanderNotifications();
+    changementVoulu.current = true;
     demarrerMinuteur();
   }, [play, demarrerMinuteur, demanderNotifications]);
 
@@ -231,6 +271,7 @@ export default function Focus() {
 
   const handleSkip = useCallback(() => {
     play("ui");
+    changementVoulu.current = true;
     passerPhase();
     toast(t("focus.phaseSkipped"), { duration: 1500 });
   }, [play, passerPhase, t]);
@@ -291,6 +332,16 @@ export default function Focus() {
       ? t("focus.announce.break", { count: seuil })
       : t("focus.announce.work", { count: seuil });
   })();
+
+  /* Reference du registre : la date du jour et le rang de la clause.
+     Pas un numero decoratif — il se lit et il est vrai. */
+  const reference = useMemo(() => {
+    const d = new Date();
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const jj = String(d.getDate()).padStart(2, "0");
+    const rang = String((timer.sessionsCompleted % 4) + 1).padStart(2, "0");
+    return `VW·${mm}${jj}·${rang}`;
+  }, [timer.sessionsCompleted]);
 
   const isBreak = timer.phase === "break";
   const frameColor = timer.isRunning ? (isBreak ? "border-accent/40" : "border-primary/40") : "border-border/30";
@@ -380,27 +431,22 @@ export default function Focus() {
       </p>
 
       <div className="flex-1 flex flex-col relative">
-        {/* Le bouton vivait dans la couche des equerres, en z-0, tandis que
-            l en-tete est en z-10 : des que le titre s elargissait par
-            rapport a la fenetre, il passait par-dessus et le bouton
-            devenait inatteignable au doigt. Mesure a 320 et 375 px :
-            elementFromPoint renvoyait le titre, pas le bouton. Il vit
-            maintenant dans le meme contexte d empilement que l en-tete. */}
-        <button
-          onClick={toggleFullscreen}
-          aria-label={isFullscreen ? t("focus.fullscreen.exit") : t("focus.fullscreen.enter")}
-          className="absolute top-0 right-0 z-20 min-w-[44px] min-h-[44px] flex items-center justify-center bg-black/40 border border-primary/30 hover:border-primary/60 hover:bg-primary/10 transition-all duration-200 text-primary/60 hover:text-primary focus-visible:ring-2 focus-visible:ring-primary"
-          style={{ clipPath: "polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px)" }}
-        >
-          {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-        </button>
-
-        <DSPageHeader
-          variant="hud"
-          title={t("focus.title")}
-          titleAccent={t("focus.titleAccent")}
-          systemLabel={t("focus.systemLabel")}
-        />
+        <header className="sc-bandeau">
+          <span className="sc-bandeau-marque" aria-hidden="true">◈ {t("focus.doc.mark")}</span>
+          <h1 className="sc-bandeau-titre">{t("focus.doc.title")}</h1>
+          <span className="sc-bandeau-fil" aria-hidden="true" />
+          <span className="sc-bandeau-ref">{reference}</span>
+          <button
+            type="button"
+            className="sc-immersion"
+            onClick={toggleFullscreen}
+            aria-pressed={immersion}
+            aria-label={immersion ? t("focus.immersion.exit") : t("focus.immersion.enter")}
+          >
+            {immersion ? <Minimize className="h-3.5 w-3.5" /> : <Maximize className="h-3.5 w-3.5" />}
+            <span>{immersion ? t("focus.immersion.exitShort") : t("focus.immersion.enterShort")}</span>
+          </button>
+        </header>
 
         <div className="flex flex-col items-center gap-4 sm:gap-6 mt-4 sm:mt-8">
           <FocusSeal
@@ -410,6 +456,7 @@ export default function Focus() {
             isPaused={timer.isPaused}
             sessionsCompleted={timer.sessionsCompleted}
             workMinutes={workMin}
+            totalSeconds={timer.totalSeconds}
             targetName={linkedName}
             goalImageUrl={linkedImageUrl}
             onStart={handleStart}
@@ -458,8 +505,14 @@ export default function Focus() {
             </motion.div>
           )}
 
+          {timer.isRunning && (
+            <div className="w-full max-w-lg mx-auto mt-2 relative z-20">
+              <FocusMedia userId={user?.id} compact />
+            </div>
+          )}
+
           <AnimatePresence mode="wait">
-            {activePanel && (!timer.isRunning || activePanel === "spotify") && (
+            {activePanel && !timer.isRunning && (
               <motion.div
                 key={activePanel}
                 initial={{ opacity: 0, height: 0, scale: 0.95 }}
@@ -478,7 +531,7 @@ export default function Focus() {
                     <div className="w-1 h-3 bg-primary" />
                     <span className="ds-t-label font-mono text-primary uppercase tracking-[0.2em]">
                       {" >> "}{" "}
-                      {activePanel === "spotify" ? "AUDIO_LINK_ESTABLISHED" : `${activePanel.toUpperCase()}_SYS`}
+                      {activePanel === "media" ? "AUDIO_LINK_ESTABLISHED" : `${activePanel.toUpperCase()}_SYS`}
                     </span>
                   </div>
 
@@ -493,7 +546,7 @@ export default function Focus() {
                         onLongBreakChange={setLongBreakMin}
                       />
                     )}
-                    {activePanel === "spotify" && <SpotifyPlayer className="w-full compact-player" compact={false} userId={user?.id} />}
+                    {activePanel === "media" && <FocusMedia userId={user?.id} compact={timer.isRunning} />}
                     {activePanel === "stats" && !timer.isRunning && (
                       <FocusStats
                         todayCount={todayStats.count}

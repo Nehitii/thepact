@@ -43,7 +43,7 @@ export function MobileBottomNav() {
   });
 
   return (
-    <nav
+    <nav data-chrome="mobile-nav"
       role="navigation"
       aria-label="Primary mobile navigation"
       className={cn(

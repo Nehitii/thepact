@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Goal } from "@/hooks/useGoals";
 import type { TodoTask } from "@/hooks/useTodoList";
 
-export type FocusPanel = "config" | "spotify" | "stats" | "history" | null;
+export type FocusPanel = "config" | "media" | "stats" | "history" | null;
 
 interface FocusToolbarProps {
   goals: Goal[];
@@ -116,7 +116,7 @@ export function FocusToolbar({
 
       <div className="flex items-center justify-center gap-2">
         <ToolbarIconButton icon={Settings} label={t("focus.toolbar.config")} isActive={activePanel === "config"} onClick={() => togglePanel("config")} />
-        <ToolbarIconButton icon={Music} label={t("focus.toolbar.spotify")} isActive={activePanel === "spotify"} onClick={() => togglePanel("spotify")} />
+        <ToolbarIconButton icon={Music} label={t("focus.toolbar.audio")} isActive={activePanel === "media"} onClick={() => togglePanel("media")} />
         <ToolbarIconButton icon={BarChart3} label={t("focus.toolbar.stats")} isActive={activePanel === "stats"} onClick={() => togglePanel("stats")} />
         <ToolbarIconButton icon={History} label={t("focus.toolbar.history")} isActive={activePanel === "history"} onClick={() => togglePanel("history")} />
       </div>

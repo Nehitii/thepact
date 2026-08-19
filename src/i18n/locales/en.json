@@ -1706,14 +1706,6 @@
       "empty": "No sessions yet",
       "emptyHint": "Start your first focus session"
     },
-    "spotify": {
-      "add": "Add Spotify",
-      "paste": "Paste Spotify URL...",
-      "invalid": "Invalid Spotify URL",
-      "pasteHint": "Paste a Spotify playlist, album, or track URL",
-      "edit": "Edit Spotify link",
-      "remove": "Remove Spotify link"
-    },
     "controls": {
       "resume": "[ > EXE.RESUME ]",
       "halt": "[ || SYS.HALT ]",
@@ -1798,6 +1790,34 @@
       "sealedOf": "{{count}} seal affixed of 4",
       "sealedOf_other": "{{count}} seals affixed of 4",
       "ready": "No seal affixed"
+    },
+    "doc": {
+      "mark": "Pact",
+      "title": "Execution register"
+    },
+    "immersion": {
+      "enter": "Enter immersion mode",
+      "exit": "Leave immersion mode",
+      "enterShort": "Immersion",
+      "exitShort": "Exit"
+    },
+    "tele": {
+      "elapsed": "elapsed",
+      "left": "left",
+      "seals": "seals",
+      "engraved": "engraved"
+    },
+    "media": {
+      "add": "Link some music",
+      "link": "Audio link",
+      "paste": "Paste a Spotify or YouTube address…",
+      "hint": "Spotify playlist, album or track — YouTube video or playlist.",
+      "invalid": "Address not recognised. Spotify or YouTube only.",
+      "edit": "Change the link",
+      "remove": "Remove the link",
+      "collapse": "Collapse the player",
+      "expand": "Expand the player",
+      "stillPlaying": "Player collapsed — playback continues"
     }
   },
   "calendar": {

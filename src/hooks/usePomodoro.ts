@@ -393,6 +393,9 @@ export function usePomodoroTimer(
   return {
     phase: etat.phase,
     secondsLeft: etat.secondsLeft,
+    // Duree totale de la phase en cours : la telemetrie affiche le temps
+    // ECOULE, qui ne se deduit pas du seul temps restant.
+    totalSeconds: etat.totalPhase,
     progress,
     sessionsCompleted: etat.cycles,
     isPaused: etat.enPause,

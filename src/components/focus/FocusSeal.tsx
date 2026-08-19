@@ -28,6 +28,7 @@ interface FocusSealProps {
   isPaused: boolean;
   sessionsCompleted: number;
   workMinutes: number;
+  totalSeconds: number;
   targetName?: string | null;
   goalImageUrl?: string | null;
   onStart?: () => void;
@@ -71,6 +72,7 @@ export function FocusSeal({
   isPaused,
   sessionsCompleted,
   workMinutes,
+  totalSeconds,
   targetName,
   goalImageUrl,
   onStart,
@@ -98,9 +100,22 @@ export function FocusSeal({
     cyclesPrecedents.current = sessionsCompleted;
   }, [sessionsCompleted, mouvementReduit]);
 
+  const [derangee, setDerangee] = useState(false);
+  const phasePrecedente = useRef(phase);
+  useEffect(() => {
+    if (phase !== phasePrecedente.current && phase !== "idle" && !mouvementReduit) {
+      setDerangee(true);
+      const fin = setTimeout(() => setDerangee(false), 1300);
+      phasePrecedente.current = phase;
+      return () => clearTimeout(fin);
+    }
+    phasePrecedente.current = phase;
+  }, [phase, mouvementReduit]);
+
   // Les couches ne s enclenchent que pendant la gravure : une pause
   // n execute aucune clause.
   const quarts = enTravail ? Math.floor(progress * 4) : 0;
+  const ecoule = Math.max(0, totalSeconds - secondsLeft);
 
   const etat = auRepos
     ? t("focus.clause.toSeal")
@@ -119,15 +134,17 @@ export function FocusSeal({
   return (
     <div className="sc" data-phase={phase}>
       <div className="sc-etat">{etat}</div>
-      <p className="sc-enonce">{enonce}</p>
+      <p className={`sc-enonce${derangee ? " est-derangee" : ""}`}>{enonce}</p>
 
       <div
         className={`sc-sceau${auRepos ? " sc-sceau--vierge" : ""}${frappe ? " est-frappee" : ""}`}
         style={{ ["--p" as string]: auRepos ? 0 : progress, ["--circ" as string]: CIRC }}
       >
         <span className={`sc-frappe${frappe ? " est-lancee" : ""}`} aria-hidden="true" />
+        <span className="sc-balayage" aria-hidden="true" />
+        <span className="sc-grain" aria-hidden="true" />
 
-        {goalImageUrl && !auRepos && (
+        {goalImageUrl && (
           <div className="sc-vignette" aria-hidden="true">
             <img src={goalImageUrl} alt="" loading="lazy" decoding="async" />
           </div>
@@ -152,6 +169,20 @@ export function FocusSeal({
             {denture.map((d, i) => (
               <line key={i} x1={d.x1} y1={d.y1} x2={d.x2} y2={d.y2} />
             ))}
+          </g>
+          <g className="sc-anneau-ext" aria-hidden="true">
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => {
+              const rad = (a * Math.PI) / 180;
+              return (
+                <line
+                  key={a}
+                  x1={C + Math.cos(rad) * 168}
+                  y1={C + Math.sin(rad) * 168}
+                  x2={C + Math.cos(rad) * 152}
+                  y2={C + Math.sin(rad) * 152}
+                />
+              );
+            })}
           </g>
           <circle className="sc-cercle" cx={C} cy={C} r={162} />
           <circle className="sc-cercle sc-cercle--net" cx={C} cy={C} r={152} />
@@ -227,6 +258,27 @@ export function FocusSeal({
           </div>
         )}
       </div>
+
+      {!auRepos && (
+        <div className="sc-tele">
+          <div>
+            <b>{formatTime(ecoule)}</b>
+            <span>{t("focus.tele.elapsed")}</span>
+          </div>
+          <div>
+            <b>{formatTime(secondsLeft)}</b>
+            <span>{t("focus.tele.left")}</span>
+          </div>
+          <div className={quarts >= 4 ? "est-vive" : undefined}>
+            <b>{cachetsPoses}/4</b>
+            <span>{t("focus.tele.seals")}</span>
+          </div>
+          <div>
+            <b>{Math.round(progress * 100)}%</b>
+            <span>{t("focus.tele.engraved")}</span>
+          </div>
+        </div>
+      )}
 
       <div className="sc-signature">
         <i aria-hidden="true" />

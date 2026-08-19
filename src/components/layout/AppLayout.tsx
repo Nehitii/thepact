@@ -109,6 +109,7 @@ export function AppLayout() {
         type="button"
         onClick={() => setCoachOpen(true)}
         aria-label="Ouvrir le Coach IA (Cmd+J)"
+        data-chrome="coach"
         className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[80] h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/30 hover:scale-105 transition-transform flex items-center justify-center"
       >
         <Bot className="h-5 w-5" />

@@ -332,6 +332,7 @@ export const AppSidebar = memo(function AppSidebar() {
         <button
           onClick={() => setMobileOpen(true)}
           aria-label="Open navigation"
+          data-chrome="sidebar-mobile"
           className="fixed top-14 left-4 z-50 p-2.5 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
           style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
         >
@@ -342,6 +343,7 @@ export const AppSidebar = memo(function AppSidebar() {
       <aside
         role="navigation"
         aria-label="Main navigation"
+        data-chrome="sidebar"
         style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
         className={cn(
           "flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
