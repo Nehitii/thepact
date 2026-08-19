@@ -124,6 +124,23 @@ export function GridViewGoalCard({
     "--halo-intensity": intensity,
   } as React.CSSProperties;
 
+  /* ÉCLAT DE VERRE — silhouette brisée, socle d'affiche
+   *
+   * La carte etait une carte a collectionner : coins arrondis a 22px,
+   * effet foil, panneau de verre flou pose sur l'image. Quatre couches
+   * decoratives pour porter cinq informations.
+   *
+   * Ici la carte est un fragment. Le bas est coupe en pointe
+   * asymetrique — aucun cote n'est parallele a un autre — et le palier
+   * descend en bande lumineuse sur le flanc gauche. Une bande inclinee
+   * traverse l'image et porte le nom du palier.
+   *
+   * Le socle vient de la proposition "affiche" : un aplat plein, teinte
+   * par le palier, qui porte le nom en grand et une lettre geante en
+   * filigrane. C'est lui qui donne a chaque carte une identite lisible
+   * de loin en grille, la ou des vignettes sombres se ressemblent
+   * toutes.
+   */
   return (
     <article
       style={cssVars}
@@ -131,183 +148,71 @@ export function GridViewGoalCard({
       role="button"
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      data-halo={intensity}
+      aria-label={goal.name}
       className={cn(
-        "group relative w-full mx-auto cursor-pointer select-none rounded-[22px]",
-        "transition-transform duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]",
-        "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
-        "[perspective:1000px]",
-        "rarity-halo",
-        isCompleted && "grayscale-[0.4] hover:grayscale-0",
-        goal.isShared && "ring-1 ring-cyan-500/30",
+        "verre",
+        goal.is_focus && "verre--focus",
+        isCompleted && "verre--honore",
+        goal.isShared && "verre--partage",
       )}
     >
-      {/* Card Inner */}
-      <div
-        className={cn(
-          "relative w-full rounded-[22px] overflow-hidden tcg-frame",
-          "bg-[var(--goal-card-bg)] border border-[var(--goal-card-border)]",
-          "shadow-sm transition-all duration-400 [transition-timing-function:cubic-bezier(0.25,0.8,0.25,1)]",
-          "group-hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.6),0_0_0_1px_rgba(var(--accent-rgb),0.3)]",
-          "group-hover:border-[rgba(var(--accent-rgb),0.3)]",
-        )}
-        style={{ aspectRatio: "4/5" }}
-      >
-        {/* L'Overlay DOIT être ici, à l'intérieur du container overflow-hidden */}
-        {goal.is_locked && <GoalLockOverlay />}
+      {goal.is_locked && <GoalLockOverlay />}
 
-        {/* Image Layer */}
-        <div className="absolute inset-0 z-0">
-          {goal.image_url ? (
-            <img
-              src={goal.image_url}
-              alt={goal.name}
-              loading="lazy"
-              className="w-full h-full object-cover opacity-95 transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-100"
-            />
-          ) : (
-            <div className="w-full h-full bg-[radial-gradient(circle_at_center,#1f2937,#111827)] flex items-center justify-center text-[#374151]">
-              <ImageOff size={48} strokeWidth={1} opacity={0.3} />
-            </div>
-          )}
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
-        </div>
-
-        {/* Shine Effect (all rarities) */}
-        <div className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-[shimmer_1s_forwards]" />
-
-        {/* Holographic foil — only legendary tiers (halos 4-5) */}
-        {intensity >= 4 && (
-          <div className="absolute inset-0 z-[2] overflow-hidden pointer-events-none rounded-[22px]">
-            <div className="tcg-foil" />
+      <div className="verre-in">
+        {/* Image plein cadre : elle n'est plus enfermee dans une vignette. */}
+        {goal.image_url ? (
+          <img src={goal.image_url} alt="" loading="lazy" className="verre-img" />
+        ) : (
+          <div className="verre-vide" aria-hidden="true">
+            <ImageOff size={40} strokeWidth={1} />
           </div>
         )}
 
-        {/* Top Bar */}
-        <div className="absolute top-0 left-0 right-0 p-2 sm:p-3.5 flex justify-between items-start z-10 gap-1.5 sm:gap-2">
-          {/* Difficulty Hex Gem + label */}
-          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-            <div
-              className="tcg-gem tcg-gem--sm sm:tcg-gem--md shrink-0"
-              role="img"
-              aria-label={`Difficulty: ${getDifficultyLabel(difficulty, customDifficultyName)}`}
-              title={getDifficultyLabel(difficulty, customDifficultyName)}
-            />
-            <span className="hidden sm:inline-flex items-center px-2 py-1 bg-black/55 backdrop-blur-md border border-white/10 rounded-md ds-t-label font-bold tracking-[0.12em] text-white/90 uppercase font-orbitron">
-              {getDifficultyLabel(difficulty, customDifficultyName)}
-            </span>
-          </div>
+        <span className="verre-voile" aria-hidden="true" />
+        <span className="verre-flanc" aria-hidden="true" />
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Progress mini gem (desktop) */}
-            <div
-              className="tcg-gem-mini hidden sm:flex items-center justify-center ds-t-label font-bold text-white tabular-nums shrink-0"
-              aria-label={`Progress ${progress}%`}
-              title={`${progress}%`}
-            >
-              {progress}
-            </div>
+        {/* Bande inclinee : le palier traverse l'image. */}
+        <span className="verre-bande">{getDifficultyLabel(difficulty, customDifficultyName)}</span>
 
-            {/* Focus Button */}
-            <button
-              className={cn(
-                "w-9 h-9 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all duration-200 border shrink-0",
-                "backdrop-blur-sm cursor-pointer",
-                goal.is_focus
-                  ? "bg-[rgba(var(--accent-rgb),0.2)] border-[var(--accent)] text-[var(--accent)] shadow-[0_0_12px_rgba(var(--accent-rgb),0.3)]"
-                  : "bg-black/40 border-white/10 text-white/60 hover:bg-white/20 hover:scale-110 hover:text-white",
-              )}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFocus(goal.id, !!goal.is_focus, e);
-              }}
-              aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
-            >
-              <Star
-                className="w-4 h-4 sm:w-4 sm:h-4"
-                fill={goal.is_focus ? "currentColor" : "none"}
-                strokeWidth={goal.is_focus ? 0 : 2}
-              />
-            </button>
-          </div>
-        </div>
+        {/* Socle d'affiche, teinte par le palier. */}
+        <div className="verre-socle">
+          <span className="verre-lettre" aria-hidden="true">
+            {getDifficultyLabel(difficulty, customDifficultyName).slice(0, 1)}
+          </span>
 
-        {/* Glass Panel Content */}
-        <div
-          className={cn(
-            "absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl z-10",
-            "bg-[rgba(20,20,25,0.75)] backdrop-blur-xl border border-white/[0.08]",
-            "shadow-[0_4px_20px_rgba(0,0,0,0.4)]",
-            "flex flex-col gap-1.5 sm:gap-3 transition-all duration-300",
-            "group-hover:bg-[rgba(20,20,25,0.85)] group-hover:border-white/[0.15]",
-          )}
-        >
-          {/* Side ornaments */}
-          <span className="tcg-ornament left-1" aria-hidden />
-          <span className="tcg-ornament right-1" aria-hidden />
+          <h3 className="verre-nom">{goal.name}</h3>
 
-          {/* Header Row */}
-          <div className="hidden sm:flex justify-between items-center mb-1.5">
-            <span className="text-[var(--accent)] drop-shadow-[0_0_4px_rgba(var(--accent-rgb),0.4)]">
-              {isCompleted ? <CheckCircle size={14} /> : isHabitGoal ? <Zap size={14} /> : <Target size={14} />}
-            </span>
-            <div className="flex gap-1">
-              {displayTags.map((tag, i) => (
-                <span
-                  key={i}
-                  className="ds-t-label font-bold px-1.5 py-0.5 rounded-md border bg-black/40 uppercase tracking-wider font-orbitron"
-                  style={{ borderColor: getTagColor(tag), color: getTagColor(tag) }}
-                >
-                  {getTagLabel(tag)}
-                </span>
+          {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="verre-partage-badge" />}
+
+          <div className="verre-bas">
+            <span className="verre-seg" aria-hidden="true">
+              {Array.from({ length: 10 }, (_, i) => (
+                <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
               ))}
-              {remainingTagsCount > 0 && (
-                <span className="ds-t-label font-bold px-1.5 py-0.5 rounded-md border border-dashed border-gray-600 text-gray-400 bg-black/40 uppercase">
-                  +{remainingTagsCount}
-                </span>
-              )}
-            </div>
+            </span>
+            <b className="verre-pct">
+              {totalSteps > 0 ? `${completedSteps}/${totalSteps}` : `${progress}%`}
+            </b>
           </div>
 
-          {/* Title */}
-          <h3 className="text-[0.8125rem] sm:text-[1.0625rem] font-bold leading-tight text-white line-clamp-2 [text-shadow:0_2px_4px_rgba(0,0,0,0.9)] font-orbitron tracking-wide">
-            {goal.name}
-          </h3>
-          {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="mt-1" />}
-
-          {/* Progress */}
-          <div className="flex flex-col gap-1 sm:gap-1.5">
-            <div className="flex justify-between items-center ds-t-label sm:ds-t-label font-semibold">
-              <span className={cn("inline-flex items-center gap-1 uppercase tracking-wider truncate", isCompleted ? "text-[var(--accent)]" : "text-gray-400")}>
-                {(() => {
-                  const Icon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
-                  return <Icon className="h-3 w-3 shrink-0" aria-hidden="true" />;
-                })()}
-                {statusLabel}
-              </span>
-              <span className="text-gray-100 tabular-nums">{progress}%</span>
-            </div>
-            <div className="tcg-progress-track">
-              <div className="tcg-progress-fill" />
-              <div className="tcg-progress-ticks" />
-            </div>
-            <div className="hidden sm:flex justify-end">
-              <span className="ds-t-label text-gray-500">
-                {completedSteps} / {totalSteps} {isHabitGoal ? "days" : "steps"}
-              </span>
-            </div>
-          </div>
+          <span className="verre-etat">{statusLabel}</span>
         </div>
 
-        {/* Border Glow */}
-        <div
-          className={cn(
-            "absolute inset-0 rounded-[22px] border border-transparent pointer-events-none z-20",
-            "transition-all duration-300",
-            "group-hover:border-[rgba(var(--accent-rgb),0.4)] group-hover:shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]",
-          )}
-        />
+        <button
+          type="button"
+          className={cn("verre-focus", goal.is_focus && "active")}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFocus(goal.id, !!goal.is_focus, e);
+          }}
+          aria-label={goal.is_focus ? "Remove from focus" : "Set as focus"}
+        >
+          <Star
+            className="w-4 h-4"
+            fill={goal.is_focus ? "currentColor" : "none"}
+            strokeWidth={goal.is_focus ? 0 : 2}
+          />
+        </button>
       </div>
     </article>
   );

@@ -2439,3 +2439,200 @@
 @media (prefers-reduced-motion: reduce) {
   .eclat-groupe-bord { animation: none; background: var(--cp-jaune); opacity: 0.55; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CARTE EN GRILLE — ÉCLAT DE VERRE, SOCLE D'AFFICHE
+
+   La carte etait une carte a collectionner : coins arrondis a 22px,
+   effet foil, panneau de verre flou pose par-dessus l'image. Quatre
+   couches decoratives pour porter cinq informations.
+
+   Elle devient un fragment. Le bas est coupe en pointe asymetrique —
+   aucun cote n'est parallele a un autre — et le palier descend en bande
+   lumineuse sur le flanc gauche. Une bande inclinee traverse l'image.
+
+   Le socle vient de la proposition "affiche" : un aplat plein, teinte
+   par le palier, qui porte le nom en grand et une lettre geante en
+   filigrane. C'est lui qui donne a chaque carte une identite lisible de
+   loin en grille, la ou des vignettes sombres se ressemblent toutes.
+   ═══════════════════════════════════════════════════════════════ */
+
+.verre {
+  position: relative;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 260ms cubic-bezier(.34, 1.4, .64, 1);
+}
+.verre:hover { transform: translateY(-4px); z-index: 20; }
+.verre:active { transform: translateY(-1px) scale(.99); }
+.verre:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 3px; }
+
+/* La silhouette brisee. Trois sommets bas a des hauteurs differentes :
+   c'est l'asymetrie qui fait lire un fragment plutot qu'un rectangle
+   coupe. */
+.verre-in {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: var(--nexus-bg);
+  border: 1px solid var(--accent);
+  clip-path: polygon(0 0, 100% 0, 100% 88%, 62% 100%, 0 92%);
+}
+
+.verre-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 620ms ease, filter 260ms ease;
+}
+.verre:hover .verre-img { transform: scale(1.05); }
+.verre-vide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  opacity: .4;
+  background:
+    repeating-linear-gradient(-45deg, rgb(255 255 255 / .05) 0 9px, transparent 9px 18px),
+    var(--nexus-bg);
+}
+/* Le voile s'epaissit vers le bas : l'image reste nette en haut, le
+   socle se detache en bas. */
+.verre-voile {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+    rgb(3 7 14 / .08) 26%,
+    rgb(3 7 14 / .62) 56%,
+    rgb(3 7 14 / .96) 74%);
+}
+.verre-flanc {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--accent);
+  box-shadow: 0 0 16px -1px var(--accent);
+}
+
+/* Bande inclinee. Elle deborde de chaque cote pour qu'aucune extremite
+   ne soit visible : une bande qui commence et finit dans le cadre se
+   lirait comme une etiquette posee, pas comme une bande qui traverse. */
+.verre-bande {
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  top: 50%;
+  padding: 3px 16px;
+  transform: rotate(-3.5deg);
+  background: color-mix(in srgb, var(--accent) 88%, black);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #05080f;
+}
+
+/* ── Socle ── */
+.verre-socle {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 12px 14px 22px 16px;
+  background: color-mix(in srgb, var(--accent) 13%, rgb(5 9 17));
+  border-top: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+}
+.verre-lettre {
+  position: absolute;
+  right: -6px;
+  bottom: -22px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 4.6rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--accent);
+  opacity: .15;
+  pointer-events: none;
+}
+.verre-nom {
+  position: relative;
+  margin: 0 0 8px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(.72rem, .58rem + .5vw, .88rem);
+  font-weight: 900;
+  letter-spacing: .5px;
+  line-height: 1.16;
+  text-transform: uppercase;
+  color: #f2f9ff;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.verre-bas { position: relative; display: flex; align-items: center; gap: 8px; }
+.verre-seg { display: flex; gap: 2px; flex: 1; }
+.verre-seg u {
+  flex: 1;
+  height: 7px;
+  background: rgb(255 255 255 / .13);
+  text-decoration: none;
+  /* Meme biseau que la carte, a l'echelle du detail. */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 2px) 100%, 0 100%);
+}
+.verre-seg u.on { background: var(--accent); }
+.verre-pct {
+  flex-shrink: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: .76rem;
+  font-weight: 900;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.verre-etat {
+  position: relative;
+  display: block;
+  margin-top: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux);
+}
+.verre-partage-badge { position: relative; margin-bottom: 6px; }
+
+.verre-focus {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--accent);
+  background: rgb(3 7 14 / .74);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  cursor: pointer;
+  transition: border-color 140ms linear, background 140ms linear;
+}
+.verre-focus:hover { border-color: var(--accent); background: rgb(3 7 14 / .95); }
+.verre-focus:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.verre-focus.active { background: color-mix(in srgb, var(--accent) 22%, rgb(3 7 14)); border-color: var(--accent); }
+
+.verre--focus .verre-in { box-shadow: 0 0 0 1px var(--accent), 0 0 26px -8px var(--accent); }
+/* Un objectif honore garde son image pleine et perd sa jauge : elle
+   serait pleine, donc muette. */
+.verre--honore .verre-seg { display: none; }
+.verre--honore .verre-img { filter: saturate(1.06) contrast(1.04); }
+.verre--partage .verre-in { border-color: color-mix(in srgb, var(--cp-cyan) 55%, var(--accent)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .verre, .verre-img { transition: none; }
+  .verre:hover { transform: none; }
+  .verre:hover .verre-img { transform: none; }
+}
