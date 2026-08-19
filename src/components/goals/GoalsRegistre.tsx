@@ -1,8 +1,9 @@
 import React, { memo, useMemo, useState } from "react";
-import { Crown, Lock, Star } from "lucide-react";
+import { ChevronRight, Crown, Lock, Star } from "lucide-react";
 import { getStatusLabel } from "@/lib/goalConstants";
 import { filterGoalsByRule, nomSansPrefixeGroupe, type SuperGoalRule } from "@/components/goals/super/types";
 import type { Goal } from "@/hooks/useGoals";
+import { useGoalSteps } from "@/hooks/useGoalSteps";
 
 /* REGISTRE — la vue liste
  *
@@ -123,6 +124,16 @@ export const GoalsRegistre = memo(function GoalsRegistre({
     try { return localStorage.getItem(CLE_GROUPE) === "1"; } catch { return false; }
   });
 
+  /* Une seule ligne ouverte a la fois.
+   *
+   * Un accordeon a plusieurs volets ouverts redevient une longue liste :
+   * on perd exactement ce que le registre apporte, la vue d ensemble. En
+   * n en gardant qu un, la hauteur de la page reste stable et l oeil ne
+   * quitte jamais la colonne qu il suivait.
+   */
+  const [ouvert, setOuvert] = useState<string | null>(null);
+  const ouvrir = (id: string) => setOuvert((o) => (o === id ? null : id));
+
   const basculer = () => {
     setGrouper((v) => {
       const n = !v;
@@ -163,45 +174,83 @@ export const GoalsRegistre = memo(function GoalsRegistre({
 
   const ligne = (g: Goal, indente = false) => {
     const t = teinte(g, customDifficultyColor);
-    const av = avancement(g, g.goal_type === "super" ? membresDe(g, allGoals) : undefined);
+    const membres = g.goal_type === "super" ? membresDe(g, allGoals) : undefined;
+    const av = avancement(g, membres);
     const etat = etatDe(g);
+    const estOuvert = ouvert === g.id;
+    // Un objectif sans etape et un groupe sans membre n'ont rien a deplier.
+    const deployable = g.goal_type === "super" ? (membres?.length ?? 0) > 0 : av.total > 0;
+
     return (
-      <div
-        key={g.id}
-        className={`rg-l${indente ? " rg-l--fils" : ""}`}
-        style={{ ["--t" as string]: t }}
-        role="button"
-        tabIndex={0}
-        onClick={() => onNavigate(g.id)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate(g.id); }
-        }}
-      >
-        {indente && <span className="rg-branche" aria-hidden="true" />}
-        <span className="rg-palier">{libellePalier(g, customDifficultyName)}</span>
-        <span className="rg-nom">
-          {g.goal_type === "super" && <Crown size={10} aria-hidden="true" />}
-          {g.is_locked && <Lock size={10} aria-hidden="true" />}
-          {g.goal_type === "super" ? nomSansPrefixeGroupe(g.name) : g.name}
-        </span>
-        <span className="rg-etapes">
-          {av.faits}<i>/{av.total}</i>
-        </span>
-        <span className="rg-jauge" aria-hidden="true">
-          {Array.from({ length: 14 }, (_, i) => (
-            <u key={i} className={i < Math.round((av.pct / 100) * 14) ? "on" : ""} />
-          ))}
-        </span>
-        <span className="rg-xp">{g.potential_score ?? 0}</span>
-        <span className={`rg-etat rg-etat--${etat}`}>{getStatusLabel(g.status || "not_started")}</span>
-        <button
-          type="button"
-          className={`rg-focus${g.is_focus ? " active" : ""}`}
-          onClick={(e) => { e.stopPropagation(); onToggleFocus(g.id, !!g.is_focus, e); }}
-          aria-label={g.is_focus ? "Remove from focus" : "Set as focus"}
+      <div key={g.id} className={`rg-bloc${estOuvert ? " est-ouvert" : ""}`}>
+        <div
+          className={`rg-l${indente ? " rg-l--fils" : ""}`}
+          style={{ ["--t" as string]: t }}
+          role="button"
+          tabIndex={0}
+          onClick={() => onNavigate(g.id)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate(g.id); }
+          }}
         >
-          <Star size={12} fill={g.is_focus ? t : "none"} stroke={t} />
-        </button>
+          {indente && <span className="rg-branche" aria-hidden="true" />}
+
+          {/* Le chevron deplie, la ligne ouvre l'objectif. Deux gestes
+              distincts pour deux intentions distinctes : consulter le
+              detail sur place, ou quitter la liste. */}
+          {deployable ? (
+            <button
+              type="button"
+              className="rg-chevron"
+              aria-expanded={estOuvert}
+              aria-label={estOuvert ? "Replier" : "Déplier"}
+              onClick={(e) => { e.stopPropagation(); ouvrir(g.id); }}
+            >
+              <ChevronRight size={13} aria-hidden="true" />
+            </button>
+          ) : (
+            <span className="rg-chevron rg-chevron--vide" aria-hidden="true" />
+          )}
+
+          <span className="rg-palier">{libellePalier(g, customDifficultyName)}</span>
+          <span className="rg-nom">
+            {g.goal_type === "super" && <Crown size={10} aria-hidden="true" />}
+            {g.is_locked && <Lock size={10} aria-hidden="true" />}
+            {g.goal_type === "super" ? nomSansPrefixeGroupe(g.name) : g.name}
+          </span>
+          <span className="rg-etapes">
+            {av.faits}<i>/{av.total}</i>
+          </span>
+          <span className="rg-jauge" aria-hidden="true">
+            {Array.from({ length: 14 }, (_, i) => (
+              <u key={i} className={i < Math.round((av.pct / 100) * 14) ? "on" : ""} />
+            ))}
+          </span>
+          <span className="rg-xp">{g.potential_score ?? 0}</span>
+          <span className={`rg-etat rg-etat--${etat}`}>{getStatusLabel(g.status || "not_started")}</span>
+          <button
+            type="button"
+            className={`rg-focus${g.is_focus ? " active" : ""}`}
+            onClick={(e) => { e.stopPropagation(); onToggleFocus(g.id, !!g.is_focus, e); }}
+            aria-label={g.is_focus ? "Remove from focus" : "Set as focus"}
+          >
+            <Star size={12} fill={g.is_focus ? t : "none"} stroke={t} />
+          </button>
+        </div>
+
+        {/* Le volet est toujours dans le DOM : c'est ce qui permet
+            d'animer sa hauteur sans la mesurer en JavaScript. */}
+        <div className="rg-volet" style={{ ["--t" as string]: t }}>
+          <div className="rg-volet-in">
+            {estOuvert && (
+              g.goal_type === "super"
+                ? <MembresDuGroupe membres={membres || []} onNavigate={onNavigate}
+                    customDifficultyName={customDifficultyName}
+                    customDifficultyColor={customDifficultyColor} />
+                : <EtapesDeLObjectif goalId={g.id} />
+            )}
+          </div>
+        </div>
       </div>
     );
   };
@@ -286,5 +335,60 @@ export const GoalsRegistre = memo(function GoalsRegistre({
     </div>
   );
 });
+
+/* Membres d un groupe, dans le volet. Volontairement plus sobres que les
+   lignes principales : ce sont des enfants, pas des pairs. */
+function MembresDuGroupe({ membres, onNavigate, customDifficultyName, customDifficultyColor }: {
+  membres: Goal[];
+  onNavigate: (id: string) => void;
+  customDifficultyName: string;
+  customDifficultyColor: string;
+}) {
+  return (
+    <div className="rg-membres">
+      {membres.map((m) => {
+        const av = avancement(m);
+        return (
+          <button key={m.id} type="button" className="rg-membre"
+            style={{ ["--t" as string]: teinte(m, customDifficultyColor) }}
+            onClick={(e) => { e.stopPropagation(); onNavigate(m.id); }}>
+            <span className="rg-membre-p">{libellePalier(m, customDifficultyName)}</span>
+            <span className="rg-membre-n">{m.name}</span>
+            <span className="rg-membre-j" aria-hidden="true">
+              {Array.from({ length: 10 }, (_, i) => (
+                <u key={i} className={i < Math.round((av.pct / 100) * 10) ? "on" : ""} />
+              ))}
+            </span>
+            <span className="rg-membre-c">{av.faits}/{av.total}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/* Etapes d un objectif. Elles ne sont demandees qu a l ouverture — voir
+   useGoalSteps. */
+function EtapesDeLObjectif({ goalId }: { goalId: string }) {
+  const { data: etapes = [], isLoading } = useGoalSteps(goalId);
+
+  if (isLoading) return <p className="rg-attente">Chargement…</p>;
+  if (etapes.length === 0) return <p className="rg-attente">Aucune étape.</p>;
+
+  return (
+    <ol className="rg-etapes-liste">
+      {etapes.map((e, i) => {
+        const faite = e.status === "completed" || e.status === "validated";
+        return (
+          <li key={e.id} className={faite ? "faite" : ""}>
+            <span className="rg-etape-n">{String(i + 1).padStart(2, "0")}</span>
+            <span className="rg-etape-coche" aria-hidden="true">{faite ? "✓" : ""}</span>
+            <span className="rg-etape-t">{e.title || "Sans titre"}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 export default GoalsRegistre;

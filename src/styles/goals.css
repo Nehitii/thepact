@@ -3119,3 +3119,151 @@
 @media (prefers-reduced-motion: reduce) {
   .rg-l, .rg-focus { transition: none; }
 }
+
+/* ── Registre : accordéon ──────────────────────────────────────
+ *
+ * Une seule ligne ouverte a la fois. Un accordeon a plusieurs volets
+ * ouverts redevient une longue liste, et on perd exactement ce que le
+ * registre apporte : la vue d'ensemble.
+ *
+ * L'animation repose sur grid-template-rows 0fr → 1fr, et non sur une
+ * hauteur mesuree en JavaScript. C'est la seule facon d'animer une
+ * hauteur AUTO de maniere fluide : max-height oblige a deviner une
+ * borne — trop basse elle coupe, trop haute elle rend la fermeture
+ * molle et le debut de l'ouverture immobile.
+ * ────────────────────────────────────────────────────────────── */
+
+.rg-bloc { border-bottom: 1px solid rgb(255 255 255 / 0.045); }
+.rg-bloc .rg-l { border-bottom: 0; }
+
+.rg-volet {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 280ms cubic-bezier(.3, .8, .3, 1);
+}
+.rg-bloc.est-ouvert .rg-volet { grid-template-rows: 1fr; }
+/* min-height: 0 est indispensable : sans lui, l'element de grille refuse
+   de descendre sous la hauteur de son contenu et rien ne s'anime. */
+.rg-volet-in {
+  min-height: 0;
+  overflow: hidden;
+}
+.rg-bloc.est-ouvert .rg-volet-in {
+  border-left: 2px solid var(--t);
+  background: rgb(255 255 255 / 0.022);
+}
+
+/* Le chevron pivote au lieu de changer d'icone : la rotation dit le sens
+   du mouvement, un changement d'icone ne dirait que l'etat. */
+.rg-chevron {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  color: var(--cp-texte-doux);
+  cursor: pointer;
+  transition: transform 240ms cubic-bezier(.3, .8, .3, 1), color 140ms linear;
+}
+.rg-chevron:hover { color: var(--cp-cyan); }
+.rg-chevron:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+.rg-bloc.est-ouvert .rg-chevron { transform: rotate(90deg); color: var(--t); }
+.rg-chevron--vide { cursor: default; }
+
+/* La colonne du chevron s'ajoute a la grille declaree plus haut. */
+.rg-tete, .rg-l { grid-template-columns: 18px 92px 1fr 64px 132px 56px 104px 30px; }
+
+/* ── Contenu du volet ── */
+.rg-membres { display: flex; flex-direction: column; padding: 6px 12px 8px 30px; }
+.rg-membre {
+  display: grid;
+  grid-template-columns: 88px 1fr 96px 52px;
+  align-items: center;
+  gap: 11px;
+  height: 26px;
+  padding: 0 8px;
+  text-align: left;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  color: var(--cp-texte-doux);
+  cursor: pointer;
+  transition: background 120ms linear;
+}
+.rg-membre:hover { background: hsl(var(--primary) / 0.07); }
+.rg-membre:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+.rg-membre-p { color: var(--t); letter-spacing: 1.3px; }
+.rg-membre-n {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #dbeaf7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rg-membre-j { display: flex; gap: 2px; }
+.rg-membre-j u { flex: 1; height: 6px; background: rgb(255 255 255 / 0.12); text-decoration: none; }
+.rg-membre-j u.on { background: var(--t); }
+.rg-membre-c { text-align: right; color: #cfe4f5; font-variant-numeric: tabular-nums; }
+
+.rg-etapes-liste {
+  list-style: none;
+  margin: 0;
+  padding: 6px 12px 8px 30px;
+  display: flex;
+  flex-direction: column;
+}
+.rg-etapes-liste li {
+  display: grid;
+  grid-template-columns: 26px 16px 1fr;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  color: #cfe4f5;
+}
+.rg-etape-n { color: var(--cp-texte-doux); font-variant-numeric: tabular-nums; }
+.rg-etape-coche { color: var(--t); text-align: center; }
+.rg-etape-t {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Une etape faite est barree ET attenuee : le trait dit "c'est fait",
+   l'attenuation la fait reculer derriere celles qui restent. */
+.rg-etapes-liste li.faite .rg-etape-t { text-decoration: line-through; opacity: 0.5; }
+.rg-attente {
+  margin: 0;
+  padding: 10px 12px 12px 30px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.2px;
+  color: var(--cp-texte-doux);
+}
+
+@media (max-width: 900px) {
+  .rg-tete, .rg-l { grid-template-columns: 18px 76px 1fr 58px 84px 26px; }
+  .rg-membre { grid-template-columns: 72px 1fr 44px; }
+  .rg-membre-j { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rg-volet, .rg-chevron { transition: none; }
+}
+
+/* Un volet ne doit pas repousser la page hors de vue. Le groupe
+   automatique capte trente-deux objectifs : son volet mesurait 846px,
+   soit plus que la fenetre — ouvrir une ligne faisait disparaitre tout
+   le reste du registre, ce que le repliement etait justement cense
+   eviter.
+   Au-dela de 320px le contenu defile dans le volet. L'animation reste
+   intacte : elle porte sur le conteneur, dont la hauteur est desormais
+   bornee par celle de son contenu. */
+.rg-membres,
+.rg-etapes-liste {
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
