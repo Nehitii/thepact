@@ -294,7 +294,10 @@ export default function Focus() {
 
   const isBreak = timer.phase === "break";
   const frameColor = timer.isRunning ? (isBreak ? "border-accent/40" : "border-primary/40") : "border-border/30";
-  const textColor = timer.isRunning ? (isBreak ? "text-accent/40" : "text-primary/40") : "text-muted-foreground/30";
+  // 2,15 : 1 mesure sur ces libelles a 11 px, pour un plancher a 4,5.
+  // Ils portaient une donnee reelle — le pourcentage d avancement — noyee
+  // dans de la telemetrie de decor.
+  const textColor = timer.isRunning ? (isBreak ? "text-accent/80" : "text-primary/80") : "text-muted-foreground/60";
 
   return (
     <DSPageShell
@@ -351,9 +354,13 @@ export default function Focus() {
         <div className={`absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 transition-colors duration-1000 ${frameColor}`} />
         <div className={`absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 transition-colors duration-1000 ${frameColor}`} />
 
-        {/* Vertical Data Streams */}
+        {/* Colonnes de telemetrie.
+            Decor, et marquees comme telles : la seule donnee reelle qu elles
+            portent — l avancement — est exposee proprement sur la barre de
+            progression et dans la region vocale. Un lecteur d ecran n a
+            rien a faire de « Latency 12 ms ». */}
         {!isMobile && (
-          <>
+          <div aria-hidden="true">
             <div className="absolute left-1 top-12 bottom-12 flex items-center justify-center w-6">
               <span className={`ds-t-label font-mono tracking-[0.3em] uppercase whitespace-nowrap -rotate-90 transition-colors duration-1000 ${textColor}`}>
                 {t("focus.sideData.uplink")} {isBreak ? "B-RK" : "F-CS"}
@@ -364,7 +371,7 @@ export default function Focus() {
                 {t("focus.sideData.vitals")} {Math.round(timer.progress * 100)}%
               </span>
             </div>
-          </>
+          </div>
         )}
       </div>
 

@@ -48,7 +48,7 @@ export function FocusControls({ phase, isPaused, onPause, onResume, onSkip, onEn
         >
           <span className="ds-t-label font-mono font-bold tracking-widest uppercase relative z-10">
             {isPaused ? t("focus.controls.resume") : t("focus.controls.halt")}
-            <span className="ds-t-label text-primary/40 ml-1.5">(SPACE)</span>
+            <span className="ds-t-label text-primary/80 ml-1.5">(SPACE)</span>
           </span>
           {isPaused ? <Play className="h-4 w-4 relative z-10 ml-1" /> : <Pause className="h-4 w-4 relative z-10" />}
         </button>
@@ -60,7 +60,7 @@ export function FocusControls({ phase, isPaused, onPause, onResume, onSkip, onEn
           title={t("focus.skipPhase")}
         >
           <SkipForward className="h-4 w-4 group-hover:text-foreground" />
-          <span className="ds-t-label font-mono text-muted-foreground/50 leading-none mt-0.5" aria-hidden="true">⇧+S</span>
+          <span className="ds-t-label font-mono text-muted-foreground leading-none mt-0.5" aria-hidden="true">⇧+S</span>
         </button>
       </div>
 
@@ -73,7 +73,7 @@ export function FocusControls({ phase, isPaused, onPause, onResume, onSkip, onEn
         <span className="ds-t-label font-mono font-bold tracking-[0.2em] uppercase group-hover:text-destructive">
           {t("focus.controls.abort")}
         </span>
-        <span className="ds-t-label font-mono text-destructive/40" aria-hidden="true">(ESC)</span>
+        <span className="ds-t-label font-mono text-destructive" aria-hidden="true">(ESC)</span>
       </button>
     </div>
   );
