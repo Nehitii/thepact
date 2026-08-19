@@ -27,19 +27,31 @@
   flex-wrap: wrap;
   padding: 12px 16px;
 }
-.gr-tete-gauche { display: flex; flex-direction: column; gap: 3px; }
+/* Bouton de retour.
+   Il etait un lien de 11px pose au-dessus du titre. Un retour se cherche
+   a gauche du titre, pas dessus, et il lui faut une cible cliquable —
+   pas seulement deux mots. 36px de cote : la taille minimale confortable
+   au doigt comme a la souris. */
 .gr-retour {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: 'Share Tech Mono', monospace;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
   color: var(--cp-texte-doux);
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
   cursor: pointer;
-  transition: color 140ms linear;
+  transition: color 140ms linear, border-color 140ms linear, transform 140ms ease;
 }
-.gr-retour:hover { color: var(--cp-cyan); }
+.gr-retour:hover {
+  color: var(--cp-jaune);
+  border-color: rgb(252 238 10 / 0.55);
+  transform: translateX(-2px);
+}
+.gr-retour:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+
 .gr-titre {
   position: relative;
   margin: 0;
@@ -330,3 +342,8 @@
    larges : un pointille serre se lit comme un trait plein des qu on
    dezoome. */
 .gr-arete--dyn .react-flow__edge-path { stroke-dasharray: 2 9 !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gr-retour { transition: none; }
+  .gr-retour:hover { transform: none; }
+}

@@ -364,14 +364,24 @@ export default function GoalsGraph() {
         <div className="cp-cadre gr-tete-cadre">
           <div className="cp-fond gr-tete">
             <span className="cp-equerre cp-equerre-hg" />
-            <div className="gr-tete-gauche">
-              <button type="button" onClick={() => navigate(-1)} className="gr-retour ds-t-label">
-                <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Retour
-              </button>
-              <h1 className="gr-titre font-orbitron">
-                Constellation
-              </h1>
-            </div>
+            {/* Le retour etait un lien pose AU-DESSUS du titre, dans une
+                colonne : trop petit pour se voir, et detache de tout ce qui
+                l'entourait. Il devient un bouton carre a gauche du titre, sur
+                la meme ligne — la ou l'oeil cherche un retour, et la seule
+                position qui le rattache a quelque chose. Il reprend le
+                chanfrein et la cible tactile des autres boutons. */}
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="gr-retour"
+              aria-label="Retour aux objectifs"
+              title="Retour aux objectifs"
+            >
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <h1 className="gr-titre font-orbitron">
+              Constellation
+            </h1>
 
             <span className="ana-panneau-fil" />
 
