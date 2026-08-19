@@ -1895,7 +1895,6 @@
     "viewWeek": "Week",
     "viewMonth": "Month",
     "viewYear": "Year",
-    "viewAgenda": "Agenda",
     "errors": {
       "titleRequired": "Give the event a title.",
       "endBeforeStart": "The end must come after the start.",
@@ -1936,7 +1935,21 @@
     "startTimeFull": "Start time",
     "endTimeFull": "End time",
     "addOnDay": "New event on {{date}}",
-    "noResults": "Nothing found."
+    "noResults": "Nothing found.",
+    "viewRuban": "Ribbon",
+    "openDay": "Open {{date}}",
+    "tel": {
+      "next": "Next",
+      "first": "First",
+      "nothingAhead": "Nothing ahead",
+      "load": "Month load",
+      "breakdown": "{{events}} events, {{deadlines}} deadlines",
+      "busyDays": "Busy days",
+      "busiest": "Busiest: {{date}}",
+      "upcoming": "Upcoming"
+    },
+    "entries_one": "{{count}} entry",
+    "entries_other": "{{count}} entries"
   },
   "friends": {
     "networkActive": "Social Network Active",

@@ -1895,7 +1895,6 @@
     "viewWeek": "Semaine",
     "viewMonth": "Mois",
     "viewYear": "Année",
-    "viewAgenda": "Agenda",
     "errors": {
       "titleRequired": "Donnez un titre à l’événement.",
       "endBeforeStart": "La fin doit venir après le début.",
@@ -1936,7 +1935,21 @@
     "startTimeFull": "Heure de début",
     "endTimeFull": "Heure de fin",
     "addOnDay": "Nouvel événement le {{date}}",
-    "noResults": "Aucun résultat."
+    "noResults": "Aucun résultat.",
+    "viewRuban": "Ruban",
+    "openDay": "Ouvrir {{date}}",
+    "tel": {
+      "next": "Prochain",
+      "first": "Premier",
+      "nothingAhead": "Rien devant",
+      "load": "Charge du mois",
+      "breakdown": "{{events}} événements, {{deadlines}} échéances",
+      "busyDays": "Jours occupés",
+      "busiest": "Le plus chargé : {{date}}",
+      "upcoming": "À venir"
+    },
+    "entries_one": "{{count}} entrée",
+    "entries_other": "{{count}} entrées"
   },
   "friends": {
     "networkActive": "Réseau Social Actif",

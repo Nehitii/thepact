@@ -1,47 +1,338 @@
-/* CAL.01 — adaptation
+/* CAL.01 — LE RUBAN, DANS LE CADRE DU PLAN DE VOL
  *
- * Deux mesures de l audit tiennent ce fichier.
+ * Deux decisions tiennent ce fichier.
  *
- * 1. La barre laterale se montrait parce que la FENETRE faisait 1080 px,
- *    alors que la grille, elle, n en avait que 473. La navigation de
- *    l application prend 280 px : le point de rupture « lg » regardait
- *    donc une largeur que le calendrier n a jamais eue. On mesure
- *    desormais le conteneur, pas la fenetre.
+ * LE RUBAN. Le mois cessait d etre lisible des qu il etait plein : sept
+ * colonnes, trois lignes par case, et le reste cache derriere un « +N ».
+ * La vue par defaut est desormais une bande — une ligne par jour, un axe
+ * horaire dessous, les evenements poses a leur vraie place. On ne lit
+ * plus une liste, on voit la FORME d une journee : ses trous, ses blocs,
+ * ses collisions. Les jours vides se replient, si bien qu un mois entier
+ * se parcourt d un coup d oeil. La grille reste, en carte.
  *
- * 2. Cinquante-sept cibles sous 44 px sur telephone. Le seuil ne depend
- *    pas de la largeur mais du doigt : c est « pointer: coarse » qui le
- *    decide, pas un point de rupture.
+ * LE CADRE. Tout est pose sur une plaque d instrument : biseaux plutot
+ * que coins arrondis, equerres aux quatre angles, rail de coordonnees en
+ * mono, et une colonne de telemetrie qui donne un sens au vide. C est ce
+ * cadre qui rend la page reconnaissable — il vaut pour les cinq vues.
+ *
+ * Deux mesures de l audit sont conservees plus bas : la barre laterale
+ * se decide sur le CONTENEUR et non sur la fenetre, et le seuil tactile
+ * se decide sur « pointer: coarse » et non sur un point de rupture.
  */
 
-/* ── Le conteneur qui decide ────────────────────────────────── */
+.cal {
+  --cal-plaque:  hsl(var(--ds-surface-1));
+  --cal-creux:   hsl(var(--ds-surface-2));
+  --cal-trait:   hsl(var(--ds-border-default) / 0.16);
+  --cal-trait-fort: hsl(var(--ds-border-default) / 0.32);
+  --cal-signal:  hsl(var(--ds-accent-primary));
+  --cal-texte:   hsl(var(--ds-text-primary));
+  --cal-doux:    hsl(var(--ds-text-secondary));
+  --cal-faible:  hsl(var(--ds-text-muted) / 0.8);
+  --cal-mono: "JetBrains Mono", ui-monospace, monospace;
+  --cal-titre: "Orbitron", sans-serif;
+  --cal-corps: "Rajdhani", system-ui, sans-serif;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LE CONTENEUR QUI DECIDE
+   « lg » regardait la FENETRE, qui compte 280 px de navigation
+   que le calendrier n a jamais eus : a 1080 px, la grille se
+   retrouvait avec 473 px pour huit colonnes.
+   ═══════════════════════════════════════════════════════════ */
 .cal-corps {
   container-type: inline-size;
   container-name: calendrier;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
 }
-
-/* Cachee par defaut : elle ne revient que si la grille a de quoi
-   respirer une fois ses 256 px preleves. */
-.cal-flanc {
-  display: none;
-}
+.cal-flanc { display: none; }
 
 @container calendrier (min-width: 980px) {
+  .cal-corps { grid-template-columns: minmax(0, 1fr) 208px; }
   .cal-flanc { display: block; }
 }
 
-/* ── La grille du mois ──────────────────────────────────────── */
-.cal-grille {
+/* ═══════════════════════════════════════════════════════════
+   LA PLAQUE — le cadre commun aux cinq vues
+   ═══════════════════════════════════════════════════════════ */
+.cal-plaque {
+  position: relative;
+  background: var(--cal-plaque);
+  border: 1px solid hsl(var(--ds-accent-primary) / 0.16);
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+}
+/* Quatre angles, pas un cadre : l equerre suffit a dire « instrument ». */
+.cal-plaque::before {
+  content: "";
+  position: absolute; inset: 7px; pointer-events: none; z-index: 5;
+  background:
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 0 0 / 14px 1px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 0 0 / 1px 14px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 100% 100% / 14px 1px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 100% 100% / 1px 14px no-repeat;
+  opacity: 0.5;
+}
+
+.cal-rail {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 16px 8px;
+  border-bottom: 1px solid var(--cal-trait);
+  font-family: var(--cal-mono);
+  font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase;
+  color: var(--cal-faible);
+  white-space: nowrap; overflow: hidden;
+}
+.cal-rail b { color: var(--cal-signal); font-weight: 400; }
+.cal-rail i { flex: 1; min-width: 8px; height: 1px; background: var(--cal-trait); }
+.cal-rail .cal-rail-facultatif { display: none; }
+@container calendrier (min-width: 640px) {
+  .cal-rail .cal-rail-facultatif { display: inline; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LA BANDE — l objet « evenement », partout
+   Un filet de couleur, l heure en mono, le titre. Les echeances
+   importees portent un filet pointille : on les distingue sans
+   les lire.
+   ═══════════════════════════════════════════════════════════ */
+.cal-evt {
   display: grid;
-  grid-template-columns: 32px repeat(7, minmax(0, 1fr));
+  grid-template-columns: 3px minmax(0, auto) minmax(0, 1fr);
+  align-items: center; gap: 5px;
+  width: 100%; max-width: 100%;
+  padding: 0 4px 0 0;
+  background: color-mix(in oklab, var(--cal-teinte) 12%, transparent);
+  text-align: left;
+  transition: background 140ms var(--ds-ease-out);
+}
+.cal-evt:hover { background: color-mix(in oklab, var(--cal-teinte) 26%, transparent); }
+.cal-evt-filet { align-self: stretch; background: var(--cal-teinte); min-height: 15px; }
+.cal-evt[data-importe="true"] .cal-evt-filet {
+  background: repeating-linear-gradient(180deg, var(--cal-teinte) 0 3px, transparent 3px 6px);
+}
+.cal-evt-heure {
+  font-family: var(--cal-mono);
+  font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.02em;
+  color: var(--cal-teinte);
+  font-variant-numeric: tabular-nums;
+}
+.cal-evt-titre {
+  font-family: var(--cal-corps);
+  font-size: max(12px, 0.75rem);
+  font-weight: 600; line-height: 1.15;
+  /* Le titre s ecrivait DANS la teinte, sur un fond de la meme teinte :
+     le contraste dependait de la couleur choisie, et deux des dix
+     passaient sous 4,5. Il en part maintenant et remonte d un quart vers
+     le blanc — le pire des dix est a 6,06. */
+  color: var(--cal-teinte);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@supports (color: color-mix(in oklab, red, white)) {
+  .cal-evt-titre { color: color-mix(in oklab, var(--cal-teinte) 75%, white); }
+  .cal-evt-heure { color: color-mix(in oklab, var(--cal-teinte) 68%, white); }
+}
+.cal-evt.est-compact { height: 17px; }
+
+/* ═══════════════════════════════════════════════════════════
+   LE RUBAN — la vue par defaut
+   ═══════════════════════════════════════════════════════════ */
+.cal-rb-axe {
+  display: grid; grid-template-columns: var(--cal-rb-timbre, 78px) minmax(0, 1fr);
+  border-bottom: 1px solid var(--cal-trait-fort);
+  background: var(--cal-plaque);
+}
+.cal-rb-axe-piste { position: relative; height: 22px; }
+.cal-rb-heure {
+  position: absolute; top: 6px; transform: translateX(-50%);
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.08em; color: hsl(var(--ds-text-muted) / 0.88);
+  font-variant-numeric: tabular-nums;
 }
 
+.cal-rb-ligne {
+  display: grid; grid-template-columns: var(--cal-rb-timbre, 78px) minmax(0, 1fr);
+  border-bottom: 1px solid var(--cal-trait);
+  transition: background 140ms var(--ds-ease-out);
+}
+.cal-rb-ligne:hover { background: hsl(var(--ds-surface-2) / 0.55); }
+.cal-rb-ligne.est-weekend .cal-rb-timbre { background: hsl(var(--ds-surface-2) / 0.5); }
+.cal-rb-ligne.est-auj { background: hsl(var(--ds-accent-primary) / 0.055); }
+
+.cal-rb-timbre {
+  border-right: 1px solid var(--cal-trait);
+  padding: 7px 8px 7px 12px;
+  display: flex; align-items: baseline; gap: 8px;
+  background: none; text-align: left;
+}
+.cal-rb-jour {
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--cal-faible);
+}
+.cal-rb-num {
+  font-family: var(--cal-titre); font-weight: 900;
+  font-size: max(18px, 1.125rem); line-height: 1;
+  color: var(--cal-doux); font-variant-numeric: tabular-nums;
+  transition: color 140ms var(--ds-ease-out);
+}
+.cal-rb-timbre:hover .cal-rb-num { color: var(--cal-signal); }
+.cal-rb-ligne.est-auj .cal-rb-num {
+  color: var(--cal-signal);
+  text-shadow: 0 0 12px hsl(var(--ds-accent-primary) / 0.5);
+}
+/* Un jour vide n a pas besoin de quarante-six pixels pour dire qu il est
+   vide : il se replie, et le mois se parcourt d un coup d oeil. */
+.cal-rb-ligne.est-vide .cal-rb-timbre { padding-top: 4px; padding-bottom: 4px; }
+/* Un jour vide reste une information : sa date doit se LIRE. Elle se
+   distingue d une journee pleine par sa taille et par la hauteur de sa
+   ligne, pas en devenant illisible — 2,92 de rapport, c etait un jour
+   qu on ne pouvait plus nommer. */
+.cal-rb-ligne.est-vide .cal-rb-num { font-size: max(13px, 0.8125rem); color: hsl(var(--ds-text-muted) / 0.8); }
+.cal-rb-ligne.est-vide .cal-rb-jour { color: hsl(var(--ds-text-muted) / 0.75); }
+
+.cal-rb-piste { position: relative; padding: 7px 10px 7px 0; min-height: 46px; }
+.cal-rb-ligne.est-vide .cal-rb-piste { min-height: 0; padding: 4px 10px 4px 0; }
+/* Les traits d heure sont le fond de la journee, pas un decor. */
+.cal-rb-piste::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: repeating-linear-gradient(90deg,
+    hsl(var(--ds-border-default) / 0.10) 0 1px, transparent 1px calc(100% / 6));
+}
+
+.cal-rb-bloc {
+  position: absolute; height: 22px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 6px; overflow: hidden;
+  background: color-mix(in oklab, var(--cal-teinte) 20%, transparent);
+  border-left: 2px solid var(--cal-teinte);
+  font-family: var(--cal-corps); font-size: max(12px, 0.75rem); font-weight: 600;
+  white-space: nowrap; text-align: left;
+  color: var(--cal-teinte);
+  transition: background 140ms var(--ds-ease-out), transform 140ms var(--ds-ease-out);
+}
+@supports (color: color-mix(in oklab, red, white)) {
+  .cal-rb-bloc { color: color-mix(in oklab, var(--cal-teinte) 72%, white); }
+}
+.cal-rb-bloc:hover { background: color-mix(in oklab, var(--cal-teinte) 34%, transparent); transform: translateY(-1px); z-index: 2; }
+.cal-rb-h {
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem);
+  opacity: 0.8; font-variant-numeric: tabular-nums;
+}
+/* Une echeance n a pas d heure : elle couvre la journee. */
+.cal-rb-jourentier {
+  position: absolute; left: 0; right: 10px; top: 2px; height: 13px;
+  display: flex; align-items: center; gap: 5px; padding: 0 6px;
+  background: repeating-linear-gradient(135deg,
+    color-mix(in oklab, var(--cal-teinte) 22%, transparent) 0 5px, transparent 5px 10px);
+  border-left: 2px dashed var(--cal-teinte);
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem); letter-spacing: 0.06em;
+  color: var(--cal-teinte);
+  white-space: nowrap; overflow: hidden; text-align: left;
+}
+@supports (color: color-mix(in oklab, red, white)) {
+  .cal-rb-jourentier { color: color-mix(in oklab, var(--cal-teinte) 72%, white); }
+}
+.cal-rb-aiguille {
+  position: absolute; top: 0; bottom: 0; width: 1px; z-index: 3;
+  background: var(--cal-signal);
+  box-shadow: 0 0 8px hsl(var(--ds-accent-primary) / 0.8);
+  pointer-events: none;
+}
+.cal-rb-aiguille::before {
+  content: ""; position: absolute; top: -3px; left: -3px; width: 7px; height: 7px;
+  background: var(--cal-signal); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.cal-rb-vide {
+  padding: 42px 20px; text-align: center;
+  font-family: var(--cal-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--cal-faible);
+}
+
+/* Sous 560 px de conteneur, l axe horaire ne porte plus rien d utile :
+   les blocs passent en pleine largeur, dans l ordre, sans mentir sur
+   leur duree — l heure est ecrite a cote. */
+@container calendrier (max-width: 560px) {
+  .cal-corps { --cal-rb-timbre: 62px; }
+  .cal-rb-axe { display: none; }
+  .cal-rb-piste { display: flex; flex-direction: column; gap: 3px; padding: 6px 8px 6px 0; min-height: 0; }
+  .cal-rb-piste::before { display: none; }
+  /* Empiles et en pleine largeur, les blocs n ont plus de duree a
+     encoder : ils peuvent prendre la taille du doigt. */
+  /* Specificite doublee a dessein : la regle tactile plus bas fixe 26 px
+     pour les blocs poses sur l axe horaire, et elle vient apres. Ici les
+     blocs sont empiles et pleine largeur — ils peuvent prendre la taille
+     du doigt sans mentir sur aucune duree. */
+  .cal-corps .cal-rb-bloc, .cal-corps .cal-rb-jourentier {
+    position: static; width: auto !important; left: auto !important; right: auto;
+    height: auto; min-height: 44px; padding: 6px 8px;
+  }
+  .cal-rb-aiguille { display: none; }
+  .cal-rb-ligne.est-vide .cal-rb-piste { padding: 2px 8px 2px 0; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   LA GRILLE DU MOIS — la carte
+   ═══════════════════════════════════════════════════════════ */
+.cal-grille { display: grid; grid-template-columns: 30px repeat(7, minmax(0, 1fr)); }
+.cal-jourtete { padding: 8px 0 7px; text-align: center; border-bottom: 1px solid var(--cal-trait-fort); font-family: var(--cal-mono); }
+.cal-coord { display: block; font-size: max(9px, 0.5625rem); letter-spacing: 0.18em; color: hsl(var(--ds-text-muted) / 0.55); }
+.cal-abrev { display: block; font-size: max(10.5px, 0.656rem); letter-spacing: 0.2em; color: var(--cal-doux); text-transform: uppercase; }
+.cal-semaine {
+  border-bottom: 1px solid var(--cal-trait); border-right: 1px solid var(--cal-trait);
+  display: flex; align-items: flex-start; justify-content: center; padding-top: 8px;
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem); color: hsl(var(--ds-text-muted) / 0.5);
+}
 .cal-case {
-  height: var(--cal-hauteur-case, 110px);
+  position: relative; height: var(--cal-hauteur-case, 112px);
+  padding: 5px 4px 4px;
+  border-bottom: 1px solid var(--cal-trait); border-right: 1px solid var(--cal-trait);
+  display: flex; flex-direction: column; gap: 3px; min-width: 0; min-height: 0;
+  overflow: hidden;
 }
+.cal-case.hors-mois { opacity: 0.32; }
+.cal-case.est-survolee { background: hsl(var(--ds-accent-primary) / 0.12); }
+/* L en-tete de la colonne des semaines suit son sort. */
+.cal-semaine-tete { border-right: 1px solid var(--cal-trait); }
+@container calendrier (max-width: 640px) { .cal-semaine-tete { display: none; } }
+/* La colonne des semaines emprunte la hauteur d une case, pas ses marges. */
+.cal-semaine.cal-case { padding: 8px 0 0; gap: 0; }
+.cal-jour {
+  font-family: var(--cal-mono); font-size: max(11px, 0.6875rem);
+  color: var(--cal-doux); letter-spacing: 0.04em;
+  padding: 0 3px 2px; text-align: left; width: 100%; flex-shrink: 0;
+  transition: color 140ms var(--ds-ease-out);
+}
+.cal-jour:hover { color: var(--cal-signal); }
+/* Aujourd hui : quatre crochets et une case eclairee, pas un aplat. */
+.cal-case.est-auj { background: hsl(var(--ds-accent-primary) / 0.05); }
+.cal-case.est-auj::after {
+  content: ""; position: absolute; inset: 2px; pointer-events: none; z-index: 1;
+  background:
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 0 0 / 10px 1px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 0 0 / 1px 10px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 100% 0 / 10px 1px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 100% 0 / 1px 10px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 0 100% / 10px 1px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 0 100% / 1px 10px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 100% 100% / 10px 1px no-repeat,
+    linear-gradient(var(--cal-signal), var(--cal-signal)) 100% 100% / 1px 10px no-repeat;
+}
+.cal-case.est-auj .cal-jour { color: var(--cal-signal); text-shadow: 0 0 10px hsl(var(--ds-accent-primary) / 0.55); }
+.cal-plus {
+  margin-top: auto; text-align: left; width: 100%;
+  font-family: var(--cal-mono); font-size: max(9px, 0.5625rem); letter-spacing: 0.12em;
+  color: var(--cal-faible); padding-left: 3px;
+  transition: color 140ms var(--ds-ease-out);
+}
+.cal-plus:hover { color: var(--cal-signal); }
 
-/* Sous 640 px de conteneur, sept colonnes de 45 px ne portent plus rien.
-   La colonne des numeros de semaine part, et la grille garde un plancher
-   en defilant dans SON cadre — la page, elle, ne bouge pas. */
+/* Sous 640 px de conteneur : la colonne des semaines part, la grille
+   garde un plancher en defilant dans SON cadre — la page ne bouge pas. */
 @container calendrier (max-width: 640px) {
   .cal-mois-cadre { overflow-x: auto; }
   .cal-mois-piste { min-width: 532px; }
@@ -49,42 +340,132 @@
   .cal-grille { grid-template-columns: repeat(7, minmax(0, 1fr)); }
 }
 
-/* ── Le doigt ───────────────────────────────────────────────── */
-@media (pointer: coarse) {
-  .cal-outil,
-  .cal-vue,
-  .cal-source {
-    min-height: 44px;
-  }
+/* ═══════════════════════════════════════════════════════════
+   LA TELEMETRIE — ce qui donne un sens au vide
+   ═══════════════════════════════════════════════════════════ */
+.cal-tel { display: flex; flex-direction: column; gap: 8px; }
+.cal-tel-bloc {
+  background: var(--cal-plaque); border: 1px solid var(--cal-trait);
+  padding: 11px 13px 10px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+.cal-tel-nom {
+  display: block; font-family: var(--cal-mono);
+  font-size: max(9px, 0.5625rem); letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--cal-faible);
+}
+.cal-tel-val {
+  display: block; margin-top: 5px;
+  font-family: var(--cal-titre); font-weight: 900; font-size: max(24px, 1.5rem); line-height: 1;
+  color: var(--cal-texte); font-variant-numeric: tabular-nums;
+}
+.cal-tel-bloc.est-signal .cal-tel-val { color: var(--cal-signal); }
+.cal-tel-note {
+  display: block; margin-top: 5px;
+  font-family: var(--cal-corps); font-size: max(12.5px, 0.78rem); line-height: 1.35;
+  color: var(--cal-doux);
+}
+.cal-tel-jauge { display: flex; gap: 2px; margin-top: 8px; }
+.cal-tel-jauge i { flex: 1; height: 3px; background: var(--cal-trait-fort); }
+.cal-tel-jauge i.est-plein { background: var(--cal-signal); }
+.cal-tel-liste { display: flex; flex-direction: column; }
+.cal-tel-item {
+  display: grid; grid-template-columns: 3px minmax(0, 1fr); gap: 8px; align-items: stretch;
+  padding: 7px 0; border-top: 1px solid var(--cal-trait); text-align: left;
+}
+.cal-tel-item:first-of-type { border-top: 0; }
+.cal-tel-item em { background: var(--cal-teinte); font-style: normal; }
+.cal-tel-titre {
+  display: block; font-family: var(--cal-corps); font-size: max(13px, 0.8125rem); font-weight: 600;
+  color: var(--cal-texte); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  transition: color 140ms var(--ds-ease-out);
+}
+.cal-tel-item:hover .cal-tel-titre { color: var(--cal-signal); }
+.cal-tel-quand {
+  display: block; margin-top: 1px; font-family: var(--cal-mono);
+  font-size: max(9.5px, 0.594rem); letter-spacing: 0.06em; color: var(--cal-faible);
+}
+.cal-tel-quand.est-passe { color: hsl(var(--ds-accent-critical) / 0.9); }
 
+/* ═══════════════════════════════════════════════════════════
+   LES COMMANDES
+   ═══════════════════════════════════════════════════════════ */
+.cal-barre { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.cal-barre-haut { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+
+.cal-outil {
+  font-family: var(--cal-mono);
+  border-radius: 0 !important;
+  letter-spacing: 0.1em;
+}
+.cal-periode {
+  font-family: var(--cal-titre); font-weight: 900;
+  font-size: max(15px, 0.9375rem); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--cal-texte); min-width: 172px; text-align: center;
+  padding: 4px 8px; border: 1px solid transparent;
+  transition: color 140ms var(--ds-ease-out), border-color 140ms var(--ds-ease-out);
+}
+.cal-periode:hover { color: var(--cal-signal); border-color: hsl(var(--ds-accent-primary) / 0.3); }
+
+.cal-vues {
+  display: flex; align-items: stretch;
+  border: 1px solid var(--cal-trait);
+  background: hsl(var(--ds-surface-1) / 0.7);
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+}
+.cal-vue {
+  padding: 6px 11px;
+  font-family: var(--cal-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--cal-faible);
+  border-right: 1px solid var(--cal-trait);
+  transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.cal-vue:last-child { border-right: 0; }
+.cal-vue:hover { color: var(--cal-texte); background: hsl(var(--ds-surface-2) / 0.7); }
+.cal-vue[aria-pressed="true"] {
+  color: hsl(var(--ds-bg-base)); background: var(--cal-signal);
+}
+
+.cal-sources { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.cal-source {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  font-family: var(--cal-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  border: 1px solid color-mix(in oklab, var(--cal-teinte) 45%, transparent);
+  color: var(--cal-teinte);
+  background: color-mix(in oklab, var(--cal-teinte) 10%, transparent);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+  transition: opacity 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+@supports (color: color-mix(in oklab, red, white)) {
+  .cal-source { color: color-mix(in oklab, var(--cal-teinte) 72%, white); }
+}
+.cal-source[aria-pressed="false"] {
+  border-color: var(--cal-trait); color: hsl(var(--ds-text-muted) / 0.6);
+  background: none;
+}
+.cal-source[aria-pressed="false"]:hover { color: hsl(var(--ds-text-secondary)); }
+
+/* ═══════════════════════════════════════════════════════════
+   LE DOIGT
+   Le seuil ne depend pas de la largeur mais du pointeur.
+   ═══════════════════════════════════════════════════════════ */
+@media (pointer: coarse) {
+  .cal-outil, .cal-vue, .cal-source, .cal-periode { min-height: 44px; }
   .cal-outil { min-width: 44px; }
   .cal-vue { padding-inline: 14px; }
   .cal-source { padding-inline: 12px; }
-
-  /* Le numero du jour est la porte d entree de la saisie rapide : elle
-     merite la meme surface que le reste. La case s agrandit d autant,
-     pour ne pas prendre la place des evenements. */
   .cal-jour { min-height: 44px; display: flex; align-items: center; }
-  .cal-case { --cal-hauteur-case: 136px; }
+  .cal-case { --cal-hauteur-case: 138px; }
+  .cal-rb-timbre { min-height: 44px; }
+  /* Sur un axe horaire, un bloc encode une DUREE : l epaissir a 44 px
+     mentirait sur la journee. Le timbre du jour, lui, fait 44 px et
+     ouvre la meme journee en grand — c est la cible de repli. */
+  .cal-rb-bloc, .cal-rb-jourentier { min-height: 26px; }
 }
 
-
-/* ── La lisibilite des pastilles ────────────────────────────
- *
- * Le titre s ecrivait dans la teinte de l evenement, sur un fond de la
- * MEME teinte a 19 % : le rapport de contraste dependait donc
- * entierement de la couleur choisie. Deux des dix passaient sous 4,5 —
- * #6366f1 a 3,89 et #8b5cf6 a 4,08 — ainsi que le violet impose aux
- * echeances d objectif, #a855f7 a 4,33, que personne ne choisit.
- *
- * Le texte part maintenant de la teinte et remonte vers le blanc — d un
- * quart seulement : assez pour que le rapport ne depende plus de la
- * couleur (le pire des dix passe de 3,89 a 6,05), assez peu pour que la
- * couleur reste franchement elle-meme. Le repli garde l ancien
- * comportement la ou color-mix manque.
- */
-.cal-evt { color: var(--cal-teinte); }
-
-@supports (color: color-mix(in oklab, red, white)) {
-  .cal-evt { color: color-mix(in oklab, var(--cal-teinte) 75%, white); }
+@media (prefers-reduced-motion: reduce) {
+  .cal *, .cal *::before, .cal *::after { transition: none !important; animation: none !important; }
 }

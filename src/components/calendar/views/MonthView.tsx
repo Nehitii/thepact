@@ -13,6 +13,17 @@ import { EventQuickAdd } from "../EventQuickAdd";
 import { DndContext, DragEndEvent, PointerSensor, KeyboardSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { useDraggable, useDroppable } from "@dnd-kit/core";
 
+/* LA CARTE
+ *
+ * Le ruban est devenu la vue par defaut ; la grille reste ce qu elle a
+ * toujours ete de mieux : une carte. On y cherche une date, on y voit la
+ * forme d un mois, on n y lit pas le detail d une journee.
+ *
+ * Elle est habillee du meme cadre que le reste : les coordonnees en
+ * en-tete, les evenements en bandes, et aujourd hui marque par quatre
+ * crochets plutot que par un aplat de couleur.
+ */
+
 interface MonthViewProps {
   viewDate: Date;
   events: CalendarEvent[];
@@ -72,12 +83,7 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd, onShowMore, 
   return (
     <div
       ref={setNodeRef}
-      className={cn(
-        "cal-case border border-border/30 p-1 transition-colors relative flex flex-col min-w-0 min-h-0 overflow-hidden",
-        !inMonth && "opacity-40",
-        isOver && "bg-primary/10",
-        today && "bg-primary/5 ring-1 ring-inset ring-primary/40"
-      )}
+      className={cn("cal-case", !inMonth && "hors-mois", today && "est-auj", isOver && "est-survolee")}
     >
       <EventQuickAdd
         date={day}
@@ -91,40 +97,33 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd, onShowMore, 
             on ne pouvait pas creer d evenement depuis une case. */}
         <button
           type="button"
-          className="cal-jour w-full text-left shrink-0 min-w-0"
+          className="cal-jour"
           aria-label={t("calendar.addOnDay", "New event on {{date}}", {
             date: format(day, "EEEE d MMMM", { locale }),
           })}
         >
-          <span className={cn(
-            "text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full",
-            today && "bg-primary text-primary-foreground font-bold"
-          )}>
-            {format(day, "d")}
-          </span>
-          {today && (
-            <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          )}
+          {format(day, "d")}
         </button>
       </EventQuickAdd>
 
-      <div className="flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden space-y-0.5 scrollbar-thin scrollbar-thumb-border/50">
+      <div className="relative z-[2] flex-1 min-h-0 min-w-0 overflow-y-auto overflow-x-hidden space-y-[3px] scrollbar-thin scrollbar-thumb-border/50">
         {visible.map((ev) => (
           <DraggableEvent key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); onEventClick(ev); }} />
         ))}
-        {overflow > 0 && (
-          /* C etait un paragraphe : le surplus n etait atteignable qu en
-             faisant defiler l interieur d une case de 110 px, ce que rien
-             n indiquait. Et la chaine etait la seule en anglais en dur. */
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); onShowMore?.(day); }}
-            className="w-full text-left ds-t-label text-muted-foreground hover:text-primary pl-1 truncate transition-colors"
-          >
-            {t("calendar.moreEvents", "+{{count}} more", { count: overflow })}
-          </button>
-        )}
       </div>
+
+      {overflow > 0 && (
+        /* C etait un paragraphe : le surplus n etait atteignable qu en
+           faisant defiler l interieur d une case de 112 px, ce que rien
+           n indiquait. */
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onShowMore?.(day); }}
+          className="cal-plus relative z-[2]"
+        >
+          {t("calendar.moreEvents", "+{{count}} more", { count: overflow })}
+        </button>
+      )}
     </div>
   );
 }
@@ -143,18 +142,14 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
     return eachDayOfInterval({ start: gridStart, end: gridEnd });
   }, [viewDate]);
 
-  const dayHeaders = useMemo(() => {
-    return Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(2024, 0, i + 1);
-      return format(d, "EEE", { locale });
-    });
-  }, [locale]);
+  const dayHeaders = useMemo(
+    () => Array.from({ length: 7 }, (_, i) => format(new Date(2024, 0, i + 1), "EEE", { locale })),
+    [locale],
+  );
 
   const weeks = useMemo(() => {
     const result: Date[][] = [];
-    for (let i = 0; i < days.length; i += 7) {
-      result.push(days.slice(i, i + 7));
-    }
+    for (let i = 0; i < days.length; i += 7) result.push(days.slice(i, i + 7));
     return result;
   }, [days]);
 
@@ -174,49 +169,45 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
     const eventData = active.data.current?.event as CalendarEvent | undefined;
     if (!eventData) return;
     const realId = eventData._virtual ? eventData.id.split("_r")[0] : eventData.id;
-    const newDate = new Date(over.id as string);
-    onEventMove(realId, newDate);
+    onEventMove(realId, new Date(over.id as string));
   }, [onEventMove]);
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       {/* Sous 640 px de conteneur la grille defile dans SON cadre : la
           page, elle, ne part jamais en travers. */}
-      <div className="cal-mois-cadre rounded-lg overflow-hidden border border-border/40">
+      <div className="cal-mois-cadre">
         <div className="cal-mois-piste">
-        {/* Header */}
-        <div className="cal-grille bg-muted/30">
-          <div className="cal-semaine text-center ds-t-label text-muted-foreground py-1.5 uppercase">W</div>
-          {dayHeaders.map((h) => (
-            <div key={h} className="text-center ds-t-label font-medium text-muted-foreground py-1.5 uppercase tracking-wider min-w-0">
-              {h}
+          <div className="cal-grille">
+            <div className="cal-jourtete cal-semaine-tete" aria-hidden="true" />
+            {dayHeaders.map((h, i) => (
+              <div key={h} className="cal-jourtete">
+                <span className="cal-coord" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+                <span className="cal-abrev">{h}</span>
+              </div>
+            ))}
+          </div>
+
+          {weeks.map((week, wi) => (
+            <div key={wi} className="cal-grille">
+              <div className="cal-semaine cal-case">{getISOWeek(week[0])}</div>
+              {week.map((day) => {
+                const key = format(day, "yyyy-MM-dd");
+                return (
+                  <DayCell
+                    key={key}
+                    day={day}
+                    viewDate={viewDate}
+                    events={eventsByDay.get(key) ?? []}
+                    onEventClick={onEventClick}
+                    onQuickAdd={onQuickAdd}
+                    onShowMore={onShowMore}
+                    locale={locale}
+                  />
+                );
+              })}
             </div>
           ))}
-        </div>
-
-        {/* Body */}
-        {weeks.map((week, wi) => (
-          <div key={wi} className="cal-grille">
-            <div className="cal-semaine cal-case flex items-start justify-center pt-2 ds-t-label text-muted-foreground font-mono border border-border/20 min-w-0">
-              {getISOWeek(week[0])}
-            </div>
-            {week.map((day) => {
-              const key = format(day, "yyyy-MM-dd");
-              return (
-                <DayCell
-                  key={key}
-                  day={day}
-                  viewDate={viewDate}
-                  events={eventsByDay.get(key) ?? []}
-                  onEventClick={onEventClick}
-                  onQuickAdd={onQuickAdd}
-                  onShowMore={onShowMore}
-                  locale={locale}
-                />
-              );
-            })}
-          </div>
-        ))}
         </div>
       </div>
     </DndContext>

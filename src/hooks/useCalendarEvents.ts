@@ -230,8 +230,10 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
       const ws = startOfWeek(viewDate, { weekStartsOn: 1 });
       return { rangeStart: ws, rangeEnd: endOfWeek(viewDate, { weekStartsOn: 1 }) };
     }
-    if (view === "agenda") {
-      return { rangeStart: startOfDay(viewDate), rangeEnd: addDays(viewDate, 30) };
+    /* Le ruban couvre le mois affiche, comme la grille : les fleches, le
+       titre et la periode disent alors la meme chose. */
+    if (view === "ruban") {
+      return { rangeStart: startOfMonth(viewDate), rangeEnd: endOfMonth(viewDate) };
     }
     const ms = startOfWeek(startOfMonth(viewDate), { weekStartsOn: 1 });
     const me = endOfWeek(endOfMonth(viewDate), { weekStartsOn: 1 });

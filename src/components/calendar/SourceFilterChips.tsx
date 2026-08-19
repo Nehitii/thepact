@@ -1,6 +1,5 @@
 import { memo } from "react";
 import { CheckSquare, Target, Footprints, CalendarDays } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import type { CalendarSourceType } from "@/hooks/useCalendarEvents";
 
@@ -9,11 +8,14 @@ interface SourceFilterChipsProps {
   onToggle: (source: CalendarSourceType) => void;
 }
 
-const chips: { key: CalendarSourceType; icon: typeof CalendarDays; colorClass: string }[] = [
-  { key: "event", icon: CalendarDays, colorClass: "text-blue-400 border-blue-400/50 bg-blue-400/10" },
-  { key: "todo", icon: CheckSquare, colorClass: "text-orange-400 border-orange-400/50 bg-orange-400/10" },
-  { key: "goal", icon: Target, colorClass: "text-purple-400 border-purple-400/50 bg-purple-400/10" },
-  { key: "step", icon: Footprints, colorClass: "text-teal-400 border-teal-400/50 bg-teal-400/10" },
+/* Les pastilles portent la teinte reelle de leur source — celle qu on
+   retrouve sur les bandes du calendrier. Une legende qui n emploie pas
+   les memes couleurs que la carte n est pas une legende. */
+const chips: { key: CalendarSourceType; icon: typeof CalendarDays; teinte: string }[] = [
+  { key: "event", icon: CalendarDays, teinte: "#3b82f6" },
+  { key: "todo", icon: CheckSquare, teinte: "#f97316" },
+  { key: "goal", icon: Target, teinte: "#a855f7" },
+  { key: "step", icon: Footprints, teinte: "#14b8a6" },
 ];
 
 export const SourceFilterChips = memo(({ active, onToggle }: SourceFilterChipsProps) => {
@@ -27,26 +29,21 @@ export const SourceFilterChips = memo(({ active, onToggle }: SourceFilterChipsPr
   };
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={t("calendar.sourceFilters", "Sources shown")}>
-      {chips.map(({ key, icon: Icon, colorClass }) => {
-        const isActive = active.has(key);
-        return (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onToggle(key)}
-            /* Une source active ne se distinguait que par l opacite. */
-            aria-pressed={isActive}
-            className={cn(
-              "cal-source flex items-center gap-1 px-2.5 py-1 rounded-full ds-t-label font-medium border transition-all",
-              isActive ? colorClass : "text-muted-foreground border-border/30 bg-transparent opacity-50"
-            )}
-          >
-            <Icon className="h-3 w-3" aria-hidden="true" />
-            {labels[key]}
-          </button>
-        );
-      })}
+    <div className="cal-sources" role="group" aria-label={t("calendar.sourceFilters", "Sources shown")}>
+      {chips.map(({ key, icon: Icon, teinte }) => (
+        <button
+          key={key}
+          type="button"
+          onClick={() => onToggle(key)}
+          /* Une source active ne se distinguait que par l opacite. */
+          aria-pressed={active.has(key)}
+          className="cal-source"
+          style={{ ["--cal-teinte" as string]: teinte } as React.CSSProperties}
+        >
+          <Icon className="h-3 w-3" aria-hidden="true" />
+          {labels[key]}
+        </button>
+      ))}
     </div>
   );
 });

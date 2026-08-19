@@ -1,8 +1,19 @@
 import { memo } from "react";
 import { format, parseISO } from "date-fns";
-import { Repeat, CheckSquare, Target, Footprints } from "lucide-react";
-import type { CalendarEvent, CalendarSourceType } from "@/hooks/useCalendarEvents";
+import { Repeat } from "lucide-react";
+import type { CalendarEvent } from "@/hooks/useCalendarEvents";
 import { cn } from "@/lib/utils";
+
+/* LA BANDE
+ *
+ * Un filet de couleur, l heure en mono, le titre. Pas de pastille, pas
+ * de coin arrondi : la case du mois fait 112 px de haut et doit en loger
+ * trois — chaque pixel de chrome est un pixel de titre en moins.
+ *
+ * Les echeances importees — taches, objectifs, etapes — portent un filet
+ * POINTILLE : on les distingue des vrais evenements sans avoir a les
+ * lire, et sans depenser une icone.
+ */
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -10,42 +21,27 @@ interface EventCardProps {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-const sourceIcons: Partial<Record<CalendarSourceType, typeof CheckSquare>> = {
-  todo: CheckSquare,
-  goal: Target,
-  step: Footprints,
-};
-
 export const EventCard = memo(({ event, compact, onClick }: EventCardProps) => {
-  const start = parseISO(event.start_time);
-  const timeStr = event.all_day ? "" : format(start, "HH:mm");
-  const isExternal = event._source && event._source !== "event";
-  const SourceIcon = isExternal ? sourceIcons[event._source!] : undefined;
+  const debut = parseISO(event.start_time);
+  const importe = !!event._source && event._source !== "event";
+  const heure = event.all_day ? null : format(debut, "HH:mm");
 
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={cn(
-        "cal-evt group w-full max-w-full text-left rounded-md px-1.5 py-0.5 text-xs font-medium truncate transition-all overflow-hidden",
-        "hover:ring-1 hover:ring-white/30 hover:brightness-110 cursor-pointer",
-        compact && "ds-t-label leading-tight"
-      )}
-      /* Le texte n est plus pris dans la teinte : il en part, puis
-         remonte vers le blanc — voir calendar.css. Sans quoi le rapport
-         de contraste dependait de la couleur choisie, et deux des dix
-         passaient sous le seuil. */
-      style={{
-        ["--cal-teinte" as string]: event.color,
-        backgroundColor: event.color + "30",
-        borderLeft: isExternal ? `3px dashed ${event.color}` : `3px solid ${event.color}`,
-      } as React.CSSProperties}
+      className={cn("cal-evt", compact && "est-compact")}
+      data-importe={importe}
+      style={{ ["--cal-teinte" as string]: event.color } as React.CSSProperties}
       title={event.title}
     >
-      <span className="flex items-center gap-1 min-w-0">
-        {SourceIcon && <SourceIcon className="w-2.5 h-2.5 shrink-0 opacity-70" />}
-        {timeStr && <span className="opacity-70 shrink-0">{timeStr}</span>}
-        <span className="truncate">{event.title}</span>
-        {event.recurrence_rule && <Repeat className="w-2.5 h-2.5 opacity-50 shrink-0" />}
+      <span className="cal-evt-filet" aria-hidden="true" />
+      {heure && <span className="cal-evt-heure">{heure}</span>}
+      <span className="cal-evt-titre">
+        {event.title}
+        {event.recurrence_rule && (
+          <Repeat className="cal-evt-marque inline-block w-2.5 h-2.5 ml-1 -mt-0.5" aria-hidden="true" />
+        )}
       </span>
     </button>
   );

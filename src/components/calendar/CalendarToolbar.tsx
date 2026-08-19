@@ -10,7 +10,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { SourceFilterChips } from "./SourceFilterChips";
 import type { CalendarSourceType } from "@/hooks/useCalendarEvents";
 
-export type CalendarView = "month" | "week" | "day" | "year" | "agenda";
+/* La vue « agenda » listait les jours a venir. Le ruban fait le meme
+   travail — chronologique, jour par jour — mais montre en plus a quelle
+   heure les choses tombent et ce qui se chevauche. Garder les deux aurait
+   ete garder deux vues pour un seul metier. */
+export type CalendarView = "ruban" | "week" | "day" | "month" | "year";
 
 interface CalendarToolbarProps {
   viewDate: Date;
@@ -33,11 +37,11 @@ export const CalendarToolbar = memo(({
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   const viewLabels: { key: CalendarView; label: string }[] = [
+    { key: "ruban", label: t("calendar.viewRuban", "Ribbon") },
     { key: "day", label: t("calendar.viewDay", "Day") },
     { key: "week", label: t("calendar.viewWeek", "Week") },
     { key: "month", label: t("calendar.viewMonth", "Month") },
     { key: "year", label: t("calendar.viewYear", "Year") },
-    { key: "agenda", label: t("calendar.viewAgenda", "Agenda") },
   ];
 
   const navigate = (dir: 1 | -1) => {
@@ -47,8 +51,8 @@ export const CalendarToolbar = memo(({
     onDateChange(fn(viewDate, 1));
   };
 
-  /* Un chevron seul n annonce rien. Le libelle nomme la periode qu on
-     quitte ou qu on rejoint, pas une direction abstraite. */
+  /* Un chevron seul n annonce rien. Le libelle nomme la periode
+     concernee, pas une direction abstraite. */
   const periode = view === "day" ? t("calendar.viewDay", "Day")
     : view === "week" ? t("calendar.viewWeek", "Week")
     : view === "year" ? t("calendar.viewYear", "Year")
@@ -60,9 +64,9 @@ export const CalendarToolbar = memo(({
     : "MMMM yyyy";
 
   return (
-    <div className="space-y-2 mb-4">
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        {/* Left: nav */}
+    <div className="cal-barre">
+      <div className="cal-barre-haut">
+        {/* Gauche : la navigation */}
         <div className="flex items-center gap-1.5">
           <Button
             variant="ghost"
@@ -80,10 +84,10 @@ export const CalendarToolbar = memo(({
                 type="button"
                 aria-haspopup="dialog"
                 aria-expanded={datePickerOpen}
-                /* Pas d aria-label ici : il remplacerait « August 2026 »
-                   par un texte qui ne le contient pas, et le nom annonce
-                   ne correspondrait plus au libelle visible. */
-                className="cal-outil text-lg font-orbitron font-bold capitalize min-w-[140px] text-center hover:text-primary transition-colors cursor-pointer"
+                /* Pas d aria-label ici : il remplacerait « aout 2026 » par
+                   un texte qui ne le contient pas, et le nom annonce ne
+                   correspondrait plus au libelle visible. */
+                className="cal-periode"
               >
                 {format(viewDate, titleFormat, { locale })}
               </button>
@@ -110,17 +114,13 @@ export const CalendarToolbar = memo(({
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Button variant="outline" size="sm" onClick={onToday} className="cal-outil h-8 text-xs ml-1">
-            <CalendarDays className="h-3.5 w-3.5 mr-1" aria-hidden="true" />
+            <CalendarDays className="h-3.5 w-3.5 mr-1.5" aria-hidden="true" />
             {t("calendar.today", "Today")}
           </Button>
         </div>
 
-        {/* Center: view switcher */}
-        <div
-          className="flex items-center bg-card/50 rounded-lg p-0.5 border border-border/40"
-          role="group"
-          aria-label={t("calendar.viewSwitcher", "Calendar view")}
-        >
+        {/* Centre : le selecteur de vue */}
+        <div className="cal-vues" role="group" aria-label={t("calendar.viewSwitcher", "Calendar view")}>
           {viewLabels.map((v) => (
             <button
               key={v.key}
@@ -128,19 +128,14 @@ export const CalendarToolbar = memo(({
               onClick={() => onViewChange(v.key)}
               /* La vue courante ne se lisait qu a la couleur du fond. */
               aria-pressed={view === v.key}
-              className={cn(
-                "cal-vue px-3 py-1.5 text-xs font-medium rounded-md transition-all",
-                view === v.key
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              )}
+              className={cn("cal-vue", view === v.key && "est-active")}
             >
               {v.label}
             </button>
           ))}
         </div>
 
-        {/* Right: actions */}
+        {/* Droite : les actions */}
         <div className="flex items-center gap-1.5">
           {onSearchToggle && (
             <Button
@@ -153,14 +148,13 @@ export const CalendarToolbar = memo(({
               <Search className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
-          <Button size="sm" onClick={onNewEvent} className="cal-outil h-8 gap-1">
+          <Button size="sm" onClick={onNewEvent} className="cal-outil h-8 gap-1.5">
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             {t("calendar.newEvent", "Event")}
           </Button>
         </div>
       </div>
 
-      {/* Source filter chips */}
       <SourceFilterChips active={activeFilters} onToggle={onFilterToggle} />
     </div>
   );
