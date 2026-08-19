@@ -1690,7 +1690,8 @@
       "title": "Configuration du timer",
       "work": "Travail",
       "break": "Pause",
-      "longBreak": "Pause longue"
+      "longBreak": "Pause longue",
+      "backdrop": "Fond vivant"
     },
     "stats": {
       "today": "Aujourd'hui",
@@ -1818,6 +1819,13 @@
       "collapse": "Replier le lecteur",
       "expand": "Déplier le lecteur",
       "stillPlaying": "Lecteur replié — la lecture continue"
+    },
+    "backdrop": {
+      "mycelium": "Mycélium",
+      "aurores": "Aurores",
+      "maillage": "Maillage",
+      "maree": "Marée",
+      "aucun": "Aucun"
     }
   },
   "calendar": {

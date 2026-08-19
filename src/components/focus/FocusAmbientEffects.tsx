@@ -7,6 +7,9 @@ interface FocusAmbientEffectsProps {
   isBreak?: boolean;
   /** Au repos, l ambiance reste — mais elle ne bouge pas. */
   statique?: boolean;
+  /** Un fond en canevas tourne deja : deux systemes de particules pour un
+   *  seul ecran, c est le double du cout pour le meme effet. */
+  sansParticules?: boolean;
 }
 
 /* Cette couche reste a l ecran pendant vingt-cinq minutes : c est le
@@ -17,9 +20,10 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
   progress,
   isBreak = false,
   statique = false,
+  sansParticules = false,
 }: FocusAmbientEffectsProps) {
   const { profile } = useProfileSettings();
-  const particlesEnabled = profile?.particles_enabled ?? true;
+  const particlesEnabled = (profile?.particles_enabled ?? true) && !sansParticules;
   const reducedMotion = useReducedMotion();
 
   /* La couche la plus visible de la page vivait hors du systeme de

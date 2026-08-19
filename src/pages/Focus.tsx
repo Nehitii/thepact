@@ -30,6 +30,8 @@ import {
   FocusToolbar,
   FocusConfigPanel,
   FocusAmbientEffects,
+  FocusFond,
+  type VarianteFond,
   FocusControls,
   FocusDistractionButton,
   type FocusPanel,
@@ -40,6 +42,7 @@ import {
    25 serait aussi surprenant que de perdre le compte a rebours. */
 const CLE_CONFIG = "vowpact.focus.config";
 const CLE_LIEN = "vowpact.focus.lien";
+const CLE_FOND = "vowpact.focus.fond";
 
 function lire<T>(cle: string, defaut: T): T {
   try {
@@ -73,6 +76,19 @@ export default function Focus() {
   const [longBreakMin, setLongBreakMin] = useState(config0.longue);
   const [linkedGoalId, setLinkedGoalId] = useState<string | null>(lien0.goal);
   const [linkedTodoId, setLinkedTodoId] = useState<string | null>(lien0.todo);
+  /* Le fond vivant, choisi par l utilisateur et retenu. Quatre scenes plus
+     « aucune » : imposer une ambiance a quelqu un qui vient chercher le
+     calme serait exactement le contraire du but de la page. */
+  const [fond, setFond] = useState<VarianteFond>(() => {
+    try {
+      const lu = localStorage.getItem(CLE_FOND);
+      return (lu as VarianteFond) || "mycelium";
+    } catch { return "mycelium"; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem(CLE_FOND, fond); } catch { /* stockage indisponible */ }
+  }, [fond]);
+
   const [activePanel, setActivePanel] = useState<FocusPanel>(null);
 
   /* Les panneaux nont pas la meme hauteur : passer de Stats a Historique
@@ -392,6 +408,13 @@ export default function Focus() {
             progress={timer.isRunning ? Math.round(timer.progress * 20) / 20 : 0}
             isBreak={isBreak}
             statique={!timer.isRunning}
+            sansParticules={fond !== "aucun"}
+          />
+          <FocusFond
+            variante={fond}
+            actif={timer.isRunning}
+            progress={Math.round(timer.progress * 20) / 20}
+            isBreak={isBreak}
           />
         </>
       }
@@ -561,6 +584,8 @@ export default function Focus() {
                   <div className="p-1 sc-panneau-corps">
                     {activePanel === "config" && !timer.isRunning && (
                       <FocusConfigPanel
+                        fond={fond}
+                        onFondChange={setFond}
                         breakMin={breakMin}
                         longBreakMin={longBreakMin}
                         onBreakChange={setBreakMin}

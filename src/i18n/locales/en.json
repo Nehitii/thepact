@@ -1690,7 +1690,8 @@
       "title": "Timer Configuration",
       "work": "Work",
       "break": "Break",
-      "longBreak": "Long Break"
+      "longBreak": "Long Break",
+      "backdrop": "Living backdrop"
     },
     "stats": {
       "today": "Today",
@@ -1818,6 +1819,13 @@
       "collapse": "Collapse the player",
       "expand": "Expand the player",
       "stillPlaying": "Player collapsed — playback continues"
+    },
+    "backdrop": {
+      "mycelium": "Mycelium",
+      "aurores": "Aurorae",
+      "maillage": "Mesh",
+      "maree": "Tide",
+      "aucun": "None"
     }
   },
   "calendar": {
