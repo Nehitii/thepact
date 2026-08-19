@@ -261,6 +261,28 @@ export default function Focus() {
   const linkedName = linkedGoal?.name ?? (linkedTodoId ? tasks.find((t) => t.id === linkedTodoId)?.name : null);
   const linkedImageUrl = linkedGoal?.image_url ?? null;
 
+  /* Region vocale : trois annonces par phase, pas une par minute.
+     Une region qui se met a jour chaque minute diffuse encore le temps,
+     et une session de vingt-cinq minutes produirait vingt-cinq
+     interruptions. On annonce l entree dans la phase, puis les deux
+     seuls seuils qui changent une decision : cinq minutes, une minute.
+     Le temps restant exact, lui, est expose sur la barre de progression
+     et se lit a la demande. */
+  const annonce = (() => {
+    if (timer.phase === "idle") return "";
+    if (timer.isPaused) return t("focus.announce.paused");
+    const minutes = Math.ceil(timer.secondsLeft / 60);
+    const seuil = minutes <= 1 ? 1 : minutes <= 5 ? 5 : null;
+    if (seuil === null) {
+      return timer.phase === "break"
+        ? t("focus.announce.breakStarted")
+        : t("focus.announce.workStarted");
+    }
+    return timer.phase === "break"
+      ? t("focus.announce.break", { count: seuil })
+      : t("focus.announce.work", { count: seuil });
+  })();
+
   const isBreak = timer.phase === "break";
   const frameColor = timer.isRunning ? (isBreak ? "border-accent/40" : "border-primary/40") : "border-border/30";
   const textColor = timer.isRunning ? (isBreak ? "text-accent/40" : "text-primary/40") : "text-muted-foreground/30";
@@ -336,6 +358,10 @@ export default function Focus() {
           </>
         )}
       </div>
+
+      <p className="sr-only" role="status" aria-live="polite">
+        {annonce}
+      </p>
 
       <div className="flex-1 flex flex-col relative">
         {/* Le bouton vivait dans la couche des equerres, en z-0, tandis que

@@ -104,6 +104,11 @@ export function FocusTimerRing({
         aria-valuenow={Math.round(progress * 100)}
         aria-valuemin={0}
         aria-valuemax={100}
+        aria-valuetext={
+          isIdle
+            ? t("focus.ring.notStarted")
+            : t("focus.ring.remaining", { time: formatTime(secondsLeft) })
+        }
       >
         <circle cx="160" cy="160" r={radius} fill="none" stroke="currentColor" className="text-muted/20" strokeWidth="1" />
         <circle

@@ -1710,7 +1710,9 @@
       "add": "Ajouter Spotify",
       "paste": "Coller l'URL Spotify...",
       "invalid": "URL Spotify invalide",
-      "pasteHint": "Colle l'URL d'une playlist, album ou track Spotify"
+      "pasteHint": "Colle l'URL d'une playlist, album ou track Spotify",
+      "edit": "Modifier le lien Spotify",
+      "remove": "Retirer le lien Spotify"
     },
     "controls": {
       "resume": "[ > EXE.REPRISE ]",
@@ -1723,7 +1725,9 @@
       "halted": "[ SYS::PAUSE ]",
       "focused": "[ SYS::FOCUS ]",
       "cooling": "[ SYS::REPOS ]",
-      "progress": "Avancement de la phase"
+      "progress": "Avancement de la phase",
+      "remaining": "{{time}} restant",
+      "notStarted": "Session non démarrée"
     },
     "toolbar": {
       "config": "Config",
@@ -1761,7 +1765,16 @@
       "exit": "Quitter le plein écran (Échap)"
     },
     "skipPhase": "Passer la phase (⇧+S)",
-    "phaseSkipped": "Phase passée"
+    "phaseSkipped": "Phase passée",
+    "announce": {
+      "work_one": "Concentration, 1 minute restante",
+      "work_other": "Concentration, {{count}} minutes restantes",
+      "break_one": "Pause, 1 minute restante",
+      "break_other": "Pause, {{count}} minutes restantes",
+      "paused": "Session suspendue",
+      "workStarted": "Phase de concentration en cours",
+      "breakStarted": "Pause en cours"
+    }
   },
   "calendar": {
     "title": "Calendrier",

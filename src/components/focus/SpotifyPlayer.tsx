@@ -144,13 +144,13 @@ export function SpotifyPlayer({ className, compact = false, userId }: SpotifyPla
           <span className="ds-t-label font-mono uppercase tracking-wider text-muted-foreground">Spotify</span>
         </div>
         <div className="flex items-center gap-1">
-          <button onClick={() => setIsEditing(true)} className="p-1.5 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary" aria-label="Edit Spotify link">
+          <button onClick={() => setIsEditing(true)} className="p-1.5 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary" aria-label={t("focus.spotify.edit")}>
             <Link className="h-3 w-3" />
           </button>
           <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-1.5 hover:bg-muted/50 transition-colors text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-primary" aria-label={isCollapsed ? "Expand" : "Collapse"}>
             {isCollapsed ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />}
           </button>
-          <button onClick={handleClear} className="p-1.5 hover:bg-destructive/20 transition-colors text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-primary" aria-label="Remove Spotify link">
+          <button onClick={handleClear} className="p-1.5 hover:bg-destructive/20 transition-colors text-muted-foreground hover:text-destructive focus-visible:ring-2 focus-visible:ring-primary" aria-label={t("focus.spotify.remove")}>
             <X className="h-3 w-3" />
           </button>
         </div>
