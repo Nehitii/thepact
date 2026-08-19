@@ -110,14 +110,20 @@ const JAUNE = "#fcee0a";
  * l'anneau ecrase verticalement. Grossir le rayon dilate l'ensemble et
  * rend le texte illisible a l'echelle d'ensemble.
  *
- * Le moyeu est donc pose a gauche et ses satellites empiles a sa droite
- * sur deux colonnes. Aucun chevauchement n'est possible par
- * construction, et l'amas occupe deux fois moins de place qu'un anneau
- * de meme contenu. */
+ * Le moyeu est donc pose a gauche et ses satellites empiles a sa droite,
+ * sur UNE seule colonne. Aucun chevauchement n'est possible par
+ * construction.
+ *
+ * La colonne unique n'est pas un detail de mise en page : avec deux
+ * colonnes, l'arete qui relie le moyeu a un satellite de la seconde
+ * passait forcement par-dessus une carte de la premiere, et le trace
+ * devenait illisible. En n'en gardant qu'une, le couloir entre le moyeu
+ * et la colonne n'accueille aucune carte : il est reserve aux aretes,
+ * qui s'y deploient en eventail sans jamais croiser un noeud. */
 const L_NOEUD = 196;
 const H_NOEUD = 108;
-const DECALAGE_MOYEU = 268;
-const COLS_ENFANTS = 2;
+const DECALAGE_MOYEU = 330;
+const COLS_ENFANTS = 1;
 
 function disposer(
   supers: { id: string; enfants: string[] }[],
@@ -158,7 +164,7 @@ function disposer(
   const basY = basDeRangee + 130;
   libres.forEach((id, k) => {
     if (pos.has(id)) return;
-    pos.set(id, { x: (k % 5) * L_NOEUD, y: basY + Math.floor(k / 5) * H_NOEUD });
+      pos.set(id, { x: (k % 5) * L_NOEUD, y: basY + Math.floor(k / 5) * H_NOEUD });
   });
 
   return pos;
@@ -263,14 +269,22 @@ export default function GoalsGraph() {
                   <span className="gr-palier">
                     {estSuper ? (monAmas?.dynamique ? "DYNAMIQUE" : "GROUPE") : NOM_PALIER[palier] || palier}
                   </span>
-                  {etat === "acquis" && (
-                    <span className="gr-fanion" aria-label="Objectif honoré">
-                      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
-                    </span>
-                  )}
+                  {/* rien ici : la marque est en bas de carte */}
                 </span>
                 <span className="gr-nom">{g.name}</span>
-                <span className="gr-jauge"><i style={{ width: `${pct}%` }} /></span>
+                {etat === "acquis" ? (
+                  /* Une bande pleine sur toute la largeur, avec le mot ecrit.
+                     Le fanion d angle qui la precedait etait un signe a
+                     decoder — or personne ne lit une legende pour comprendre
+                     une carte. La bande occupe le meme espace que la jauge
+                     qu elle remplace, et se lit a n importe quelle echelle. */
+                  <span className="gr-acquis-bande">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
+                    HONORÉ
+                  </span>
+                ) : (
+                  <span className="gr-jauge"><i style={{ width: `${pct}%` }} /></span>
+                )}
               </span>
             </span>
           ),
@@ -293,6 +307,8 @@ export default function GoalsGraph() {
           source: a.id,
           target: idEnfant,
           type: "smoothstep",
+          zIndex: 0,
+          pathOptions: { borderRadius: 26, offset: 18 },
           animated: acquis && !a.dynamique,
           className: a.dynamique ? "gr-arete gr-arete--dyn" : "gr-arete",
           style: {

@@ -166,43 +166,6 @@
   background: var(--t, #94a3b8);
   clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
 }
-/* Marque d'objectif honore.
- *
- * Le premier jet etait un glyphe de 13px. A l'echelle d'ensemble — 0,49 —
- * il n'en restait que 6px : invisible, c'est-a-dire inutile, puisque la
- * question posee est justement "qu'est-ce qui est deja fait ?" a laquelle
- * on doit repondre d'un coup d'oeil.
- *
- * Le fanion occupe le coin haut-droit sur 34px et porte un trait epais.
- * A 0,49 il fait encore 17px, et sa forme triangulaire reste
- * identifiable meme quand le trait se brouille. La taille est choisie
- * pour l'echelle d'ensemble, pas pour le zoom.
- */
-.gr-fanion {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
-  background: var(--t, #94a3b8);
-  /* Triangle : le coin, pas une pastille. Il epouse le chanfrein. */
-  clip-path: polygon(100% 0, 100% 100%, 0 0);
-}
-.gr-fanion svg {
-  width: 13px;
-  height: 13px;
-  margin: -7px 4px 0 0;
-  fill: none;
-  stroke: #05080f;
-  stroke-width: 3.4;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
-}
-.gr-noeud--moyeu .gr-fanion { width: 40px; height: 40px; }
-.gr-noeud--moyeu .gr-fanion svg { width: 15px; height: 15px; margin: -8px 5px 0 0; }
-
 .gr-nom {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -291,7 +254,7 @@
   padding: 3px;
   box-shadow: 0 0 26px -5px var(--t, #94a3b8), 0 0 0 1px rgb(255 255 255 / 0.14);
 }
-.gr-etat-acquis .gr-jauge { display: none; }
+
 .gr-etat-acquis .gr-img { filter: saturate(1.12) contrast(1.06) brightness(1.04); }
 .gr-etat-encours .gr-img { filter: saturate(0.86) brightness(0.9); }
 .gr-etat-encours .gr-jauge { height: 7px; }
@@ -306,3 +269,64 @@
   opacity: 0.65;
   text-transform: none;
 }
+
+/* ── Marque d'objectif honoré ──
+ *
+ * Deux tentatives ratees avant celle-ci, pour la meme raison a chaque
+ * fois : je concevais un SIGNE, quand il fallait un MOT.
+ *
+ * D'abord un glyphe de 13px — reduit a 6px a l'echelle d'ensemble, donc
+ * invisible. Puis un fanion d'angle de 34px, bien visible mais
+ * indechiffrable : personne ne lit une legende pour comprendre une
+ * carte, et un triangle dans un coin ne dit pas "termine".
+ *
+ * La bande occupe toute la largeur, porte une coche ET le mot. Elle
+ * remplace la jauge — qui serait pleine, donc muette — et prend donc
+ * exactement sa place, sans rien deplacer. A l'echelle d'ensemble on
+ * voit une barre coloree pleine ; en zoomant on lit le mot. Les deux
+ * niveaux de lecture disent la meme chose.
+ */
+.gr-acquis-bande {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 15px;
+  margin-top: 3px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  color: #05080f;
+  background: var(--t, #94a3b8);
+  box-shadow: 0 0 12px -2px var(--t, #94a3b8);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 5px) 100%, 5px 100%);
+}
+.gr-acquis-bande svg {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: #05080f;
+  stroke-width: 3.6;
+  stroke-linecap: square;
+}
+.gr-noeud--moyeu .gr-acquis-bande { height: 17px; font-size: 11px; }
+
+/* ── Aretes ──
+   ReactFlow peint les aretes sous les noeuds. Avec deux colonnes de
+   satellites, chaque arete vers la seconde colonne disparaissait sous une
+   carte de la premiere : on voyait des pointilles surgir puis se perdre.
+   La colonne unique regle la cause — le couloir entre le moyeu et la
+   colonne n accueille plus aucune carte.
+
+   Reste la lisibilite du trace lui-meme. Les aretes recoivent une ombre
+   portee sombre : sur un fond etoile ou sur une image de carte, un trait
+   fin sans contour se dissout. */
+.gr-toile .react-flow__edge-path {
+  filter: drop-shadow(0 0 3px rgb(3 7 14 / 0.95));
+}
+/* Les liens des groupes automatiques restent en pointilles, mais plus
+   larges : un pointille serre se lit comme un trait plein des qu on
+   dezoome. */
+.gr-arete--dyn .react-flow__edge-path { stroke-dasharray: 2 9 !important; }
