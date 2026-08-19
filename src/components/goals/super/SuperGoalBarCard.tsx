@@ -1,5 +1,5 @@
 import React, { memo, useMemo } from "react";
-import { Crown, Zap, Trophy, TrendingUp } from "lucide-react";
+import { Crown, Zap } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getDifficultyIntensity } from "@/lib/goalConstants";
 import { getDifficultyLabel } from "@/lib/goalConstants";
 import type { SuperGoalRule } from "./types";
@@ -77,14 +77,15 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
   } as React.CSSProperties;
 
   return (
-    // Etait un <div onClick> : toute la carte est un controle, elle doit donc
-    // en etre un. type="button" empeche la soumission si elle finit dans un
-    // formulaire, et text-left annule le centrage propre aux boutons.
+    /* La carte de groupe reprend Eclat a l identique et n ajoute que deux
+       signes : un arc de lumiere qui parcourt le contour, et une pastille
+       par objectif contenu. Rien d autre ne la distingue — il ne faut pas
+       deux langages dans une meme liste. */
     <div
       role="button"
       tabIndex={0}
       aria-label={name}
-      className="bar-card-root w-full text-left cursor-pointer rounded-[18px] outline-none focus-visible:ring-2 focus-visible:ring-primary/70 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="eclat-groupe-cadre"
       style={cssVars}
       onClick={() => onClick(id)}
       onKeyDown={(e) => {
@@ -94,75 +95,66 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
         }
       }}
     >
-      <div className="bar-card-container noselect">
-        <div className="bar-card-canvas">
-          {[...Array(9)].map((_, i) => (
-            <div key={i} className={`bar-card-tracker tr-${i + 1}`} />
-          ))}
-          <div className="bar-card-inner">
-            <div className="bar-card-noise" />
-            <div className="bar-card-content">
-              <div className="bar-card-visual">
-                <div className="bar-card-img-glow" />
-                <div className="bar-card-img-frame">
-                  {imageUrl ? (
-                    <img src={imageUrl} alt={name} loading="lazy" />
-                  ) : (
-                    <div className="bar-card-placeholder">
-                      <Crown size={24} />
-                    </div>
-                  )}
-                </div>
-                {childCount > 0 && (
-                  <div
-                    className="bar-card-mini-ring"
-                    style={{ background: `conic-gradient(${theme.color} ${progressPercent}%, rgba(255,255,255,0.1) 0)` }}
-                  >
-                    <div className="bar-card-ring-inner">
-                      {isComplete ? <Trophy size={10} color={theme.color} /> : <TrendingUp size={10} color="white" />}
-                    </div>
-                  </div>
-                )}
-              </div>
+      {/* Un arc de lumiere doree parcourt le contour en six secondes. Le
+          contour DEVIENT l'effet : rien n'est ajoute par-dessus la carte,
+          ce qui evite d'alourdir une ligne deja dense. */}
+      <span className="eclat-groupe-bord" aria-hidden="true" />
 
-              <div className="bar-card-info">
-                <div className="bar-card-header">
-                  <div className="bar-card-tags-row">
-                    <div className="bar-card-diff-tag">
-                      <span className="bar-card-dot" />
-                      {difficultyLabel}
-                    </div>
-                    <div className="bar-card-super-tag">
-                      <Crown size={9} style={{ fill: "currentColor" }} />
-                      SUPER
-                    </div>
-                    {isDynamic && (
-                      <div className="bar-card-dynamic-tag">
-                        <Zap size={9} />
-                        Dynamic
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <h3 className="bar-card-name">{name}</h3>
-                <div className="bar-card-meta">
-                  <div className="bar-card-status">{isComplete ? "Complete" : "In Progress"}</div>
-                  <div className="bar-card-steps">
-                    {completedCount} <span className="bar-card-sep">/</span> {childCount} goals
-                  </div>
-                </div>
-                <div className="bar-card-progress">
-                  <div className="bar-card-track">
-                    <div className="bar-card-fill" />
-                    <div className="bar-card-shine" />
-                  </div>
-                </div>
-                {ruleLabel && <div className="bar-card-rule">{ruleLabel}</div>}
-              </div>
-            </div>
+      <div className="eclat eclat-groupe">
+        <div className="eclat-img">
+          {imageUrl ? (
+            <img src={imageUrl} alt="" loading="lazy" />
+          ) : (
+            <div className="eclat-vide"><Crown size={24} strokeWidth={1.6} aria-hidden="true" /></div>
+          )}
+        </div>
+
+        <span className="eclat-lueur" aria-hidden="true" />
+
+        <div className="eclat-corps eclat-corps--groupe">
+          <div className="eclat-tete">
+            <span className="eclat-palier">{difficultyLabel}</span>
+            <span className="eclat-sep" aria-hidden="true" />
+            <span className="eclat-groupe-tag">
+              <Crown size={9} style={{ fill: "currentColor" }} aria-hidden="true" />
+              GROUPE
+            </span>
+            {isDynamic && (
+              <span className="eclat-groupe-tag eclat-groupe-tag--dyn">
+                <Zap size={9} aria-hidden="true" />
+                AUTO
+              </span>
+            )}
+          </div>
+
+          <h3 className="eclat-nom">{name}</h3>
+
+          <div className="eclat-bas">
+            <span className="eclat-jauge">
+              <i style={{ width: `${progressPercent}%` }} />
+            </span>
+            <span className="eclat-chiffre">
+              {completedCount}<span className="eclat-fraction">/{childCount}</span>
+            </span>
           </div>
         </div>
+
+        {/* Une pastille par objectif contenu, allumee quand il est honore.
+            Le groupe montre son contenu : on lit son avancement sans lire
+            un chiffre. Au-dela de douze enfants on s'arrete — au-dela, les
+            pastilles deviennent un trait et ne comptent plus rien. */}
+        {childCount > 0 && childCount <= 12 && (
+          <span className="eclat-pastilles" aria-hidden="true">
+            {Array.from({ length: childCount }, (_, i) => (
+              <u key={i} className={i < completedCount ? "on" : ""} />
+            ))}
+          </span>
+        )}
+
+        <span className="eclat-coin" aria-hidden="true" />
       </div>
+
+      {ruleLabel && <div className="eclat-groupe-regle">{ruleLabel}</div>}
     </div>
   );
 });

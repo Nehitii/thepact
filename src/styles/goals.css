@@ -2244,17 +2244,38 @@
 }
 .eclat-fraction { font-size: 0.72rem; opacity: 0.6; margin-left: 1px; }
 
-/* Trame dans le coin tranche. */
+/* ── Trame du coin tranche ──
+ *
+ * Premier jet : un rectangle de 34x24 pose dans le coin, avec des rayures
+ * a -45 degres. La coupe de la carte le traversait en biais sans aucun
+ * rapport avec lui, d'ou l'impression que la decoration ne tombait pas
+ * juste. Deux geometries independantes qui se croisent ne peuvent pas
+ * s'accorder.
+ *
+ * La trame est desormais construite A PARTIR de la coupe.
+ *
+ * La coupe mesure 30 de large sur 20 de haut. La trame est un triangle de
+ * memes proportions — 60 x 40, soit le meme rapport 3:2 — donc son
+ * hypotenuse est rigoureusement parallele a la coupe. Le clip-path de la
+ * carte en retire la pointe exterieure, et il reste une bande de largeur
+ * constante qui longe le biseau.
+ *
+ * Les rayures suivent le meme angle. La coupe a pour vecteur (30, -20) ;
+ * l'axe du degrade doit lui etre perpendiculaire, soit atan2(20, -30),
+ * c'est-a-dire 146 degres. A -45 degres elles traversaient la bande au
+ * hasard.
+ */
 .eclat-coin {
   position: absolute;
   right: 0;
   bottom: 0;
-  width: 34px;
-  height: 24px;
-  opacity: 0.35;
+  width: 60px;
+  height: 40px;
+  opacity: 0.4;
   pointer-events: none;
-  background-image: repeating-linear-gradient(-45deg,
-    var(--accent) 0 2px, transparent 2px 6px);
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+  background-image: repeating-linear-gradient(146deg,
+    var(--accent) 0 2px, transparent 2px 7px);
 }
 
 .eclat-focus {
@@ -2291,4 +2312,130 @@
   .eclat, .eclat-img img { transition: none; }
   .eclat:hover { transform: none; }
   .eclat:hover .eclat-img img { transform: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CARTE DE GROUPE — ÉCLAT + BORD VIVANT + PASTILLES
+
+   Le groupe reprend Eclat a l'identique et n'ajoute que deux signes.
+   Il ne faut pas deux langages visuels dans une meme liste : ce qui
+   distingue doit s'ajouter, pas remplacer.
+   ═══════════════════════════════════════════════════════════════ */
+
+.eclat-groupe-cadre {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 2px;
+  text-align: left;
+  cursor: pointer;
+  /* Le cadre est legerement plus grand que la carte : sa coupe doit donc
+     l'etre aussi, sinon le bord dore depasserait du biseau. */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 32px) 100%, 0 100%);
+}
+.eclat-groupe-cadre:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+
+/* ── Bord vivant ──
+ *
+ * Un arc de lumiere doree parcourt le contour en six secondes. Le contour
+ * DEVIENT l'effet : rien n'est pose par-dessus la carte, ce qui evite
+ * d'alourdir une ligne deja dense.
+ *
+ * @property est indispensable ici. Sans lui, --ang est une chaine que le
+ * navigateur ne sait pas interpoler : l'animation sauterait de 0 a 360
+ * d'un coup au lieu de tourner. En le declarant comme <angle>, il devient
+ * une valeur animable et l'arc glisse.
+ */
+@property --eclat-ang {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes eclat-tour { to { --eclat-ang: 360deg; } }
+.eclat-groupe-bord {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: conic-gradient(from var(--eclat-ang),
+    transparent 0deg,
+    var(--cp-jaune) 40deg,
+    transparent 92deg,
+    transparent 360deg);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 32px) 100%, 0 100%);
+  animation: eclat-tour 6s linear infinite;
+}
+
+/* La carte elle-meme se pose au-dessus de l'arc : seul le lisere de 2px
+   laisse passer la lumiere. */
+.eclat-groupe { position: relative; }
+
+/* ── Pastilles d'enfants ──
+ *
+ * Une pastille par objectif contenu, allumee quand il est honore. Le
+ * groupe montre son contenu : on lit son avancement sans lire un chiffre.
+ *
+ * Elles se posent sous la jauge, dans le corps de la carte, et non
+ * par-dessus l'image : la ou l'oeil vient deja chercher l'avancement.
+ */
+.eclat-corps--groupe { padding-bottom: 16px; }
+.eclat-pastilles {
+  position: absolute;
+  left: calc(44% + 26px);
+  bottom: 10px;
+  display: flex;
+  gap: 4px;
+  z-index: 3;
+  pointer-events: none;
+}
+.eclat-pastilles u {
+  width: 15px;
+  height: 5px;
+  background: rgb(255 255 255 / 0.14);
+  text-decoration: none;
+  /* Meme biseau que la jauge, a l'echelle du detail. */
+  clip-path: polygon(0 0, 100% 0, calc(100% - 2px) 100%, 0 100%);
+}
+.eclat-pastilles u.on {
+  background: var(--cp-jaune);
+  box-shadow: 0 0 7px var(--cp-jaune);
+}
+
+/* ── Marqueurs de groupe ── */
+.eclat-groupe-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding: 0 5px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.6px;
+  color: #0a0a00;
+  background: var(--cp-jaune);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+.eclat-groupe-tag--dyn {
+  color: var(--cp-jaune);
+  background: transparent;
+  border: 1px solid rgb(252 238 10 / 0.5);
+}
+.eclat-groupe-regle {
+  margin-top: 5px;
+  padding-left: 2px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  color: var(--nexus-text-dimmer);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  /* En vue etroite le corps se resserre : les pastilles suivent, sinon
+     elles se poseraient sur le nom. */
+  .eclat-pastilles { left: calc(40% + 18px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eclat-groupe-bord { animation: none; background: var(--cp-jaune); opacity: 0.55; }
 }
