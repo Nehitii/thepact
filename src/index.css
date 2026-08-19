@@ -1380,4 +1380,22 @@ html {
 html body[data-scroll-locked] {
   margin-right: 0 !important;
   padding-right: 0 !important;
+  /* Et surtout : on annule le verrou lui-meme.
+
+     react-remove-scroll pose overflow:hidden sur body. Avec overflow-y:
+     scroll sur html — necessaire pour que la barre ne disparaisse pas —
+     html devient le conteneur de defilement, et un body en overflow
+     hidden ecrase sa hauteur defilable. Le navigateur ramene alors le
+     defilement au nouveau maximum : mesure, scrollY tombait de 420 a
+     106 des l ouverture d une liste deroulante, page scrollee.
+
+     Verrouiller html a la place preserverait la position mais
+     supprimerait la barre — on retomberait sur le decalage de 11px.
+
+     On laisse donc l arriere-plan defiler. Radix repositionne son
+     popper au defilement, la liste reste accrochee a son declencheur :
+     le desagrement est nul, la ou le saut de 314px etait brutal. */
+  overflow: visible !important;
+  position: static !important;
+  top: auto !important;
 }

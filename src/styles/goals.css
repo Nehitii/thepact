@@ -2914,3 +2914,208 @@
    du tout dans ce cas, la regle n'a donc plus d'objet. L'image garde en
    revanche sa pleine intensite. */
 .verre--honore .verre-img { filter: saturate(1.08) contrast(1.05); }
+
+/* ═══════════════════════════════════════════════════════════════
+   REGISTRE — la vue liste
+
+   Les trois modes se partageaient deux usages. La barre montre les
+   objectifs un par un, la grille les montre en images, et la vue liste
+   refaisait la grille avec d'autres marges.
+
+   Le registre occupe la place vide : voir l'ensemble et comparer. Une
+   ligne par objectif, des colonnes alignees, aucune image. Trente-huit
+   objectifs tiennent dans un ecran et se lisent les uns contre les
+   autres.
+
+   C'est la seule vue ou la ligne prime sur la carte, donc la seule ou
+   l'alignement des colonnes compte plus que la mise en valeur de chaque
+   element. Rien n'y est centre, rien n'y flotte.
+   ═══════════════════════════════════════════════════════════════ */
+
+.rg {
+  width: 100%;
+  background: var(--nexus-bg);
+  border: 1px solid var(--nexus-border);
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.rg-barre {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--nexus-border);
+}
+.rg-titre {
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--nexus-text-dim);
+  flex-shrink: 0;
+}
+.rg-fil { flex: 1; height: 1px; background: linear-gradient(90deg, var(--nexus-separator), transparent); }
+
+/* La grille de colonnes est declaree une fois et partagee par l'en-tete
+   et les lignes : c'est ce qui garantit l'alignement, et l'alignement est
+   la seule raison d'etre de cette vue. */
+.rg-tete,
+.rg-l {
+  display: grid;
+  grid-template-columns: 92px 1fr 64px 132px 56px 104px 30px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+}
+.rg-tete {
+  height: 30px;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--nexus-text-dimmer);
+  background: hsl(var(--primary) / 0.05);
+  border-bottom: 1px solid var(--nexus-border);
+}
+.rg-l {
+  position: relative;
+  height: 32px;
+  cursor: pointer;
+  border-bottom: 1px solid rgb(255 255 255 / 0.045);
+  transition: background 120ms linear;
+}
+.rg-l:hover { background: hsl(var(--primary) / 0.06); }
+.rg-l:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+/* Un liseré a la couleur du palier sur le flanc : c'est le seul rappel
+   chromatique de la ligne, le reste doit rester neutre pour que les
+   colonnes se comparent. */
+.rg-l::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--t);
+}
+
+.rg-palier {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  color: var(--t);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rg-nom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #eaf6ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rg-nom svg { flex-shrink: 0; color: var(--cp-jaune); }
+.rg-etapes {
+  text-align: right;
+  font-size: max(11px, 0.6875rem);
+  color: #cfe4f5;
+  font-variant-numeric: tabular-nums;
+}
+.rg-etapes i { font-style: normal; color: var(--nexus-text-dimmer); }
+.rg-jauge { display: flex; gap: 2px; }
+.rg-jauge u { flex: 1; height: 8px; background: rgb(255 255 255 / 0.12); text-decoration: none; }
+.rg-jauge u.on { background: var(--t); }
+.rg-xp {
+  text-align: right;
+  font-size: max(11px, 0.6875rem);
+  color: var(--cp-jaune);
+  font-variant-numeric: tabular-nums;
+}
+.rg-etat {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rg-etat--attente { color: var(--cp-texte-doux); }
+.rg-etat--encours { color: var(--cp-cyan); }
+.rg-etat--honore  { color: #00ff88; }
+
+.rg-focus {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  opacity: 0.35;
+  cursor: pointer;
+  transition: opacity 120ms linear;
+}
+.rg-l:hover .rg-focus, .rg-focus.active { opacity: 1; }
+.rg-focus:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 1px; }
+
+/* ── Regroupement par constellation ──
+   Une bascule, pas un mode a part : les memes lignes, rangees sous le
+   groupe auquel elles appartiennent. */
+.rg-section { border-bottom: 1px solid rgb(255 255 255 / 0.06); }
+.rg-groupe {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  height: 30px;
+  padding: 0 12px;
+  cursor: pointer;
+  background: rgb(252 238 10 / 0.05);
+  border-left: 2px solid rgb(252 238 10 / 0.55);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  color: var(--nexus-text-dimmer);
+}
+.rg-groupe:hover { background: rgb(252 238 10 / 0.09); }
+.rg-groupe:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: -2px; }
+.rg-groupe svg { color: var(--cp-jaune); flex-shrink: 0; }
+.rg-groupe b {
+  font-weight: 400;
+  letter-spacing: 2.4px;
+  color: var(--cp-jaune);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rg-groupe--libres { background: rgb(255 255 255 / 0.03); border-left-color: rgb(255 255 255 / 0.16); }
+.rg-groupe--libres b { color: var(--nexus-text-dim); }
+.rg-pastilles { display: flex; gap: 3px; flex-shrink: 0; }
+.rg-pastilles u { width: 12px; height: 4px; background: rgb(255 255 255 / 0.16); text-decoration: none; }
+.rg-pastilles u.on { background: var(--cp-jaune); }
+.rg-compte { color: #cfe4f5; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+
+/* Les lignes d'un groupe sont indentees par une branche, pas par une
+   marge : la branche relie visuellement l'objectif a son groupe, une
+   marge ne ferait que le decaler. */
+.rg-l--fils { padding-left: 26px; }
+.rg-branche {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  width: 8px;
+  height: 1px;
+  background: var(--t);
+  opacity: 0.55;
+}
+
+@media (max-width: 900px) {
+  /* On sacrifie XP et etat avant les etapes : sur un ecran etroit, savoir
+     ou en est un objectif prime sur ce qu'il rapporte. */
+  .rg-tete, .rg-l { grid-template-columns: 76px 1fr 58px 84px 26px; gap: 9px; }
+  .rg-tete span:nth-child(5), .rg-tete span:nth-child(6),
+  .rg-xp, .rg-etat { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rg-l, .rg-focus { transition: none; }
+}

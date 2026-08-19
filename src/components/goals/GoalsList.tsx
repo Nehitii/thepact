@@ -15,6 +15,7 @@ import {
   type SuperGoalRule,
 } from "@/components/goals/super";
 import { GoalsPagination } from "@/components/goals/GoalsPagination";
+import { GoalsRegistre } from "@/components/goals/GoalsRegistre";
 import type { Goal } from "@/hooks/useGoals";
 import type { DisplayMode, GoalTab } from "@/hooks/useGoalFilters";
 
@@ -268,14 +269,28 @@ export function GoalsList({
             renderEmptyState()
           ) : (
             <>
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={containerVariants}
-                className={getGridClass(displayMode)}
-              >
-                {paginated.map((goal) => renderGoalCard(goal))}
-              </motion.div>
+              {/* La vue liste n'est plus une grille de cartes : c'est un
+                  registre, une ligne par objectif. Le composant gere sa
+                  propre disposition et sa bascule de regroupement. */}
+              {displayMode === "bookmark" ? (
+                <GoalsRegistre
+                  goals={paginated}
+                  allGoals={allGoals}
+                  customDifficultyName={customDifficultyName}
+                  customDifficultyColor={customDifficultyColor}
+                  onNavigate={handleNavigate}
+                  onToggleFocus={toggleFocus}
+                />
+              ) : (
+                <motion.div
+                  initial="hidden"
+                  animate="visible"
+                  variants={containerVariants}
+                  className={getGridClass(displayMode)}
+                >
+                  {paginated.map((goal) => renderGoalCard(goal))}
+                </motion.div>
+              )}
               <GoalsPagination
                 currentPage={currentPage}
                 totalPages={totalPages}
