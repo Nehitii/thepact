@@ -1,0 +1,18 @@
+/* ── FOCUS ─────────────────────────────────────────────────────
+ *
+ * La rotation de l anneau etait posee en style en ligne, hors de portee
+ * de toute requete media : elle tournait donc aussi pour qui demande a
+ * ne pas voir de mouvement. Une classe permet de la conditionner.
+ *
+ * La regle est ecrite a l endroit : on N ACTIVE la rotation que si
+ * l utilisateur n a rien demande de contraire. Une regle inverse, qui
+ * la coupe sous prefers-reduced-motion, laisserait passer tout style en
+ * ligne pose plus tard.
+ * ────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: no-preference) {
+  .focus-anneau--tourne {
+    animation: spin 60s linear infinite;
+    will-change: transform;
+  }
+}

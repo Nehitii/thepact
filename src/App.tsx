@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import { MotionConfig } from "framer-motion";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { AppProviders } from "@/components/AppProviders";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
@@ -143,18 +144,23 @@ function AppRoutes() {
   );
 }
 
+/* reducedMotion="user" fait respecter la preference systeme par TOUTES
+   les animations Framer Motion de l application d un seul geste. Sans
+   lui, chaque composant devait y penser — et un seul le faisait. */
 const App = () => (
-  <AppProviders>
-    <ErrorBoundary>
-      <Suspense fallback={
-        <div className="flex min-h-screen items-center justify-center bg-background">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
-      }>
-        <AppRoutes />
-      </Suspense>
-    </ErrorBoundary>
-  </AppProviders>
+  <MotionConfig reducedMotion="user">
+    <AppProviders>
+      <ErrorBoundary>
+        <Suspense fallback={
+          <div className="flex min-h-screen items-center justify-center bg-background">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          </div>
+        }>
+          <AppRoutes />
+        </Suspense>
+      </ErrorBoundary>
+    </AppProviders>
+  </MotionConfig>
 );
 
 export default App;

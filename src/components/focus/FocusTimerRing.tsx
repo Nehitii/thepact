@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Target } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { PomodoroPhase } from "@/hooks/usePomodoro";
@@ -37,6 +37,7 @@ export function FocusTimerRing({
   onStart,
 }: FocusTimerRingProps) {
   const { t } = useTranslation();
+  const mouvementReduit = useReducedMotion();
 
   const isWork = phase === "work";
   const isBreak = phase === "break";
@@ -94,14 +95,10 @@ export function FocusTimerRing({
 
       <svg
         viewBox="0 0 320 320"
-        className="transform -rotate-90 relative z-10 block"
-        style={{
-          width: "var(--anneau)",
-          height: "var(--anneau)",
-          ...(!isIdle && !isPaused
-            ? { animation: "spin 60s linear infinite", willChange: "transform" as const }
-            : {}),
-        }}
+        className={`transform -rotate-90 relative z-10 block${
+          !isIdle && !isPaused ? " focus-anneau--tourne" : ""
+        }`}
+        style={{ width: "var(--anneau)", height: "var(--anneau)" }}
         role="progressbar"
         aria-label={t("focus.ring.progress")}
         aria-valuenow={Math.round(progress * 100)}
@@ -131,7 +128,7 @@ export function FocusTimerRing({
           strokeWidth="3"
           strokeDasharray="1 10"
           opacity={isIdle ? 0.2 : 0.6}
-          animate={!isIdle && !isPaused ? { strokeDashoffset: -100 } : {}}
+          animate={!isIdle && !isPaused && !mouvementReduit ? { strokeDashoffset: -100 } : {}}
           transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
         />
       </svg>
@@ -181,8 +178,14 @@ export function FocusTimerRing({
                 <motion.p
                   className="text-6xl font-orbitron font-black tabular-nums tracking-widest text-foreground"
                   style={{ textShadow: `0 0 20px ${colorHsl}` }}
-                  animate={isPaused ? { opacity: [1, 0.3, 1] } : { opacity: 1 }}
-                  transition={isPaused ? { repeat: Infinity, duration: 2 } : {}}
+                  animate={
+                    isPaused
+                      ? mouvementReduit
+                        ? { opacity: 0.55 }
+                        : { opacity: [1, 0.3, 1] }
+                      : { opacity: 1 }
+                  }
+                  transition={isPaused && !mouvementReduit ? { repeat: Infinity, duration: 2 } : {}}
                 >
                   {formatTime(secondsLeft)}
                 </motion.p>

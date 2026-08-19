@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Maximize, Minimize } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { usePomodoroTimer, usePomodoroSessions, type CycleAcheve } from "@/hooks/usePomodoro";
@@ -11,6 +11,7 @@ import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
 import { DSPageShell, DSPageHeader } from "@/components/ds";
+import "@/styles/focus.css";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -61,6 +62,7 @@ export default function Focus() {
   const { tasks } = useTodoList();
   const { play } = useSound();
   const isMobile = useIsMobile();
+  const mouvementReduit = useReducedMotion();
 
   const config0 = useRef(lire(CLE_CONFIG, { work: 25, pause: 5, longue: 15 })).current;
   const lien0 = useRef(lire(CLE_LIEN, { goal: null as string | null, todo: null as string | null })).current;
@@ -168,7 +170,7 @@ export default function Focus() {
 
   useEffect(() => {
     if (timer.phase !== prevPhaseRef.current && timer.phase !== "idle") {
-      setShowFlash(true);
+      if (!mouvementReduit) setShowFlash(true);
       const timeout = setTimeout(() => setShowFlash(false), 500);
 
       if ("Notification" in window && Notification.permission === "granted") {
@@ -185,7 +187,7 @@ export default function Focus() {
       return () => clearTimeout(timeout);
     }
     prevPhaseRef.current = timer.phase;
-  }, [timer.phase, t]);
+  }, [timer.phase, t, mouvementReduit]);
 
   // ── Handlers (memoized) ──
   const handleStart = useCallback(() => {
