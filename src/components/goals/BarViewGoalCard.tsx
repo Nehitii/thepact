@@ -130,105 +130,97 @@ export const BarViewGoalCard = memo(function BarViewGoalCard({
 
   const StatusIcon = getGoalStatusIcon(goal.status || (isCompleted ? "fully_completed" : "not_started"));
 
+  /* ÉCLAT
+   *
+   * Aucun rectangle. L'image ne tient plus dans un cadre : elle saigne
+   * dans le fond de la carte par une coupe diagonale franche, une lumiere
+   * rasante a la couleur du palier traverse l'ensemble, et le coin
+   * bas-droit est tranche puis rempli d'une trame.
+   *
+   * La carte precedente empilait quatre blocs — vignette, informations,
+   * indicateur, jauge — chacun dans sa boite. Ici il n'y a plus de
+   * boites : la diagonale de l'image guide l'oeil vers le nom, et la
+   * jauge ferme la lecture en bas. Une seule trajectoire au lieu de
+   * quatre zones a balayer.
+   */
   return (
     <div
-      className={`bar-card-root rarity-halo${goal.is_focus ? " is-focus" : ""}`}
+      className={`eclat${goal.is_focus ? " eclat--focus" : ""}${isCompleted ? " eclat--honore" : ""}`}
       style={cssVars}
-      data-halo={intensity}
       onClick={() => onNavigate(goal.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onNavigate(goal.id);
+        }
+      }}
     >
       {goal.is_locked && <GoalLockOverlay className="z-50" />}
-      <div className="bar-card-container noselect">
-        <div className="bar-card-scanline" aria-hidden="true" />
 
-        <button
-          type="button"
-          aria-label={goal.is_focus ? "Unset focus" : "Set as focus"}
-          className={`bar-card-focus-btn ${goal.is_focus ? "active" : ""}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFocus(goal.id, !!goal.is_focus, e);
-          }}
-        >
-          <Star className="star-icon" size={14} fill={goal.is_focus ? theme.color : "none"} stroke={theme.color} />
-        </button>
+      <div className="eclat-img">
+        {goal.image_url ? (
+          <img src={goal.image_url} alt="" loading="lazy" />
+        ) : (
+          <div className="eclat-vide"><Target size={26} strokeWidth={1.6} aria-hidden="true" /></div>
+        )}
+      </div>
 
-        <div className="bar-card-content">
-          {/* Visual block */}
-          <div className="bar-card-visual">
-            <div className="bar-card-img-glow" />
-            <div className="bar-card-img-frame">
-              {goal.image_url ? (
-                <img src={goal.image_url} alt={goal.name} loading="lazy" />
-              ) : (
-                <div className="bar-card-placeholder">
-                  <Target size={28} strokeWidth={1.8} />
-                </div>
-              )}
-            </div>
-            {totalSteps > 0 && (
-              <div
-                className="bar-card-mini-ring"
-                style={{
-                  background: `conic-gradient(${theme.color} ${progressPercent}%, rgba(255,255,255,0.08) 0)`,
-                }}
-              >
-                <div className="bar-card-ring-inner">
-                  {isCompleted ? <Trophy size={11} /> : `${progressPercent}`}
-                </div>
-              </div>
-            )}
-          </div>
+      {/* La lumiere rasante : une bande claire en travers, a la couleur du
+          palier. C'est elle qui relie l'image au texte. */}
+      <span className="eclat-lueur" aria-hidden="true" />
 
-          {/* Info block */}
-          <div className="bar-card-info">
-            <div className="bar-card-diff-chip">
-              <span className="bar-card-dot" />
-              {difficultyLabel}
-            </div>
-            <h3 className="bar-card-name">{goal.name}</h3>
-            <div className="bar-card-meta">
-              <span className="bar-card-status">
-                <StatusIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
-                {statusLabel}
-              </span>
-              {deadlineInfo && !isCompleted && (
-                <>
-                  <span className="bar-card-meta-divider" aria-hidden="true" />
-                  <span className="bar-card-steps" style={{ color: deadlineInfo.color }}>
-                    {deadlineInfo.daysLeft > 0
-                      ? `${deadlineInfo.daysLeft}d`
-                      : deadlineInfo.daysLeft === 0
-                        ? "Today"
-                        : `${Math.abs(deadlineInfo.daysLeft)}d late`}
-                  </span>
-                </>
-              )}
-              {totalSteps > 0 && (
-                <>
-                  <span className="bar-card-meta-divider" aria-hidden="true" />
-                  <span className="bar-card-steps">
-                    {completedSteps}<span className="bar-card-sep"> / </span>{totalSteps}
-                  </span>
-                </>
-              )}
-              {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
-            </div>
-            <div className="bar-card-progress">
-              <div className="bar-card-track">
-                <div className="bar-card-fill" />
-                <div className="bar-card-shine" />
-              </div>
-            </div>
-          </div>
+      <div className="eclat-corps">
+        <div className="eclat-tete">
+          <span className="eclat-palier">{difficultyLabel}</span>
+          <span className="eclat-sep" aria-hidden="true" />
+          <span className="eclat-etat">
+            <StatusIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
+            {statusLabel}
+          </span>
+          {deadlineInfo && !isCompleted && (
+            <span className="eclat-delai" style={{ color: deadlineInfo.color }}>
+              {deadlineInfo.daysLeft > 0
+                ? `${deadlineInfo.daysLeft}d`
+                : deadlineInfo.daysLeft === 0
+                  ? "Today"
+                  : `${Math.abs(deadlineInfo.daysLeft)}d late`}
+            </span>
+          )}
+          {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} />}
+        </div>
 
-          {/* KPI block (right) */}
-          <div className="bar-card-kpi" aria-hidden="true">
-            <div className="bar-card-kpi-value">{kpi.value}</div>
-            <div className="bar-card-kpi-label">{kpi.label}</div>
-          </div>
+        <h3 className="eclat-nom">{goal.name}</h3>
+
+        <div className="eclat-bas">
+          <span className="eclat-jauge">
+            <i style={{ width: `${progressPercent}%` }} />
+          </span>
+          {totalSteps > 0 ? (
+            <span className="eclat-chiffre">
+              {completedSteps}<span className="eclat-fraction">/{totalSteps}</span>
+            </span>
+          ) : (
+            <span className="eclat-chiffre">{isCompleted ? <Trophy size={15} /> : `${intensity}/5`}</span>
+          )}
         </div>
       </div>
+
+      {/* Le coin tranche, rempli d'une trame diagonale. */}
+      <span className="eclat-coin" aria-hidden="true" />
+
+      <button
+        type="button"
+        aria-label={goal.is_focus ? "Unset focus" : "Set as focus"}
+        className={`eclat-focus${goal.is_focus ? " active" : ""}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleFocus(goal.id, !!goal.is_focus, e);
+        }}
+      >
+        <Star size={14} fill={goal.is_focus ? theme.color : "none"} stroke={theme.color} />
+      </button>
     </div>
   );
 });

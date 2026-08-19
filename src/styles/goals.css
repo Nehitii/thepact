@@ -2087,3 +2087,208 @@
   .gl-bilan-total { flex-direction: row; align-items: baseline; gap: 10px; }
   .gl-bilan-total span { margin-top: 0; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   CARTE EN BARRE — ÉCLAT
+
+   Aucun rectangle. L'image ne tient plus dans un cadre : elle saigne
+   dans le fond par une coupe diagonale, une lumiere rasante a la couleur
+   du palier traverse la carte, et le coin bas-droit est tranche.
+
+   La version precedente empilait quatre blocs — vignette, informations,
+   indicateur, jauge — chacun dans sa boite. Ici la diagonale de l'image
+   guide l'oeil vers le nom, et la jauge ferme la lecture en bas : une
+   trajectoire au lieu de quatre zones a balayer.
+
+   Les anciennes regles .bar-card-* restent en place : SuperGoalBarCard
+   s'en sert encore. Les supprimer casserait les cartes de groupe.
+   ═══════════════════════════════════════════════════════════════ */
+
+.eclat {
+  position: relative;
+  height: 96px;
+  overflow: hidden;
+  background: var(--nexus-bg);
+  border: 1px solid var(--accent);
+  cursor: pointer;
+  /* Le coin bas-droit est tranche : c'est la coupe qui donne son nom a
+     la carte, et elle interdit toute lecture en rectangle. */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 30px) 100%, 0 100%);
+  transition: transform 180ms cubic-bezier(.22,.9,.24,1), box-shadow 180ms ease;
+}
+.eclat:hover {
+  transform: translateX(3px);
+  box-shadow: -6px 0 22px -10px var(--accent);
+}
+.eclat:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+
+/* ── L'image saigne ──
+   La coupe part du bord haut et rentre de 28 % en bas : la diagonale
+   pointe vers le texte. Le degrade la prolonge pour qu'aucune arete nette
+   ne subsiste entre l'image et le fond. */
+.eclat-img {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 46%;
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 72% 100%, 0 100%);
+}
+.eclat-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 500ms ease, filter 220ms ease;
+}
+.eclat:hover .eclat-img img { transform: scale(1.05); }
+.eclat-img::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg,
+    transparent 30%, rgb(7 12 23 / 0.5) 72%, var(--nexus-bg));
+}
+.eclat-vide {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  opacity: 0.45;
+  background:
+    repeating-linear-gradient(-45deg, rgb(255 255 255 / 0.05) 0 8px, transparent 8px 16px),
+    var(--nexus-bg);
+}
+
+/* ── Lumiere rasante ──
+   color-mix plutot qu'une opacite fixe : la bande doit rester du meme
+   ton que le palier quelle que soit sa teinte, et un blanc translucide
+   virerait au gris sur les paliers sombres. */
+.eclat-lueur {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg,
+    transparent 34%,
+    color-mix(in srgb, var(--accent) 22%, transparent) 40%,
+    transparent 46%);
+}
+
+.eclat-corps {
+  position: absolute;
+  inset: 0 0 0 44%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 46px 0 26px;
+  min-width: 0;
+}
+.eclat-tete {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--nexus-text-dimmer);
+  min-width: 0;
+}
+.eclat-palier {
+  flex-shrink: 0;
+  color: var(--accent);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+.eclat-sep { width: 1px; height: 10px; background: var(--nexus-separator); flex-shrink: 0; }
+.eclat-etat { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; }
+.eclat-delai { flex-shrink: 0; }
+
+.eclat-nom {
+  margin: 0;
+  font-family: 'Orbitron', sans-serif;
+  font-size: clamp(0.86rem, 0.72rem + 0.5vw, 1.02rem);
+  font-weight: 900;
+  letter-spacing: 1.3px;
+  line-height: 1.15;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eclat-bas { display: flex; align-items: center; gap: 11px; margin-top: 3px; }
+/* La jauge est coupee en biais a son extremite : meme grammaire que le
+   coin de la carte, a l'echelle du detail. */
+.eclat-jauge {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  background: rgb(255 255 255 / 0.09);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+.eclat-jauge > i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+.eclat-chiffre {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 900;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.eclat-fraction { font-size: 0.72rem; opacity: 0.6; margin-left: 1px; }
+
+/* Trame dans le coin tranche. */
+.eclat-coin {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 34px;
+  height: 24px;
+  opacity: 0.35;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(-45deg,
+    var(--accent) 0 2px, transparent 2px 6px);
+}
+
+.eclat-focus {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  background: rgb(7 12 23 / 0.72);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+  cursor: pointer;
+  transition: border-color 140ms linear, background 140ms linear;
+}
+.eclat-focus:hover { border-color: var(--accent); background: rgb(7 12 23 / 0.95); }
+.eclat-focus:focus-visible { outline: 2px solid var(--cp-jaune); outline-offset: 2px; }
+.eclat-focus.active { background: color-mix(in srgb, var(--accent) 20%, rgb(7 12 23)); border-color: var(--accent); }
+
+/* Un objectif en focus porte un halo permanent ; un objectif honore
+   garde son image a pleine intensite et voit sa jauge disparaitre —
+   elle serait pleine, donc muette. */
+.eclat--focus { box-shadow: 0 0 0 1px var(--accent), -8px 0 26px -12px var(--accent); }
+.eclat--honore .eclat-jauge { display: none; }
+.eclat--honore .eclat-img img { filter: saturate(1.08) contrast(1.04); }
+
+@media (max-width: 620px) {
+  .eclat { height: 88px; }
+  .eclat-corps { inset: 0 0 0 40%; padding: 0 40px 0 18px; }
+  .eclat-etat { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eclat, .eclat-img img { transition: none; }
+  .eclat:hover { transform: none; }
+  .eclat:hover .eclat-img img { transform: none; }
+}
