@@ -9,6 +9,8 @@ export type FocusPanel = "config" | "spotify" | "stats" | "history" | null;
 interface FocusToolbarProps {
   goals: Goal[];
   todos: TodoTask[];
+  workMin: number;
+  onWorkChange: (m: number) => void;
   linkedGoalId: string | null;
   linkedTodoId: string | null;
   onLinkGoal: (id: string | null) => void;
@@ -17,9 +19,17 @@ interface FocusToolbarProps {
   onPanelChange: (panel: FocusPanel) => void;
 }
 
+/* La clause se compose ici, et se lit au-dessus, dans le sceau. Les deux
+   champs designaient deja l objet de la session ; la duree les rejoint,
+   parce qu elle fait partie de l engagement enonce — « vingt-cinq
+   minutes, sans interruption » — et qu aller la chercher dans un panneau
+   repliable pour modifier une phrase affichee a l ecran n avait pas de
+   sens. */
 export function FocusToolbar({
   goals,
   todos,
+  workMin,
+  onWorkChange,
   linkedGoalId,
   linkedTodoId,
   onLinkGoal,
@@ -36,6 +46,12 @@ export function FocusToolbar({
 
   return (
     <div className="w-full max-w-lg space-y-3">
+      <div className="sc-signature" aria-hidden="true">
+        <i />
+        <span>{t("focus.clause.compose")}</span>
+        <i />
+      </div>
+
       <div className="flex gap-2">
         <div className="flex-1">
           <Select
@@ -82,6 +98,20 @@ export function FocusToolbar({
             </SelectContent>
           </Select>
         </div>
+      </div>
+
+      <div className="sc-duree">
+        <span className="sc-duree-titre">{t("focus.config.work")}</span>
+        {[15, 25, 30, 45].map((m) => (
+          <button
+            key={m}
+            type="button"
+            aria-pressed={workMin === m}
+            onClick={() => onWorkChange(m)}
+          >
+            {m}′
+          </button>
+        ))}
       </div>
 
       <div className="flex items-center justify-center gap-2">

@@ -1782,6 +1782,22 @@
       "submit": ">> LOG",
       "saved": "Distraction logged",
       "error": "Could not save"
+    },
+    "clause": {
+      "toSeal": "Clause to seal",
+      "executing": "Clause in execution",
+      "suspended": "Execution suspended",
+      "recovery": "Recovery",
+      "compose": "Compose the clause",
+      "withTarget": "“{{target}}”, without interruption.",
+      "plain": "{{minutes}} minutes, without interruption."
+    },
+    "seal": {
+      "affix": "Affix the seal",
+      "engraving": "Engraving · {{pct}}%",
+      "sealedOf": "{{count}} seal affixed of 4",
+      "sealedOf_other": "{{count}} seals affixed of 4",
+      "ready": "No seal affixed"
     }
   },
   "calendar": {

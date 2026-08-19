@@ -1,4 +1,4 @@
-export { FocusTimerRing } from "./FocusTimerRing";
+export { FocusSeal } from "./FocusSeal";
 export { FocusControls } from "./FocusControls";
 export { FocusStats } from "./FocusStats";
 export { FocusHistory } from "./FocusHistory";

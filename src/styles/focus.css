@@ -1,18 +1,347 @@
-/* ── FOCUS ─────────────────────────────────────────────────────
+/* ── FOCUS : LE SCELLÉ ─────────────────────────────────────────
  *
- * La rotation de l anneau etait posee en style en ligne, hors de portee
- * de toute requete media : elle tournait donc aussi pour qui demande a
- * ne pas voir de mouvement. Une classe permet de la conditionner.
+ * L application s appelle Vowpact. Une session n etait pourtant qu un
+ * minuteur anonyme : un anneau de progression, le meme que dans n importe
+ * quelle application de pomodoro, pose au milieu d un cadre vide qui
+ * occupait les deux tiers de la hauteur sans rien dire.
  *
- * La regle est ecrite a l endroit : on N ACTIVE la rotation que si
- * l utilisateur n a rien demande de contraire. Une regle inverse, qui
- * la coupe sous prefers-reduced-motion, laisserait passer tout style en
- * ligne pose plus tard.
+ * Ici, une session est l EXECUTION D UNE CLAUSE. La page est un document :
+ * l engagement est enonce en haut, le sceau se grave pendant que le temps
+ * passe, la ligne de signature compte ce qui a ete honore.
+ *
+ * Ce qui distingue un sceau d une barre de progression ronde, ce n est pas
+ * le trace — c est le SUBSTRAT GRAVE, present des la premiere seconde :
+ * denture, cercles concentriques, equerres. A zero pour cent, il y a deja
+ * un objet a regarder.
  * ────────────────────────────────────────────────────────────── */
 
+/* La rotation de l anneau etait posee en style en ligne, hors de portee
+   de toute requete media : elle tournait donc aussi pour qui demande a
+   ne pas voir de mouvement. Une classe permet de la conditionner.
+
+   La regle est ecrite a l endroit : on N ACTIVE la rotation que si
+   l utilisateur n a rien demande de contraire. Une regle inverse, qui la
+   couperait sous prefers-reduced-motion, laisserait passer tout style en
+   ligne pose plus tard. */
 @media (prefers-reduced-motion: no-preference) {
   .focus-anneau--tourne {
     animation: spin 60s linear infinite;
     will-change: transform;
   }
+}
+
+/* ── Le document ─────────────────────────────────────────────── */
+
+.sc {
+  --sc-teinte: hsl(var(--primary));
+  --sc-doux: hsl(var(--primary) / 0.55);
+  --sc-faible: hsl(var(--primary) / 0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 3vw, 26px);
+  width: 100%;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+}
+.sc[data-phase="break"] {
+  --sc-teinte: hsl(var(--accent));
+  --sc-doux: hsl(var(--accent) / 0.55);
+  --sc-faible: hsl(var(--accent) / 0.18);
+}
+
+/* L en-tete de clause : son etat, puis son enonce. */
+.sc-etat {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--sc-teinte);
+  text-align: center;
+}
+
+.sc-enonce {
+  font-family: 'Orbitron', 'Arial Black', sans-serif;
+  font-weight: 500;
+  font-size: clamp(15px, 2.4vw, 21px);
+  line-height: 1.42;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-wrap: balance;
+  max-width: 26ch;
+  margin: 0;
+  color: hsl(var(--foreground));
+}
+.sc-enonce b { font-weight: 700; color: var(--sc-teinte); }
+
+/* ── Le sceau ────────────────────────────────────────────────── */
+
+.sc-sceau {
+  position: relative;
+  /* Dimensionne en relatif : fige a 320 px, il debordait des deux cotes
+     sous 360 px de fenetre — et la coque de page portant overflow:hidden,
+     il etait rogne sans meme ouvrir un defilement. */
+  width: min(340px, 80vw);
+  height: min(340px, 80vw);
+  display: grid;
+  place-items: center;
+}
+
+/* Deux equerres : le sceau est pose sur un document, pas suspendu. */
+.sc-sceau::before,
+.sc-sceau::after {
+  content: "";
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-color: var(--cp-jaune, #fcee0a);
+  opacity: 0.45;
+  pointer-events: none;
+}
+.sc-sceau::before { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }
+.sc-sceau::after { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
+
+.sc-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sc-dents line { stroke: var(--sc-faible); stroke-width: 1; }
+.sc-cercle { fill: none; stroke: var(--sc-faible); stroke-width: 1; }
+.sc-cercle--net { stroke: hsl(var(--primary) / 0.26); }
+.sc[data-phase="break"] .sc-cercle--net { stroke: hsl(var(--accent) / 0.26); }
+
+.sc-piste { fill: none; stroke: var(--sc-faible); stroke-width: 2; }
+
+/* Le trace grave. Deux epaisseurs : une large et sourde qui creuse, une
+   fine et vive qui brille — un trait unique et lisse ressemblerait a une
+   barre de progression. */
+.sc-trace,
+.sc-trace-fond {
+  fill: none;
+  stroke-linecap: butt;
+  stroke-dasharray: var(--circ);
+  stroke-dashoffset: calc(var(--circ) - var(--p) * var(--circ));
+  transition: stroke-dashoffset 450ms linear;
+}
+.sc-trace-fond { stroke: var(--sc-doux); stroke-width: 7; opacity: 0.28; }
+.sc-trace {
+  stroke: var(--sc-teinte);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 7px var(--sc-doux));
+}
+
+/* Le burin : le point ou la gravure se fait. Pas de transition — il
+   avance de 0,24 degre par seconde, une interpolation ne servirait qu a
+   produire un tour arriere au changement de phase. */
+.sc-burin {
+  transform: rotate(calc(var(--p) * 360deg));
+  transform-box: view-box;
+  transform-origin: 170px 170px;
+}
+.sc-burin line {
+  stroke: var(--sc-teinte);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px var(--sc-teinte));
+}
+
+/* Les quatre couches. Elles s enclenchent aux quarts : quatre reperes
+   sans avoir a lire les chiffres. */
+.sc-couche {
+  opacity: 0;
+  transform: scale(0.92);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 420ms ease, transform 420ms cubic-bezier(0.2, 1.3, 0.4, 1);
+}
+.sc-couche.est-posee { opacity: 1; transform: scale(1); }
+
+/* L image de l objectif, au fond du sceau. */
+.sc-vignette {
+  position: absolute;
+  width: 54%;
+  height: 54%;
+  border-radius: 50%;
+  overflow: hidden;
+  opacity: 0.2;
+  filter: saturate(0.55) contrast(1.1);
+  pointer-events: none;
+  mask-image: radial-gradient(circle, #000 42%, transparent 76%);
+}
+.sc-vignette img { width: 100%; height: 100%; object-fit: cover; }
+
+.sc-noyau {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.sc-temps {
+  font-family: 'Orbitron', 'Arial Black', sans-serif;
+  font-weight: 900;
+  font-size: clamp(38px, 11vw, 56px);
+  line-height: 1;
+  color: hsl(var(--foreground));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+  text-shadow: 0 0 22px var(--sc-doux);
+}
+
+.sc-sous {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+}
+
+/* La frappe. Le seul geste vif de l ecran, place exactement la ou il
+   recompense : au moment ou la clause est honoree. */
+.sc-frappe {
+  position: absolute;
+  inset: 6%;
+  border: 2px solid var(--cp-jaune, #fcee0a);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sc-frappe.est-lancee { animation: sc-choc 900ms cubic-bezier(0.15, 0.9, 0.3, 1) forwards; }
+  .sc-sceau.est-frappee .sc-svg { animation: sc-poincon 520ms cubic-bezier(0.2, 1.5, 0.35, 1); }
+  .sc-sceau--vierge .sc-piste { animation: sc-attente 5s ease-in-out infinite; }
+}
+@keyframes sc-choc {
+  0% { transform: scale(0.55); opacity: 0.9; }
+  100% { transform: scale(1.75); opacity: 0; }
+}
+@keyframes sc-poincon {
+  0% { transform: scale(1.13); }
+  100% { transform: scale(1); }
+}
+/* Le sceau vierge respire tres lentement : il attend d etre appose. */
+@keyframes sc-attente {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ── Le depart : apposer le sceau ────────────────────────────── */
+
+.sc-depart {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 26px 22px;
+  min-width: 170px;
+  min-height: 170px;
+  background: hsl(var(--primary) / 0.07);
+  border: 1px solid hsl(var(--primary) / 0.35);
+  color: hsl(var(--primary));
+  cursor: pointer;
+  transition: background 220ms, border-color 220ms, box-shadow 220ms;
+  clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+.sc-depart:hover {
+  background: hsl(var(--primary) / 0.15);
+  border-color: hsl(var(--primary) / 0.8);
+  box-shadow: 0 0 34px hsl(var(--primary) / 0.28);
+}
+.sc-depart:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 3px; }
+.sc-depart span {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ── La ligne de signature ───────────────────────────────────── */
+
+.sc-signature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(440px, 92%);
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+}
+.sc-signature i {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary) / 0.3));
+}
+.sc-signature i:last-child { background: linear-gradient(90deg, hsl(var(--primary) / 0.3), transparent); }
+
+.sc-cachets { display: flex; gap: 5px; flex-shrink: 0; }
+.sc-cachets u {
+  width: 9px;
+  height: 9px;
+  text-decoration: none;
+  border: 1px solid hsl(var(--primary) / 0.35);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.sc-cachets u.est-appose {
+  background: var(--cp-jaune, #fcee0a);
+  border-color: var(--cp-jaune, #fcee0a);
+}
+
+/* ── Les champs de la clause, au repos ───────────────────────── */
+
+.sc-champs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  max-width: 520px;
+}
+.sc-champs > * { flex: 1 1 200px; min-width: 0; }
+
+.sc-duree {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.sc-duree-titre {
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+  margin-right: 4px;
+}
+.sc-duree button {
+  min-width: 44px;
+  min-height: 36px;
+  padding: 6px 10px;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.1em;
+  color: var(--cp-texte-doux, #7089a0);
+  background: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+  transition: color 160ms, border-color 160ms, background 160ms;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+.sc-duree button:hover { color: hsl(var(--foreground)); border-color: hsl(var(--primary) / 0.5); }
+.sc-duree button[aria-pressed="true"] {
+  color: hsl(var(--primary-foreground));
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+}
+.sc-duree button:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  .sc-sceau::before, .sc-sceau::after { display: none; }
 }

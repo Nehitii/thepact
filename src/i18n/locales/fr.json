@@ -1782,6 +1782,22 @@
       "submit": ">> NOTER",
       "saved": "Distraction notée",
       "error": "Échec de l'enregistrement"
+    },
+    "clause": {
+      "toSeal": "Clause à sceller",
+      "executing": "Clause en exécution",
+      "suspended": "Exécution suspendue",
+      "recovery": "Récupération",
+      "compose": "Composer la clause",
+      "withTarget": "« {{target}} », sans interruption.",
+      "plain": "{{minutes}} minutes, sans interruption."
+    },
+    "seal": {
+      "affix": "Apposer le sceau",
+      "engraving": "Gravure · {{pct}} %",
+      "sealedOf": "{{count}} sceau apposé sur 4",
+      "sealedOf_other": "{{count}} sceaux apposés sur 4",
+      "ready": "Aucun sceau apposé"
     }
   },
   "calendar": {

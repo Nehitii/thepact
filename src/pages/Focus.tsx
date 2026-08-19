@@ -23,7 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  FocusTimerRing,
+  FocusSeal,
   FocusStats,
   FocusHistory,
   SpotifyPlayer,
@@ -403,40 +403,14 @@ export default function Focus() {
         />
 
         <div className="flex flex-col items-center gap-4 sm:gap-6 mt-4 sm:mt-8">
-          {/* Target badge + session counter */}
-          <div className="h-6 flex items-center justify-center gap-3">
-            <AnimatePresence>
-              {timer.isRunning && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  className="flex items-center gap-3"
-                >
-                  {linkedName && (
-                    <div
-                      className="flex items-center gap-2 px-3 py-1 bg-black/40 border border-primary/30"
-                      style={{ clipPath: "polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%)" }}
-                    >
-                      <span className="ds-t-label font-mono text-primary/60 uppercase tracking-widest">{t("focus.target")}:</span>
-                      <span className="ds-t-label font-mono text-primary font-bold tracking-wider truncate max-w-[200px] uppercase">
-                        {linkedName}
-                      </span>
-                    </div>
-                  )}
-                  <div className="px-2 py-0.5 bg-black/40 border border-accent/30 text-accent ds-t-label font-mono uppercase tracking-widest">
-                    {t("focus.session")} {(timer.sessionsCompleted % 4) + 1}/4
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          <FocusTimerRing
+          <FocusSeal
             phase={timer.phase}
             progress={timer.progress}
             secondsLeft={timer.secondsLeft}
             isPaused={timer.isPaused}
+            sessionsCompleted={timer.sessionsCompleted}
+            workMinutes={workMin}
+            targetName={linkedName}
             goalImageUrl={linkedImageUrl}
             onStart={handleStart}
           />
@@ -455,6 +429,8 @@ export default function Focus() {
               <FocusToolbar
                 goals={goals}
                 todos={tasks}
+                workMin={workMin}
+                onWorkChange={setWorkMin}
                 linkedGoalId={linkedGoalId}
                 linkedTodoId={linkedTodoId}
                 onLinkGoal={setLinkedGoalId}
