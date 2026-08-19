@@ -47,7 +47,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
         {/* 1. Scanline Animation */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
           <motion.div
-            className="w-full h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent shadow-[0_0_15px_rgba(var(--primary),0.5)]"
+            className="w-full h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent shadow-[0_0_15px_hsl(var(--primary)/0.5)]"
             animate={{ top: ["0%", "100%"] }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
@@ -97,7 +97,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
                   cx="48"
                   cy="48"
                   r="40"
-                  className="stroke-primary fill-none drop-shadow-[0_0_8px_rgba(var(--primary),0.6)]"
+                  className="stroke-primary fill-none drop-shadow-[0_0_8px_hsl(var(--primary)/0.6)]"
                   strokeWidth="6"
                   strokeLinecap="round"
                   initial={{ strokeDasharray: "0 251.2" }}
@@ -145,7 +145,7 @@ export function TodoGamifiedHeader({ stats, activeTaskCount, maxTasks }: TodoGam
               {Array.from({ length: 10 }).map((_, i) => (
                 <div key={i} className="flex-1 h-full rounded-[2px] bg-white/5 overflow-hidden">
                   <motion.div
-                    className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]"
+                    className="h-full bg-primary shadow-[0_0_10px_hsl(var(--primary)/0.5)]"
                     initial={{ width: "0%" }}
                     animate={{
                       width:

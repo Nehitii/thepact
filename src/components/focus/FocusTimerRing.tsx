@@ -149,10 +149,10 @@ export function FocusTimerRing({
               transition={{ duration: 0.2 }}
               onClick={onStart}
               aria-label={t("focus.initSync")}
-              className="group relative flex flex-col items-center justify-center w-32 h-32 bg-primary/10 border border-primary/40 hover:bg-primary/20 hover:border-primary hover:shadow-[0_0_30px_rgba(var(--primary),0.4)] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
+              className="group relative flex flex-col items-center justify-center w-32 h-32 bg-primary/10 border border-primary/40 hover:bg-primary/20 hover:border-primary hover:shadow-[0_0_30px_hsl(var(--primary)/0.4)] transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-primary"
               style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }}
             >
-              <Target className="h-8 w-8 text-primary group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_rgba(var(--primary),0.8)]" />
+              <Target className="h-8 w-8 text-primary group-hover:scale-110 transition-transform drop-shadow-[0_0_8px_hsl(var(--primary)/0.8)]" />
               <span className="mt-2 ds-t-label font-mono uppercase tracking-[0.3em] text-primary">{t("focus.initSync")}</span>
             </motion.button>
           ) : !isIdle ? (

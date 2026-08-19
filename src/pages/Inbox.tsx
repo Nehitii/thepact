@@ -62,7 +62,7 @@ export default function Inbox() {
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-r from-primary to-violet-500 rounded-xl blur opacity-25 group-hover:opacity-60 transition duration-500" />
               <div className="relative w-11 h-11 md:w-14 md:h-14 rounded-xl bg-card border border-border flex items-center justify-center shadow-2xl">
-                <InboxIcon className="h-5 w-5 md:h-7 md:w-7 text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.5)]" />
+                <InboxIcon className="h-5 w-5 md:h-7 md:w-7 text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.5)]" />
               </div>
             </div>
             <div className="min-w-0">

@@ -434,8 +434,12 @@ export function usePomodoroSessions() {
         .from("pomodoro_sessions")
         .select("*")
         .eq("user_id", user.id)
+        // Cinquante lignes ne suffisent plus : chaque cycle est desormais
+        // sa propre ligne, et la serie se calcule sur ce que rapporte
+        // cette requete — elle se serait coupee silencieusement au
+        // cinquantieme enregistrement.
         .order("created_at", { ascending: false })
-        .limit(50);
+        .limit(400);
       if (error) throw error;
       return (data || []) as PomodoroSession[];
     },
@@ -510,6 +514,9 @@ export function usePomodoroSessions() {
     return count;
   })();
 
+  // Le plus long cycle mene a son terme. Avant, duration_minutes portait
+  // la duree CONFIGUREE : regler 45 minutes et s arreter a 3 donnait un
+  // record de 45.
   const bestSession = (() => {
     const completed = (sessions.data || []).filter((s) => s.completed);
     if (completed.length === 0) return 0;

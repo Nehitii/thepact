@@ -142,12 +142,12 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
               "flex items-center justify-center h-10 w-10 mx-auto transition-all duration-300 relative group",
               "border-l-2",
               isActive
-                ? "text-primary border-primary bg-primary/10 shadow-[inset_4px_0_15px_-5px_rgba(var(--primary),0.3)]"
+                ? "text-primary border-primary bg-primary/10 shadow-[inset_4px_0_15px_-5px_hsl(var(--primary)/0.3)]"
                 : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
             )}
             style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
           >
-            <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_rgba(var(--primary),1)]")} />
+            <Icon size={18} className={cn(isActive && "drop-shadow-[0_0_8px_hsl(var(--primary)/1)]")} />
             {badge != null && badge > 0 && (
               <span className="absolute top-1 right-1 ds-t-label leading-none bg-destructive text-destructive-foreground w-3.5 h-3.5 flex items-center justify-center font-black rounded-sm shadow-[0_0_8px_rgba(220,38,38,0.8)]">
                 {badge > 99 ? "99" : badge}
@@ -179,7 +179,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
           "group relative flex items-center transition-all duration-300 overflow-hidden px-3 py-2.5 mb-1",
           "border-l-2 before:absolute before:inset-0 before:z-0",
           isActive
-            ? "text-primary border-primary bg-primary/10 before:bg-[linear-gradient(90deg,rgba(var(--primary),0.1)_1px,transparent_1px)] before:bg-[size:4px_4px]"
+            ? "text-primary border-primary bg-primary/10 before:bg-[linear-gradient(90deg,hsl(var(--primary)/0.1)_1px,transparent_1px)] before:bg-[size:4px_4px]"
             : "text-muted-foreground border-transparent hover:text-primary hover:border-primary/50 hover:bg-primary/5",
         )
       }
@@ -193,7 +193,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
               className={cn(
                 "transition-all duration-300",
                 isActive
-                  ? "text-primary drop-shadow-[0_0_8px_rgba(var(--primary),0.9)]"
+                  ? "text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/0.9)]"
                   : "group-hover:text-primary group-hover:scale-110",
               )}
             />
@@ -202,7 +202,7 @@ function SidebarNavItem({ to, icon: Icon, label, badge, mini, closeMobile, navig
             className={cn(
               "relative z-10 text-xs font-bold tracking-[0.1em] font-mono uppercase transition-all duration-300",
               isActive
-                ? "text-primary drop-shadow-[0_0_4px_rgba(var(--primary),0.5)] translate-x-1"
+                ? "text-primary drop-shadow-[0_0_4px_hsl(var(--primary)/0.5)] translate-x-1"
                 : "group-hover:translate-x-1",
             )}
           >
@@ -332,7 +332,7 @@ export const AppSidebar = memo(function AppSidebar() {
         <button
           onClick={() => setMobileOpen(true)}
           aria-label="Open navigation"
-          className="fixed top-14 left-4 z-50 p-2.5 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+          className="fixed top-14 left-4 z-50 p-2.5 bg-black/80 border border-primary/40 text-primary hover:bg-primary/20 transition-colors shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
           style={{ clipPath: "polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%)" }}
         >
           <ChevronsRight size={20} />
@@ -345,7 +345,7 @@ export const AppSidebar = memo(function AppSidebar() {
         style={{ width: isMobile ? 280 : collapsed ? 72 : 280 }}
         className={cn(
           "flex-shrink-0 z-50 flex flex-col bg-[#050508] border-r border-primary/20 font-rajdhani hide-scrollbar relative",
-          "shadow-[8px_0_30px_-10px_rgba(var(--primary),0.15)]",
+          "shadow-[8px_0_30px_-10px_hsl(var(--primary)/0.15)]",
           "transition-[width] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)]",
           !isMobile && "sticky top-0 h-screen overflow-hidden",
           isMobile && "fixed top-0 left-0 h-full transition-transform duration-300",
@@ -380,14 +380,14 @@ export const AppSidebar = memo(function AppSidebar() {
               <div className="absolute -inset-3 bg-primary/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
               <div
                 className={cn(
-                  "relative bg-[#0a0a0c] border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 shadow-[0_0_15px_rgba(var(--primary),0.3)]",
+                  "relative bg-[#0a0a0c] border border-primary flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 shadow-[0_0_15px_hsl(var(--primary)/0.3)]",
                   mini ? "w-10 h-10" : "w-12 h-12",
                 )}
                 style={{ clipPath: "polygon(25% 0%, 100% 0%, 100% 75%, 75% 100%, 0% 100%, 0% 25%)" }}
               >
                 <span
                   className={cn(
-                    "font-black font-orbitron text-primary drop-shadow-[0_0_8px_rgba(var(--primary),1)]",
+                    "font-black font-orbitron text-primary drop-shadow-[0_0_8px_hsl(var(--primary)/1)]",
                     mini ? "text-lg" : "text-2xl",
                   )}
                 >
@@ -534,7 +534,7 @@ export const AppSidebar = memo(function AppSidebar() {
 
         {/* ─── TERMINAL FOOTER (PARAMÈTRES RESTAURÉS) ─── */}
         <div className={cn("mt-auto relative bg-[#0a0a0c] border-t border-primary/30", mini ? "p-1.5" : "p-3")}>
-          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent shadow-[0_0_10px_rgba(var(--primary),0.8)]" />
+          <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary/80 to-transparent shadow-[0_0_10px_hsl(var(--primary)/0.8)]" />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -555,7 +555,7 @@ export const AppSidebar = memo(function AppSidebar() {
                   <div className="relative shrink-0">
                     <Avatar
                       className={cn(
-                        "border border-primary/40 rounded-none transition-all group-hover:border-primary group-hover:shadow-[0_0_10px_rgba(var(--primary),0.5)]",
+                        "border border-primary/40 rounded-none transition-all group-hover:border-primary group-hover:shadow-[0_0_10px_hsl(var(--primary)/0.5)]",
                         mini ? "h-8 w-8" : "h-9 w-9",
                       )}
                     >
@@ -568,14 +568,14 @@ export const AppSidebar = memo(function AppSidebar() {
                       <NotificationBadge
                         count={totalUnread}
                         size="sm"
-                        className="absolute -top-1.5 -right-1.5 shadow-[0_0_8px_rgba(var(--primary),0.8)] rounded-none border border-black"
+                        className="absolute -top-1.5 -right-1.5 shadow-[0_0_8px_hsl(var(--primary)/0.8)] rounded-none border border-black"
                       />
                     )}
                   </div>
 
                   {!mini && (
                     <div className="flex-1 text-left min-w-0">
-                      <p className="text-sm font-bold text-primary uppercase tracking-widest font-orbitron truncate group-hover:text-primary drop-shadow-[0_0_2px_rgba(var(--primary),0.8)]">
+                      <p className="text-sm font-bold text-primary uppercase tracking-widest font-orbitron truncate group-hover:text-primary drop-shadow-[0_0_2px_hsl(var(--primary)/0.8)]">
                         {profile?.display_name || "AGENT_UNKNOWN"}
                       </p>
                     </div>
@@ -594,15 +594,15 @@ export const AppSidebar = memo(function AppSidebar() {
             <DropdownMenuContent
               align={mini ? "start" : "end"}
               side="right"
-              className="w-72 bg-[#050508]/95 border border-primary/40 text-primary font-mono shadow-[0_0_30px_rgba(var(--primary),0.15)] rounded-none backdrop-blur-xl p-0"
+              className="w-72 bg-[#050508]/95 border border-primary/40 text-primary font-mono shadow-[0_0_30px_hsl(var(--primary)/0.15)] rounded-none backdrop-blur-xl p-0"
               sideOffset={16}
             >
               {/* Header du dropdown */}
               <div className="px-3 py-2 bg-primary/10 border-b border-primary/30 flex items-center justify-between">
-                <span className="ds-t-label uppercase font-black tracking-[0.2em] font-orbitron drop-shadow-[0_0_5px_rgba(var(--primary),0.5)]">
+                <span className="ds-t-label uppercase font-black tracking-[0.2em] font-orbitron drop-shadow-[0_0_5px_hsl(var(--primary)/0.5)]">
                   System_Config
                 </span>
-                <div className="w-1.5 h-1.5 bg-primary animate-pulse shadow-[0_0_5px_rgba(var(--primary),1)]" />
+                <div className="w-1.5 h-1.5 bg-primary animate-pulse shadow-[0_0_5px_hsl(var(--primary)/1)]" />
               </div>
 
               {/* Grille de paramètres restaurée (2 colonnes) */}

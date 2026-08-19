@@ -39,7 +39,7 @@ export function FocusControls({ phase, isPaused, onPause, onResume, onSkip, onEn
           className={cn(
             "flex items-center justify-between px-4 h-12 min-h-[44px] border transition-all duration-200 group relative overflow-hidden focus-visible:ring-2 focus-visible:ring-primary",
             isPaused
-              ? "bg-primary/20 border-primary text-primary hover:bg-primary/30 shadow-[0_0_15px_rgba(var(--primary),0.3)]"
+              ? "bg-primary/20 border-primary text-primary hover:bg-primary/30 shadow-[0_0_15px_hsl(var(--primary)/0.3)]"
               : "bg-muted/10 border-primary/40 text-primary hover:border-primary hover:bg-primary/10",
           )}
           style={{

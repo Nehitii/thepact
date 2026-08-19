@@ -1704,7 +1704,7 @@
       "showAll": "Voir les {{count}} sessions",
       "showLess": "Voir moins",
       "empty": "Aucune session pour l'instant",
-      "emptyHint": "Lancez votre première session de concentration"
+      "emptyHint": "Lance ta première session de concentration"
     },
     "spotify": {
       "add": "Ajouter Spotify",
@@ -1755,8 +1755,8 @@
       "uplink": "Uplink :: Sécurisé // Latence 12ms // Protocole",
       "vitals": "Vitals :: Nominal // Sync neurale"
     },
-    "resumed_one": "{{count}} cycle rattrapé pendant votre absence",
-    "resumed_other": "{{count}} cycles rattrapés pendant votre absence",
+    "resumed_one": "{{count}} cycle rattrapé pendant ton absence",
+    "resumed_other": "{{count}} cycles rattrapés pendant ton absence",
     "notifications": {
       "blocked": "Notifications bloquées. L'alerte de fin sera visuelle et sonore."
     },
@@ -1774,6 +1774,14 @@
       "paused": "Session suspendue",
       "workStarted": "Phase de concentration en cours",
       "breakStarted": "Pause en cours"
+    },
+    "distraction": {
+      "open": "Noter une distraction",
+      "title": "NOTER_DISTRACTION",
+      "placeholder": "Qu'est-ce qui t'a distrait ?",
+      "submit": ">> NOTER",
+      "saved": "Distraction notée",
+      "error": "Échec de l'enregistrement"
     }
   },
   "calendar": {

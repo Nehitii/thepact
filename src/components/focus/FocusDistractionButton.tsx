@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Brain, X } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { useLogFocusDistraction } from "@/hooks/useFocusDistractions";
 
 /**
@@ -9,6 +10,7 @@ import { useLogFocusDistraction } from "@/hooks/useFocusDistractions";
  * One click opens an inline note input; saves to focus_distractions.
  */
 export function FocusDistractionButton() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const log = useLogFocusDistraction();
@@ -18,11 +20,11 @@ export function FocusDistractionButton() {
     if (!trimmed) return;
     try {
       await log.mutateAsync({ note: trimmed });
-      toast("Distraction notée", { duration: 1200 });
+      toast(t("focus.distraction.saved"), { duration: 1200 });
       setNote("");
       setOpen(false);
     } catch {
-      toast.error("Échec de l'enregistrement");
+      toast.error(t("focus.distraction.error"));
     }
   };
 
@@ -39,9 +41,9 @@ export function FocusDistractionButton() {
           >
             <div className="flex items-center justify-between mb-2">
               <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-primary/70">
-                LOG_DISTRACTION
+                {t("focus.distraction.title")}
               </span>
-              <button onClick={() => setOpen(false)} aria-label="Close">
+              <button onClick={() => setOpen(false)} aria-label={t("common.close")}>
                 <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
               </button>
             </div>
@@ -52,7 +54,7 @@ export function FocusDistractionButton() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit();
               }}
-              placeholder="Qu'est-ce qui t'a distrait ?"
+              placeholder={t("focus.distraction.placeholder")}
               rows={3}
               className="w-full bg-black/40 border border-primary/20 text-foreground text-xs p-2 font-mono focus:outline-none focus:border-primary/60 resize-none"
             />
@@ -62,7 +64,7 @@ export function FocusDistractionButton() {
                 disabled={!note.trim() || log.isPending}
                 className="ds-t-label font-mono uppercase tracking-widest text-primary border border-primary/40 px-3 py-1 hover:bg-primary/10 disabled:opacity-40"
               >
-                {">> NOTER"}
+                {t("focus.distraction.submit")}
               </button>
             </div>
           </motion.div>
@@ -72,8 +74,8 @@ export function FocusDistractionButton() {
         onClick={() => setOpen((v) => !v)}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
-        aria-label="Log distraction"
-        className="w-12 h-12 flex items-center justify-center bg-black/60 border border-primary/40 text-primary hover:border-primary hover:bg-primary/10 backdrop-blur"
+        aria-label={t("focus.distraction.open")}
+        className="min-w-[44px] min-h-[44px] w-12 h-12 flex items-center justify-center bg-black/60 border border-primary/40 text-primary hover:border-primary hover:bg-primary/10 backdrop-blur"
         style={{ clipPath: "polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px)" }}
       >
         <Brain className="w-5 h-5" />

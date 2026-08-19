@@ -31,6 +31,7 @@ import {
   FocusConfigPanel,
   FocusAmbientEffects,
   FocusControls,
+  FocusDistractionButton,
   type FocusPanel,
 } from "@/components/focus";
 
@@ -100,6 +101,14 @@ export default function Focus() {
   }, [saveSession, breakMin, linkedGoalId, linkedTodoId]);
 
   const timer = usePomodoroTimer(workMin, breakMin, longBreakMin, enregistrerCycle);
+  const {
+    start: demarrerMinuteur,
+    pause: suspendreMinuteur,
+    resume: reprendreMinuteur,
+    skip: passerPhase,
+    reset: reinitialiserMinuteur,
+    cycleEnCours,
+  } = timer;
 
   // Cycles franchis pendant que la page n etait pas montee.
   const cyclesFlushes = useRef(false);
@@ -193,28 +202,28 @@ export default function Focus() {
   const handleStart = useCallback(() => {
     play("ui");
     void demanderNotifications();
-    timer.start();
-  }, [play, timer, demanderNotifications]);
+    demarrerMinuteur();
+  }, [play, demarrerMinuteur, demanderNotifications]);
 
   const handlePause = useCallback(() => {
     play("ui");
-    timer.pause();
-  }, [play, timer]);
+    suspendreMinuteur();
+  }, [play, suspendreMinuteur]);
 
   const handleResume = useCallback(() => {
     play("ui");
-    timer.resume();
-  }, [play, timer]);
+    reprendreMinuteur();
+  }, [play, reprendreMinuteur]);
 
   const confirmEnd = useCallback(() => {
     play("ui");
     // Les cycles acheves sont deja enregistres. Reste le cycle entame,
     // dont on garde la duree reellement ecoulee, marquee incomplete.
-    const partiel = timer.cycleEnCours();
+    const partiel = cycleEnCours();
     if (partiel) enregistrerCycle(partiel);
-    timer.reset();
+    reinitialiserMinuteur();
     setShowAbortConfirm(false);
-  }, [play, timer, enregistrerCycle]);
+  }, [play, cycleEnCours, reinitialiserMinuteur, enregistrerCycle]);
 
   const handleEnd = useCallback(() => {
     setShowAbortConfirm(true);
@@ -222,9 +231,9 @@ export default function Focus() {
 
   const handleSkip = useCallback(() => {
     play("ui");
-    timer.skip();
-    toast(t("focus.phaseSkipped", "Phase skipped"), { duration: 1500 });
-  }, [play, timer, t]);
+    passerPhase();
+    toast(t("focus.phaseSkipped"), { duration: 1500 });
+  }, [play, passerPhase, t]);
 
   // ── Terminal Overrides (Keyboard shortcuts) ──
   useEffect(() => {
@@ -525,6 +534,8 @@ export default function Focus() {
           </AnimatePresence>
         </div>
       </div>
+
+      {timer.isRunning && <FocusDistractionButton />}
 
       {/* Abort Confirmation Dialog */}
       <AlertDialog open={showAbortConfirm} onOpenChange={setShowAbortConfirm}>

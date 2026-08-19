@@ -19,8 +19,13 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
   const particlesEnabled = profile?.particles_enabled ?? true;
   const reducedMotion = useReducedMotion();
 
-  const mainColor = isBreak ? "160, 80%, 55%" : "195, 100%, 50%";
-  const mainColorRgb = isBreak ? "60, 180, 130" : "0, 170, 255";
+  /* La couche la plus visible de la page vivait hors du systeme de
+     jetons : changer la couleur d accent de l application l aurait
+     laissee derriere. Elle suit maintenant --accent en pause et
+     --primary en travail, avec la syntaxe qui fonctionne pour un
+     triplet HSL. */
+  const jeton = isBreak ? "--accent" : "--primary";
+  const teinte = (alpha: number) => `hsl(var(${jeton}) / ${alpha})`;
 
   // If user prefers reduced motion, show only static ambient glow
   if (reducedMotion) {
@@ -34,14 +39,14 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
           className="absolute inset-0"
           style={{
             background: isBreak
-              ? "linear-gradient(180deg, hsla(160,40%,5%,0.7) 0%, hsla(160,30%,3%,0.85) 100%)"
-              : "linear-gradient(180deg, hsla(210,50%,4%,0.7) 0%, hsla(220,40%,2%,0.85) 100%)",
+              ? `linear-gradient(180deg, ${teinte(0.06)} 0%, ${teinte(0.03)} 100%), linear-gradient(180deg, rgb(4 6 9 / 0.72) 0%, rgb(3 4 6 / 0.86) 100%)`
+              : `linear-gradient(180deg, ${teinte(0.06)} 0%, ${teinte(0.03)} 100%), linear-gradient(180deg, rgb(4 6 9 / 0.72) 0%, rgb(3 4 6 / 0.86) 100%)`,
           }}
         />
         <div
           className="absolute inset-0"
           style={{
-            background: `radial-gradient(ellipse 130% 60% at 50% 110%, hsla(${mainColor}, 0.12) 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse 130% 60% at 50% 110%, ${teinte(0.12)} 0%, transparent 70%)`,
           }}
         />
       </div>
@@ -62,8 +67,8 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
         className="absolute inset-0"
         style={{
           background: isBreak
-            ? "linear-gradient(180deg, hsla(160,40%,5%,0.7) 0%, hsla(160,30%,3%,0.85) 100%)"
-            : "linear-gradient(180deg, hsla(210,50%,4%,0.7) 0%, hsla(220,40%,2%,0.85) 100%)",
+            ? `linear-gradient(180deg, ${teinte(0.06)} 0%, ${teinte(0.03)} 100%), linear-gradient(180deg, rgb(4 6 9 / 0.72) 0%, rgb(3 4 6 / 0.86) 100%)`
+            : `linear-gradient(180deg, ${teinte(0.06)} 0%, ${teinte(0.03)} 100%), linear-gradient(180deg, rgb(4 6 9 / 0.72) 0%, rgb(3 4 6 / 0.86) 100%)`,
         }}
       />
 
@@ -73,7 +78,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
         animate={{ opacity: [0.5, 0.8, 0.5] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         style={{
-          background: `radial-gradient(ellipse 130% 60% at 50% 110%, hsla(${mainColor}, 0.15) 0%, hsla(${mainColor}, 0.05) 40%, transparent 70%)`,
+          background: `radial-gradient(ellipse 130% 60% at 50% 110%, ${teinte(0.15)} 0%, ${teinte(0.05)} 40%, transparent 70%)`,
         }}
       />
 
@@ -83,7 +88,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
         animate={{ opacity: [0.3, 0.5, 0.3] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         style={{
-          background: `radial-gradient(ellipse 80% 40% at 50% -5%, hsla(${mainColor}, 0.1) 0%, transparent 60%)`,
+          background: `radial-gradient(ellipse 80% 40% at 50% -5%, ${teinte(0.1)} 0%, transparent 60%)`,
         }}
       />
 
@@ -93,7 +98,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
         animate={{ opacity: [0.6, 0.85, 0.6] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         style={{
-          background: `radial-gradient(ellipse at center, transparent 20%, hsla(${mainColor}, 0.04) 45%, hsla(${mainColor}, 0.1) 70%, hsla(${mainColor}, 0.18) 100%)`,
+          background: `radial-gradient(ellipse at center, transparent 20%, ${teinte(0.04)} 45%, ${teinte(0.1)} 70%, ${teinte(0.18)} 100%)`,
         }}
       />
 
@@ -106,7 +111,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          background: `radial-gradient(circle, hsla(${mainColor}, ${0.2 + progress * 0.15}) 0%, hsla(${mainColor}, 0.06) 40%, transparent 65%)`,
+          background: `radial-gradient(circle, ${teinte(0.2 + progress * 0.15)} 0%, ${teinte(0.06)} 40%, transparent 65%)`,
           filter: "blur(60px)",
         }}
         animate={{ opacity: [0.62, 1, 0.62] }}
@@ -120,8 +125,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
             <FloatingParticle
               key={i}
               index={i}
-              mainColor={mainColor}
-              mainColorRgb={mainColorRgb}
+              couleur={teinte}
               intensity={0.5 + progress * 0.5}
             />
           ))}
@@ -135,7 +139,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         style={{
           width: 2,
-          background: `linear-gradient(to bottom, transparent, hsla(${mainColor}, 0.5), transparent)`,
+          background: `linear-gradient(to bottom, transparent, ${teinte(0.5)}, transparent)`,
           filter: "blur(4px)",
         }}
       />
@@ -145,7 +149,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2.5 }}
         style={{
           width: 2,
-          background: `linear-gradient(to bottom, transparent, hsla(${mainColor}, 0.4), transparent)`,
+          background: `linear-gradient(to bottom, transparent, ${teinte(0.4)}, transparent)`,
           filter: "blur(4px)",
         }}
       />
@@ -155,7 +159,7 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
         className="absolute left-0 w-full"
         style={{
           height: 1,
-          background: `linear-gradient(90deg, transparent 10%, hsla(${mainColor}, 0.15) 50%, transparent 90%)`,
+          background: `linear-gradient(90deg, transparent 10%, ${teinte(0.15)} 50%, transparent 90%)`,
           filter: "blur(1px)",
         }}
         animate={{ top: ["-2%", "102%"] }}
@@ -167,13 +171,11 @@ export const FocusAmbientEffects = memo(function FocusAmbientEffects({
 
 function FloatingParticle({
   index,
-  mainColor,
-  mainColorRgb,
+  couleur,
   intensity,
 }: {
   index: number;
-  mainColor: string;
-  mainColorRgb: string;
+  couleur: (alpha: number) => string;
   intensity: number;
 }) {
   const size = 3 + (index % 4) * 2;
@@ -189,8 +191,8 @@ function FloatingParticle({
         height: size,
         left: `${startX}%`,
         bottom: "-10px",
-        background: `hsla(${mainColor}, 0.8)`,
-        boxShadow: `0 0 ${size * 3}px rgba(${mainColorRgb}, 0.6)`,
+        background: couleur(0.8),
+        boxShadow: `0 0 ${size * 3}px ${couleur(0.6)}`,
       }}
       animate={{
         y: [0, "-105vh"],

@@ -1774,6 +1774,14 @@
       "paused": "Session paused",
       "workStarted": "Focus phase under way",
       "breakStarted": "Break under way"
+    },
+    "distraction": {
+      "open": "Log a distraction",
+      "title": "LOG_DISTRACTION",
+      "placeholder": "What pulled you away?",
+      "submit": ">> LOG",
+      "saved": "Distraction logged",
+      "error": "Could not save"
     }
   },
   "calendar": {
