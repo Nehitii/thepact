@@ -1900,7 +1900,41 @@
       "titleRequired": "Give the event a title.",
       "endBeforeStart": "The end must come after the start.",
       "dateRequired": "A start date and an end date are required."
-    }
+    },
+    "colors": {
+      "blue": "Blue",
+      "red": "Red",
+      "green": "Green",
+      "amber": "Amber",
+      "violet": "Violet",
+      "pink": "Pink",
+      "cyan": "Cyan",
+      "orange": "Orange",
+      "teal": "Teal",
+      "indigo": "Indigo"
+    },
+    "days": {
+      "MO": "Monday",
+      "TU": "Tuesday",
+      "WE": "Wednesday",
+      "TH": "Thursday",
+      "FR": "Friday",
+      "SA": "Saturday",
+      "SU": "Sunday"
+    },
+    "prevPeriod": "Previous {{period}}",
+    "nextPeriod": "Next {{period}}",
+    "pickDate": "Pick a date",
+    "search": "Search events",
+    "viewSwitcher": "Calendar view",
+    "sourceFilters": "Sources shown",
+    "moreEvents": "+{{count}} more",
+    "openEvent": "Open: {{title}}",
+    "deleteEvent": "Delete event",
+    "removeReminder": "Remove reminder",
+    "oneDay": "1 day",
+    "startTimeFull": "Start time",
+    "endTimeFull": "End time"
   },
   "friends": {
     "networkActive": "Social Network Active",

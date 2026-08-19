@@ -27,19 +27,22 @@ export const SourceFilterChips = memo(({ active, onToggle }: SourceFilterChipsPr
   };
 
   return (
-    <div className="flex items-center gap-1.5 flex-wrap">
+    <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={t("calendar.sourceFilters", "Sources shown")}>
       {chips.map(({ key, icon: Icon, colorClass }) => {
         const isActive = active.has(key);
         return (
           <button
             key={key}
+            type="button"
             onClick={() => onToggle(key)}
+            /* Une source active ne se distinguait que par l opacite. */
+            aria-pressed={isActive}
             className={cn(
               "flex items-center gap-1 px-2.5 py-1 rounded-full ds-t-label font-medium border transition-all",
               isActive ? colorClass : "text-muted-foreground border-border/30 bg-transparent opacity-50"
             )}
           >
-            <Icon className="h-3 w-3" />
+            <Icon className="h-3 w-3" aria-hidden="true" />
             {labels[key]}
           </button>
         );

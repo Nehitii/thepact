@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useId } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,9 +13,19 @@ import { RecurrenceEditor } from "./RecurrenceEditor";
 import { ReminderEditor } from "./ReminderEditor";
 import { composerInstant, debutDeJournee, finDeJournee } from "./temps";
 
-const COLORS = [
-  "#3b82f6", "#ef4444", "#22c55e", "#f59e0b", "#8b5cf6",
-  "#ec4899", "#06b6d4", "#f97316", "#14b8a6", "#6366f1",
+/* Les couleurs portent un nom : une pastille ronde sans libelle n annonce
+   que « bouton », dix fois de suite. */
+const COLORS: { hex: string; key: string }[] = [
+  { hex: "#3b82f6", key: "blue" },
+  { hex: "#ef4444", key: "red" },
+  { hex: "#22c55e", key: "green" },
+  { hex: "#f59e0b", key: "amber" },
+  { hex: "#8b5cf6", key: "violet" },
+  { hex: "#ec4899", key: "pink" },
+  { hex: "#06b6d4", key: "cyan" },
+  { hex: "#f97316", key: "orange" },
+  { hex: "#14b8a6", key: "teal" },
+  { hex: "#6366f1", key: "indigo" },
 ];
 
 const DUREE_DEFAUT = 3600000;
@@ -33,6 +43,11 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
   const { t } = useTranslation();
   const isEdit = !!event && !event._virtual;
 
+  /* Un prefixe unique par instance : deux dialogues ouverts ne peuvent
+     pas se disputer les memes identifiants. */
+  const uid = useId();
+  const id = (nom: string) => `${uid}-${nom}`;
+
   const defaultStart = defaultDate ?? new Date();
   const defaultEnd = new Date(defaultStart.getTime() + DUREE_DEFAUT);
 
@@ -44,7 +59,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
   const [endDate, setEndDate] = useState("");
   const [endTime, setEndTime] = useState("");
   const [allDay, setAllDay] = useState(false);
-  const [color, setColor] = useState(COLORS[0]);
+  const [color, setColor] = useState(COLORS[0].hex);
   const [category, setCategory] = useState("general");
   const [isBusy, setIsBusy] = useState(true);
   const [recurrenceRule, setRecurrenceRule] = useState<any>(null);
@@ -87,7 +102,7 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
       setEndDate(format(defaultEnd, "yyyy-MM-dd"));
       setEndTime(format(defaultEnd, "HH:mm"));
       setAllDay(false);
-      setColor(COLORS[0]);
+      setColor(COLORS[0].hex);
       setCategory("general");
       setIsBusy(true);
       setRecurrenceRule(null);
@@ -178,40 +193,47 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
-          {/* Title */}
+          {/* Title — une invite n est pas un libelle : elle s efface des
+              qu on tape, et n a jamais ete annoncee comme un nom. */}
           <div>
+            <Label htmlFor={id("titre")} className="ds-t-label mb-1 block">
+              {t("calendar.eventTitle", "Event title")}
+            </Label>
             <Input
+              id={id("titre")}
               ref={titreRef}
               placeholder={t("calendar.eventTitle", "Event title")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="text-base font-medium"
               aria-invalid={!!erreurTitre}
-              aria-describedby={erreurTitre ? "cal-err-titre" : undefined}
+              aria-describedby={erreurTitre ? id("err-titre") : undefined}
               autoFocus
             />
             {erreurTitre && (
-              <p id="cal-err-titre" role="alert" className="mt-1.5 text-xs text-destructive">
+              <p id={id("err-titre")} role="alert" className="mt-1.5 text-xs text-destructive">
                 {erreurTitre.texte}
               </p>
             )}
           </div>
 
-          {/* All day toggle */}
+          {/* All day toggle — un <label for> ne mord pas sur un bouton :
+              l interrupteur se nomme donc par aria-labelledby. */}
           <div className="flex items-center justify-between">
-            <Label className="flex items-center gap-2 text-xs">
-              <Clock className="h-3.5 w-3.5" />
+            <Label id={id("lbl-journee")} className="flex items-center gap-2 text-xs">
+              <Clock className="h-3.5 w-3.5" aria-hidden="true" />
               {t("calendar.allDay", "All day")}
             </Label>
-            <Switch checked={allDay} onCheckedChange={setAllDay} />
+            <Switch checked={allDay} onCheckedChange={setAllDay} aria-labelledby={id("lbl-journee")} />
           </div>
 
           {/* Date / Time */}
           <div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="ds-t-label">{t("calendar.startDate", "Start")}</Label>
+                <Label htmlFor={id("debut-date")} className="ds-t-label">{t("calendar.startDate", "Start")}</Label>
                 <Input
+                  id={id("debut-date")}
                   type="date"
                   value={startDate}
                   onChange={(e) => deplacerDebut(e.target.value, startTime)}
@@ -220,8 +242,12 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
               </div>
               {!allDay && (
                 <div>
-                  <Label className="ds-t-label">{t("calendar.startTime", "Time")}</Label>
+                  <Label htmlFor={id("debut-heure")} className="ds-t-label">{t("calendar.startTime", "Time")}</Label>
                   <Input
+                    id={id("debut-heure")}
+                    /* Deux champs nommes « Heure » dans le meme formulaire :
+                       la mise en page les distingue, l annonce non. */
+                    aria-label={t("calendar.startTimeFull", "Start time")}
                     type="time"
                     value={startTime}
                     onChange={(e) => deplacerDebut(startDate, e.target.value)}
@@ -230,32 +256,35 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
                 </div>
               )}
               <div>
-                <Label className="ds-t-label">{t("calendar.endDate", "End")}</Label>
+                <Label htmlFor={id("fin-date")} className="ds-t-label">{t("calendar.endDate", "End")}</Label>
                 <Input
+                  id={id("fin-date")}
                   type="date"
                   value={endDate}
                   onChange={(e) => reglerFin(e.target.value, endTime)}
                   className="h-9 text-xs"
                   aria-invalid={!!erreurDates}
-                  aria-describedby={erreurDates ? "cal-err-dates" : undefined}
+                  aria-describedby={erreurDates ? id("err-dates") : undefined}
                 />
               </div>
               {!allDay && (
                 <div>
-                  <Label className="ds-t-label">{t("calendar.endTime", "Time")}</Label>
+                  <Label htmlFor={id("fin-heure")} className="ds-t-label">{t("calendar.endTime", "Time")}</Label>
                   <Input
+                    id={id("fin-heure")}
+                    aria-label={t("calendar.endTimeFull", "End time")}
                     type="time"
                     value={endTime}
                     onChange={(e) => reglerFin(endDate, e.target.value)}
                     className="h-9 text-xs"
                     aria-invalid={!!erreurDates}
-                    aria-describedby={erreurDates ? "cal-err-dates" : undefined}
+                    aria-describedby={erreurDates ? id("err-dates") : undefined}
                   />
                 </div>
               )}
             </div>
             {erreurDates && (
-              <p id="cal-err-dates" role="alert" className="mt-1.5 text-xs text-destructive">
+              <p id={id("err-dates")} role="alert" className="mt-1.5 text-xs text-destructive">
                 {erreurDates.texte}
               </p>
             )}
@@ -263,17 +292,21 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
           {/* Color picker */}
           <div>
-            <Label className="ds-t-label mb-1.5 block">{t("calendar.color", "Color")}</Label>
-            <div className="flex gap-1.5 flex-wrap">
-              {COLORS.map((c) => (
+            <span id={id("lbl-couleur")} className="ds-t-label mb-1.5 block text-muted-foreground">
+              {t("calendar.color", "Color")}
+            </span>
+            <div className="flex gap-1.5 flex-wrap" role="group" aria-labelledby={id("lbl-couleur")}>
+              {COLORS.map(({ hex, key }) => (
                 <button
-                  key={c}
+                  key={hex}
                   type="button"
-                  onClick={() => setColor(c)}
+                  onClick={() => setColor(hex)}
+                  aria-label={t(`calendar.colors.${key}`, key)}
+                  aria-pressed={color === hex}
                   className="w-6 h-6 rounded-full transition-all ring-offset-background"
                   style={{
-                    backgroundColor: c,
-                    boxShadow: color === c ? `0 0 0 2px var(--background), 0 0 0 4px ${c}` : "none",
+                    backgroundColor: hex,
+                    boxShadow: color === hex ? `0 0 0 2px var(--background), 0 0 0 4px ${hex}` : "none",
                   }}
                 />
               ))}
@@ -282,10 +315,11 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
           {/* Location */}
           <div>
-            <Label className="ds-t-label flex items-center gap-1 mb-1">
-              <MapPin className="h-3 w-3" /> {t("calendar.location", "Location")}
+            <Label htmlFor={id("lieu")} className="ds-t-label flex items-center gap-1 mb-1">
+              <MapPin className="h-3 w-3" aria-hidden="true" /> {t("calendar.location", "Location")}
             </Label>
             <Input
+              id={id("lieu")}
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="h-9 text-xs"
@@ -295,8 +329,15 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
           {/* Description */}
           <div>
-            <Label className="ds-t-label mb-1 block">{t("calendar.description", "Description")}</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} className="text-xs min-h-[60px]" />
+            <Label htmlFor={id("description")} className="ds-t-label mb-1 block">
+              {t("calendar.description", "Description")}
+            </Label>
+            <Textarea
+              id={id("description")}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="text-xs min-h-[60px]"
+            />
           </div>
 
           {/* Recurrence */}
@@ -307,8 +348,8 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
 
           {/* Busy */}
           <div className="flex items-center justify-between">
-            <Label className="text-xs">{t("calendar.markBusy", "Mark as busy")}</Label>
-            <Switch checked={isBusy} onCheckedChange={setIsBusy} />
+            <Label id={id("lbl-occupe")} className="text-xs">{t("calendar.markBusy", "Mark as busy")}</Label>
+            <Switch checked={isBusy} onCheckedChange={setIsBusy} aria-labelledby={id("lbl-occupe")} />
           </div>
 
           {/* Actions */}
@@ -317,8 +358,13 @@ export function EventDetailModal({ open, onClose, event, defaultDate, onSave, on
               {isEdit ? t("common.saveChanges") : t("common.create")}
             </Button>
             {isEdit && onDelete && event && (
-              <Button variant="destructive" size="icon" onClick={() => { onDelete(event.id); onClose(); }}>
-                <Trash2 className="h-4 w-4" />
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => { onDelete(event.id); onClose(); }}
+                aria-label={t("calendar.deleteEvent", "Delete event")}
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" />
               </Button>
             )}
           </div>

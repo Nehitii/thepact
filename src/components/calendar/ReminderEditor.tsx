@@ -18,9 +18,10 @@ const PRESETS = [
   { value: "5", label: "5 min" },
   { value: "15", label: "15 min" },
   { value: "30", label: "30 min" },
-  { value: "60", label: "1h" },
-  { value: "1440", label: "1 day" },
-];
+  { value: "60", label: "1 h" },
+  // « 1 day » etait la seule etiquette ecrite en dur, en anglais.
+  { value: "1440", key: "calendar.oneDay", label: "1 day" },
+] as { value: string; label: string; key?: string }[];
 
 export function ReminderEditor({ reminders, onChange }: ReminderEditorProps) {
   const { t } = useTranslation();
@@ -43,11 +44,11 @@ export function ReminderEditor({ reminders, onChange }: ReminderEditorProps) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label className="text-xs flex items-center gap-1.5">
-          <Bell className="h-3.5 w-3.5" />
+          <Bell className="h-3.5 w-3.5" aria-hidden="true" />
           {t("calendar.reminders", "Reminders")}
         </Label>
         <Button variant="ghost" size="sm" onClick={add} className="h-6 text-xs gap-1">
-          <Plus className="h-3 w-3" />
+          <Plus className="h-3 w-3" aria-hidden="true" />
           {t("common.add")}
         </Button>
       </div>
@@ -63,12 +64,20 @@ export function ReminderEditor({ reminders, onChange }: ReminderEditorProps) {
             </SelectTrigger>
             <SelectContent>
               {PRESETS.map((p) => (
-                <SelectItem key={p.value} value={p.value}>{p.label} {t("calendar.before", "before")}</SelectItem>
+                <SelectItem key={p.value} value={p.value}>
+                  {p.key ? t(p.key, p.label) : p.label} {t("calendar.before", "before")}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => remove(i)}>
-            <X className="h-3 w-3" />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6"
+            onClick={() => remove(i)}
+            aria-label={t("calendar.removeReminder", "Remove reminder")}
+          >
+            <X className="h-3 w-3" aria-hidden="true" />
           </Button>
         </div>
       ))}

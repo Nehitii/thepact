@@ -29,11 +29,11 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-xs flex items-center gap-1.5">
-          <Repeat className="h-3.5 w-3.5" />
+        <Label id="cal-lbl-repeat" className="text-xs flex items-center gap-1.5">
+          <Repeat className="h-3.5 w-3.5" aria-hidden="true" />
           {t("calendar.recurrence", "Repeat")}
         </Label>
-        <Switch checked={enabled} onCheckedChange={toggleEnabled} />
+        <Switch checked={enabled} onCheckedChange={toggleEnabled} aria-labelledby="cal-lbl-repeat" />
       </div>
 
       {enabled && rule && (
@@ -70,6 +70,9 @@ export function RecurrenceEditor({ rule, onChange }: RecurrenceEditorProps) {
                   return (
                     <button
                       key={d}
+                      type="button"
+                      aria-label={t("calendar.days." + d, d)}
+                      aria-pressed={!!active}
                       onClick={() => {
                         const current = rule.byDay ?? [];
                         const next = active ? current.filter((x) => x !== d) : [...current, d];

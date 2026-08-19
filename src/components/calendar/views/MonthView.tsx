@@ -1,7 +1,8 @@
 import { useMemo, useState, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
-  eachDayOfInterval, isSameMonth, isSameDay, isToday, format, parseISO, getISOWeek,
+  eachDayOfInterval, isSameMonth, isToday, format, parseISO, getISOWeek,
 } from "date-fns";
 import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
@@ -17,12 +18,15 @@ interface MonthViewProps {
   onEventClick: (event: CalendarEvent) => void;
   onQuickAdd: (data: { title: string; start_time: string; end_time: string; all_day: boolean }) => void;
   onEventMove: (eventId: string, newDate: Date) => void;
+  /** Le surplus d une case mene a la journee, la seule vue qui le tienne. */
+  onShowMore?: (day: Date) => void;
 }
 
 const MAX_VISIBLE = 3;
 const GRID_COLS = "grid-cols-[32px_repeat(7,minmax(0,1fr))]";
 
 function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e: React.MouseEvent) => void }) {
+  const { t } = useTranslation();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: event.id,
     data: { event },
@@ -35,7 +39,7 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
       {...listeners}
       {...attributes}
       role="button"
-      aria-label={`Event: ${event.title}`}
+      aria-label={t("calendar.openEvent", "Open: {{title}}", { title: event.title })}
       className="min-w-0 overflow-hidden"
       style={{
         transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
@@ -48,13 +52,15 @@ function DraggableEvent({ event, onClick }: { event: CalendarEvent; onClick: (e:
   );
 }
 
-function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
+function DayCell({ day, viewDate, events, onEventClick, onQuickAdd, onShowMore }: {
   day: Date;
   viewDate: Date;
   events: CalendarEvent[];
   onEventClick: (ev: CalendarEvent) => void;
   onQuickAdd: MonthViewProps["onQuickAdd"];
+  onShowMore?: (day: Date) => void;
 }) {
+  const { t } = useTranslation();
   const { setNodeRef, isOver } = useDroppable({ id: day.toISOString() });
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const inMonth = isSameMonth(day, viewDate);
@@ -94,14 +100,23 @@ function DayCell({ day, viewDate, events, onEventClick, onQuickAdd }: {
           <DraggableEvent key={ev.id} event={ev} onClick={(e) => { e.stopPropagation(); onEventClick(ev); }} />
         ))}
         {overflow > 0 && (
-          <p className="ds-t-label text-muted-foreground pl-1 truncate">+{overflow} more</p>
+          /* C etait un paragraphe : le surplus n etait atteignable qu en
+             faisant defiler l interieur d une case de 110 px, ce que rien
+             n indiquait. Et la chaine etait la seule en anglais en dur. */
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onShowMore?.(day); }}
+            className="w-full text-left ds-t-label text-muted-foreground hover:text-primary pl-1 truncate transition-colors"
+          >
+            {t("calendar.moreEvents", "+{{count}} more", { count: overflow })}
+          </button>
         )}
       </div>
     </div>
   );
 }
 
-export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventMove }: MonthViewProps) {
+export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventMove, onShowMore }: MonthViewProps) {
   const locale = useDateFnsLocale();
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } });
   const keyboardSensor = useSensor(KeyboardSensor);
@@ -179,6 +194,7 @@ export function MonthView({ viewDate, events, onEventClick, onQuickAdd, onEventM
                   events={eventsByDay.get(key) ?? []}
                   onEventClick={onEventClick}
                   onQuickAdd={onQuickAdd}
+                  onShowMore={onShowMore}
                 />
               );
             })}

@@ -1900,7 +1900,41 @@
       "titleRequired": "Donnez un titre à l’événement.",
       "endBeforeStart": "La fin doit venir après le début.",
       "dateRequired": "Une date de début et une date de fin sont nécessaires."
-    }
+    },
+    "colors": {
+      "blue": "Bleu",
+      "red": "Rouge",
+      "green": "Vert",
+      "amber": "Ambre",
+      "violet": "Violet",
+      "pink": "Rose",
+      "cyan": "Cyan",
+      "orange": "Orange",
+      "teal": "Turquoise",
+      "indigo": "Indigo"
+    },
+    "days": {
+      "MO": "Lundi",
+      "TU": "Mardi",
+      "WE": "Mercredi",
+      "TH": "Jeudi",
+      "FR": "Vendredi",
+      "SA": "Samedi",
+      "SU": "Dimanche"
+    },
+    "prevPeriod": "{{period}} précédent",
+    "nextPeriod": "{{period}} suivant",
+    "pickDate": "Choisir une date",
+    "search": "Rechercher des événements",
+    "viewSwitcher": "Vue du calendrier",
+    "sourceFilters": "Sources affichées",
+    "moreEvents": "+{{count}} autres",
+    "openEvent": "Ouvrir : {{title}}",
+    "deleteEvent": "Supprimer l’événement",
+    "removeReminder": "Retirer ce rappel",
+    "oneDay": "1 jour",
+    "startTimeFull": "Heure de début",
+    "endTimeFull": "Heure de fin"
   },
   "friends": {
     "networkActive": "Réseau Social Actif",

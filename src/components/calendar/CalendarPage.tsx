@@ -177,6 +177,7 @@ export function CalendarPage() {
                   onEventClick={handleEventClick}
                   onQuickAdd={handleQuickAdd}
                   onEventMove={handleEventMove}
+                  onShowMore={handleDayClick}
                 />
               )}
               {view === "week" && (
