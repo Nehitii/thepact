@@ -128,10 +128,27 @@ export function GoalsHeader({
 
         <div className="cp-danger ana-bandeau-rayure" />
 
-        <div className="ana-bandeau">
-          <Compteur valeur={total} libelle={t("goals.totalLabel")} teinte="hsl(var(--primary))" />
-          <Compteur valeur={actifs} libelle={t("goals.activeLabel")} teinte="#ffab00" />
-          <Compteur valeur={franchis} libelle={t("goals.doneLabel")} teinte="#00ff88" pct={pct} />
+        {/* Total dominant, puis sa decomposition.
+
+            Trois compteurs de meme poids posaient trois mesures cote a cote
+            sans dire qu elles n en font qu une : 38 = 25 + 13. La hierarchie
+            est desormais explicite — un nombre principal, deux details qui
+            s additionnent pour le reconstituer — et les deux jauges rendent
+            le rapport lisible avant meme les chiffres.
+
+            Ce traitement ne vaut que parce que les parts composent le tout.
+            Sur Statistiques les trois compteurs sont independants ; les
+            decomposer ainsi y serait faux. */}
+        <div className="gl-bilan">
+          <div className="gl-bilan-total">
+            <b className="font-orbitron">{total}</b>
+            <span className="ds-t-label">{t("goals.totalLabel")}</span>
+          </div>
+          <span className="gl-bilan-sep" />
+          <div className="gl-bilan-detail">
+            <Part libelle={t("goals.activeLabel")} valeur={actifs} total={total} teinte="#ffab00" />
+            <Part libelle={t("goals.doneLabel")} valeur={franchis} total={total} teinte="#00ff88" />
+          </div>
         </div>
 
         <Telemetrie segments={segments} />
@@ -140,29 +157,19 @@ export function GoalsHeader({
   );
 }
 
-function Compteur({ valeur, libelle, teinte, pct }: {
-  valeur: number; libelle: string; teinte: string; pct?: number;
+/** Une part du total : libelle, jauge segmentee, nombre. La largeur de la
+ *  jauge est la part reelle, pas une valeur decorative. */
+function Part({ libelle, valeur, total, teinte }: {
+  libelle: string; valeur: number; total: number; teinte: string;
 }) {
+  const pct = total > 0 ? (valeur / total) * 100 : 0;
   return (
-    <div className="ana-compteur">
-      {pct !== undefined && (
-        <span
-          className="ana-jauge"
-          style={{
-            ["--c" as string]: teinte,
-            ["--p" as string]: `${Math.min(100, Math.max(0, pct))}%`,
-          }}
-        />
-      )}
-      <span className="ana-compteur-txt">
-        <span
-          className="ana-compteur-val font-orbitron"
-          style={{ color: teinte, textShadow: `0 0 14px ${teinte}55` }}
-        >
-          {valeur}
-        </span>
-        <span className="ana-compteur-lib ds-t-label">{libelle}</span>
+    <div className="gl-part">
+      <span className="gl-part-nom ds-t-label">{libelle}</span>
+      <span className="cp-segments gl-part-jauge" style={{ ["--c" as string]: teinte }}>
+        <i style={{ width: `${pct}%` }} />
       </span>
+      <span className="gl-part-val font-orbitron" style={{ color: teinte }}>{valeur}</span>
     </div>
   );
 }
