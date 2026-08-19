@@ -284,7 +284,14 @@ export default function Focus() {
             transition={{ duration: 1.2, ease: "easeInOut" }}
           />
           {timer.isRunning && (
-            <FocusAmbientEffects progress={timer.progress} isBreak={isBreak} />
+            // Quantifie : l intensite du halo suit l avancement, mais par
+            // paliers de 5 % au lieu de changer chaque seconde. Le
+            // degrade et le flou ne sont donc rasterises que vingt fois
+            // par session, pas mille cinq cents.
+            <FocusAmbientEffects
+              progress={Math.round(timer.progress * 20) / 20}
+              isBreak={isBreak}
+            />
           )}
         </>
       }

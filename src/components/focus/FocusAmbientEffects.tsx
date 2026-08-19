@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
 
@@ -6,7 +7,14 @@ interface FocusAmbientEffectsProps {
   isBreak?: boolean;
 }
 
-export function FocusAmbientEffects({ progress, isBreak = false }: FocusAmbientEffectsProps) {
+/* Cette couche reste a l ecran pendant vingt-cinq minutes : c est le
+   contexte ou le cout d un effet se paie en autonomie et en chauffe.
+   Elle est memoisee, et l appelant lui transmet un avancement quantifie
+   — sans quoi elle se re-rendait chaque seconde. */
+export const FocusAmbientEffects = memo(function FocusAmbientEffects({
+  progress,
+  isBreak = false,
+}: FocusAmbientEffectsProps) {
   const { profile } = useProfileSettings();
   const particlesEnabled = profile?.particles_enabled ?? true;
   const reducedMotion = useReducedMotion();
@@ -101,10 +109,7 @@ export function FocusAmbientEffects({ progress, isBreak = false }: FocusAmbientE
           background: `radial-gradient(circle, hsla(${mainColor}, ${0.2 + progress * 0.15}) 0%, hsla(${mainColor}, 0.06) 40%, transparent 65%)`,
           filter: "blur(60px)",
         }}
-        animate={{
-          scale: [1, 1.08, 1],
-          opacity: [0.7, 1, 0.7],
-        }}
+        animate={{ opacity: [0.62, 1, 0.62] }}
         transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
       />
 
@@ -158,7 +163,7 @@ export function FocusAmbientEffects({ progress, isBreak = false }: FocusAmbientE
       />
     </motion.div>
   );
-}
+});
 
 function FloatingParticle({
   index,
@@ -188,7 +193,7 @@ function FloatingParticle({
         boxShadow: `0 0 ${size * 3}px rgba(${mainColorRgb}, 0.6)`,
       }}
       animate={{
-        y: [0, -(typeof window !== "undefined" ? window.innerHeight : 800) - 50],
+        y: [0, "-105vh"],
         opacity: [0, intensity * 0.7, intensity * 0.7, 0],
         x: [0, Math.sin(index * 1.3) * 50, Math.sin(index * 2.1) * -30, Math.sin(index * 0.7) * 25],
       }}
