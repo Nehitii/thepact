@@ -185,6 +185,10 @@ export function GridViewGoalCard({
           {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="verre-partage-badge" />}
 
           <div className="verre-bas">
+            {/* Le statut passe sur la ligne de la jauge. Pose en dessous il
+                se retrouvait a 11px dans le ton le plus sourd de la palette,
+                a 53px du bord, et se lisait comme absent. */}
+            <span className="verre-etat">{statusLabel}</span>
             <span className="verre-seg" aria-hidden="true">
               {Array.from({ length: 10 }, (_, i) => (
                 <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
@@ -195,7 +199,6 @@ export function GridViewGoalCard({
             </b>
           </div>
 
-          <span className="verre-etat">{statusLabel}</span>
         </div>
 
         <button

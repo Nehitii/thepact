@@ -2557,17 +2557,16 @@
       color-mix(in srgb, var(--accent) 20%, rgb(5 8 15)) 0%,
       rgb(4 7 13) 76%);
 }
-/* Le lisere suit la cassure : une bordure CSS resterait rectangulaire et
-   passerait au travers. On le dessine en calque, decale d'un pixel sous
-   le socle et clippe sur le meme polygone. */
-.verre-socle::before {
-  content: "";
-  position: absolute;
-  inset: -1px 0 0 0;
-  background: color-mix(in srgb, var(--accent) 78%, transparent);
-  clip-path: polygon(0 11%, 100% 0, 100% 100%, 0 100%);
-  z-index: -1;
-}
+/* Pas de calque de lisere.
+
+   Premiere version : un ::before clippe sur le meme polygone, cense ne
+   laisser voir qu un pixel de bord. Avec isolation: isolate, un enfant
+   en z-index negatif se peint au-dessus du FOND de son parent et sous
+   son contenu — le calque recouvrait donc tout le socle a 78 % de la
+   couleur du palier. D ou ces aplats satures ou plus rien ne se lisait.
+
+   Le lisere est inutile de toute facon : la bande se pose exactement sur
+   la cassure et la marque deja. */
 
 /* La bande se pose a cheval sur la jointure, au meme angle qu'elle. Elle
    deborde de chaque cote : une bande dont on voit les extremites se lit
@@ -2742,4 +2741,123 @@
   background-clip: text;
   color: transparent;
   opacity: .3;
+}
+
+/* ── Corrections apres rendu ──
+ *
+ * Le socle etait recouvert par le calque de lisere, donc satur. Une fois
+ * celui-ci retire, trois reglages restent a faire pour que le bloc porte
+ * du texte lisible.
+ */
+
+/* Le socle s'assombrit franchement. La couleur du palier reste presente
+   par la lueur diagonale et par la bande — inutile de la coucher en
+   aplat derriere le texte, ou elle ne fait que voler du contraste. */
+.verre-socle {
+  background:
+    linear-gradient(152deg,
+      color-mix(in srgb, var(--accent) 22%, transparent) 0%,
+      transparent 58%),
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--accent) 11%, rgb(4 7 13)) 0%,
+      rgb(3 6 11) 70%);
+}
+
+/* Le statut : visible mais pas lisible.
+   11px dans le ton le plus sourd de la palette, avec 1,8px de crenage —
+   or un crenage large disloque un petit texte au lieu de l'aerer. Il
+   passe en clair, le crenage tombe a 1px, et une pastille a la couleur
+   du palier le rend reperable avant meme d'etre lu. */
+.verre-etat {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-top: 0;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1px;
+  color: #cfe4f5;
+  white-space: nowrap;
+}
+.verre-etat::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* La ligne du bas porte maintenant trois elements : statut, jauge,
+   compte. La jauge prend ce qui reste. */
+.verre-bas { gap: 9px; }
+.verre-seg { flex: 1 1 auto; min-width: 34px; }
+
+/* Les marqueurs de groupe passent sur une seule ligne : empiles, ils
+   poussaient le statut hors du socle sur les cartes de groupe. */
+.verre-groupe-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 5px; }
+.verre-groupe-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 5px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1.4px;
+  color: #05080f;
+  background: var(--cp-jaune);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+.verre-groupe-tag--dyn {
+  color: var(--cp-jaune);
+  background: transparent;
+  border: 1px solid rgb(252 238 10 / 0.5);
+}
+.verre-pastilles { display: flex; gap: 3px; margin: 0 0 6px; }
+.verre-pastilles u {
+  width: 13px;
+  height: 4px;
+  background: rgb(255 255 255 / 0.16);
+  text-decoration: none;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 2px) 100%, 0 100%);
+}
+.verre-pastilles u.on { background: var(--cp-jaune); box-shadow: 0 0 6px var(--cp-jaune); }
+.verre-regle {
+  display: block;
+  margin-top: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 1px;
+  color: var(--cp-texte-doux);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Le nom d'un groupe tient sur deux lignes, pas trois : les marqueurs et
+   les pastilles occupent deja deux rangees au-dessus de la jauge. */
+.verre-groupe .verre-nom { -webkit-line-clamp: 2; line-clamp: 2; }
+.verre-groupe .verre-socle { padding-top: 26px; }
+
+/* ── Bord vivant du groupe ── */
+@property --verre-ang {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes verre-tour { to { --verre-ang: 360deg; } }
+.verre-groupe-bord {
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  pointer-events: none;
+  background: conic-gradient(from var(--verre-ang),
+    transparent 0deg, var(--cp-jaune) 42deg, transparent 96deg, transparent 360deg);
+  animation: verre-tour 6s linear infinite;
+}
+.verre-groupe { isolation: isolate; }
+
+@media (prefers-reduced-motion: reduce) {
+  .verre-groupe-bord { animation: none; background: var(--cp-jaune); opacity: .5; }
 }

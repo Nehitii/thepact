@@ -69,148 +69,90 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
     "--progress": `${progress}%`,
   } as React.CSSProperties;
 
+  /* La carte de groupe reprend "eclat de verre" a l'identique et n'ajoute
+   * que les deux signes retenus pour la vue en barre : un arc de lumiere
+   * doree qui parcourt le contour, et une pastille par objectif contenu.
+   * Il ne faut pas deux langages dans une meme grille — ce qui distingue
+   * doit s'ajouter, pas remplacer. */
   return (
     <article
       style={cssVars}
       onClick={() => onClick(id)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(id); } }}
-      className={cn(
-        "group relative w-full mx-auto cursor-pointer select-none rounded-[22px]",
-        "transition-transform duration-300 [transition-timing-function:cubic-bezier(0.34,1.56,0.64,1)]",
-        "hover:-translate-y-1 hover:z-20 active:scale-[0.98]",
-        "[perspective:1000px]",
-        isComplete && "grayscale-[0.4] hover:grayscale-0",
-      )}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick(id);
+        }
+      }}
+      aria-label={name}
+      className={cn("verre verre-groupe", isComplete && "verre--honore")}
     >
-      <div
-        className={cn(
-          "relative w-full rounded-[22px] overflow-hidden tcg-frame",
-          "bg-[var(--goal-card-bg)] border border-[var(--goal-card-border)]",
-          "shadow-sm transition-all duration-400 [transition-timing-function:cubic-bezier(0.25,0.8,0.25,1)]",
-          "group-hover:shadow-[0_20px_40px_-5px_rgba(0,0,0,0.6),0_0_0_1px_rgba(var(--accent-rgb),0.3)]",
-          "group-hover:border-[rgba(var(--accent-rgb),0.3)]",
-        )}
-        style={{ aspectRatio: "4/5" }}
-      >
-        {/* Image Layer */}
-        <div className="absolute inset-0 z-0">
-          {imageUrl ? (
-            <>
-              <img
-                src={imageUrl}
-                alt={name}
-                loading="lazy"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
-            </>
-          ) : (
-            <>
-              <div
-                className="w-full h-full flex items-center justify-center"
-                style={{
-                  background: `radial-gradient(circle at center, rgba(var(--accent-rgb), 0.25), rgba(var(--accent-rgb), 0.05) 60%, #111827)`,
-                }}
-              >
-                <ImageOff className="w-12 h-12 text-white/20" />
-              </div>
-              <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/10 via-black/20 to-black/90" />
-            </>
-          )}
-        </div>
+      <span className="verre-groupe-bord" aria-hidden="true" />
 
-        {/* Shine Effect */}
-        <div className="absolute inset-0 z-[2] pointer-events-none bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-[150%] skew-x-[-20deg] group-hover:animate-[shimmer_1s_forwards]" />
-
-        {/* Top Bar - Difficulty only */}
-        <div className="absolute top-0 left-0 right-0 p-3.5 flex justify-between items-start z-10">
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-black/60 backdrop-blur-lg border border-white/10 rounded-full ds-t-label font-bold tracking-wider text-gray-100 uppercase">
-            <span
-              className="w-1.5 h-1.5 rounded-full"
-              style={{ background: "var(--accent)", boxShadow: "0 0 8px var(--accent)" }}
-            />
-            {getDiffLabel(difficulty, customDifficultyName)}
+      <div className="verre-in">
+        {imageUrl ? (
+          <img src={imageUrl} alt="" loading="lazy" className="verre-img" />
+        ) : (
+          <div className="verre-vide" aria-hidden="true">
+            <Crown size={40} strokeWidth={1} />
           </div>
-        </div>
+        )}
 
-        {/* Glass Panel Content */}
-        <div
-          className={cn(
-            "absolute bottom-3 left-3 right-3 p-4 rounded-2xl z-10",
-            "bg-[rgba(20,20,25,0.75)] backdrop-blur-xl border border-white/[0.08]",
-            "shadow-[0_4px_20px_rgba(0,0,0,0.4)]",
-            "flex flex-col gap-3 transition-all duration-300",
-            "group-hover:bg-[rgba(20,20,25,0.85)] group-hover:border-white/[0.15]",
-          )}
-        >
-          {/* Header Row with SUPER tag */}
-          <div className="flex justify-between items-center mb-1.5">
-            <div
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full ds-t-label font-bold tracking-wider uppercase"
-              style={{
-                background: "linear-gradient(135deg, #b8860b, #fbbf24, #b8860b)",
-                color: "#fff",
-                boxShadow: "0 0 10px rgba(251, 191, 36, 0.5), inset 0 1px 1px rgba(255,255,255,0.25)",
-              }}
-            >
-              <Crown size={10} className="fill-current" />
-              SUPER
-            </div>
+        <span className="verre-voile" aria-hidden="true" />
+        <span className="verre-flanc" aria-hidden="true" />
+
+        <span className="verre-bande">
+          {getDiffLabel(difficulty, customDifficultyName)}
+        </span>
+
+        <div className="verre-socle">
+          <span className="verre-lettre" aria-hidden="true">
+            {getDiffLabel(difficulty, customDifficultyName).slice(0, 1)}
+          </span>
+
+          <div className="verre-groupe-tags">
+            <span className="verre-groupe-tag">
+              <Crown size={9} style={{ fill: "currentColor" }} aria-hidden="true" />
+              GROUPE
+            </span>
             {isDynamic && (
-              <span className="ds-t-label font-bold px-1.5 py-0.5 rounded-md border border-purple-500/30 text-purple-400 bg-black/40 uppercase">
-                <Zap className="w-2.5 h-2.5 inline mr-0.5" />Dynamic
+              <span className="verre-groupe-tag verre-groupe-tag--dyn">
+                <Zap size={9} aria-hidden="true" />
+                AUTO
               </span>
             )}
           </div>
 
-          {/* Title */}
-          <h3 className="text-base font-bold leading-tight text-white line-clamp-2 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
-            {name}
-          </h3>
+          <h3 className="verre-nom">{name}</h3>
 
-          {/* Progress */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex justify-between items-center ds-t-label font-semibold">
-              <span className={cn("uppercase tracking-wider", isComplete ? "text-green-400" : "text-gray-400")}>
-                {isComplete ? "Complete" : "In Progress"}
-              </span>
-              <span className="text-gray-100 tabular-nums">{progress}%</span>
-            </div>
-            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-[width] duration-1000 [transition-timing-function:cubic-bezier(0.2,0.8,0.2,1)]"
-                style={{
-                  width: `${progress}%`,
-                  background: isComplete ? "#4ade80" : "var(--accent)",
-                  boxShadow: isComplete ? "0 0 8px #4ade80" : "0 0 8px var(--accent)",
-                }}
-              />
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="ds-t-label text-gray-500">
-                {completedCount} / {childCount} goals
-              </span>
-            </div>
+          {/* Une pastille par objectif contenu, allumee quand il est
+              honore. Au-dela de douze elles formeraient un trait continu
+              et ne compteraient plus rien : on les retire. */}
+          {childCount > 0 && childCount <= 12 && (
+            <span className="verre-pastilles" aria-hidden="true">
+              {Array.from({ length: childCount }, (_, i) => (
+                <u key={i} className={i < completedCount ? "on" : ""} />
+              ))}
+            </span>
+          )}
+
+          <div className="verre-bas">
+            {/* Statut sur la ligne de la jauge : pose en dessous, il
+                debordait du socle de 26px sur les cartes de groupe — les
+                marqueurs et les pastilles prennent deja deux rangees. */}
+            <span className="verre-etat">{isComplete ? "Complete" : "In Progress"}</span>
+            <span className="verre-seg" aria-hidden="true">
+              {Array.from({ length: 10 }, (_, i) => (
+                <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
+              ))}
+            </span>
+            <b className="verre-pct">{completedCount}/{childCount}</b>
           </div>
 
-          {/* Rule label */}
-          {ruleLabel && (
-            <div className="pt-1 border-t border-white/[0.06]">
-              <span className="ds-t-label text-gray-500 font-mono truncate block">{ruleLabel}</span>
-            </div>
-          )}
+          {ruleLabel && <span className="verre-regle">{ruleLabel}</span>}
         </div>
-
-        {/* Border Glow */}
-        <div
-          className={cn(
-            "absolute inset-0 rounded-[20px] border border-transparent pointer-events-none z-20",
-            "transition-all duration-300",
-            "group-hover:border-[rgba(var(--accent-rgb),0.4)] group-hover:shadow-[inset_0_0_20px_rgba(var(--accent-rgb),0.05)]",
-          )}
-        />
       </div>
     </article>
   );
