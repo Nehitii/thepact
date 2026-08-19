@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useMemo } from "react";
+import { useEffect, useId, useMemo } from "react";
 import {
   startOfMonth, endOfMonth, startOfWeek, endOfWeek,
   addDays, addWeeks, addMonths, addYears,
@@ -179,6 +179,40 @@ function makeVirtualOccurrence(event: CalendarEvent, start: Date, end: Date, idx
   };
 }
 
+/* LA RECHERCHE PORTAIT SUR LA PERIODE AFFICHEE
+ *
+ * Elle filtrait les evenements deja charges : chercher un rendez-vous du
+ * mois prochain depuis le mois courant ne renvoyait rien, sans que rien
+ * n indique que la recherche etait bornee. Elle interroge desormais la
+ * base, sans borne de date.
+ *
+ * Les valeurs sont mises entre guillemets : une virgule dans le terme
+ * cherche est un separateur pour PostgREST, et casserait le « ou ». */
+export function useCalendarEventSearch(term: string) {
+  const { user } = useAuth();
+  const q = term.trim();
+
+  return useQuery({
+    queryKey: ["calendar-search", user?.id, q],
+    queryFn: async () => {
+      if (!user || q.length < 2) return [];
+      const v = q.replace(/[\\%_]/g, (c) => "\\" + c).replace(/"/g, '\\"');
+      const motif = `"%${v}%"`;
+      const { data, error } = await supabase
+        .from("calendar_events")
+        .select("*")
+        .eq("user_id", user.id)
+        .or(`title.ilike.${motif},description.ilike.${motif},location.ilike.${motif}`)
+        .order("start_time", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return ((data ?? []) as unknown as CalendarEvent[]).map((e) => ({ ...e, _source: "event" as const }));
+    },
+    enabled: !!user && q.length >= 2,
+    staleTime: 30000,
+  });
+}
+
 // ─── Hook ───────────────────────────────────────────────────
 export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: Set<string>) {
   const { user } = useAuth();
@@ -204,6 +238,14 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
     return { rangeStart: ms, rangeEnd: me };
   }, [viewDate, view]);
 
+  /* Les echeances sont posees sur des jours, la fenetre est faite
+     d instants : on elargit d un jour de chaque cote plutot que de jouer
+     aux bords avec les fuseaux. Les vues refiltrent de toute facon. */
+  const bornes = useMemo(() => ({
+    debut: addDays(rangeStart, -1).toISOString(),
+    fin: addDays(rangeEnd, 1).toISOString(),
+  }), [rangeStart, rangeEnd]);
+
   // Calendar events
   const query = useQuery({
     queryKey: ["calendar-events", user?.id, rangeStart.toISOString(), rangeEnd.toISOString()],
@@ -212,6 +254,9 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
       const { data, error } = await supabase
         .from("calendar_events")
         .select("*")
+        // La protection ne reposait que sur les regles au niveau des
+        // lignes. Elles restent la ceinture ; ceci est les bretelles.
+        .eq("user_id", user.id)
         .gte("start_time", rangeStart.toISOString())
         .lte("start_time", rangeEnd.toISOString())
         .order("start_time");
@@ -231,6 +276,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
       const { data, error } = await supabase
         .from("calendar_events")
         .select("*")
+        .eq("user_id", user.id)
         .not("recurrence_rule", "is", null)
         .lt("start_time", rangeStart.toISOString())
         .order("start_time");
@@ -243,7 +289,7 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
   // Todo deadlines — skip if source filter excludes todos
   const todoEnabled = !!user && (!sourceFilters || sourceFilters.has("todo"));
   const todoQuery = useQuery({
-    queryKey: ["calendar-todos", user?.id],
+    queryKey: ["calendar-todos", user?.id, bornes.debut, bornes.fin],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
@@ -251,7 +297,11 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
         .select("id, name, deadline, category, location")
         .eq("user_id", user.id)
         .eq("status", "active")
-        .not("deadline", "is", null);
+        .not("deadline", "is", null)
+        // Toute la liste etait chargee, quelle que soit la periode
+        // regardee, puis filtree a l affichage.
+        .gte("deadline", bornes.debut)
+        .lte("deadline", bornes.fin);
       if (error) throw error;
       return (data ?? []).map((t: any): CalendarEvent => ({
         id: `todo_${t.id}`,
@@ -285,14 +335,19 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
   // Goal deadlines — skip if source filter excludes goals
   const goalEnabled = !!user && (!sourceFilters || sourceFilters.has("goal"));
   const goalQuery = useQuery({
-    queryKey: ["calendar-goals", user?.id],
+    queryKey: ["calendar-goals", user?.id, bornes.debut, bornes.fin],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
         .from("goals")
         .select("id, name, deadline, pact_id, pacts!inner(user_id)")
+        // Toutes les lignes de la table etaient ramenees avant d ecarter
+        // cote client celles des autres utilisateurs.
+        .eq("pacts.user_id", user.id)
         .not("deadline", "is", null)
-        .not("status", "in", '("completed","archived")');
+        .not("status", "in", '("completed","archived")')
+        .gte("deadline", bornes.debut)
+        .lte("deadline", bornes.fin);
       if (error) throw error;
       return (data ?? [])
         .filter((g: any) => g.pacts?.user_id === user.id)
@@ -328,14 +383,17 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
   // Step due dates — skip if source filter excludes steps
   const stepEnabled = !!user && (!sourceFilters || sourceFilters.has("step"));
   const stepQuery = useQuery({
-    queryKey: ["calendar-steps", user?.id],
+    queryKey: ["calendar-steps", user?.id, bornes.debut, bornes.fin],
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
         .from("steps")
         .select("id, title, due_date, goal_id, goals!inner(pact_id, name, pacts!inner(user_id))")
+        .eq("goals.pacts.user_id", user.id)
         .not("due_date", "is", null)
-        .neq("status", "completed");
+        .neq("status", "completed")
+        .gte("due_date", bornes.debut)
+        .lte("due_date", bornes.fin);
       if (error) throw error;
       return (data ?? [])
         .filter((s: any) => s.goals?.pacts?.user_id === user.id)
@@ -393,18 +451,28 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
     return [...expanded, ...todos, ...goals, ...steps];
   }, [query.data, recurringQuery.data, todoQuery.data, goalQuery.data, stepQuery.data, rangeStart, rangeEnd]);
 
+  /* Le canal portait un nom constant : deux montages simultanes du
+     crochet — le mode strict en developpement en produit un a chaque
+     fois — se disputaient le meme abonnement. */
+  const canalId = useId();
+
   // Realtime subscription
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel("calendar-events-realtime")
-      .on("postgres_changes", { event: "*", schema: "public", table: "calendar_events" }, () => {
+      .channel(`calendar-events${canalId}`)
+      .on("postgres_changes", {
+        event: "*",
+        schema: "public",
+        table: "calendar_events",
+        filter: `user_id=eq.${user.id}`,
+      }, () => {
         qc.invalidateQueries({ queryKey: ["calendar-events"] });
         qc.invalidateQueries({ queryKey: ["calendar-recurring"] });
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [user, qc]);
+  }, [user, qc, canalId]);
 
   // Mutations
   const invalidate = () => {
@@ -433,10 +501,12 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
 
   const updateEvent = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Partial<CalendarEventInsert>) => {
+      if (!user) throw new Error("Not authenticated");
       const { data, error } = await supabase
         .from("calendar_events")
         .update({ ...updates, updated_at: new Date().toISOString() } as any)
         .eq("id", id)
+        .eq("user_id", user.id)
         .select()
         .single();
       if (error) throw error;
@@ -447,7 +517,12 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
 
   const deleteEvent = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from("calendar_events").delete().eq("id", id);
+      if (!user) throw new Error("Not authenticated");
+      const { error } = await supabase
+        .from("calendar_events")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
       if (error) throw error;
     },
     onSuccess: invalidate,

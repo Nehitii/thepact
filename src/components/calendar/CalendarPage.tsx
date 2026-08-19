@@ -158,6 +158,7 @@ export function CalendarPage() {
         <CalendarSearch
           events={filteredEvents}
           onEventClick={handleEventClick}
+          onNavigate={setViewDate}
           onClose={() => setShowSearch(false)}
         />
       )}
