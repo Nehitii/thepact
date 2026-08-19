@@ -2472,13 +2472,17 @@
 /* La silhouette brisee. Trois sommets bas a des hauteurs differentes :
    c'est l'asymetrie qui fait lire un fragment plutot qu'un rectangle
    coupe. */
+/* La carte est un rectangle. La fracture est DANS LE VERRE, pas dans la
+   plaque : couper le bas de la carte tranchait le socle en plein texte
+   et en pleine jauge, ce qui se lit comme un defaut de rendu et non
+   comme un parti pris. La ligne brisee est desormais la frontiere entre
+   l'image et le socle — visible, franche, et sans rien amputer. */
 .verre-in {
   position: relative;
   overflow: hidden;
   aspect-ratio: 4 / 5;
   background: var(--nexus-bg);
   border: 1px solid var(--accent);
-  clip-path: polygon(0 0, 100% 0, 100% 88%, 62% 100%, 0 92%);
 }
 
 .verre-img {
@@ -2507,9 +2511,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg,
-    rgb(3 7 14 / .08) 26%,
-    rgb(3 7 14 / .62) 56%,
-    rgb(3 7 14 / .96) 74%);
+    rgb(3 7 14 / .06) 20%,
+    rgb(3 7 14 / .45) 52%,
+    rgb(3 7 14 / .8) 72%);
 }
 .verre-flanc {
   position: absolute;
@@ -2539,12 +2543,30 @@
 }
 
 /* ── Socle ── */
+/* Le socle porte la fracture sur son bord HAUT, et reste plein jusqu'en
+   bas. Trois sommets a des hauteurs differentes : c'est l'asymetrie qui
+   fait lire une cassure plutot qu'un simple biseau.
+
+   Le padding haut degage 26px : sans lui le nom viendrait buter contre
+   la pointe la plus basse de la brisure. */
 .verre-socle {
   position: absolute;
   inset: auto 0 0 0;
-  padding: 12px 14px 22px 16px;
+  isolation: isolate;
+  padding: 26px 14px 13px 16px;
   background: color-mix(in srgb, var(--accent) 13%, rgb(5 9 17));
-  border-top: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  clip-path: polygon(0 30%, 58% 0, 100% 19%, 100% 100%, 0 100%);
+}
+/* Le liseré suit la cassure : une bordure CSS resterait rectangulaire et
+   passerait au travers. On le dessine donc en calque, decale d'un pixel
+   sous le socle. */
+.verre-socle::before {
+  content: "";
+  position: absolute;
+  inset: -1px 0 0 0;
+  background: color-mix(in srgb, var(--accent) 70%, transparent);
+  clip-path: polygon(0 30%, 58% 0, 100% 19%, 100% 100%, 0 100%);
+  z-index: -1;
 }
 .verre-lettre {
   position: absolute;
