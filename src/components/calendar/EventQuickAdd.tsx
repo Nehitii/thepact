@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
+import { aLHeure } from "./temps";
 
 interface EventQuickAddProps {
   date: Date;
@@ -19,11 +20,13 @@ export function EventQuickAdd({ date, open, onClose, onSave, children }: EventQu
 
   const handleSave = () => {
     if (!title.trim()) return;
-    const dateStr = format(date, "yyyy-MM-dd");
+    /* Une vraie date locale, serialisee avec son fuseau : la chaine collee
+       « aaaa-mm-jjT09:00:00 » etait relue par Postgres dans le fuseau du
+       serveur, et deplacait le rendez-vous. */
     onSave({
       title: title.trim(),
-      start_time: `${dateStr}T09:00:00`,
-      end_time: `${dateStr}T10:00:00`,
+      start_time: aLHeure(date, 9).toISOString(),
+      end_time: aLHeure(date, 10).toISOString(),
       all_day: false,
     });
     setTitle("");
@@ -44,7 +47,7 @@ export function EventQuickAdd({ date, open, onClose, onSave, children }: EventQu
           autoFocus
         />
         <div className="flex gap-1.5">
-          <Button size="sm" className="h-7 text-xs flex-1" onClick={handleSave}>
+          <Button size="sm" className="h-7 text-xs flex-1" onClick={handleSave} disabled={!title.trim()}>
             {t("common.create")}
           </Button>
           <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={onClose}>

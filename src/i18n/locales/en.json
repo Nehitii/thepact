@@ -1895,7 +1895,12 @@
     "viewWeek": "Week",
     "viewMonth": "Month",
     "viewYear": "Year",
-    "viewAgenda": "Agenda"
+    "viewAgenda": "Agenda",
+    "errors": {
+      "titleRequired": "Give the event a title.",
+      "endBeforeStart": "The end must come after the start.",
+      "dateRequired": "A start date and an end date are required."
+    }
   },
   "friends": {
     "networkActive": "Social Network Active",

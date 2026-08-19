@@ -36,7 +36,7 @@
     "completed": "Terminés",
     "pending": "En attente",
     "required": "Requis",
-    "optional": "Optionnel",
+    "optional": "Facultatif",
     "reset": "Réinitialiser",
     "customize": "Personnaliser",
     "save": "Enregistrer",
@@ -1895,7 +1895,12 @@
     "viewWeek": "Semaine",
     "viewMonth": "Mois",
     "viewYear": "Année",
-    "viewAgenda": "Agenda"
+    "viewAgenda": "Agenda",
+    "errors": {
+      "titleRequired": "Donnez un titre à l’événement.",
+      "endBeforeStart": "La fin doit venir après le début.",
+      "dateRequired": "Une date de début et une date de fin sont nécessaires."
+    }
   },
   "friends": {
     "networkActive": "Réseau Social Actif",
