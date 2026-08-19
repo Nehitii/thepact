@@ -132,6 +132,10 @@ export function FocusPanels({ actif, vues }: FocusPanelsProps) {
       }
       if (t < 1) animRef.current = requestAnimationFrame(pas);
       else {
+        // Remise a zero indispensable : l observateur de redimensionnement
+        // se garde sur cette valeur, et un identifiant oublie le laissait
+        // muet pour de bon.
+        animRef.current = 0;
         piste.dataset.x = String(x1);
         sc.removeEventListener("wheel", stop);
         sc.removeEventListener("touchstart", stop);
@@ -141,6 +145,7 @@ export function FocusPanels({ actif, vues }: FocusPanelsProps) {
 
     return () => {
       cancelAnimationFrame(animRef.current);
+      animRef.current = 0;
       sc.removeEventListener("wheel", stop);
       sc.removeEventListener("touchstart", stop);
     };
@@ -156,7 +161,13 @@ export function FocusPanels({ actif, vues }: FocusPanelsProps) {
     const obs = new ResizeObserver(() => {
       // Pendant l animation, c est elle qui commande.
       if (animRef.current) return;
-      hublot.style.height = `${vue.offsetHeight}px`;
+      const h = vue.offsetHeight;
+      if (Math.abs(hublot.getBoundingClientRect().height - h) < 1) return;
+      /* Deplier un contenu — l historique, par exemple — doit agrandir la
+         plaque tout de suite, et avec la meme douceur que le reste. */
+      hublot.style.transition = "height 260ms cubic-bezier(0.3, 0.85, 0.25, 1)";
+      hublot.style.height = `${h}px`;
+      window.setTimeout(() => { hublot.style.transition = ""; }, 300);
     });
     obs.observe(vue);
     return () => obs.disconnect();

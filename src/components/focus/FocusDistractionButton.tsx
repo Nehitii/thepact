@@ -44,6 +44,7 @@ export function FocusDistractionButton() {
                 <X className="w-3 h-3 text-muted-foreground hover:text-foreground" />
               </button>
             </div>
+            <p className="dst-aide">{t("focus.distraction.explain")}</p>
             <textarea
               autoFocus
               value={note}
@@ -72,10 +73,12 @@ export function FocusDistractionButton() {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label={t("focus.distraction.open")}
-        className="cyb cyb--icone"
+        className="cyb cyb--icone dst-bouton"
         aria-expanded={open}
+        title={t("focus.distraction.explain")}
       >
-        <Brain className="w-5 h-5" />
+        <Brain className="w-4 h-4" aria-hidden="true" />
+        <span className="dst-libelle">{t("focus.distraction.short")}</span>
       </motion.button>
     </div>
   );

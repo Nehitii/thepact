@@ -1311,3 +1311,17 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 }
 .sc-apercu::before { top: 6px; left: 6px; border-top: 1px solid; border-left: 1px solid; }
 .sc-apercu::after { bottom: 6px; right: 6px; border-bottom: 1px solid; border-right: 1px solid; }
+
+
+/* Le carnet portait une icone de cerveau et rien d autre : personne ne
+   pouvait deviner a quoi elle sert. Un libelle des qu il y a la place. */
+.dst-bouton { gap: 7px; }
+.dst-libelle { display: none; }
+@media (min-width: 720px) { .dst-libelle { display: inline; } }
+.dst-aide {
+  margin: 0 0 8px;
+  font-size: max(11px, 0.6875rem);
+  line-height: 1.55;
+  letter-spacing: 0.06em;
+  color: var(--cp-texte-doux, #7089a0);
+}

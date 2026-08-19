@@ -1774,7 +1774,9 @@
       "placeholder": "Qu'est-ce qui t'a distrait ?",
       "submit": ">> NOTER",
       "saved": "Distraction notée",
-      "error": "Échec de l'enregistrement"
+      "error": "Échec de l'enregistrement",
+      "short": "Distraction",
+      "explain": "Notez ce qui vient de vous détourner. Vous retrouverez ces notes dans vos statistiques."
     },
     "clause": {
       "toSeal": "Clause à sceller",

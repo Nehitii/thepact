@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import { useState } from "react";
 import { FocusFond, VARIANTES_FOND, type VarianteFond } from "./FocusFond";
 
 const cyberClip = "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)";
@@ -22,11 +21,10 @@ export function FocusConfigPanel({
   onLongBreakChange,
 }: FocusConfigPanelProps) {
   const { t } = useTranslation();
-  /* On previsualise ce que le pointeur designe, sans rien engager : c est
-     la difference entre essayer et choisir. Faute de survol, on montre ce
-     qui est retenu. */
-  const [survol, setSurvol] = useState<VarianteFond | null>(null);
-  const montre = survol ?? fond;
+  /* L apercu montre ce qui est CHOISI, pas ce que le pointeur effleure :
+     un fond qui change au moindre passage de souris rend la rangee
+     nerveuse et empeche de comparer. */
+  const montre = fond;
 
   return (
     <div className="w-full max-w-lg space-y-3 p-4 bg-card/40 backdrop-blur border border-border/50" style={{ clipPath: cyberClip }}>
@@ -40,7 +38,7 @@ export function FocusConfigPanel({
         style={{ clipPath: cyberClip }}
       >
         <span className="text-xs font-mono text-foreground">{t("focus.config.backdrop")}</span>
-        <div className="sc-fonds" onMouseLeave={() => setSurvol(null)}>
+        <div className="sc-fonds">
           {VARIANTES_FOND.map((v) => (
             <button
               key={v}
@@ -48,9 +46,6 @@ export function FocusConfigPanel({
               className="cyb cyb--petit"
               aria-pressed={fond === v}
               onClick={() => onFondChange(v)}
-              onMouseEnter={() => setSurvol(v)}
-              onFocus={() => setSurvol(v)}
-              onBlur={() => setSurvol(null)}
             >
               {t("focus.backdrop." + v)}
             </button>
@@ -63,10 +58,7 @@ export function FocusConfigPanel({
           {montre === "aucun"
             ? <span className="sc-apercu-vide">{t("focus.backdrop.none")}</span>
             : <FocusFond variante={montre} actif progress={0.55} apercu />}
-          <figcaption>
-            {t("focus.backdrop." + montre)}
-            {survol && survol !== fond ? <b> · {t("focus.backdrop.preview")}</b> : null}
-          </figcaption>
+          <figcaption>{t("focus.backdrop." + montre)}</figcaption>
         </figure>
       </div>
 

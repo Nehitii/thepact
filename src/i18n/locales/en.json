@@ -1774,7 +1774,9 @@
       "placeholder": "What pulled you away?",
       "submit": ">> LOG",
       "saved": "Distraction logged",
-      "error": "Could not save"
+      "error": "Could not save",
+      "short": "Distraction",
+      "explain": "Note what just pulled you away. These notes show up in your statistics."
     },
     "clause": {
       "toSeal": "Clause to seal",
