@@ -55,18 +55,32 @@ export function GoalsHeader({ total, actifs, franchis }: Props) {
               <Network className="h-3.5 w-3.5" aria-hidden="true" />
               <span className="hidden md:inline">{t("goals.graph")}</span>
             </button>
-            {/* Le bouton porte l'action principale de la page : il respire,
-                et un reflet le traverse. Les deux effets sont lents et de
-                faible amplitude — un clignotement rapide se lit comme une
-                alerte, pas comme une invitation. */}
+            {/* Le bouton porte l action principale de la page.
+
+                Le premier jet y faisait glisser un reflet — un effet de
+                vitrine, propre mais sans rapport avec le reste. Cyberpunk
+                2077 ne fait pas briller, il fait DECROCHER : l image se
+                dedouble en rouge et cyan, des tranches horizontales se
+                decalent, et tout revient en place.
+
+                Deux choses font la difference entre une vraie glitch et un
+                clignotement. D abord steps(1) : l animation saute d un etat
+                a l autre sans interpoler — une interpolation donnerait un
+                mouvement fluide, donc organique, exactement le contraire.
+                Ensuite le rythme : quatre-vingt-cinq pour cent du cycle ne
+                se passe rien. Une glitch permanente devient un motif, et un
+                motif ne surprend plus. */}
             <button
               type="button"
               onClick={() => navigate("/goals/new")}
               className="gl-btn gl-btn-primaire gl-btn-appel"
             >
-              <span className="gl-btn-reflet" aria-hidden="true" />
               <Plus className="h-4 w-4" aria-hidden="true" />
-              <span>{t("goals.createGoal")}</span>
+              {/* Le texte est repete dans data-texte : les deux calques
+                  decales sont des pseudo-elements qui lisent cet attribut. */}
+              <span className="gl-glitch" data-texte={t("goals.createGoal")}>
+                {t("goals.createGoal")}
+              </span>
             </button>
           </div>
         </header>
