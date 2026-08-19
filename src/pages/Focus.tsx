@@ -43,6 +43,35 @@ const CLE_CONFIG = "vowpact.focus.config";
 const CLE_LIEN = "vowpact.focus.lien";
 const CLE_FOND = "vowpact.focus.fond";
 
+/* L OBJET DE LA CLAUSE
+ *
+ * Une clause porte UN objet : un objectif, ou une tache, jamais les deux.
+ * C etait deja le comportement a l ecran, mais il reposait sur une
+ * convention — deux etats separes, et chaque gestionnaire qui pense a
+ * vider l autre. Une troisieme voie d ecriture, ou un enregistrement
+ * bricole dans le stockage, suffisait a poser les deux : verifie, rien
+ * ne refusait { goal, todo } tous deux remplis.
+ *
+ * Un seul emplacement rend la chose impossible par construction, au lieu
+ * de la rendre seulement improbable. Les deux colonnes de la base sont
+ * derivees au moment de l ecriture, la ou elles existent vraiment. */
+export type ObjetClause = { type: "goal" | "todo"; id: string } | null;
+
+function lireObjet(): ObjetClause {
+  try {
+    const brut = localStorage.getItem(CLE_LIEN);
+    if (!brut) return null;
+    const o = JSON.parse(brut);
+    if (o && (o.type === "goal" || o.type === "todo") && typeof o.id === "string") return o;
+    // Ancien format { goal, todo } : on le replie sur un seul emplacement.
+    if (o && typeof o.goal === "string") return { type: "goal", id: o.goal };
+    if (o && typeof o.todo === "string") return { type: "todo", id: o.todo };
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function lire<T>(cle: string, defaut: T): T {
   try {
     const brut = localStorage.getItem(cle);
@@ -68,13 +97,16 @@ export default function Focus() {
   const mouvementReduit = useReducedMotion();
 
   const config0 = useRef(lire(CLE_CONFIG, { work: 25, pause: 5, longue: 15 })).current;
-  const lien0 = useRef(lire(CLE_LIEN, { goal: null as string | null, todo: null as string | null })).current;
+  const objet0 = useRef(lireObjet()).current;
 
   const [workMin, setWorkMin] = useState(config0.work);
   const [breakMin, setBreakMin] = useState(config0.pause);
   const [longBreakMin, setLongBreakMin] = useState(config0.longue);
-  const [linkedGoalId, setLinkedGoalId] = useState<string | null>(lien0.goal);
-  const [linkedTodoId, setLinkedTodoId] = useState<string | null>(lien0.todo);
+  const [objet, setObjet] = useState<ObjetClause>(objet0);
+  // Derives, jamais stockes : c est ce qui garantit qu ils ne peuvent pas
+  // etre remplis tous les deux.
+  const linkedGoalId = objet?.type === "goal" ? objet.id : null;
+  const linkedTodoId = objet?.type === "todo" ? objet.id : null;
   /* Le fond vivant, choisi par l utilisateur et retenu. Quatre scenes plus
      « aucune » : imposer une ambiance a quelqu un qui vient chercher le
      calme serait exactement le contraire du but de la page. */
@@ -109,8 +141,18 @@ export default function Focus() {
 
   useEffect(() => { ecrire(CLE_CONFIG, { work: workMin, pause: breakMin, longue: longBreakMin }); },
     [workMin, breakMin, longBreakMin]);
-  useEffect(() => { ecrire(CLE_LIEN, { goal: linkedGoalId, todo: linkedTodoId }); },
-    [linkedGoalId, linkedTodoId]);
+  useEffect(() => { ecrire(CLE_LIEN, objet); }, [objet]);
+
+  /* Un objectif supprime laissait un champ vide plutot que « Aucun » :
+     l identifiant survivait a sa cible. On ne verifie qu une fois la
+     liste concernee chargee — la vider pendant le chargement effacerait
+     un lien parfaitement valide. */
+  useEffect(() => {
+    if (!objet) return;
+    const liste = objet.type === "goal" ? goals : tasks;
+    if (liste.length === 0) return;
+    if (!liste.some((x) => x.id === objet.id)) setObjet(null);
+  }, [objet, goals, tasks]);
 
   const { saveSession, todayStats, weeklyStats, streak, bestSession, sessions } = usePomodoroSessions();
 
@@ -515,10 +557,8 @@ export default function Focus() {
                 todos={tasks}
                 workMin={workMin}
                 onWorkChange={setWorkMin}
-                linkedGoalId={linkedGoalId}
-                linkedTodoId={linkedTodoId}
-                onLinkGoal={setLinkedGoalId}
-                onLinkTodo={setLinkedTodoId}
+                objet={objet}
+                onObjetChange={setObjet}
                 activePanel={activePanel}
                 onPanelChange={setActivePanel}
               />

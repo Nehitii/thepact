@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Goal } from "@/hooks/useGoals";
 import type { TodoTask } from "@/hooks/useTodoList";
+import type { ObjetClause } from "@/pages/Focus";
 
 export type FocusPanel = "config" | "media" | "stats" | "history" | null;
 
@@ -11,10 +12,11 @@ interface FocusToolbarProps {
   todos: TodoTask[];
   workMin: number;
   onWorkChange: (m: number) => void;
-  linkedGoalId: string | null;
-  linkedTodoId: string | null;
-  onLinkGoal: (id: string | null) => void;
-  onLinkTodo: (id: string | null) => void;
+  /* Un seul emplacement : deux champs a l ecran, mais une seule valeur
+     derriere. Choisir dans l un vide l autre parce que le modele n a
+     qu une place, pas parce qu un gestionnaire y pense. */
+  objet: ObjetClause;
+  onObjetChange: (o: ObjetClause) => void;
   activePanel: FocusPanel;
   onPanelChange: (panel: FocusPanel) => void;
 }
@@ -44,10 +46,8 @@ export function FocusToolbar({
   todos,
   workMin,
   onWorkChange,
-  linkedGoalId,
-  linkedTodoId,
-  onLinkGoal,
-  onLinkTodo,
+  objet,
+  onObjetChange,
   activePanel,
   onPanelChange,
 }: FocusToolbarProps) {
@@ -56,6 +56,10 @@ export function FocusToolbar({
 
   const basculer = (panneau: Exclude<FocusPanel, null>) =>
     onPanelChange(activePanel === panneau ? null : panneau);
+
+  const valeur = (type: "goal" | "todo") => (objet?.type === type ? objet.id : "none");
+  const choisir = (type: "goal" | "todo") => (v: string) =>
+    onObjetChange(v === "none" ? null : { type, id: v });
 
   return (
     <section className="sc-composeur" aria-label={t("focus.clause.compose")}>
@@ -68,13 +72,7 @@ export function FocusToolbar({
       <div className="sc-composeur-corps">
         <div className="sc-ligne">
           <span className="sc-lab" id="lab-objet">{t("focus.field.target")}</span>
-          <Select
-            value={linkedGoalId || "none"}
-            onValueChange={(v) => {
-              onLinkGoal(v === "none" ? null : v);
-              if (v !== "none") onLinkTodo(null);
-            }}
-          >
+          <Select value={valeur("goal")} onValueChange={choisir("goal")}>
             <SelectTrigger className="cyb-select" aria-labelledby="lab-objet">
               <Target className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <SelectValue placeholder={t("focus.linker.goal")} />
@@ -90,13 +88,7 @@ export function FocusToolbar({
 
         <div className="sc-ligne">
           <span className="sc-lab" id="lab-tache">{t("focus.field.task")}</span>
-          <Select
-            value={linkedTodoId || "none"}
-            onValueChange={(v) => {
-              onLinkTodo(v === "none" ? null : v);
-              if (v !== "none") onLinkGoal(null);
-            }}
-          >
+          <Select value={valeur("todo")} onValueChange={choisir("todo")}>
             <SelectTrigger className="cyb-select" aria-labelledby="lab-tache">
               <ListTodo className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
               <SelectValue placeholder={t("focus.linker.task")} />
