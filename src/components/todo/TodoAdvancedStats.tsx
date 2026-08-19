@@ -188,13 +188,13 @@ export function TodoAdvancedStats() {
         <StatCard
           icon={<Flame className="w-5 h-5 text-orange-400" />}
           label={t('todo.advanced.currentStreak')}
-          value={`${stats?.current_streak ?? 0} ${t('todo.header.days')}`}
+          value={t('todo.advanced.days', { count: stats?.current_streak ?? 0 })}
           color="orange"
         />
         <StatCard
           icon={<Trophy className="w-5 h-5 text-amber-400" />}
           label={t('todo.advanced.bestStreak')}
-          value={`${stats?.longest_streak ?? 0} ${t('todo.header.days')}`}
+          value={t('todo.advanced.days', { count: stats?.longest_streak ?? 0 })}
           color="amber"
         />
         <StatCard

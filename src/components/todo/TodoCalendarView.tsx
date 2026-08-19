@@ -12,6 +12,7 @@ import {
   addMonths,
   subMonths,
   startOfWeek,
+  addDays,
   endOfWeek,
   parseISO,
 } from 'date-fns';
@@ -47,11 +48,18 @@ export function TodoCalendarView({ tasks, onTaskClick }: TodoCalendarViewProps) 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
-  const dayNames = (t('common.daysShort', { returnObjects: true }) as unknown as string[]) || [];
+  /* La page Calendar commence ses semaines un lundi ; celle-ci les
+     commencait un dimanche — deux vues des memes echeances, deux
+     calendriers. Les en-tetes viennent maintenant de la locale, ce qui
+     evite en plus une liste de jours a maintenir a la main. */
+  const dayNames = useMemo(() => {
+    const lundi = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => format(addDays(lundi, i), 'EEEEEE', { locale: dateLocale }));
+  }, [dateLocale]);
 
   const calendarDays = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentMonth));
-    const end = endOfWeek(endOfMonth(currentMonth));
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 

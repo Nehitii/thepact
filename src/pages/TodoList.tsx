@@ -14,7 +14,6 @@ import { TodoCalendarView } from '@/components/todo/TodoCalendarView';
 import { TodoFilterSort, SortField, SortDirection } from '@/components/todo/TodoFilterSort';
 import { TodoEditForm, UpdateTaskInput } from '@/components/todo/TodoEditForm';
 import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
-import { MentalLoadIndicator } from '@/components/todo/MentalLoadIndicator';
 import { FocusOverlay } from '@/components/todo/FocusOverlay';
 import { TodoCommandInfo } from '@/components/todo/TodoCommandInfo';
 
@@ -27,6 +26,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 
 type ActivePanel = 'none' | 'create' | 'stats' | 'history' | 'calendar' | 'edit';
 type ViewMode = 'expanded' | 'compact';
@@ -58,9 +58,14 @@ const SortableTaskCard = React.forwardRef<HTMLDivElement, SortableTaskCardProps>
     else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node;
   };
 
+  /* La carte entiere portait role="button" et tabindex="0" tout en
+     contenant cinq boutons : un controle interactif dans un controle
+     interactif, que rien ne definit. La poignee descend dans la carte,
+     et l enveloppe redevient un simple conteneur. */
   return (
-    <div ref={setRefs} style={style} {...attributes} {...listeners}>
+    <div ref={setRefs} style={style}>
       <TodoGamifiedTaskCard
+        poignee={{ ...attributes, ...listeners }}
         task={task}
         variant={viewMode}
         onComplete={onComplete}
@@ -79,7 +84,9 @@ export default function TodoList() {
   
   const [activePanel, setActivePanel] = useState<ActivePanel>('none');
   const [selectedTaskType, setSelectedTaskType] = useState<string | null>(null);
-  const [sortField, setSortField] = useState<SortField>('created_at');
+  /* Le rangement a la main est l ordre de depart : c est le seul que le
+     glisser-deposer puisse honorer. */
+  const [sortField, setSortField] = useState<SortField>('manual');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [editingTask, setEditingTask] = useState<TodoTask | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('expanded');
@@ -126,6 +133,11 @@ export default function TodoList() {
       return true;
     });
 
+    /* En rangement manuel on ne trie pas : la requete rend deja les
+       taches par position croissante, et c est precisement cet ordre-la
+       que le glisser-deposer ecrit. */
+    if (sortField === 'manual') return result;
+
     result.sort((a, b) => {
       let comparison = 0;
       switch (sortField) {
@@ -163,6 +175,14 @@ export default function TodoList() {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
+    /* Deplacer une tache alors qu un tri automatique est actif ne
+       pouvait rien donner : on bascule sur le rangement a la main, qui
+       est le seul ou le geste a un sens. */
+    if (sortField !== 'manual') {
+      setSortField('manual');
+      toast.info(t('todo.toasts.switchedToManual'));
+    }
+
     const oldIndex = filteredAndSortedTasks.findIndex(t => t.id === active.id);
     const newIndex = filteredAndSortedTasks.findIndex(t => t.id === over.id);
     if (oldIndex === -1 || newIndex === -1) return;
@@ -172,7 +192,7 @@ export default function TodoList() {
     newOrder.splice(newIndex, 0, moved);
 
     reorderTasks.mutate(newOrder.map(t => t.id));
-  }, [reorderTasks, filteredAndSortedTasks]);
+  }, [reorderTasks, filteredAndSortedTasks, sortField, t]);
 
   // Boot sequence removed for instant load
 
@@ -229,7 +249,7 @@ export default function TodoList() {
             <div className="flex items-center justify-center gap-3 text-xs font-mono text-muted-foreground">
               <span className="text-primary font-bold">LVL {Math.floor((stats?.score ?? 0) / 100) + 1}</span>
               <span className="text-foreground/30">·</span>
-              <span>Score <span className="text-foreground/80 font-bold">{stats?.score ?? 0}</span></span>
+              <span>{t('todo.scoreLabel')} <span className="text-foreground/80 font-bold">{stats?.score ?? 0}</span></span>
               <span className="text-foreground/30">·</span>
               <span className="flex items-center gap-0.5"><Flame className="w-3 h-3 text-orange-400" /><span className="text-foreground/80 font-bold">{stats?.current_streak ?? 0}</span></span>
               <span className="text-foreground/30">·</span>
@@ -263,21 +283,25 @@ export default function TodoList() {
               <div className="flex items-center gap-0.5 p-0.5 rounded-lg border border-border/50 bg-card/40">
                 <button
                   onClick={() => setViewMode('expanded')}
+                  aria-label={t('todo.views.expanded')}
+                  aria-pressed={viewMode === 'expanded'}
                   className={cn(
-                    "p-1.5 rounded-md transition-colors",
+                    "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors",
                     viewMode === 'expanded' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <LayoutGrid className="w-4 h-4" aria-hidden="true" />
                 </button>
                 <button
                   onClick={() => setViewMode('compact')}
+                  aria-label={t('todo.views.compact')}
+                  aria-pressed={viewMode === 'compact'}
                   className={cn(
-                    "p-1.5 rounded-md transition-colors",
+                    "min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors",
                     viewMode === 'compact' ? "bg-primary/20 text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <List className="w-3.5 h-3.5" />
+                  <List className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
 
@@ -291,19 +315,22 @@ export default function TodoList() {
             {/* Right: icon buttons + New */}
             <div className="flex items-center gap-1">
               <TodoCommandInfo />
-              <button onClick={() => setActivePanel('calendar')} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                <CalendarIcon className="w-4 h-4" />
+              <button onClick={() => setActivePanel('calendar')} aria-label={t('todo.panels.calendar')}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                <CalendarIcon className="w-4 h-4" aria-hidden="true" />
               </button>
-              <button onClick={() => setActivePanel('stats')} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                <BarChart3 className="w-4 h-4" />
+              <button onClick={() => setActivePanel('stats')} aria-label={t('todo.questAnalytics')}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                <BarChart3 className="w-4 h-4" aria-hidden="true" />
               </button>
-              <button onClick={() => setActivePanel('history')} className="p-1.5 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
-                <History className="w-4 h-4" />
+              <button onClick={() => setActivePanel('history')} aria-label={t('todo.questHistory')}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+                <History className="w-4 h-4" aria-hidden="true" />
               </button>
               <Button onClick={() => setActivePanel('create')} disabled={!canAddTask} size="sm"
-                className="ml-1 bg-card/80 backdrop-blur-sm border border-primary/30 text-primary text-xs font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
+                className="ml-1 min-h-[44px] bg-card/80 backdrop-blur-sm border border-primary/30 text-primary text-xs font-medium hover:border-primary/60 hover:bg-primary/10 hover:shadow-[0_0_12px_hsl(var(--primary)/0.2)]"
               >
-                <Plus className="w-3.5 h-3.5 mr-1" /> New
+                <Plus className="w-3.5 h-3.5 mr-1" aria-hidden="true" /> {t('todo.create.new')}
               </Button>
             </div>
           </motion.div>
@@ -313,11 +340,11 @@ export default function TodoList() {
           <AnimatePresence>
             {insights.length > 0 && (
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-2">
-                {insights.map((insight, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
+                {insights.map((insight) => (
+                  <motion.div key={insight.cle} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
                     className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-card/50 to-card/30 border border-border/30 text-sm text-muted-foreground backdrop-blur-sm font-mono"
                   >
-                    💡 {insight}
+                    <span aria-hidden="true">💡 </span>{t(insight.cle, insight.params)}
                   </motion.div>
                 ))}
               </motion.div>
@@ -413,6 +440,11 @@ export default function TodoList() {
 
         <Dialog open={activePanel === 'calendar'} onOpenChange={(open) => !open && setActivePanel('none')}>
           <DialogContent className="bg-card/95 backdrop-blur-xl border-border max-w-4xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-foreground font-light tracking-wide flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-primary" aria-hidden="true" /> {t('todo.panels.calendar')}
+              </DialogTitle>
+            </DialogHeader>
             <TodoCalendarView tasks={tasks} />
           </DialogContent>
         </Dialog>

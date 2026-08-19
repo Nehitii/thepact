@@ -45,17 +45,17 @@ function parseCommand(raw: string) {
   const deadMatch = raw.match(DEADLINE_REGEX);
   if (deadMatch) {
     const d = deadMatch[0].slice(1).toLowerCase();
-    const now = new Date();
-    if (d === "today") {
-      deadline = now.toISOString();
-      task_type = "deadline";
-    } else if (d === "tomorrow") {
-      deadline = addDays(now, 1).toISOString();
-      task_type = "deadline";
-    } else if (d === "nextweek") {
-      deadline = addDays(now, 7).toISOString();
-      task_type = "deadline";
-    }
+    /* « @today » posait l echeance a l heure qu il etait : ecrit a 14 h,
+       aujourd hui voulait dire 14 h aujourd hui, deja a moitie passe.
+       Une echeance de journee court jusqu au soir. */
+    const finDeJournee = (j: number) => {
+      const x = addDays(new Date(), j);
+      x.setHours(23, 59, 0, 0);
+      return x.toISOString();
+    };
+    if (d === "today") { deadline = finDeJournee(0); task_type = "deadline"; }
+    else if (d === "tomorrow") { deadline = finDeJournee(1); task_type = "deadline"; }
+    else if (d === "nextweek") { deadline = finDeJournee(7); task_type = "deadline"; }
   }
 
   // Strip all commands from the name
@@ -155,9 +155,9 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
       {/* Shortcuts hint tooltip */}
       <div className="flex items-center justify-end mb-1.5 gap-2 opacity-60 hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-3 ds-t-label font-mono text-muted-foreground">
-          <span><span className="text-amber-400 font-bold">!high</span> {t('todo.neuralInput.priorityHint', { defaultValue: 'priority' })}</span>
-          <span><span className="text-emerald-400 font-bold">#work</span> {t('todo.neuralInput.categoryHint', { defaultValue: 'category' })}</span>
-          <span><span className="text-purple-400 font-bold">@today</span> {t('todo.neuralInput.deadlineHint', { defaultValue: 'deadline' })}</span>
+          <span><span className="text-amber-400 font-bold">!high</span> {t('todo.neuralInput.priorityHint')}</span>
+          <span><span className="text-emerald-400 font-bold">#work</span> {t('todo.neuralInput.categoryHint')}</span>
+          <span><span className="text-purple-400 font-bold">@today</span> {t('todo.neuralInput.deadlineHint')}</span>
         </div>
       </div>
       <div
@@ -196,9 +196,10 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={disabled || isLoading}
-            placeholder={t("todo.neuralInput.placeholder", { defaultValue: "Type task... !high #work @today" })}
+            aria-label={t("todo.neuralInput.label")}
+            placeholder={t("todo.neuralInput.placeholder")}
             className={cn(
-              "w-full bg-transparent outline-none font-mono text-sm",
+              "w-full min-h-[44px] bg-transparent outline-none font-mono text-sm",
               "pl-12 pr-12", // Padding identique à l'overlay
               "placeholder:text-muted-foreground/50",
               "caret-primary", // Curseur visible
@@ -219,9 +220,10 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={handleSubmit}
               disabled={!parsed.name || isLoading}
-              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-lg bg-primary/20 text-primary text-xs font-mono border border-primary/30 hover:bg-primary/30 transition-colors z-30"
+              aria-label={t("todo.neuralInput.submit")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 rounded-lg bg-primary/20 text-primary font-mono border border-primary/30 hover:bg-primary/30 transition-colors z-30"
             >
-              <CornerDownLeft className="w-3 h-3" />
+              <CornerDownLeft className="w-4 h-4" aria-hidden="true" />
             </motion.button>
           )}
         </AnimatePresence>

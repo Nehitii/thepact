@@ -42,8 +42,13 @@ function fichiersSources(dossier, acc = []) {
 const feuille = (arbre, chemin) =>
   chemin.split(".").reduce((n, p) => (n && typeof n === "object" ? n[p] : undefined), arbre);
 
+/* Une valeur peut etre un tableau — common.daysShort en est un, lu avec
+   returnObjects. Le refuser signalait une cle presente comme manquante. */
+const estValeur = (v) =>
+  typeof v === "string" || (Array.isArray(v) && v.every((x) => typeof x === "string"));
+
 const presente = (arbre, cle) =>
-  SUFFIXES.some((s) => typeof feuille(arbre, cle + s) === "string");
+  SUFFIXES.some((s) => estValeur(feuille(arbre, cle + s)));
 
 const traductions = Object.fromEntries(
   LANGUES.map((l) => [l, JSON.parse(fs.readFileSync(path.join(RACINE, "i18n/locales", l + ".json"), "utf8"))]),
@@ -68,7 +73,7 @@ for (const cle of [...cles].sort()) {
 /* Les deux langues doivent aussi rester en phase entre elles. */
 const aplatir = (arbre, prefixe = "", acc = new Set()) => {
   for (const [k, v] of Object.entries(arbre)) {
-    if (typeof v === "string") acc.add(prefixe + k);
+    if (estValeur(v)) acc.add(prefixe + k);
     else if (v && typeof v === "object") aplatir(v, prefixe + k + ".", acc);
   }
   return acc;

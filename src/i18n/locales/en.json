@@ -241,7 +241,8 @@
         "priority": "Priority",
         "name": "Name",
         "category": "Category",
-        "is_urgent": "Urgency"
+        "is_urgent": "Urgency",
+        "manual": "Manual order"
       },
       "types": {
         "all": "All",
@@ -249,7 +250,9 @@
         "waiting": "Waiting",
         "rendezvous": "Appointment",
         "deadline": "Deadline"
-      }
+      },
+      "direction": "Reverse order",
+      "taskType": "Task type"
     },
     "create": {
       "title": "New quest",
@@ -281,7 +284,8 @@
         "bimonthly": "Every 2 months",
         "semiannual": "Every 6 months",
         "yearly": "Yearly"
-      }
+      },
+      "new": "New"
     },
     "categories": {
       "work": "Work",
@@ -326,8 +330,16 @@
       "postponeTo": "Postpone to…",
       "deleteTitle": "Delete task?",
       "deleteDesc": "This will permanently remove the task. This action cannot be undone.",
-      "delete": "Delete",
-      "reminderActive": "Reminder active"
+      "delete": "Delete: {{name}}",
+      "reminderActive": "Reminder active",
+      "dragHandle": "Move task",
+      "complete": "Complete: {{name}}",
+      "focus": "Focus on: {{name}}",
+      "edit": "Edit: {{name}}",
+      "postpone": "Postpone: {{name}}",
+      "overdue": "Overdue",
+      "critical": "Critical",
+      "location": "Location"
     },
     "calendarView": {
       "title": "Task calendar",
@@ -349,7 +361,13 @@
       "categoryBreakdown": "Category breakdown",
       "productivityByTime": "Productivity by time of day",
       "completeToSee": "Complete tasks to see your detailed statistics here.",
-      "tasksTooltip": "{{count}} tasks"
+      "tasksTooltip": "{{count}} tasks",
+      "morning": "Morning (6-12)",
+      "afternoon": "Afternoon (12-18)",
+      "evening": "Evening (18-24)",
+      "night": "Night (0-6)",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days"
     },
     "header": {
       "lvl": "LVL",
@@ -361,6 +379,59 @@
       "days": "days",
       "xp": "{{value}}/100 XP",
       "streakBonus": "Streak bonus active!"
+    },
+    "toasts": {
+      "created": "Task created",
+      "createFailed": "Could not create the task",
+      "limitReached": "You have reached the maximum number of active tasks. Complete some before adding more.",
+      "completed": "Task completed — +{{points}} points",
+      "completeFailed": "Could not complete the task",
+      "postponed": "Task postponed",
+      "postponeFailed": "Could not postpone the task",
+      "deleted": "Task deleted",
+      "deleteFailed": "Could not delete the task",
+      "updated": "Task updated",
+      "updateFailed": "Could not update the task",
+      "historyCleared": "History cleared",
+      "historyClearFailed": "Could not clear the history",
+      "reorderFailed": "The new order could not be saved",
+      "switchedToManual": "Switched to manual order"
+    },
+    "insights": {
+      "morning": "You finish most of your tasks in the morning.",
+      "afternoon": "You are at your best in the afternoon.",
+      "evening": "You often wrap tasks up in the evening.",
+      "postponed_one": "1 task has been postponed at least three times.",
+      "postponed_other": "{{count}} tasks have been postponed at least three times.",
+      "fewHighPriority": "High-priority tasks are only a small share of what you finish."
+    },
+    "priorities": {
+      "low": "Low priority",
+      "medium": "Medium priority",
+      "high": "High priority"
+    },
+    "views": {
+      "expanded": "Detailed view",
+      "compact": "Compact view"
+    },
+    "panels": {
+      "calendar": "Task calendar"
+    },
+    "scoreLabel": "Score",
+    "neuralInput": {
+      "placeholder": "Type a task… !high #work @today",
+      "priorityHint": "priority",
+      "categoryHint": "category",
+      "deadlineHint": "deadline",
+      "label": "Quick task entry",
+      "submit": "Add task"
+    },
+    "commands": {
+      "title": "Quick commands",
+      "priority": "Set priority",
+      "category": "Set category",
+      "deadline": "Set deadline",
+      "nextWeek": "Deadline next week"
     }
   },
   "goals": {

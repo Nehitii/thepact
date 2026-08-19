@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import {
   Check,
@@ -18,7 +18,7 @@ import {
   MapPin,
   Bell,
   Crosshair,
-  ChevronRight,
+  GripVertical,
 } from "lucide-react";
 import { format, isPast, isToday, isTomorrow, addDays } from "date-fns";
 import { TodoTask } from "@/hooks/useTodoList";
@@ -54,6 +54,11 @@ interface TodoGamifiedTaskCardProps {
   onFocus?: () => void;
   variant?: "expanded" | "compact";
   isDragging?: boolean;
+  /* La poignee de deplacement etait posee sur la carte ENTIERE, qui
+     devenait un role="button" contenant cinq boutons — un controle dans
+     un controle, que rien ne definit. Elle est maintenant un element a
+     part, et la carte redevient un conteneur. */
+  poignee?: React.HTMLAttributes<HTMLElement>;
 }
 
 // --- CONFIGURATION CYBERPUNK ---
@@ -111,6 +116,7 @@ export function TodoGamifiedTaskCard({
   onFocus,
   variant = "expanded",
   isDragging,
+  poignee,
 }: TodoGamifiedTaskCardProps) {
   const { t } = useTranslation();
   const sound = useSound();
@@ -119,6 +125,14 @@ export function TodoGamifiedTaskCard({
   const [isCompleting, setIsCompleting] = useState(false);
   const [swiped, setSwiped] = useState<"left" | "right" | null>(null);
   const { trigger, ParticleEffects } = useParticleEffect();
+
+  /* Deux minuteries partaient sans jamais etre annulees : si la carte
+     disparaissait entre-temps, l action partait quand meme. */
+  const minuteries = useRef<number[]>([]);
+  const differer = useCallback((fn: () => void, ms: number) => {
+    minuteries.current.push(window.setTimeout(fn, ms));
+  }, []);
+  useEffect(() => () => { minuteries.current.forEach(clearTimeout); }, []);
 
   const x = useMotionValue(0);
   const bgRight = useTransform(x, [0, SWIPE_THRESHOLD], ["rgba(16,185,129,0)", "rgba(16,185,129,0.2)"]);
@@ -154,22 +168,25 @@ export function TodoGamifiedTaskCard({
       sound.play("success", "reward");
       const particleCount = task.priority === "high" ? 40 : task.priority === "medium" ? 25 : 15;
       trigger(e.clientX, e.clientY, config.accent, particleCount);
-      setTimeout(() => onComplete(), 500);
+      differer(() => onComplete(), 500);
     },
-    [onComplete, trigger, config.accent, sound, task.priority],
+    [onComplete, trigger, config.accent, sound, task.priority, differer],
   );
 
   const handleSwipeEnd = useCallback(
-    (_: any, info: PanInfo) => {
+    (_: unknown, info: PanInfo) => {
       if (info.offset.x > SWIPE_THRESHOLD) {
         setSwiped("right");
-        setTimeout(() => onComplete(), 300);
+        differer(() => onComplete(), 300);
       } else if (info.offset.x < -SWIPE_THRESHOLD) {
-        setSwiped("left");
-        setTimeout(() => onDelete(), 300);
+        /* Le balayage supprimait sur-le-champ, sans confirmation ni
+           annulation — alors que le bouton, lui, en demandait une. Sur
+           telephone c etait le SEUL chemin vers la suppression. */
+        x.set(0);
+        setShowDeleteConfirm(true);
       }
     },
-    [onComplete, onDelete],
+    [onComplete, differer, x],
   );
 
   // --- RENDU COMPACT (LOG STYLE) ---
@@ -190,25 +207,46 @@ export function TodoGamifiedTaskCard({
               onDragEnd={handleSwipeEnd}
               style={{ x }}
               className={cn(
-                "group relative flex items-center gap-3 h-11 px-3 rounded-none border-b border-border/20 transition-all",
+                "group relative flex items-center gap-3 min-h-[44px] py-1 px-3 rounded-none border-b border-border/20 transition-all",
                 "bg-black/20 hover:bg-white/5",
-                "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[2px] before:transition-all",
-                `before:bg-[${config.accent}] before:opacity-50 group-hover:before:opacity-100`,
                 isDragging && "opacity-50",
               )}
             >
+              {/* Le liseret de priorite etait declare par une classe
+                  fabriquee a l execution — before:bg-[#f59e0b] — que
+                  Tailwind ne genere jamais : il etait transparent. */}
+              <span
+                aria-hidden="true"
+                className="absolute left-0 top-0 bottom-0 w-[2px] opacity-60 group-hover:opacity-100 transition-opacity"
+                style={{ backgroundColor: config.accent }}
+              />
+
+              {poignee && (
+                <button
+                  type="button"
+                  {...poignee}
+                  aria-label={t("todo.taskCard.dragHandle")}
+                  className="shrink-0 -ml-1 w-6 [@media(pointer:coarse)]:min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing touch-none"
+                >
+                  <GripVertical className="w-3.5 h-3.5" aria-hidden="true" />
+                </button>
+              )}
+
               {/* Checkbox Holographique */}
               <motion.button
                 onClick={handleComplete}
+                aria-label={t("todo.taskCard.complete", { name: task.name })}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className={cn(
-                  "w-4 h-4 rounded-sm border flex items-center justify-center transition-colors",
-                  "border-white/20 hover:border-white/50 bg-transparent group-hover:bg-white/5",
+                  "shrink-0 min-w-[44px] min-h-[44px] flex items-center justify-center transition-colors",
+                  "text-white/30 hover:text-white/80",
                 )}
                 style={{ borderColor: isCompleting ? config.accent : undefined }}
               >
-                {isCompleting && <Check className="w-3 h-3" style={{ color: config.accent }} />}
+                <span className="w-4 h-4 rounded-sm border border-current flex items-center justify-center">
+                  {isCompleting && <Check className="w-3 h-3" style={{ color: config.accent }} aria-hidden="true" />}
+                </span>
               </motion.button>
 
               {/* Title & Meta */}
@@ -231,40 +269,44 @@ export function TodoGamifiedTaskCard({
                         isOverdue ? "text-red-400" : "text-muted-foreground",
                       )}
                     >
-                      {isOverdue ? "OVERDUE" : formatDeadline()}
+                      {isOverdue ? t("todo.taskCard.overdue") : formatDeadline()}
                     </span>
                   )}
                   {task.is_urgent && <AlertTriangle className="w-3 h-3 text-red-400" />}
                 </div>
               </div>
 
-              {/* Actions on Hover */}
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* « opacity-0 » cache a l oeil et laisse au clavier : ces
+                  boutons restaient focalisables, invisibles. Ils
+                  apparaissent maintenant au focus, et en permanence
+                  quand le pointeur est grossier — un doigt ne survole
+                  rien. */}
+              <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 group-focus-within:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-opacity">
                 {onFocus && (
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 text-muted-foreground hover:text-cyan-400"
+                    variant="ghost" size="icon"
+                    className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-cyan-400"
                     onClick={onFocus}
+                    aria-label={t("todo.taskCard.focus", { name: task.name })}
                   >
-                    <Crosshair className="w-3.5 h-3.5" />
+                    <Crosshair className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 )}
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-white"
+                  variant="ghost" size="icon"
+                  className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-white"
                   onClick={onEdit}
+                  aria-label={t("todo.taskCard.edit", { name: task.name })}
                 >
-                  <Pencil className="w-3.5 h-3.5" />
+                  <Pencil className="w-4 h-4" aria-hidden="true" />
                 </Button>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-red-400"
+                  variant="ghost" size="icon"
+                  className="min-h-[44px] min-w-[44px] text-muted-foreground hover:text-red-400"
                   onClick={() => setShowDeleteConfirm(true)}
+                  aria-label={t("todo.taskCard.delete", { name: task.name })}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Trash2 className="w-4 h-4" aria-hidden="true" />
                 </Button>
               </div>
             </motion.div>
@@ -329,14 +371,26 @@ export function TodoGamifiedTaskCard({
             )}
 
             <div className="relative z-10 p-4 pl-5">
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3">
+                {poignee && (
+                  <button
+                    type="button"
+                    {...poignee}
+                    aria-label={t("todo.taskCard.dragHandle")}
+                    className="shrink-0 -ml-2 w-6 [@media(pointer:coarse)]:min-w-[44px] min-h-[44px] flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing touch-none"
+                  >
+                    <GripVertical className="w-4 h-4" aria-hidden="true" />
+                  </button>
+                )}
+
                 {/* Checkbox Tactique */}
                 <motion.button
                   onClick={handleComplete}
+                  aria-label={t("todo.taskCard.complete", { name: task.name })}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   className={cn(
-                    "flex-shrink-0 w-11 h-11 rounded-lg border bg-black/20 flex items-center justify-center transition-all duration-300",
+                    "flex-shrink-0 min-w-[44px] min-h-[44px] rounded-lg border bg-black/20 flex items-center justify-center transition-all duration-300",
                     "group/btn hover:bg-white/5",
                     "border-white/10 hover:border-white/30",
                   )}
@@ -370,7 +424,7 @@ export function TodoGamifiedTaskCard({
                       {task.location && taskType === "rendezvous" && (
                         <div className="flex items-center gap-1.5 text-xs text-purple-300/80 font-mono">
                           <MapPin className="w-3 h-3" />
-                          <span>LOC :: {task.location.toUpperCase()}</span>
+                          <span>{t("todo.taskCard.location")} :: {task.location.toUpperCase()}</span>
                         </div>
                       )}
 
@@ -400,14 +454,14 @@ export function TodoGamifiedTaskCard({
                             config.badge,
                           )}
                         >
-                          {task.priority} PRTY
+                          {t("todo.priorities." + task.priority)}
                         </div>
 
                         {/* Urgent Alert */}
                         {task.is_urgent && (
                           <div className="flex items-center gap-1 ds-t-label font-bold text-red-400 animate-pulse">
-                            <AlertTriangle className="w-3 h-3" />
-                            CRITICAL
+                            <AlertTriangle className="w-3 h-3" aria-hidden="true" />
+                            {t("todo.taskCard.critical")}
                           </div>
                         )}
 
@@ -431,25 +485,30 @@ export function TodoGamifiedTaskCard({
                       </div>
                     </div>
 
-                    {/* Desktop Actions (Hover Slide-in) */}
-                    <div className="hidden md:flex items-center gap-1 opacity-0 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 ease-out">
+                    {/* Elles etaient retirees sous 768 px et invisibles
+                        au-dessus jusqu au survol : sur telephone il ne
+                        restait aucun bouton, et le seul chemin vers la
+                        suppression etait un balayage sans confirmation. */}
+                    <div className="flex items-center gap-1 opacity-50 group-hover:opacity-100 group-focus-within:opacity-100 [@media(pointer:coarse)]:opacity-100 transition-opacity duration-300 ease-out">
                       {onFocus && (
                         <ActionButton
                           icon={Crosshair}
                           onClick={onFocus}
+                          label={t("todo.taskCard.focus", { name: task.name })}
                           color="hover:text-cyan-400 hover:bg-cyan-500/10"
                         />
                       )}
-                      <ActionButton icon={Pencil} onClick={onEdit} color="hover:text-white hover:bg-white/10" />
+                      <ActionButton icon={Pencil} onClick={onEdit} label={t("todo.taskCard.edit", { name: task.name })} color="hover:text-white hover:bg-white/10" />
 
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 rounded text-muted-foreground hover:text-white hover:bg-white/10"
+                            aria-label={t("todo.taskCard.postpone", { name: task.name })}
+                            className="min-h-[44px] min-w-[44px] rounded text-muted-foreground hover:text-white hover:bg-white/10"
                           >
-                            <Clock className="w-4 h-4" />
+                            <Clock className="w-4 h-4" aria-hidden="true" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
@@ -471,6 +530,7 @@ export function TodoGamifiedTaskCard({
                       <ActionButton
                         icon={Trash2}
                         onClick={() => setShowDeleteConfirm(true)}
+                        label={t("todo.taskCard.delete", { name: task.name })}
                         color="hover:text-red-400 hover:bg-red-500/10"
                       />
                     </div>
@@ -489,18 +549,24 @@ export function TodoGamifiedTaskCard({
 
 // --- HELPER COMPONENTS ---
 
-function ActionButton({ icon: Icon, onClick, color }: { icon: any; onClick: () => void; color: string }) {
+function ActionButton({ icon: Icon, onClick, color, label }: {
+  icon: React.ElementType;
+  onClick: () => void;
+  color: string;
+  label: string;
+}) {
   return (
     <Button
       variant="ghost"
       size="icon"
+      aria-label={label}
       onClick={(e) => {
         e.stopPropagation();
         onClick();
       }}
-      className={cn("h-8 w-8 rounded text-muted-foreground transition-all duration-200", color)}
+      className={cn("min-h-[44px] min-w-[44px] rounded text-muted-foreground transition-all duration-200", color)}
     >
-      <Icon className="w-4 h-4" />
+      <Icon className="w-4 h-4" aria-hidden="true" />
     </Button>
   );
 }
@@ -520,19 +586,19 @@ function DeleteDialog({
       <AlertDialogContent className="bg-black/95 border border-white/10 shadow-2xl backdrop-blur-xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="font-mono text-red-400 tracking-widest uppercase text-sm">
-            System Warning
+            {t("todo.taskCard.deleteTitle")}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-white/70">{t("todo.taskCard.deleteDesc")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="bg-transparent border-white/10 text-white/50 hover:bg-white/5 hover:text-white font-mono text-xs">
-            ABORT
+            {t("common.cancel")}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-red-500/20 border border-red-500/50 text-red-400 hover:bg-red-500/30 font-mono text-xs"
           >
-            CONFIRM_DELETE
+            {t("common.delete")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

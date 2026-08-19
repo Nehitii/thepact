@@ -14,7 +14,11 @@ import {
 } from '@/components/ui/select';
 import { useTranslation } from 'react-i18next';
 
-export type SortField = 'created_at' | 'deadline' | 'priority' | 'name' | 'category' | 'is_urgent';
+/* Le rangement a la main n etait proposable nulle part : on pouvait
+   deplacer une tache, sa position partait en base, et la liste la
+   reecrasait aussitot par date de creation. Le tri manuel est desormais
+   une option — et celle de depart. */
+export type SortField = 'manual' | 'created_at' | 'deadline' | 'priority' | 'name' | 'category' | 'is_urgent';
 export type SortDirection = 'asc' | 'desc';
 
 interface TodoFilterSortProps {
@@ -26,6 +30,7 @@ interface TodoFilterSortProps {
 }
 
 const sortOptions: { field: SortField }[] = [
+  { field: 'manual' },
   { field: 'created_at' },
   { field: 'deadline' },
   { field: 'priority' },
@@ -68,7 +73,7 @@ export function TodoFilterSort({
           value={sortField} 
           onValueChange={(value) => onSortChange(value as SortField, sortDirection)}
         >
-          <SelectTrigger className="w-[130px] h-9 text-sm">
+          <SelectTrigger className="w-[150px] min-h-[44px] text-sm" aria-label={t('todo.filters.sort')}>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -82,8 +87,10 @@ export function TodoFilterSort({
         <Button 
           variant="ghost" 
           size="icon" 
-          onClick={toggleDirection} 
-          className="h-9 w-9 rounded-xl border border-border/60 bg-card/90 hover:bg-card hover:border-primary/40 hover:shadow-[0_0_8px_hsl(var(--primary)/0.15)] transition-all duration-200"
+          onClick={toggleDirection}
+          disabled={sortField === 'manual'}
+          aria-label={t('todo.filters.direction')}
+          className="min-h-[44px] min-w-[44px] rounded-xl border border-border/60 bg-card/90 hover:bg-card hover:border-primary/40 hover:shadow-[0_0_8px_hsl(var(--primary)/0.15)] transition-all duration-200"
         >
           <ChevronRight className={cn(
             "h-4 w-4 text-foreground/70 transition-transform duration-200",
@@ -95,7 +102,7 @@ export function TodoFilterSort({
       <div className="h-6 w-px bg-border hidden md:block" />
 
       {/* Task Type Segmented Filter - matching /goals tabs style */}
-      <div role="tablist" aria-label={t('todo.filters.taskType', { defaultValue: 'Task type' })} className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl overflow-x-auto">
+      <div role="tablist" aria-label={t('todo.filters.taskType')} className="flex gap-1 p-1 rounded-xl bg-card/30 border border-primary/20 backdrop-blur-xl overflow-x-auto">
         {taskTypeFilters.map((type) => {
           const isActive = selectedTaskType === type.id;
           const Icon = type.icon;

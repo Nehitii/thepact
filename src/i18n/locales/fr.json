@@ -10,13 +10,13 @@
     "error": "Erreur",
     "success": "Succès !",
     "daysShort": [
-      "Dim",
-      "Lun",
-      "Mar",
-      "Mer",
-      "Jeu",
-      "Ven",
-      "Sam"
+      "dim",
+      "lun",
+      "mar",
+      "mer",
+      "jeu",
+      "ven",
+      "sam"
     ],
     "confirm": "Confirmer",
     "delete": "Supprimer",
@@ -241,7 +241,8 @@
         "priority": "Priorité",
         "name": "Nom",
         "category": "Catégorie",
-        "is_urgent": "Urgence"
+        "is_urgent": "Urgence",
+        "manual": "Rangement manuel"
       },
       "types": {
         "all": "Toutes",
@@ -249,7 +250,9 @@
         "waiting": "En attente",
         "rendezvous": "Rendez-vous",
         "deadline": "Échéance"
-      }
+      },
+      "direction": "Inverser l’ordre",
+      "taskType": "Type de tâche"
     },
     "create": {
       "title": "Nouvelle quête",
@@ -281,7 +284,8 @@
         "bimonthly": "Tous les 2 mois",
         "semiannual": "Tous les 6 mois",
         "yearly": "Annuel"
-      }
+      },
+      "new": "Nouvelle"
     },
     "categories": {
       "work": "Travail",
@@ -326,8 +330,16 @@
       "postponeTo": "Reporter à…",
       "deleteTitle": "Supprimer la tâche ?",
       "deleteDesc": "La tâche sera supprimée définitivement. Cette action est irréversible.",
-      "delete": "Supprimer",
-      "reminderActive": "Rappel actif"
+      "delete": "Supprimer : {{name}}",
+      "reminderActive": "Rappel actif",
+      "dragHandle": "Déplacer la tâche",
+      "complete": "Terminer : {{name}}",
+      "focus": "Se concentrer sur : {{name}}",
+      "edit": "Modifier : {{name}}",
+      "postpone": "Reporter : {{name}}",
+      "overdue": "En retard",
+      "critical": "Critique",
+      "location": "Lieu"
     },
     "calendarView": {
       "title": "Calendrier des tâches",
@@ -349,7 +361,13 @@
       "categoryBreakdown": "Répartition par catégories",
       "productivityByTime": "Productivité selon l'heure",
       "completeToSee": "Termine des tâches pour afficher des statistiques détaillées ici.",
-      "tasksTooltip": "{{count}} tâches"
+      "tasksTooltip": "{{count}} tâches",
+      "morning": "Matin (6-12)",
+      "afternoon": "Après-midi (12-18)",
+      "evening": "Soir (18-24)",
+      "night": "Nuit (0-6)",
+      "days_one": "{{count}} jour",
+      "days_other": "{{count}} jours"
     },
     "header": {
       "lvl": "NIV",
@@ -361,6 +379,59 @@
       "days": "jours",
       "xp": "{{value}}/100 XP",
       "streakBonus": "Bonus de série actif !"
+    },
+    "toasts": {
+      "created": "Tâche créée",
+      "createFailed": "La création a échoué",
+      "limitReached": "Vous avez atteint le maximum de tâches actives. Terminez-en avant d’en ajouter.",
+      "completed": "Tâche terminée — +{{points}} points",
+      "completeFailed": "Impossible de terminer la tâche",
+      "postponed": "Tâche reportée",
+      "postponeFailed": "Le report a échoué",
+      "deleted": "Tâche supprimée",
+      "deleteFailed": "La suppression a échoué",
+      "updated": "Tâche mise à jour",
+      "updateFailed": "La mise à jour a échoué",
+      "historyCleared": "Historique effacé",
+      "historyClearFailed": "L’effacement a échoué",
+      "reorderFailed": "Le rangement n’a pas pu être enregistré",
+      "switchedToManual": "Rangement manuel activé"
+    },
+    "insights": {
+      "morning": "Vous terminez surtout vos tâches le matin.",
+      "afternoon": "Vous êtes plus efficace l’après-midi.",
+      "evening": "Vous bouclez souvent vos tâches en soirée.",
+      "postponed_one": "1 tâche a été reportée au moins trois fois.",
+      "postponed_other": "{{count}} tâches ont été reportées au moins trois fois.",
+      "fewHighPriority": "Les tâches prioritaires ne représentent qu’une petite part de ce que vous terminez."
+    },
+    "priorities": {
+      "low": "Priorité basse",
+      "medium": "Priorité moyenne",
+      "high": "Priorité haute"
+    },
+    "views": {
+      "expanded": "Vue détaillée",
+      "compact": "Vue compacte"
+    },
+    "panels": {
+      "calendar": "Calendrier des tâches"
+    },
+    "scoreLabel": "Score",
+    "neuralInput": {
+      "placeholder": "Tapez une tâche… !high #work @today",
+      "priorityHint": "priorité",
+      "categoryHint": "catégorie",
+      "deadlineHint": "échéance",
+      "label": "Saisie rapide d’une tâche",
+      "submit": "Ajouter la tâche"
+    },
+    "commands": {
+      "title": "Commandes rapides",
+      "priority": "Définir la priorité",
+      "category": "Définir la catégorie",
+      "deadline": "Définir l’échéance",
+      "nextWeek": "Échéance la semaine prochaine"
     }
   },
   "goals": {

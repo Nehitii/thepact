@@ -1,8 +1,23 @@
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
+import i18n from '@/i18n/i18n';
 import { trackTodoCompleted } from '@/lib/achievements';
+
+/* CE CROCHET NE PARLAIT QU ANGLAIS
+ *
+ * Il contenait dix-neuf phrases destinees a l utilisateur — les quatorze
+ * messages de confirmation et d erreur, et les analyses d habitudes — et
+ * pas un seul appel de traduction. Elles seraient restees en anglais
+ * quelle que soit la langue choisie.
+ *
+ * Un crochet n est pas un composant : il n a pas acces au « t » de
+ * react-i18next. Il s adresse donc directement a l instance, qui est la
+ * meme et qui est initialisee avant le premier rendu.
+ */
+const tr = (cle: string, params?: Record<string, unknown>) => i18n.t(cle, params) as string;
 
 // Types
 export type TodoPriority = 'low' | 'medium' | 'high';
@@ -25,7 +40,6 @@ export interface TodoTask {
   category: string | null;
   task_type: string | null;
   position: number;
-  // New fields
   reminder_enabled: boolean;
   reminder_frequency: ReminderFrequency | null;
   reminder_last_sent: string | null;
@@ -73,7 +87,20 @@ export interface CreateTaskInput {
   appointment_time?: string | null;
 }
 
+/** Une analyse d habitude : une cle et ses valeurs, traduites a l affichage. */
+export interface TodoInsight {
+  cle: string;
+  params?: Record<string, unknown>;
+}
+
 const MAX_ACTIVE_TASKS = 30;
+
+/* « Aujourd hui » se lit dans le fuseau de l utilisateur, pas a
+   Greenwich. toISOString() renvoie la date UTC : une tache terminee a
+   00 h 30 a Paris comptait pour la veille, et cassait une serie qui
+   aurait du tenir. */
+const cleDuJour = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 // Reusable fetcher — used by useTodoList and by background prefetch.
 export async function fetchTodoTasks(userId: string | undefined): Promise<TodoTask[]> {
@@ -106,23 +133,23 @@ export function useTodoList() {
     queryKey: ['todo-stats', userId],
     queryFn: async () => {
       if (!userId) return null;
-      
-      // First try to get existing stats
-      let { data, error } = await supabase
+
+      const { data: existantes, error } = await supabase
         .from('todo_stats')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
-      
+
       if (error) throw error;
-      
+      let data = existantes;
+
       // If no stats exist, create them via SECURITY DEFINER RPC
       if (!data) {
         const { data: rpcResult, error: rpcError } = await supabase.rpc('init_todo_stats' as any);
         if (rpcError) throw rpcError;
         data = rpcResult as any;
       }
-      
+
       return data as TodoStats;
     },
     enabled: !!userId,
@@ -139,7 +166,7 @@ export function useTodoList() {
         .eq('user_id', userId)
         .order('completed_at', { ascending: false })
         .limit(100);
-      
+
       if (error) throw error;
       return (data || []) as TodoHistory[];
     },
@@ -150,8 +177,7 @@ export function useTodoList() {
   const createTask = useMutation({
     mutationFn: async (input: CreateTaskInput) => {
       if (!userId) throw new Error('Not authenticated');
-      
-      // Check limit
+
       if (tasks.length >= MAX_ACTIVE_TASKS) {
         throw new Error('LIMIT_REACHED');
       }
@@ -170,23 +196,22 @@ export function useTodoList() {
           reminder_frequency: input.reminder_frequency || null,
           location: input.location || null,
           appointment_time: input.appointment_time || null,
+          /* Une tache nouvelle se pose en tete du rangement manuel, pas
+             au fond d une liste ou personne ne la verra. */
+          position: tasks.reduce((min, t) => Math.min(min, t.position ?? 0), 0) - 1,
         })
         .select()
         .single();
-      
+
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
-      toast.success('Task created');
+      toast.success(tr('todo.toasts.created'));
     },
     onError: (error: Error) => {
-      if (error.message === 'LIMIT_REACHED') {
-        toast.error('You\'ve reached the maximum number of active tasks. Complete existing tasks before adding new ones.');
-      } else {
-        toast.error('Failed to create task');
-      }
+      toast.error(error.message === 'LIMIT_REACHED' ? tr('todo.toasts.limitReached') : tr('todo.toasts.createFailed'));
     },
   });
 
@@ -194,25 +219,25 @@ export function useTodoList() {
   const completeTask = useMutation({
     mutationFn: async (taskId: string) => {
       if (!userId) throw new Error('Not authenticated');
-      
-      const task = tasks.find(t => t.id === taskId);
+
+      const task = tasks.find((t) => t.id === taskId);
       if (!task) throw new Error('Task not found');
 
       const now = new Date();
-      const today = now.toISOString().split('T')[0];
+      const today = cleDuJour(now);
 
-      // Update task status
       const { error: taskError } = await supabase
         .from('todo_tasks')
-        .update({ 
-          status: 'completed' as TodoStatus,
-          completed_at: now.toISOString()
-        })
-        .eq('id', taskId);
-      
+        .update({ status: 'completed' as TodoStatus, completed_at: now.toISOString() })
+        .eq('id', taskId)
+        .eq('user_id', userId);
+
       if (taskError) throw taskError;
 
-      // Add to history
+      /* Trois ecritures se suivent sans transaction : si la deuxieme
+         echoue, la tache serait terminee et introuvable dans
+         l historique. A defaut d une procedure unique cote serveur, on
+         defait ce qu on vient de faire. */
       const { error: historyError } = await supabase
         .from('todo_history')
         .insert({
@@ -226,45 +251,42 @@ export function useTodoList() {
           reminder_frequency: task.reminder_frequency,
           location: task.location,
         });
-      
-      if (historyError) throw historyError;
+
+      if (historyError) {
+        await supabase
+          .from('todo_tasks')
+          .update({ status: 'active' as TodoStatus, completed_at: null })
+          .eq('id', taskId)
+          .eq('user_id', userId);
+        throw historyError;
+      }
 
       // Update stats
       if (stats) {
         const currentMonth = now.getMonth() + 1;
         const currentYear = now.getFullYear();
-        
+
         let newMonthCount = stats.tasks_completed_month;
         let newYearCount = stats.tasks_completed_year;
-        
-        // Reset counters if month/year changed
-        if (stats.current_month !== currentMonth) {
-          newMonthCount = 0;
-        }
-        if (stats.current_year !== currentYear) {
-          newYearCount = 0;
-        }
-        
-        // Calculate streak
+
+        if (stats.current_month !== currentMonth) newMonthCount = 0;
+        if (stats.current_year !== currentYear) newYearCount = 0;
+
         let newStreak = stats.current_streak;
         const lastDate = stats.last_completion_date;
-        
+
         if (!lastDate || lastDate !== today) {
-          // Check if last completion was yesterday
-          const yesterday = new Date(now);
-          yesterday.setDate(yesterday.getDate() - 1);
-          const yesterdayStr = yesterday.toISOString().split('T')[0];
-          
-          if (lastDate === yesterdayStr) {
+          const hier = new Date(now);
+          hier.setDate(hier.getDate() - 1);
+          if (lastDate === cleDuJour(hier)) {
             newStreak = stats.current_streak + 1;
-          } else if (lastDate !== today) {
-            newStreak = 1; // Reset streak
+          } else {
+            newStreak = 1;
           }
         }
-        
+
         const newLongestStreak = Math.max(stats.longest_streak, newStreak);
 
-        // Use SECURITY DEFINER RPC instead of direct update
         const { error: statsError } = await supabase.rpc('record_todo_completion' as any, {
           p_score_increment: 10,
           p_new_streak: newStreak,
@@ -275,7 +297,7 @@ export function useTodoList() {
           p_current_month: currentMonth,
           p_current_year: currentYear,
         });
-        
+
         if (statsError) throw statsError;
       }
 
@@ -285,13 +307,11 @@ export function useTodoList() {
       queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
       queryClient.invalidateQueries({ queryKey: ['todo-stats', userId] });
       queryClient.invalidateQueries({ queryKey: ['todo-history', userId] });
-      toast.success('Task completed! +10 points');
-      if (userId) {
-        trackTodoCompleted(userId);
-      }
+      toast.success(tr('todo.toasts.completed', { points: 10 }));
+      if (userId) trackTodoCompleted(userId);
     },
     onError: () => {
-      toast.error('Failed to complete task');
+      toast.error(tr('todo.toasts.completeFailed'));
     },
   });
 
@@ -300,25 +320,23 @@ export function useTodoList() {
     mutationFn: async ({ taskId, newDeadline }: { taskId: string; newDeadline: string }) => {
       if (!userId) throw new Error('Not authenticated');
 
-      const task = tasks.find(t => t.id === taskId);
+      const task = tasks.find((t) => t.id === taskId);
       if (!task) throw new Error('Task not found');
 
       const { error } = await supabase
         .from('todo_tasks')
-        .update({
-          deadline: newDeadline,
-          postpone_count: task.postpone_count + 1,
-        })
-        .eq('id', taskId);
-      
+        .update({ deadline: newDeadline, postpone_count: task.postpone_count + 1 })
+        .eq('id', taskId)
+        .eq('user_id', userId);
+
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
-      toast.success('Task postponed');
+      toast.success(tr('todo.toasts.postponed'));
     },
     onError: () => {
-      toast.error('Failed to postpone task');
+      toast.error(tr('todo.toasts.postponeFailed'));
     },
   });
 
@@ -330,16 +348,17 @@ export function useTodoList() {
       const { error } = await supabase
         .from('todo_tasks')
         .delete()
-        .eq('id', taskId);
-      
+        .eq('id', taskId)
+        .eq('user_id', userId);
+
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
-      toast.success('Task deleted');
+      toast.success(tr('todo.toasts.deleted'));
     },
     onError: () => {
-      toast.error('Failed to delete task');
+      toast.error(tr('todo.toasts.deleteFailed'));
     },
   });
 
@@ -374,16 +393,17 @@ export function useTodoList() {
           location: input.location ?? null,
           appointment_time: input.appointment_time ?? null,
         })
-        .eq('id', input.id);
-      
+        .eq('id', input.id)
+        .eq('user_id', userId);
+
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
-      toast.success('Task updated');
+      toast.success(tr('todo.toasts.updated'));
     },
     onError: () => {
-      toast.error('Failed to update task');
+      toast.error(tr('todo.toasts.updateFailed'));
     },
   });
 
@@ -392,19 +412,15 @@ export function useTodoList() {
     mutationFn: async () => {
       if (!userId) throw new Error('Not authenticated');
 
-      const { error } = await supabase
-        .from('todo_history')
-        .delete()
-        .eq('user_id', userId);
-      
+      const { error } = await supabase.from('todo_history').delete().eq('user_id', userId);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['todo-history', userId] });
-      toast.success('History cleared');
+      toast.success(tr('todo.toasts.historyCleared'));
     },
     onError: () => {
-      toast.error('Failed to clear history');
+      toast.error(tr('todo.toasts.historyClearFailed'));
     },
   });
 
@@ -412,24 +428,33 @@ export function useTodoList() {
   const reorderTasks = useMutation({
     mutationFn: async (orderedIds: string[]) => {
       if (!userId) throw new Error('Not authenticated');
-      // Update each task's position
-      const updates = orderedIds.map((id, index) =>
-        supabase
-          .from('todo_tasks')
-          .update({ position: index })
-          .eq('id', id)
-      );
-      await Promise.all(updates);
+
+      /* Une requete par tache — trente pour un seul geste — et pas une
+         seule dont on regardait le resultat : la mutation se declarait
+         reussie meme si tout avait echoue. Un seul appel, verifie. */
+      const parId = new Map(tasks.map((t) => [t.id, t]));
+      const lignes = orderedIds
+        .map((id, index) => {
+          const t = parId.get(id);
+          return t ? { id, user_id: userId, name: t.name, position: index } : null;
+        })
+        .filter(Boolean) as { id: string; user_id: string; name: string; position: number }[];
+
+      if (lignes.length === 0) return;
+
+      const { error } = await supabase.from('todo_tasks').upsert(lignes, { onConflict: 'id' });
+      if (error) throw error;
     },
     onMutate: async (orderedIds: string[]) => {
-      // Optimistic update
       await queryClient.cancelQueries({ queryKey: ['todo-tasks', userId] });
       const previous = queryClient.getQueryData<TodoTask[]>(['todo-tasks', userId]);
       if (previous) {
-        const ordered = orderedIds.map((id, i) => {
-          const task = previous.find(t => t.id === id);
-          return task ? { ...task, position: i } : null;
-        }).filter(Boolean) as TodoTask[];
+        const ordered = orderedIds
+          .map((id, i) => {
+            const task = previous.find((t) => t.id === id);
+            return task ? { ...task, position: i } : null;
+          })
+          .filter(Boolean) as TodoTask[];
         queryClient.setQueryData(['todo-tasks', userId], ordered);
       }
       return { previous };
@@ -438,15 +463,15 @@ export function useTodoList() {
       if (context?.previous) {
         queryClient.setQueryData(['todo-tasks', userId], context.previous);
       }
-      toast.error('Failed to reorder tasks');
+      toast.error(tr('todo.toasts.reorderFailed'));
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['todo-tasks', userId] });
     },
   });
 
-  // Generate insights based on history
-  const insights = generateInsights(history, tasks);
+  // Les analyses etaient recalculees a chaque rendu.
+  const insights = useMemo(() => genererAnalyses(history, tasks), [history, tasks]);
 
   return {
     tasks,
@@ -468,43 +493,34 @@ export function useTodoList() {
   };
 }
 
-function generateInsights(history: TodoHistory[], activeTasks: TodoTask[]): string[] {
-  const insights: string[] = [];
-  
-  if (history.length < 5) return insights;
+/* Les analyses rendaient des phrases anglaises toutes faites. Elles
+   rendent maintenant des cles : c est la page qui les traduit. */
+function genererAnalyses(history: TodoHistory[], activeTasks: TodoTask[]): TodoInsight[] {
+  const analyses: TodoInsight[] = [];
 
-  // Analyze completion times
-  const completionHours = history.map(h => new Date(h.completed_at).getHours());
-  const morningCount = completionHours.filter(h => h >= 6 && h < 12).length;
-  const afternoonCount = completionHours.filter(h => h >= 12 && h < 18).length;
-  const eveningCount = completionHours.filter(h => h >= 18 || h < 6).length;
-  
-  const total = morningCount + afternoonCount + eveningCount;
+  if (history.length < 5) return analyses;
+
+  const heures = history.map((h) => new Date(h.completed_at).getHours());
+  const matin = heures.filter((h) => h >= 6 && h < 12).length;
+  const apresMidi = heures.filter((h) => h >= 12 && h < 18).length;
+  const soir = heures.filter((h) => h >= 18 || h < 6).length;
+
+  const total = matin + apresMidi + soir;
   if (total > 0) {
-    if (morningCount / total > 0.5) {
-      insights.push('You tend to complete most tasks in the morning.');
-    } else if (afternoonCount / total > 0.5) {
-      insights.push('You usually complete tasks better in the afternoon.');
-    } else if (eveningCount / total > 0.5) {
-      insights.push('You often finish tasks in the evening hours.');
-    }
+    if (matin / total > 0.5) analyses.push({ cle: 'todo.insights.morning' });
+    else if (apresMidi / total > 0.5) analyses.push({ cle: 'todo.insights.afternoon' });
+    else if (soir / total > 0.5) analyses.push({ cle: 'todo.insights.evening' });
   }
 
-  // Analyze postponements
-  const frequentlyPostponed = activeTasks.filter(t => t.postpone_count >= 3);
-  if (frequentlyPostponed.length > 0) {
-    insights.push(`${frequentlyPostponed.length} task(s) have been postponed 3+ times.`);
+  const souventReportees = activeTasks.filter((t) => t.postpone_count >= 3);
+  if (souventReportees.length > 0) {
+    analyses.push({ cle: 'todo.insights.postponed', params: { count: souventReportees.length } });
   }
 
-  // High priority analysis
-  const highPriorityCompleted = history.filter(h => h.priority === 'high').length;
-  const totalCompleted = history.length;
-  if (highPriorityCompleted > 0 && totalCompleted > 10) {
-    const ratio = highPriorityCompleted / totalCompleted;
-    if (ratio < 0.2) {
-      insights.push('High-priority tasks make up a small portion of your completions.');
-    }
+  const hautesTerminees = history.filter((h) => h.priority === 'high').length;
+  if (hautesTerminees > 0 && history.length > 10 && hautesTerminees / history.length < 0.2) {
+    analyses.push({ cle: 'todo.insights.fewHighPriority' });
   }
 
-  return insights.slice(0, 3); // Max 3 insights
+  return analyses.slice(0, 3);
 }
