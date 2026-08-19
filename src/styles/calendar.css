@@ -67,3 +67,24 @@
   .cal-jour { min-height: 44px; display: flex; align-items: center; }
   .cal-case { --cal-hauteur-case: 136px; }
 }
+
+
+/* ── La lisibilite des pastilles ────────────────────────────
+ *
+ * Le titre s ecrivait dans la teinte de l evenement, sur un fond de la
+ * MEME teinte a 19 % : le rapport de contraste dependait donc
+ * entierement de la couleur choisie. Deux des dix passaient sous 4,5 —
+ * #6366f1 a 3,89 et #8b5cf6 a 4,08 — ainsi que le violet impose aux
+ * echeances d objectif, #a855f7 a 4,33, que personne ne choisit.
+ *
+ * Le texte part maintenant de la teinte et remonte vers le blanc — d un
+ * quart seulement : assez pour que le rapport ne depende plus de la
+ * couleur (le pire des dix passe de 3,89 a 6,05), assez peu pour que la
+ * couleur reste franchement elle-meme. Le repli garde l ancien
+ * comportement la ou color-mix manque.
+ */
+.cal-evt { color: var(--cal-teinte); }
+
+@supports (color: color-mix(in oklab, red, white)) {
+  .cal-evt { color: color-mix(in oklab, var(--cal-teinte) 75%, white); }
+}

@@ -26,15 +26,19 @@ export const EventCard = memo(({ event, compact, onClick }: EventCardProps) => {
     <button
       onClick={onClick}
       className={cn(
-        "group w-full max-w-full text-left rounded-md px-1.5 py-0.5 text-xs font-medium truncate transition-all overflow-hidden",
+        "cal-evt group w-full max-w-full text-left rounded-md px-1.5 py-0.5 text-xs font-medium truncate transition-all overflow-hidden",
         "hover:ring-1 hover:ring-white/30 hover:brightness-110 cursor-pointer",
         compact && "ds-t-label leading-tight"
       )}
+      /* Le texte n est plus pris dans la teinte : il en part, puis
+         remonte vers le blanc — voir calendar.css. Sans quoi le rapport
+         de contraste dependait de la couleur choisie, et deux des dix
+         passaient sous le seuil. */
       style={{
+        ["--cal-teinte" as string]: event.color,
         backgroundColor: event.color + "30",
         borderLeft: isExternal ? `3px dashed ${event.color}` : `3px solid ${event.color}`,
-        color: event.color,
-      }}
+      } as React.CSSProperties}
       title={event.title}
     >
       <span className="flex items-center gap-1 min-w-0">

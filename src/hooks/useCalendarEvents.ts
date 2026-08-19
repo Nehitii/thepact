@@ -530,7 +530,17 @@ export function useCalendarEvents(viewDate: Date, view: string, sourceFilters?: 
 
   return {
     events,
-    isLoading: query.isLoading || recurringQuery.isLoading,
+    /* Il ne couvrait que les evenements et les recurrences : la grille
+       s affichait « vide » pendant que les echeances de taches,
+       d objectifs et d etapes etaient encore en route. En v5 isLoading
+       reste faux pour une requete desactivee — couper une source ne fait
+       donc pas tourner le calendrier indefiniment. */
+    isLoading:
+      query.isLoading ||
+      recurringQuery.isLoading ||
+      todoQuery.isLoading ||
+      goalQuery.isLoading ||
+      stepQuery.isLoading,
     createEvent,
     updateEvent,
     deleteEvent,
