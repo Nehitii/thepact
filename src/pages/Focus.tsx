@@ -437,7 +437,7 @@ export default function Focus() {
         id: "media" as const,
         contenu: (
           <div className="sc-panneau-corps">
-            <FocusMedia userId={user?.id} />
+            <FocusMedia userId={user?.id} sansEntete />
           </div>
         ),
       },

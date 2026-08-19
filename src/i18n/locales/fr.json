@@ -1825,7 +1825,9 @@
       "aurores": "Aurores",
       "maillage": "Maillage",
       "maree": "Marée",
-      "aucun": "Aucun"
+      "aucun": "Aucun",
+      "none": "Fond eteint",
+      "preview": "aperçu"
     },
     "field": {
       "target": "Objet",

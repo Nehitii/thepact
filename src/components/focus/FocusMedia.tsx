@@ -72,9 +72,12 @@ interface FocusMediaProps {
   userId?: string;
   /** Pendant une session, le lecteur se fait discret. */
   compact?: boolean;
+  /** Dans la plaque, l en-tete nomme deja le panneau : le repeter dans
+   *  le lecteur donnait « Audio link » deux fois de suite. */
+  sansEntete?: boolean;
 }
 
-export function FocusMedia({ userId, compact = false }: FocusMediaProps) {
+export function FocusMedia({ userId, compact = false, sansEntete = false }: FocusMediaProps) {
   const { t } = useTranslation();
   const stockage = cle(userId);
 
@@ -127,9 +130,11 @@ export function FocusMedia({ userId, compact = false }: FocusMediaProps) {
   if (edition) {
     return (
       <div className="md md-edition">
-        <div className="md-tete">
-          <span className="md-titre">{t("focus.media.link")}</span>
-        </div>
+        {!sansEntete && (
+          <div className="md-tete">
+            <span className="md-titre">{t("focus.media.link")}</span>
+          </div>
+        )}
         <div className="md-champ">
           <input
             value={url}

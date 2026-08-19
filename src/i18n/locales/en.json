@@ -1825,7 +1825,9 @@
       "aurores": "Aurorae",
       "maillage": "Mesh",
       "maree": "Tide",
-      "aucun": "None"
+      "aucun": "None",
+      "none": "Backdrop off",
+      "preview": "preview"
     },
     "field": {
       "target": "Target",

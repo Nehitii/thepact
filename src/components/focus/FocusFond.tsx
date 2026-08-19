@@ -22,6 +22,8 @@ interface FocusFondProps {
   actif: boolean;
   progress: number;
   isBreak?: boolean;
+  /** Apercu : la scene tourne quoi qu il arrive, dans son propre cadre. */
+  apercu?: boolean;
 }
 
 /* ── Bruit de valeur : bon marche, et suffisant pour un fond ── */
@@ -297,7 +299,7 @@ const SCENES: Record<Exclude<VarianteFond, "aucun">, {
   maree: { init: initMaree, peindre: peindreMaree },
 };
 
-export function FocusFond({ variante, actif, progress, isBreak = false }: FocusFondProps) {
+export function FocusFond({ variante, actif, progress, isBreak = false, apercu = false }: FocusFondProps) {
   const cvRef = useRef<HTMLCanvasElement | null>(null);
   const mouvementReduit = useReducedMotion();
 
@@ -330,7 +332,22 @@ export function FocusFond({ variante, actif, progress, isBreak = false }: FocusF
     };
     relireRef.current = relireCouleurs;
 
-    const dimensionne = () => {
+    /* Redimensionner un canevas VIDE sa memoire. Le mycelium, dont tout
+       l interet est d accumuler, repartait donc de zero a chaque
+       changement de taille — et passer en plein ecran en est un. C est ce
+       qui « relancait l animation ».
+       On recopie donc l image avant de redimensionner, et on la repose
+       ensuite, etiree a la nouvelle taille. */
+    const dimensionne = (preserver = false) => {
+      const avant = preserver && cv.width > 0 && cv.height > 0
+        ? (() => {
+            const t = document.createElement("canvas");
+            t.width = cv.width; t.height = cv.height;
+            t.getContext("2d")?.drawImage(cv, 0, 0);
+            return t;
+          })()
+        : null;
+
       // Au-dela de 1,5 la densite ne se voit pas sur un fond, et le cout
       // double. Ce n est pas une image, c est une ambiance.
       etat.dpr = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -341,7 +358,12 @@ export function FocusFond({ variante, actif, progress, isBreak = false }: FocusF
       cv.height = Math.round(etat.h * etat.dpr);
       ctx.setTransform(etat.dpr, 0, 0, etat.dpr, 0, 0);
       relireCouleurs();
-      scene.init(etat);
+
+      if (avant) {
+        ctx.drawImage(avant, 0, 0, etat.w, etat.h);
+      } else {
+        scene.init(etat);
+      }
     };
     dimensionne();
 
@@ -349,16 +371,21 @@ export function FocusFond({ variante, actif, progress, isBreak = false }: FocusF
        sa presence sans jamais bouger. */
     if (mouvementReduit) {
       for (let i = 0; i < 220; i++) scene.peindre(etat, 16.7, 1, progRef.current);
+      let m = 0;
       const surResize = () => {
-        dimensionne();
-        for (let i = 0; i < 220; i++) scene.peindre(etat, 16.7, 1, progRef.current);
+        clearTimeout(m);
+        m = window.setTimeout(() => {
+          dimensionne();
+          for (let i = 0; i < 220; i++) scene.peindre(etat, 16.7, 1, progRef.current);
+        }, 120);
       };
       window.addEventListener("resize", surResize);
-      return () => window.removeEventListener("resize", surResize);
+      return () => { clearTimeout(m); window.removeEventListener("resize", surResize); };
     }
 
     let eveil = 0;
     let brut = 0;
+    cv.style.opacity = "1";
     let tPrec = performance.now();
     let boucleId = 0;
     let vivant = true;
@@ -369,11 +396,17 @@ export function FocusFond({ variante, actif, progress, isBreak = false }: FocusF
       const dt = Math.min(50, now - tPrec);
       tPrec = now;
 
-      const cible = actifRef.current ? 1 : 0;
+      const cible = apercu || actifRef.current ? 1 : 0;
       eveil += (cible - eveil) * Math.min(1, dt / 2000) * (cible ? 1.6 : 3);
-      if (!cible && eveil < 0.01) {
-        // Rien a peindre : on s arrete completement plutot que de
-        // repeindre du noir soixante fois par seconde.
+
+      /* Le trace deja pose sur la toile ne s eteint pas avec l eveil : il
+         restait entier jusqu au fillRect final qui le supprimait d un
+         coup. On fait fondre la toile elle-meme — c est une opacite, donc
+         du compositeur — et on ne l efface qu une fois invisible. */
+      const opacite = cible ? 1 : Math.max(0, Math.min(1, eveil * 1.6));
+      cv.style.opacity = String(opacite);
+
+      if (!cible && opacite <= 0.005) {
         if (brut > 0) { ctx.fillStyle = FOND; ctx.fillRect(0, 0, etat.w, etat.h); brut = 0; }
         return;
       }
@@ -390,16 +423,22 @@ export function FocusFond({ variante, actif, progress, isBreak = false }: FocusF
       else if (!vivant) { vivant = true; tPrec = performance.now(); boucleId = requestAnimationFrame(image); }
     };
     document.addEventListener("visibilitychange", surVisibilite);
-    window.addEventListener("resize", dimensionne);
+    let minuterie = 0;
+    const surResize = () => {
+      clearTimeout(minuterie);
+      minuterie = window.setTimeout(() => dimensionne(true), 120);
+    };
+    window.addEventListener("resize", surResize);
 
     return () => {
       vivant = false;
       relireRef.current = null;
+      clearTimeout(minuterie);
       cancelAnimationFrame(boucleId);
       document.removeEventListener("visibilitychange", surVisibilite);
-      window.removeEventListener("resize", dimensionne);
+      window.removeEventListener("resize", surResize);
     };
-  }, [variante, mouvementReduit]);
+  }, [variante, mouvementReduit, apercu]);
 
   // La teinte suit la phase sans relancer la scene : relancer effacerait
   // la pousse du mycelium, qui est justement sa raison detre.
@@ -410,8 +449,8 @@ export function FocusFond({ variante, actif, progress, isBreak = false }: FocusF
   return (
     <canvas
       ref={cvRef}
-      className="fixed inset-0 w-full h-full pointer-events-none"
-      style={{ zIndex: 0 }}
+      className={apercu ? "sc-apercu-toile" : "fixed inset-0 w-full h-full pointer-events-none"}
+      style={apercu ? undefined : { zIndex: 0 }}
       aria-hidden="true"
     />
   );

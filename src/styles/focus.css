@@ -623,12 +623,22 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
    arrive avant lui a specificite egale et se ferait sinon ecraser. */
 .md-appel { width: 100%; border-style: dashed; }
 
-.md-edition { padding-bottom: 10px; }
-.md-champ { display: flex; gap: 6px; padding: 10px 10px 0; }
+/* La barre de saisie paraissait decalee : le champ et ses deux boutons
+   etaient en flex libre, avec une marge haute mais pas basse, et le champ
+   prenait tout ce qui restait sans marge egale de part et d autre. Une
+   grille a trois colonnes et un cadre a marges egales le posent droit. */
+.md-edition { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.md-edition .md-tete { margin: -12px -12px 0; }
+.md-champ {
+  display: grid;
+  grid-template-columns: 1fr 44px 44px;
+  gap: 8px;
+  padding: 0;
+  align-items: stretch;
+}
 .md-champ input {
-  flex: 1;
   min-width: 0;
-  min-height: 38px;
+  min-height: 44px;
   padding: 8px 10px;
   font-family: 'Share Tech Mono', ui-monospace, monospace;
   font-size: max(12px, 0.75rem);
@@ -639,7 +649,7 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 .md-champ input:focus { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: -1px; }
 .md-champ button {
   min-width: 44px;
-  min-height: 38px;
+  min-height: 44px;
   display: grid;
   place-items: center;
   color: var(--cp-texte-doux, #7089a0);
@@ -653,7 +663,7 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
 .md-champ button:focus-visible { outline: 2px solid var(--cp-jaune, #fcee0a); outline-offset: 1px; }
 
 .md-erreur, .md-aide {
-  margin: 8px 10px 0;
+  margin: 0;
   font-size: max(11px, 0.6875rem);
   letter-spacing: 0.1em;
   line-height: 1.5;
@@ -1248,3 +1258,56 @@ html[data-immersion] .sc-sceau { width: min(420px, 74vh); height: min(420px, 74v
   0%, 100% { box-shadow: 0 0 6px rgba(252, 238, 10, 0.5); }
   50% { box-shadow: 0 0 16px rgba(252, 238, 10, 0.95); }
 }
+
+
+/* ── L apercu du fond ────────────────────────────────────────────
+   Le fond ne tourne pas au repos : sans apercu, on choisit un nom sans
+   avoir jamais vu ce qu il designe. */
+
+.sc-fonds { display: grid; grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 6px; }
+
+.sc-apercu {
+  position: relative;
+  margin: 10px 0 0;
+  height: 132px;
+  overflow: hidden;
+  background: #04060a;
+  border: 1px solid hsl(var(--primary) / 0.28);
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+.sc-apercu-toile { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.sc-apercu-vide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cp-texte-doux, #7089a0);
+}
+.sc-apercu figcaption {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 5px 10px;
+  background: linear-gradient(180deg, transparent, rgba(4, 6, 10, 0.9) 55%);
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--foreground));
+}
+.sc-apercu figcaption b { color: var(--cp-jaune, #fcee0a); font-weight: 400; }
+/* Deux equerres : c est une fenetre sur le fond, pas une vignette. */
+.sc-apercu::before, .sc-apercu::after {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  border-color: var(--cp-jaune, #fcee0a);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+.sc-apercu::before { top: 6px; left: 6px; border-top: 1px solid; border-left: 1px solid; }
+.sc-apercu::after { bottom: 6px; right: 6px; border-bottom: 1px solid; border-right: 1px solid; }
