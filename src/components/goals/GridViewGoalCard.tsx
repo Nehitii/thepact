@@ -184,20 +184,26 @@ export function GridViewGoalCard({
 
           {goal.isShared && <SharedGoalBadge ownerName={goal.sharedByName} className="verre-partage-badge" />}
 
-          <div className="verre-bas">
-            {/* Le statut passe sur la ligne de la jauge. Pose en dessous il
-                se retrouvait a 11px dans le ton le plus sourd de la palette,
-                a 53px du bord, et se lisait comme absent. */}
-            <span className="verre-etat">{statusLabel}</span>
-            <span className="verre-seg" aria-hidden="true">
-              {Array.from({ length: 10 }, (_, i) => (
-                <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
-              ))}
+          {/* Un objectif honore perd sa jauge — pleine, donc muette — et
+              recoit la bande qui le dit en toutes lettres. */}
+          {isCompleted ? (
+            <span className="verre-honore">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
+              HONORÉ
             </span>
-            <b className="verre-pct">
-              {totalSteps > 0 ? `${completedSteps}/${totalSteps}` : `${progress}%`}
-            </b>
-          </div>
+          ) : (
+            <div className="verre-bas">
+              <span className="verre-etat">{statusLabel}</span>
+              <span className="verre-seg" aria-hidden="true">
+                {Array.from({ length: 10 }, (_, i) => (
+                  <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
+                ))}
+              </span>
+              <b className="verre-pct">
+                {totalSteps > 0 ? `${completedSteps}/${totalSteps}` : `${progress}%`}
+              </b>
+            </div>
+          )}
 
         </div>
 

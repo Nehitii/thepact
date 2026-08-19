@@ -2861,3 +2861,56 @@
 @media (prefers-reduced-motion: reduce) {
   .verre-groupe-bord { animation: none; background: var(--cp-jaune); opacity: .5; }
 }
+
+/* ── Réglages retenus sur l'apercu ──────────────────────────────
+   Quatre ajustements, valides sur maquette avant integration.
+   ─────────────────────────────────────────────────────────────── */
+
+/* D — L'image reprend de la place : le socle passe de 45 % a 38 % de la
+   carte. En grille, c'est l'illustration qui distingue une carte d'une
+   autre ; deux cartes du meme palier ne se separent que par elle. La
+   bande suit la jointure, sans quoi elle flotterait au-dessus. */
+.verre-socle { inset: 62% 0 0 0; }
+.verre-bande { top: 62%; }
+
+/* E — Le compte passe au corps du nom. Le rapport etapes faites / total
+   est l'information la plus actionnable de la carte, et c'etait la plus
+   petite : 0,76rem contre 0,74rem pour le nom. */
+.verre-pct {
+  font-size: 1.12rem;
+  line-height: 1;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+/* C — Bande d'objectif honore. Elle remplace la jauge et occupe donc sa
+   place exacte, sans rien deplacer. De loin on voit une barre pleine ;
+   de pres on lit le mot. Les deux niveaux disent la meme chose. */
+.verre-honore {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 18px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: max(11px, 0.6875rem);
+  font-weight: 700;
+  letter-spacing: 2.4px;
+  color: #05080f;
+  background: var(--accent);
+  box-shadow: 0 0 14px -2px var(--accent);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 6px 100%);
+}
+.verre-honore svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: #05080f;
+  stroke-width: 3.4;
+  stroke-linecap: square;
+}
+/* La regle .verre--honore masquait la jauge ; celle-ci n'est plus rendue
+   du tout dans ce cas, la regle n'a donc plus d'objet. L'image garde en
+   revanche sa pleine intensite. */
+.verre--honore .verre-img { filter: saturate(1.08) contrast(1.05); }

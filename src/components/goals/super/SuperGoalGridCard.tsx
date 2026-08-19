@@ -2,7 +2,7 @@ import React, { useMemo, memo } from "react";
 import { Crown, Zap, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDifficultyLabel, DIFFICULTY_OPTIONS } from "@/lib/goalConstants";
-import type { SuperGoalRule } from "./types";
+import { nomSansPrefixeGroupe, type SuperGoalRule } from "./types";
 
 interface SuperGoalGridCardProps {
   id: string;
@@ -125,7 +125,7 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
             )}
           </div>
 
-          <h3 className="verre-nom">{name}</h3>
+          <h3 className="verre-nom">{nomSansPrefixeGroupe(name)}</h3>
 
           {/* Une pastille par objectif contenu, allumee quand il est
               honore. Au-dela de douze elles formeraient un trait continu
@@ -138,18 +138,24 @@ export const SuperGoalGridCard = memo(function SuperGoalGridCard({
             </span>
           )}
 
-          <div className="verre-bas">
-            {/* Statut sur la ligne de la jauge : pose en dessous, il
-                debordait du socle de 26px sur les cartes de groupe — les
-                marqueurs et les pastilles prennent deja deux rangees. */}
-            <span className="verre-etat">{isComplete ? "Complete" : "In Progress"}</span>
-            <span className="verre-seg" aria-hidden="true">
-              {Array.from({ length: 10 }, (_, i) => (
-                <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
-              ))}
+          {/* Un groupe termine perd sa jauge — pleine, donc muette — et
+              recoit la bande qui le dit en toutes lettres. */}
+          {isComplete ? (
+            <span className="verre-honore">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5.2 5.2L20 6.9" /></svg>
+              HONORÉ
             </span>
-            <b className="verre-pct">{completedCount}/{childCount}</b>
-          </div>
+          ) : (
+            <div className="verre-bas">
+              <span className="verre-etat">In Progress</span>
+              <span className="verre-seg" aria-hidden="true">
+                {Array.from({ length: 10 }, (_, i) => (
+                  <u key={i} className={i < Math.round(progress / 10) ? "on" : ""} />
+                ))}
+              </span>
+              <b className="verre-pct">{completedCount}/{childCount}</b>
+            </div>
+          )}
 
           {ruleLabel && <span className="verre-regle">{ruleLabel}</span>}
         </div>

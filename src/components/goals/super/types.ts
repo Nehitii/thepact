@@ -91,3 +91,22 @@ export function filterGoalsByRule<T extends {
     return true;
   });
 }
+
+/**
+ * Retire le prefixe "SUPER GOAL :" du nom d'un groupe pour l'affichage.
+ *
+ * Les noms sont saisis avec ce prefixe, qui occupe jusqu'a une ligne
+ * entiere sur une carte en grille — au point de tronquer le vrai nom.
+ * Or le marqueur GROUPE, present sur la carte, dit deja de quoi il
+ * s'agit : le prefixe ne repete qu'une information deja donnee.
+ *
+ * On ne touche pas a la donnee : le nom reste intact en base et partout
+ * ailleurs. Seul l'affichage des cartes le raccourcit.
+ *
+ * Si le nom n'est QUE le prefixe, on le rend tel quel plutot que de
+ * renvoyer une chaine vide.
+ */
+export function nomSansPrefixeGroupe(nom: string): string {
+  const court = nom.replace(/^\s*super\s*goals?\s*[:\-–—]\s*/i, "").trim();
+  return court.length > 0 ? court : nom;
+}

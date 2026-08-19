@@ -2,7 +2,7 @@ import React, { memo, useMemo } from "react";
 import { Crown, Zap } from "lucide-react";
 import { DIFFICULTY_OPTIONS, getDifficultyIntensity } from "@/lib/goalConstants";
 import { getDifficultyLabel } from "@/lib/goalConstants";
-import type { SuperGoalRule } from "./types";
+import { nomSansPrefixeGroupe, type SuperGoalRule } from "./types";
 
 interface SuperGoalBarCardProps {
   id: string;
@@ -127,7 +127,7 @@ export const SuperGoalBarCard = memo(function SuperGoalBarCard({
             )}
           </div>
 
-          <h3 className="eclat-nom">{name}</h3>
+          <h3 className="eclat-nom">{nomSansPrefixeGroupe(name)}</h3>
 
           <div className="eclat-bas">
             <span className="eclat-jauge">
