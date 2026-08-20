@@ -203,6 +203,10 @@ export function JournalEditor({
     attributes: {
       class: "jr-html",
       "data-lignes": numeros ? "1" : "0",
+      /* Quand la police du document est deja penchee, l italique se
+         dit en redressant : c est la regle typographique, et c est ce
+         qui rend le bouton utile au lieu de rester sans effet. */
+      "data-italique": police.style === "italic" ? "1" : "0",
       spellcheck: correcteur ? "true" : "false",
       lang: i18n.language || "fr",
       style: `font-family:${police.css};font-style:${police.style};font-size:${taille.px}px;`
@@ -400,7 +404,13 @@ export function JournalEditor({
         <Outil actif={marques.gras} sur={() => editor.chain().focus().toggleBold().run()} titre={`${t("journal.ed.gras")} (Ctrl+B)`}>
           <Bold aria-hidden="true" />
         </Outil>
-        <Outil actif={marques.italique} sur={() => editor.chain().focus().toggleItalic().run()} titre={`${t("journal.ed.italique")} (Ctrl+I)`}>
+        <Outil
+          actif={marques.italique}
+          sur={() => editor.chain().focus().toggleItalic().run()}
+          titre={police.style === "italic"
+            ? t("journal.ed.italiqueDoc")
+            : `${t("journal.ed.italique")} (Ctrl+I)`}
+        >
           <Italic aria-hidden="true" />
         </Outil>
         <Outil actif={marques.souligne} sur={() => editor.chain().focus().toggleUnderline().run()} titre={`${t("journal.ed.souligne")} (Ctrl+U)`}>
@@ -565,12 +575,16 @@ export function JournalEditor({
             <EditorContent editor={editor} />
             {marques.vide && corpsPlaceholder && (
               <p
-                className="jr-feuille-amorce"
+                /* Elle porte la meme classe que la feuille : la
+                   gouttiere des numeros lui vient de la meme regle,
+                   au lieu d une largeur devinee qui collait au « 01 ». */
+                className="jr-html jr-feuille-amorce"
+                data-lignes={numeros ? "1" : "0"}
                 aria-hidden="true"
                 style={{
                   fontFamily: police.css, fontStyle: police.style,
                   fontSize: `${taille.px}px`, textAlign: alignement.val,
-                  paddingLeft: numeros ? "3.5ch" : undefined,
+                  ["--jr-fs" as string]: `${taille.px}px`,
                 }}
               >
                 {corpsPlaceholder}

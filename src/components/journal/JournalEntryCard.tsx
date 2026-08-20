@@ -111,6 +111,7 @@ export function JournalEntryCard({ entry, onEdit, onDelete, theme = "sombre" }: 
           <div
             className="jr-html"
             data-lignes={entry.line_numbers ? "1" : "0"}
+            data-italique={font.style === "italic" ? "1" : "0"}
             style={styleCorps}
             dangerouslySetInnerHTML={{ __html: html }}
           />

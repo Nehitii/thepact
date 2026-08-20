@@ -1904,7 +1904,8 @@
       "accentAide": "Habille le mobilier du document : numéros de ligne, traits, cases cochées.",
       "nouvelleRef": "Nouvelle pièce",
       "lecture_one": "{{count}} min de lecture",
-      "lecture_other": "{{count}} min de lecture"
+      "lecture_other": "{{count}} min de lecture",
+      "italiqueDoc": "Le document est en italique — ceci redresse le passage"
     },
     "energy": "Énergie"
   },

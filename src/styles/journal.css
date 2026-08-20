@@ -285,6 +285,10 @@
 .jr-html p:last-child { margin-bottom: 0; }
 .jr-html strong { color: var(--jr-encre); }
 .jr-html em { font-style: italic; }
+/* Un italique dans un texte deja penche se dit en redressant : sans
+   cela, le bouton Italique n avait aucun effet visible sur un
+   document compose en MONO·I, et rien ne permettait de l enlever. */
+.jr-html[data-italique="1"] em { font-style: normal; }
 
 .jr-pied {
   display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
@@ -1004,3 +1008,19 @@
 .jr-liste [role="menuitem"].est-rouge[data-highlighted] svg {
   background: var(--jr-rouge); color: var(--jr-papier);
 }
+
+/* Le choix d un objectif est une liste du meme dossier : shadcn garde
+   sa disposition, le papier prend le reste. */
+.jr-liste [role="option"] {
+  min-height: 42px; border-radius: 0;
+  border-bottom: 1px solid var(--jr-trait);
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--jr-encre-2);
+}
+.jr-liste [role="option"]:last-child { border-bottom: 0; }
+.jr-liste [role="option"][data-highlighted],
+.jr-liste [role="option"][data-state="checked"] {
+  background: var(--jr-papier-2); color: var(--jr-encre);
+}
+.jr-liste [role="option"] svg { color: var(--jr-rouge-encre); }

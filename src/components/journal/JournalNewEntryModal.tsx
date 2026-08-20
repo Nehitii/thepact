@@ -505,7 +505,11 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
                   <SelectTrigger className="jr-at-select" aria-label={t("journal.modal.linkedGoal")}>
                     <SelectValue placeholder={t("journal.modal.noGoal")} />
                   </SelectTrigger>
-                  <SelectContent className="jr-dlg font-mono text-xs" data-jr={theme}>
+                  {/* Radix recopie sur son enveloppe le z-index calcule
+                      du contenu. Celui d origine vaut 100 : la liste
+                      s ouvrait derriere la fenetre, qui est a 9999, et
+                      rien ne paraissait. */}
+                  <SelectContent className="jr-dlg jr-liste z-[10001]" data-jr={theme}>
                     <SelectItem value="none">{t("journal.modal.noGoal")}</SelectItem>
                     {activeGoals.map((g: Goal) => (
                       <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>

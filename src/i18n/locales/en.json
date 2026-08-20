@@ -1904,7 +1904,8 @@
       "accentAide": "Dresses the document furniture: line numbers, dividers, ticked boxes.",
       "nouvelleRef": "New document",
       "lecture_one": "{{count}} min read",
-      "lecture_other": "{{count}} min read"
+      "lecture_other": "{{count}} min read",
+      "italiqueDoc": "The document is set in italics — this sets the passage upright"
     },
     "energy": "Energy"
   },
