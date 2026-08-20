@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheCall } from "@/hooks/useTheCall";
+import { CoeurStellaire } from "@/components/thecall/CoeurStellaire";
 import { DSPageShell } from "@/components/ds";
 import { cn } from "@/lib/utils";
 
@@ -85,9 +86,7 @@ export default function TheCall() {
   const [relacheTot, setRelacheTot] = useState(false);
 
   const racineRef = useRef<HTMLDivElement>(null);
-  const secousseRef = useRef<HTMLDivElement>(null);
   const boutonRef = useRef<HTMLButtonElement>(null);
-  const anneauRef = useRef<SVGCircleElement>(null);
   const compteRef = useRef<HTMLSpanElement>(null);
 
   const progresRef = useRef(0);
@@ -99,21 +98,6 @@ export default function TheCall() {
   const vivantRef = useRef(true);
   const vitesseRef = useRef(1);
   const autoRef = useRef(false);
-
-  const rayon = isMobile ? 126 : 152;
-  const circonference = 2 * Math.PI * rayon;
-
-  /* Les particules etaient tirees au sort DANS le rendu : a soixante
-     rendus par seconde, leurs animations redemarraient sans cesse et ne
-     jouaient jamais. Elles sont tirees une fois. */
-  const particules = useMemo(
-    () => Array.from({ length: NB_PARTICULES }, (_, i) => ({
-      angle: (i / NB_PARTICULES) * 360,
-      taille: Math.random() * 2 + 1,
-      retard: -Math.random() * 2,
-    })),
-    [],
-  );
 
   const enSequence = phase === "implosion" || phase === "singularite"
     || phase === "explosion" || phase === "revelation";
@@ -134,8 +118,10 @@ export default function TheCall() {
     return () => { vivantRef.current = false; cancelAnimationFrame(rafRef.current); };
   }, []);
 
-  // ── La peinture, hors de React ──────────────────────────────
+  // ── Ce que le DOM porte encore : le texte ──────────────────
   const peindre = useCallback((p: number) => {
+    /* La toile lit « progresRef » toute seule. Ici on ne touche qu au
+       compte a rebours et aux deux variables dont le texte se sert. */
     const r = racineRef.current;
     if (r) {
       r.style.setProperty("--rit-p", String(p));
@@ -144,44 +130,7 @@ export default function TheCall() {
     if (compteRef.current) {
       compteRef.current.textContent = p > 0 ? `${(20 - p * 20).toFixed(1)}s` : "";
     }
-    if (anneauRef.current) {
-      anneauRef.current.style.strokeDashoffset = String(circonference * (1 - p));
-    }
-
-    const intensite = clamp(easeInExpo(p), 0, 1);
-
-    if (secousseRef.current) {
-      if (immobile || intensite === 0) {
-        secousseRef.current.style.transform = "none";
-        secousseRef.current.style.textShadow = "none";
-        secousseRef.current.style.filter = "none";
-      } else {
-        const amp = 35 * intensite;
-        const x = (Math.random() - 0.5) * 2 * amp;
-        const y = (Math.random() - 0.5) * 2 * amp;
-        const rot = (Math.random() - 0.5) * 4 * intensite;
-        const ecart = 10 * intensite;
-        secousseRef.current.style.transform =
-          `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg) scale(${1 + intensite * 0.05})`;
-        secousseRef.current.style.textShadow =
-          `${ecart}px 0 rgba(255,0,80,${0.5 * intensite}), -${ecart}px 0 rgba(0,255,255,${0.5 * intensite})`;
-        secousseRef.current.style.filter =
-          intensite > 0.1 ? `blur(${3 * intensite}px) contrast(${1 + intensite * 0.2})` : "none";
-      }
-    }
-
-    if (boutonRef.current) {
-      if (immobile) {
-        boutonRef.current.style.transform = "none";
-      } else {
-        const souffle = 1 + Math.sin((performance.now() / 1000) * (2 + intensite * 10)) * (0.02 + intensite * 0.08);
-        const jx = p > 0.8 ? (Math.random() - 0.5) * 10 * ((p - 0.8) * 5) : 0;
-        const jy = p > 0.8 ? (Math.random() - 0.5) * 10 * ((p - 0.8) * 5) : 0;
-        boutonRef.current.style.transform =
-          `scale(${souffle + intensite * 0.15}) translate3d(${jx}px, ${jy}px, 0)`;
-      }
-    }
-  }, [circonference, immobile]);
+  }, []);
 
   const rendreLaMain = useCallback(() => {
     progresRef.current = 0;
@@ -222,6 +171,10 @@ export default function TheCall() {
     setPhase("revelation");
     await attendre(3000);
     if (!vivantRef.current) return;
+    /* Le reacteur a disparu : le fond doit redescendre avec lui, sinon
+       l ecran reste incandescent sous l etat verrouille. */
+    progresRef.current = 0;
+    peindre(0);
     setPhase("verrouille");
   }, [peindre, enregistrer, immobile, rendreLaMain]);
 
@@ -333,12 +286,10 @@ export default function TheCall() {
         data-pret={pret}
         className="rit h-[100dvh] bg-background overflow-hidden flex flex-col relative text-foreground select-none"
       >
-        {/* Le fond */}
-        <div className="absolute inset-0 pointer-events-none z-0 rit-fond">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120vmax] h-[120vmax] rit-halo" />
-        </div>
+        {/* Le coeur : une seule toile, qui porte le reacteur ET le fond */}
+        <CoeurStellaire progres={progresRef} phase={phase} immobile={immobile} />
 
-        <div ref={secousseRef} className="relative z-10 flex-1 flex flex-col items-center will-change-transform">
+        <div className="relative z-10 flex-1 flex flex-col items-center">
           {/* L en-tete */}
           <div className={cn(
             "w-full z-20 transition-opacity duration-500 pointer-events-none shrink-0",
@@ -409,23 +360,7 @@ export default function TheCall() {
                 phase === "implosion" ? "scale-0 opacity-0 duration-500" : "scale-100 opacity-100 duration-100",
                 phase === "revelation" ? "hidden" : "block",
               )}>
-                {!verrouille && (
-                  <svg
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-30 rit-anneau"
-                    width={(rayon + 8) * 2}
-                    height={(rayon + 8) * 2}
-                    aria-hidden="true"
-                  >
-                    <circle
-                      ref={anneauRef}
-                      cx={rayon + 8} cy={rayon + 8} r={rayon}
-                      fill="none" stroke="var(--rit-teinte)" strokeWidth="2" strokeLinecap="round"
-                      strokeDasharray={circonference}
-                      strokeDashoffset={circonference}
-                      style={{ transform: "rotate(-90deg)", transformOrigin: "center" }}
-                    />
-                  </svg>
-                )}
+
 
                 <button
                   ref={boutonRef}
@@ -451,38 +386,14 @@ export default function TheCall() {
                   aria-label={verrouille ? t("thecall.ariaDone") : t("thecall.ariaHold")}
                   aria-describedby="rit-etat"
                   className={cn(
-                    "rit-noyau touch-none relative w-60 h-60 sm:w-72 sm:h-72 rounded-full flex items-center justify-center",
-                    "border transition-colors duration-100 will-change-transform",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    "rit-prise touch-none relative w-64 h-64 sm:w-80 sm:h-80 rounded-full flex items-center justify-center",
+                    "transition-colors duration-200",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-background",
                     verrouille
-                      ? "border-[hsl(var(--ds-accent-success)/0.35)] bg-[hsl(var(--ds-accent-success)/0.06)] cursor-default"
-                      : "border-white/10 bg-black/40 cursor-pointer",
+                      ? "border border-[hsl(var(--ds-accent-success)/0.35)] bg-[hsl(var(--ds-accent-success)/0.06)] cursor-default"
+                      : "cursor-pointer",
                   )}
                 >
-                  {!verrouille && (
-                    <>
-                      <span className="rit-plasma absolute inset-2 rounded-full blur-xl mix-blend-screen" aria-hidden="true" />
-                      <span className="rit-coeur absolute inset-16 rounded-full blur-md mix-blend-overlay" aria-hidden="true" />
-                      {!immobile && (
-                        <span className="absolute inset-[-100px] pointer-events-none rounded-full overflow-hidden [mask-image:radial-gradient(circle,transparent_30%,black_70%)]" aria-hidden="true">
-                          {particules.map((pa, i) => (
-                            <span
-                              key={i}
-                              className="absolute top-1/2 left-1/2 rounded-full rit-particule mix-blend-screen"
-                              style={{
-                                width: `${pa.taille}px`,
-                                height: `${pa.taille * 3}px`,
-                                transformOrigin: "0 150px",
-                                transform: `rotate(${pa.angle}deg) translateY(-150px)`,
-                                animationDelay: `${pa.retard}s`,
-                              }}
-                            />
-                          ))}
-                        </span>
-                      )}
-                    </>
-                  )}
-
                   <span className="rit-etiquette relative z-20 flex flex-col items-center pointer-events-none">
                     {verrouille ? (
                       <span className="flex flex-col items-center text-[hsl(var(--ds-accent-success))]">
@@ -583,45 +494,30 @@ export default function TheCall() {
         )}
 
         <style>{`
-        /* La progression est une variable : le CSS s en sert seul, sans
-           repasser par React. */
+        /* Le DOM ne porte plus que le texte : la toile fait le reste.
+           Ces deux variables lui donnent la couleur du moment. */
         .rit { --rit-p: 0; }
-        .rit-fond { opacity: calc(0.4 + var(--rit-p) * 0.6); transform: scale(calc(1 + var(--rit-p) * 1.5)); transition: opacity 120ms linear; }
-        .rit-halo {
-          background: radial-gradient(circle at center, hsl(var(--ds-accent-primary) / 0.15) 0%, transparent 60%);
-          mix-blend-mode: screen;
-          animation: rit-souffle 6s ease-in-out infinite;
-        }
-        @keyframes rit-souffle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
-        .rit-noyau { box-shadow: 0 0 calc(var(--rit-p) * 60px) var(--rit-teinte); }
-        .rit-noyau:focus-visible { --tw-ring-color: var(--rit-teinte); }
-        .rit-plasma { background: var(--rit-teinte); opacity: calc(var(--rit-p) * 0.8); animation: rit-plasma 2s ease-in-out infinite; }
-        .rit-coeur  { background: var(--rit-teinte); opacity: var(--rit-p); }
-        @keyframes rit-plasma { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .rit-prise { box-shadow: 0 0 calc(var(--rit-p) * 90px) color-mix(in oklab, var(--rit-teinte) 45%, transparent); }
+        .rit-prise:focus-visible { --tw-ring-color: var(--rit-teinte); }
 
-        .rit-particule {
-          background: var(--rit-teinte);
-          box-shadow: 0 0 4px var(--rit-teinte);
-          opacity: var(--rit-p);
-          animation: rit-gravite calc(3s - var(--rit-p) * 2.5s) linear infinite;
-        }
-        @keyframes rit-gravite {
-          0%   { transform: rotate(0) translateY(-180px) scale(0.5); }
-          100% { transform: rotate(180deg) translateY(0) scale(0.1); }
-        }
-
+        /* L eclair se dissout dans le coeur : passe un tiers de course,
+           c est l objet qu on regarde, plus l icone. */
         .rit-eclair {
-          color: var(--rit-teinte);
-          fill: var(--rit-teinte);
-          fill-opacity: calc(max(0, var(--rit-p) - 0.5) * 2);
+          color: #fff;
+          opacity: calc(1 - var(--rit-p) * 3);
           filter: drop-shadow(0 0 calc(var(--rit-p) * 30px) var(--rit-teinte));
           stroke-width: 1.5;
         }
-        .rit-compte { color: var(--rit-teinte); text-shadow: 0 0 calc(var(--rit-p) * 20px) var(--rit-teinte); }
+        /* Le compte a rebours passe devant un coeur incandescent : il
+           lui faut son propre fond, pas seulement sa couleur. */
+        .rit-compte {
+          color: #fff;
+          text-shadow: 0 0 12px rgba(0,0,0,0.9), 0 0 calc(var(--rit-p) * 26px) var(--rit-teinte);
+        }
         .rit-invite { color: hsl(var(--ds-text-muted)); opacity: calc(1 - var(--rit-p) * 4); animation: rit-respire 2.5s ease-in-out infinite; }
         @keyframes rit-respire { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.85; } }
-        .rit-message { color: color-mix(in oklab, var(--rit-teinte) calc(var(--rit-p) * 100%), hsl(var(--ds-text-muted))); }
+        .rit-message { color: color-mix(in oklab, var(--rit-teinte) calc(var(--rit-p) * 100%), hsl(var(--ds-text-muted))); text-shadow: 0 0 10px rgba(0,0,0,0.8); }
 
         .rit-revelation { animation: rit-revele 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
         @keyframes rit-revele {
@@ -636,7 +532,7 @@ export default function TheCall() {
         @keyframes rit-remonte { from { opacity: 0; transform: translateY(20px); } to { opacity: 0.7; transform: none; } }
 
         @media (prefers-reduced-motion: reduce) {
-          .rit-halo, .rit-plasma, .rit-particule, .rit-invite,
+          .rit-invite,
           .rit-rayons, .rit-trait, .rit-monte, .rit-revelation { animation: none !important; }
           .rit-monte { opacity: 0.7; }
           .rit-trait { width: 200px; }
