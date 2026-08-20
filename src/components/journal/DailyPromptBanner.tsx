@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDailyJournalPrompt } from "@/hooks/useJournalPrompt";
 
@@ -21,6 +22,7 @@ const CATEGORY_LABEL: Record<string, string> = {
  * Hidden after dismissal for the current day (localStorage flag).
  */
 export function DailyPromptBanner({ onUse }: Props) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { data: prompt, isLoading } = useDailyJournalPrompt(user?.id);
   const dayKey = new Date().toDateString();
@@ -29,6 +31,13 @@ export function DailyPromptBanner({ onUse }: Props) {
 
   useEffect(() => {
     setDismissed(localStorage.getItem(storageKey) === "1");
+    /* Une cle par jour masque s accumulait pour toujours. */
+    try {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith("journal-prompt-dismissed-") && k !== storageKey) localStorage.removeItem(k);
+      }
+    } catch { /* stockage indisponible */ }
   }, [storageKey]);
 
   if (isLoading || !prompt || dismissed) return null;
@@ -42,14 +51,14 @@ export function DailyPromptBanner({ onUse }: Props) {
       className="relative mb-3 border border-primary/30 bg-primary/5 px-4 py-3"
       style={{ clipPath: "polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px)" }}
       role="region"
-      aria-label="Daily journal prompt"
+      aria-label={t("journal.prompt.region")}
     >
       <div className="flex items-start gap-3">
         <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" aria-hidden />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-primary/70">
-              PROMPT_DU_JOUR
+            <span className="ds-t-label font-mono uppercase tracking-[0.2em] text-primary">
+              {t("journal.prompt.label")}
             </span>
             <span className="ds-t-label font-mono px-1.5 py-0.5 border border-primary/30 text-primary/80">
               {tag}
@@ -59,9 +68,9 @@ export function DailyPromptBanner({ onUse }: Props) {
           {onUse && (
             <button
               onClick={() => onUse(prompt.prompt)}
-              className="mt-2 ds-t-label font-mono uppercase tracking-widest text-primary hover:text-primary/80 transition-colors"
+              className="mt-2 ds-t-label font-mono uppercase tracking-widest text-primary hover:text-primary/80 transition-colors min-h-[44px] inline-flex items-center"
             >
-              {">> UTILISER"}
+              {t("journal.prompt.use")}
             </button>
           )}
         </div>
@@ -70,8 +79,8 @@ export function DailyPromptBanner({ onUse }: Props) {
             localStorage.setItem(storageKey, "1");
             setDismissed(true);
           }}
-          aria-label="Dismiss prompt"
-          className="text-muted-foreground hover:text-foreground transition-colors"
+          aria-label={t("journal.prompt.dismiss")}
+          className="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center justify-center min-w-[44px] min-h-[44px] -m-2"
         >
           <X className="w-4 h-4" />
         </button>

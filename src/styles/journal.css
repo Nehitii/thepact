@@ -79,3 +79,19 @@
    jamais relevé du journal, et leur structure demandait une refonte :
    le fond etait pose sur le <main> centre au lieu de la fenetre, et la
    grille au sol perdait sa perspective. */
+
+/* Les pastilles de filtre : 29 px de haut au doigt, et un texte a 1,9 de
+   contraste. Elles font desormais la taille d une cible. */
+.journal-pastille {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 44px; padding: 0 14px;
+  border-radius: 2px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.journal-pastille:focus-visible {
+  outline: 2px solid hsl(var(--primary)); outline-offset: 2px;
+}

@@ -44,7 +44,9 @@
     "updated": "Updated",
     "more": "more",
     "selected": "selected",
-    "done": "Done"
+    "done": "Done",
+    "on": "ON",
+    "off": "OFF"
   },
   "auth": {
     "brand": "Pact",
@@ -1713,10 +1715,10 @@
   "journal": {
     "title": "JOURNAL",
     "subtitle": "Your thoughts, documented",
-    "newEntry": "New Entry",
+    "newEntry": "New entry",
     "editEntry": "Edit Entry",
     "deleteEntry": "Delete Entry",
-    "noEntries": "No journal entries",
+    "noEntries": "No entries yet",
     "noEntriesDesc": "Start documenting your journey",
     "form": {
       "title": "Title",
@@ -1727,11 +1729,12 @@
       "lifeContext": "Life Context"
     },
     "moods": {
-      "great": "Great",
-      "good": "Good",
-      "neutral": "Neutral",
-      "low": "Low",
-      "rough": "Rough"
+      "flow": "Flow",
+      "tension": "Tension",
+      "static": "Static",
+      "signal": "Signal",
+      "void": "Void",
+      "surge": "Surge"
     },
     "contexts": {
       "work": "Work",
@@ -1739,6 +1742,96 @@
       "health": "Health",
       "relationships": "Relationships",
       "growth": "Growth"
+    },
+    "toasts": {
+      "created": "Entry saved",
+      "createFailed": "Could not save entry",
+      "updated": "Entry updated",
+      "updateFailed": "Could not update entry",
+      "deleted": "Entry deleted",
+      "deleteFailed": "Could not delete entry",
+      "deleteNothing": "Nothing was deleted — the entry may already be gone.",
+      "pinFailed": "Could not pin entry"
+    },
+    "loading": "Opening journal…",
+    "systemLabel": "JOURNAL // ACTIVE",
+    "searchLabel": "Search the journal",
+    "searchPlaceholder": "Search entries…",
+    "filterLabel": "Filter entries",
+    "loadingLogs": "Reading entries…",
+    "loadingMore": "Loading…",
+    "searching": "Searching",
+    "noMatch": "No entry matches",
+    "clearFilters": "Clear filters",
+    "endOfLog": "End of journal",
+    "badges": {
+      "entries": "Entries",
+      "pinned": "Pinned",
+      "month": "This month"
+    },
+    "delete": {
+      "title": "Delete entry?",
+      "description": "This entry will be permanently erased. This cannot be undone.",
+      "cancel": "Cancel",
+      "confirm": "Delete"
+    },
+    "card": {
+      "actions": "Actions for “{{title}}”",
+      "edit": "Edit",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "delete": "Delete"
+    },
+    "modal": {
+      "newTitle": "New entry",
+      "editTitle": "Edit entry",
+      "hint": "Write your entry, then save. Escape closes the window.",
+      "panels": "Panels",
+      "panel": {
+        "write": "Write",
+        "style": "Style",
+        "meta": "Meta"
+      },
+      "words": "{{count}} words",
+      "words_one": "{{count}} word",
+      "close": "Close",
+      "save": "Save",
+      "draftRestored": "Draft restored",
+      "titleLabel": "Entry title",
+      "titlePlaceholder": "Entry title…",
+      "bodyPlaceholder": "Start writing…",
+      "editorLoading": "Loading editor…",
+      "accent": "Accent colour",
+      "mood": "Mood",
+      "font": "Font",
+      "size": "Size",
+      "align": "Alignment",
+      "lineNumbers": "Line numbers",
+      "valence": "Emotional valence",
+      "energy": "Energy level",
+      "negative": "Negative",
+      "positive": "Positive",
+      "depleted": "Depleted",
+      "charged": "Charged",
+      "scaleValue": "{{value}} out of 10",
+      "tags": "Tags",
+      "addTag": "Add tag",
+      "removeTag": "Remove tag {{tag}}",
+      "preview": "Preview",
+      "linkedGoal": "Linked goal",
+      "noGoal": "No goal linked",
+      "context": "Life context",
+      "contextPlaceholder": "e.g. during a period of change…",
+      "discardTitle": "Discard this entry?",
+      "discardDescription": "The text you wrote will be lost. A draft was kept, but it will be erased.",
+      "keepWriting": "Keep writing",
+      "discard": "Discard"
+    },
+    "prompt": {
+      "region": "Daily prompt",
+      "label": "Daily prompt",
+      "use": ">> Use it",
+      "dismiss": "Dismiss the daily prompt"
     }
   },
   "onboarding": {

@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useCallback, useEffect, memo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
-import { useJournalEntries, useDeleteJournalEntry } from "@/hooks/useJournal";
+import { useJournalEntries, useDeleteJournalEntry, useJournalCounts } from "@/hooks/useJournal";
 import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import type { JournalEntry } from "@/types/journal";
 import { MOOD_OPTIONS, getAccent } from "@/types/journal";
@@ -10,19 +10,25 @@ import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal"
 import { SciFiDivider } from "@/components/journal/JournalDecorations";
 import { DailyPromptBanner } from "@/components/journal/DailyPromptBanner";
 import { DSPageShell, DSPageHeader } from "@/components/ds";
+import { Pin, Search } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-// Isolated clock component to avoid re-rendering the whole page
+/* LOG.01 — LE JOURNAL
+ *
+ * La recherche et le filtre ne portaient que sur les pages deja
+ * chargees : sur un journal de deux cents entrees, chercher un mot ecrit
+ * il y a six mois ne rendait rien, et la page repondait « aucune
+ * entree ». Ils partent en base, avec la pagination.
+ *
+ * Les compteurs de l en-tete comptaient eux aussi les pages chargees.
+ * Ils comptent maintenant ce qui existe.
+ */
+
+// L horloge est isolee : elle bat a la seconde, la page ne la suit pas.
 const LiveClock = memo(function LiveClock() {
   const [clock, setClock] = useState("");
   const tick = useCallback(() => {
@@ -36,7 +42,7 @@ const LiveClock = memo(function LiveClock() {
   return (
     <>
       {clock.split(":").map((t, i) => (
-        <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(191,90,242,0.35)", letterSpacing: "0.1em", writingMode: "vertical-rl" as const }}>
+        <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(191,90,242,0.55)", letterSpacing: "0.1em", writingMode: "vertical-rl" as const }}>
           {t}
         </div>
       ))}
@@ -45,81 +51,82 @@ const LiveClock = memo(function LiveClock() {
 });
 
 export default function Journal() {
-  const navigate = useNavigate();
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [rechercheEnvoyee, setRechercheEnvoyee] = useState("");
   const [filterMood, setFilterMood] = useState<string | null>(null);
+  const [epinglees, setEpinglees] = useState(false);
+  const [amorce, setAmorce] = useState("");
 
-  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useJournalEntries(user?.id);
+  /* On ne part pas en base a chaque frappe. */
+  useEffect(() => {
+    const id = setTimeout(() => setRechercheEnvoyee(search.trim()), 320);
+    return () => clearTimeout(id);
+  }, [search]);
+
+  const filtre = useMemo(
+    () => ({ recherche: rechercheEnvoyee, humeur: filterMood, epinglees }),
+    [rechercheEnvoyee, filterMood, epinglees],
+  );
+
+  const { data, isLoading, isFetching, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useJournalEntries(user?.id, filtre);
+  const { data: comptes } = useJournalCounts(user?.id);
   const deleteEntry = useDeleteJournalEntry();
 
-  const allEntries = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
+  /* La base a deja trie et filtre : la page ne fait plus que dérouler. */
+  const entries = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
+  const filtreActif = !!rechercheEnvoyee || !!filterMood || epinglees;
 
-  const entries = useMemo(() => {
-    let filtered = allEntries;
-    if (filterMood) filtered = filtered.filter((e) => e.mood === filterMood);
-    if (search) {
-      const q = search.toLowerCase();
-      filtered = filtered.filter((e) => e.title.toLowerCase().includes(q) || e.content.toLowerCase().includes(q));
-    }
-    return [...filtered].sort((a, b) => (b.is_favorite ? 1 : 0) - (a.is_favorite ? 1 : 0));
-  }, [allEntries, filterMood, search]);
-
-  // Stats
-  const totalWords = useMemo(
-    () =>
-      allEntries.reduce(
-        (s, e) =>
-          s +
-          e.content
-            .replace(/<[^>]+>/g, "")
-            .split(/\s+/)
-            .filter(Boolean).length,
-        0,
-      ),
-    [allEntries],
-  );
-  const pinnedCount = useMemo(() => allEntries.filter((e) => e.is_favorite).length, [allEntries]);
-
-  // Infinite scroll
+  // Defilement infini
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useCallback(
     (node: HTMLDivElement | null) => {
       if (observerRef.current) observerRef.current.disconnect();
       if (!node || !hasNextPage) return;
       observerRef.current = new IntersectionObserver(
-        (es) => {
-          if (es[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
-        },
+        (es) => { if (es[0].isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage(); },
         { threshold: 0.1 },
       );
       observerRef.current.observe(node);
     },
     [hasNextPage, isFetchingNextPage, fetchNextPage],
   );
+  useEffect(() => () => observerRef.current?.disconnect(), []);
 
   const handleEdit = (entry: JournalEntry) => {
     setEditingEntry(entry);
+    setAmorce("");
     setIsNewEntryOpen(true);
   };
   const handleDelete = async () => {
     if (!deletingEntryId || !user) return;
     try {
       await deleteEntry.mutateAsync({ id: deletingEntryId, userId: user.id });
-    } catch {
-      // Error handled by React Query onError
-    }
+    } catch { /* le toast d erreur est porte par la mutation */ }
     setDeletingEntryId(null);
   };
   const handleCloseModal = (open: boolean) => {
     setIsNewEntryOpen(open);
-    if (!open) setEditingEntry(null);
+    if (!open) { setEditingEntry(null); setAmorce(""); }
   };
 
-  if (!user) return null;
+  /* La page ne rendait rien du tout pendant l amorcage de la session. */
+  if (!user) {
+    return (
+      <DSPageShell width="md">
+        <div className="flex items-center justify-center py-24">
+          <div className="font-mono ds-t-label tracking-[0.15em] text-muted-foreground">
+            {t("journal.loading")}
+          </div>
+        </div>
+      </DSPageShell>
+    );
+  }
 
   return (
     <DSPageShell
@@ -132,7 +139,6 @@ export default function Journal() {
           <div className="journal-grid-bg" />
           <div className="journal-orb-left" />
           <div className="journal-orb-right" />
-          {/* Corner frames — kept as-is to preserve Journal identity */}
           {[
             { top: 16, left: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
             { top: 16, right: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
@@ -144,13 +150,12 @@ export default function Journal() {
         </>
       }
     >
-      {/* Side decorations — dark only (fixed positioning, viewport-anchored) */}
-      <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2">
+      <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2" aria-hidden="true">
         <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,255,224,0.3))" }} />
         {["◈", "◉", "◎", "◐", "◯", "◆"].map((s, i) => (
           <div key={i} className="w-px h-5 relative" style={{ background: "rgba(0,255,224,0.1)" }}>
             {i === 2 && (
-              <span className="absolute left-2 -top-1 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(0,255,224,0.25)" }}>
+              <span className="absolute left-2 -top-1 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(0,255,224,0.45)" }}>
                 {s}
               </span>
             )}
@@ -159,7 +164,7 @@ export default function Journal() {
         <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(0,255,224,0.3))" }} />
       </div>
 
-      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2">
+      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2" aria-hidden="true">
         <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(191,90,242,0.3))" }} />
         <LiveClock />
         <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }} />
@@ -167,179 +172,200 @@ export default function Journal() {
 
       <DSPageHeader
         variant="hud"
-        systemLabel="NEURAL_JOURNAL // SYS.ACTIVE"
+        systemLabel={t("journal.systemLabel")}
         title="CHRONO"
         titleAccent="LOG"
         badges={[
-          { label: "ENTRIES", value: allEntries.length, color: "#00ffe0" },
-          { label: "PINNED", value: pinnedCount, color: "#bf5af2" },
-          { label: "K-WORDS", value: `${(Math.round(totalWords / 100) / 10).toFixed(1)}k`, color: "#ffd60a" },
+          { label: t("journal.badges.entries"), value: comptes?.total ?? 0, color: "#00ffe0" },
+          { label: t("journal.badges.pinned"), value: comptes?.epinglees ?? 0, color: "#bf5af2" },
+          { label: t("journal.badges.month"), value: comptes?.ceMois ?? 0, color: "#ffd60a" },
         ]}
         actions={
           <motion.button
-            onClick={() => setIsNewEntryOpen(true)}
+            onClick={() => { setEditingEntry(null); setAmorce(""); setIsNewEntryOpen(true); }}
             whileHover={{ scale: 1.04, boxShadow: "0 0 40px hsl(var(--primary) / 0.25), 0 0 80px hsl(var(--primary) / 0.1)" }}
             whileTap={{ scale: 0.97 }}
             className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300 border border-primary text-primary rounded-[3px] font-orbitron ds-t-label font-semibold tracking-[0.2em]"
-            style={{
-              padding: "13px 36px",
-              background: "transparent",
-              boxShadow: "0 0 20px hsl(var(--primary) / 0.12), inset 0 0 20px hsl(var(--primary) / 0.03)",
-            }}
+            style={{ padding: "13px 36px", background: "transparent", boxShadow: "0 0 20px hsl(var(--primary) / 0.12), inset 0 0 20px hsl(var(--primary) / 0.03)" }}
           >
             <span className="text-[1rem] font-light font-mono">+</span>
-            NEW ENTRY
+            {t("journal.newEntry")}
           </motion.button>
         }
       />
 
-        <DailyPromptBanner onUse={() => setIsNewEntryOpen(true)} />
+      <DailyPromptBanner
+        onUse={(prompt) => {
+          /* La question du jour etait jetee : la page ouvrait un editeur
+             vide. Elle arrive maintenant a destination. */
+          setEditingEntry(null);
+          setAmorce(prompt);
+          setIsNewEntryOpen(true);
+        }}
+      />
 
-        {/* TOOLBAR */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
-          className="mb-2 flex flex-col gap-3"
-        >
-          {/* Search */}
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[0.75rem] text-primary/35">
-              ◈
-            </span>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="SEARCH LOGS..."
-              className="w-full outline-none transition-colors duration-200 font-mono ds-t-label tracking-[0.08em] text-foreground/70 rounded-[3px]"
+      {/* BARRE */}
+      <div className="mb-2 flex flex-col gap-3">
+        <div className="relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/60" aria-hidden="true" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            aria-label={t("journal.searchLabel")}
+            placeholder={t("journal.searchPlaceholder")}
+            className="w-full outline-none transition-colors duration-200 font-mono ds-t-label tracking-[0.08em] text-foreground rounded-[3px]"
+            style={{
+              padding: "11px 16px 11px 36px", minHeight: "44px",
+              background: "var(--journal-input-bg)",
+              border: "1px solid var(--journal-input-border)",
+              caretColor: "hsl(var(--primary))",
+            }}
+            onFocus={(e) => (e.target.style.borderColor = "hsl(var(--primary) / 0.4)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--journal-input-border)")}
+          />
+        </div>
+
+        <div className="flex justify-center gap-1.5 flex-wrap" role="group" aria-label={t("journal.filterLabel")}>
+          <button
+            type="button"
+            aria-pressed={epinglees}
+            onClick={() => setEpinglees((v) => !v)}
+            className="journal-pastille"
+            style={{
+              background: epinglees ? "#bf5af218" : "var(--journal-input-bg)",
+              border: `1px solid ${epinglees ? "#bf5af260" : "var(--journal-input-border)"}`,
+              color: epinglees ? "#bf5af2" : "var(--journal-text-secondary)",
+            }}
+          >
+            <Pin className="w-3 h-3" aria-hidden="true" />
+            {t("journal.badges.pinned")}
+          </button>
+          {MOOD_OPTIONS.map((m) => (
+            <button
+              key={m.id}
+              type="button"
+              aria-pressed={filterMood === m.id}
+              onClick={() => setFilterMood(filterMood === m.id ? null : m.id)}
+              className="journal-pastille"
               style={{
-                padding: "11px 16px 11px 36px",
-                background: "var(--journal-input-bg)",
-                border: "1px solid var(--journal-input-border)",
-                caretColor: "hsl(var(--primary))",
+                background: filterMood === m.id ? `${m.color}18` : "var(--journal-input-bg)",
+                border: `1px solid ${filterMood === m.id ? m.color + "60" : "var(--journal-input-border)"}`,
+                color: filterMood === m.id ? m.color : "var(--journal-text-secondary)",
+                boxShadow: filterMood === m.id ? `0 0 12px ${m.color}20` : "none",
               }}
-              onFocus={(e) => (e.target.style.borderColor = "hsl(var(--primary) / 0.4)")}
-              onBlur={(e) => (e.target.style.borderColor = "var(--journal-input-border)")}
-            />
-          </div>
+            >
+              <span style={{ fontSize: "11px" }} aria-hidden="true">{m.sym}</span>
+              {t(`journal.moods.${m.id}`)}
+            </button>
+          ))}
+        </div>
+      </div>
 
-          {/* Mood filter pills */}
-          <div className="flex justify-center gap-1.5 flex-wrap">
-            {MOOD_OPTIONS.map((m) => (
-              <button
-                key={m.id}
-                onClick={() => setFilterMood(filterMood === m.id ? null : m.id)}
-                className="flex items-center gap-1.5 rounded-sm cursor-pointer transition-all duration-150 font-mono ds-t-label tracking-[0.1em]"
-                style={{
-                  padding: "5px 12px",
-                  background: filterMood === m.id ? `${m.color}12` : "var(--journal-input-bg)",
-                  border: `1px solid ${filterMood === m.id ? m.color + "45" : "var(--journal-input-border)"}`,
-                  color: filterMood === m.id ? m.color : "var(--journal-text-dim)",
-                  boxShadow: filterMood === m.id ? `0 0 12px ${m.color}20` : "none",
-                }}
-              >
-                <span style={{ fontSize: "11px" }}>{m.sym}</span>
-                {m.label}
-              </button>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ENTRIES */}
-        <div className="pb-20 mt-2">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-24">
-              <div className="flex flex-col items-center gap-3">
-                <motion.div
-                  className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary"
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-                />
-                <div className="font-mono text-[0.75rem] text-muted-foreground/20 tracking-[0.15em]">
-                  LOADING_LOGS...
-                </div>
+      {/* ENTREES */}
+      <div className="pb-20 mt-2">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="flex flex-col items-center gap-3">
+              <motion.div
+                className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+              />
+              <div className="font-mono ds-t-label text-muted-foreground tracking-[0.15em]">
+                {t("journal.loadingLogs")}
               </div>
             </div>
-          ) : entries.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-20">
-              <div className="font-mono text-[0.75rem] text-muted-foreground/20 tracking-[0.15em]">
-                // NO_ENTRIES_FOUND
-              </div>
-            </motion.div>
-          ) : (
-            <AnimatePresence mode="popLayout">
-              {entries.map((entry, i) => {
-                const entryAccent = getAccent(entry.accent_color);
-                return (
-                  <div key={entry.id}>
-                    {i > 0 && (
-                      <div className="py-3">
-                        <SciFiDivider color={entryAccent.hex} label={`LOG·${String(i + 1).padStart(3, "0")}`} />
-                      </div>
-                    )}
-                    <JournalEntryCard
-                      entry={entry}
-                      index={i}
-                      onEdit={handleEdit}
-                      onDelete={(id) => setDeletingEntryId(id)}
-                    />
-                  </div>
-                );
-              })}
-            </AnimatePresence>
-          )}
-
-          {/* Infinite scroll sentinel */}
-          <div ref={sentinelRef} className="h-10 flex items-center justify-center">
-            {isFetchingNextPage && (
-              <div className="font-mono ds-t-label text-muted-foreground/20 tracking-[0.15em]">
-                LOADING_MORE...
-              </div>
+          </div>
+        ) : entries.length === 0 ? (
+          <div className="text-center py-20" role="status">
+            <p className="font-mono ds-t-label text-muted-foreground tracking-[0.15em] m-0">
+              {filtreActif ? t("journal.noMatch") : t("journal.noEntries")}
+            </p>
+            {filtreActif && (
+              <button
+                type="button"
+                onClick={() => { setSearch(""); setFilterMood(null); setEpinglees(false); }}
+                className="mt-4 font-mono ds-t-label tracking-[0.15em] text-primary hover:underline min-h-[44px] px-3"
+              >
+                {t("journal.clearFilters")}
+              </button>
             )}
           </div>
-
-          {/* End terminator */}
-          {entries.length > 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="mt-8 text-center">
-              <div className="flex items-center gap-3 justify-center">
-                <div className="h-px w-20 bg-gradient-to-r from-transparent to-primary/20" />
-                <span className="font-mono ds-t-label text-primary/25 tracking-[0.2em]">
-                  // END_OF_LOG
-                </span>
-                <div className="h-px w-20 bg-gradient-to-r from-primary/20 to-transparent" />
+        ) : (
+          entries.map((entry, i) => {
+            const entryAccent = getAccent(entry.accent_color);
+            return (
+              <div key={entry.id}>
+                {i > 0 && (
+                  <div className="py-3">
+                    {/* Le libelle numerotait la position a l ecran, laquelle
+                        changeait avec le filtre. Il porte la date. */}
+                    <SciFiDivider
+                      color={entryAccent.hex}
+                      label={new Date(entry.created_at).toISOString().slice(0, 10).replace(/-/g, ".")}
+                    />
+                  </div>
+                )}
+                <JournalEntryCard entry={entry} onEdit={handleEdit} onDelete={(id) => setDeletingEntryId(id)} />
               </div>
-            </motion.div>
+            );
+          })
+        )}
+
+        <div ref={sentinelRef} className="h-10 flex items-center justify-center">
+          {isFetchingNextPage && (
+            <div className="font-mono ds-t-label text-muted-foreground tracking-[0.15em]">
+              {t("journal.loadingMore")}
+            </div>
           )}
         </div>
 
-      {/* Editor */}
+        {entries.length > 0 && !hasNextPage && (
+          <div className="mt-8 text-center">
+            <div className="flex items-center gap-3 justify-center">
+              <div className="h-px w-20 bg-gradient-to-r from-transparent to-primary/40" />
+              <span className="font-mono ds-t-label text-primary/70 tracking-[0.2em]">
+                {t("journal.endOfLog")}
+              </span>
+              <div className="h-px w-20 bg-gradient-to-r from-primary/40 to-transparent" />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Recherche en cours, annoncee sans voler le focus */}
+      <p className="sr-only" role="status" aria-live="polite">
+        {isFetching && !isLoading ? t("journal.searching") : ""}
+      </p>
+
       <JournalNewEntryModal
         open={isNewEntryOpen}
         onOpenChange={handleCloseModal}
         userId={user.id}
         editingEntry={editingEntry}
+        amorce={amorce}
       />
 
-      {/* Delete Dialog */}
-      <AlertDialog open={!!deletingEntryId} onOpenChange={() => setDeletingEntryId(null)}>
+      <AlertDialog open={!!deletingEntryId} onOpenChange={(o) => { if (!o) setDeletingEntryId(null); }}>
         <AlertDialogContent className="border border-destructive/15 shadow-2xl rounded-xl bg-card">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-mono tracking-wider text-foreground">
-              PURGE_LOG
+              {t("journal.delete.title")}
             </AlertDialogTitle>
             <AlertDialogDescription className="font-mono text-xs text-muted-foreground">
-              This entry will be permanently erased. This action cannot be reversed.
+              {t("journal.delete.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-2">
             <AlertDialogCancel className="rounded-lg font-mono text-xs bg-muted/50 border-border text-muted-foreground">
-              ABORT
+              {t("journal.delete.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               className="rounded-lg font-mono text-xs bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
             >
-              CONFIRM_PURGE
+              {t("journal.delete.confirm")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

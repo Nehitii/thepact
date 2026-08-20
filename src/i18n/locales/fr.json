@@ -44,7 +44,9 @@
     "updated": "Mis à jour",
     "more": "de plus",
     "selected": "sélectionné(s)",
-    "done": "Fait"
+    "done": "Fait",
+    "on": "OUI",
+    "off": "NON"
   },
   "auth": {
     "brand": "Pact",
@@ -1713,10 +1715,10 @@
   "journal": {
     "title": "JOURNAL",
     "subtitle": "Tes pensées, documentées",
-    "newEntry": "Nouvelle entrée",
+    "newEntry": "Nouvelle entree",
     "editEntry": "Modifier l'entrée",
     "deleteEntry": "Supprimer l'entrée",
-    "noEntries": "Aucune entrée de journal",
+    "noEntries": "Aucune entree pour l instant",
     "noEntriesDesc": "Commence à documenter ton parcours",
     "form": {
       "title": "Titre",
@@ -1727,11 +1729,12 @@
       "lifeContext": "Contexte de vie"
     },
     "moods": {
-      "great": "Super",
-      "good": "Bien",
-      "neutral": "Neutre",
-      "low": "Bas",
-      "rough": "Difficile"
+      "flow": "Flux",
+      "tension": "Tension",
+      "static": "Statique",
+      "signal": "Signal",
+      "void": "Vide",
+      "surge": "Poussee"
     },
     "contexts": {
       "work": "Travail",
@@ -1739,6 +1742,96 @@
       "health": "Santé",
       "relationships": "Relations",
       "growth": "Croissance"
+    },
+    "toasts": {
+      "created": "Entree enregistree",
+      "createFailed": "Enregistrement impossible",
+      "updated": "Entree mise a jour",
+      "updateFailed": "Mise a jour impossible",
+      "deleted": "Entree supprimee",
+      "deleteFailed": "Suppression impossible",
+      "deleteNothing": "Aucune entree supprimee — elle a peut-etre deja ete effacee.",
+      "pinFailed": "Epinglage impossible"
+    },
+    "loading": "Ouverture du journal…",
+    "systemLabel": "JOURNAL // ACTIF",
+    "searchLabel": "Rechercher dans le journal",
+    "searchPlaceholder": "Rechercher dans les entrees…",
+    "filterLabel": "Filtrer les entrees",
+    "loadingLogs": "Lecture des entrees…",
+    "loadingMore": "Chargement…",
+    "searching": "Recherche en cours",
+    "noMatch": "Aucune entree ne correspond",
+    "clearFilters": "Effacer les filtres",
+    "endOfLog": "Fin du journal",
+    "badges": {
+      "entries": "Entrees",
+      "pinned": "Epinglees",
+      "month": "Ce mois"
+    },
+    "delete": {
+      "title": "Supprimer l entree ?",
+      "description": "Cette entree sera effacee definitivement. L action est irreversible.",
+      "cancel": "Annuler",
+      "confirm": "Supprimer"
+    },
+    "card": {
+      "actions": "Actions sur « {{title}} »",
+      "edit": "Modifier",
+      "pin": "Epingler",
+      "unpin": "Desepingler",
+      "delete": "Supprimer"
+    },
+    "modal": {
+      "newTitle": "Nouvelle entree",
+      "editTitle": "Modifier l entree",
+      "hint": "Ecrivez votre entree, puis enregistrez. Echap ferme la fenetre.",
+      "panels": "Panneaux",
+      "panel": {
+        "write": "Ecrire",
+        "style": "Style",
+        "meta": "Meta"
+      },
+      "words": "{{count}} mots",
+      "words_one": "{{count}} mot",
+      "close": "Fermer",
+      "save": "Enregistrer",
+      "draftRestored": "Brouillon restaure",
+      "titleLabel": "Titre de l entree",
+      "titlePlaceholder": "Titre de l entree…",
+      "bodyPlaceholder": "Commencez a ecrire…",
+      "editorLoading": "Chargement de l editeur…",
+      "accent": "Couleur d accent",
+      "mood": "Humeur",
+      "font": "Police",
+      "size": "Taille",
+      "align": "Alignement",
+      "lineNumbers": "Numeros de ligne",
+      "valence": "Valence emotionnelle",
+      "energy": "Niveau d energie",
+      "negative": "Negative",
+      "positive": "Positive",
+      "depleted": "Epuise",
+      "charged": "Charge",
+      "scaleValue": "{{value}} sur 10",
+      "tags": "Etiquettes",
+      "addTag": "Ajouter l etiquette",
+      "removeTag": "Retirer l etiquette {{tag}}",
+      "preview": "Apercu",
+      "linkedGoal": "Objectif lie",
+      "noGoal": "Aucun objectif lie",
+      "context": "Contexte de vie",
+      "contextPlaceholder": "ex. : pendant une periode de changement…",
+      "discardTitle": "Abandonner cette entree ?",
+      "discardDescription": "Le texte ecrit sera perdu. Un brouillon a ete garde, mais il sera efface.",
+      "keepWriting": "Continuer a ecrire",
+      "discard": "Abandonner"
+    },
+    "prompt": {
+      "region": "Question du jour",
+      "label": "Question du jour",
+      "use": ">> Utiliser",
+      "dismiss": "Masquer la question du jour"
     }
   },
   "onboarding": {

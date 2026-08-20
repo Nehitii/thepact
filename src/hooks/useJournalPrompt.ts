@@ -28,16 +28,26 @@ export function useDailyJournalPrompt(userId: string | undefined) {
     enabled: !!userId,
     staleTime: 1000 * 60 * 60,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("journal_prompts" as any)
-        .select("id, prompt, category, language")
+      /* On rapportait TOUTES les questions actives de la langue pour en
+         tirer une seule. On compte, puis on va chercher celle du jour. */
+      const { count, error: erreurCompte } = await supabase
+        .from("journal_prompts" as never)
+        .select("id", { count: "exact", head: true })
         .eq("language", lang)
         .eq("is_active", true);
+      if (erreurCompte) throw erreurCompte;
+      if (!count) return null;
+
+      const idx = dayHash(new Date(), userId ?? "anon") % count;
+      const { data, error } = await supabase
+        .from("journal_prompts" as never)
+        .select("id, prompt, category, language")
+        .eq("language", lang)
+        .eq("is_active", true)
+        .order("id", { ascending: true })
+        .range(idx, idx);
       if (error) throw error;
-      const list = (data ?? []) as unknown as JournalPrompt[];
-      if (list.length === 0) return null;
-      const idx = dayHash(new Date(), userId ?? "anon") % list.length;
-      return list[idx];
+      return ((data ?? [])[0] as unknown as JournalPrompt) ?? null;
     },
   });
 }
