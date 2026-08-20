@@ -11,14 +11,15 @@ import { useEffect, useRef } from "react";
  * Tout est peint sur une seule toile, hors de React : la boucle lit des
  * references, elle ne declenche aucun rendu.
  *
- * Six ameliorations sont montees en options, pour pouvoir les comparer
- * avant de choisir :
- *   A « recit »  — quatre seuils, chacun avec son evenement
- *   B « matiere » — arcs electriques, debris, aurore
+ * Cinq comportements sont montes en options, retenus sur maquette :
+ *   A « recit »   — quatre seuils, chacun avec son evenement
  *   C « gravite » — la grille se courbe vers le coeur
  *   D « main »    — le coeur repond a l appui et au relachement
  *   E « final »   — effondrement inverse, blanc, souffle deformant
  *   F « apres »   — un astre calme reste apres le rituel
+ *
+ * « B — la matiere » (arcs, debris, aurore) reste ecrite mais eteinte :
+ * elle n a pas ete retenue.
  */
 
 export type PhaseCoeur =
@@ -230,7 +231,13 @@ export function CoeurStellaire({
       ctx.translate(ox, oy);
 
       // ── Le fond ──────────────────────────────────────────────
-      const intensiteFond = calme ? 0.12 : (0.10 + p * 0.34) * eclat;
+      /* Le fond couvre TOUT l ecran : son alpha doit rester borne. Sans
+         cette borne, l eclair du quatrieme seuil le poussait a 0,98 —
+         l ecran virait au blanc complet a 90 %. L eclair reste pour le
+         coeur et les anneaux, il ne prend pas le fond. */
+      const intensiteFond = calme
+        ? 0.12
+        : Math.min(0.4, (0.10 + p * 0.3) * (1 + eclatSeuil * 0.35));
       const halo = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(largeur, hauteur) * 0.8);
       halo.addColorStop(0, rgba(c, intensiteFond));
       halo.addColorStop(0.28, rgba(c, intensiteFond * 0.6));

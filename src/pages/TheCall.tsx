@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
 import { useTheCall } from "@/hooks/useTheCall";
-import { CoeurStellaire } from "@/components/thecall/CoeurStellaire";
+import { CoeurStellaire, type EvenementMain, type OptionsCoeur } from "@/components/thecall/CoeurStellaire";
 import { DSPageShell } from "@/components/ds";
 import { cn } from "@/lib/utils";
 
@@ -69,10 +69,34 @@ function useMouvementReduit() {
   return reduit;
 }
 
+/* La grille courbee repeint pres de deux mille points par image : sur un
+   petit ecran, on s en passe. */
+function useEcranEtroit() {
+  const [etroit, setEtroit] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 700px)").matches,
+  );
+  useEffect(() => {
+    const m = window.matchMedia("(max-width: 700px)");
+    const suivre = () => setEtroit(m.matches);
+    m.addEventListener("change", suivre);
+    return () => m.removeEventListener("change", suivre);
+  }, []);
+  return etroit;
+}
+
 export default function TheCall() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const immobile = useMouvementReduit();
+  const etroit = useEcranEtroit();
+
+  /* Les cinq ameliorations retenues. « La matiere » — arcs, debris,
+     aurore — n a pas ete gardee. */
+  const optionsCoeur = useMemo<OptionsCoeur>(
+    () => ({ recit: true, gravite: !etroit, main: true, final: true, apres: true }),
+    [etroit],
+  );
+  const evenementsCoeur = useRef<EvenementMain[]>([]);
 
   const {
     pacte, chargement, erreurLecture, pret, dejaFait,
@@ -210,6 +234,7 @@ export default function TheCall() {
     if (!tenable || tientRef.current || finiRef.current) return;
     if (erreurEcriture) reinitialiserErreur();
     setRelacheTot(false);
+    evenementsCoeur.current.push("appui");
     tientRef.current = true;
     departRef.current = performance.now();
     planifier();
@@ -225,6 +250,8 @@ export default function TheCall() {
     cancelAnimationFrame(rafRef.current);
 
     if (progresRef.current > 0.05) {
+      /* Lacher trop tot n est pas neutre : les anneaux se dispersent. */
+      evenementsCoeur.current.push("rupture");
       setRelacheTot(true);
       setTimeout(() => setRelacheTot(false), 2500);
     }
@@ -288,7 +315,14 @@ export default function TheCall() {
         className="rit h-[100dvh] bg-background overflow-hidden flex flex-col relative text-foreground select-none"
       >
         {/* Le reacteur, centre sur la zone de prise */}
-        <CoeurStellaire progres={progresRef} phase={phase} immobile={immobile} cible={boutonRef} />
+        <CoeurStellaire
+          progres={progresRef}
+          phase={phase}
+          immobile={immobile}
+          cible={boutonRef}
+          options={optionsCoeur}
+          evenements={evenementsCoeur}
+        />
 
         {/* Le poste : trame, equerres, rails */}
         <span className="rit-trame" aria-hidden="true" />
@@ -397,19 +431,7 @@ export default function TheCall() {
                 aria-describedby="rit-etat"
                 className={cn("rit-prise touch-none", verrouille && "est-verrouille")}
               >
-                {verrouille ? (
-                  <span className="rit-verrou">
-                    <Lock className="w-12 h-12" aria-hidden="true" />
-                    <span className="rit-verrou-titre">{t("thecall.locked")}</span>
-                    {pacte && (
-                      <span className="rit-verrou-mesures">
-                        <span><b>{serie}</b>{t("thecall.streakShort")}</span>
-                        <span className="rit-sep" aria-hidden="true" />
-                        <span><b>{total}</b>{t("thecall.callsShort")}</span>
-                      </span>
-                    )}
-                  </span>
-                ) : (
+                {verrouille ? null : (
                   <span className="rit-etiquette">
                     <Zap className="rit-eclair w-14 h-14" aria-hidden="true" />
                     <span className="rit-compte" ref={compteRef} />
@@ -443,9 +465,22 @@ export default function TheCall() {
           )}
 
           {verrouille && (
-            <button type="button" onClick={() => navigate("/")} className="rit-outil est-large">
-              {t("thecall.returnHome")}
-            </button>
+            <div className="rit-verrou">
+              <span className="rit-verrou-titre">
+                <Lock className="w-3.5 h-3.5" aria-hidden="true" />
+                {t("thecall.locked")}
+              </span>
+              {pacte && (
+                <span className="rit-verrou-mesures">
+                  <span><b>{serie}</b>{t("thecall.streakShort")}</span>
+                  <span className="rit-sep" aria-hidden="true" />
+                  <span><b>{total}</b>{t("thecall.callsShort")}</span>
+                </span>
+              )}
+              <button type="button" onClick={() => navigate("/")} className="rit-outil est-large">
+                {t("thecall.returnHome")}
+              </button>
+            </div>
           )}
 
           {!verrouille && (
@@ -478,10 +513,9 @@ export default function TheCall() {
            avec la charge. */
         .rit-trame {
           position: absolute; inset: 0; z-index: 1; pointer-events: none;
-          background:
-            repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.014) 2px 4px),
-            linear-gradient(hsl(var(--ds-accent-primary) / 0.03) 1px, transparent 1px) 0 0 / 100% 34px,
-            linear-gradient(90deg, hsl(var(--ds-accent-primary) / 0.03) 1px, transparent 1px) 0 0 / 40px 100%;
+          /* Plus de grille ici : la toile la dessine, courbee vers le
+             coeur. Il ne reste que les lignes de balayage. */
+          background: repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.016) 2px 4px);
           opacity: calc(0.5 + var(--rit-p) * 0.5);
         }
 
@@ -566,11 +600,7 @@ export default function TheCall() {
         .rit-prise:focus-visible {
           outline: 1px solid var(--rit-teinte); outline-offset: 14px;
         }
-        .rit-prise.est-verrouille {
-          cursor: default;
-          border: 1px solid hsl(var(--ds-accent-success) / 0.35);
-          background: hsl(var(--ds-accent-success) / 0.05);
-        }
+        .rit-prise.est-verrouille { cursor: default; }
         .rit-etiquette {
           display: flex; flex-direction: column; align-items: center; gap: 10px;
           pointer-events: none;
@@ -606,13 +636,14 @@ export default function TheCall() {
         @keyframes rit-respire { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.95; } }
 
         .rit-verrou {
-          display: flex; flex-direction: column; align-items: center; gap: 10px;
-          color: hsl(var(--ds-accent-success));
+          display: flex; flex-direction: column; align-items: center; gap: 12px;
         }
-        .rit-verrou svg { filter: drop-shadow(0 0 14px currentColor); }
         .rit-verrou-titre {
+          display: inline-flex; align-items: center; gap: 8px;
+          color: hsl(var(--ds-accent-success));
           font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
           letter-spacing: 0.3em; text-transform: uppercase;
+          text-shadow: 0 0 14px hsl(var(--ds-accent-success) / 0.5);
         }
         .rit-verrou-mesures {
           display: flex; align-items: center; gap: 10px; margin-top: 4px;
