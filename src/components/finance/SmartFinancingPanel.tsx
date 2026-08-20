@@ -109,6 +109,7 @@ export function SmartFinancingPanel({
           <b>
             <input
               type="text"
+                className="cy-saisie"
               inputMode="numeric"
               value={texteMois}
               onFocus={(e) => { setEdite("mois"); setSaisieMois(String(mois)); e.currentTarget.select(); }}
@@ -126,6 +127,7 @@ export function SmartFinancingPanel({
           <b>
             <input
               type="text"
+                className="cy-saisie"
               inputMode="decimal"
               value={texteMontant}
               onFocus={(e) => { setEdite("montant"); setSaisieMontant(parMois.toFixed(0)); e.currentTarget.select(); }}

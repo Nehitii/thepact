@@ -201,6 +201,7 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
           <Coins aria-hidden="true" />
           <input
             type="text"
+            className="cy-saisie"
             inputMode="decimal"
             value={saisie}
             onChange={(e) => changerMontant(e.target.value)}

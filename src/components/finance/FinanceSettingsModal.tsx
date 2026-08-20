@@ -105,6 +105,7 @@ export function FinanceSettingsModal({
             <label className="cy-reg-champ est-court">
               <input
                 type="text"
+                className="cy-saisie"
                 inputMode="numeric"
                 value={salaryDay}
                 onChange={(e) => {
@@ -138,6 +139,7 @@ export function FinanceSettingsModal({
               <label className="cy-reg-champ">
                 <input
                   type="text"
+                className="cy-saisie"
                   inputMode="decimal"
                   value={fundingTarget}
                   onChange={(e) => setFundingTarget(nombre(e.target.value))}
@@ -163,6 +165,7 @@ export function FinanceSettingsModal({
             <label className="cy-reg-champ">
               <input
                 type="text"
+                className="cy-saisie"
                 inputMode="decimal"
                 value={monthlyAllocation}
                 onChange={(e) => setMonthlyAllocation(nombre(e.target.value))}
@@ -183,6 +186,7 @@ export function FinanceSettingsModal({
             <label className="cy-reg-champ">
               <input
                 type="text"
+                className="cy-saisie"
                 inputMode="decimal"
                 value={apport}
                 onChange={(e) => setApport(nombre(e.target.value))}
