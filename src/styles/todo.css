@@ -45,10 +45,14 @@
    coupes n auraient aucun trait. On le dessine.
    ═══════════════════════════════════════════════════════════ */
 .tsk-plaque, .tsk-bloc, .tsk-outil, .tsk-groupe, .tsk-dlg, .tsk-vide {
-  position: relative;
   border: 0;
   clip-path: var(--tsk-biseau);
 }
+/* Le dialogue est deja place — en position FIXE — par Radix : lui
+   imposer « relative » le faisait retomber dans le flux, a moitie hors
+   de l ecran, et la page ne pouvait pas defiler jusqu a lui. Les autres
+   plaques, elles, ont besoin d un ancrage pour leur liseret. */
+.tsk-plaque, .tsk-bloc, .tsk-outil, .tsk-groupe, .tsk-vide { position: relative; }
 .tsk-plaque::after, .tsk-bloc::after, .tsk-outil::after,
 .tsk-groupe::after, .tsk-dlg::after, .tsk-vide::after {
   content: "";

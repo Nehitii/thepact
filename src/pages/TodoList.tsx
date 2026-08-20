@@ -20,6 +20,7 @@ import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
 import { FocusOverlay } from '@/components/todo/FocusOverlay';
 import { TodoCommandInfo } from '@/components/todo/TodoCommandInfo';
 import { useTranslation } from 'react-i18next';
+import { useDialogueConsole } from '@/hooks/useDialogueConsole';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -91,6 +92,12 @@ export default function TodoList() {
   const [formulaire, setFormulaire] = useState<'aucun' | 'creation' | 'edition'>('aucun');
   const [tacheFocus, setTacheFocus] = useState<TodoTask | null>(null);
   const [enVol, setEnVol] = useState<TodoTask | null>(null);
+
+  /* Radix centre sur la fenetre ; la page, elle, est a droite de la
+     barre de navigation. Et le degrade du bas ne sert que s il reste
+     a lire. */
+  const dlgCreation = useDialogueConsole(formulaire === 'creation');
+  const dlgEdition = useDialogueConsole(formulaire === 'edition' && tacheEditee !== null);
 
   useEffect(() => {
     try { localStorage.setItem(CLE_VUE, vue); } catch { /* sans consequence */ }
@@ -364,13 +371,16 @@ export default function TodoList() {
 
           {/* ── Les formulaires, seuls a rester modaux ─────── */}
           <Dialog open={formulaire === 'creation'} onOpenChange={(o) => !o && setFormulaire('aucun')}>
-            <DialogContent className="tsk tsk-dlg sm:max-w-md max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden">
+            <DialogContent
+              className="tsk tsk-dlg sm:max-w-md max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden"
+              style={{ ["--tsk-dlg-decalage" as string]: `${dlgCreation.decalage}px` } as React.CSSProperties}
+            >
               <div className="tsk-dlg-rail">
                 <b>TSK.01</b>
                 <i />
                 <DialogTitle asChild><span>{t('todo.create.title')}</span></DialogTitle>
               </div>
-              <div className="tsk-dlg-contenu tsk-form">
+              <div ref={dlgCreation.corpsRef} className={cn("tsk-dlg-contenu tsk-form", dlgCreation.entier && "est-entier")}>
                 <TodoGamifiedCreateForm
                   onSubmit={(input) => createTask.mutate(input, { onSuccess: () => setFormulaire('aucun') })}
                   onCancel={() => setFormulaire('aucun')}
@@ -384,13 +394,16 @@ export default function TodoList() {
             open={formulaire === 'edition' && tacheEditee !== null}
             onOpenChange={(o) => { if (!o) { setFormulaire('aucun'); setTacheEditee(null); } }}
           >
-            <DialogContent className="tsk tsk-dlg sm:max-w-md max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden">
+            <DialogContent
+              className="tsk tsk-dlg sm:max-w-md max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden"
+              style={{ ["--tsk-dlg-decalage" as string]: `${dlgEdition.decalage}px` } as React.CSSProperties}
+            >
               <div className="tsk-dlg-rail">
                 <b>TSK.01</b>
                 <i />
                 <DialogTitle asChild><span>{t('todo.editQuest')}</span></DialogTitle>
               </div>
-              <div className="tsk-dlg-contenu tsk-form">
+              <div ref={dlgEdition.corpsRef} className={cn("tsk-dlg-contenu tsk-form", dlgEdition.entier && "est-entier")}>
                 {tacheEditee && (
                   <TodoEditForm
                     task={tacheEditee}

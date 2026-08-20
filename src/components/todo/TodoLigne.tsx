@@ -9,6 +9,7 @@ import { useDateFnsLocale } from "@/i18n/useDateFnsLocale";
 import { cn } from "@/lib/utils";
 import { useSound } from "@/contexts/SoundContext";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useDialogueConsole } from "@/hooks/useDialogueConsole";
 import { useParticleEffect } from "@/components/ParticleEffect";
 import type { TodoTask } from "@/hooks/useTodoList";
 import {
@@ -66,6 +67,8 @@ export function TodoLigne({
   const { trigger, ParticleEffects } = useParticleEffect();
 
   const [confirmerSuppression, setConfirmerSuppression] = useState(false);
+  /* Le dialogue se centre sur la zone de contenu, pas sur la fenetre. */
+  const dlg = useDialogueConsole(confirmerSuppression);
   const [sortante, setSortante] = useState(false);
   const x = useMotionValue(0);
 
@@ -275,7 +278,10 @@ export function TodoLigne({
       </AnimatePresence>
 
       <AlertDialog open={confirmerSuppression} onOpenChange={setConfirmerSuppression}>
-        <AlertDialogContent className="tsk tsk-dlg border-0 bg-transparent p-0 shadow-none">
+        <AlertDialogContent
+          className="tsk tsk-dlg border-0 bg-transparent p-0 shadow-none"
+          style={{ ["--tsk-dlg-decalage" as string]: `${dlg.decalage}px` } as React.CSSProperties}
+        >
           <div className="tsk-dlg-rail">
             <b>TSK.01</b>
             <i />
