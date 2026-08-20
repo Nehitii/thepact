@@ -290,3 +290,241 @@
 .grille-eclat-pied .point { width: 6px; height: 6px; background: var(--teinte); }
 .grille-eclat.est-epingle { border-color: color-mix(in oklab, var(--or) 45%, var(--trait)); }
 .grille-eclat.est-epingle .grille-eclat-pied .epingle { color: var(--or); margin-left: auto; }
+
+/* ═══════════════════════════════════════════════════════════
+   D — ARASAKA : le dossier corporate, en clair
+   Le cyberpunk sans neon. Papier casse, encre noire, un seul
+   rouge de sceau. Regles fines, colonne de kana a la verticale,
+   titre condense. Une entree est un DOCUMENT.
+   ═══════════════════════════════════════════════════════════ */
+.arasaka {
+  --papier: #EDE9E1; --papier-2: #E3DED4; --encre: #14100D;
+  --encre-2: #4A443C; --encre-3: #7A7267; --rouge: #C8102E; --trait: #C9C2B6;
+  background: var(--papier); color: var(--encre);
+  border: 1px solid var(--trait); min-height: 640px;
+  display: grid; grid-template-columns: 54px minmax(0, 1fr);
+}
+.arasaka-marge {
+  border-right: 1px solid var(--trait);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: 16px 0; background: var(--papier-2);
+}
+.arasaka-kana {
+  writing-mode: vertical-rl; font-family: var(--apj-mono);
+  font-size: 10px; letter-spacing: 0.5em; text-transform: uppercase; color: var(--encre-3);
+}
+.arasaka-sceau {
+  width: 30px; height: 30px; border: 2px solid var(--rouge); color: var(--rouge);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--apj-mono); font-size: 11px; font-weight: 700;
+  transform: rotate(-8deg);
+}
+.arasaka-corps { min-width: 0; }
+.arasaka-tete {
+  display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap;
+  padding: 22px 26px 16px; border-bottom: 2px solid var(--encre);
+}
+.arasaka-tete h2 {
+  margin: 0; font-family: "Rajdhani", sans-serif; font-weight: 700;
+  font-size: 30px; letter-spacing: 0.16em; text-transform: uppercase; line-height: 1;
+}
+.arasaka-tete .ref {
+  font-family: var(--apj-mono); font-size: 10.5px; letter-spacing: 0.2em;
+  color: var(--encre-3); text-transform: uppercase;
+}
+.arasaka-tete .ref b { color: var(--rouge); font-weight: 400; }
+.arasaka-outils { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.arasaka-champ {
+  display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px;
+  background: var(--papier-2); border: 1px solid var(--trait);
+}
+.arasaka-champ input {
+  border: 0; background: none; outline: none; min-width: 0; width: 200px;
+  font-family: var(--apj-mono); font-size: 11.5px; color: var(--encre); letter-spacing: 0.06em;
+}
+.arasaka-champ input::placeholder { color: var(--encre-3); }
+.arasaka-bouton {
+  display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px;
+  font-family: var(--apj-mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--papier); background: var(--rouge); border: 0; cursor: pointer;
+}
+.arasaka-bouton:hover { background: #A80D26; }
+.arasaka-filtres {
+  display: flex; gap: 0; flex-wrap: wrap; padding: 0 26px;
+  border-bottom: 1px solid var(--trait);
+}
+.arasaka-filtre {
+  min-height: 44px; padding: 0 16px; background: none; border: 0; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  font-family: var(--apj-mono); font-size: 11px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.arasaka-filtre:hover { color: var(--encre); }
+.arasaka-filtre[aria-pressed="true"] { color: var(--encre); border-bottom-color: var(--rouge); }
+.arasaka-filtre b { color: var(--encre-3); font-weight: 400; margin-left: 6px; }
+
+.arasaka-doc { padding: 0 26px 26px; }
+.arasaka-entree { padding: 24px 0; border-bottom: 1px solid var(--trait); }
+.arasaka-entete {
+  display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 18px; align-items: start;
+}
+.arasaka-cote {
+  font-family: var(--apj-mono); font-size: 10.5px; letter-spacing: 0.12em;
+  color: var(--encre-3); text-transform: uppercase; line-height: 1.8;
+}
+.arasaka-cote b { display: block; color: var(--encre); font-weight: 700; }
+.arasaka-entree h3 {
+  margin: 0 0 10px; font-family: "Rajdhani", sans-serif; font-weight: 700;
+  font-size: 25px; line-height: 1.14; letter-spacing: 0.01em; color: var(--encre);
+}
+.arasaka-entree p { margin: 0; font-size: 15.5px; line-height: 1.7; color: var(--encre-2); max-width: 66ch; }
+.arasaka-bande {
+  display: inline-block; padding: 2px 9px; margin-bottom: 10px;
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--papier); background: var(--encre);
+}
+.arasaka-bande.est-rouge { background: var(--rouge); }
+.arasaka-pied {
+  display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.12em; color: var(--encre-3);
+}
+.arasaka-etiquette { border: 1px solid var(--trait); padding: 3px 8px; background: var(--papier-2); }
+.arasaka-mesure { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.arasaka-mesure i { display: block; width: 46px; height: 6px; background: var(--papier-2); border: 1px solid var(--trait); position: relative; }
+.arasaka-mesure i u { position: absolute; top: 0; bottom: 0; left: 0; background: var(--encre); }
+
+/* ═══════════════════════════════════════════════════════════
+   E — BRAINDANCE : la piste de relecture
+   Le journal comme un enregistrement qu on rembobine. Les
+   jours en colonne, trois pistes sous le texte : humeur,
+   energie, valence — et le jour lu s y allume.
+   ═══════════════════════════════════════════════════════════ */
+.bd {
+  --sol: #070609; --panneau: #0E0C13; --trait: #241E2E;
+  --rouge: #FF2E5B; --cyan: #35E6FF; --ambre: #FFB020;
+  --encre: #EDE9F2; --encre-2: #A296B4; --encre-3: #7A6E8C;
+  background: var(--sol); color: var(--encre); border: 1px solid var(--trait);
+  min-height: 640px; display: grid; grid-template-columns: 104px minmax(0, 1fr);
+}
+.bd-piste {
+  border-right: 1px solid var(--trait); padding: 14px 0;
+  background: linear-gradient(180deg, var(--panneau), var(--sol));
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.bd-piste-titre {
+  font-family: var(--apj-mono); font-size: 9px; letter-spacing: 0.26em;
+  text-transform: uppercase; color: var(--encre-3); margin-bottom: 8px;
+}
+.bd-jour {
+  width: 74px; min-height: 22px; border: 0; cursor: pointer; padding: 0;
+  display: flex; align-items: center; gap: 6px; background: none;
+}
+.bd-jour i { flex: 1; height: 3px; background: var(--teinte); opacity: 0.4; transition: opacity 140ms, height 140ms; }
+.bd-jour:hover i { opacity: 0.85; }
+.bd-jour[aria-pressed="true"] i { opacity: 1; height: 7px; box-shadow: 0 0 10px var(--teinte); }
+.bd-jour span {
+  font-family: var(--apj-mono); font-size: 9px; color: var(--encre-3); width: 30px; text-align: right;
+}
+.bd-jour[aria-pressed="true"] span { color: var(--encre); }
+
+.bd-scene { min-width: 0; display: flex; flex-direction: column; }
+.bd-barre {
+  display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+  border-bottom: 1px solid var(--trait);
+  font-family: var(--apj-mono); font-size: 10.5px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.bd-barre b { color: var(--rouge); font-weight: 400; }
+.bd-barre .fil { flex: 1; height: 1px; background: var(--trait); }
+.bd-bouton {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 14px;
+  font-family: var(--apj-mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--rouge); background: rgba(255,46,91,0.08); border: 1px solid rgba(255,46,91,0.4); cursor: pointer;
+}
+.bd-lecture { padding: 26px 30px 14px; flex: 1; min-width: 0; }
+.bd-lecture h3 {
+  margin: 0 0 6px; font-family: "Rajdhani", sans-serif; font-weight: 700;
+  font-size: 30px; line-height: 1.1; color: var(--encre);
+}
+.bd-lecture .horo {
+  font-family: var(--apj-mono); font-size: 10.5px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--encre-3); margin: 0 0 16px;
+}
+.bd-lecture .horo b { color: var(--teinte); font-weight: 400; }
+.bd-lecture p { margin: 0 0 13px; font-size: 15.5px; line-height: 1.75; color: var(--encre-2); max-width: 64ch; }
+
+.bd-pistes { border-top: 1px solid var(--trait); background: var(--panneau); padding: 13px 20px 16px; }
+.bd-rail { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 12px; margin-bottom: 9px; }
+.bd-rail:last-child { margin-bottom: 0; }
+.bd-rail-nom {
+  font-family: var(--apj-mono); font-size: 9.5px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.bd-onde { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+.bd-onde i {
+  flex: 1; background: var(--piste); opacity: 0.3; min-height: 2px;
+  transition: opacity 140ms;
+}
+.bd-onde i.est-actif { opacity: 1; box-shadow: 0 0 10px var(--piste); }
+
+/* ═══════════════════════════════════════════════════════════
+   F — ATLAS : la carte des jours
+   Ni liste ni cartes : une annee de cellules. On cherche par le
+   temps et par la couleur, on lit a droite.
+   ═══════════════════════════════════════════════════════════ */
+.atlas {
+  --sol: #05070B; --panneau: #0B1017; --trait: #1A2430;
+  --encre: #E6EDF5; --encre-2: #93A5B8; --encre-3: #6C7E90; --or: #FCEE0A;
+  background: var(--sol); color: var(--encre); border: 1px solid var(--trait);
+  min-height: 640px; display: grid; grid-template-columns: minmax(0, 1fr) 330px;
+}
+.atlas-carte { padding: 20px 22px; min-width: 0; }
+.atlas-tete {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 18px;
+  font-family: var(--apj-mono); font-size: 10.5px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.atlas-tete b { color: var(--or); font-weight: 400; }
+.atlas-tete .fil { flex: 1; height: 1px; background: var(--trait); }
+.atlas-bouton {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 34px; padding: 0 14px;
+  font-family: var(--apj-mono); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: #05070B; background: var(--or); border: 0; cursor: pointer;
+}
+.atlas-grille { display: grid; grid-template-columns: repeat(26, 1fr); gap: 3px; }
+.atlas-cellule {
+  aspect-ratio: 1; border: 0; padding: 0; cursor: pointer;
+  background: var(--c, #111A22);
+  transition: transform 140ms, box-shadow 140ms;
+}
+.atlas-cellule:hover { transform: scale(1.4); box-shadow: 0 0 12px var(--c); z-index: 2; }
+.atlas-cellule[aria-pressed="true"] { outline: 2px solid var(--or); outline-offset: 1px; }
+.atlas-legende {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-top: 18px;
+  font-family: var(--apj-mono); font-size: 9.5px; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.atlas-legende span { display: inline-flex; align-items: center; gap: 6px; }
+.atlas-legende i { width: 9px; height: 9px; }
+
+.atlas-lecteur {
+  border-left: 1px solid var(--trait); background: var(--panneau);
+  padding: 20px 20px 26px; display: flex; flex-direction: column; gap: 13px;
+}
+.atlas-lecteur-code {
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.atlas-lecteur-code b { color: var(--teinte); font-weight: 400; }
+.atlas-lecteur h3 {
+  margin: 0; font-family: "Rajdhani", sans-serif; font-weight: 700;
+  font-size: 23px; line-height: 1.16; color: var(--encre);
+}
+.atlas-lecteur p { margin: 0; font-size: 14.5px; line-height: 1.7; color: var(--encre-2); }
+.atlas-lecteur-pied {
+  margin-top: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-family: var(--apj-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--encre-3);
+}
+.atlas-etiquette { border: 1px solid var(--trait); padding: 3px 8px; color: var(--encre-2); }
