@@ -1713,7 +1713,7 @@
     "noResultsHint": "No achievement matches these filters. Widen the rarity or category."
   },
   "journal": {
-    "title": "JOURNAL",
+    "title": "Journal",
     "subtitle": "Your thoughts, documented",
     "newEntry": "New entry",
     "editEntry": "Edit Entry",
@@ -1832,6 +1832,23 @@
       "label": "Daily prompt",
       "use": ">> Use it",
       "dismiss": "Dismiss the daily prompt"
+    },
+    "spine": "Journal — Archive",
+    "dossier": "File",
+    "pieces_one": "{{count}} piece",
+    "pieces_other": "{{count}} pieces",
+    "write": "Write",
+    "words_one": "{{count}} word",
+    "words_other": "{{count}} words",
+    "valence": "Valence",
+    "filters": {
+      "all": "All"
+    },
+    "theme": {
+      "label": "Page light",
+      "auto": "Follow the app",
+      "light": "Light",
+      "dark": "Dark"
     }
   },
   "onboarding": {

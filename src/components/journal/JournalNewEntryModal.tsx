@@ -40,6 +40,8 @@ interface JournalNewEntryModalProps {
   editingEntry?: JournalEntry | null;
   /** Le texte du prompt du jour, quand l entree part de lui. */
   amorce?: string;
+  /** Le journal peut forcer sa lumiere : la fenetre la suit. */
+  theme?: "clair" | "sombre";
 }
 
 function StyleSection({ label, accent, children }: { label: string; accent: { hex: string }; children: React.ReactNode }) {
@@ -85,7 +87,7 @@ function ToggleSwitch({ value, onChange, label, accent }: { value: boolean; onCh
 
 const CLE_BROUILLON = (id?: string) => `journal-draft-${id ?? "new"}`;
 
-export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry, amorce }: JournalNewEntryModalProps) {
+export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry, amorce, theme = "sombre" }: JournalNewEntryModalProps) {
   const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -235,8 +237,8 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) demanderFermeture(); }}>
         <DialogContent
-          className="fixed left-0 top-0 z-[9999] w-screen max-w-none h-[100dvh] max-h-none translate-x-0 translate-y-0 flex flex-col overflow-hidden rounded-none border-0 p-0 gap-0 backdrop-blur-2xl [&>button]:hidden"
-          style={{ background: "var(--journal-overlay-bg)" }}
+          className="jr-dlg fixed left-0 top-0 z-[9999] w-screen max-w-none h-[100dvh] max-h-none translate-x-0 translate-y-0 flex flex-col overflow-hidden rounded-none border-0 p-0 gap-0 [&>button]:hidden"
+          data-jr={theme}
           onEscapeKeyDown={(e) => { if (sale) { e.preventDefault(); setConfirmerFermeture(true); } }}
           onInteractOutside={(e) => e.preventDefault()}
         >
@@ -626,7 +628,7 @@ export function JournalNewEntryModal({ open, onOpenChange, userId, editingEntry,
 
       {/* Ce qui est ecrit ne se jetait pas : il disparaissait. */}
       <AlertDialog open={confirmerFermeture} onOpenChange={setConfirmerFermeture}>
-        <AlertDialogContent className="z-[10000]">
+        <AlertDialogContent className="jr-dlg z-[10000]" data-jr={theme}>
           <AlertDialogHeader>
             <AlertDialogTitle>{t("journal.modal.discardTitle")}</AlertDialogTitle>
             <AlertDialogDescription>{t("journal.modal.discardDescription")}</AlertDialogDescription>

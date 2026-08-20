@@ -1,58 +1,55 @@
-import { useState, useMemo, useRef, useCallback, useEffect, memo } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "next-themes";
+import { Search, Plus, Sun, Moon, MonitorSmartphone } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJournalEntries, useDeleteJournalEntry, useJournalCounts } from "@/hooks/useJournal";
-import { useVisibleInterval } from "@/hooks/useVisibleInterval";
 import type { JournalEntry } from "@/types/journal";
-import { MOOD_OPTIONS, getAccent } from "@/types/journal";
+import { MOOD_OPTIONS } from "@/types/journal";
 import { JournalEntryCard } from "@/components/journal/JournalEntryCard";
 import { JournalNewEntryModal } from "@/components/journal/JournalNewEntryModal";
-import { SciFiDivider } from "@/components/journal/JournalDecorations";
 import { DailyPromptBanner } from "@/components/journal/DailyPromptBanner";
-import { DSPageShell, DSPageHeader } from "@/components/ds";
-import { Pin, Search } from "lucide-react";
+import { DSPageShell } from "@/components/ds";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { motion } from "framer-motion";
 
-/* LOG.01 — LE JOURNAL
+/* LOG.01 — LE DOSSIER
  *
- * La recherche et le filtre ne portaient que sur les pages deja
- * chargees : sur un journal de deux cents entrees, chercher un mot ecrit
- * il y a six mois ne rendait rien, et la page repondait « aucune
- * entree ». Ils partent en base, avec la pagination.
+ * Le journal etait un panneau neon parmi d autres. Il devient une piece
+ * d archive : papier casse, encre noire, un seul rouge — celui du sceau.
+ * Chaque entree est un document, avec sa cote a gauche, sa bande
+ * d humeur estampee et son texte a soixante-six caracteres.
  *
- * Les compteurs de l en-tete comptaient eux aussi les pages chargees.
- * Ils comptent maintenant ce qui existe.
+ * Le theme suit celui de l application, et la page peut le forcer : on
+ * n ecrit pas dans la meme lumiere le matin et le soir. Le choix local
+ * est garde, et « Auto » rend la main a l application.
  */
 
-// L horloge est isolee : elle bat a la seconde, la page ne la suit pas.
-const LiveClock = memo(function LiveClock() {
-  const [clock, setClock] = useState("");
-  const tick = useCallback(() => {
-    const n = new Date();
-    setClock(
-      `${String(n.getHours()).padStart(2, "0")}:${String(n.getMinutes()).padStart(2, "0")}:${String(n.getSeconds()).padStart(2, "0")}`,
-    );
-  }, []);
-  useEffect(() => { tick(); }, [tick]);
-  useVisibleInterval(tick, 1000);
-  return (
-    <>
-      {clock.split(":").map((t, i) => (
-        <div key={i} style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(191,90,242,0.55)", letterSpacing: "0.1em", writingMode: "vertical-rl" as const }}>
-          {t}
-        </div>
-      ))}
-    </>
-  );
-});
+type Lumiere = "auto" | "clair" | "sombre";
+const CLE_LUMIERE = "vowpact.journal.lumiere";
+
+function lumiereInitiale(): Lumiere {
+  try {
+    const v = localStorage.getItem(CLE_LUMIERE) as Lumiere | null;
+    if (v === "clair" || v === "sombre" || v === "auto") return v;
+  } catch { /* stockage indisponible */ }
+  return "auto";
+}
 
 export default function Journal() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { resolvedTheme } = useTheme();
+
+  const [lumiere, setLumiere] = useState<Lumiere>(lumiereInitiale);
+  useEffect(() => {
+    try { localStorage.setItem(CLE_LUMIERE, lumiere); } catch { /* sans consequence */ }
+  }, [lumiere]);
+  const theme = lumiere === "auto" ? (resolvedTheme === "light" ? "clair" : "sombre") : lumiere;
+
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [deletingEntryId, setDeletingEntryId] = useState<string | null>(null);
@@ -78,11 +75,9 @@ export default function Journal() {
   const { data: comptes } = useJournalCounts(user?.id);
   const deleteEntry = useDeleteJournalEntry();
 
-  /* La base a deja trie et filtre : la page ne fait plus que dérouler. */
   const entries = useMemo(() => data?.pages.flatMap((p) => p.data) ?? [], [data]);
   const filtreActif = !!rechercheEnvoyee || !!filterMood || epinglees;
 
-  // Defilement infini
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -98,16 +93,11 @@ export default function Journal() {
   );
   useEffect(() => () => observerRef.current?.disconnect(), []);
 
-  const handleEdit = (entry: JournalEntry) => {
-    setEditingEntry(entry);
-    setAmorce("");
-    setIsNewEntryOpen(true);
-  };
+  const handleEdit = (entry: JournalEntry) => { setEditingEntry(entry); setAmorce(""); setIsNewEntryOpen(true); };
   const handleDelete = async () => {
     if (!deletingEntryId || !user) return;
-    try {
-      await deleteEntry.mutateAsync({ id: deletingEntryId, userId: user.id });
-    } catch { /* le toast d erreur est porte par la mutation */ }
+    try { await deleteEntry.mutateAsync({ id: deletingEntryId, userId: user.id }); }
+    catch { /* le toast d erreur est porte par la mutation */ }
     setDeletingEntryId(null);
   };
   const handleCloseModal = (open: boolean) => {
@@ -115,226 +105,151 @@ export default function Journal() {
     if (!open) { setEditingEntry(null); setAmorce(""); }
   };
 
-  /* La page ne rendait rien du tout pendant l amorcage de la session. */
+  const LUMIERES: { id: Lumiere; icone: typeof Sun; cle: string }[] = [
+    { id: "auto", icone: MonitorSmartphone, cle: "journal.theme.auto" },
+    { id: "clair", icone: Sun, cle: "journal.theme.light" },
+    { id: "sombre", icone: Moon, cle: "journal.theme.dark" },
+  ];
+
   if (!user) {
     return (
-      <DSPageShell width="md">
-        <div className="flex items-center justify-center py-24">
-          <div className="font-mono ds-t-label tracking-[0.15em] text-muted-foreground">
-            {t("journal.loading")}
-          </div>
-        </div>
+      <DSPageShell width="lg">
+        <div className="jr-etat">{t("journal.loading")}</div>
       </DSPageShell>
     );
   }
 
   return (
-    <DSPageShell
-      width="md"
-      background={
-        <>
-          <div className="absolute inset-0" style={{ background: "var(--journal-bg)" }} />
-          <div className="journal-scanline" />
-          <div className="journal-noise" />
-          <div className="journal-grid-bg" />
-          <div className="journal-orb-left" />
-          <div className="journal-orb-right" />
-          {[
-            { top: 16, left: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
-            { top: 16, right: 16, borderTop: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
-            { bottom: 16, left: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderLeft: "1px solid rgba(0,255,224,0.35)" },
-            { bottom: 16, right: 16, borderBottom: "1px solid rgba(0,255,224,0.35)", borderRight: "1px solid rgba(0,255,224,0.35)" },
-          ].map((s, i) => (
-            <div key={i} className="absolute w-8 h-8 z-[9500] pointer-events-none dark:block hidden" style={s as React.CSSProperties} />
-          ))}
-        </>
-      }
-    >
-      <div className="fixed left-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2" aria-hidden="true">
-        <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(0,255,224,0.3))" }} />
-        {["◈", "◉", "◎", "◐", "◯", "◆"].map((s, i) => (
-          <div key={i} className="w-px h-5 relative" style={{ background: "rgba(0,255,224,0.1)" }}>
-            {i === 2 && (
-              <span className="absolute left-2 -top-1 whitespace-nowrap" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: "max(11px, 0.6875rem)", color: "rgba(0,255,224,0.45)" }}>
-                {s}
-              </span>
-            )}
-          </div>
-        ))}
-        <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(0,255,224,0.3))" }} />
-      </div>
-
-      <div className="fixed right-5 top-1/2 -translate-y-1/2 z-50 pointer-events-none hidden dark:lg:flex flex-col items-center gap-2" aria-hidden="true">
-        <div className="w-px h-20" style={{ background: "linear-gradient(to bottom, transparent, rgba(191,90,242,0.3))" }} />
-        <LiveClock />
-        <div className="w-px h-20" style={{ background: "linear-gradient(to top, transparent, rgba(191,90,242,0.3))" }} />
-      </div>
-
-      <DSPageHeader
-        variant="hud"
-        systemLabel={t("journal.systemLabel")}
-        title="CHRONO"
-        titleAccent="LOG"
-        badges={[
-          { label: t("journal.badges.entries"), value: comptes?.total ?? 0, color: "#00ffe0" },
-          { label: t("journal.badges.pinned"), value: comptes?.epinglees ?? 0, color: "#bf5af2" },
-          { label: t("journal.badges.month"), value: comptes?.ceMois ?? 0, color: "#ffd60a" },
-        ]}
-        actions={
-          <motion.button
-            onClick={() => { setEditingEntry(null); setAmorce(""); setIsNewEntryOpen(true); }}
-            whileHover={{ scale: 1.04, boxShadow: "0 0 40px hsl(var(--primary) / 0.25), 0 0 80px hsl(var(--primary) / 0.1)" }}
-            whileTap={{ scale: 0.97 }}
-            className="relative overflow-hidden inline-flex items-center gap-2.5 cursor-pointer transition-shadow duration-300 border border-primary text-primary rounded-[3px] font-orbitron ds-t-label font-semibold tracking-[0.2em]"
-            style={{ padding: "13px 36px", background: "transparent", boxShadow: "0 0 20px hsl(var(--primary) / 0.12), inset 0 0 20px hsl(var(--primary) / 0.03)" }}
-          >
-            <span className="text-[1rem] font-light font-mono">+</span>
-            {t("journal.newEntry")}
-          </motion.button>
-        }
-      />
-
-      <DailyPromptBanner
-        onUse={(prompt) => {
-          /* La question du jour etait jetee : la page ouvrait un editeur
-             vide. Elle arrive maintenant a destination. */
-          setEditingEntry(null);
-          setAmorce(prompt);
-          setIsNewEntryOpen(true);
-        }}
-      />
-
-      {/* BARRE */}
-      <div className="mb-2 flex flex-col gap-3">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/60" aria-hidden="true" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            aria-label={t("journal.searchLabel")}
-            placeholder={t("journal.searchPlaceholder")}
-            className="w-full outline-none transition-colors duration-200 font-mono ds-t-label tracking-[0.08em] text-foreground rounded-[3px]"
-            style={{
-              padding: "11px 16px 11px 36px", minHeight: "44px",
-              background: "var(--journal-input-bg)",
-              border: "1px solid var(--journal-input-border)",
-              caretColor: "hsl(var(--primary))",
-            }}
-            onFocus={(e) => (e.target.style.borderColor = "hsl(var(--primary) / 0.4)")}
-            onBlur={(e) => (e.target.style.borderColor = "var(--journal-input-border)")}
-          />
+    <DSPageShell width="lg" padding="tight">
+      <div className="jr" data-jr={theme}>
+        {/* La tranche : ce qu on lit sur le dos d un dossier range */}
+        <div className="jr-marge" aria-hidden="true">
+          <span className="jr-kana">{t("journal.spine")}</span>
+          <span className="jr-sceau">秘</span>
+          <span className="jr-kana">LOG.01</span>
         </div>
 
-        <div className="flex justify-center gap-1.5 flex-wrap" role="group" aria-label={t("journal.filterLabel")}>
-          <button
-            type="button"
-            aria-pressed={epinglees}
-            onClick={() => setEpinglees((v) => !v)}
-            className="journal-pastille"
-            style={{
-              background: epinglees ? "#bf5af218" : "var(--journal-input-bg)",
-              border: `1px solid ${epinglees ? "#bf5af260" : "var(--journal-input-border)"}`,
-              color: epinglees ? "#bf5af2" : "var(--journal-text-secondary)",
-            }}
-          >
-            <Pin className="w-3 h-3" aria-hidden="true" />
-            {t("journal.badges.pinned")}
-          </button>
-          {MOOD_OPTIONS.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              aria-pressed={filterMood === m.id}
-              onClick={() => setFilterMood(filterMood === m.id ? null : m.id)}
-              className="journal-pastille"
-              style={{
-                background: filterMood === m.id ? `${m.color}18` : "var(--journal-input-bg)",
-                border: `1px solid ${filterMood === m.id ? m.color + "60" : "var(--journal-input-border)"}`,
-                color: filterMood === m.id ? m.color : "var(--journal-text-secondary)",
-                boxShadow: filterMood === m.id ? `0 0 12px ${m.color}20` : "none",
-              }}
-            >
-              <span style={{ fontSize: "11px" }} aria-hidden="true">{m.sym}</span>
-              {t(`journal.moods.${m.id}`)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* ENTREES */}
-      <div className="pb-20 mt-2">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-24">
-            <div className="flex flex-col items-center gap-3">
-              <motion.div
-                className="w-6 h-6 rounded-full border-2 border-primary/20 border-t-primary"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-              />
-              <div className="font-mono ds-t-label text-muted-foreground tracking-[0.15em]">
-                {t("journal.loadingLogs")}
-              </div>
-            </div>
-          </div>
-        ) : entries.length === 0 ? (
-          <div className="text-center py-20" role="status">
-            <p className="font-mono ds-t-label text-muted-foreground tracking-[0.15em] m-0">
-              {filtreActif ? t("journal.noMatch") : t("journal.noEntries")}
+        <div className="jr-corps">
+          <header className="jr-tete">
+            <h1>{t("journal.title")}</h1>
+            <p className="jr-dossier">
+              {t("journal.dossier")} <b>{t("journal.pieces", { count: comptes?.total ?? 0 })}</b>
             </p>
-            {filtreActif && (
+
+            <div className="jr-outils">
+              <label className="jr-champ">
+                <Search className="w-3.5 h-3.5" aria-hidden="true" />
+                <input
+                  type="search"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  aria-label={t("journal.searchLabel")}
+                  placeholder={t("journal.searchPlaceholder")}
+                />
+              </label>
+
+              <div className="jr-bascule" role="group" aria-label={t("journal.theme.label")}>
+                {LUMIERES.map(({ id, icone: Icone, cle }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    aria-pressed={lumiere === id}
+                    onClick={() => setLumiere(id)}
+                    aria-label={t(cle)}
+                    title={t(cle)}
+                  >
+                    <Icone className="w-3.5 h-3.5" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+
               <button
                 type="button"
-                onClick={() => { setSearch(""); setFilterMood(null); setEpinglees(false); }}
-                className="mt-4 font-mono ds-t-label tracking-[0.15em] text-primary hover:underline min-h-[44px] px-3"
+                className="jr-bouton"
+                onClick={() => { setEditingEntry(null); setAmorce(""); setIsNewEntryOpen(true); }}
               >
-                {t("journal.clearFilters")}
+                <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                {t("journal.write")}
               </button>
+            </div>
+          </header>
+
+          <div className="jr-filtres" role="group" aria-label={t("journal.filterLabel")}>
+            <button
+              type="button"
+              className="jr-filtre"
+              aria-pressed={!filterMood && !epinglees}
+              onClick={() => { setFilterMood(null); setEpinglees(false); }}
+            >
+              {t("journal.filters.all")} <b>{comptes?.total ?? 0}</b>
+            </button>
+            <button
+              type="button"
+              className="jr-filtre"
+              aria-pressed={epinglees}
+              onClick={() => { setEpinglees((v) => !v); setFilterMood(null); }}
+            >
+              {t("journal.badges.pinned")} <b>{comptes?.epinglees ?? 0}</b>
+            </button>
+            {MOOD_OPTIONS.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className="jr-filtre"
+                aria-pressed={filterMood === m.id}
+                onClick={() => { setFilterMood(filterMood === m.id ? null : m.id); setEpinglees(false); }}
+              >
+                {t(`journal.moods.${m.id}`)}
+              </button>
+            ))}
+          </div>
+
+          <div className="jr-doc">
+            <DailyPromptBanner
+              onUse={(prompt) => {
+                /* La question du jour etait jetee : la page ouvrait un
+                   editeur vide. Elle arrive maintenant a destination. */
+                setEditingEntry(null); setAmorce(prompt); setIsNewEntryOpen(true);
+              }}
+            />
+
+            {isLoading ? (
+              <p className="jr-etat">{t("journal.loadingLogs")}</p>
+            ) : entries.length === 0 ? (
+              <div className="jr-etat" role="status">
+                <b>{filtreActif ? t("journal.noMatch") : t("journal.noEntries")}</b>
+                {filtreActif && (
+                  <button
+                    type="button"
+                    className="jr-bouton est-sobre"
+                    onClick={() => { setSearch(""); setFilterMood(null); setEpinglees(false); }}
+                  >
+                    {t("journal.clearFilters")}
+                  </button>
+                )}
+              </div>
+            ) : (
+              entries.map((entry) => (
+                <JournalEntryCard
+                  key={entry.id}
+                  entry={entry}
+                  onEdit={handleEdit}
+                  onDelete={(id) => setDeletingEntryId(id)}
+                />
+              ))
+            )}
+
+            <div ref={sentinelRef} className="h-10 flex items-center justify-center">
+              {isFetchingNextPage && <span className="jr-fin">{t("journal.loadingMore")}</span>}
+            </div>
+
+            {entries.length > 0 && !hasNextPage && (
+              <p className="jr-fin">{t("journal.endOfLog")}</p>
             )}
           </div>
-        ) : (
-          entries.map((entry, i) => {
-            const entryAccent = getAccent(entry.accent_color);
-            return (
-              <div key={entry.id}>
-                {i > 0 && (
-                  <div className="py-3">
-                    {/* Le libelle numerotait la position a l ecran, laquelle
-                        changeait avec le filtre. Il porte la date. */}
-                    <SciFiDivider
-                      color={entryAccent.hex}
-                      label={new Date(entry.created_at).toISOString().slice(0, 10).replace(/-/g, ".")}
-                    />
-                  </div>
-                )}
-                <JournalEntryCard entry={entry} onEdit={handleEdit} onDelete={(id) => setDeletingEntryId(id)} />
-              </div>
-            );
-          })
-        )}
-
-        <div ref={sentinelRef} className="h-10 flex items-center justify-center">
-          {isFetchingNextPage && (
-            <div className="font-mono ds-t-label text-muted-foreground tracking-[0.15em]">
-              {t("journal.loadingMore")}
-            </div>
-          )}
         </div>
-
-        {entries.length > 0 && !hasNextPage && (
-          <div className="mt-8 text-center">
-            <div className="flex items-center gap-3 justify-center">
-              <div className="h-px w-20 bg-gradient-to-r from-transparent to-primary/40" />
-              <span className="font-mono ds-t-label text-primary/70 tracking-[0.2em]">
-                {t("journal.endOfLog")}
-              </span>
-              <div className="h-px w-20 bg-gradient-to-r from-primary/40 to-transparent" />
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Recherche en cours, annoncee sans voler le focus */}
       <p className="sr-only" role="status" aria-live="polite">
         {isFetching && !isLoading ? t("journal.searching") : ""}
       </p>
@@ -345,28 +260,22 @@ export default function Journal() {
         userId={user.id}
         editingEntry={editingEntry}
         amorce={amorce}
+        theme={theme}
       />
 
       <AlertDialog open={!!deletingEntryId} onOpenChange={(o) => { if (!o) setDeletingEntryId(null); }}>
-        <AlertDialogContent className="border border-destructive/15 shadow-2xl rounded-xl bg-card">
+        <AlertDialogContent className={cn("jr-dlg")} data-jr={theme}>
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-mono tracking-wider text-foreground">
+            <AlertDialogTitle className="jr-titre" style={{ marginBottom: 0 }}>
               {t("journal.delete.title")}
             </AlertDialogTitle>
-            <AlertDialogDescription className="font-mono text-xs text-muted-foreground">
+            <AlertDialogDescription style={{ color: "var(--jr-encre-2)" }}>
               {t("journal.delete.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="gap-2">
-            <AlertDialogCancel className="rounded-lg font-mono text-xs bg-muted/50 border-border text-muted-foreground">
-              {t("journal.delete.cancel")}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="rounded-lg font-mono text-xs bg-destructive/10 border-destructive/20 text-destructive hover:bg-destructive/20"
-            >
-              {t("journal.delete.confirm")}
-            </AlertDialogAction>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="jr-bouton est-sobre">{t("journal.delete.cancel")}</AlertDialogCancel>
+            <AlertDialogAction className="jr-bouton" onClick={handleDelete}>{t("journal.delete.confirm")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

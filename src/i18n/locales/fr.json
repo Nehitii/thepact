@@ -1713,7 +1713,7 @@
     "noResultsHint": "Aucun succès ne correspond à ces filtres. Élargis la rareté ou la catégorie."
   },
   "journal": {
-    "title": "JOURNAL",
+    "title": "Journal",
     "subtitle": "Tes pensées, documentées",
     "newEntry": "Nouvelle entree",
     "editEntry": "Modifier l'entrée",
@@ -1832,6 +1832,23 @@
       "label": "Question du jour",
       "use": ">> Utiliser",
       "dismiss": "Masquer la question du jour"
+    },
+    "spine": "Journal — Archive",
+    "dossier": "Dossier",
+    "pieces_one": "{{count}} piece",
+    "pieces_other": "{{count}} pieces",
+    "write": "Rediger",
+    "words_one": "{{count}} mot",
+    "words_other": "{{count}} mots",
+    "valence": "Valence",
+    "filters": {
+      "all": "Toutes"
+    },
+    "theme": {
+      "label": "Lumiere de la page",
+      "auto": "Suivre l application",
+      "light": "Clair",
+      "dark": "Sombre"
     }
   },
   "onboarding": {

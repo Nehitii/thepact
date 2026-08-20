@@ -80,18 +80,252 @@
    le fond etait pose sur le <main> centre au lieu de la fenetre, et la
    grille au sol perdait sa perspective. */
 
-/* Les pastilles de filtre : 29 px de haut au doigt, et un texte a 1,9 de
-   contraste. Elles font desormais la taille d une cible. */
-.journal-pastille {
-  display: inline-flex; align-items: center; gap: 7px;
-  min-height: 44px; padding: 0 14px;
-  border-radius: 2px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 0.1em; text-transform: uppercase;
-  cursor: pointer;
-  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+
+/* ═══════════════════════════════════════════════════════════
+   LOG.01 — ARASAKA
+   Le journal cesse d etre un panneau neon pour devenir un
+   DOSSIER : papier casse, encre noire, un seul rouge — celui
+   du sceau. Sa version sombre n est pas une inversion mais un
+   autre materiau : une laque noire chaude, une encre d os, et
+   un rouge monte d un cran, parce qu a #C8102E un sceau perd
+   sa force sur du noir.
+   Le thème suit celui de l application ; la page peut le
+   forcer — on n ecrit pas dans la meme lumiere le matin et le
+   soir. C est « data-jr » qui tranche, jamais la classe
+   globale : l interrupteur local doit toujours gagner.
+   ═══════════════════════════════════════════════════════════ */
+[data-jr] {
+  --jr-papier: #EDE9E1;
+  --jr-papier-2: #E3DED4;
+  --jr-encre: #14100D;
+  --jr-encre-2: #4A443C;
+  /* #7A7267 donnait 3,91 sur ce papier : sous le seuil pour du
+     texte de dix pixels. */
+  --jr-encre-3: #635B51;
+  --jr-rouge: #C8102E;
+  --jr-trait: #C9C2B6;
+  --jr-mono: "JetBrains Mono", ui-monospace, monospace;
+  --jr-titre: "Rajdhani", system-ui, sans-serif;
+
+  /* Les composants du journal lisent deja ces jetons : les
+     redefinir suffit a les rhabiller entierement. */
+  --journal-bg: var(--jr-papier);
+  --journal-surface: var(--jr-papier-2);
+  --journal-surface-hover: var(--jr-papier-2);
+  --journal-border: var(--jr-trait);
+  --journal-border-hover: var(--jr-encre-3);
+  --journal-text-primary: var(--jr-encre);
+  --journal-text-secondary: var(--jr-encre-2);
+  --journal-text-dim: var(--jr-encre-3);
+  --journal-text-dimmer: var(--jr-encre-3);
+  --journal-input-bg: var(--jr-papier-2);
+  --journal-input-border: var(--jr-trait);
+  --journal-topbar-bg: var(--jr-papier-2);
+  --journal-overlay-bg: var(--jr-papier);
 }
-.journal-pastille:focus-visible {
-  outline: 2px solid hsl(var(--primary)); outline-offset: 2px;
+
+[data-jr="sombre"] {
+  --jr-papier: #0E0D0B;
+  --jr-papier-2: #16140F;
+  --jr-encre: #EDE7DA;
+  --jr-encre-2: #B6ADA0;
+  --jr-encre-3: #8B8174;
+  --jr-rouge: #FF2D4E;
+  --jr-trait: #2C2822;
 }
+
+/* ── La piece ──────────────────────────────────────────────── */
+.jr {
+  display: grid; grid-template-columns: 54px minmax(0, 1fr);
+  background: var(--jr-papier); color: var(--jr-encre);
+  border: 1px solid var(--jr-trait);
+  min-height: calc(100dvh - 96px);
+}
+[data-jr="sombre"].jr {
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.006) 3px 4px),
+    radial-gradient(120% 70% at 12% 0%, rgba(255,45,78,0.045), transparent 62%);
+}
+@media (max-width: 720px) { .jr { grid-template-columns: 1fr; } .jr-marge { display: none; } }
+
+.jr-marge {
+  border-right: 1px solid var(--jr-trait); background: var(--jr-papier-2);
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: 18px 0;
+}
+[data-jr="sombre"] .jr-marge { background-image: linear-gradient(180deg, rgba(255,255,255,0.02), transparent); }
+.jr-kana {
+  writing-mode: vertical-rl; font-family: var(--jr-mono);
+  font-size: max(10px, 0.625rem); letter-spacing: 0.5em;
+  text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-sceau {
+  width: 30px; height: 30px; border: 2px solid var(--jr-rouge); color: var(--jr-rouge);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--jr-mono); font-size: 12px; font-weight: 700;
+  transform: rotate(-8deg);
+}
+[data-jr="sombre"] .jr-sceau { box-shadow: 0 0 18px rgba(255,45,78,0.35); }
+
+.jr-corps { min-width: 0; }
+
+/* ── L en-tete ─────────────────────────────────────────────── */
+.jr-tete {
+  display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap;
+  padding: 22px 24px 16px; border-bottom: 2px solid var(--jr-encre);
+}
+[data-jr="sombre"] .jr-tete { border-bottom-color: var(--jr-encre-3); }
+.jr-tete h1 {
+  margin: 0; font-family: var(--jr-titre); font-weight: 700;
+  font-size: clamp(24px, 4vw, 32px); line-height: 1;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--jr-encre);
+}
+.jr-dossier {
+  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-dossier b { color: var(--jr-rouge); font-weight: 400; }
+.jr-outils { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.jr-champ {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 44px; padding: 0 12px;
+  background: var(--jr-papier-2); border: 1px solid var(--jr-trait);
+}
+.jr-champ:focus-within { border-color: var(--jr-encre-3); }
+.jr-champ svg { color: var(--jr-encre-3); flex-shrink: 0; }
+.jr-champ input {
+  min-width: 0; width: clamp(140px, 26vw, 240px);
+  background: none; border: 0; outline: none;
+  font-family: var(--jr-mono); font-size: max(11.5px, 0.72rem);
+  letter-spacing: 0.06em; color: var(--jr-encre);
+}
+.jr-champ input::placeholder { color: var(--jr-encre-3); }
+
+.jr-bouton {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 44px; padding: 0 16px;
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem); font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--jr-papier); background: var(--jr-rouge); border: 0; cursor: pointer;
+  transition: filter 140ms ease;
+}
+.jr-bouton:hover { filter: brightness(1.1); }
+.jr-bouton.est-sobre {
+  color: var(--jr-encre); background: var(--jr-papier-2); border: 1px solid var(--jr-trait);
+}
+.jr-bouton.est-sobre:hover { border-color: var(--jr-encre-3); }
+
+/* Le commutateur de lumiere, sur la page meme. */
+.jr-bascule { display: inline-flex; border: 1px solid var(--jr-trait); }
+.jr-bascule button {
+  min-height: 44px; min-width: 44px; padding: 0 10px;
+  background: none; border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--jr-encre-3); transition: background 140ms, color 140ms;
+}
+.jr-bascule button:hover { color: var(--jr-encre); }
+.jr-bascule button[aria-pressed="true"] { background: var(--jr-encre); color: var(--jr-papier); }
+
+/* ── Les onglets de filtre ─────────────────────────────────── */
+.jr-filtres {
+  display: flex; flex-wrap: wrap; padding: 0 24px;
+  border-bottom: 1px solid var(--jr-trait);
+}
+.jr-filtre {
+  min-height: 44px; padding: 0 14px; background: none; border: 0; cursor: pointer;
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--jr-encre-3);
+  transition: color 140ms, border-color 140ms;
+}
+.jr-filtre:hover { color: var(--jr-encre); }
+.jr-filtre[aria-pressed="true"] { color: var(--jr-encre); border-bottom-color: var(--jr-rouge); }
+.jr-filtre b { color: var(--jr-encre-3); font-weight: 400; margin-left: 6px; }
+.jr-filtre[aria-pressed="true"] b { color: var(--jr-rouge); }
+
+/* ── Le dossier ────────────────────────────────────────────── */
+.jr-doc { padding: 0 24px 28px; }
+.jr-entree { padding: 24px 0; border-bottom: 1px solid var(--jr-trait); }
+.jr-entete { display: grid; grid-template-columns: 118px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 640px) { .jr-entete { grid-template-columns: 1fr; gap: 10px; } }
+
+.jr-cote {
+  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--jr-encre-3); line-height: 1.85;
+}
+.jr-cote b { display: block; color: var(--jr-encre); font-weight: 700; }
+@media (max-width: 640px) { .jr-cote { display: flex; gap: 10px; flex-wrap: wrap; } .jr-cote b { display: inline; } }
+
+.jr-bande {
+  display: inline-flex; align-items: center; gap: 7px; padding: 3px 9px; margin-bottom: 10px;
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--jr-papier); background: var(--jr-encre);
+}
+.jr-bande.est-rouge { background: var(--jr-rouge); }
+[data-jr="sombre"] .jr-bande, [data-jr="sombre"] .jr-bande.est-rouge { color: #0E0D0B; }
+
+.jr-titre {
+  margin: 0 0 10px; font-family: var(--jr-titre); font-weight: 700;
+  font-size: clamp(19px, 2.4vw, 25px); line-height: 1.14;
+  letter-spacing: 0.01em; color: var(--jr-encre);
+}
+.jr-html { color: var(--jr-encre-2); font-size: max(15.5px, 0.97rem); line-height: 1.72; max-width: 66ch; }
+.jr-html p { margin: 0 0 0.85em; }
+.jr-html p:last-child { margin-bottom: 0; }
+.jr-html strong { color: var(--jr-encre); }
+.jr-html em { font-style: italic; }
+
+.jr-ligne { display: flex; gap: 14px; }
+.jr-numero {
+  flex-shrink: 0; min-width: 2ch; text-align: right;
+  font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  line-height: 1.72; color: var(--jr-rouge); opacity: 0.55; user-select: none;
+}
+
+.jr-pied {
+  display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.12em; color: var(--jr-encre-3);
+}
+.jr-etiquette {
+  border: 1px solid var(--jr-trait); padding: 3px 8px;
+  background: var(--jr-papier-2); color: var(--jr-encre-2);
+}
+.jr-mesure { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.jr-mesure i {
+  display: block; width: 46px; height: 6px; position: relative;
+  background: var(--jr-papier-2); border: 1px solid var(--jr-trait);
+}
+.jr-mesure i u { position: absolute; top: 0; bottom: 0; left: 0; background: var(--jr-encre); }
+
+.jr-menu {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 44px; min-height: 44px; margin-left: auto;
+  background: none; border: 1px solid transparent; color: var(--jr-encre-3);
+  cursor: pointer; transition: color 140ms, border-color 140ms, background 140ms;
+}
+.jr-menu:hover { color: var(--jr-encre); border-color: var(--jr-trait); background: var(--jr-papier-2); }
+
+/* ── Les etats ─────────────────────────────────────────────── */
+.jr-etat {
+  padding: 64px 24px; text-align: center;
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-etat b { display: block; color: var(--jr-encre); font-weight: 400; margin-bottom: 10px; }
+.jr-fin {
+  padding: 22px 24px 8px; text-align: center;
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.24em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+.jr-fin::before, .jr-fin::after { content: "———"; margin: 0 12px; color: var(--jr-trait); }
+
+/* ── La fenetre d ecriture reprend le meme papier ──────────── */
+.jr-dlg { background: var(--jr-papier) !important; color: var(--jr-encre); }
+[data-jr="sombre"].jr-dlg {
+  background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.006) 3px 4px) !important;
+}
+.jr-dlg .font-orbitron { font-family: var(--jr-titre), sans-serif; letter-spacing: 0.02em; }
