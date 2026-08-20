@@ -76,8 +76,7 @@ function Section({ n, titre, requis, variants, bouge, children }: {
   variants?: Variants; children: React.ReactNode;
 }) {
   return (
-    /* Les voisines glissent quand un volet apparait — sauf si le
-       systeme demande le calme. */
+    /* Les voisines glissent quand un volet s ouvre ou se ferme. */
     <motion.div variants={variants} layout={bouge ? "position" : false}>
       <p className="tsk-f-tete">
         <b>{n}</b>
