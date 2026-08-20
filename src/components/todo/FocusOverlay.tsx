@@ -1,9 +1,25 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Play, Pause, Check, Timer } from 'lucide-react';
-import { TodoTask } from '@/hooks/useTodoList';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { X, Play, Pause, Check } from "lucide-react";
+import { isPast, isToday } from "date-fns";
+import { useTranslation } from "react-i18next";
+import type { TodoTask } from "@/hooks/useTodoList";
+import { cn } from "@/lib/utils";
+
+/* LE POSTE DE FOCUS
+ *
+ * Il etait reste en dehors de la refonte : coins arrondis, pastilles
+ * genereuses, libelles anglais ecrits en dur — « HYPERFOCUS ACTIVE »,
+ * « ELAPSED », « Mission Complete » — la priorite affichee brute
+ * (« high »), et un bouton principal en texte primaire sur un fond
+ * primaire a vingt pour cent : bleu sur bleu, invisible.
+ *
+ * Il devient un poste : quatre equerres, une trame, un rail, et un
+ * compteur qui EST l element principal — avec sa jauge de soixante
+ * crans, une seconde par cran. La teinte est celle de la priorite de
+ * la tache, rouge si elle est en retard, et le bouton la porte pleine
+ * avec le fond de la page pour texte.
+ */
 
 interface FocusOverlayProps {
   task: TodoTask;
@@ -11,144 +27,155 @@ interface FocusOverlayProps {
   onExit: () => void;
 }
 
-function formatTime(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
+const enDeuxChiffres = (n: number) => String(n).padStart(2, "0");
+const referenceDe = (id: string) => "T." + id.replace(/[^0-9a-f]/gi, "").slice(-4).toUpperCase();
 
 export function FocusOverlay({ task, onComplete, onExit }: FocusOverlayProps) {
-  const [elapsed, setElapsed] = useState(0);
-  const [running, setRunning] = useState(true);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { t } = useTranslation();
+  const immobile = useReducedMotion();
+  const [ecoule, setEcoule] = useState(0);
+  const [enMarche, setEnMarche] = useState(true);
+  const sortieRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (running) {
-      intervalRef.current = setInterval(() => setElapsed(p => p + 1), 1000);
-    }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running]);
+    if (!enMarche) return;
+    const id = setInterval(() => setEcoule((p) => p + 1), 1000);
+    return () => clearInterval(id);
+  }, [enMarche]);
 
-  const toggle = useCallback(() => setRunning(p => !p), []);
-
-  // Lock body scroll
+  /* Un plein ecran doit se fermer par Echap, et prendre le clavier :
+     sans quoi le focus reste sur la page, derriere. */
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
+    const auClavier = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { e.preventDefault(); onExit(); }
+      if (e.key === " " && e.target === document.body) { e.preventDefault(); setEnMarche((v) => !v); }
+    };
+    window.addEventListener("keydown", auClavier);
+    sortieRef.current?.focus();
+    const avant = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", auClavier);
+      document.body.style.overflow = avant;
+    };
+  }, [onExit]);
+
+  const basculer = useCallback(() => setEnMarche((p) => !p), []);
+
+  const echeance = task.deadline ? new Date(task.deadline) : null;
+  const enRetard = !!echeance && isPast(echeance) && !isToday(echeance);
+
+  const minutes = Math.floor(ecoule / 60);
+  const secondes = ecoule % 60;
+
+  const bloc = immobile
+    ? {}
+    : { initial: { opacity: 0, y: 14 }, animate: { opacity: 1, y: 0 } };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/95 backdrop-blur-xl"
-      >
-        {/* Scan lines */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, hsl(var(--primary) / 0.1) 2px, hsl(var(--primary) / 0.1) 4px)',
-          }}
-        />
+    <motion.div
+      className="tsk tsk-foc"
+      role="dialog"
+      aria-modal="true"
+      aria-label={t("todo.focus.title")}
+      data-prio={task.priority}
+      data-retard={enRetard}
+      initial={immobile ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <span className="tsk-foc-equerres" aria-hidden="true" />
 
-        {/* Exit button */}
-        <button
-          onClick={onExit}
-          className="absolute top-6 right-6 p-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-card/50 transition-colors"
+      <div className="tsk-foc-rail">
+        <b>TSK.01</b>
+        <i />
+        <span className={cn("tsk-foc-etat", !enMarche && "est-arrete")}>
+          <s aria-hidden="true" />
+          {t("todo.focus.title")} · {enMarche ? t("todo.focus.running") : t("todo.focus.paused")}
+        </span>
+        <i />
+        <span>{referenceDe(task.id)}</span>
+      </div>
+
+      <button
+        ref={sortieRef}
+        type="button"
+        onClick={onExit}
+        aria-label={t("todo.focus.exit")}
+        className="tsk-outil est-icone tsk-foc-sortie"
+      >
+        <X className="w-4 h-4" aria-hidden="true" />
+      </button>
+
+      <motion.h1
+        className="tsk-foc-nom"
+        {...bloc}
+        transition={{ delay: 0.08, type: "spring", stiffness: 320, damping: 30 }}
+      >
+        {task.name}
+      </motion.h1>
+
+      <motion.div className="tsk-foc-badges" {...bloc} transition={{ delay: 0.16 }}>
+        <span className="tsk-badge">{t("todo.categories." + (task.category || "general"))}</span>
+        <span
+          className="tsk-badge est-teinte"
+          style={{ ["--tsk-teinte" as string]: "var(--tsk-foc-teinte)" } as React.CSSProperties}
         >
-          <X className="w-6 h-6" />
+          {t("todo.priorities." + task.priority)}
+        </span>
+        {enRetard && (
+          <span
+            className="tsk-badge est-teinte"
+            style={{ ["--tsk-teinte" as string]: "var(--tsk-retard)" } as React.CSSProperties}
+          >
+            {t("todo.taskCard.overdue")}
+          </span>
+        )}
+      </motion.div>
+
+      <motion.span className="tsk-foc-mesure" {...bloc} transition={{ delay: 0.24 }}>
+        {t("todo.focus.elapsed")}
+      </motion.span>
+
+      <motion.span
+        className={cn("tsk-foc-temps", !enMarche && "est-arrete")}
+        role="timer"
+        aria-live="off"
+        {...bloc}
+        transition={{ delay: 0.28 }}
+      >
+        {enDeuxChiffres(minutes)}<u aria-hidden="true">:</u>{enDeuxChiffres(secondes)}
+      </motion.span>
+
+      {/* Soixante crans, une seconde chacun : la minute en cours. */}
+      <motion.span
+        className={cn("tsk-foc-jauge", !enMarche && "est-arrete")}
+        aria-hidden="true"
+        {...bloc}
+        transition={{ delay: 0.34 }}
+      >
+        {Array.from({ length: 60 }, (_, i) => (
+          <i key={i} className={i < secondes ? "est-plein" : undefined} />
+        ))}
+      </motion.span>
+
+      <motion.div className="tsk-foc-actions" {...bloc} transition={{ delay: 0.42 }}>
+        <button
+          type="button"
+          onClick={basculer}
+          aria-label={enMarche ? t("todo.focus.pause") : t("todo.focus.resume")}
+          className="tsk-outil"
+        >
+          {enMarche
+            ? <Pause className="w-3.5 h-3.5" aria-hidden="true" />
+            : <Play className="w-3.5 h-3.5" aria-hidden="true" />}
+          {enMarche ? t("todo.focus.pause") : t("todo.focus.resume")}
         </button>
 
-        {/* Focus mode label */}
-        <motion.div
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="flex items-center gap-2 mb-8"
-        >
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-xs font-mono uppercase tracking-[0.3em] text-primary">HYPERFOCUS ACTIVE</span>
-          <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-        </motion.div>
-
-        {/* Task name */}
-        <motion.h1
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-          className="text-3xl md:text-5xl font-bold text-foreground text-center max-w-3xl px-8 leading-tight"
-        >
-          {task.name}
-        </motion.h1>
-
-        {/* Category & Priority badges */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex items-center gap-3 mt-6"
-        >
-          <span className="px-3 py-1 rounded-lg bg-card/50 border border-border/50 text-xs font-mono text-muted-foreground uppercase">
-            {task.category || 'general'}
-          </span>
-          <span className={cn(
-            "px-3 py-1 rounded-lg text-xs font-mono uppercase border",
-            task.priority === 'high' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
-            task.priority === 'low' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' :
-            'bg-blue-500/20 text-blue-300 border-blue-500/30'
-          )}>
-            {task.priority}
-          </span>
-        </motion.div>
-
-        {/* Timer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="mt-12 flex flex-col items-center gap-4"
-        >
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Timer className="w-4 h-4" />
-            <span className="text-xs font-mono uppercase tracking-wider">ELAPSED</span>
-          </div>
-          <span className="text-5xl md:text-7xl font-mono font-bold text-foreground tabular-nums tracking-wider"
-            style={{ textShadow: '0 0 30px hsl(var(--primary) / 0.3)' }}
-          >
-            {formatTime(elapsed)}
-          </span>
-
-          {/* Timer controls */}
-          <div className="flex items-center gap-3 mt-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggle}
-              className="w-12 h-12 rounded-full border border-primary/30 text-primary hover:bg-primary/10"
-            >
-              {running ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Complete button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-          className="mt-12"
-        >
-          <Button
-            onClick={onComplete}
-            className="px-8 py-6 text-lg font-mono uppercase tracking-wider bg-gradient-to-r from-primary/20 to-emerald-500/20 hover:from-primary/30 hover:to-emerald-500/30 text-primary border border-primary/40 hover:shadow-[0_0_30px_hsl(var(--primary)/0.3)] transition-all"
-          >
-            <Check className="w-5 h-5 mr-2" />
-            Mission Complete
-          </Button>
-        </motion.div>
+        <button type="button" onClick={onComplete} className="tsk-foc-terminer">
+          <Check className="w-4 h-4" aria-hidden="true" />
+          {t("todo.focus.complete")}
+        </button>
       </motion.div>
-    </AnimatePresence>
+    </motion.div>
   );
 }

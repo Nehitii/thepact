@@ -460,6 +460,16 @@
       "load": "Charge",
       "activeCount": "{{count}} / {{max}} ACTIVES",
       "title": "Mesures"
+    },
+    "focus": {
+      "title": "Hyperfocus",
+      "running": "En cours",
+      "paused": "En pause",
+      "elapsed": "Temps ecoule",
+      "pause": "Mettre en pause",
+      "resume": "Reprendre",
+      "complete": "Terminer",
+      "exit": "Quitter le focus"
     }
   },
   "goals": {

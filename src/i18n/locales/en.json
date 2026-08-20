@@ -460,6 +460,16 @@
       "load": "Load",
       "activeCount": "{{count}} / {{max}} ACTIVE",
       "title": "Readings"
+    },
+    "focus": {
+      "title": "Hyperfocus",
+      "running": "Running",
+      "paused": "Paused",
+      "elapsed": "Elapsed",
+      "pause": "Pause",
+      "resume": "Resume",
+      "complete": "Complete",
+      "exit": "Exit focus"
     }
   },
   "goals": {

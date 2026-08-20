@@ -1039,3 +1039,191 @@
 .tsk-f-corps::-webkit-scrollbar { width: 0; height: 0; display: none; }
 .tsk-f-corps.est-entier { -webkit-mask-image: none; mask-image: none; }
 .tsk-dlg-pied.est-colonne { flex-direction: column; align-items: stretch; gap: 9px; }
+
+/* ═══════════════════════════════════════════════════════════
+   LE POSTE DE FOCUS
+   Il etait reste en dehors de la refonte : coins arrondis,
+   pastilles genereuses, libelles anglais ecrits en dur — et un
+   bouton « Mission Complete » en texte primaire sur un fond
+   primaire a vingt pour cent, c est-a-dire bleu sur bleu.
+   Il devient un poste : quatre equerres, une trame, un rail, et
+   un compteur qui EST l element principal. La teinte est celle
+   de la priorite de la tache — rouge si elle est en retard.
+   ═══════════════════════════════════════════════════════════ */
+.tsk-foc {
+  --tsk-foc-teinte: var(--tsk-moy);
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 28px 20px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in oklab, var(--tsk-foc-teinte) 12%, transparent), transparent 62%),
+    linear-gradient(hsl(var(--ds-accent-primary) / 0.03) 1px, transparent 1px) 0 0 / 100% 30px,
+    linear-gradient(90deg, hsl(var(--ds-accent-primary) / 0.03) 1px, transparent 1px) 0 0 / 36px 100%,
+    hsl(var(--ds-bg-base) / 0.97);
+  backdrop-filter: blur(20px);
+  transition: background 420ms var(--ds-ease-out);
+}
+.tsk-foc[data-prio="low"]  { --tsk-foc-teinte: var(--tsk-basse); }
+.tsk-foc[data-prio="high"] { --tsk-foc-teinte: var(--tsk-haute); }
+.tsk-foc[data-retard="true"] { --tsk-foc-teinte: var(--tsk-retard); }
+
+/* Les lignes de balayage, et une passe lente qui descend. */
+.tsk-foc::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.4;
+  background: repeating-linear-gradient(0deg,
+    transparent 0 2px, hsl(var(--ds-accent-primary) / 0.05) 2px 4px);
+}
+.tsk-foc::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--tsk-foc-teinte) 9%, transparent), transparent) no-repeat;
+  background-size: 100% 180px;
+  animation: tsk-foc-passe 7s linear infinite;
+}
+@keyframes tsk-foc-passe {
+  0%   { background-position: 0 -220px; }
+  100% { background-position: 0 calc(100% + 220px); }
+}
+
+/* Quatre equerres : le cadre d un viseur, pas une boite. */
+.tsk-foc-equerres {
+  position: absolute; inset: 22px; pointer-events: none;
+  background:
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 0 0 / 26px 1px no-repeat,
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 0 0 / 1px 26px no-repeat,
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 100% 0 / 26px 1px no-repeat,
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 100% 0 / 1px 26px no-repeat,
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 0 100% / 26px 1px no-repeat,
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 0 100% / 1px 26px no-repeat,
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 100% 100% / 26px 1px no-repeat,
+    linear-gradient(var(--tsk-foc-teinte), var(--tsk-foc-teinte)) 100% 100% / 1px 26px no-repeat;
+  opacity: 0.55;
+}
+
+/* Le rail du haut : l identite, l etat, la reference. */
+.tsk-foc-rail {
+  /* Le bouton de sortie occupe le coin : le rail lui laisse la place,
+     sinon la reference passe dessous. */
+  position: absolute; top: 34px; left: 34px; right: 74px;
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase; color: var(--tsk-faible);
+  white-space: nowrap; overflow: hidden;
+}
+.tsk-foc-rail b { color: var(--tsk-foc-teinte); font-weight: 400; }
+.tsk-foc-rail i { flex: 1; min-width: 8px; height: 1px; background: var(--tsk-trait); }
+.tsk-foc-etat {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: var(--tsk-foc-teinte);
+}
+.tsk-foc-etat s {
+  width: 7px; height: 7px; text-decoration: none;
+  background: var(--tsk-foc-teinte);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  animation: tsk-foc-battement 1.8s ease-in-out infinite;
+}
+.tsk-foc-etat.est-arrete { color: var(--tsk-faible); }
+.tsk-foc-etat.est-arrete s { background: var(--tsk-faible); animation: none; }
+@keyframes tsk-foc-battement {
+  0%, 100% { opacity: 0.35; box-shadow: 0 0 0 currentColor; }
+  50%      { opacity: 1; box-shadow: 0 0 10px currentColor; }
+}
+
+/* Le nom de la tache. */
+.tsk-foc-nom {
+  position: relative; z-index: 2; margin: 0; max-width: 22ch;
+  font-family: var(--tsk-titre); font-weight: 900;
+  font-size: clamp(24px, 4.4vw, 46px); line-height: 1.04;
+  letter-spacing: 0.02em; text-align: center;
+  color: var(--tsk-texte);
+  text-wrap: balance;
+}
+.tsk-foc-badges {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+/* Le compteur : c est lui, l element principal. */
+.tsk-foc-mesure {
+  position: relative; z-index: 2; margin-top: clamp(28px, 6vh, 56px);
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.3em; text-transform: uppercase; color: var(--tsk-faible);
+}
+.tsk-foc-temps {
+  position: relative; z-index: 2;
+  margin-top: 10px;
+  font-family: var(--tsk-mono); font-weight: 700;
+  font-size: clamp(52px, 13vw, 116px); line-height: 1;
+  letter-spacing: 0.04em; font-variant-numeric: tabular-nums;
+  color: var(--tsk-texte);
+  text-shadow: 0 0 42px color-mix(in oklab, var(--tsk-foc-teinte) 45%, transparent);
+  transition: color 300ms var(--ds-ease-out), text-shadow 300ms var(--ds-ease-out);
+}
+.tsk-foc-temps.est-arrete {
+  color: var(--tsk-doux);
+  text-shadow: none;
+}
+/* Les deux points battent la seconde — et s arretent avec le compteur. */
+.tsk-foc-temps u { text-decoration: none; animation: tsk-foc-seconde 1s steps(1, end) infinite; }
+.tsk-foc-temps.est-arrete u { animation: none; opacity: 0.4; }
+@keyframes tsk-foc-seconde { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.25; } }
+
+/* La jauge : soixante crans, une seconde chacun. */
+.tsk-foc-jauge {
+  position: relative; z-index: 2;
+  display: grid; grid-template-columns: repeat(60, 1fr); gap: 2px;
+  width: min(560px, 76vw); margin-top: 22px;
+}
+.tsk-foc-jauge i {
+  height: 10px; background: var(--tsk-trait-fort);
+  transition: background 220ms var(--ds-ease-out), box-shadow 220ms var(--ds-ease-out);
+}
+.tsk-foc-jauge i.est-plein {
+  background: var(--tsk-foc-teinte);
+  box-shadow: 0 0 8px color-mix(in oklab, var(--tsk-foc-teinte) 55%, transparent);
+}
+.tsk-foc-jauge.est-arrete i.est-plein { box-shadow: none; opacity: 0.5; }
+
+/* Les commandes. */
+.tsk-foc-actions {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+  margin-top: clamp(26px, 5vh, 46px);
+}
+.tsk-foc-terminer {
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 52px; padding: 0 26px;
+  font-family: var(--tsk-mono); font-size: max(12px, 0.75rem); font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  /* Le bouton etait en texte primaire sur fond primaire a vingt pour
+     cent : bleu sur bleu. Le fond porte la teinte pleine, le texte
+     prend le fond de la page. */
+  color: hsl(var(--ds-bg-base));
+  background: var(--tsk-foc-teinte);
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  box-shadow: 0 0 34px color-mix(in oklab, var(--tsk-foc-teinte) 35%, transparent);
+  transition: filter 160ms var(--ds-ease-out), box-shadow 220ms var(--ds-ease-out);
+}
+.tsk-foc-terminer::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 20%, hsl(0 0% 100% / 0.4) 50%, transparent 80%);
+  transform: translateX(-110%);
+  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.tsk-foc-terminer:hover::after { transform: translateX(110%); }
+.tsk-foc-terminer:hover {
+  filter: brightness(1.12);
+  box-shadow: 0 0 48px color-mix(in oklab, var(--tsk-foc-teinte) 55%, transparent);
+}
+
+.tsk-foc-sortie { position: absolute; top: 26px; right: 26px; z-index: 3; }
+
+@media (pointer: coarse) {
+  .tsk-foc-terminer { min-height: 56px; }
+  .tsk-foc-jauge i { height: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tsk-foc::after, .tsk-foc-etat s, .tsk-foc-temps u { animation: none !important; }
+}
