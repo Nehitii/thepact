@@ -299,7 +299,9 @@
    ═══════════════════════════════════════════════════════════ */
 .arasaka {
   --papier: #EDE9E1; --papier-2: #E3DED4; --encre: #14100D;
-  --encre-2: #4A443C; --encre-3: #7A7267; --rouge: #C8102E; --trait: #C9C2B6;
+  /* #7A7267 donnait 3,91 sur ce papier — sous le seuil pour du texte
+     de dix pixels. */
+  --encre-2: #4A443C; --encre-3: #635B51; --rouge: #C8102E; --trait: #C9C2B6;
   background: var(--papier); color: var(--encre);
   border: 1px solid var(--trait); min-height: 640px;
   display: grid; grid-template-columns: 54px minmax(0, 1fr);
@@ -528,3 +530,50 @@
   font-family: var(--apj-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--encre-3);
 }
 .atlas-etiquette { border: 1px solid var(--trait); padding: 3px 8px; color: var(--encre-2); }
+
+/* ═══════════════════════════════════════════════════════════
+   D SOMBRE — la meme piece, en laque
+   Pas une inversion : un autre materiau. Le papier casse
+   devient un noir chaud, l encre devient de l os, et le rouge
+   monte d un cran — a #C8102E sur du noir, un sceau perd sa
+   force. Tout le reste tient parce que les couleurs etaient
+   deja des jetons.
+   ═══════════════════════════════════════════════════════════ */
+.arasaka.est-sombre {
+  --papier: #0E0D0B;
+  --papier-2: #16140F;
+  --encre: #EDE7DA;
+  --encre-2: #B6ADA0;
+  --encre-3: #8B8174;
+  --rouge: #FF2D4E;
+  --trait: #2C2822;
+  /* Un grain de laque, a peine : une surface noire pure fait
+     flotter le texte. */
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.006) 3px 4px),
+    radial-gradient(120% 70% at 12% 0%, rgba(255,45,78,0.045), transparent 62%);
+}
+.arasaka.est-sombre .arasaka-marge {
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+}
+.arasaka.est-sombre .arasaka-sceau {
+  box-shadow: 0 0 18px rgba(255,45,78,0.35);
+}
+.arasaka.est-sombre .arasaka-tete { border-bottom-color: var(--encre-3); }
+.arasaka.est-sombre .arasaka-bouton { color: #0E0D0B; }
+.arasaka.est-sombre .arasaka-bouton:hover { background: #FF4E68; }
+/* Le tampon reste un tampon : il s inverse avec les jetons. */
+.arasaka.est-sombre .arasaka-bande { color: #0E0D0B; }
+.arasaka.est-sombre .arasaka-bande.est-rouge { color: #0E0D0B; }
+
+/* Le commutateur clair / sombre du banc. */
+.arasaka-bascule {
+  display: inline-flex; align-items: center; gap: 0;
+  border: 1px solid var(--trait); margin-left: 8px;
+}
+.arasaka-bascule button {
+  min-height: 38px; padding: 0 12px; background: none; border: 0; cursor: pointer;
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.arasaka-bascule button[aria-pressed="true"] { background: var(--encre); color: var(--papier); }

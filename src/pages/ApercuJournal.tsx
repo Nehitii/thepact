@@ -234,9 +234,10 @@ function Grille() {
 /* ── D ─ ARASAKA ────────────────────────────────────────────── */
 function Arasaka() {
   const [humeur, setHumeur] = useState<string | null>(null);
+  const [sombre, setSombre] = useState(false);
   const entrees = humeur ? ENTREES.filter((e) => e.humeur === humeur) : ENTREES;
   return (
-    <div className="arasaka">
+    <div className={cn("arasaka", sombre && "est-sombre")}>
       <div className="arasaka-marge">
         <span className="arasaka-kana">Journal — Archive</span>
         <span className="arasaka-sceau">秘</span>
@@ -253,6 +254,10 @@ function Arasaka() {
               <input placeholder="RECHERCHER…" readOnly />
             </label>
             <button className="arasaka-bouton"><Plus className="w-3.5 h-3.5" />Rediger</button>
+            <span className="arasaka-bascule" role="group" aria-label="Theme">
+              <button type="button" aria-pressed={!sombre} onClick={() => setSombre(false)}>Clair</button>
+              <button type="button" aria-pressed={sombre} onClick={() => setSombre(true)}>Sombre</button>
+            </span>
           </div>
         </div>
 
