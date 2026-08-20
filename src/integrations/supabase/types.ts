@@ -10,58 +10,35 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.15"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
-      account_transfers: {
-        Row: {
-          amount: number
-          created_at: string | null
-          from_account_id: string
-          id: string
-          note: string | null
-          to_account_id: string
-          transfer_date: string | null
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string | null
-          from_account_id: string
-          id?: string
-          note?: string | null
-          to_account_id: string
-          transfer_date?: string | null
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string | null
-          from_account_id?: string
-          id?: string
-          note?: string | null
-          to_account_id?: string
-          transfer_date?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "account_transfers_from_account_id_fkey"
-            columns: ["from_account_id"]
-            isOneToOne: false
-            referencedRelation: "user_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "account_transfers_to_account_id_fkey"
-            columns: ["to_account_id"]
-            isOneToOne: false
-            referencedRelation: "user_accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       achievement_definitions: {
         Row: {
           bond_reward: number | null
@@ -365,66 +342,6 @@ export type Database = {
         }
         Relationships: []
       }
-      bank_transactions: {
-        Row: {
-          account_id: string | null
-          amount: number
-          category: string | null
-          created_at: string
-          description: string
-          id: string
-          life_area_id: string | null
-          note: string | null
-          source: string
-          transaction_date: string
-          transaction_type: string
-          user_id: string
-        }
-        Insert: {
-          account_id?: string | null
-          amount?: number
-          category?: string | null
-          created_at?: string
-          description: string
-          id?: string
-          life_area_id?: string | null
-          note?: string | null
-          source?: string
-          transaction_date?: string
-          transaction_type?: string
-          user_id: string
-        }
-        Update: {
-          account_id?: string | null
-          amount?: number
-          category?: string | null
-          created_at?: string
-          description?: string
-          id?: string
-          life_area_id?: string | null
-          note?: string | null
-          source?: string
-          transaction_date?: string
-          transaction_type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bank_transactions_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "user_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bank_transactions_life_area_id_fkey"
-            columns: ["life_area_id"]
-            isOneToOne: false
-            referencedRelation: "life_areas"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       blocked_users: {
         Row: {
           blocked_user_id: string
@@ -621,72 +538,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      categorization_rules: {
-        Row: {
-          category: string
-          created_at: string
-          id: string
-          is_active: boolean
-          match_type: string
-          pattern: string
-          priority: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          category: string
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          match_type?: string
-          pattern: string
-          priority?: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          category?: string
-          created_at?: string
-          id?: string
-          is_active?: boolean
-          match_type?: string
-          pattern?: string
-          priority?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      category_budgets: {
-        Row: {
-          budget_type: string
-          category: string
-          created_at: string | null
-          id: string
-          monthly_limit: number
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          budget_type?: string
-          category: string
-          created_at?: string | null
-          id?: string
-          monthly_limit?: number
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          budget_type?: string
-          category?: string
-          created_at?: string | null
-          id?: string
-          monthly_limit?: number
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
       }
       coach_conversations: {
         Row: {
@@ -1341,68 +1192,6 @@ export type Database = {
           },
         ]
       }
-      debts: {
-        Row: {
-          account_id: string | null
-          created_at: string
-          current_balance: number
-          debt_type: string
-          end_date: string | null
-          id: string
-          interest_rate: number
-          is_active: boolean
-          monthly_payment: number
-          name: string
-          notes: string | null
-          principal: number
-          start_date: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          account_id?: string | null
-          created_at?: string
-          current_balance?: number
-          debt_type?: string
-          end_date?: string | null
-          id?: string
-          interest_rate?: number
-          is_active?: boolean
-          monthly_payment?: number
-          name: string
-          notes?: string | null
-          principal?: number
-          start_date?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          account_id?: string | null
-          created_at?: string
-          current_balance?: number
-          debt_type?: string
-          end_date?: string | null
-          id?: string
-          interest_rate?: number
-          is_active?: boolean
-          monthly_payment?: number
-          name?: string
-          notes?: string | null
-          principal?: number
-          start_date?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "debts_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "user_accounts"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       decisions: {
         Row: {
           actual_outcome: string | null
@@ -1707,6 +1496,7 @@ export type Database = {
       }
       goal_cost_items: {
         Row: {
+          acquired_at: string | null
           category: string | null
           created_at: string
           goal_id: string
@@ -1717,6 +1507,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          acquired_at?: string | null
           category?: string | null
           created_at?: string
           goal_id: string
@@ -1727,6 +1518,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          acquired_at?: string | null
           category?: string | null
           created_at?: string
           goal_id?: string
@@ -3394,10 +3186,6 @@ export type Database = {
           custom_difficulty_name: string | null
           display_name: string | null
           displayed_badges: string[] | null
-          finance_budget_alert_pct: number | null
-          finance_csv_date_format: string | null
-          finance_csv_delimiter: string | null
-          finance_default_account_id: string | null
           font_size: number
           goal_unlock_code: string | null
           height: number | null
@@ -3447,10 +3235,6 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
-          finance_budget_alert_pct?: number | null
-          finance_csv_date_format?: string | null
-          finance_csv_delimiter?: string | null
-          finance_default_account_id?: string | null
           font_size?: number
           goal_unlock_code?: string | null
           height?: number | null
@@ -3500,10 +3284,6 @@ export type Database = {
           custom_difficulty_name?: string | null
           display_name?: string | null
           displayed_badges?: string[] | null
-          finance_budget_alert_pct?: number | null
-          finance_csv_date_format?: string | null
-          finance_csv_delimiter?: string | null
-          finance_default_account_id?: string | null
           font_size?: number
           goal_unlock_code?: string | null
           height?: number | null
@@ -3537,13 +3317,6 @@ export type Database = {
             columns: ["active_pact_id"]
             isOneToOne: false
             referencedRelation: "pacts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_finance_default_account_id_fkey"
-            columns: ["finance_default_account_id"]
-            isOneToOne: false
-            referencedRelation: "user_accounts"
             referencedColumns: ["id"]
           },
         ]
@@ -3840,62 +3613,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      savings_goals: {
-        Row: {
-          color: string | null
-          completed_at: string | null
-          created_at: string | null
-          current_amount: number
-          deadline: string | null
-          icon_emoji: string | null
-          id: string
-          is_completed: boolean | null
-          linked_account_id: string | null
-          name: string
-          target_amount: number
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          color?: string | null
-          completed_at?: string | null
-          created_at?: string | null
-          current_amount?: number
-          deadline?: string | null
-          icon_emoji?: string | null
-          id?: string
-          is_completed?: boolean | null
-          linked_account_id?: string | null
-          name: string
-          target_amount?: number
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          color?: string | null
-          completed_at?: string | null
-          created_at?: string | null
-          current_amount?: number
-          deadline?: string | null
-          icon_emoji?: string | null
-          id?: string
-          is_completed?: boolean | null
-          linked_account_id?: string | null
-          name?: string
-          target_amount?: number
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "savings_goals_linked_account_id_fkey"
-            columns: ["linked_account_id"]
-            isOneToOne: false
-            referencedRelation: "user_accounts"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       season_rewards: {
         Row: {
@@ -4211,116 +3928,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      sinking_fund_contributions: {
-        Row: {
-          amount: number
-          contribution_date: string
-          created_at: string
-          fund_id: string
-          id: string
-          note: string | null
-          source: string
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          contribution_date?: string
-          created_at?: string
-          fund_id: string
-          id?: string
-          note?: string | null
-          source?: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          contribution_date?: string
-          created_at?: string
-          fund_id?: string
-          id?: string
-          note?: string | null
-          source?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sinking_fund_contributions_fund_id_fkey"
-            columns: ["fund_id"]
-            isOneToOne: false
-            referencedRelation: "sinking_funds"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      sinking_funds: {
-        Row: {
-          account_id: string | null
-          auto_contribute: boolean
-          created_at: string
-          current_balance: number
-          goal_id: string | null
-          icon_emoji: string | null
-          id: string
-          is_active: boolean
-          monthly_contribution: number
-          name: string
-          notes: string | null
-          target_amount: number
-          target_date: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          account_id?: string | null
-          auto_contribute?: boolean
-          created_at?: string
-          current_balance?: number
-          goal_id?: string | null
-          icon_emoji?: string | null
-          id?: string
-          is_active?: boolean
-          monthly_contribution?: number
-          name: string
-          notes?: string | null
-          target_amount?: number
-          target_date?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          account_id?: string | null
-          auto_contribute?: boolean
-          created_at?: string
-          current_balance?: number
-          goal_id?: string | null
-          icon_emoji?: string | null
-          id?: string
-          is_active?: boolean
-          monthly_contribution?: number
-          name?: string
-          notes?: string | null
-          target_amount?: number
-          target_date?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "sinking_funds_account_id_fkey"
-            columns: ["account_id"]
-            isOneToOne: false
-            referencedRelation: "user_accounts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sinking_funds_goal_id_fkey"
-            columns: ["goal_id"]
-            isOneToOne: false
-            referencedRelation: "goals"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       special_offers: {
         Row: {
@@ -4690,60 +4297,6 @@ export type Database = {
           totp_enabled?: boolean
           totp_secret?: string | null
           updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_accounts: {
-        Row: {
-          account_type: string | null
-          balance: number | null
-          balance_date: string | null
-          bank_name: string | null
-          color: string | null
-          created_at: string | null
-          icon_emoji: string | null
-          icon_url: string | null
-          id: string
-          initial_balance: number | null
-          is_active: boolean | null
-          name: string
-          sort_order: number | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          account_type?: string | null
-          balance?: number | null
-          balance_date?: string | null
-          bank_name?: string | null
-          color?: string | null
-          created_at?: string | null
-          icon_emoji?: string | null
-          icon_url?: string | null
-          id?: string
-          initial_balance?: number | null
-          is_active?: boolean | null
-          name: string
-          sort_order?: number | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          account_type?: string | null
-          balance?: number | null
-          balance_date?: string | null
-          bank_name?: string | null
-          color?: string | null
-          created_at?: string | null
-          icon_emoji?: string | null
-          icon_url?: string | null
-          id?: string
-          initial_balance?: number | null
-          is_active?: boolean | null
-          name?: string
-          sort_order?: number | null
-          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -5227,6 +4780,7 @@ export type Database = {
         Args: { _delta?: number; _kind: string; _user_id: string }
         Returns: undefined
       }
+      a_un_second_facteur: { Args: never; Returns: boolean }
       accept_guild_invite: { Args: { p_invite_id: string }; Returns: Json }
       add_guild_xp: {
         Args: { p_amount: number; p_guild_id: string; p_reason: string }
@@ -5244,16 +4798,6 @@ export type Database = {
         Args: { p_cosmetic_id: string; p_user_id: string }
         Returns: Json
       }
-      apply_categorization_rules: { Args: { _limit?: number }; Returns: Json }
-      apply_sinking_contribution: {
-        Args: {
-          _amount: number
-          _fund_id: string
-          _note?: string
-          _source?: string
-        }
-        Returns: Json
-      }
       check_and_increment_ai_quota: {
         Args: { _daily_limit?: number; _function_name: string }
         Returns: Json
@@ -5263,31 +4807,6 @@ export type Database = {
         Returns: Json
       }
       claim_quest: { Args: { _quest_id: string }; Returns: Json }
-      compute_cashflow_projection: {
-        Args: { _months?: number }
-        Returns: {
-          cumulative_best: number
-          cumulative_realistic: number
-          cumulative_worst: number
-          debt_payments: number
-          expenses: number
-          income: number
-          month_start: string
-          net: number
-          sinking: number
-        }[]
-      }
-      compute_debt_schedule: {
-        Args: { _debt_id: string }
-        Returns: {
-          due_date: string
-          installment: number
-          interest: number
-          payment: number
-          principal_paid: number
-          remaining_balance: number
-        }[]
-      }
       create_guild_with_owner: {
         Args: {
           p_color?: string
@@ -5318,14 +4837,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      execute_account_transfer: {
-        Args: {
-          p_amount: number
-          p_from_account_id: string
-          p_note?: string
-          p_to_account_id: string
-        }
-        Returns: Json
+      enregistrer_appel: {
+        Args: { p_jour: string; p_pact_id: string }
+        Returns: {
+          deja_fait: boolean
+          jour: string
+          serie: number
+          total: number
+        }[]
       }
       get_accepted_friends: {
         Args: { p_user_id: string }
@@ -5690,6 +5209,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["user", "admin"],

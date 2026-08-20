@@ -1048,6 +1048,45 @@
       "deadline": "Deadline",
       "daysLeft": "{{count}} days left",
       "updateAmount": "Update amount"
+    },
+    "sections": {
+      "pacte": "The pact",
+      "arbitrage": "Arbitrage",
+      "arbitrageAide": "Put down an amount. The tool looks for the combination that closes the most goals — not the one that spends the most.",
+      "mois": "The month"
+    },
+    "cart": {
+      "total": "Pact cost",
+      "finance": "Already funded",
+      "restant": "Left to fund",
+      "progression": "{{pct}}% funded",
+      "parPieces": "Items acquired",
+      "parApport": "Declared contribution",
+      "pieces": "{{acquises}} of {{total}} items",
+      "parObjectifs": "Completed goals"
+    },
+    "arb": {
+      "chargement": "Reading the items…",
+      "videTitre": "No priced items",
+      "videAide": "Add priced items to your goals — they are what this tool works with.",
+      "montantLabel": "Amount to allocate",
+      "netMensuel": "This month's net",
+      "dejaMisDeCote": "Already set aside",
+      "toutBoucler": "Close everything",
+      "rienNeRentre": "Nothing fits this amount: the cheapest item costs more.",
+      "verdictBoucle_one": "You close 1 goal — {{pieces}} item(s).",
+      "verdictBoucle_other": "You close {{count}} goals — {{pieces}} item(s).",
+      "verdictEntame_one": "1 item, without closing a goal.",
+      "verdictEntame_other": "{{count}} items, without closing a goal.",
+      "reliquat": "{{montant}} left over.",
+      "boucle": "Closed",
+      "panier_one": "1 item",
+      "panier_other": "{{count}} items",
+      "depassement": "Over by {{montant}}",
+      "valider": "Mark as acquired",
+      "acquis_one": "1 item marked acquired",
+      "acquis_other": "{{count}} items marked acquired",
+      "acquisEchec": "Could not mark these items"
     }
   },
   "health": {

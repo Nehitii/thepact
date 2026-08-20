@@ -6,9 +6,11 @@ interface AnimatedNumberProps {
   currency: string;
   isPositive: boolean;
   className?: string;
+  /** Un solde se signe, un montant non : « +14 062 € » ne veut rien dire. */
+  showSign?: boolean;
 }
 
-export function AnimatedNumber({ value, currency, isPositive, className }: AnimatedNumberProps) {
+export function AnimatedNumber({ value, currency, isPositive, className, showSign = true }: AnimatedNumberProps) {
   const [displayValue, setDisplayValue] = useState(0);
   const prevValue = useRef(0);
 
@@ -37,7 +39,7 @@ export function AnimatedNumber({ value, currency, isPositive, className }: Anima
 
   return (
     <span className={className || `neu-hero-balance ${!isPositive ? 'negative' : ''}`}>
-      {isPositive && value >= 0 ? '+' : ''}{formatCurrency(displayValue, currency)}
+      {showSign && isPositive && value >= 0 ? '+' : ''}{formatCurrency(displayValue, currency)}
     </span>
   );
 }

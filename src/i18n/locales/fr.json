@@ -1048,6 +1048,45 @@
       "deadline": "Échéance",
       "daysLeft": "{{count}} jours restants",
       "updateAmount": "Mettre à jour le montant"
+    },
+    "sections": {
+      "pacte": "Le pacte",
+      "arbitrage": "Arbitrage",
+      "arbitrageAide": "Posez une somme. L'outil cherche la combinaison qui boucle le plus d'objectifs — pas celle qui dépense le plus.",
+      "mois": "Le mois"
+    },
+    "cart": {
+      "total": "Coût du pacte",
+      "finance": "Déjà financé",
+      "restant": "Reste à financer",
+      "progression": "Financé à {{pct}} %",
+      "parPieces": "Pièces acquises",
+      "parApport": "Apport déclaré",
+      "pieces": "{{acquises}} pièce(s) sur {{total}}",
+      "parObjectifs": "Objectifs terminés"
+    },
+    "arb": {
+      "chargement": "Lecture des pièces…",
+      "videTitre": "Aucune pièce chiffrée",
+      "videAide": "Ajoutez des articles chiffrés à vos objectifs : c'est la matière de cet outil.",
+      "montantLabel": "Somme à arbitrer",
+      "netMensuel": "Net du mois",
+      "dejaMisDeCote": "Déjà de côté",
+      "toutBoucler": "Tout boucler",
+      "rienNeRentre": "Rien ne rentre dans cette somme : la pièce la moins chère coûte davantage.",
+      "verdictBoucle_one": "Vous bouclez 1 objectif — {{pieces}} pièce(s).",
+      "verdictBoucle_other": "Vous bouclez {{count}} objectifs — {{pieces}} pièce(s).",
+      "verdictEntame_one": "1 pièce, sans boucler d'objectif.",
+      "verdictEntame_other": "{{count}} pièces, sans boucler d'objectif.",
+      "reliquat": "Il reste {{montant}}.",
+      "boucle": "Bouclé",
+      "panier_one": "1 pièce",
+      "panier_other": "{{count}} pièces",
+      "depassement": "Dépasse de {{montant}}",
+      "valider": "Marquer comme acquis",
+      "acquis_one": "1 pièce marquée acquise",
+      "acquis_other": "{{count}} pièces marquées acquises",
+      "acquisEchec": "Impossible de marquer ces pièces"
     }
   },
   "health": {

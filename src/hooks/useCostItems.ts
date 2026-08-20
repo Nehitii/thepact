@@ -8,6 +8,8 @@ export interface CostItem {
   price: number;
   category: string | null;
   step_id: string | null;
+  /** Nul tant que la piece n est pas achetee. */
+  acquired_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -73,6 +75,57 @@ export function useSaveCostItems() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["cost-items", variables.goalId] });
       queryClient.invalidateQueries({ queryKey: ["goals"] });
+    },
+  });
+}
+
+/* ── LES PIECES DU PACTE ────────────────────────────────────
+ *
+ * L onglet finance ne tient plus de comptes bancaires : il regarde le
+ * pacte. Or ce qui coute, dans un pacte, ce sont les pieces chiffrees
+ * accrochees aux objectifs. Les voici toutes ensemble, pour qu on
+ * puisse arbitrer entre elles au lieu de les decouvrir une par une.
+ */
+
+/** Toutes les pieces des objectifs donnes, achetees ou non. */
+export function usePactCostItems(goalIds: string[] | undefined) {
+  const cle = (goalIds ?? []).slice().sort().join(",");
+  return useQuery({
+    queryKey: ["cost-items-pacte", cle],
+    enabled: !!goalIds && goalIds.length > 0,
+    queryFn: async () => {
+      if (!goalIds || goalIds.length === 0) return [];
+      const { data, error } = await supabase
+        .from("goal_cost_items")
+        .select("*")
+        .in("goal_id", goalIds)
+        .order("price", { ascending: true });
+      if (error) throw error;
+      return (data || []) as CostItem[];
+    },
+  });
+}
+
+/** Marquer des pieces comme acquises, ou revenir dessus. */
+export function useAcquerirPieces() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ids, acquis }: { ids: string[]; acquis: boolean }) => {
+      if (ids.length === 0) return 0;
+      const { data, error } = await supabase
+        .from("goal_cost_items")
+        .update({ acquired_at: acquis ? new Date().toISOString() : null })
+        .in("id", ids)
+        .select("id");
+      if (error) throw error;
+      /* Une regle de securite qui bloque ne renvoie pas d erreur mais
+         zero ligne : sans ce controle, l echec passait pour un succes. */
+      if ((data?.length ?? 0) === 0) throw new Error("Aucune piece mise a jour");
+      return data.length;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["cost-items-pacte"] });
+      queryClient.invalidateQueries({ queryKey: ["cost-items"] });
     },
   });
 }

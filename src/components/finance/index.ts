@@ -4,7 +4,6 @@
 export { FinanceOverviewCard } from "./FinanceOverviewCard";
 export { FinanceSettingsModal } from "./FinanceSettingsModal";
 
-export { ProjectionsPanel } from "./ProjectionsPanel";
 export { SmartFinancingPanel } from "./SmartFinancingPanel";
 
 // AURA Neo-Banking layer
