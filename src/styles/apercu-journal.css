@@ -1,0 +1,292 @@
+/* MAQUETTE — trois themes pour le journal. A supprimer apres le choix. */
+
+.apj { --apj-mono: "JetBrains Mono", ui-monospace, monospace; }
+.apj-choix { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.apj-onglet {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 0 16px;
+  font-family: var(--apj-mono); font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: #8A97A6; background: #0C1016; border: 1px solid #1E242B;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  cursor: pointer;
+}
+.apj-onglet[aria-pressed="true"] { color: #05070A; background: #FCEE0A; border-color: #FCEE0A; }
+.apj-note {
+  margin: 14px 0 22px; max-width: 78ch; color: #93A2B4;
+  font-size: 15px; line-height: 1.55;
+}
+.apj-note b { color: #FCEE0A; font-weight: 600; }
+
+/* ═══════════════════════════════════════════════════════════
+   A — RELAIS : la fiche d archive
+   Un index a gauche, toujours la ; des dossiers a droite. La
+   couleur ne sert qu a deux choses : l action (jaune) et
+   l humeur (le dos de la fiche).
+   ═══════════════════════════════════════════════════════════ */
+.relais {
+  --or: #FCEE0A;
+  --sol: #05070A; --panneau: #0B0E13; --creux: #10151C;
+  --trait: #1C232C; --trait-fort: #2A3440;
+  --encre: #E7ECF2; --encre-2: #97A5B5; --encre-3: #63717F;
+  background: var(--sol); color: var(--encre);
+  display: grid; grid-template-columns: 218px minmax(0, 1fr); gap: 0;
+  border: 1px solid var(--trait);
+  min-height: 640px;
+}
+@media (max-width: 860px) { .relais { grid-template-columns: 1fr; } .relais-index { display: none; } }
+
+.relais-index {
+  border-right: 1px solid var(--trait);
+  background: linear-gradient(180deg, var(--panneau), var(--sol));
+  padding: 18px 0;
+  position: relative;
+}
+.relais-index::after {
+  content: ""; position: absolute; top: 0; right: -1px; width: 1px; height: 78px;
+  background: var(--or);
+}
+.relais-sig {
+  padding: 0 16px 14px;
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.26em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.relais-sig b { color: var(--or); font-weight: 400; }
+.relais-cat {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  min-height: 44px; padding: 0 16px;
+  font-family: var(--apj-mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--encre-2);
+  border-left: 2px solid transparent; background: none; cursor: pointer;
+  transition: background 140ms, color 140ms, border-color 140ms;
+}
+.relais-cat:hover { background: var(--creux); color: var(--encre); }
+.relais-cat[aria-pressed="true"] {
+  color: var(--encre); background: var(--creux); border-left-color: var(--teinte, var(--or));
+}
+.relais-cat i { width: 7px; height: 7px; background: var(--teinte, var(--encre-3)); flex-shrink: 0; }
+.relais-cat span { margin-left: auto; color: var(--encre-3); font-variant-numeric: tabular-nums; }
+.relais-separateur { height: 1px; background: var(--trait); margin: 14px 16px; }
+
+.relais-corps { min-width: 0; }
+.relais-barre {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid var(--trait);
+  background: var(--panneau);
+}
+.relais-recherche {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+  height: 40px; padding: 0 12px;
+  background: var(--sol); border: 1px solid var(--trait);
+}
+.relais-recherche input {
+  flex: 1; min-width: 0; background: none; border: 0; outline: none;
+  font-family: var(--apj-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--encre);
+}
+.relais-recherche input::placeholder { color: var(--encre-3); }
+.relais-action {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 40px; padding: 0 18px;
+  font-family: var(--apj-mono); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: #05070A; background: var(--or); border: 0; cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.relais-action:hover { filter: brightness(1.1); }
+
+.relais-flux { padding: 16px 18px 26px; display: flex; flex-direction: column; gap: 12px; }
+.relais-fiche {
+  position: relative; display: grid; grid-template-columns: 3px minmax(0, 1fr);
+  background: var(--panneau); border: 1px solid var(--trait);
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%);
+  transition: border-color 160ms, background 160ms;
+}
+.relais-fiche:hover { border-color: var(--trait-fort); background: var(--creux); }
+.relais-dos { background: linear-gradient(180deg, transparent, var(--teinte), transparent); }
+.relais-fiche-corps { padding: 14px 18px 16px; min-width: 0; }
+.relais-meta {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.relais-meta b { color: var(--teinte); font-weight: 400; }
+.relais-meta .sep { color: var(--trait-fort); }
+.relais-meta .epingle { color: var(--or); margin-left: auto; }
+.relais-titre {
+  margin: 9px 0 7px; font-family: "Rajdhani", sans-serif; font-weight: 700;
+  font-size: 21px; line-height: 1.15; letter-spacing: 0.01em; color: var(--encre);
+}
+.relais-texte {
+  margin: 0; color: var(--encre-2); font-size: 14.5px; line-height: 1.65;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.relais-pied { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.relais-tag {
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.1em;
+  color: var(--encre-2); background: var(--creux); border: 1px solid var(--trait);
+  padding: 3px 8px;
+}
+.relais-jauge { margin-left: auto; display: flex; align-items: center; gap: 5px; }
+.relais-jauge i {
+  width: 4px; height: 12px; background: var(--trait-fort);
+}
+.relais-jauge i.plein { background: var(--teinte); }
+
+/* ═══════════════════════════════════════════════════════════
+   B — FLUX : le terminal de conscience
+   Pas de cartes. Des transmissions separees par un filet, a
+   largeur de lecture. Le cyberpunk est dans la grammaire, pas
+   dans le decor.
+   ═══════════════════════════════════════════════════════════ */
+.flux {
+  --signal: #00E5D0;
+  --sol: #04060A; --trait: #16202A; --encre: #DCE6F0; --encre-2: #93A6B8; --encre-3: #5E7183;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.008) 3px 4px),
+    var(--sol);
+  color: var(--encre); border: 1px solid var(--trait);
+  min-height: 640px; padding: 0 0 30px;
+}
+.flux-tete {
+  position: sticky; top: 0; z-index: 5;
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 26px; border-bottom: 1px solid var(--trait);
+  background: rgba(4,6,10,0.92); backdrop-filter: blur(8px);
+  font-family: var(--apj-mono); font-size: 11px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.flux-tete b { color: var(--signal); font-weight: 400; }
+.flux-invite {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 9px;
+  height: 38px; padding: 0 12px;
+  background: rgba(0,229,208,0.04); border: 1px solid rgba(0,229,208,0.18);
+}
+.flux-invite span { color: var(--signal); }
+.flux-invite input {
+  flex: 1; min-width: 0; background: none; border: 0; outline: none;
+  font-family: var(--apj-mono); font-size: 12.5px; color: var(--encre); letter-spacing: 0.02em;
+}
+.flux-invite input::placeholder { color: var(--encre-3); }
+.flux-ajouter {
+  display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px;
+  font-family: var(--apj-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--signal); background: none; border: 1px solid var(--signal); cursor: pointer;
+}
+.flux-ajouter:hover { background: rgba(0,229,208,0.1); }
+
+.flux-metre { display: flex; gap: 1px; padding: 0 26px; margin-top: 18px; background: var(--trait); border: 1px solid var(--trait); }
+.flux-cran {
+  flex: 1; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  background: var(--sol); border: 0; cursor: pointer;
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--encre-3); transition: color 140ms, background 140ms;
+}
+.flux-cran:hover { color: var(--encre); }
+.flux-cran[aria-pressed="true"] { color: var(--teinte); background: color-mix(in oklab, var(--teinte) 10%, var(--sol)); }
+.flux-cran u { text-decoration: none; font-size: 13px; color: inherit; font-variant-numeric: tabular-nums; }
+
+.flux-liste { max-width: 68ch; margin: 0 auto; padding: 0 26px; }
+.flux-entree { padding: 30px 0; border-bottom: 1px solid var(--trait); }
+.flux-entree:first-of-type { padding-top: 26px; }
+.flux-code {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  font-family: var(--apj-mono); font-size: 10.5px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.flux-code b { color: var(--teinte); font-weight: 400; }
+.flux-code .fil { flex: 1; min-width: 12px; height: 1px; background: var(--trait); }
+.flux-titre {
+  margin: 12px 0 10px; font-family: "Rajdhani", sans-serif; font-weight: 700;
+  font-size: 26px; line-height: 1.12; color: var(--encre); letter-spacing: 0.005em;
+}
+.flux-texte { margin: 0; color: var(--encre-2); font-size: 16px; line-height: 1.78; }
+.flux-texte + .flux-texte { margin-top: 14px; }
+.flux-outils { display: flex; gap: 6px; margin-top: 16px; opacity: 0; transition: opacity 160ms; }
+.flux-entree:hover .flux-outils, .flux-entree:focus-within .flux-outils { opacity: 1; }
+.flux-outil {
+  font-family: var(--apj-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--encre-3); background: none; border: 1px solid var(--trait);
+  min-height: 32px; padding: 0 10px; cursor: pointer;
+}
+.flux-outil:hover { color: var(--signal); border-color: rgba(0,229,208,0.4); }
+
+/* ═══════════════════════════════════════════════════════════
+   C — GRILLE : la mosaique de memoire
+   Une frise des mois en haut, des eclats en dessous. On
+   retrouve une entree a l oeil, pas au mot.
+   ═══════════════════════════════════════════════════════════ */
+.grille {
+  --rose: #FF2E88; --cyan: #22D3EE; --or: #FCEE0A;
+  --sol: #06070C; --panneau: #0D0F17; --trait: #1B1F2C;
+  --encre: #ECEFF6; --encre-2: #9AA3B8; --encre-3: #646D82;
+  background:
+    radial-gradient(90% 60% at 15% 0%, rgba(255,46,136,0.07), transparent 60%),
+    radial-gradient(80% 55% at 90% 10%, rgba(34,211,238,0.06), transparent 60%),
+    var(--sol);
+  color: var(--encre); border: 1px solid var(--trait); min-height: 640px;
+}
+.grille-tete {
+  display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;
+  padding: 20px 22px 14px; border-bottom: 1px solid var(--trait);
+}
+.grille-titre {
+  margin: 0; font-family: "Orbitron", sans-serif; font-weight: 900;
+  font-size: 24px; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.grille-titre em { font-style: normal; color: var(--rose); }
+.grille-frise { display: flex; align-items: flex-end; gap: 3px; margin-left: auto; height: 46px; }
+.grille-mois {
+  width: 20px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: 0; cursor: pointer; padding: 0;
+}
+.grille-mois i {
+  width: 100%; background: linear-gradient(180deg, var(--cyan), rgba(34,211,238,0.25));
+  transition: background 160ms, transform 160ms;
+}
+.grille-mois:hover i { transform: scaleY(1.08); }
+.grille-mois[aria-pressed="true"] i { background: linear-gradient(180deg, var(--rose), rgba(255,46,136,0.3)); }
+.grille-mois span {
+  font-family: var(--apj-mono); font-size: 9px; letter-spacing: 0.08em; color: var(--encre-3);
+}
+.grille-mois[aria-pressed="true"] span { color: var(--rose); }
+
+.grille-mosaique {
+  padding: 18px 22px 26px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px; align-items: start;
+}
+.grille-eclat {
+  position: relative; text-align: left;
+  background: var(--panneau); border: 1px solid var(--trait);
+  padding: 15px 16px 16px; cursor: pointer; overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 13px), calc(100% - 13px) 100%, 0 100%);
+  transition: transform 200ms cubic-bezier(0.22,1,0.36,1), border-color 200ms;
+}
+.grille-eclat::before {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(150deg, color-mix(in oklab, var(--teinte) 22%, transparent), transparent 62%);
+  opacity: 0.5; transition: opacity 220ms;
+}
+.grille-eclat:hover { transform: translateY(-3px); border-color: color-mix(in oklab, var(--teinte) 50%, var(--trait)); }
+.grille-eclat:hover::before { opacity: 0.9; }
+.grille-eclat > * { position: relative; }
+.grille-eclat-code {
+  font-family: var(--apj-mono); font-size: 9.5px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--encre-3);
+}
+.grille-eclat-code b { color: var(--teinte); font-weight: 400; }
+.grille-eclat h3 {
+  margin: 8px 0 7px; font-family: "Rajdhani", sans-serif; font-weight: 700;
+  font-size: 17px; line-height: 1.2; color: var(--encre);
+}
+.grille-eclat p {
+  margin: 0; font-size: 13px; line-height: 1.55; color: var(--encre-2);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.grille-eclat-pied {
+  display: flex; align-items: center; gap: 8px; margin-top: 12px;
+  font-family: var(--apj-mono); font-size: 9.5px; letter-spacing: 0.12em; color: var(--encre-3);
+}
+.grille-eclat-pied .point { width: 6px; height: 6px; background: var(--teinte); }
+.grille-eclat.est-epingle { border-color: color-mix(in oklab, var(--or) 45%, var(--trait)); }
+.grille-eclat.est-epingle .grille-eclat-pied .epingle { color: var(--or); margin-left: auto; }

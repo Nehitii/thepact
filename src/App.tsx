@@ -12,6 +12,7 @@ import { routeImports } from "@/lib/prefetchRoutes";
 // Lazy-loaded pages
 const Auth = lazy(() => import("./pages/Auth"));
 const TwoFactor = lazy(() => import("./pages/TwoFactor"));
+const ApercuJournal = lazy(() => import("./pages/ApercuJournal")); // MAQUETTE
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const Home = lazy(routeImports.home);
 const TheCall = lazy(() => import("./pages/TheCall"));
@@ -84,6 +85,7 @@ function AppRoutes() {
     <Routes>
       {/* Public */}
       <Route path="/auth" element={<Auth />} />
+      <Route path="/apercu-journal" element={<ApercuJournal />} />
 
       {/* Protected without layout */}
       <Route path="/two-factor" element={<ProtectedRoute><TwoFactor /></ProtectedRoute>} />
