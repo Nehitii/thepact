@@ -286,7 +286,9 @@
         "semiannual": "Tous les 6 mois",
         "yearly": "Annuel"
       },
-      "new": "Nouvelle"
+      "new": "Nouvelle",
+      "missingName": "Une designation est requise",
+      "missingDate": "Une date est requise"
     },
     "categories": {
       "work": "Travail",

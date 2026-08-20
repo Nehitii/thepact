@@ -286,7 +286,9 @@
         "semiannual": "Every 6 months",
         "yearly": "Yearly"
       },
-      "new": "New"
+      "new": "New",
+      "missingName": "A name is required",
+      "missingDate": "A date is required"
     },
     "categories": {
       "work": "Work",

@@ -372,7 +372,7 @@ export default function TodoList() {
           {/* ── Les formulaires, seuls a rester modaux ─────── */}
           <Dialog open={formulaire === 'creation'} onOpenChange={(o) => !o && setFormulaire('aucun')}>
             <DialogContent
-              className="tsk tsk-dlg sm:max-w-md max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden"
+              className="tsk tsk-dlg sm:max-w-lg max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden"
               style={{ ["--tsk-dlg-decalage" as string]: `${dlgCreation.decalage}px` } as React.CSSProperties}
             >
               <div className="tsk-dlg-rail">
@@ -380,13 +380,13 @@ export default function TodoList() {
                 <i />
                 <DialogTitle asChild><span>{t('todo.create.title')}</span></DialogTitle>
               </div>
-              <div ref={dlgCreation.corpsRef} className={cn("tsk-dlg-contenu tsk-form", dlgCreation.entier && "est-entier")}>
-                <TodoGamifiedCreateForm
-                  onSubmit={(input) => createTask.mutate(input, { onSuccess: () => setFormulaire('aucun') })}
-                  onCancel={() => setFormulaire('aucun')}
-                  isLoading={createTask.isPending}
-                />
-              </div>
+              <TodoGamifiedCreateForm
+                onSubmit={(input) => createTask.mutate(input, { onSuccess: () => setFormulaire('aucun') })}
+                onCancel={() => setFormulaire('aucun')}
+                isLoading={createTask.isPending}
+                corpsRef={dlgCreation.corpsRef}
+                entier={dlgCreation.entier}
+              />
             </DialogContent>
           </Dialog>
 
@@ -395,7 +395,7 @@ export default function TodoList() {
             onOpenChange={(o) => { if (!o) { setFormulaire('aucun'); setTacheEditee(null); } }}
           >
             <DialogContent
-              className="tsk tsk-dlg sm:max-w-md max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden"
+              className="tsk tsk-dlg sm:max-w-lg max-h-[92vh] border-0 bg-transparent p-0 shadow-none [&>button]:hidden"
               style={{ ["--tsk-dlg-decalage" as string]: `${dlgEdition.decalage}px` } as React.CSSProperties}
             >
               <div className="tsk-dlg-rail">
@@ -403,19 +403,19 @@ export default function TodoList() {
                 <i />
                 <DialogTitle asChild><span>{t('todo.editQuest')}</span></DialogTitle>
               </div>
-              <div ref={dlgEdition.corpsRef} className={cn("tsk-dlg-contenu tsk-form", dlgEdition.entier && "est-entier")}>
-                {tacheEditee && (
-                  <TodoEditForm
-                    task={tacheEditee}
-                    onSubmit={(input: UpdateTaskInput) =>
-                      updateTask.mutate(input, {
-                        onSuccess: () => { setFormulaire('aucun'); setTacheEditee(null); },
-                      })}
-                    onCancel={() => { setFormulaire('aucun'); setTacheEditee(null); }}
-                    isLoading={updateTask.isPending}
-                  />
-                )}
-              </div>
+              {tacheEditee && (
+                <TodoEditForm
+                  task={tacheEditee}
+                  onSubmit={(input: UpdateTaskInput) =>
+                    updateTask.mutate(input, {
+                      onSuccess: () => { setFormulaire('aucun'); setTacheEditee(null); },
+                    })}
+                  onCancel={() => { setFormulaire('aucun'); setTacheEditee(null); }}
+                  isLoading={updateTask.isPending}
+                  corpsRef={dlgEdition.corpsRef}
+                  entier={dlgEdition.entier}
+                />
+              )}
             </DialogContent>
           </Dialog>
         </div>

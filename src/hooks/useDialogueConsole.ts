@@ -40,7 +40,7 @@ export function useDialogueConsole(ouvert: boolean) {
          telephone, la zone de contenu peut etre etroite au point que
          son centre n en soit plus un. On borne le rattrapage a ce que
          la largeur maximale du dialogue autorise. */
-      const largeur = Math.min(448, vue - 32);
+      const largeur = Math.min(520, vue - 32);
       const borne = Math.max(0, (vue - largeur) / 2 - 8);
       setDecalage(Math.round(Math.max(-borne, Math.min(borne, brut))));
     };
