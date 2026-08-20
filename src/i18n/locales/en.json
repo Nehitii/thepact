@@ -1849,6 +1849,20 @@
       "auto": "Follow the app",
       "light": "Light",
       "dark": "Dark"
+    },
+    "legend": {
+      "open": "What do the states mean?",
+      "short": "Legend",
+      "title": "State legend",
+      "hint": "One state per entry. It serves nobody but you: it is what you will find again when filtering."
+    },
+    "moodsDesc": {
+      "flow": "It moves by itself. The work happens without friction.",
+      "tension": "Something resists: friction, conflict, a wait that weighs.",
+      "static": "Nothing moves. Neither good nor bad — the flat day, written down so it does not vanish.",
+      "signal": "Something showed up: a hunch, a clue, a message worth keeping.",
+      "void": "Absence. Tiredness, withdrawal, the page you open without knowing what to put in it.",
+      "surge": "A surge: energy, appetite, a breakthrough to catch before it fades."
     }
   },
   "onboarding": {

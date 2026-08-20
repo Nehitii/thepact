@@ -1,7 +1,8 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "next-themes";
-import { Search, Plus, Sun, Moon, MonitorSmartphone } from "lucide-react";
+import { Search, Plus, Sun, Moon, MonitorSmartphone, Info } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/contexts/AuthContext";
 import { useJournalEntries, useDeleteJournalEntry, useJournalCounts } from "@/hooks/useJournal";
 import type { JournalEntry } from "@/types/journal";
@@ -121,11 +122,14 @@ export default function Journal() {
 
   return (
     <DSPageShell width="lg" padding="tight">
-      <div className="jr" data-jr={theme}>
+      <div className="jr" data-jr={theme} data-humeur={filterMood ?? undefined}>
         {/* La tranche : ce qu on lit sur le dos d un dossier range */}
         <div className="jr-marge" aria-hidden="true">
           <span className="jr-kana">{t("journal.spine")}</span>
           <span className="jr-sceau">秘</span>
+          {filterMood && (
+            <span className="jr-sceau-nom">{t(`journal.moods.${filterMood}`)}</span>
+          )}
           <span className="jr-kana">LOG.01</span>
         </div>
 
@@ -202,6 +206,35 @@ export default function Journal() {
                 {t(`journal.moods.${m.id}`)}
               </button>
             ))}
+
+            {/* Un dossier a toujours sa legende. */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className="jr-legende-ouvrir" aria-label={t("journal.legend.open")}>
+                  <Info className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span className="hidden sm:inline">{t("journal.legend.short")}</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="jr-legende" data-jr={theme}>
+                <p className="jr-legende-tete"><b>LOG.01</b>{t("journal.legend.title")}</p>
+                <div className="jr-legende-corps">
+                  {MOOD_OPTIONS.map((m) => (
+                    <div
+                      key={m.id}
+                      className="jr-legende-ligne"
+                      style={{ ["--jr-etat" as string]: `var(--jr-etat-${m.id})` } as React.CSSProperties}
+                    >
+                      <span className="jr-legende-sym" aria-hidden="true">{m.sym}</span>
+                      <span>
+                        <b className="jr-legende-nom">{t(`journal.moods.${m.id}`)}</b>
+                        <span className="jr-legende-def">{t(`journal.moodsDesc.${m.id}`)}</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="jr-legende-pied">{t("journal.legend.hint")}</p>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="jr-doc">

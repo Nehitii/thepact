@@ -1849,6 +1849,20 @@
       "auto": "Suivre l application",
       "light": "Clair",
       "dark": "Sombre"
+    },
+    "legend": {
+      "open": "Que veulent dire les etats ?",
+      "short": "Legende",
+      "title": "Legende des etats",
+      "hint": "Un etat par entree. Il ne sert a rien d autre qu a vous : c est ce que vous retrouverez en filtrant."
+    },
+    "moodsDesc": {
+      "flow": "Ca avance tout seul. Le travail se fait sans friction, on est dans le mouvement.",
+      "tension": "Quelque chose resiste : une contrariete, un conflit, une attente qui pese.",
+      "static": "Rien ne bouge. Ni bien ni mal — le jour plat, qu on note pour qu il ne disparaisse pas.",
+      "signal": "Quelque chose s est manifeste : une intuition, un indice, un message a ne pas perdre.",
+      "void": "L absence. Fatigue, retrait, la page qu on ouvre sans savoir quoi y mettre.",
+      "surge": "Un elan : energie, envie, une percee qu on veut retenir avant qu elle retombe."
     }
   },
   "onboarding": {

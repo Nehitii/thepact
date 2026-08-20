@@ -329,3 +329,106 @@
   background-image: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,0.006) 3px 4px) !important;
 }
 .jr-dlg .font-orbitron { font-family: var(--jr-titre), sans-serif; letter-spacing: 0.02em; }
+
+/* ═══════════════════════════════════════════════════════════
+   LE SCEAU PREND L ETAT
+   Le carre incline etait rouge en toutes circonstances. Quand
+   un etat est choisi, il en prend la couleur : le rouge reste
+   celui du dossier, l encre du sceau devient celle du filtre.
+   Les teintes d origine sont faites pour du neon — sur du
+   papier, elles tombent sous le seuil. Chaque etat a donc son
+   encre de papier et son encre de laque.
+   ═══════════════════════════════════════════════════════════ */
+.jr-sceau { border-color: var(--jr-sceau, var(--jr-rouge)); color: var(--jr-sceau, var(--jr-rouge)); }
+[data-jr="sombre"] .jr-sceau {
+  box-shadow: 0 0 18px color-mix(in oklab, var(--jr-sceau, var(--jr-rouge)) 45%, transparent);
+}
+
+/* Les encres d etat, une fois pour toutes : le sceau et la legende
+   y puisent. */
+[data-jr] {
+  --jr-etat-flow: #08636D; --jr-etat-tension: #B31036; --jr-etat-static: #7A5B00;
+  --jr-etat-signal: #7A2FB0; --jr-etat-void: #0A5AB8; --jr-etat-surge: #12662C;
+}
+[data-jr="sombre"] {
+  --jr-etat-flow: #00FFE0; --jr-etat-tension: #FF375F; --jr-etat-static: #FFD60A;
+  --jr-etat-signal: #BF5AF2; --jr-etat-void: #4DA3FF; --jr-etat-surge: #30D158;
+}
+
+[data-humeur="flow"]    { --jr-sceau: #08636D; }
+[data-humeur="tension"] { --jr-sceau: #B31036; }
+[data-humeur="static"]  { --jr-sceau: #7A5B00; }
+[data-humeur="signal"]  { --jr-sceau: #7A2FB0; }
+[data-humeur="void"]    { --jr-sceau: #0A5AB8; }
+[data-humeur="surge"]   { --jr-sceau: #12662C; }
+
+[data-jr="sombre"][data-humeur="flow"]    { --jr-sceau: #00FFE0; }
+[data-jr="sombre"][data-humeur="tension"] { --jr-sceau: #FF375F; }
+[data-jr="sombre"][data-humeur="static"]  { --jr-sceau: #FFD60A; }
+[data-jr="sombre"][data-humeur="signal"]  { --jr-sceau: #BF5AF2; }
+[data-jr="sombre"][data-humeur="void"]    { --jr-sceau: #4DA3FF; }
+[data-jr="sombre"][data-humeur="surge"]   { --jr-sceau: #30D158; }
+
+/* Le nom de l etat, sous le sceau : on comprend d ou vient la
+   couleur sans avoir a la deviner. */
+.jr-sceau-nom {
+  margin-top: 10px; writing-mode: vertical-rl;
+  font-family: var(--jr-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.32em; text-transform: uppercase;
+  color: var(--jr-sceau, var(--jr-rouge));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LA LEGENDE
+   Un dossier a toujours sa legende. Elle vit au bout de la
+   rangee de filtres, la ou la question se pose.
+   ═══════════════════════════════════════════════════════════ */
+.jr-legende-ouvrir {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-height: 44px; min-width: 44px; padding: 0 12px;
+  margin-left: auto;
+  background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--jr-encre-3);
+  cursor: pointer; transition: color 140ms;
+}
+.jr-legende-ouvrir:hover, .jr-legende-ouvrir[data-state="open"] { color: var(--jr-encre); }
+
+.jr-legende {
+  width: min(360px, calc(100vw - 32px));
+  padding: 0; border: 1px solid var(--jr-trait); border-radius: 0;
+  background: var(--jr-papier); color: var(--jr-encre);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+}
+.jr-legende-tete {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-bottom: 2px solid var(--jr-encre);
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.24em; text-transform: uppercase; color: var(--jr-encre-3);
+}
+[data-jr="sombre"] .jr-legende-tete { border-bottom-color: var(--jr-encre-3); }
+.jr-legende-tete b { color: var(--jr-rouge); font-weight: 400; }
+.jr-legende-corps { padding: 6px 0; }
+.jr-legende-ligne {
+  display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px;
+  padding: 9px 14px; border-bottom: 1px solid var(--jr-trait);
+}
+.jr-legende-ligne:last-child { border-bottom: 0; }
+.jr-legende-sym {
+  font-size: 15px; line-height: 1.2; text-align: center;
+  color: var(--jr-etat);
+}
+.jr-legende-nom {
+  display: block; font-family: var(--jr-mono); font-size: max(10.5px, 0.656rem);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--jr-etat);
+  margin-bottom: 3px;
+}
+.jr-legende-def {
+  display: block; font-size: max(13px, 0.8125rem); line-height: 1.5;
+  color: var(--jr-encre-2);
+}
+.jr-legende-pied {
+  padding: 10px 14px 12px; border-top: 1px solid var(--jr-trait);
+  font-family: var(--jr-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.1em; color: var(--jr-encre-3); line-height: 1.5;
+}
