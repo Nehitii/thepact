@@ -1080,7 +1080,11 @@
       "valider": "Mark as acquired",
       "acquis_one": "1 item marked acquired",
       "acquis_other": "{{count}} items marked acquired",
-      "acquisEchec": "Could not mark these items"
+      "acquisEchec": "Could not mark these items",
+      "horsPortee_one": "{{count}} goal out of reach",
+      "horsPortee_other": "{{count}} goals out of reach",
+      "afficher": "Show",
+      "masquer": "Hide"
     },
     "terminal": {
       "sous": "What the pact costs, what is paid, what is left to find — and the means to decide.",

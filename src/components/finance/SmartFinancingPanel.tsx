@@ -1,183 +1,166 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import { Slider } from '@/components/ui/slider';
-import { Input } from '@/components/ui/input';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { formatCurrency, getCurrencySymbol } from '@/lib/currency';
 import { differenceInMonths, addMonths, format } from 'date-fns';
-import { AlertCircle, CheckCircle, Calculator, Wallet, Calendar } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useFinanceSettings, useUpdateFinanceSettings } from '@/hooks/useFinance';
+
+/* L HORIZON
+ *
+ * Combien de mois pour boucler, ou combien par mois pour tenir une
+ * date. Une seule equation, dans les deux sens.
+ *
+ * Le panneau tenait 733 pixels sur les 1 190 de l ecran du pacte :
+ * cinq blocs empiles, chacun avec sa carte, son icone et son titre,
+ * pour un curseur et deux nombres. C est une bande.
+ *
+ * Deux choses ont saute en meme temps :
+ *
+ * — Il redemandait « l apport disponible » et l ecrivait dans le meme
+ *   reglage que la fenetre des parametres, sous un autre nom. Une
+ *   valeur, deux endroits, deux libelles.
+ *
+ * — Et il la soustrayait une SECONDE fois : « restant » sort deja du
+ *   cartouche apport deduit. Le montant a financer etait donc minore
+ *   des qu un apport etait declare. Le defaut ne se voyait pas tant
+ *   que l apport valait zero.
+ */
 
 interface SmartFinancingPanelProps {
+  /** Ce qui reste a trouver, apport deja deduit par le cartouche. */
   totalRemaining: number;
   projectEndDate: Date | null;
   currentMonthlyAllocation: number;
 }
 
-export function SmartFinancingPanel({ totalRemaining, projectEndDate, currentMonthlyAllocation }: SmartFinancingPanelProps) {
+const MAX_MOIS = 60;
+
+export function SmartFinancingPanel({
+  totalRemaining, projectEndDate, currentMonthlyAllocation,
+}: SmartFinancingPanelProps) {
   const { t } = useTranslation();
   const { currency } = useCurrency();
-  const { user } = useAuth();
-  const { data: financeSettings } = useFinanceSettings(user?.id);
-  const updateSettings = useUpdateFinanceSettings();
-  const [months, setMonths] = useState(12);
-  const [monthlyAmount, setMonthlyAmount] = useState(currentMonthlyAllocation);
-  const [existingBalance, setExistingBalance] = useState(0);
-  const [manualMonthsInput, setManualMonthsInput] = useState('');
-  const [manualAmountInput, setManualAmountInput] = useState('');
 
-  // Load persisted balance from profile
+  const [mois, setMois] = useState(12);
+  const [parMois, setParMois] = useState(currentMonthlyAllocation);
+  /* Les deux champs affichent la valeur, pas un indice grise : un
+     nombre en « placeholder » se lit comme un champ vide. Tant qu on y
+     tape, le texte est a l utilisateur ; des qu on en sort, il reprend
+     ce que l equation a calcule. */
+  const [edite, setEdite] = useState<"mois" | "montant" | null>(null);
+  const [saisieMois, setSaisieMois] = useState('');
+  const [saisieMontant, setSaisieMontant] = useState('');
+
+  const aFinancer = Math.max(0, totalRemaining);
+  const moisJusquAuTerme = projectEndDate ? differenceInMonths(projectEndDate, new Date()) : null;
+
+  const depuisMois = useCallback((n: number) => {
+    const borne = Math.max(1, Math.min(MAX_MOIS, n));
+    setMois(borne);
+    if (aFinancer > 0) setParMois(aFinancer / borne);
+  }, [aFinancer]);
+
+  const depuisMontant = useCallback((v: number) => {
+    if (v <= 0) return;
+    setParMois(v);
+    if (aFinancer > 0) setMois(Math.max(1, Math.min(MAX_MOIS, Math.ceil(aFinancer / v))));
+  }, [aFinancer]);
+
+  /* Le point de depart : l allocation si elle existe, douze mois sinon. */
   useEffect(() => {
-    if (financeSettings?.already_funded != null) {
-      setExistingBalance(financeSettings.already_funded);
+    if (aFinancer <= 0) return;
+    if (currentMonthlyAllocation > 0) {
+      setParMois(currentMonthlyAllocation);
+      setMois(Math.max(1, Math.min(MAX_MOIS, Math.ceil(aFinancer / currentMonthlyAllocation))));
+    } else {
+      setMois(12);
+      setParMois(aFinancer / 12);
     }
-  }, [financeSettings?.already_funded]);
+  }, [currentMonthlyAllocation, aFinancer]);
 
-  const today = new Date();
-  const maxMonths = 60;
-  const amountToFinance = Math.max(0, totalRemaining - existingBalance);
-  const monthsToDeadline = projectEndDate ? differenceInMonths(projectEndDate, today) : null;
+  const terme = useMemo(() => addMonths(new Date(), mois), [mois]);
+  const dansLesTemps = moisJusquAuTerme === null ? true : mois <= moisJusquAuTerme;
+  const moisEnTrop = moisJusquAuTerme === null ? 0 : Math.max(0, mois - moisJusquAuTerme);
 
-  const updateFromMonths = useCallback((newMonths: number) => {
-    setMonths(newMonths);
-    if (amountToFinance > 0 && newMonths > 0) {
-      setMonthlyAmount(amountToFinance / newMonths);
-      setManualAmountInput('');
-    }
-  }, [amountToFinance]);
-
-  const updateFromAmount = useCallback((newAmount: number) => {
-    setMonthlyAmount(newAmount);
-    if (amountToFinance > 0 && newAmount > 0) {
-      setMonths(Math.min(Math.ceil(amountToFinance / newAmount), maxMonths));
-      setManualMonthsInput('');
-    }
-  }, [amountToFinance]);
-
-  useEffect(() => {
-    if (currentMonthlyAllocation > 0 && amountToFinance > 0) {
-      setMonthlyAmount(currentMonthlyAllocation);
-      setMonths(Math.min(Math.ceil(amountToFinance / currentMonthlyAllocation), maxMonths));
-    } else if (amountToFinance > 0) {
-      updateFromMonths(12);
-    }
-  }, [currentMonthlyAllocation, amountToFinance]);
-
-  useEffect(() => {
-    if (amountToFinance > 0 && months > 0) {
-      setMonthlyAmount(amountToFinance / months);
-    }
-  }, [existingBalance]);
-
-  const completionDate = addMonths(today, months);
-  const isOnTrack = monthsToDeadline !== null ? months <= monthsToDeadline : true;
-  const monthsOverDeadline = monthsToDeadline !== null ? Math.max(0, months - monthsToDeadline) : 0;
-
-  const handleManualMonthsSubmit = () => {
-    const value = parseInt(manualMonthsInput);
-    if (!isNaN(value) && value >= 1 && value <= maxMonths) updateFromMonths(value);
-    setManualMonthsInput('');
+  const validerMois = () => {
+    const v = parseInt(saisieMois);
+    if (!isNaN(v)) depuisMois(v);
+    setEdite(null);
+  };
+  const validerMontant = () => {
+    const v = parseFloat(saisieMontant.replace(',', '.'));
+    if (!isNaN(v)) depuisMontant(v);
+    setEdite(null);
   };
 
-  const handleManualAmountSubmit = () => {
-    const value = parseFloat(manualAmountInput);
-    if (!isNaN(value) && value > 0) updateFromAmount(value);
-    setManualAmountInput('');
-  };
+  const texteMois = edite === "mois" ? saisieMois : String(mois);
+  const texteMontant = edite === "montant" ? saisieMontant : parMois.toFixed(0);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1, ease: [0.16, 1, 0.3, 1] }} className="neu-card h-full relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/[0.03] to-transparent" />
-      <div className="relative z-10 p-6 md:p-8">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, hsla(180,80%,50%,0.15) 0%, hsla(180,80%,50%,0.05) 100%)', border: '1px solid hsla(180,80%,50%,0.25)', boxShadow: '0 0 30px hsla(180,80%,50%,0.15)' }}>
-            <Calculator className="h-5 w-5 text-cyan-400" />
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-foreground tracking-tight">{t('finance.smartFinancing.title')}</h3>
-            <p className="text-sm text-muted-foreground">{t('finance.smartFinancing.subtitle')}</p>
-          </div>
-        </div>
+    <section className="cy-horizon" aria-label={t('finance.smartFinancing.title')}>
+      <div className="cy-horizon-rang">
+        <p className="cy-horizon-lect">
+          <span>{t('finance.smartFinancing.amountToFinance')}</span>
+          <b>{formatCurrency(aFinancer, currency)}</b>
+        </p>
 
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }} className="text-center mb-6 p-5 rounded-xl neu-inset relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.05] to-transparent" />
-          <div className="relative">
-            <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider font-medium">{t('finance.smartFinancing.amountToFinance')}</p>
-            <p className="text-3xl font-bold text-primary tabular-nums" style={{ textShadow: '0 0 30px hsla(200,100%,60%,0.3)' }}>{formatCurrency(amountToFinance, currency)}</p>
-            {existingBalance > 0 && (
-              <p className="text-xs text-muted-foreground mt-2">{t('finance.smartFinancing.afterBalance', { amount: formatCurrency(existingBalance, currency) })}</p>
-            )}
-          </div>
-        </motion.div>
+        <label className="cy-horizon-lect est-saisie">
+          <span>{t('finance.smartFinancing.paymentDuration')}</span>
+          <b>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={texteMois}
+              onFocus={(e) => { setEdite("mois"); setSaisieMois(String(mois)); e.currentTarget.select(); }}
+              onChange={(e) => setSaisieMois(e.target.value.replace(/[^0-9]/g, ''))}
+              onBlur={validerMois}
+              onKeyDown={(e) => { if (e.key === 'Enter') validerMois(); }}
+              aria-label={t('finance.smartFinancing.paymentDuration')}
+            />
+            <u>{t('finance.smartFinancing.months')}</u>
+          </b>
+        </label>
 
-        <div className="mb-6">
-          <label className="flex items-center gap-2 text-xs text-muted-foreground mb-3 font-medium uppercase tracking-wider">
-            <Wallet className="h-3.5 w-3.5" />{t('finance.smartFinancing.existingBalance')}
-          </label>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
-            <Input type="number" placeholder="0.00" value={existingBalance || ''} onChange={(e) => {
-              const val = Math.max(0, parseFloat(e.target.value) || 0);
-              setExistingBalance(val);
-            }} onBlur={() => {
-              updateSettings.mutate({ already_funded: existingBalance });
-            }} className="pl-8 h-12 finance-input rounded-xl" min="0" step="100" />
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">{t('finance.smartFinancing.existingBalanceHint')}</p>
-        </div>
-
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-semibold text-foreground">{t('finance.smartFinancing.paymentDuration')}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Input type="number" placeholder={months.toString()} value={manualMonthsInput} onChange={(e) => setManualMonthsInput(e.target.value)} onBlur={handleManualMonthsSubmit} onKeyDown={(e) => e.key === 'Enter' && handleManualMonthsSubmit()} className="w-16 h-9 text-center text-sm finance-input rounded-lg" min="1" max={maxMonths} />
-              <span className="text-sm text-muted-foreground">{t('finance.smartFinancing.months')}</span>
-            </div>
-          </div>
-          <div className="py-2">
-            <Slider value={[months]} onValueChange={([value]) => updateFromMonths(value)} min={1} max={maxMonths} step={1} className="w-full" />
-          </div>
-          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-            <span>1 {t('finance.smartFinancing.month')}</span>
-            <span>{maxMonths} {t('finance.smartFinancing.months')}</span>
-          </div>
-        </div>
-
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mb-6 p-5 rounded-xl neu-inset">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground font-medium">{t('finance.smartFinancing.monthlyPayment')}</span>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">{getCurrencySymbol(currency)}</span>
-              <Input type="number" placeholder={monthlyAmount.toFixed(0)} value={manualAmountInput} onChange={(e) => setManualAmountInput(e.target.value)} onBlur={handleManualAmountSubmit} onKeyDown={(e) => e.key === 'Enter' && handleManualAmountSubmit()} className="w-24 h-8 text-right text-sm bg-transparent border-border font-semibold text-foreground placeholder:text-muted-foreground rounded-lg" min="1" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-foreground tabular-nums">
-            {formatCurrency(monthlyAmount, currency)}
-            <span className="text-sm font-normal text-muted-foreground ml-1">/{t('finance.smartFinancing.month')}</span>
-          </p>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-          className={`flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${isOnTrack ? 'bg-emerald-500/[0.08] border-emerald-500/25 shadow-[0_0_20px_hsla(160,80%,50%,0.1)]' : 'bg-amber-500/[0.08] border-amber-500/25 shadow-[0_0_20px_hsla(40,90%,50%,0.1)]'}`}
-        >
-          {isOnTrack ? (
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center shrink-0"><CheckCircle className="h-5 w-5 text-emerald-400" /></div>
-          ) : (
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center shrink-0"><AlertCircle className="h-5 w-5 text-amber-400" /></div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className={`text-sm font-semibold ${isOnTrack ? 'text-emerald-400' : 'text-amber-400'}`}>
-              {isOnTrack ? t('finance.smartFinancing.onTrack') : t('finance.smartFinancing.exceedsDeadline', { count: monthsOverDeadline })}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">{t('finance.smartFinancing.completion', { date: format(completionDate, 'MMM yyyy') })}</p>
-          </div>
-        </motion.div>
+        <label className="cy-horizon-lect est-saisie est-forte">
+          <span>{t('finance.smartFinancing.monthlyPayment')}</span>
+          <b>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={texteMontant}
+              onFocus={(e) => { setEdite("montant"); setSaisieMontant(parMois.toFixed(0)); e.currentTarget.select(); }}
+              onChange={(e) => setSaisieMontant(e.target.value.replace(/[^0-9.,]/g, ''))}
+              onBlur={validerMontant}
+              onKeyDown={(e) => { if (e.key === 'Enter') validerMontant(); }}
+              aria-label={t('finance.smartFinancing.monthlyPayment')}
+            />
+            <u>{getCurrencySymbol(currency)}</u>
+          </b>
+        </label>
       </div>
-    </motion.div>
+
+      {/* Le curseur : la meme equation, tiree a la main. */}
+      <input
+        type="range"
+        className="cy-horizon-curseur"
+        min={1}
+        max={MAX_MOIS}
+        step={1}
+        value={mois}
+        onChange={(e) => depuisMois(Number(e.target.value))}
+        aria-label={t('finance.smartFinancing.paymentDuration')}
+        aria-valuetext={t('finance.smartFinancing.months', { count: mois }) as string}
+      />
+
+      <p className="cy-horizon-verdict" data-tenu={dansLesTemps ? '1' : '0'} role="status">
+        {dansLesTemps ? <CheckCircle aria-hidden="true" /> : <AlertCircle aria-hidden="true" />}
+        <b>
+          {dansLesTemps
+            ? t('finance.smartFinancing.onTrack')
+            : t('finance.smartFinancing.exceedsDeadline', { count: moisEnTrop })}
+        </b>
+        <span>{t('finance.smartFinancing.completion', { date: format(terme, 'MMM yyyy') })}</span>
+      </p>
+    </section>
   );
 }

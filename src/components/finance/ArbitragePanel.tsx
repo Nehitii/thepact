@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, Coins, PackageCheck, Target, Sparkles } from "lucide-react";
+import { Check, ChevronDown, Coins, PackageCheck, Target, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatCurrency, getCurrencySymbol } from "@/lib/currency";
@@ -125,6 +125,19 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
     return lots.filter((l) => l.pieces.length > 0 && l.pieces.every((p) => panier.has(p.id)));
   }, [lots, panier]);
 
+  /* Ce que la somme touche passe devant ; le reste se replie. Neuf
+     objectifs deplies en permanence faisaient deux ecrans et demi
+     pour une decision qui n en concerne que deux ou trois. */
+  const [toutVoir, setToutVoir] = useState(false);
+  const { touches, intacts } = useMemo(() => {
+    const t: Lot[] = [], i: Lot[] = [];
+    for (const lot of lots) {
+      (lot.pieces.some((p) => panier.has(p.id)) ? t : i).push(lot);
+    }
+    return { touches: t, intacts: i };
+  }, [lots, panier]);
+  const resteIntact = intacts.reduce((s, l) => s + l.reste, 0);
+
   const reliquat = Math.max(0, montant - totalPanier);
   const depassement = Math.max(0, totalPanier - montant);
 
@@ -235,7 +248,7 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
 
       {/* ── Les lots ─────────────────────────────────────── */}
       <ul className="cy-lots">
-        {lots.map((lot) => {
+        {(toutVoir ? lots : touches).map((lot) => {
           const prisDuLot = lot.pieces.filter((p) => panier.has(p.id));
           const totalPris = prisDuLot.reduce((s, p) => s + p.price, 0);
           const estBoucle = prisDuLot.length === lot.pieces.length;
@@ -281,6 +294,21 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
           );
         })}
       </ul>
+
+      {/* Ce que la somme n atteint pas : range, mais pas cache. */}
+      {intacts.length > 0 && (
+        <button
+          type="button"
+          className="cy-replies"
+          aria-expanded={toutVoir}
+          onClick={() => setToutVoir((v) => !v)}
+        >
+          <ChevronDown aria-hidden="true" />
+          <b>{t("finance.arb.horsPortee", { count: intacts.length })}</b>
+          <span>{formatCurrency(resteIntact, currency)}</span>
+          <em>{toutVoir ? t("finance.arb.masquer") : t("finance.arb.afficher")}</em>
+        </button>
+      )}
 
       {/* ── Le pied ──────────────────────────────────────── */}
       <AnimatePresence>

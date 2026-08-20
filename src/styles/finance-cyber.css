@@ -735,3 +735,124 @@
 /* La baie affichee n a plus de barre de titre : la navette la porte. */
 .cy-ecran { animation: cy-monte 340ms cubic-bezier(0.16, 1, 0.3, 1) both; }
 @media (prefers-reduced-motion: reduce) { .cy-ecran { animation: none; } }
+
+/* ═══════════════════════════════════════════════════════════
+   L HORIZON
+   Une bande, pas un panneau : trois lectures, un curseur, un
+   verdict. Elle tenait 733 pixels pour dire deux nombres.
+   ═══════════════════════════════════════════════════════════ */
+.cy-horizon {
+  padding: 16px 18px;
+  background: var(--cy-creux); border: 1px solid var(--cy-trait);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.cy-horizon-rang {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px; align-items: end;
+}
+@media (max-width: 720px) { .cy-horizon-rang { grid-template-columns: 1fr; gap: 12px; } }
+
+.cy-horizon-lect { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.cy-horizon-lect > span {
+  font-family: var(--cy-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--cy-encre-3);
+}
+.cy-horizon-lect > b {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--cy-chiffre); font-size: 21px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: var(--cy-encre);
+}
+.cy-horizon-lect.est-forte > b { color: var(--cy-jaune); text-shadow: 0 0 20px rgba(252, 238, 10, 0.3); }
+.cy-horizon-lect > b u {
+  text-decoration: none; font-family: var(--cy-mono);
+  font-size: max(10.5px, 0.656rem); letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--cy-encre-3);
+}
+/* Les deux lectures qui se saisissent portent leur trait d appel. */
+.cy-horizon-lect.est-saisie > b {
+  border-bottom: 1px dashed var(--cy-trait-fort); padding-bottom: 3px;
+}
+.cy-horizon-lect.est-saisie:focus-within > b { border-bottom-color: var(--cy-jaune); }
+.cy-horizon-lect input {
+  width: 5ch; min-width: 0; background: none !important; border: 0 !important;
+  outline: none; padding: 0;
+  font-family: var(--cy-chiffre); font-size: 21px; font-weight: 700;
+  font-variant-numeric: tabular-nums; color: inherit !important;
+}
+.cy-horizon-lect.est-forte input { width: 7ch; }
+.cy-horizon-lect input::placeholder { color: inherit; opacity: 1; }
+
+/* Le curseur : une glissiere crantee, un pouce jaune. */
+.cy-horizon-curseur {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 26px; margin: 14px 0 10px;
+  background: none; cursor: pointer;
+}
+.cy-horizon-curseur::-webkit-slider-runnable-track {
+  height: 8px; border: 1px solid var(--cy-trait);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 calc(8.333% - 1px), var(--cy-trait) calc(8.333% - 1px) 8.333%),
+    #0A0E13;
+}
+.cy-horizon-curseur::-moz-range-track {
+  height: 8px; border: 1px solid var(--cy-trait); background: #0A0E13;
+}
+.cy-horizon-curseur::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 24px; margin-top: -9px;
+  background: var(--cy-jaune); border: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), 50% 100%, 0 calc(100% - 5px));
+  box-shadow: 0 0 16px rgba(252, 238, 10, 0.5);
+}
+.cy-horizon-curseur::-moz-range-thumb {
+  width: 14px; height: 24px; border: 0; border-radius: 0;
+  background: var(--cy-jaune); box-shadow: 0 0 16px rgba(252, 238, 10, 0.5);
+}
+.cy-horizon-curseur:focus-visible { outline: 2px solid var(--cy-jaune); outline-offset: 4px; }
+
+.cy-horizon-verdict {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0;
+  padding-top: 12px; border-top: 1px solid var(--cy-trait);
+}
+.cy-horizon-verdict svg { width: 15px; height: 15px; flex-shrink: 0; }
+.cy-horizon-verdict b {
+  font-family: var(--cy-titre); font-weight: 700; font-size: max(14px, 0.875rem);
+  letter-spacing: 0.06em;
+}
+.cy-horizon-verdict span {
+  font-family: var(--cy-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--cy-encre-3);
+}
+.cy-horizon-verdict[data-tenu="1"] svg, .cy-horizon-verdict[data-tenu="1"] b { color: var(--cy-vert); }
+.cy-horizon-verdict[data-tenu="0"] svg, .cy-horizon-verdict[data-tenu="0"] b { color: var(--cy-jaune); }
+
+@media (pointer: coarse) { .cy-horizon-curseur { height: 44px; } }
+
+/* Ce que la somme n atteint pas : range en bas, pas efface. */
+.cy-replies {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  min-height: 46px; margin-top: 10px; padding: 0 16px; cursor: pointer;
+  background: transparent; border: 1px dashed var(--cy-trait);
+  clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  transition: border-color 180ms, background 180ms;
+}
+.cy-replies:hover { border-color: var(--cy-trait-fort); background: rgba(255, 255, 255, 0.015); }
+.cy-replies svg {
+  width: 15px; height: 15px; flex-shrink: 0; color: var(--cy-encre-3);
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cy-replies[aria-expanded="true"] svg { transform: rotate(180deg); color: var(--cy-jaune); }
+.cy-replies b {
+  font-family: var(--cy-mono); font-size: max(10.5px, 0.656rem); font-weight: 400;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--cy-encre-2);
+}
+.cy-replies span {
+  font-family: var(--cy-mono); font-size: max(10.5px, 0.656rem);
+  font-variant-numeric: tabular-nums; color: var(--cy-encre-3);
+}
+.cy-replies em {
+  margin-left: auto; font-style: normal;
+  font-family: var(--cy-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--cy-jaune);
+}
+@media (pointer: coarse) { .cy-replies { min-height: 48px; } }

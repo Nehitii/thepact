@@ -1080,7 +1080,11 @@
       "valider": "Marquer comme acquis",
       "acquis_one": "1 pièce marquée acquise",
       "acquis_other": "{{count}} pièces marquées acquises",
-      "acquisEchec": "Impossible de marquer ces pièces"
+      "acquisEchec": "Impossible de marquer ces pièces",
+      "horsPortee_one": "{{count}} objectif hors de portée",
+      "horsPortee_other": "{{count}} objectifs hors de portée",
+      "afficher": "Afficher",
+      "masquer": "Masquer"
     },
     "terminal": {
       "sous": "Ce que coûte le pacte, ce qui est payé, ce qu il reste à trouver — et de quoi arbitrer.",
