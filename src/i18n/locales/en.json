@@ -878,7 +878,8 @@
       "noHistoryYet": "No history yet",
       "startTracking": "Start tracking to build your history",
       "noDataRecorded": "No data recorded for this month",
-      "editThisMonth": "Edit this month"
+      "editThisMonth": "Edit this month",
+      "ratio": "{{pct}}% of what moves is income"
     },
     "recurring": {
       "title": "Recurring Items",
@@ -1087,6 +1088,12 @@
       "acquis_one": "1 item marked acquired",
       "acquis_other": "{{count}} items marked acquired",
       "acquisEchec": "Could not mark these items"
+    },
+    "terminal": {
+      "sous": "What the pact costs, what is paid, what is left to find — and the means to decide.",
+      "lecturePacte": "{{pct}}% funded",
+      "lectureArbitrage_one": "{{count}} item pending",
+      "lectureArbitrage_other": "{{count}} items pending"
     }
   },
   "health": {

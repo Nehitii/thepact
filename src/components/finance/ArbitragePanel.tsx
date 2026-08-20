@@ -168,12 +168,12 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
   const totalRestant = lots.reduce((s, l) => s + l.reste, 0);
 
   if (isLoading) {
-    return <p className="fin-arb-etat">{t("finance.arb.chargement")}</p>;
+    return <p className="cy-arb-etat">{t("finance.arb.chargement")}</p>;
   }
 
   if (lots.length === 0) {
     return (
-      <p className="fin-arb-etat">
+      <p className="cy-arb-etat">
         <b>{t("finance.arb.videTitre")}</b>
         {t("finance.arb.videAide")}
       </p>
@@ -181,10 +181,10 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
   }
 
   return (
-    <div className="fin-arb">
+    <div className="cy-arb">
       {/* ── La mise ──────────────────────────────────────── */}
-      <div className="fin-arb-mise">
-        <label className="fin-arb-champ">
+      <div className="cy-mise">
+        <label className="cy-champ">
           <Coins aria-hidden="true" />
           <input
             type="text"
@@ -197,7 +197,7 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
           <b>{symbole}</b>
         </label>
 
-        <div className="fin-arb-raccourcis">
+        <div className="cy-raccourcis">
           {netMensuel > 0 && (
             <button type="button" onClick={() => changerMontant(String(Math.round(netMensuel)))}>
               {t("finance.arb.netMensuel")} · {formatCurrency(netMensuel, currency)}
@@ -219,7 +219,7 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
         key={`${boucles.length}-${panier.size}`}
         initial={{ opacity: 0, y: -4 }}
         animate={{ opacity: 1, y: 0 }}
-        className="fin-arb-verdict"
+        className="cy-verdict"
         role="status"
       >
         <Sparkles aria-hidden="true" />
@@ -234,7 +234,7 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
       </motion.p>
 
       {/* ── Les lots ─────────────────────────────────────── */}
-      <ul className="fin-arb-lots">
+      <ul className="cy-lots">
         {lots.map((lot) => {
           const prisDuLot = lot.pieces.filter((p) => panier.has(p.id));
           const totalPris = prisDuLot.reduce((s, p) => s + p.price, 0);
@@ -242,31 +242,31 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
           const part = lot.reste > 0 ? Math.round((totalPris / lot.reste) * 100) : 0;
 
           return (
-            <li key={lot.goal.id} className="fin-arb-lot" data-boucle={estBoucle ? "1" : "0"}>
-              <div className="fin-arb-lot-tete">
+            <li key={lot.goal.id} className="cy-lot" data-boucle={estBoucle ? "1" : "0"}>
+              <div className="cy-lot-tete">
                 <Target aria-hidden="true" />
                 <b>{lot.goal.name}</b>
                 <span>{formatCurrency(lot.reste, currency)}</span>
                 {estBoucle && (
-                  <em className="fin-arb-sceau">
+                  <em className="cy-sceau">
                     <PackageCheck aria-hidden="true" />
                     {t("finance.arb.boucle")}
                   </em>
                 )}
               </div>
 
-              <div className="fin-arb-jauge" aria-hidden="true">
+              <div className="cy-jauge" aria-hidden="true">
                 <i style={{ width: `${part}%` }} />
               </div>
 
-              <div className="fin-arb-pieces">
+              <div className="cy-pieces">
                 {lot.pieces.map((p) => {
                   const pris = panier.has(p.id);
                   return (
                     <button
                       key={p.id}
                       type="button"
-                      className="fin-arb-piece"
+                      className="cy-piece"
                       aria-pressed={pris}
                       onClick={() => basculer(p.id)}
                     >
@@ -286,7 +286,7 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
       <AnimatePresence>
         {panier.size > 0 && (
           <motion.div
-            className="fin-arb-pied"
+            className="cy-pied"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}
@@ -296,13 +296,13 @@ export function ArbitragePanel({ goals, netMensuel, dejaFinance }: ArbitragePane
               <b data-depasse={depassement > 0 ? "1" : "0"}>{formatCurrency(totalPanier, currency)}</b>
             </span>
             {depassement > 0 && (
-              <em className="fin-arb-alerte">
+              <em className="cy-alerte">
                 {t("finance.arb.depassement", { montant: formatCurrency(depassement, currency) })}
               </em>
             )}
             <button
               type="button"
-              className="fin-arb-valider"
+              className="cy-valider"
               onClick={valider}
               disabled={acquerir.isPending}
             >

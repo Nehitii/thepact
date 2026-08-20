@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Landmark, PackageCheck, Hourglass } from "lucide-react";
@@ -9,70 +9,109 @@ import type { ComptePacte } from "./comptePacte";
 
 /* LE CARTOUCHE
  *
- * Trois chiffres, et rien d autre : ce que coute le pacte, ce qui est
- * paye, ce qui reste. Le reste de la page en decoule.
+ * Trois lectures, et rien d autre : ce que coute le pacte, ce qui est
+ * paye, ce qui reste. Chacune a son encre — cyan, vert, rouge — et un
+ * filet de tranche qui dit son role avant qu on lise le chiffre.
  *
- * « Paye » ne se devine plus : c est la somme des pieces reellement
- * acquises, plus l apport declare. Un objectif termine compte pour son
- * cout entier — sinon un objectif boucle avant que les pieces existent
- * disparaitrait du compte.
+ * Quand un chiffre change, il accroche une fois : c est le seul
+ * endroit de la page ou l on veut que l oeil revienne.
  */
+
+const CHIFFRES = [
+  { cle: "total", icone: Landmark, ton: "cout" },
+  { cle: "finance", icone: PackageCheck, ton: "acquis" },
+  { cle: "restant", icone: Hourglass, ton: "reste" },
+] as const;
+
+/** Une secousse breve quand la valeur bouge, pas a chaque rendu. */
+function useAccroche(valeur: number) {
+  const [accroche, setAccroche] = useState(false);
+  const precedente = useRef(valeur);
+  useEffect(() => {
+    if (precedente.current === valeur) return;
+    precedente.current = valeur;
+    setAccroche(true);
+    const id = window.setTimeout(() => setAccroche(false), 340);
+    return () => window.clearTimeout(id);
+  }, [valeur]);
+  return accroche;
+}
+
+function Lecture({
+  cle, icone: Icone, ton, valeur, index,
+}: {
+  cle: string;
+  icone: typeof Landmark;
+  ton: string;
+  valeur: number;
+  index: number;
+}) {
+  const { t } = useTranslation();
+  const { currency } = useCurrency();
+  const accroche = useAccroche(valeur);
+
+  return (
+    <motion.div
+      className="cy-lect"
+      data-ton={ton}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.12 + index * 0.07, duration: 0.34, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <span className="cy-lect-cran" aria-hidden="true">
+        <u /><u /><u />
+      </span>
+      <span className="cy-lect-nom">
+        <Icone aria-hidden="true" />
+        {t(`finance.cart.${cle}`)}
+      </span>
+      <strong className={`cy-lect-val${accroche ? " cy-accroche" : ""}`}>
+        <AnimatedNumber value={valeur} currency={currency} isPositive showSign={false} />
+      </strong>
+    </motion.div>
+  );
+}
 
 export function CartouchePacte({ compte }: { compte: ComptePacte }) {
   const { t } = useTranslation();
   const { currency } = useCurrency();
 
   const part = compte.total > 0 ? Math.min(100, (compte.finance / compte.total) * 100) : 0;
-
-  const chiffres = useMemo(
-    () => [
-      { cle: "total", icone: Landmark, valeur: compte.total, ton: "neutre" },
-      { cle: "finance", icone: PackageCheck, valeur: compte.finance, ton: "acquis" },
-      { cle: "restant", icone: Hourglass, valeur: compte.restant, ton: "reste" },
-    ] as const,
-    [compte],
+  const valeurs = useMemo(
+    () => ({ total: compte.total, finance: compte.finance, restant: compte.restant }),
+    [compte.total, compte.finance, compte.restant],
   );
 
   return (
-    <div className="fin-cart">
-      <div className="fin-cart-chiffres">
-        {chiffres.map(({ cle, icone: Icone, valeur, ton }, i) => (
-          <motion.div
-            key={cle}
-            className="fin-cart-bloc"
-            data-ton={ton}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06, duration: 0.32, ease: "easeOut" }}
-          >
-            <span className="fin-cart-etiquette">
-              <Icone aria-hidden="true" />
-              {t(`finance.cart.${cle}`)}
-            </span>
-            <strong className="fin-cart-valeur">
-              <AnimatedNumber
-                value={valeur}
-                currency={currency}
-                isPositive
-                showSign={false}
-                className="fin-cart-nombre"
-              />
-            </strong>
-          </motion.div>
+    <div className="cy-cart">
+      <div className="cy-cart-grille">
+        {CHIFFRES.map((c, i) => (
+          <Lecture
+            key={c.cle}
+            cle={c.cle}
+            icone={c.icone}
+            ton={c.ton}
+            valeur={valeurs[c.cle as keyof typeof valeurs]}
+            index={i}
+          />
         ))}
       </div>
 
-      {/* La barre de financement : une seule lecture, du regard. */}
-      <div className="fin-cart-barre" role="img" aria-label={t("finance.cart.progression", { pct: Math.round(part) })}>
+      {/* La barre de financement : dix logements, comme la mesure. */}
+      <div
+        className="cy-barre"
+        role="img"
+        aria-label={t("finance.cart.progression", { pct: Math.round(part) })}
+      >
         <motion.i
           initial={{ width: 0 }}
           animate={{ width: `${part}%` }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+          transition={{ duration: 0.9, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
         />
         <b>{Math.round(part)}%</b>
       </div>
 
-      <p className="fin-cart-detail">
+      <p className="cy-cart-detail">
         {compte.partObjectifs > 0 && (
           <span>
             {t("finance.cart.parObjectifs")} <b>{formatCurrency(compte.partObjectifs, currency)}</b>

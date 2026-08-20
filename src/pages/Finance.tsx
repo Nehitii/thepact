@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import "@/styles/finance.css";
+import "@/styles/finance-cyber.css";
 import { useTranslation } from "react-i18next";
 import { Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,26 +14,29 @@ import { ArbitragePanel } from "@/components/finance/ArbitragePanel";
 import { SmartFinancingPanel } from "@/components/finance/SmartFinancingPanel";
 import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
-import { DSPageShell, DSBackground, DSPageHeader, DSPanel } from "@/components/ds";
+import { Baie } from "@/components/finance/Baie";
+import { DSPageShell } from "@/components/ds";
 import { roundMoney } from "@/lib/financeCategories";
 import { parseISO } from "date-fns";
+import { formatCurrency } from "@/lib/currency";
+import { useCurrency } from "@/contexts/CurrencyContext";
 
-/* FIN.SYS — LE PACTE, EN ARGENT
+/* FIN.SYS — L APPAREIL
  *
- * Cet onglet tenait des comptes bancaires : soldes, transactions,
- * import CSV, dettes, budgets par categorie. Rien de tout cela ne
- * parlait du pacte, et l ensemble avait fini par ne plus rien dire.
+ * La page n est plus une suite de cartes : c est un terminal. Un
+ * chassis, trois baies numerotees, et des lectures.
  *
- * Il ne reste que ce qui touche au pacte : un cartouche de trois
- * chiffres — ce qu il coute, ce qui est paye, ce qui reste — et deux
- * outils. Le premier arbitre une somme entre les pieces a acheter. Le
- * second tient les flux du mois, dont le solde alimente l horizon de
- * financement.
+ * Le jaune est la couleur de l appareil — chassis, index, equerres —
+ * et ne dit jamais une donnee. Les donnees ont leurs encres : cyan
+ * pour le pacte, vert pour ce qui est acquis, rouge pour ce qui
+ * manque. On sait d un coup d oeil si l on regarde la machine ou son
+ * pacte.
  */
 
 export default function Finance() {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { currency } = useCurrency();
   const [reglagesOuverts, setReglagesOuverts] = useState(false);
 
   const { data: pact } = usePact(user?.id);
@@ -65,59 +69,82 @@ export default function Finance() {
   }, [recurringExpenses, recurringIncome]);
 
   const finDeProjet = pact?.project_end_date ? parseISO(pact.project_end_date) : null;
-
-  const actions = (
-    <button
-      type="button"
-      className="fin-action"
-      onClick={() => setReglagesOuverts(true)}
-      aria-label={t("finance.settings.title")}
-      title={t("finance.settings.title")}
-    >
-      <Settings aria-hidden="true" />
-    </button>
-  );
+  const partFinancee = compte.total > 0 ? Math.round((compte.finance / compte.total) * 100) : 0;
+  const piecesRestantes = pieces.filter((p) => !p.acquired_at).length;
 
   return (
-    <DSPageShell width="lg">
-      <DSBackground variant="aura" />
+    <DSPageShell width="lg" padding="tight">
+      <div className="cy">
+        <div className="cy-fond" aria-hidden="true" />
+        <div className="cy-balayage" aria-hidden="true" />
 
-      <DSPageHeader
-        variant="hud"
-        systemLabel="FIN.SYS // PACTE"
-        title="FIN"
-        titleAccent="ANCE"
-        actions={actions}
-      />
+        <div className="cy-corps">
+          <header className="cy-entete">
+            <p className="cy-entete-sys">
+              <i aria-hidden="true" />
+              FIN.SYS // {pact?.name ? pact.name.toUpperCase() : "PACTE"}
+            </p>
+            <h1>
+              FIN<em>ANCE</em>
+            </h1>
+            <p className="cy-entete-sous">{t("finance.terminal.sous")}</p>
 
-      <div className="space-y-6">
-        <DSPanel title={t("finance.sections.pacte")} tier="primary" accent="primary">
-          <CartouchePacte compte={compte} />
-          <div className="mt-6">
-            <SmartFinancingPanel
-              totalRemaining={compte.restant}
-              projectEndDate={finDeProjet}
-              currentMonthlyAllocation={
-                reglages.project_monthly_allocation > 0
-                  ? reglages.project_monthly_allocation
-                  : Math.max(0, netMensuel)
-              }
-            />
+            <div className="cy-entete-outils">
+              <button
+                type="button"
+                className="cy-outil"
+                onClick={() => setReglagesOuverts(true)}
+                aria-label={t("finance.settings.title")}
+                title={t("finance.settings.title")}
+              >
+                <Settings aria-hidden="true" />
+              </button>
+            </div>
+          </header>
+
+          <div className="space-y-4">
+            <Baie
+              index="01"
+              nom={t("finance.sections.pacte")}
+              lecture={t("finance.terminal.lecturePacte", { pct: partFinancee })}
+              vivant
+            >
+              <CartouchePacte compte={compte} />
+              <div className="mt-6">
+                <SmartFinancingPanel
+                  totalRemaining={compte.restant}
+                  projectEndDate={finDeProjet}
+                  currentMonthlyAllocation={
+                    reglages.project_monthly_allocation > 0
+                      ? reglages.project_monthly_allocation
+                      : Math.max(0, netMensuel)
+                  }
+                />
+              </div>
+            </Baie>
+
+            <Baie
+              index="02"
+              nom={t("finance.sections.arbitrage")}
+              lecture={t("finance.terminal.lectureArbitrage", { count: piecesRestantes })}
+            >
+              <p className="cy-chapo">{t("finance.sections.arbitrageAide")}</p>
+              <ArbitragePanel
+                goals={goals}
+                netMensuel={Math.max(0, netMensuel)}
+                dejaFinance={reglages.already_funded}
+              />
+            </Baie>
+
+            <Baie
+              index="03"
+              nom={t("finance.sections.mois")}
+              lecture={`${netMensuel >= 0 ? "+" : ""}${formatCurrency(netMensuel, currency)}`}
+            >
+              <MonthlyDashboard salaryPaymentDay={reglages.salary_payment_day} />
+            </Baie>
           </div>
-        </DSPanel>
-
-        <DSPanel title={t("finance.sections.arbitrage")}>
-          <p className="fin-chapo">{t("finance.sections.arbitrageAide")}</p>
-          <ArbitragePanel
-            goals={goals}
-            netMensuel={Math.max(0, netMensuel)}
-            dejaFinance={reglages.already_funded}
-          />
-        </DSPanel>
-
-        <DSPanel title={t("finance.sections.mois")}>
-          <MonthlyDashboard salaryPaymentDay={reglages.salary_payment_day} />
-        </DSPanel>
+        </div>
       </div>
 
       <FinanceSettingsModal

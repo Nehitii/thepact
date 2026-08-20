@@ -878,7 +878,8 @@
       "noHistoryYet": "Pas encore d'historique",
       "startTracking": "Commence à suivre pour construire ton historique",
       "noDataRecorded": "Aucune donnée enregistrée pour ce mois",
-      "editThisMonth": "Modifier ce mois"
+      "editThisMonth": "Modifier ce mois",
+      "ratio": "{{pct}} % de ce qui circule est une entrée"
     },
     "recurring": {
       "title": "Éléments récurrents",
@@ -1087,6 +1088,12 @@
       "acquis_one": "1 pièce marquée acquise",
       "acquis_other": "{{count}} pièces marquées acquises",
       "acquisEchec": "Impossible de marquer ces pièces"
+    },
+    "terminal": {
+      "sous": "Ce que coûte le pacte, ce qui est payé, ce qu il reste à trouver — et de quoi arbitrer.",
+      "lecturePacte": "{{pct}} % financé",
+      "lectureArbitrage_one": "{{count}} pièce en attente",
+      "lectureArbitrage_other": "{{count}} pièces en attente"
     }
   },
   "health": {
