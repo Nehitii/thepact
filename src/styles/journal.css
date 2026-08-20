@@ -535,23 +535,25 @@
    devient un halo colore derriere une encre restee noire — meme
    intention, autre materiau, comme la laque et le papier. */
 .jr-lueur {
-  /* Un rectangle de couleur est deja pris : c est le surlignage. La
-     lueur ne borde rien — l encre prend la teinte de l etat et
-     s epaissit, posee sur une clarte qui n a pas de bord. */
+  /* Tout fond pose sur une ligne de texte se lit comme un surlignage :
+     c est exactement la meme forme, et la marque l occupe deja. La
+     lueur n a donc aucun fond — elle epouse les lettres. L encre prend
+     la teinte de l etat, s epaissit, et rayonne.
+     L aureole est en « em » : elle suit le corps du texte, sinon elle
+     ecrase un petit corps et disparait sur un grand. */
   color: var(--jr-teinte, var(--jr-rouge));
   font-weight: 700;
-  background: radial-gradient(
-    ellipse 130% 190% at 50% 56%,
-    color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 24%, transparent) 0%,
-    color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 9%, transparent) 44%,
-    transparent 76%);
-  text-shadow: 0 0 11px color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 42%, transparent);
+  background: none;
+  text-shadow:
+    0 0 0.12em color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 75%, transparent),
+    0 0 0.40em color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 55%, transparent),
+    0 0 0.90em color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 35%, transparent);
 }
 [data-jr="sombre"] .jr-lueur {
   color: #fff; font-weight: inherit; background: none;
   text-shadow:
-    0 0 6px var(--jr-teinte, var(--jr-rouge)),
-    0 0 20px var(--jr-teinte, var(--jr-rouge));
+    0 0 0.35em var(--jr-teinte, var(--jr-rouge)),
+    0 0 1.10em var(--jr-teinte, var(--jr-rouge));
 }
 
 .jr-marque {
