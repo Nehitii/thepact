@@ -2258,6 +2258,9 @@
     "errorWrite": "The call could not be saved.",
     "retry": "Try again",
     "flashWarning": "Intense light effects",
-    "announceDone": "Ritual saved"
+    "announceDone": "Ritual saved",
+    "charge": "Charge",
+    "streakShort": "Streak",
+    "callsShort": "Calls"
   }
 }

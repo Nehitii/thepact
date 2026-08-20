@@ -2,8 +2,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Zap, ArrowLeft, Lock, RefreshCw, Play, FastForward, Flame, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useTheCall } from "@/hooks/useTheCall";
 import { CoeurStellaire } from "@/components/thecall/CoeurStellaire";
 import { DSPageShell } from "@/components/ds";
@@ -74,7 +72,6 @@ function useMouvementReduit() {
 export default function TheCall() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
   const immobile = useMouvementReduit();
 
   const {
@@ -88,6 +85,7 @@ export default function TheCall() {
   const racineRef = useRef<HTMLDivElement>(null);
   const boutonRef = useRef<HTMLButtonElement>(null);
   const compteRef = useRef<HTMLSpanElement>(null);
+  const chargeRef = useRef<HTMLElement>(null);
 
   const progresRef = useRef(0);
   const tientRef = useRef(false);
@@ -129,6 +127,9 @@ export default function TheCall() {
     }
     if (compteRef.current) {
       compteRef.current.textContent = p > 0 ? `${(20 - p * 20).toFixed(1)}s` : "";
+    }
+    if (chargeRef.current) {
+      chargeRef.current.textContent = `${Math.round(p * 100)}%`;
     }
   }, []);
 
@@ -279,228 +280,300 @@ export default function TheCall() {
       <div
         ref={racineRef}
         style={{ ["--rit-p" as string]: 0, ["--rit-teinte" as string]: "hsl(var(--ds-accent-primary))" } as React.CSSProperties}
-        /* « touch-none » etait pose sur la page entiere : le zoom par
-           pincement etait interdit partout. Il ne l est plus que sur le
-           bouton, ou il empeche le defilement pendant l appui. */
         data-phase={phase}
         data-pret={pret}
+        /* « touch-none » etait pose sur la page entiere : le zoom par
+           pincement etait interdit partout. Il ne l est plus que sur la
+           zone de prise, ou il empeche le defilement pendant l appui. */
         className="rit h-[100dvh] bg-background overflow-hidden flex flex-col relative text-foreground select-none"
       >
-        {/* Le coeur : une seule toile, qui porte le reacteur ET le fond */}
-        <CoeurStellaire progres={progresRef} phase={phase} immobile={immobile} />
+        {/* Le reacteur, centre sur la zone de prise */}
+        <CoeurStellaire progres={progresRef} phase={phase} immobile={immobile} cible={boutonRef} />
 
-        <div className="relative z-10 flex-1 flex flex-col items-center">
-          {/* L en-tete */}
-          <div className={cn(
-            "w-full z-20 transition-opacity duration-500 pointer-events-none shrink-0",
-            enSequence ? "opacity-0" : "opacity-100",
-          )}>
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/")}
-              className="pointer-events-auto absolute top-4 left-4 sm:top-6 sm:left-6 z-30 text-muted-foreground hover:text-foreground hover:bg-muted/10 font-mono text-xs tracking-[0.2em]"
-            >
-              <ArrowLeft className="w-3 h-3 mr-2" aria-hidden="true" /> {t("thecall.back")}
-            </Button>
+        {/* Le poste : trame, equerres, rails */}
+        <span className="rit-trame" aria-hidden="true" />
+        <span className="rit-equerres" aria-hidden="true" />
 
-            <div className="pt-12 sm:pt-16 pb-2 sm:pb-4 text-center">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <span className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-transparent to-primary/20" />
-                <span className="font-mono ds-t-label text-primary/50 tracking-[0.25em]">{t("thecall.engine")}</span>
-                <span className="flex-1 max-w-[80px] h-px bg-gradient-to-r from-primary/20 to-transparent" />
-              </div>
-              <h1 className="font-orbitron font-black text-[clamp(24px,5vw,40px)] tracking-[0.08em] leading-none text-transparent bg-clip-text bg-gradient-to-b from-foreground/95 to-foreground/50">
-                THE <span className="text-primary [text-shadow:0_0_12px_hsl(var(--ds-accent-primary)/0.8)]">CALL</span>
-              </h1>
+        {/* ── Le rail haut ─────────────────────────────────────── */}
+        <header className={cn("rit-rail", enSequence && "est-efface")}>
+          <button type="button" onClick={() => navigate("/")} className="rit-outil">
+            <ArrowLeft className="w-3 h-3" aria-hidden="true" />
+            <span className="hidden sm:inline">{t("thecall.back")}</span>
+          </button>
 
-              {pacte && !enSequence && (
-                <div className="flex items-center justify-center gap-4 mt-3">
-                  <span className="font-mono ds-t-label text-muted-foreground/70 tracking-wider">
-                    <Flame className="w-3 h-3 inline mr-1 text-orange-400/80" aria-hidden="true" />
-                    {t("thecall.streak", { count: serie })}
-                  </span>
-                  <span className="font-mono ds-t-label text-muted-foreground/70 tracking-wider">
-                    {t("thecall.calls", { count: total })}
-                  </span>
-                </div>
-              )}
+          <span className="rit-sig">RIT.01</span>
+          <span className="rit-filet" />
+          <span className="rit-sig hidden md:inline">{t("thecall.engine")}</span>
+          <span className="rit-filet hidden md:block" />
+
+          <span className="rit-lecture">
+            <b ref={chargeRef}>0%</b>
+            <span>{t("thecall.charge")}</span>
+          </span>
+        </header>
+
+        {/* ── Le titre ─────────────────────────────────────────── */}
+        <div className={cn("rit-titre-bloc", enSequence && "est-efface")}>
+          {/* L espace compte : sans lui, le nom lu est « THECALL ». */}
+          <h1 className="rit-titre">
+            THE <em>CALL</em>
+          </h1>
+          {pacte && (
+            <div className="rit-mesures">
+              <span className="rit-mesure">
+                <Flame className="w-3 h-3" aria-hidden="true" />
+                <b>{serie}</b>{t("thecall.streakShort")}
+              </span>
+              <span className="rit-sep" aria-hidden="true" />
+              <span className="rit-mesure"><b>{total}</b>{t("thecall.callsShort")}</span>
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* Le centre */}
-          <div className="flex-1 flex items-center justify-center w-full">
-            <div className="relative flex flex-col items-center justify-center">
-              <div className={cn(
-                "fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200",
-                phase === "singularite" ? "opacity-100" : "opacity-0",
-              )} />
-              <div className={cn(
-                "fixed inset-0 z-[100] pointer-events-none transition-opacity ease-out bg-white",
-                phase === "explosion"
-                  ? (immobile ? "duration-500 opacity-70" : "duration-150 opacity-90")
-                  : "[transition-duration:3000ms] opacity-0",
-              )} />
+        {/* ── La scene ─────────────────────────────────────────── */}
+        <div className="flex-1 flex items-center justify-center w-full relative z-10 min-h-0">
+          <div className="relative flex flex-col items-center justify-center">
+            <div className={cn(
+              "fixed inset-0 bg-black z-[90] pointer-events-none transition-opacity duration-200",
+              phase === "singularite" ? "opacity-100" : "opacity-0",
+            )} />
+            <div className={cn(
+              "fixed inset-0 z-[100] pointer-events-none transition-opacity ease-out bg-white",
+              phase === "explosion"
+                ? (immobile ? "duration-500 opacity-70" : "duration-150 opacity-90")
+                : "[transition-duration:3000ms] opacity-0",
+            )} />
 
-              {phase === "revelation" && (
-                <div className="absolute z-[110] flex flex-col items-center rit-revelation top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
-                  <div className="absolute inset-[-300px] rit-rayons opacity-50 blur-2xl -z-10" />
-                  {/* C etait un second « h1 » sur la page. */}
-                  <p className="text-5xl sm:text-6xl md:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 tracking-tight drop-shadow-[0_0_50px_rgba(255,255,255,0.9)] leading-[0.95] mb-6 m-0">
-                    {t("thecall.connected")}
-                  </p>
-                  <span className="h-px w-0 bg-cyan-400/50 rit-trait" />
-                  <p className="text-cyan-200/70 font-mono text-xs uppercase tracking-[0.5em] mt-6 rit-monte">
-                    {t("thecall.synchronized")}
-                  </p>
-                </div>
-              )}
+            {phase === "revelation" && (
+              <div className="absolute z-[110] flex flex-col items-center rit-revelation top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center w-full">
+                <p className="rit-connecte">{t("thecall.connected")}</p>
+                <span className="rit-trait" />
+                <p className="rit-sous-connecte">{t("thecall.synchronized")}</p>
+              </div>
+            )}
 
-              <div className={cn(
-                "relative transition-all will-change-transform",
-                phase === "implosion" ? "scale-0 opacity-0 duration-500" : "scale-100 opacity-100 duration-100",
-                phase === "revelation" ? "hidden" : "block",
-              )}>
-
-
-                <button
-                  ref={boutonRef}
-                  type="button"
-                  onPointerDown={(e) => {
-                    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* pointeur synthetique */ }
-                    demarrer();
-                  }}
-                  onPointerUp={arreter}
-                  /* « pointercancel » manquait : c est lui que le systeme
-                     envoie quand le geste devient un defilement ou qu un
-                     appel arrive. Sans lui, la boucle continuait seule. */
-                  onPointerCancel={arreter}
-                  onLostPointerCapture={arreter}
-                  onKeyDown={(e) => {
-                    if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); demarrer(); }
-                  }}
-                  onKeyUp={(e) => {
-                    if (e.key === " " || e.key === "Enter") { e.preventDefault(); arreter(); }
-                  }}
-                  onBlur={arreter}
-                  disabled={!tenable}
-                  aria-label={verrouille ? t("thecall.ariaDone") : t("thecall.ariaHold")}
-                  aria-describedby="rit-etat"
-                  className={cn(
-                    "rit-prise touch-none relative w-64 h-64 sm:w-80 sm:h-80 rounded-full flex items-center justify-center",
-                    "transition-colors duration-200",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-4 focus-visible:ring-offset-background",
-                    verrouille
-                      ? "border border-[hsl(var(--ds-accent-success)/0.35)] bg-[hsl(var(--ds-accent-success)/0.06)] cursor-default"
-                      : "cursor-pointer",
-                  )}
-                >
-                  <span className="rit-etiquette relative z-20 flex flex-col items-center pointer-events-none">
-                    {verrouille ? (
-                      <span className="flex flex-col items-center text-[hsl(var(--ds-accent-success))]">
-                        <Lock className="w-14 h-14 mb-3 drop-shadow-[0_0_15px_currentColor]" aria-hidden="true" />
-                        <span className="font-mono ds-t-label tracking-[0.3em] uppercase opacity-80">
-                          {t("thecall.locked")}
-                        </span>
-                        {pacte && (
-                          <span className="flex items-center gap-3 mt-4 text-muted-foreground/60">
-                            <span className="font-mono ds-t-label tracking-wider">
-                              <Flame className="w-3 h-3 inline mr-1 text-orange-400/70" aria-hidden="true" />{serie}
-                            </span>
-                            {/* Le total etait affiche « + 1 » cote client ;
-                                c est celui que la base a rendu. */}
-                            <span className="font-mono ds-t-label tracking-wider">{t("thecall.calls", { count: total })}</span>
-                          </span>
-                        )}
+            <div className={cn(
+              "relative transition-all",
+              phase === "implosion" ? "scale-0 opacity-0 duration-500" : "scale-100 opacity-100 duration-100",
+              phase === "revelation" ? "hidden" : "block",
+            )}>
+              <button
+                ref={boutonRef}
+                type="button"
+                onPointerDown={(e) => {
+                  try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* pointeur synthetique */ }
+                  demarrer();
+                }}
+                onPointerUp={arreter}
+                /* « pointercancel » manquait : c est lui que le systeme
+                   envoie quand le geste devient un defilement ou qu un
+                   appel arrive. Sans lui, la boucle continuait seule. */
+                onPointerCancel={arreter}
+                onLostPointerCapture={arreter}
+                onKeyDown={(e) => {
+                  if ((e.key === " " || e.key === "Enter") && !e.repeat) { e.preventDefault(); demarrer(); }
+                }}
+                onKeyUp={(e) => {
+                  if (e.key === " " || e.key === "Enter") { e.preventDefault(); arreter(); }
+                }}
+                onBlur={arreter}
+                disabled={!tenable}
+                aria-label={verrouille ? t("thecall.ariaDone") : t("thecall.ariaHold")}
+                aria-describedby="rit-etat"
+                className={cn("rit-prise touch-none", verrouille && "est-verrouille")}
+              >
+                {verrouille ? (
+                  <span className="rit-verrou">
+                    <Lock className="w-12 h-12" aria-hidden="true" />
+                    <span className="rit-verrou-titre">{t("thecall.locked")}</span>
+                    {pacte && (
+                      <span className="rit-verrou-mesures">
+                        <span><b>{serie}</b>{t("thecall.streakShort")}</span>
+                        <span className="rit-sep" aria-hidden="true" />
+                        <span><b>{total}</b>{t("thecall.callsShort")}</span>
                       </span>
-                    ) : (
-                      <>
-                        <Zap className="rit-eclair w-16 h-16" aria-hidden="true" />
-                        <span className="mt-4 h-5 flex items-center justify-center font-mono text-xs tracking-[0.2em]">
-                          <span ref={compteRef} className="rit-compte tabular-nums" />
-                          <span className="rit-invite">
-                            {chargement ? t("thecall.loading") : t("thecall.hold")}
-                          </span>
-                        </span>
-                      </>
                     )}
                   </span>
-                </button>
-              </div>
-
-              {/* L etat, annonce aussi a la voix */}
-              {!verrouille && !enSequence && (
-                <div className="mt-8 text-center">
-                  <p
-                    id="rit-etat"
-                    className="rit-message font-mono ds-t-label uppercase tracking-[0.3em] transition-colors duration-200"
-                  >
-                    {messageEtat}
-                  </p>
-                  {phase === "attente" && !immobile && (
-                    <p className="mt-3 font-mono ds-t-label uppercase tracking-[0.2em] text-muted-foreground/50 flex items-center justify-center gap-2">
-                      <AlertTriangle className="w-3 h-3" aria-hidden="true" />
-                      {t("thecall.flashWarning")}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Les erreurs : un message et une reprise, pas un verrou */}
-              {(erreurEcriture || erreurLecture) && (
-                <div className="mt-6 text-center max-w-[42ch]">
-                  <p className="font-mono text-xs uppercase tracking-[0.2em] text-[hsl(var(--ds-accent-critical))]">
-                    {erreurEcriture ? t("thecall.errorWrite") : t("thecall.errorRead")}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    onClick={() => { reinitialiserErreur(); relire(); }}
-                    className="mt-2 font-mono text-xs tracking-[0.2em] text-muted-foreground hover:text-foreground"
-                  >
-                    <RefreshCw className="w-3 h-3 mr-2" aria-hidden="true" />{t("thecall.retry")}
-                  </Button>
-                </div>
-              )}
-
-              {verrouille && (
-                <div className="mt-8 text-center">
-                  <Button
-                    variant="ghost"
-                    onClick={() => navigate("/")}
-                    className="text-muted-foreground/60 hover:text-foreground font-mono text-xs tracking-[0.2em]"
-                  >
-                    {t("thecall.returnHome")}
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <span className="rit-etiquette">
+                    <Zap className="rit-eclair w-14 h-14" aria-hidden="true" />
+                    <span className="rit-compte" ref={compteRef} />
+                    <span className="rit-invite">
+                      {chargement ? t("thecall.loading") : t("thecall.hold")}
+                    </span>
+                  </span>
+                )}
+              </button>
             </div>
           </div>
         </div>
+
+        {/* ── Le rail bas ──────────────────────────────────────── */}
+        <footer className={cn("rit-pied", enSequence && "est-efface")}>
+          {!verrouille && (
+            <>
+              <p id="rit-etat" className="rit-message">{messageEtat}</p>
+              {/* La jauge se remplit depuis la variable : aucun rendu. */}
+              <span className="rit-jauge" aria-hidden="true"><i /></span>
+            </>
+          )}
+
+          {(erreurEcriture || erreurLecture) && (
+            <div className="rit-alerte">
+              <span>{erreurEcriture ? t("thecall.errorWrite") : t("thecall.errorRead")}</span>
+              <button type="button" onClick={() => { reinitialiserErreur(); relire(); }} className="rit-outil">
+                <RefreshCw className="w-3 h-3" aria-hidden="true" />{t("thecall.retry")}
+              </button>
+            </div>
+          )}
+
+          {verrouille && (
+            <button type="button" onClick={() => navigate("/")} className="rit-outil est-large">
+              {t("thecall.returnHome")}
+            </button>
+          )}
+
+          {phase === "attente" && !immobile && !verrouille && (
+            <p className="rit-avert">
+              <AlertTriangle className="w-3 h-3" aria-hidden="true" />
+              {t("thecall.flashWarning")}
+            </p>
+          )}
+        </footer>
 
         {/* Ce que la page dit a voix haute : les paliers, pas les dixiemes */}
         <p role="status" aria-live="polite" className="sr-only">{annonce}</p>
 
         {import.meta.env.DEV && (
-          <div className="fixed bottom-4 right-4 z-[200] flex gap-2 opacity-20 hover:opacity-100 focus-within:opacity-100 transition-opacity">
-            <Button variant="secondary" size="icon" onClick={devReset} aria-label="Reinitialiser (dev)" title="Reinitialiser">
-              <RefreshCw className="w-4 h-4" aria-hidden="true" />
-            </Button>
-            <Button variant="secondary" size="icon" onClick={() => devAuto(1)} aria-label="Lecture automatique (dev)" title="Lecture automatique">
-              <Play className="w-4 h-4" aria-hidden="true" />
-            </Button>
-            <Button variant="secondary" size="icon" onClick={() => devAuto(5)} aria-label="Lecture acceleree (dev)" title="Lecture acceleree x5">
-              <FastForward className="w-4 h-4" aria-hidden="true" />
-            </Button>
+          <div className="fixed bottom-4 right-4 z-[200] flex gap-2 opacity-25 hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <button type="button" onClick={devReset} aria-label="Reinitialiser (dev)" title="Reinitialiser" className="rit-outil est-icone">
+              <RefreshCw className="w-3.5 h-3.5" aria-hidden="true" />
+            </button>
+            <button type="button" onClick={() => devAuto(1)} aria-label="Lecture automatique (dev)" title="Lecture automatique" className="rit-outil est-icone">
+              <Play className="w-3.5 h-3.5" aria-hidden="true" />
+            </button>
+            <button type="button" onClick={() => devAuto(5)} aria-label="Lecture acceleree (dev)" title="Lecture acceleree x5" className="rit-outil est-icone">
+              <FastForward className="w-3.5 h-3.5" aria-hidden="true" />
+            </button>
           </div>
         )}
 
         <style>{`
-        /* Le DOM ne porte plus que le texte : la toile fait le reste.
-           Ces deux variables lui donnent la couleur du moment. */
-        .rit { --rit-p: 0; }
+        /* ═══════════════════════════════════════════════════════
+           LE POSTE — l interface autour du reacteur
+           Elle etait faite de boutons d application poses sur un
+           fond noir. Elle devient un instrument : des rails, des
+           equerres, une trame — et surtout, elle CHAUFFE avec le
+           coeur : tout ce qui est teinte lit « --rit-teinte ».
+           ═══════════════════════════════════════════════════════ */
+        .rit {
+          --rit-p: 0;
+          --rit-mono: "JetBrains Mono", ui-monospace, monospace;
+          --rit-trait: hsl(var(--ds-border-default) / 0.18);
+          --rit-faible: hsl(var(--ds-text-muted) / 0.85);
+        }
 
-        .rit-prise { box-shadow: 0 0 calc(var(--rit-p) * 90px) color-mix(in oklab, var(--rit-teinte) 45%, transparent); }
-        .rit-prise:focus-visible { --tw-ring-color: var(--rit-teinte); }
+        /* La trame et les lignes de balayage : discretes, elles montent
+           avec la charge. */
+        .rit-trame {
+          position: absolute; inset: 0; z-index: 1; pointer-events: none;
+          background:
+            repeating-linear-gradient(0deg, transparent 0 2px, rgba(255,255,255,0.014) 2px 4px),
+            linear-gradient(hsl(var(--ds-accent-primary) / 0.03) 1px, transparent 1px) 0 0 / 100% 34px,
+            linear-gradient(90deg, hsl(var(--ds-accent-primary) / 0.03) 1px, transparent 1px) 0 0 / 40px 100%;
+          opacity: calc(0.5 + var(--rit-p) * 0.5);
+        }
 
+        /* Quatre equerres : le cadre d un viseur. */
+        .rit-equerres {
+          position: absolute; inset: 14px; z-index: 3; pointer-events: none;
+          background:
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 0 0 / 30px 1px no-repeat,
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 0 0 / 1px 30px no-repeat,
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 100% 0 / 30px 1px no-repeat,
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 100% 0 / 1px 30px no-repeat,
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 0 100% / 30px 1px no-repeat,
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 0 100% / 1px 30px no-repeat,
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 100% 100% / 30px 1px no-repeat,
+            linear-gradient(var(--rit-teinte), var(--rit-teinte)) 100% 100% / 1px 30px no-repeat;
+          opacity: calc(0.35 + var(--rit-p) * 0.65);
+        }
+
+        /* ── Les rails ─────────────────────────────────────────── */
+        .rit-rail {
+          position: relative; z-index: 20;
+          display: flex; align-items: center; gap: 12px;
+          padding: 26px 30px 12px;
+          font-family: var(--rit-mono); font-size: max(9.5px, 0.594rem);
+          letter-spacing: 0.26em; text-transform: uppercase; color: var(--rit-faible);
+          white-space: nowrap;
+          transition: opacity 400ms var(--ds-ease-out);
+        }
+        .rit-rail.est-efface, .rit-titre-bloc.est-efface, .rit-pied.est-efface {
+          opacity: 0; pointer-events: none;
+        }
+        .rit-sig { color: var(--rit-teinte); transition: color 200ms linear; }
+        .rit-filet { flex: 1; min-width: 10px; height: 1px; background: var(--rit-trait); }
+        .rit-lecture {
+          display: inline-flex; align-items: baseline; gap: 7px;
+          color: var(--rit-faible);
+        }
+        .rit-lecture b {
+          font-weight: 700; font-size: max(12px, 0.75rem); letter-spacing: 0.04em;
+          color: var(--rit-teinte); font-variant-numeric: tabular-nums;
+          text-shadow: 0 0 calc(var(--rit-p) * 16px) var(--rit-teinte);
+        }
+
+        .rit-titre-bloc {
+          position: relative; z-index: 20; text-align: center; padding: 0 20px;
+          transition: opacity 400ms var(--ds-ease-out);
+        }
+        .rit-titre {
+          margin: 0; font-family: "Orbitron", sans-serif; font-weight: 900;
+          font-size: clamp(26px, 5vw, 44px); line-height: 1;
+          letter-spacing: 0.14em; text-transform: uppercase; color: hsl(var(--ds-text-primary));
+        }
+        .rit-titre em {
+          font-style: normal;
+          color: var(--rit-teinte);
+          text-shadow: 0 0 calc(14px + var(--rit-p) * 40px) var(--rit-teinte);
+          transition: color 200ms linear;
+        }
+        .rit-mesures {
+          display: flex; align-items: center; justify-content: center; gap: 12px;
+          margin-top: 10px;
+          font-family: var(--rit-mono); font-size: max(9.5px, 0.594rem);
+          letter-spacing: 0.22em; text-transform: uppercase; color: var(--rit-faible);
+        }
+        .rit-mesure { display: inline-flex; align-items: center; gap: 6px; }
+        .rit-mesure b {
+          font-weight: 700; font-size: max(12px, 0.75rem); letter-spacing: 0.04em;
+          color: hsl(var(--ds-text-primary)); font-variant-numeric: tabular-nums;
+        }
+        .rit-mesure svg { color: hsl(var(--ds-accent-warning)); }
+        .rit-sep { width: 1px; height: 11px; background: var(--rit-trait); }
+
+        /* ── La zone de prise ──────────────────────────────────── */
+        .rit-prise {
+          position: relative; z-index: 10;
+          width: min(62vmin, 300px); height: min(62vmin, 300px);
+          border-radius: 999px;
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer;
+          transition: box-shadow 200ms var(--ds-ease-out);
+        }
+        .rit-prise:focus-visible {
+          outline: 1px solid var(--rit-teinte); outline-offset: 14px;
+        }
+        .rit-prise.est-verrouille {
+          cursor: default;
+          border: 1px solid hsl(var(--ds-accent-success) / 0.35);
+          background: hsl(var(--ds-accent-success) / 0.05);
+        }
+        .rit-etiquette {
+          display: flex; flex-direction: column; align-items: center; gap: 10px;
+          pointer-events: none;
+        }
         /* L eclair se dissout dans le coeur : passe un tiers de course,
            c est l objet qu on regarde, plus l icone. */
         .rit-eclair {
@@ -509,33 +582,145 @@ export default function TheCall() {
           filter: drop-shadow(0 0 calc(var(--rit-p) * 30px) var(--rit-teinte));
           stroke-width: 1.5;
         }
-        /* Le compte a rebours passe devant un coeur incandescent : il
-           lui faut son propre fond, pas seulement sa couleur. */
+        /* Le compte a rebours passe devant un coeur incandescent : il lui
+           faut son propre fond, pas seulement sa couleur. */
         .rit-compte {
+          font-family: var(--rit-mono); font-weight: 700;
+          font-size: clamp(28px, 6vmin, 46px); line-height: 1;
+          font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
           color: #fff;
-          text-shadow: 0 0 12px rgba(0,0,0,0.9), 0 0 calc(var(--rit-p) * 26px) var(--rit-teinte);
+          text-shadow: 0 2px 18px rgba(0,0,0,0.95), 0 0 calc(var(--rit-p) * 28px) var(--rit-teinte);
         }
-        .rit-invite { color: hsl(var(--ds-text-muted)); opacity: calc(1 - var(--rit-p) * 4); animation: rit-respire 2.5s ease-in-out infinite; }
-        @keyframes rit-respire { 0%, 100% { opacity: 0.55; } 50% { opacity: 0.85; } }
-        .rit-message { color: color-mix(in oklab, var(--rit-teinte) calc(var(--rit-p) * 100%), hsl(var(--ds-text-muted))); text-shadow: 0 0 10px rgba(0,0,0,0.8); }
+        .rit-invite {
+          font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
+          letter-spacing: 0.28em; text-transform: uppercase;
+          color: hsl(var(--ds-text-secondary));
+          text-shadow: 0 1px 10px rgba(0,0,0,0.9);
+          opacity: calc(1 - var(--rit-p) * 5);
+          animation: rit-respire 2.6s ease-in-out infinite;
+        }
+        @keyframes rit-respire { 0%, 100% { opacity: 0.6; } 50% { opacity: 0.95; } }
 
+        .rit-verrou {
+          display: flex; flex-direction: column; align-items: center; gap: 10px;
+          color: hsl(var(--ds-accent-success));
+        }
+        .rit-verrou svg { filter: drop-shadow(0 0 14px currentColor); }
+        .rit-verrou-titre {
+          font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
+          letter-spacing: 0.3em; text-transform: uppercase;
+        }
+        .rit-verrou-mesures {
+          display: flex; align-items: center; gap: 10px; margin-top: 4px;
+          font-family: var(--rit-mono); font-size: max(9.5px, 0.594rem);
+          letter-spacing: 0.2em; text-transform: uppercase;
+          color: hsl(var(--ds-text-muted));
+        }
+        .rit-verrou-mesures b { color: hsl(var(--ds-text-secondary)); font-weight: 700; margin-right: 5px; }
+
+        /* ── Le rail bas ───────────────────────────────────────── */
+        .rit-pied {
+          position: relative; z-index: 20;
+          display: flex; flex-direction: column; align-items: center; gap: 10px;
+          padding: 10px 30px 30px;
+          transition: opacity 400ms var(--ds-ease-out);
+        }
+        .rit-message {
+          margin: 0;
+          font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
+          letter-spacing: 0.3em; text-transform: uppercase;
+          color: color-mix(in oklab, var(--rit-teinte) calc(var(--rit-p) * 100%), hsl(var(--ds-text-muted)));
+          text-shadow: 0 0 12px rgba(0,0,0,0.8);
+          text-align: center;
+        }
+        /* Une jauge segmentee, remplie par la variable — donc sans
+           aucun rendu React. */
+        .rit-jauge {
+          position: relative; display: block;
+          width: min(520px, 74vw); height: 8px;
+          background:
+            repeating-linear-gradient(90deg,
+              var(--rit-trait) 0 6px, transparent 6px 10px);
+        }
+        .rit-jauge i {
+          position: absolute; inset: 0 auto 0 0; display: block;
+          width: calc(var(--rit-p) * 100%);
+          background:
+            repeating-linear-gradient(90deg,
+              var(--rit-teinte) 0 6px, transparent 6px 10px);
+          box-shadow: 0 0 calc(6px + var(--rit-p) * 20px) var(--rit-teinte);
+        }
+        .rit-avert {
+          margin: 0; display: flex; align-items: center; gap: 7px;
+          font-family: var(--rit-mono); font-size: max(9px, 0.5625rem);
+          letter-spacing: 0.2em; text-transform: uppercase;
+          color: hsl(var(--ds-text-muted) / 0.6);
+        }
+        .rit-alerte {
+          display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;
+          padding: 9px 14px;
+          border-left: 2px solid hsl(var(--ds-accent-critical));
+          background: hsl(var(--ds-accent-critical) / 0.08);
+          font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
+          letter-spacing: 0.14em; text-transform: uppercase;
+          color: hsl(var(--ds-accent-critical));
+        }
+
+        /* ── Les outils ────────────────────────────────────────── */
+        .rit-outil {
+          display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+          min-height: 32px; padding: 0 11px;
+          font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
+          letter-spacing: 0.18em; text-transform: uppercase;
+          color: hsl(var(--ds-text-secondary));
+          background: hsl(var(--ds-surface-1) / 0.6);
+          border: 1px solid var(--rit-trait);
+          clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+          transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out), border-color 140ms var(--ds-ease-out);
+        }
+        .rit-outil:hover {
+          color: hsl(var(--ds-text-primary));
+          border-color: color-mix(in oklab, var(--rit-teinte) 60%, transparent);
+          background: hsl(var(--ds-surface-2) / 0.85);
+        }
+        .rit-outil:focus-visible { outline: 1px solid var(--rit-teinte); outline-offset: 2px; }
+        .rit-outil.est-icone { width: 32px; min-width: 32px; padding: 0; }
+        .rit-outil.est-large { padding: 0 22px; min-height: 38px; }
+
+        /* ── La revelation ─────────────────────────────────────── */
         .rit-revelation { animation: rit-revele 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
         @keyframes rit-revele {
-          0%   { opacity: 0; transform: translate(-50%, -40%) scale(1.1); filter: blur(20px); }
+          0%   { opacity: 0; transform: translate(-50%, -42%) scale(1.12); filter: blur(24px); }
           100% { opacity: 1; transform: translate(-50%, -50%) scale(1); filter: blur(0); }
         }
-        .rit-rayons { background: conic-gradient(hsl(var(--ds-accent-primary) / 0), hsl(var(--ds-accent-primary) / 0.2), hsl(var(--ds-accent-primary) / 0)); animation: rit-tourne 60s linear infinite; }
-        @keyframes rit-tourne { to { transform: rotate(360deg); } }
-        .rit-trait { animation: rit-etire 1.5s ease-out forwards 0.5s; }
-        @keyframes rit-etire { to { width: 200px; } }
-        .rit-monte { opacity: 0; animation: rit-remonte 1s ease-out forwards 1s; }
-        @keyframes rit-remonte { from { opacity: 0; transform: translateY(20px); } to { opacity: 0.7; transform: none; } }
+        .rit-connecte {
+          margin: 0; font-family: "Orbitron", sans-serif; font-weight: 900;
+          font-size: clamp(38px, 11vw, 104px); line-height: 0.92;
+          letter-spacing: 0.02em; text-transform: uppercase;
+          color: #fff;
+          text-shadow: 0 0 60px rgba(255,255,255,0.85), 0 0 140px hsl(var(--ds-accent-primary) / 0.6);
+        }
+        .rit-trait {
+          display: block; height: 1px; width: 0; margin: 22px auto 0;
+          background: hsl(var(--ds-accent-primary) / 0.6);
+          animation: rit-etire 1.4s ease-out forwards 0.5s;
+        }
+        @keyframes rit-etire { to { width: 220px; } }
+        .rit-sous-connecte {
+          margin: 18px 0 0; opacity: 0;
+          font-family: var(--rit-mono); font-size: max(10px, 0.625rem);
+          letter-spacing: 0.5em; text-transform: uppercase;
+          color: hsl(var(--ds-accent-primary) / 0.8);
+          animation: rit-remonte 1s ease-out forwards 0.9s;
+        }
+        @keyframes rit-remonte { from { opacity: 0; transform: translateY(18px); } to { opacity: 0.85; transform: none; } }
+
+        @media (pointer: coarse) { .rit-outil { min-height: 44px; } .rit-outil.est-icone { width: 44px; min-width: 44px; } }
 
         @media (prefers-reduced-motion: reduce) {
-          .rit-invite,
-          .rit-rayons, .rit-trait, .rit-monte, .rit-revelation { animation: none !important; }
-          .rit-monte { opacity: 0.7; }
-          .rit-trait { width: 200px; }
+          .rit-invite, .rit-revelation, .rit-trait, .rit-sous-connecte { animation: none !important; }
+          .rit-trait { width: 220px; }
+          .rit-sous-connecte { opacity: 0.85; }
         }
       `}</style>
       </div>

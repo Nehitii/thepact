@@ -2258,6 +2258,9 @@
     "errorWrite": "L appel n a pas pu etre enregistre.",
     "retry": "Reessayer",
     "flashWarning": "Effets lumineux intenses",
-    "announceDone": "Rituel enregistre"
+    "announceDone": "Rituel enregistre",
+    "charge": "Charge",
+    "streakShort": "Serie",
+    "callsShort": "Appels"
   }
 }

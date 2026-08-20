@@ -21,6 +21,10 @@ interface CoeurStellaireProps {
   progres: React.MutableRefObject<number>;
   phase: PhaseCoeur;
   immobile: boolean;
+  /** Le coeur se centre sur CET element, pas sur la toile : la scene a
+      un en-tete au-dessus d elle, donc son milieu n est pas celui de la
+      page. */
+  cible: React.RefObject<HTMLElement>;
 }
 
 const TAU = Math.PI * 2;
@@ -50,7 +54,7 @@ const rgba = ([r, g, b]: [number, number, number], a: number) =>
 interface Onde { r: number; force: number }
 interface Filament { angle: number; vie: number; duree: number; longueur: number; sens: number }
 
-export function CoeurStellaire({ progres, phase, immobile }: CoeurStellaireProps) {
+export function CoeurStellaire({ progres, phase, immobile, cible }: CoeurStellaireProps) {
   const toileRef = useRef<HTMLCanvasElement>(null);
   const phaseRef = useRef<PhaseCoeur>(phase);
   const debutPhaseRef = useRef<number>(0);
@@ -121,9 +125,15 @@ export function CoeurStellaire({ progres, phase, immobile }: CoeurStellaireProps
       ctx.clearRect(0, 0, largeur, hauteur);
       if (largeur === 0 || hauteur === 0) { boucleId = requestAnimationFrame(dessiner); return; }
 
-      const cx = largeur / 2;
-      const cy = hauteur / 2;
-      const base = Math.min(largeur, hauteur) * 0.15;
+      /* Le centre et la taille viennent de la zone de prise. Lire un
+         rectangle par image ne coute rien tant qu on n ecrit pas de
+         style entre-temps — et c est le seul moyen de rester centre
+         quand l en-tete change de hauteur. */
+      const boite = cible.current?.getBoundingClientRect();
+      const cadre = toile.getBoundingClientRect();
+      const cx = boite ? boite.left - cadre.left + boite.width / 2 : largeur / 2;
+      const cy = boite ? boite.top - cadre.top + boite.height / 2 : hauteur / 2;
+      const base = (boite ? Math.min(boite.width, boite.height) : Math.min(largeur, hauteur) * 0.3) * 0.5;
       const c = teinte(p);
 
       /* L effondrement : tout rentre dans le point, puis en jaillit. */
@@ -271,7 +281,7 @@ export function CoeurStellaire({ progres, phase, immobile }: CoeurStellaireProps
       cancelAnimationFrame(boucleId);
       observateur.disconnect();
     };
-  }, [progres, immobile]);
+  }, [progres, immobile, cible]);
 
   return (
     <canvas
