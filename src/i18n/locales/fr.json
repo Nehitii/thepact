@@ -1086,7 +1086,8 @@
       "sous": "Ce que coûte le pacte, ce qui est payé, ce qu il reste à trouver — et de quoi arbitrer.",
       "lecturePacte": "{{pct}} % financé",
       "lectureArbitrage_one": "{{count}} pièce en attente",
-      "lectureArbitrage_other": "{{count}} pièces en attente"
+      "lectureArbitrage_other": "{{count}} pièces en attente",
+      "navette": "Écrans de la page"
     }
   },
   "health": {

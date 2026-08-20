@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import "@/styles/finance.css";
 import "@/styles/finance-cyber.css";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { Settings } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePact } from "@/hooks/usePact";
@@ -14,7 +15,7 @@ import { ArbitragePanel } from "@/components/finance/ArbitragePanel";
 import { SmartFinancingPanel } from "@/components/finance/SmartFinancingPanel";
 import { MonthlyDashboard } from "@/components/finance/monthly/MonthlyDashboard";
 import { FinanceSettingsModal } from "@/components/finance/FinanceSettingsModal";
-import { Baie } from "@/components/finance/Baie";
+import { Navette, type Ecran } from "@/components/finance/Navette";
 import { DSPageShell } from "@/components/ds";
 import { roundMoney } from "@/lib/financeCategories";
 import { parseISO } from "date-fns";
@@ -23,21 +24,38 @@ import { useCurrency } from "@/contexts/CurrencyContext";
 
 /* FIN.SYS — L APPAREIL
  *
- * La page n est plus une suite de cartes : c est un terminal. Un
- * chassis, trois baies numerotees, et des lectures.
+ * La page tenait 4 547 pixels — 5,2 ecrans — et les trois chiffres qui
+ * en sont le sujet en occupaient 149. Trois surfaces de rythmes
+ * differents y etaient empilees comme si elles se valaient : un
+ * tableau qu on REGARDE, un outil ou l on DECIDE, une saisie qu on
+ * ENTRETIENT.
  *
- * Le jaune est la couleur de l appareil — chassis, index, equerres —
- * et ne dit jamais une donnee. Les donnees ont leurs encres : cyan
- * pour le pacte, vert pour ce qui est acquis, rouge pour ce qui
- * manque. On sait d un coup d oeil si l on regarde la machine ou son
- * pacte.
+ * Elles ont maintenant chacune leur ecran, et la navette les porte.
+ * Chaque bouton de la navette affiche la lecture de son ecran : on ne
+ * perd jamais le pourcentage finance de vue, meme en arbitrant.
+ *
+ * Le jaune reste la couleur de l appareil et ne dit jamais une donnee.
  */
+
+const CLES: Record<string, string> = { pacte: "1", arbitrage: "2", mois: "3" };
+const DEPUIS_URL = (v: string | null) =>
+  (Object.keys(CLES).find((k) => CLES[k] === v) ?? "pacte");
 
 export default function Finance() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { currency } = useCurrency();
   const [reglagesOuverts, setReglagesOuverts] = useState(false);
+
+  /* L ecran vit dans l adresse : un rechargement en pleine saisie ne
+     renvoie pas au tableau de bord. */
+  const [params, setParams] = useSearchParams();
+  const ecranActif = DEPUIS_URL(params.get("vue"));
+  const allerA = (cle: string) => {
+    const p = new URLSearchParams(params);
+    if (cle === "pacte") p.delete("vue"); else p.set("vue", CLES[cle]);
+    setParams(p, { replace: true });
+  };
 
   const { data: pact } = usePact(user?.id);
   const { data: goals = [] } = useGoals(pact?.id);
@@ -72,6 +90,21 @@ export default function Finance() {
   const partFinancee = compte.total > 0 ? Math.round((compte.finance / compte.total) * 100) : 0;
   const piecesRestantes = pieces.filter((p) => !p.acquired_at).length;
 
+  const ecrans: Ecran[] = [
+    {
+      cle: "pacte", index: "01", nom: t("finance.sections.pacte"),
+      lecture: t("finance.terminal.lecturePacte", { pct: partFinancee }),
+    },
+    {
+      cle: "arbitrage", index: "02", nom: t("finance.sections.arbitrage"),
+      lecture: t("finance.terminal.lectureArbitrage", { count: piecesRestantes }),
+    },
+    {
+      cle: "mois", index: "03", nom: t("finance.sections.mois"),
+      lecture: `${netMensuel >= 0 ? "+" : ""}${formatCurrency(netMensuel, currency)}`,
+    },
+  ];
+
   return (
     <DSPageShell width="lg" padding="tight">
       <div className="cy">
@@ -102,47 +135,54 @@ export default function Finance() {
             </div>
           </header>
 
-          <div className="space-y-4">
-            <Baie
-              index="01"
-              nom={t("finance.sections.pacte")}
-              lecture={t("finance.terminal.lecturePacte", { pct: partFinancee })}
-              vivant
-            >
-              <CartouchePacte compte={compte} />
-              <div className="mt-6">
-                <SmartFinancingPanel
-                  totalRemaining={compte.restant}
-                  projectEndDate={finDeProjet}
-                  currentMonthlyAllocation={
-                    reglages.project_monthly_allocation > 0
-                      ? reglages.project_monthly_allocation
-                      : Math.max(0, netMensuel)
-                  }
-                />
-              </div>
-            </Baie>
+          <Navette
+            ecrans={ecrans}
+            actif={ecranActif}
+            onChange={allerA}
+            libelle={t("finance.terminal.navette")}
+          />
 
-            <Baie
-              index="02"
-              nom={t("finance.sections.arbitrage")}
-              lecture={t("finance.terminal.lectureArbitrage", { count: piecesRestantes })}
-            >
-              <p className="cy-chapo">{t("finance.sections.arbitrageAide")}</p>
-              <ArbitragePanel
-                goals={goals}
-                netMensuel={Math.max(0, netMensuel)}
-                dejaFinance={reglages.already_funded}
-              />
-            </Baie>
+          <div
+            className="cy-baie cy-ecran"
+            key={ecranActif}
+            role="tabpanel"
+            id={`cy-ecran-${ecranActif}`}
+            aria-labelledby={`cy-onglet-${ecranActif}`}
+            tabIndex={0}
+          >
+            <div className="cy-baie-corps">
+              {ecranActif === "pacte" && (
+                <>
+                  <CartouchePacte compte={compte} />
+                  <div className="mt-6">
+                    <SmartFinancingPanel
+                      totalRemaining={compte.restant}
+                      projectEndDate={finDeProjet}
+                      currentMonthlyAllocation={
+                        reglages.project_monthly_allocation > 0
+                          ? reglages.project_monthly_allocation
+                          : Math.max(0, netMensuel)
+                      }
+                    />
+                  </div>
+                </>
+              )}
 
-            <Baie
-              index="03"
-              nom={t("finance.sections.mois")}
-              lecture={`${netMensuel >= 0 ? "+" : ""}${formatCurrency(netMensuel, currency)}`}
-            >
-              <MonthlyDashboard salaryPaymentDay={reglages.salary_payment_day} />
-            </Baie>
+              {ecranActif === "arbitrage" && (
+                <>
+                  <p className="cy-chapo">{t("finance.sections.arbitrageAide")}</p>
+                  <ArbitragePanel
+                    goals={goals}
+                    netMensuel={Math.max(0, netMensuel)}
+                    dejaFinance={reglages.already_funded}
+                  />
+                </>
+              )}
+
+              {ecranActif === "mois" && (
+                <MonthlyDashboard salaryPaymentDay={reglages.salary_payment_day} />
+              )}
+            </div>
           </div>
         </div>
       </div>

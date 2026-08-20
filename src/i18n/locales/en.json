@@ -1086,7 +1086,8 @@
       "sous": "What the pact costs, what is paid, what is left to find — and the means to decide.",
       "lecturePacte": "{{pct}}% funded",
       "lectureArbitrage_one": "{{count}} item pending",
-      "lectureArbitrage_other": "{{count}} items pending"
+      "lectureArbitrage_other": "{{count}} items pending",
+      "navette": "Page screens"
     }
   },
   "health": {
