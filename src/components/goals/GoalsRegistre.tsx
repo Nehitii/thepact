@@ -1,7 +1,8 @@
 import React, { memo, useMemo, useState } from "react";
 import { ChevronRight, Crown, Lock, Star } from "lucide-react";
 import { getStatusLabel } from "@/lib/goalConstants";
-import { filterGoalsByRule, nomSansPrefixeGroupe, type SuperGoalRule } from "@/components/goals/super/types";
+import { nomSansPrefixeGroupe } from "@/components/goals/super/types";
+import { membresDuGroupe, estFranchi } from "@/lib/superGoals";
 import type { Goal } from "@/hooks/useGoals";
 import { useGoalSteps } from "@/hooks/useGoalSteps";
 
@@ -65,9 +66,7 @@ function avancement(g: Goal, membres?: Goal[]): { faits: number; total: number; 
 
   if (g.goal_type === "super") {
     total = membres?.length ?? 0;
-    faits = (membres || []).filter(
-      (m) => m.status === "fully_completed" || m.status === "validated",
-    ).length;
+    faits = (membres || []).filter(estFranchi).length;
   } else if (g.goal_type === "habit") {
     total = g.habit_duration_days || 0;
     faits = Array.isArray(g.habit_checks) ? g.habit_checks.filter(Boolean).length : 0;
@@ -77,21 +76,6 @@ function avancement(g: Goal, membres?: Goal[]): { faits: number; total: number; 
   }
 
   return { faits, total, pct: total > 0 ? Math.min(100, Math.round((faits / total) * 100)) : 0 };
-}
-
-/** Membres d'un groupe : liste declaree, ou regle pour un groupe automatique. */
-function membresDe(g: Goal, tous: Goal[]): Goal[] {
-  const sg = g as any;
-  const ordinaires = tous.filter((x) => x.goal_type !== "super");
-  if (sg.is_dynamic_super && sg.super_goal_rule) {
-    return filterGoalsByRule(
-      ordinaires.filter((x) => x.id !== g.id),
-      sg.super_goal_rule as SuperGoalRule,
-    );
-  }
-  return ((sg.child_goal_ids || []) as string[])
-    .map((id) => ordinaires.find((x) => x.id === id))
-    .filter(Boolean) as Goal[];
 }
 
 type Etat = "attente" | "encours" | "honore";
@@ -200,12 +184,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
     const affiches = new Set(goals.map((g) => g.id));
 
     const parGroupe = supers.map((s) => {
-      const sg = s as any;
-      const membres: Goal[] = sg.is_dynamic_super && sg.super_goal_rule
-        ? filterGoalsByRule(ordinaires.filter((x) => x.id !== s.id), sg.super_goal_rule as SuperGoalRule)
-        : (((sg.child_goal_ids || []) as string[])
-            .map((id) => ordinaires.find((x) => x.id === id))
-            .filter(Boolean) as Goal[]);
+      const membres = membresDuGroupe(s, allGoals);
       // On ne montre que ce qui est sur la page courante : le registre
       // reste pagine, le regroupement ne le contourne pas.
       return { groupe: s, membres: membres.filter((m) => affiches.has(m.id)) };
@@ -219,7 +198,7 @@ export const GoalsRegistre = memo(function GoalsRegistre({
 
   const ligne = (g: Goal, indente = false) => {
     const t = teinte(g, customDifficultyColor);
-    const membres = g.goal_type === "super" ? membresDe(g, allGoals) : undefined;
+    const membres = g.goal_type === "super" ? membresDuGroupe(g, allGoals) : undefined;
     const av = avancement(g, membres);
     const etat = etatDe(g);
     const estOuvert = ouvert === g.id;

@@ -33,9 +33,10 @@ import {
   getStatusLabel as getCentralizedStatusLabel, mapToValidTag,
 } from "@/lib/goalConstants";
 import {
-  SuperGoalEditModal, computeSuperGoalProgress, filterGoalsByRule,
+  SuperGoalEditModal, computeSuperGoalProgress,
   type SuperGoalRule, type SuperGoalChildInfo,
 } from "@/components/goals/super";
+import { membresDuGroupe, estFranchi, synchroniserGroupes } from "@/lib/superGoals";
 import { usePact } from "@/hooks/usePact";
 import { useGoals } from "@/hooks/useGoals";
 import { useGoalDetailActions } from "@/hooks/useGoalDetailActions";
@@ -140,23 +141,35 @@ export default function GoalDetail() {
     if (!goalDetailLoading && !goalDetailData) setLoading(false);
   }, [goalDetailLoading, goalDetailData]);
 
-  // Super Goal children
+  /* Membres d un groupe. La composition suit la regle partagee ; ne
+     restent ici que les identifiants declares qui ne designent plus
+     rien — un objectif supprime laisse un lien casse, et mieux vaut le
+     montrer que le faire disparaitre. Ils ne comptent dans aucun
+     total. */
   const childGoalsInfo: SuperGoalChildInfo[] = useMemo(() => {
     if (!goal || goal.goal_type !== "super") return [];
-    let childIds = goal.child_goal_ids || [];
-    if (goal.is_dynamic_super && goal.super_goal_rule) {
-      const eligibleGoals = allGoals.filter((g) => g.id !== goal.id && g.goal_type !== "super");
-      const matched = filterGoalsByRule(eligibleGoals, goal.super_goal_rule as SuperGoalRule);
-      childIds = matched.map((g) => g.id);
-    }
-    return childIds.map((childId) => {
-      const childGoal = allGoals.find((g) => g.id === childId);
-      if (!childGoal) return { id: childId, name: "Missing Goal", difficulty: "medium", status: "not_started", progress: 0, isCompleted: false, isMissing: true };
-      const total = childGoal.totalStepsCount ?? childGoal.total_steps ?? 0;
-      const completed = childGoal.completedStepsCount ?? childGoal.validated_steps ?? 0;
-      return { id: childGoal.id, name: childGoal.name, difficulty: childGoal.difficulty, status: childGoal.status, progress: total > 0 ? Math.round((completed / total) * 100) : 0, isCompleted: childGoal.status === "fully_completed", isMissing: false };
-    });
-  }, [goal, allGoals]);
+    const membres = membresDuGroupe(goal, allGoals);
+    const casses = goal.is_dynamic_super
+      ? []
+      : (goal.child_goal_ids || []).filter((cid) => !allGoals.some((g) => g.id === cid));
+
+    return [
+      ...membres.map((m) => {
+        const total = m.totalStepsCount ?? m.total_steps ?? 0;
+        const faits = m.completedStepsCount ?? m.validated_steps ?? 0;
+        return {
+          id: m.id, name: m.name, difficulty: m.difficulty, status: m.status,
+          progress: total > 0 ? Math.round((faits / total) * 100) : 0,
+          isCompleted: estFranchi(m), isMissing: false,
+        };
+      }),
+      ...casses.map((cid) => ({
+        id: cid, name: t("goals.detail.missingGoal", "Objectif introuvable"),
+        difficulty: "medium", status: "not_started", progress: 0,
+        isCompleted: false, isMissing: true,
+      })),
+    ];
+  }, [goal, allGoals, t]);
 
   // Sync tags
   useEffect(() => {
@@ -250,6 +263,10 @@ export default function GoalDetail() {
         const { data: updatedSteps } = await supabase.from("steps").select("*").eq("goal_id", goal.id).order("order", { ascending: true });
         if (updatedSteps) { setSteps(updatedSteps); setEditStepItems(updatedSteps.map((s: any) => ({ dbId: s.id, name: s.title, key: `db-${s.id}`, excludeFromSpin: s.exclude_from_spin ?? false }))); }
 
+        /* La modification peut retirer les etapes qui restaient : le
+           declencheur en base fait alors basculer l objectif, et les
+           groupes qui le comptent doivent suivre. */
+        await synchroniserGroupes(goal.pact_id);
         queryClient.invalidateQueries({ queryKey: ["goals"] });
         queryClient.invalidateQueries({ queryKey: ["goal-detail", id] });
         setEditDialogOpen(false);

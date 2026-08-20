@@ -8,6 +8,7 @@
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { synchroniserGroupes } from "@/lib/superGoals";
 import { trackStepCompleted, trackGoalCompleted } from "@/lib/achievements";
 import { toast } from "sonner";
 import type { GoalDetailData, StepData } from "@/hooks/useGoalDetail";
@@ -40,6 +41,18 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
 
   const getDetail = () => qc.getQueryData<DetailCache>(detailKey as any) ?? null;
   const getCostItems = () => qc.getQueryData<CostItem[]>(costKey as any) ?? [];
+
+  /* Un groupe n a ni etape ni jour a cocher : son avancement est
+     celui de ses membres, et le declencheur qui derive le statut en
+     base lit des compteurs que rien ne renseignait pour lui. Tout
+     geste qui franchit, defait ou deplace un objectif peut changer le
+     compte d un groupe — y compris la mise en avant, dont une regle
+     de groupe automatique peut dependre. On les remet d accord avant
+     de rafraichir les listes. */
+  const repercuterSurGroupes = async () => {
+    const pactId = getDetail()?.goal.pact_id;
+    if (pactId) await synchroniserGroupes(pactId);
+  };
 
   const burstParticles = (color: string) => {
     triggerParticles(window.innerWidth / 2, window.innerHeight / 2, color);
@@ -101,7 +114,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
       toast.error("Error", { description: err?.message ?? "Failed to update step" });
     },
-    onSettled: () => {
+    onSettled: async () => {
+      await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
       qc.invalidateQueries({ queryKey: detailKey });
       qc.invalidateQueries({ queryKey: ["pact-wishlist"] });
@@ -179,7 +193,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
       toast.error("Error", { description: err?.message ?? "Failed to update habit" });
     },
-    onSettled: () => {
+    onSettled: async () => {
+      await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
       qc.invalidateQueries({ queryKey: detailKey });
     },
@@ -253,7 +268,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       toast.success("Goal Completed! 🎉", { description: "All steps have been marked as complete" });
     },
     onError: (err: any) => toast.error("Error", { description: err?.message ?? "Failed to complete goal" }),
-    onSettled: () => {
+    onSettled: async () => {
+      await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
       qc.invalidateQueries({ queryKey: detailKey });
     },
@@ -280,7 +296,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
       toast.error("Error", { description: err?.message ?? "Failed to update status" });
     },
-    onSettled: () => {
+    onSettled: async () => {
+      await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
       qc.invalidateQueries({ queryKey: detailKey });
     },
@@ -398,7 +415,8 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
 
       return newGoal.id as string;
     },
-    onSuccess: (newId) => {
+    onSuccess: async (newId) => {
+      await repercuterSurGroupes();
       qc.invalidateQueries({ queryKey: ["goals"] });
       toast.success("Goal Duplicated", { description: "A copy of this goal has been created." });
       navigate(`/goals/${newId}`);
@@ -410,8 +428,13 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
   const deleteGoal = useMutation({
     mutationFn: async () => {
       if (!goalId) throw new Error("Missing goal id");
+      /* Le pacte se lit avant la suppression : apres, la fiche n est
+         plus en cache et les groupes qui comptaient cet objectif
+         resteraient sur un total perime. */
+      const pactId = getDetail()?.goal.pact_id;
       const { error } = await supabase.from("goals").delete().eq("id", goalId);
       if (error) throw error;
+      if (pactId) await synchroniserGroupes(pactId);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["goals"] });
@@ -446,7 +469,10 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     onError: (_e, _v, ctx) => {
       if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
     },
-    onSettled: () => qc.invalidateQueries({ queryKey: ["goals"] }),
+    onSettled: async () => {
+      await repercuterSurGroupes();
+      qc.invalidateQueries({ queryKey: ["goals"] });
+    },
   });
 
   const toggleFocus = (e: React.MouseEvent) => {
