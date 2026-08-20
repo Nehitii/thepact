@@ -97,6 +97,9 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
   }), [allGoals, diffFilter]);
 
   const hasEligibleGoals = eligibleGoals.length > 0;
+  /* Le pere passe deja la brigade quand elle existe : on le reconnait
+     a ce que tous les objectifs recus la portent. */
+  const vivierBrigade = hasEligibleGoals && allGoals.every((g) => g.is_focus);
 
   const handleSpinStart = async () => {
     if (!hasEligibleGoals) return;
@@ -167,6 +170,15 @@ export function MissionRandomizer({ allGoals, className }: MissionRandomizerProp
                 <Crosshair className="w-10 h-10 text-[var(--nexus-text-dimmer)] mb-4" />
                 <span className="ds-t-label font-orbitron uppercase tracking-[0.15em] text-[var(--nexus-text-dimmer)]">
                   INITIALISER LE SCAN DE MISSION
+                </span>
+                {/* Le vivier du tirage se dit. Il se retrecissait deja a
+                    la brigade quand elle existait, mais en silence : on
+                    pouvait croire le tirage casse en le voyant proposer
+                    trois fois le meme objectif. */}
+                <span className="ds-t-label mt-2 uppercase tracking-[0.12em] text-[var(--nexus-text-dimmer)] opacity-70">
+                  {vivierBrigade
+                    ? `▸ BRIGADE · ${eligibleGoals.length} OBJECTIF${eligibleGoals.length > 1 ? "S" : ""}`
+                    : `▸ TOUT LE PACTE · ${eligibleGoals.length} OBJECTIFS`}
                 </span>
               </div>
 

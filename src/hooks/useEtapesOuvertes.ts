@@ -25,6 +25,8 @@ export interface EtapeOuverte {
   avancement: number;
   /** L objectif est deja engage : reprendre plutot qu ouvrir. */
   engage: boolean;
+  /** L objectif fait partie des trois de la brigade. */
+  brigade: boolean;
   /** Le tirage de mission ne propose jamais cette etape. */
   exclue: boolean;
 }
@@ -76,6 +78,7 @@ export function useEtapesOuvertes(goals: Goal[], couleurPersonnalisee?: string) 
             : (PALIER[g.difficulty] || "#94a3b8"),
           avancement: total > 0 ? Math.round((faites / total) * 100) : 0,
           engage: g.status === "in_progress",
+          brigade: !!g.is_focus,
           exclue: !!s.exclude_from_spin,
         }];
       });
@@ -92,12 +95,15 @@ export function useEtapesOuvertes(goals: Goal[], couleurPersonnalisee?: string) 
  * est presque fini avant d ouvrir un chantier de plus. A egalite,
  * l ordre des etapes dans leur objectif.
  */
+export type PorteeFront = "brigade" | "engages" | "tout";
+
 export function classerLeFront(
   etapes: EtapeOuverte[],
-  options: { engagesSeuls: boolean; sansExclues: boolean },
+  options: { portee: PorteeFront; sansExclues: boolean },
 ): EtapeOuverte[] {
   let retenues = etapes;
-  if (options.engagesSeuls) retenues = retenues.filter((e) => e.engage);
+  if (options.portee === "brigade") retenues = retenues.filter((e) => e.brigade);
+  else if (options.portee === "engages") retenues = retenues.filter((e) => e.engage);
   if (options.sansExclues) retenues = retenues.filter((e) => !e.exclue);
   return [...retenues].sort(
     (a, b) => b.avancement - a.avancement || a.rang - b.rang,

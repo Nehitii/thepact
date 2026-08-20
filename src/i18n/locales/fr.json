@@ -2440,11 +2440,17 @@
     "title": "Le front",
     "engaged": "Engagés",
     "everything": "Tout",
-    "scopeHint": "Étapes des objectifs engagés, ou de tous",
+    "scopeHint": "Étapes de la brigade, des objectifs engagés, ou de tous",
     "excluded": "hors tirage",
     "excludedHint": "Masquer les étapes exclues du tirage",
     "empty": "Aucune étape ouverte",
     "emptyEngaged": "Aucune étape sur un objectif engagé",
-    "seeAll": "Voir les {{n}} étapes"
+    "seeAll": "Voir les {{n}} étapes",
+    "emptyBrigade": "Aucune étape dans la brigade"
+  },
+  "brigade": {
+    "label": "Brigade",
+    "refusPlein": "La brigade est au complet — relâche un objectif d'abord.",
+    "refusType": "Seuls les objectifs ordinaires rejoignent la brigade."
   }
 }

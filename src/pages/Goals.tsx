@@ -1,7 +1,10 @@
-import { useCallback , useEffect } from "react";
+import { useCallback } from "react";
 import "@/styles/cyberpunk.css";
 import "@/styles/goals.css";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { brigadeDe, refusDeRecrutement, PLAFOND_BRIGADE } from "@/lib/brigade";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
@@ -26,6 +29,7 @@ const itemVariants = {
 };
 
 export default function Goals() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -41,19 +45,6 @@ export default function Goals() {
   const loading = !user || goalsLoading;
 
   const filters = useGoalFilters(goals);
-
-  /* « /goals?vue=front » ouvre directement la vue des etapes : c est
-     le lien que pose le bloc de l accueil. On consomme le parametre
-     aussitot lu, sinon un retour arriere ramenerait la vue de force
-     alors que l utilisateur en a change entre-temps. */
-  const [parametres, setParametres] = useSearchParams();
-  useEffect(() => {
-    if (parametres.get("vue") !== "front") return;
-    filters.setDisplayMode("front");
-    const p = new URLSearchParams(parametres);
-    p.delete("vue");
-    setParametres(p, { replace: true });
-  }, [parametres, setParametres, filters]);
 
   // Optimistic focus toggle — React Query mutation with prefix-scoped invalidation
   const focusKey = ["goals", pact?.id] as const;
@@ -82,13 +73,28 @@ export default function Goals() {
     (goalId: string, currentFocus: boolean, e: React.MouseEvent) => {
       e.stopPropagation();
       const goal = goals.find((g) => g.id === goalId);
-      if (goal) {
-        triggerParticles(e.clientX, e.clientY, getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor));
+      if (!goal) return;
+
+      /* La brigade tient trois places. Le refus se dit — une etoile qui
+         ne s allume pas sans un mot passe pour une panne. */
+      const refus = refusDeRecrutement(goals, goal);
+      if (refus) {
+        toast.error(t(refus === "brigade.refusPlein" ? "brigade.refusPlein" : "brigade.refusType", {
+          defaultValue: refus === "brigade.refusPlein"
+            ? "La brigade est au complet — relâche un objectif d'abord."
+            : "Seuls les objectifs ordinaires rejoignent la brigade.",
+          n: PLAFOND_BRIGADE,
+        }));
+        return;
       }
+
+      triggerParticles(e.clientX, e.clientY, getUnifiedDifficultyColor(goal.difficulty, customDifficultyColor));
       toggleFocusMutation.mutate({ goalId, nextFocus: !currentFocus });
     },
-    [goals, customDifficultyColor, triggerParticles, toggleFocusMutation],
+    [goals, customDifficultyColor, triggerParticles, toggleFocusMutation, t],
   );
+
+  const brigade = brigadeDe(goals);
 
   /* Les trois nombres que l en-tete affiche. Le decoupage suit celui des
      onglets (useGoalFilters) : un objectif non commence reste actif. */
@@ -114,6 +120,8 @@ export default function Goals() {
                         total={goals.length}
                         actifs={actifs}
                         franchis={franchis}
+                        brigade={brigade.length}
+                        plafondBrigade={PLAFOND_BRIGADE}
                         debutPacte={pact?.project_start_date}
                         finPacte={pact?.project_end_date}
                         dernierFranchi={dernierFranchi}
@@ -138,6 +146,8 @@ export default function Goals() {
                         total={goals.length}
                         actifs={actifs}
                         franchis={franchis}
+                        brigade={brigade.length}
+                        plafondBrigade={PLAFOND_BRIGADE}
                         debutPacte={pact?.project_start_date}
                         finPacte={pact?.project_end_date}
                         dernierFranchi={dernierFranchi}

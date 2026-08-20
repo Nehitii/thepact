@@ -22,6 +22,9 @@ interface Props {
   total: number;
   actifs: number;
   franchis: number;
+  /** Objectifs en brigade, sur les trois places. */
+  brigade: number;
+  plafondBrigade: number;
   /** Bornes du pacte. Absentes tant qu'il n'est pas chargé. */
   debutPacte?: string | null;
   finPacte?: string | null;
@@ -30,7 +33,7 @@ interface Props {
 }
 
 export function GoalsHeader({
-  total, actifs, franchis, debutPacte, finPacte, dernierFranchi,
+  total, actifs, franchis, brigade, plafondBrigade, debutPacte, finPacte, dernierFranchi,
 }: Props) {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -60,6 +63,7 @@ export function GoalsHeader({
   }
   segments.push(`${franchis}/${total} FRANCHIS`);
   segments.push(`${actifs} EN COURS`);
+  segments.push(`BRIGADE ${brigade}/${plafondBrigade}`);
   if (dernierFranchi) {
     try {
       const j = differenceInCalendarDays(new Date(), parseISO(dernierFranchi));
@@ -148,6 +152,12 @@ export function GoalsHeader({
           <div className="gl-bilan-detail">
             <Part libelle={t("goals.activeLabel")} valeur={actifs} total={total} teinte="#ffab00" />
             <Part libelle={t("goals.doneLabel")} valeur={franchis} total={total} teinte="#00ff88" />
+            <Part
+              libelle={t("brigade.label", "Brigade")}
+              valeur={brigade}
+              total={plafondBrigade}
+              teinte="#fcee0a"
+            />
           </div>
         </div>
 

@@ -174,7 +174,6 @@ export default function Onboarding() {
           difficulty: tpl.difficulty,
           goal_type: tpl.goal_type,
           total_steps: tpl.total_steps ?? tpl.habit_duration_days ?? 0,
-          is_focus: true,
         };
         if (tpl.goal_type === "habit" && tpl.habit_duration_days) {
           goalPayload.habit_duration_days = tpl.habit_duration_days;
@@ -188,7 +187,6 @@ export default function Onboarding() {
           difficulty: "medium",
           goal_type: "normal",
           total_steps: 5,
-          is_focus: true,
         } as any);
       }
       // Let the sealing animation breathe before navigating

@@ -165,32 +165,11 @@
   text-transform: uppercase;
   color: var(--fr-encre-3);
 }
-.fr-pied {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 30px;
-  padding: 0 12px;
-  font-family: var(--fr-mono);
-  font-size: max(11px, 0.6875rem);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--fr-encre-2);
-  background: transparent;
-  border: none;
-  border-top: 1px solid var(--fr-trait);
-  cursor: pointer;
-  width: 100%;
-}
-.fr-pied:hover { color: var(--cp-cyan); }
 
 
-/* ── Les deux densites ──
-   Compact : sept lignes, aucun defilement, un pied qui renvoie a la
-   vue pleine. Plein : toute la largeur, et la liste defile a
-   l interieur du volet plutot que d allonger la page. */
-.fr-volet--compact .fr-liste { max-height: none; }
-.fr-volet:not(.fr-volet--compact) .fr-liste { max-height: clamp(300px, 58vh, 640px); }
+/* La liste defile a l interieur du volet plutot que d allonger la
+   page : trente-neuf lignes ne se lisent pas d une traite. */
+.fr-liste { max-height: clamp(300px, 58vh, 640px); }
 
 /* Sur telephone la jauge et le pourcentage se disputent le nom de
    l etape, qui est la seule chose qu on lit vraiment. */
@@ -198,3 +177,12 @@
   .fr-ligne { grid-template-columns: minmax(0, 1fr) 40px 16px; }
   .fr-jauge { display: none; }
 }
+
+/* ── La brigade ──
+   Trois objectifs designes ; leurs etapes portent l etoile et un
+   flanc plus franc. Le reste de la liste ne change pas : la marque
+   doit se voir sans repeindre la ligne. */
+.fr-marque { color: var(--fr-or); margin-right: 5px; vertical-align: -1px; }
+.fr-ligne[data-brigade="1"]::before { width: 3px; }
+.fr-portee { display: inline-flex; align-items: center; gap: 5px; color: var(--fr-or); border-color: color-mix(in srgb, var(--fr-or) 55%, transparent); }
+.fr-portee svg { flex-shrink: 0; }

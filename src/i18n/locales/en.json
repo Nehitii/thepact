@@ -2440,11 +2440,17 @@
     "title": "The front",
     "engaged": "Engaged",
     "everything": "Everything",
-    "scopeHint": "Steps from engaged goals, or from all",
+    "scopeHint": "Steps from the brigade, from engaged goals, or from all",
     "excluded": "not drawn",
     "excludedHint": "Hide steps excluded from the draw",
     "empty": "No open step",
     "emptyEngaged": "No step on an engaged goal",
-    "seeAll": "See all {{n}} steps"
+    "seeAll": "See all {{n}} steps",
+    "emptyBrigade": "No step in the brigade"
+  },
+  "brigade": {
+    "label": "Brigade",
+    "refusPlein": "The brigade is full — release a goal first.",
+    "refusType": "Only ordinary goals join the brigade."
   }
 }

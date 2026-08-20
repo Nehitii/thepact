@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { synchroniserGroupes } from "@/lib/superGoals";
+import { PLAFOND_BRIGADE, recrutable } from "@/lib/brigade";
 import { trackStepCompleted, trackGoalCompleted } from "@/lib/achievements";
 import { toast } from "sonner";
 import type { GoalDetailData, StepData } from "@/hooks/useGoalDetail";
@@ -449,9 +450,23 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
     mutationFn: async () => {
       const detail = getDetail();
       if (!detail) throw new Error("Goal not loaded");
+      const rejoint = !detail.goal.is_focus;
+
+      if (rejoint) {
+        if (!recrutable(detail.goal)) throw new Error("BRIGADE_TYPE");
+        const { count } = await supabase
+          .from("goals")
+          .select("id", { count: "exact", head: true })
+          .eq("pact_id", detail.goal.pact_id!)
+          .eq("is_focus", true)
+          .eq("goal_type", "normal")
+          .not("status", "in", '("fully_completed","validated","archived")');
+        if ((count ?? 0) >= PLAFOND_BRIGADE) throw new Error("BRIGADE_PLEINE");
+      }
+
       const { error } = await supabase
         .from("goals")
-        .update({ is_focus: !detail.goal.is_focus })
+        .update({ is_focus: rejoint })
         .eq("id", detail.goal.id);
       if (error) throw error;
     },
@@ -466,8 +481,15 @@ export function useGoalDetailActions({ goalId, userId, getDifficultyColor, trigg
       }
       return { snapshot };
     },
-    onError: (_e, _v, ctx) => {
+    onError: (e: Error, _v, ctx) => {
       if (ctx?.snapshot) qc.setQueryData(detailKey as any, ctx.snapshot);
+      /* Une etoile qui ne s allume pas sans un mot passe pour une
+         panne : le refus se dit. */
+      if (e?.message === "BRIGADE_PLEINE") {
+        toast.error(`La brigade est au complet — relache un objectif d'abord (${PLAFOND_BRIGADE} places).`);
+      } else if (e?.message === "BRIGADE_TYPE") {
+        toast.error("Seuls les objectifs ordinaires rejoignent la brigade.");
+      }
     },
     onSettled: async () => {
       await repercuterSurGroupes();

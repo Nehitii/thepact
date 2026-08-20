@@ -7,6 +7,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import type { Goal } from "@/hooks/useGoals";
 import { filterGoalsByRule, type SuperGoalRule } from "@/components/goals/super/types";
+import { brigadeDe } from "@/lib/brigade";
 
 export type SortOption = "difficulty" | "type" | "points" | "created" | "name" | "status" | "start" | "progression" | "super_first" | "super_last";
 export type SortDirection = "asc" | "desc";
@@ -54,7 +55,25 @@ const getProgression = (goal: Goal): number => {
   return total === 0 ? 0 : (completed / total) * 100;
 };
 
+/**
+ * La brigade passe devant, quel que soit le tri choisi.
+ *
+ * C est ce qui fait qu une etoile se voit sans la chercher : trois
+ * objectifs designes, trois lignes en tete de liste. Le tri demande
+ * s applique a l interieur de chaque camp — celui de JavaScript est
+ * stable, l ordre voulu est donc conserve.
+ */
+function brigadeDevant(goals: Goal[]): Goal[] {
+  const dedans = new Set(brigadeDe(goals).map((g) => g.id));
+  if (dedans.size === 0) return goals;
+  return [...goals].sort((a, b) => Number(dedans.has(b.id)) - Number(dedans.has(a.id)));
+}
+
 function sortGoals(goals: Goal[], sortBy: SortOption, dir: SortDirection): Goal[] {
+  return brigadeDevant(trierParCritere(goals, sortBy, dir));
+}
+
+function trierParCritere(goals: Goal[], sortBy: SortOption, dir: SortDirection): Goal[] {
   const sorted = [...goals];
   const d = dir === "asc" ? 1 : -1;
 

@@ -23,8 +23,6 @@ import { useTodoReminders } from "@/hooks/useTodoReminders";
 import { usePact } from "@/hooks/usePact";
 import { useProfile } from "@/hooks/useProfile";
 import { useGoals } from "@/hooks/useGoals";
-import { useEtapesOuvertes } from "@/hooks/useEtapesOuvertes";
-import { FrontListe } from "@/components/front/FrontListe";
 import { useUserShop } from "@/hooks/useShop";
 import { useFinanceSettings } from "@/hooks/useFinance";
 import { useRankXP } from "@/hooks/useRankXP";
@@ -39,7 +37,6 @@ export default function Home() {
   const { data: pact, isLoading: pactLoading } = usePact(user?.id);
   const { data: profile } = useProfile(user?.id);
   const { data: allGoals = [], isLoading: goalsLoading } = useGoals(pact?.id);
-  const { data: etapesOuvertes = [], isLoading: chargementEtapes } = useEtapesOuvertes(allGoals);
   const { isModulePurchased, isLoading: shopLoading } = useUserShop(user?.id);
   const { data: financeSettings } = useFinanceSettings(user?.id);
   const { data: rankData } = useRankXP(user?.id, pact?.id);
@@ -281,18 +278,6 @@ export default function Home() {
               perissable de la page. Elles etaient repliees sous une
               etiquette de surveillance, donc jamais vues. */}
           <DailyQuestsPanel />
-
-          {/* Le front : sur quoi on peut partir, maintenant. L accueil
-              savait deja repondre a cette question, mais au hasard — le
-              tirage de mission, juste au-dessus, prend un objectif et sa
-              premiere etape. Voici la reponse deliberee, sept lignes,
-              les objectifs les plus proches du but en premier. */}
-          <FrontListe
-            etapes={etapesOuvertes}
-            chargement={chargementEtapes}
-            compact
-            onToutVoir={() => navigate("/goals?vue=front")}
-          />
         </section>
 
         {/* L'ETAT — ou j'en suis. Le compte a rebours dit le temps qui
