@@ -20,6 +20,8 @@ const NewGoal = lazy(routeImports.newGoal);
 const GoalDetail = lazy(routeImports.goalDetail);
 const StepDetail = lazy(() => import("./pages/StepDetail"));
 const Finance = lazy(routeImports.finance);
+/* APERCU JETABLE : part avec le choix de disposition. */
+const ApercuFinance = lazy(() => import("./pages/ApercuFinance"));
 const Journal = lazy(routeImports.journal);
 const Profile = lazy(routeImports.profile);
 const BoundedProfile = lazy(routeImports.boundedProfile);
@@ -100,6 +102,7 @@ function AppRoutes() {
         <Route path="goals/:id" element={<GoalDetail />} />
         <Route path="step/:stepId" element={<StepDetail />} />
         <Route path="finance" element={<Finance />} />
+        <Route path="apercu-finance" element={<ApercuFinance />} />
         <Route path="journal" element={<Journal />} />
         <Route path="profile" element={<Profile />} />
         <Route path="profile/bounded" element={<BoundedProfile />} />

@@ -1,0 +1,132 @@
+/* APERCU JETABLE — l habillage du selecteur et des cinq dispositions.
+   Ce fichier part avec la page d apercu. */
+
+.ap-barre {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 10px; padding: 10px 12px;
+  background: rgba(252, 238, 10, 0.05); border: 1px dashed var(--cy-jaune);
+}
+.ap-titre {
+  font-family: var(--cy-mono); font-size: 10px; letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--cy-jaune); margin-right: 6px;
+}
+.ap-choix {
+  min-height: 40px; padding: 0 12px; cursor: pointer;
+  background: transparent; border: 1px solid var(--cy-trait);
+  font-family: var(--cy-mono); font-size: 10.5px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--cy-encre-2);
+}
+.ap-choix b { color: var(--cy-jaune); font-weight: 700; margin-right: 6px; }
+.ap-choix[aria-pressed="true"] {
+  border-color: var(--cy-jaune); background: rgba(252, 238, 10, 0.12); color: var(--cy-encre);
+}
+.ap-note {
+  margin: 0 0 18px; font-family: var(--cy-titre);
+  font-size: 14px; color: var(--cy-encre-2);
+}
+
+/* A — le mur et ses onglets */
+.ap-mur { position: sticky; top: 8px; z-index: 5; margin-bottom: 12px; }
+.ap-onglets { display: flex; align-items: flex-end; gap: 4px; }
+.ap-onglets button {
+  min-height: 44px; padding: 0 18px; cursor: pointer;
+  background: var(--cy-plaque); border: 1px solid var(--cy-trait); border-bottom: 0;
+  clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%);
+  font-family: var(--cy-titre); font-weight: 700; font-size: 14px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--cy-encre-3);
+}
+.ap-onglets button b {
+  font-family: var(--cy-chiffre); font-size: 11px; margin-right: 9px; color: var(--cy-trait-fort);
+}
+.ap-onglets button[aria-pressed="true"] { color: var(--cy-encre); background: var(--cy-creux); }
+.ap-onglets button[aria-pressed="true"] b { color: var(--cy-jaune); }
+.ap-onglets-fin { flex: 1; height: 1px; background: var(--cy-trait); }
+.ap-scene { border-top: 0; }
+
+.ap-repli { margin-top: 12px; border: 1px solid var(--cy-trait); background: var(--cy-plaque); }
+.ap-repli summary {
+  padding: 12px 16px; cursor: pointer;
+  font-family: var(--cy-mono); font-size: 10.5px; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--cy-encre-3);
+}
+.ap-repli-corps { padding: 0 16px 16px; }
+
+/* B — la navette */
+.ap-navette { display: flex; gap: 6px; margin-bottom: 12px; }
+.ap-navette button {
+  flex: 1; min-height: 62px; padding: 0 16px; cursor: pointer;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--cy-plaque); border: 1px solid var(--cy-trait);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: border-color 180ms, background 180ms;
+}
+.ap-navette button b {
+  font-family: var(--cy-chiffre); font-size: 17px; font-weight: 700; color: var(--cy-trait-fort);
+}
+.ap-navette button span {
+  font-family: var(--cy-titre); font-weight: 700; font-size: 15px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--cy-encre-3);
+}
+.ap-navette button[aria-pressed="true"] {
+  border-color: var(--cy-jaune); background: rgba(252, 238, 10, 0.07);
+}
+.ap-navette button[aria-pressed="true"] b { color: var(--cy-jaune); }
+.ap-navette button[aria-pressed="true"] span { color: var(--cy-encre); }
+
+/* C — les tiroirs */
+.ap-tiroir-tete {
+  width: 100%; cursor: pointer; text-align: left; border: 0; border-bottom: 1px solid var(--cy-trait);
+}
+.ap-tiroir-tete .cy-lecture svg {
+  width: 15px; height: 15px; color: var(--cy-encre-3);
+  transition: transform 220ms var(--ds-ease-out, ease-out);
+}
+.ap-tiroir-tete[aria-expanded="true"] .cy-lecture svg { transform: rotate(180deg); color: var(--cy-jaune); }
+
+/* D — deux colonnes */
+.ap-colonnes { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 14px; align-items: start; }
+.ap-col-gauche { position: sticky; top: 8px; }
+@media (max-width: 1180px) {
+  .ap-colonnes { grid-template-columns: 1fr; }
+  .ap-col-gauche { position: static; }
+}
+
+/* E — le poste de commande */
+.ap-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+@media (max-width: 720px) { .ap-modes { grid-template-columns: 1fr; } }
+.ap-mode {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
+  padding: 22px 24px; cursor: pointer; text-align: left;
+  background: var(--cy-plaque); border: 1px solid var(--cy-trait);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  transition: border-color 200ms, background 200ms, transform 200ms;
+}
+.ap-mode:hover {
+  border-color: var(--cy-jaune); background: rgba(252, 238, 10, 0.06); transform: translateY(-2px);
+}
+.ap-mode svg { width: 22px; height: 22px; color: var(--cy-jaune); }
+.ap-mode b {
+  font-family: var(--cy-titre); font-weight: 700; font-size: 20px;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--cy-encre);
+}
+.ap-mode span {
+  font-family: var(--cy-mono); font-size: 11px; letter-spacing: 0.12em; color: var(--cy-encre-3);
+}
+
+.ap-plein {
+  position: fixed !important; left: 0 !important; top: 0 !important;
+  width: 100vw !important; max-width: none !important;
+  height: 100dvh !important; max-height: none !important;
+  transform: none !important; border-radius: 0 !important; border: 0 !important;
+  padding: 0 !important; gap: 0 !important;
+  display: flex !important; flex-direction: column;
+  background: var(--cy-fond) !important;
+  z-index: 9999;
+}
+.ap-plein [class*="absolute right-4 top-4"] { display: none; }
+.ap-plein-tete {
+  display: flex; align-items: stretch; flex-shrink: 0;
+  border-bottom: 1px solid var(--cy-trait); background: var(--cy-plaque);
+}
+.ap-plein-tete .cy-outil { align-self: center; margin-right: 12px; }
+.ap-plein-corps { flex: 1; min-height: 0; overflow-y: auto; padding: 20px; }
