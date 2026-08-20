@@ -8,7 +8,7 @@
  */
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Check, MessageSquare } from "lucide-react";
+import { Check, MessageSquare, ListOrdered, ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
 import { formatCurrency } from "@/lib/currency";
 import { getCostCategoryLabel } from "@/lib/goalConstants";
 import { HabitHeatmap } from "@/components/habits/HabitHeatmap";
@@ -257,6 +257,19 @@ export interface MembreDossier {
   isMissing?: boolean;
 }
 
+/* Trois facons de lire un groupe, dans cet ordre : celui qu on a
+   choisi en le composant, les plus avances d abord, les plus en
+   retard d abord. Le bouton passe de l une a l autre. */
+const TRIS = ["ordre", "avance", "retard"] as const;
+type Tri = (typeof TRIS)[number];
+const CLE_TRI = "vowpact.groupe.tri";
+
+const ICONE_TRI = {
+  ordre: ListOrdered,
+  avance: ArrowDownWideNarrow,
+  retard: ArrowUpNarrowWide,
+} as const;
+
 export const DossierMembres = React.memo(function DossierMembres({
   membres, teintePar, dynamique, onOuvrir, onModifier, auSeuil, onHonorer, onEclat,
 }: {
@@ -273,21 +286,63 @@ export const DossierMembres = React.memo(function DossierMembres({
   const { t } = useTranslation();
   const franchis = membres.filter((m) => m.isCompleted).length;
 
+  /* Le choix se garde d un groupe a l autre et d une session a la
+     suivante : qui lit ses groupes par avancement les lit tous ainsi. */
+  const [tri, setTri] = React.useState<Tri>(() => {
+    const garde = typeof localStorage !== "undefined" ? localStorage.getItem(CLE_TRI) : null;
+    return (TRIS as readonly string[]).includes(garde ?? "") ? (garde as Tri) : "ordre";
+  });
+
+  const changerTri = () => {
+    const suivant = TRIS[(TRIS.indexOf(tri) + 1) % TRIS.length];
+    setTri(suivant);
+    try { localStorage.setItem(CLE_TRI, suivant); } catch { /* mode prive */ }
+  };
+
+  const ordonnes = React.useMemo(() => {
+    if (tri === "ordre") return membres;
+    /* Le tri de JavaScript est stable : a avancement egal, les membres
+       gardent l ordre du groupe. Un objectif introuvable n a pas
+       d avancement — il finit en bas, dans les deux sens. */
+    const rang = (m: MembreDossier) => (m.isMissing ? -1 : m.progress);
+    return [...membres].sort((a, b) => {
+      if (a.isMissing !== b.isMissing) return a.isMissing ? 1 : -1;
+      return tri === "avance" ? rang(b) - rang(a) : rang(a) - rang(b);
+    });
+  }, [membres, tri]);
+
+  const IconeTri = ICONE_TRI[tri];
+  const nomTri = tri === "ordre"
+    ? t("goals.detail.sortOrder", "Ordre")
+    : t("goals.detail.sortProgress", "Avancement");
+
   return (
     <section className="gd-volet">
       <header className="gd-tete">
         {dynamique
           ? t("goals.detail.dynamicGroup", "Groupe dynamique")
           : t("goals.detail.group", "Groupe")}
-        <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 10 }}>
-          <b style={{ margin: 0 }}>{franchis}/{membres.length}</b>
-          <button type="button" className="gd-tete-bouton" onClick={onModifier} style={{ margin: 0 }}>
+        <span className="gd-tete-fin">
+          <b>{franchis}/{membres.length}</b>
+          {membres.length > 1 && (
+            <button
+              type="button"
+              className="gd-tete-bouton gd-tri"
+              onClick={changerTri}
+              title={t("goals.detail.sortHint", "Changer l'ordre d'affichage")}
+              aria-label={`${t("goals.detail.sortHint", "Changer l'ordre d'affichage")} — ${nomTri}`}
+            >
+              <IconeTri size={11} aria-hidden="true" />
+              {nomTri}
+            </button>
+          )}
+          <button type="button" className="gd-tete-bouton" onClick={onModifier}>
             {t("goals.detail.editMembers", "Modifier")}
           </button>
         </span>
       </header>
       <div className="gd-liste">
-        {membres.map((m, i) => {
+        {ordonnes.map((m, i) => {
           const t2 = teintePar(m.difficulty);
           const cellules = 10;
           const pleines = Math.round((m.progress / 100) * cellules);

@@ -636,7 +636,10 @@
       "unitGoals": "goals",
       "holdToHonour": "Hold to honour this group",
       "holdLabel": "HOLD TO HONOUR",
-      "thresholdNote": "All {{n}} goals in this group are complete."
+      "thresholdNote": "All {{n}} goals in this group are complete.",
+      "sortOrder": "Order",
+      "sortProgress": "Progress",
+      "sortHint": "Change the display order"
     },
     "views": {
       "grid": "Grid",

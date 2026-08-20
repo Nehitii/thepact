@@ -822,3 +822,24 @@
   .gh-libelle { letter-spacing: calc(2px + var(--p, 0) * 3px); }
   .gh-plaque { gap: 10px; padding: 0 12px; }
 }
+
+/* ── Fin d en-tete : compte, tri, modification ──
+   Les trois etaient poses en style en ligne ; ils forment un groupe,
+   et un groupe se declare une fois. */
+.gd-tete-fin {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gd-tete-fin b { margin: 0; color: var(--gd-encre-2); font-weight: 400; font-variant-numeric: tabular-nums; }
+.gd-tete-fin .gd-tete-bouton { margin: 0; }
+
+.gd-tri {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+/* La fleche indique le sens du classement, pas le fait de trier : elle
+   descend quand les plus avances passent devant. */
+.gd-tri svg { flex-shrink: 0; opacity: 0.8; }
