@@ -477,9 +477,6 @@ export default function TheCall() {
                   <span><b>{total}</b>{t("thecall.callsShort")}</span>
                 </span>
               )}
-              <button type="button" onClick={() => navigate("/")} className="rit-outil est-large">
-                {t("thecall.returnHome")}
-              </button>
             </div>
           )}
 

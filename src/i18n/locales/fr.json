@@ -2253,7 +2253,6 @@
     "locked": "PROTOCOLE VERROUILLE",
     "connected": "AME CONNECTEE",
     "synchronized": "Rituel synchronise",
-    "returnHome": "Retour au tableau de bord",
     "errorRead": "Impossible de lire le pacte.",
     "errorWrite": "L appel n a pas pu etre enregistre.",
     "retry": "Reessayer",

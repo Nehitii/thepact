@@ -2253,7 +2253,6 @@
     "locked": "PROTOCOL LOCKED",
     "connected": "SOUL CONNECTED",
     "synchronized": "Ritual synchronized",
-    "returnHome": "Return to dashboard",
     "errorRead": "The pact could not be read.",
     "errorWrite": "The call could not be saved.",
     "retry": "Try again",
