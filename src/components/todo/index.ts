@@ -10,7 +10,7 @@ export { TodoFilterSort } from "./TodoFilterSort";
 export type { SortField, SortDirection } from "./TodoFilterSort";
 export { TodoGamifiedCreateForm } from "./TodoGamifiedCreateForm";
 export { TodoLigne } from "./TodoLigne";
-export { TodoTelemetrie } from "./TodoTelemetrie";
+export { TodoCartouche } from "./TodoCartouche";
 export { TodoHistoryPanel } from "./TodoHistoryPanel";
 export { QuickTaskInput } from "./QuickTaskInput";
 export { FocusOverlay } from "./FocusOverlay";

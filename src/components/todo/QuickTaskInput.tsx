@@ -125,14 +125,11 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
   const aDesJetons = /(!(?:high|med|low)|#\w+|@(?:today|tomorrow|nextweek))/i.test(valeur);
 
   return (
-    <div>
-      <div className="tsk-indices">
-        <span><b className="tsk-jeton-prio">!high</b> {t("todo.neuralInput.priorityHint")}</span>
-        <span><b className="tsk-jeton-cat">#work</b> {t("todo.neuralInput.categoryHint")}</span>
-        <span><b className="tsk-jeton-ech">@today</b> {t("todo.neuralInput.deadlineHint")}</span>
-      </div>
-
-      <div className={cn("tsk-invite", disabled && "opacity-60")}>
+    <>
+      {/* Les trois indices tenaient une ligne pleine au-dessus du champ,
+          en permanence, pour une syntaxe qui s apprend une fois : ils
+          sont passes derriere le bouton d aide de la barre. */}
+      <div className={cn("tsk-invite est-ligne", disabled && "opacity-60")}>
         <span className="tsk-sigle" aria-hidden="true">tsk&nbsp;&gt;</span>
 
         <div className="tsk-invite-champ">
@@ -184,6 +181,6 @@ export function QuickTaskInput({ onSubmit, isLoading, disabled }: QuickTaskInput
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }

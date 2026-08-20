@@ -66,19 +66,32 @@
 /* ═══════════════════════════════════════════════════════════
    LA PLAQUE
    ═══════════════════════════════════════════════════════════ */
+/* Le cadre porte le conteneur de MISE EN PAGE. Il etait porte par
+   « .tsk-corps » lui-meme — or un element ne peut pas interroger le
+   conteneur qu il declare : la regle des deux colonnes ne s appliquait
+   jamais, tandis que celle qui rallumait le flanc, portant sur un
+   enfant, fonctionnait. Le cartouche tombait donc pleine largeur SOUS
+   la liste, en cinq gros encadres. */
+.tsk-cadre { container-type: inline-size; container-name: page; }
+
 .tsk-corps {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   align-items: start;
-  container-type: inline-size;
-  container-name: taches;
 }
 .tsk-flanc { display: none; }
-@container taches (min-width: 900px) {
-  .tsk-corps { grid-template-columns: minmax(0, 1fr) 210px; }
-  .tsk-flanc { display: block; }
+@container page (min-width: 900px) {
+  .tsk-corps:not(.est-seul) { grid-template-columns: minmax(0, 1fr) 220px; }
+  .tsk-corps:not(.est-seul) .tsk-flanc { display: block; }
+  /* Les lectures sont portees par le cartouche des qu il existe :
+     les afficher deux fois serait les rendre inaudibles. */
+  .tsk-corps:not(.est-seul) .tsk-analyse { display: none; }
 }
+
+/* Les lignes, elles, se mesurent a leur plaque — pas a la page : la
+   plaque perd 220 px des que le cartouche apparait. */
+.tsk-plaque { container-type: inline-size; container-name: taches; }
 
 .tsk-plaque {
   --tsk-biseau: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
@@ -290,6 +303,40 @@
   color: hsl(var(--ds-bg-base)); background: hsl(var(--ds-accent-critical));
   --tsk-liseret: hsl(var(--ds-accent-critical));
 }
+/* Un reglage pose se voit sur le bouton, sinon on cherche pourquoi
+   la liste est courte. */
+.tsk-outil.est-actif {
+  color: var(--tsk-signal);
+  --tsk-liseret: hsl(var(--ds-accent-primary) / 0.5);
+  background: hsl(var(--ds-accent-primary) / 0.12);
+}
+/* Une option de panneau : pleine largeur, 32 px, la teinte quand elle
+   est retenue. */
+.tsk-choix {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; min-height: 32px; padding: 0 9px;
+  font-family: var(--tsk-mono); font-size: max(10px, 0.625rem);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--tsk-faible); text-align: left;
+  transition: color 140ms var(--ds-ease-out), background 140ms var(--ds-ease-out);
+}
+.tsk-choix:hover { color: var(--tsk-texte); background: hsl(var(--ds-surface-2) / 0.9); }
+.tsk-choix[aria-pressed="true"] {
+  color: hsl(var(--ds-bg-base)); background: var(--tsk-signal);
+}
+.tsk-sens {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 24px; min-height: 24px; color: var(--tsk-signal);
+}
+.tsk-sens.est-inerte { color: var(--tsk-faible); opacity: 0.5; cursor: default; }
+/* Un panneau plus haut que l ecran doit defiler — sans montrer la
+   barre, comme les dialogues. */
+.tsk-panneau {
+  max-height: min(70vh, 520px); overflow-y: auto;
+  scrollbar-width: none; -ms-overflow-style: none;
+}
+.tsk-panneau::-webkit-scrollbar { width: 0; height: 0; display: none; }
+
 .tsk-outil.est-inerte {
   opacity: 0.5; cursor: default;
   color: var(--tsk-faible); --tsk-liseret: var(--tsk-trait);
@@ -332,6 +379,120 @@
 .tsk-barre .tsk-espace { flex: 1 1 auto; min-width: 0; }
 
 /* ═══════════════════════════════════════════════════════════
+   LE BANDEAU-TITRE — une bande, dans la plaque
+   Il tenait cent trente pixels pour dire un nom que la navigation
+   disait deja, avec un sous-titre publicitaire, une date, une heure,
+   et « TSK.01 » — ecrit une deuxieme fois vingt pixels plus bas.
+   ═══════════════════════════════════════════════════════════ */
+.tsk-tete {
+  position: relative; z-index: 3;
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 16px 10px;
+  border-bottom: 1px solid var(--tsk-trait);
+}
+.tsk-tete h1 {
+  margin: 0;
+  font-family: var(--tsk-titre); font-weight: 900;
+  font-size: max(18px, 1.125rem); line-height: 1;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--tsk-texte); white-space: nowrap;
+}
+/* Le meme degrade que le calendrier : le titre cesse d etre du cyan
+   plat au milieu de rails deja cyan. */
+.tsk-tete h1 em {
+  font-style: normal;
+  background: linear-gradient(96deg, hsl(var(--ds-accent-primary)), hsl(var(--ds-accent-special)));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 14px hsl(var(--ds-accent-primary) / 0.45));
+}
+.tsk-sig {
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.26em; text-transform: uppercase; color: var(--tsk-faible);
+  white-space: nowrap;
+}
+.tsk-tete i { flex: 1; min-width: 8px; height: 1px; background: var(--tsk-trait); }
+
+/* Les deux seules mesures qui restent sous les yeux. */
+.tsk-mesure {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--tsk-faible);
+  white-space: nowrap;
+}
+.tsk-mesure b {
+  font-weight: 700; font-size: max(12px, 0.75rem); letter-spacing: 0.04em;
+  color: var(--tsk-texte); font-variant-numeric: tabular-nums;
+}
+.tsk-mesure.est-alerte { color: var(--tsk-retard); }
+.tsk-mesure.est-alerte b {
+  color: var(--tsk-retard);
+  text-shadow: 0 0 10px color-mix(in oklab, var(--tsk-retard) 60%, transparent);
+}
+.tsk-tete .tsk-large { display: none; }
+@container taches (min-width: 640px) { .tsk-tete .tsk-large { display: inline-flex; } }
+
+/* La legende des priorites, en liseret haut : la seule couleur de la
+   page qui veuille dire quelque chose. */
+.tsk-plaque.est-tete::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px; z-index: 8;
+  background: linear-gradient(90deg,
+    var(--tsk-haute) 0 33.3%, var(--tsk-moy) 33.3% 66.6%, var(--tsk-basse) 66.6% 100%);
+  inset-inline: 0; opacity: 1;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LES OUTILS — dans la plaque, plus au-dessus d elle
+   ═══════════════════════════════════════════════════════════ */
+.tsk-outils {
+  position: relative; z-index: 3;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--tsk-trait);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LE CARTOUCHE — des lignes, pas des encadres
+   Cinq blocs a grands chiffres repetaient ce que le rail disait
+   deja, et l un d eux — le niveau — a sa place dans la vue Stats.
+   ═══════════════════════════════════════════════════════════ */
+.tsk-cartouche { position: relative; z-index: 2; }
+.tsk-mes {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--tsk-trait);
+}
+.tsk-mes span {
+  font-family: var(--tsk-mono); font-size: max(9px, 0.5625rem);
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--tsk-faible);
+}
+.tsk-mes b {
+  font-family: var(--tsk-titre); font-weight: 900; font-size: max(15px, 0.9375rem);
+  line-height: 1; color: var(--tsk-texte); font-variant-numeric: tabular-nums;
+}
+.tsk-mes.est-alerte b {
+  color: var(--tsk-retard);
+  text-shadow: 0 0 12px color-mix(in oklab, var(--tsk-retard) 45%, transparent);
+}
+.tsk-mes-suite { padding: 8px 13px 10px; border-bottom: 1px solid var(--tsk-trait); }
+.tsk-prochaine {
+  display: block; width: 100%; text-align: left;
+  font-family: var(--tsk-corps); font-size: max(13px, 0.8125rem); line-height: 1.3;
+  color: var(--tsk-doux);
+  transition: color 140ms var(--ds-ease-out);
+}
+.tsk-prochaine:hover { color: var(--tsk-signal); }
+.tsk-cartouche .tsk-jauge { margin: 0; padding: 10px 13px 11px; }
+.tsk-lecture {
+  padding: 9px 13px 11px;
+  font-family: var(--tsk-corps); font-size: max(12.5px, 0.78rem); line-height: 1.35;
+  color: var(--tsk-doux);
+}
+.tsk-lecture + .tsk-lecture { padding-top: 0; }
+.tsk-lecture::before {
+  content: "// "; font-family: var(--tsk-mono); font-size: 10px; color: var(--tsk-signal);
+}
+
+/* ═══════════════════════════════════════════════════════════
    LA SAISIE — l invite
    ═══════════════════════════════════════════════════════════ */
 .tsk-invite {
@@ -344,6 +505,16 @@
   transition: background 160ms var(--ds-ease-out);
 }
 .tsk-invite:focus-within { --tsk-liseret: var(--tsk-signal); background: hsl(210 80% 6% / 0.98); }
+
+/* Dans la plaque, l invite n est plus une boite posee : c est la
+   premiere ligne de la console. */
+.tsk-invite.est-ligne {
+  clip-path: none;
+  border-bottom: 1px solid var(--tsk-trait);
+  background: hsl(210 80% 4% / 0.55);
+}
+.tsk-invite.est-ligne:focus-within { background: hsl(210 80% 6% / 0.95); }
+.tsk-invite.est-ligne input { min-height: 44px; }
 .tsk-invite .tsk-sigle {
   font-family: var(--tsk-mono); font-size: max(12px, 0.75rem);
   color: var(--tsk-signal); letter-spacing: 0.06em; flex-shrink: 0;
@@ -370,13 +541,20 @@
 .tsk-jeton-ech  { color: hsl(var(--ds-accent-special)); font-weight: 700; }
 .tsk-invite-texte { color: var(--tsk-texte); }
 .tsk-indices {
-  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-  margin-bottom: 6px;
+  display: flex; flex-direction: column; gap: 7px;
   font-family: var(--tsk-mono); font-size: max(9.5px, 0.594rem);
   letter-spacing: 0.1em; text-transform: uppercase; color: hsl(var(--ds-text-muted) / 0.8);
 }
 .tsk-indices b { font-weight: 700; }
-.tsk-apercu { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+/* La lecture de ce qui vient d etre tape : une ligne de la console,
+   pas une boite qui pousse la liste. */
+.tsk-apercu {
+  position: relative; z-index: 3;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 7px 14px;
+  border-bottom: 1px solid var(--tsk-trait);
+  background: hsl(210 80% 4% / 0.35);
+}
 
 /* ═══════════════════════════════════════════════════════════
    LA TELEMETRIE
@@ -432,11 +610,10 @@
 }
 .tsk-analyse {
   position: relative; z-index: 2;
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 9px 16px;
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 7px 16px;
   border-bottom: 1px solid var(--tsk-trait);
-  background: hsl(var(--ds-accent-primary) / 0.045);
-  font-family: var(--tsk-corps); font-size: max(13.5px, 0.84rem); color: var(--tsk-doux);
+  font-family: var(--tsk-corps); font-size: max(13px, 0.8125rem); color: var(--tsk-doux);
 }
 .tsk-analyse::before {
   content: "//"; font-family: var(--tsk-mono); font-size: 11px;
@@ -516,7 +693,7 @@
    LE DOIGT
    ═══════════════════════════════════════════════════════════ */
 @media (pointer: coarse) {
-  .tsk-outil, .tsk-onglet, .tsk-action, .tsk-lampe { min-height: 44px; }
+  .tsk-outil, .tsk-onglet, .tsk-action, .tsk-lampe, .tsk-choix { min-height: 44px; }
   .tsk-outil.est-icone, .tsk-action, .tsk-onglet { min-width: 44px; }
   .tsk-onglet { padding-inline: 12px; }
   /* La colonne de la lampe s elargit avec elle : sinon le bouton

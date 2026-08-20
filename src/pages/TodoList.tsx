@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Plus, BarChart3, History, Calendar as CalendarIcon, Pencil, List, LayoutGrid } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, BarChart3, History, Calendar as CalendarIcon, List, LayoutGrid } from 'lucide-react';
 import {
   DndContext, DragOverlay, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors,
   defaultDropAnimationSideEffects,
@@ -10,7 +9,7 @@ import { SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-
 import { useTodoList, TodoTask } from '@/hooks/useTodoList';
 import { DSPageShell, DSBackground, DSPageLoader } from '@/components/ds';
 import { TodoLigne } from '@/components/todo/TodoLigne';
-import { TodoTelemetrie } from '@/components/todo/TodoTelemetrie';
+import { TodoCartouche } from '@/components/todo/TodoCartouche';
 import { TodoGamifiedCreateForm } from '@/components/todo/TodoGamifiedCreateForm';
 import { TodoAdvancedStats } from '@/components/todo/TodoAdvancedStats';
 import { TodoHistoryPanel } from '@/components/todo/TodoHistoryPanel';
@@ -21,8 +20,6 @@ import { QuickTaskInput } from '@/components/todo/QuickTaskInput';
 import { FocusOverlay } from '@/components/todo/FocusOverlay';
 import { TodoCommandInfo } from '@/components/todo/TodoCommandInfo';
 import { useTranslation } from 'react-i18next';
-import { useDateFnsLocale } from '@/i18n/useDateFnsLocale';
-import { useVisibleInterval } from '@/hooks/useVisibleInterval';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -30,15 +27,18 @@ import '@/styles/todo.css';
 
 /* TSK.01 — LA CONSOLE D OPERATIONS
  *
- * La page disait ce qu il y a. Elle ne disait pas ce qu il y a a faire :
- * une liste plate, un menu de tri, et cinq de ses fonctions derriere des
- * fenetres modales qui recouvraient tout.
+ * Premiere version : la page devenait un releve pose sur une plaque
+ * d instrument. Mais le releve etait entoure de sept bandes — bandeau
+ * de titre, indices de grammaire, invite, barre des vues, barre des
+ * filtres, rail, analyses — soit quatre cent cinquante pixels avant la
+ * premiere tache ; et le cartouche de mesures, qu une requete de
+ * conteneur impossible n a jamais su placer a droite, tombait pleine
+ * largeur sous la liste en cinq gros encadres.
  *
- * Elle devient un releve pose sur une plaque d instrument. Les panneaux
- * — calendrier, statistiques, historique — sont maintenant des VUES de
- * cette plaque, qu on change par la barre : on ne perd plus la liste des
- * yeux pour consulter son historique. Seuls les formulaires restent
- * modaux, parce qu un formulaire doit tenir la main.
+ * Tout rentre dans UNE plaque : le titre est une bande de dix-huit
+ * pixels, les outils et l invite en sont les deux premieres lignes,
+ * les mesures tiennent dans un cartouche lateral qui s arrete ou son
+ * contenu s arrete. Cent cinquante pixels avant la premiere tache.
  */
 
 type Vue = 'liste' | 'detaillee' | 'calendrier' | 'stats' | 'historique';
@@ -82,7 +82,6 @@ function LigneTriable({ task, ...reste }: LigneTriableProps) {
 
 export default function TodoList() {
   const { t } = useTranslation();
-  const locale = useDateFnsLocale();
 
   const [vue, setVue] = useState<Vue>(vueInitiale);
   const [typeFiltre, setTypeFiltre] = useState<string | null>(null);
@@ -92,9 +91,6 @@ export default function TodoList() {
   const [formulaire, setFormulaire] = useState<'aucun' | 'creation' | 'edition'>('aucun');
   const [tacheFocus, setTacheFocus] = useState<TodoTask | null>(null);
   const [enVol, setEnVol] = useState<TodoTask | null>(null);
-
-  const [maintenant, setMaintenant] = useState(() => new Date());
-  useVisibleInterval(() => setMaintenant(new Date()), 60_000);
 
   useEffect(() => {
     try { localStorage.setItem(CLE_VUE, vue); } catch { /* sans consequence */ }
@@ -180,8 +176,6 @@ export default function TodoList() {
     reorderTasks.mutate(ordre.map((x) => x.id));
   }, [reorderTasks, taches, sortField, t]);
 
-  const nomDeVue = t(`todo.views.${vue}`);
-
   if (isLoading) {
     return <DSPageLoader variant="verbose" message={t('todo.loadingQuests')} />;
   }
@@ -197,121 +191,106 @@ export default function TodoList() {
       )}
 
       <DSPageShell width="xl" background={<DSBackground variant="cyber" />}>
-        <div className="tsk max-w-6xl mx-auto">
-          {/* ── Le bandeau ─────────────────────────────────── */}
-          <header className="tsk-plaque mb-3">
-            <div className="tsk-rail">
-              <b>TSK.01</b>
-              <i />
-              <span>{format(maintenant, 'EEE d MMM', { locale })}</span>
-              <i />
-              <b>{format(maintenant, 'HH:mm')}</b>
-            </div>
-            <div className="px-[18px] pt-4 pb-4">
-              <h1 className="font-orbitron font-black uppercase tracking-[0.06em] text-[clamp(24px,4.2vw,40px)] leading-none m-0">
-                TASK<span className="text-[hsl(var(--ds-accent-primary))] [text-shadow:0_0_18px_hsl(var(--ds-accent-primary)/0.45)]">OPS</span>
-              </h1>
-              <p className="mt-2 max-w-[46ch] font-rajdhani text-[15px] text-[hsl(var(--ds-text-secondary))]">
-                {t('todo.subtitle')}
-              </p>
-            </div>
-          </header>
-
-          {/* ── L invite ───────────────────────────────────── */}
-          <QuickTaskInput
-            onSubmit={(input) => createTask.mutate(input)}
-            isLoading={createTask.isPending}
-            disabled={!canAddTask}
-          />
-
-          {/* ── Les commandes ──────────────────────────────── */}
-          <div className="tsk-barre mt-3">
-            <div className="tsk-groupe" role="group" aria-label={t('todo.views.switcher')}>
-              {(['liste', 'detaillee'] as Vue[]).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  aria-pressed={vue === v}
-                  onClick={() => setVue(v)}
-                  className="tsk-onglet"
-                  aria-label={t(`todo.views.${v}`)}
-                  title={t(`todo.views.${v}`)}
-                >
-                  {v === 'liste'
-                    ? <List className="w-3.5 h-3.5" aria-hidden="true" />
-                    : <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" />}
-                </button>
-              ))}
-            </div>
-
-            <div className="tsk-groupe" role="group" aria-label={t('todo.views.panels')}>
-              {(['calendrier', 'stats', 'historique'] as Vue[]).map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  aria-pressed={vue === v}
-                  onClick={() => setVue(v)}
-                  /* Le libelle visible disparait sous md ; l aria-label
-                     reste. Deux spans annoncaient « CalendarCalendar ». */
-                  aria-label={t(`todo.views.${v}`)}
-                  className="tsk-onglet"
-                >
-                  {v === 'calendrier' && <CalendarIcon className="w-3.5 h-3.5" aria-hidden="true" />}
-                  {v === 'stats' && <BarChart3 className="w-3.5 h-3.5" aria-hidden="true" />}
-                  {v === 'historique' && <History className="w-3.5 h-3.5" aria-hidden="true" />}
-                  <span className="hidden md:inline" aria-hidden="true">{t(`todo.views.${v}`)}</span>
-                </button>
-              ))}
-            </div>
-
-            <span className="tsk-espace" />
-            <TodoCommandInfo />
-            <button
-              type="button"
-              onClick={() => setFormulaire('creation')}
-              disabled={!canAddTask}
-              className={cn('tsk-outil', canAddTask ? 'est-primaire' : 'est-inerte')}
-            >
-              <Plus className="w-3.5 h-3.5" aria-hidden="true" />
-              {t('todo.create.new')}
-            </button>
-          </div>
-
-          {estListe && (
-            <TodoFilterSort
-              selectedTaskType={typeFiltre}
-              sortField={sortField}
-              sortDirection={sortDirection}
-              onTaskTypeChange={setTypeFiltre}
-              onSortChange={(f, d) => { setSortField(f); setSortDirection(d); }}
-            />
-          )}
-
-          {/* ── La plaque ──────────────────────────────────── */}
-          <div className="tsk-corps">
-            <div className="tsk-plaque min-w-0">
+        <div className="tsk tsk-cadre max-w-6xl mx-auto">
+          <div className={cn('tsk-corps', !estListe && 'est-seul')}>
+            <div className="tsk-plaque est-tete min-w-0">
               <span className="tsk-scan" aria-hidden="true" />
-              <div className="tsk-rail">
-                <b>TSK.01</b>
+
+              {/* ── Le bandeau : une bande, deux mesures ────────── */}
+              <div className="tsk-tete">
+                <span className="tsk-sig">TSK.01</span>
+                <h1>
+                  {/* Le nom lu par un lecteur d ecran est celui de la
+                      navigation ; le nom vu est celui de la console. */}
+                  <span className="sr-only">{t('todo.title')}</span>
+                  <span aria-hidden="true">TASK<em>·OPS</em></span>
+                </h1>
                 <i />
-                <span>{nomDeVue}</span>
-                <i />
-                <span className="tsk-rail-option">
-                  {t('todo.tel.activeCount', { count: activeTaskCount, max: maxTasks })}
+                <span className="tsk-mesure tsk-large">
+                  {t('todo.tel.load')} <b>{activeTaskCount}/{maxTasks}</b>
                 </span>
-                <i className="tsk-rail-option" />
                 {enRetard > 0
-                  ? <b className="tsk-alerte">{t('todo.rail.alert', { count: enRetard })}</b>
-                  : <b>{t('todo.rail.nominal')}</b>}
+                  ? <span className="tsk-mesure est-alerte"><b>{enRetard}</b> {t('todo.tel.overdue')}</span>
+                  : <span className="tsk-mesure">{t('todo.rail.nominal')}</span>}
               </div>
 
-              {estListe && insights.map((a) => (
+              {/* ── Les outils, dans la plaque ──────────────────── */}
+              <div className="tsk-outils">
+                <div className="tsk-groupe" role="group" aria-label={t('todo.views.switcher')}>
+                  {(['liste', 'detaillee'] as Vue[]).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      aria-pressed={vue === v}
+                      onClick={() => setVue(v)}
+                      aria-label={t(`todo.views.${v}`)}
+                      title={t(`todo.views.${v}`)}
+                      className="tsk-onglet"
+                    >
+                      {v === 'liste'
+                        ? <List className="w-3.5 h-3.5" aria-hidden="true" />
+                        : <LayoutGrid className="w-3.5 h-3.5" aria-hidden="true" />}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="tsk-groupe" role="group" aria-label={t('todo.views.panels')}>
+                  {(['calendrier', 'stats', 'historique'] as Vue[]).map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      aria-pressed={vue === v}
+                      onClick={() => setVue(v)}
+                      /* Le libelle visible disparait sous lg ; l aria-label
+                         reste. Deux spans annoncaient « CalendarCalendar ». */
+                      aria-label={t(`todo.views.${v}`)}
+                      className="tsk-onglet"
+                    >
+                      {v === 'calendrier' && <CalendarIcon className="w-3.5 h-3.5" aria-hidden="true" />}
+                      {v === 'stats' && <BarChart3 className="w-3.5 h-3.5" aria-hidden="true" />}
+                      {v === 'historique' && <History className="w-3.5 h-3.5" aria-hidden="true" />}
+                      <span className="hidden lg:inline" aria-hidden="true">{t(`todo.views.${v}`)}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <span className="tsk-espace" />
+
+                {estListe && (
+                  <TodoFilterSort
+                    selectedTaskType={typeFiltre}
+                    sortField={sortField}
+                    sortDirection={sortDirection}
+                    onTaskTypeChange={setTypeFiltre}
+                    onSortChange={(f, d) => { setSortField(f); setSortDirection(d); }}
+                  />
+                )}
+                <TodoCommandInfo />
+                <button
+                  type="button"
+                  onClick={() => setFormulaire('creation')}
+                  disabled={!canAddTask}
+                  className={cn('tsk-outil', canAddTask ? 'est-primaire' : 'est-inerte')}
+                >
+                  <Plus className="w-3.5 h-3.5" aria-hidden="true" />
+                  {t('todo.create.new')}
+                </button>
+              </div>
+
+              {/* ── L invite : la premiere ligne de la console ──── */}
+              <QuickTaskInput
+                onSubmit={(input) => createTask.mutate(input)}
+                isLoading={createTask.isPending}
+                disabled={!canAddTask}
+              />
+
+              {!canAddTask && <p className="tsk-avertissement">{t('todo.questLogFull')}</p>}
+
+              {/* Une lecture au plus, et seulement quand le cartouche
+                  n est pas la pour les porter (le CSS s en charge). */}
+              {estListe && insights.slice(0, 1).map((a) => (
                 <p key={a.cle} className="tsk-analyse">{t(a.cle, a.params)}</p>
               ))}
-
-              {estListe && !canAddTask && (
-                <p className="tsk-avertissement">{t('todo.questLogFull')}</p>
-              )}
 
               {vue === 'calendrier' && <div className="relative z-[2] p-4"><TodoCalendarView tasks={tasks} /></div>}
               {vue === 'stats' && <div className="relative z-[2] p-4"><TodoAdvancedStats /></div>}
@@ -369,14 +348,18 @@ export default function TodoList() {
               )}
             </div>
 
-            <aside className="tsk-flanc">
-              <TodoTelemetrie
-                tasks={tasks}
-                stats={stats}
-                maxTasks={maxTasks}
-                onOuvrirTache={ouvrirEdition}
-              />
-            </aside>
+            {/* ── Le cartouche : des lignes, a cote, pas dessous ─ */}
+            {estListe && (
+              <aside className="tsk-flanc">
+                <TodoCartouche
+                  tasks={tasks}
+                  stats={stats}
+                  maxTasks={maxTasks}
+                  analyses={insights}
+                  onOuvrirTache={ouvrirEdition}
+                />
+              </aside>
+            )}
           </div>
 
           {/* ── Les formulaires, seuls a rester modaux ─────── */}

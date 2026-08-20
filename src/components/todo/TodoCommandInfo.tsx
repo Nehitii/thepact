@@ -2,14 +2,18 @@ import { Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTranslation } from "react-i18next";
 
-/* Ce panneau explique la grammaire de la barre de saisie. Il etait
-   entierement ecrit en dur, en anglais — declencheur sans nom compris,
-   alors qu il n affiche qu une icone. */
+/* LA GRAMMAIRE DE L INVITE
+ *
+ * Trois indices — !high, #work, @today — occupaient une ligne pleine
+ * au-dessus du champ, en permanence, pour une syntaxe qu on apprend
+ * une fois. Ils passent derriere ce bouton, avec le reste. Le panneau
+ * etait par ailleurs ecrit en dur, en anglais, declencheur sans nom
+ * compris — alors qu il n affiche qu une icone. */
 const COMMANDES = [
-  { cmd: "!high / !med / !low", cle: "todo.commands.priority" },
-  { cmd: "#work / #perso / #admin", cle: "todo.commands.category" },
-  { cmd: "@today / @tomorrow", cle: "todo.commands.deadline" },
-  { cmd: "@nextweek", cle: "todo.commands.nextWeek" },
+  { cmd: "!high / !med / !low", cle: "todo.commands.priority", teinte: "tsk-jeton-prio" },
+  { cmd: "#work / #perso / #admin", cle: "todo.commands.category", teinte: "tsk-jeton-cat" },
+  { cmd: "@today / @tomorrow", cle: "todo.commands.deadline", teinte: "tsk-jeton-ech" },
+  { cmd: "@nextweek", cle: "todo.commands.nextWeek", teinte: "tsk-jeton-ech" },
 ];
 
 export function TodoCommandInfo() {
@@ -21,23 +25,27 @@ export function TodoCommandInfo() {
         <button
           type="button"
           aria-label={t("todo.commands.title")}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+          className="tsk-outil est-icone"
         >
-          <Info className="w-4 h-4" aria-hidden="true" />
+          <Info className="w-3.5 h-3.5" aria-hidden="true" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-72 p-3" aria-label={t("todo.commands.title")}>
-        <p className="ds-t-label font-mono uppercase tracking-widest text-muted-foreground mb-2">
-          {t("todo.commands.title")}
-        </p>
-        <div className="space-y-1.5">
+      <PopoverContent
+        align="end"
+        className="tsk w-72 p-0 rounded-none border-[hsl(var(--ds-border-default)/0.22)] bg-[hsl(var(--ds-surface-1))]"
+        aria-label={t("todo.commands.title")}
+      >
+        <div className="tsk-dlg-rail">
+          <b>SYN.</b>
+          <i />
+          <span>{t("todo.commands.title")}</span>
+        </div>
+        <div className="tsk-indices p-3">
           {COMMANDES.map((c) => (
-            <div key={c.cmd} className="flex items-start gap-2 text-xs">
-              <code className="font-mono text-primary bg-primary/10 px-1.5 py-0.5 rounded shrink-0">
-                {c.cmd}
-              </code>
-              <span className="text-muted-foreground pt-0.5">{t(c.cle)}</span>
-            </div>
+            <span key={c.cmd} className="flex items-start gap-2">
+              <b className={c.teinte}>{c.cmd}</b>
+              <span className="opacity-80">{t(c.cle)}</span>
+            </span>
           ))}
         </div>
       </PopoverContent>

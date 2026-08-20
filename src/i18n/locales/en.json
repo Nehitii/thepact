@@ -252,7 +252,8 @@
         "deadline": "Deadline"
       },
       "direction": "Reverse order",
-      "taskType": "Task type"
+      "taskType": "Task type",
+      "settings": "Filter and sort: {{value}}"
     },
     "create": {
       "title": "New quest",
@@ -455,7 +456,8 @@
       "streak": "Streak",
       "bestStreak": "Best: {{count}} days",
       "load": "Load",
-      "activeCount": "{{count}} / {{max}} ACTIVE"
+      "activeCount": "{{count}} / {{max}} ACTIVE",
+      "title": "Readings"
     }
   },
   "goals": {

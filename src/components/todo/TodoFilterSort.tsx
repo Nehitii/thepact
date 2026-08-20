@@ -1,14 +1,19 @@
-import { Clock, Sparkles, ChevronRight, List, Hourglass, CalendarClock } from 'lucide-react';
+import { Clock, Sparkles, ChevronDown, ArrowDown, ArrowUp, List, Hourglass, CalendarClock, SlidersHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTranslation } from 'react-i18next';
 
-/* Le rangement a la main n etait proposable nulle part : on pouvait
-   deplacer une tache, sa position partait en base, et la liste la
-   reecrasait aussitot par date de creation. Le tri manuel est desormais
-   une option — et celle de depart. */
+/* LE REGLAGE
+ *
+ * Cinq pastilles de type, un menu de tri et un bouton de sens tenaient
+ * une barre entiere au-dessus de la liste — pour un reglage qu on
+ * touche une fois par semaine. Tout rentre dans un seul bouton, qui
+ * porte son etat en clair : « TOUTES · MANUEL ».
+ *
+ * Le rangement a la main n etait proposable nulle part : on pouvait
+ * deplacer une tache, sa position partait en base, et la liste la
+ * reecrasait aussitot par date de creation. Il reste l option de
+ * depart. */
 export type SortField = 'manual' | 'created_at' | 'deadline' | 'priority' | 'name' | 'category' | 'is_urgent';
 export type SortDirection = 'asc' | 'desc';
 
@@ -20,9 +25,9 @@ interface TodoFilterSortProps {
   onSortChange: (field: SortField, direction: SortDirection) => void;
 }
 
-const sortOptions: SortField[] = ['manual', 'created_at', 'deadline', 'priority', 'name', 'category', 'is_urgent'];
+const TRIS: SortField[] = ['manual', 'created_at', 'deadline', 'priority', 'name', 'category', 'is_urgent'];
 
-const filtres = [
+const FILTRES = [
   { id: null as string | null, cle: 'todo.filters.types.all', icone: List },
   { id: 'flexible', cle: 'todo.filters.types.flexible', icone: Sparkles },
   { id: 'waiting', cle: 'todo.filters.types.waiting', icone: Hourglass },
@@ -35,51 +40,78 @@ export function TodoFilterSort({
 }: TodoFilterSortProps) {
   const { t } = useTranslation();
 
+  const filtreActif = FILTRES.find((f) => f.id === selectedTaskType) ?? FILTRES[0];
+  const resume = `${t(filtreActif.cle)} · ${t(`todo.filters.sortOptions.${sortField}`)}`;
+  /* Un filtre pose n est pas un detail : le bouton le dit. */
+  const estFiltre = selectedTaskType !== null || sortField !== 'manual';
+
   return (
-    <div className="tsk-barre">
-      <div className="tsk-groupe" role="group" aria-label={t('todo.filters.taskType')}>
-        {filtres.map(({ id, cle, icone: Icone }) => (
-          <button
-            key={id ?? 'all'}
-            type="button"
-            aria-pressed={selectedTaskType === id}
-            onClick={() => onTaskTypeChange(id)}
-            className="tsk-onglet"
-          >
-            <Icone className="w-3.5 h-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline">{t(cle)}</span>
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Select value={sortField} onValueChange={(v) => onSortChange(v as SortField, sortDirection)}>
-          <SelectTrigger className="tsk-outil w-[164px]" aria-label={t('todo.filters.sort')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="tsk bg-[hsl(var(--ds-surface-1))] border-[hsl(var(--ds-border-default)/0.2)]">
-            {sortOptions.map((f) => (
-              <SelectItem key={f} value={f} className="font-mono text-xs">
-                {t(`todo.filters.sortOptions.${f}`)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Un rangement a la main n a pas de sens croissant. */}
+    <Popover>
+      <PopoverTrigger asChild>
         <button
           type="button"
-          onClick={() => onSortChange(sortField, sortDirection === 'asc' ? 'desc' : 'asc')}
-          disabled={sortField === 'manual'}
-          aria-label={t('todo.filters.direction')}
-          className={cn('tsk-outil est-icone', sortField === 'manual' && 'est-inerte')}
+          aria-label={t('todo.filters.settings', { value: resume })}
+          className={cn('tsk-outil', estFiltre && 'est-actif')}
         >
-          <ChevronRight
-            className={cn('w-3.5 h-3.5 transition-transform', sortDirection === 'asc' ? '-rotate-90' : 'rotate-90')}
-            aria-hidden="true"
-          />
+          <SlidersHorizontal className="w-3.5 h-3.5" aria-hidden="true" />
+          <span className="hidden sm:inline">{resume}</span>
+          <ChevronDown className="w-3 h-3 opacity-60" aria-hidden="true" />
         </button>
-      </div>
-    </div>
+      </PopoverTrigger>
+
+      <PopoverContent
+        align="end"
+        className="tsk tsk-panneau w-64 p-0 rounded-none border-[hsl(var(--ds-border-default)/0.22)] bg-[hsl(var(--ds-surface-1))]"
+      >
+        <div className="tsk-dlg-rail">
+          <b>FLT.</b>
+          <i />
+          <span>{t('todo.filters.taskType')}</span>
+        </div>
+        <div className="p-2 flex flex-col gap-1" role="group" aria-label={t('todo.filters.taskType')}>
+          {FILTRES.map(({ id, cle, icone: Icone }) => (
+            <button
+              key={id ?? 'all'}
+              type="button"
+              aria-pressed={selectedTaskType === id}
+              onClick={() => onTaskTypeChange(id)}
+              className="tsk-choix"
+            >
+              <Icone className="w-3.5 h-3.5" aria-hidden="true" />
+              {t(cle)}
+            </button>
+          ))}
+        </div>
+
+        <div className="tsk-dlg-rail">
+          <b>ORD.</b>
+          <i />
+          <button
+            type="button"
+            onClick={() => onSortChange(sortField, sortDirection === 'asc' ? 'desc' : 'asc')}
+            disabled={sortField === 'manual'}
+            aria-label={t('todo.filters.direction')}
+            className={cn('tsk-sens', sortField === 'manual' && 'est-inerte')}
+          >
+            {sortDirection === 'asc'
+              ? <ArrowUp className="w-3 h-3" aria-hidden="true" />
+              : <ArrowDown className="w-3 h-3" aria-hidden="true" />}
+          </button>
+        </div>
+        <div className="p-2 flex flex-col gap-1" role="group" aria-label={t('todo.filters.sort')}>
+          {TRIS.map((f) => (
+            <button
+              key={f}
+              type="button"
+              aria-pressed={sortField === f}
+              onClick={() => onSortChange(f, sortDirection)}
+              className="tsk-choix"
+            >
+              {t(`todo.filters.sortOptions.${f}`)}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

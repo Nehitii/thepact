@@ -252,7 +252,8 @@
         "deadline": "Échéance"
       },
       "direction": "Inverser l’ordre",
-      "taskType": "Type de tâche"
+      "taskType": "Type de tâche",
+      "settings": "Filtre et tri : {{value}}"
     },
     "create": {
       "title": "Nouvelle quête",
@@ -455,7 +456,8 @@
       "streak": "Série",
       "bestStreak": "Record : {{count}} jours",
       "load": "Charge",
-      "activeCount": "{{count}} / {{max}} ACTIVES"
+      "activeCount": "{{count}} / {{max}} ACTIVES",
+      "title": "Mesures"
     }
   },
   "goals": {
