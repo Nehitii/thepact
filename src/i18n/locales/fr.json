@@ -1854,7 +1854,10 @@
       "open": "Que veulent dire les etats ?",
       "short": "Legende",
       "title": "Legende des etats",
-      "hint": "Un etat par entree. Il ne sert a rien d autre qu a vous : c est ce que vous retrouverez en filtrant."
+      "hint": "Un etat par entree. Il ne sert a rien d autre qu a vous : c est ce que vous retrouverez en filtrant.",
+      "measures": "Les deux mesures",
+      "valenceDesc": "Ou penchait la journee, du plus sombre au plus lumineux. Elle ne dit pas si le jour a ete productif : seulement de quel cote il a penche.",
+      "energyDesc": "Ce qu il restait dans les reserves. On peut avoir une bonne journee a plat, et une mauvaise a pleine charge — c est pour cela qu elles sont deux."
     },
     "moodsDesc": {
       "flow": "Ca avance tout seul. Le travail se fait sans friction, on est dans le mouvement.",
@@ -1902,7 +1905,8 @@
       "nouvelleRef": "Nouvelle pièce",
       "lecture_one": "{{count}} min de lecture",
       "lecture_other": "{{count}} min de lecture"
-    }
+    },
+    "energy": "Énergie"
   },
   "onboarding": {
     "welcome": "Bienvenue dans Le Pacte",

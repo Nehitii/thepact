@@ -296,11 +296,41 @@
   background: var(--jr-papier-2); color: var(--jr-encre-2);
 }
 .jr-mesure { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+/* Une jauge de dix logements plutot qu un trait plein : la coupure
+   porte la donnee, puisque la mesure va de un a dix. */
 .jr-mesure i {
-  display: block; width: 46px; height: 6px; position: relative;
+  display: block; width: 78px; height: 10px; position: relative;
   background: var(--jr-papier-2); border: 1px solid var(--jr-trait);
 }
+.jr-mesure i::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: repeating-linear-gradient(90deg,
+    transparent 0 calc(10% - 1px),
+    var(--jr-papier-2) calc(10% - 1px) 10%);
+}
 .jr-mesure i u { position: absolute; top: 0; bottom: 0; left: 0; background: var(--jr-encre); }
+
+/* L energie se lit comme une charge : sourde au depart, vive au bord. */
+.jr-mesure.est-energie i u {
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--jr-accent, var(--jr-rouge)) 45%, transparent) 0%,
+    var(--jr-accent, var(--jr-rouge)) 100%);
+}
+[data-jr="sombre"] .jr-mesure.est-energie i {
+  border-color: color-mix(in oklab, var(--jr-accent, var(--jr-rouge)) 40%, var(--jr-trait));
+}
+[data-jr="sombre"] .jr-mesure.est-energie i u {
+  box-shadow: 0 0 9px color-mix(in oklab, var(--jr-accent, var(--jr-rouge)) 65%, transparent);
+}
+[data-jr="sombre"] .jr-mesure i::before {
+  background: repeating-linear-gradient(90deg,
+    transparent 0 calc(10% - 1px),
+    var(--jr-papier) calc(10% - 1px) 10%);
+}
+
+/* Le second titre de la legende : les mesures, apres les etats. */
+.jr-legende-tete-2 { border-top: 1px solid var(--jr-trait); }
 
 .jr-menu {
   display: inline-flex; align-items: center; justify-content: center;
@@ -397,6 +427,8 @@
 
 .jr-legende {
   width: min(360px, calc(100vw - 32px));
+  /* Deux sections tiennent mal sur un ecran bas : elle defile. */
+  max-height: min(72vh, 660px); overflow-y: auto; overscroll-behavior: contain;
   padding: 0; border: 1px solid var(--jr-trait); border-radius: 0;
   background: var(--jr-papier); color: var(--jr-encre);
   box-shadow: 0 18px 40px rgba(0,0,0,0.28);
@@ -503,13 +535,20 @@
    devient un halo colore derriere une encre restee noire — meme
    intention, autre materiau, comme la laque et le papier. */
 .jr-lueur {
-  color: var(--jr-encre);
-  background: color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 26%, transparent);
-  box-shadow: 0 0 0 0.18em color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 26%, transparent);
-  border-radius: 2px;
+  /* Un rectangle de couleur est deja pris : c est le surlignage. La
+     lueur ne borde rien — l encre prend la teinte de l etat et
+     s epaissit, posee sur une clarte qui n a pas de bord. */
+  color: var(--jr-teinte, var(--jr-rouge));
+  font-weight: 700;
+  background: radial-gradient(
+    ellipse 130% 190% at 50% 56%,
+    color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 24%, transparent) 0%,
+    color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 9%, transparent) 44%,
+    transparent 76%);
+  text-shadow: 0 0 11px color-mix(in oklab, var(--jr-teinte, var(--jr-rouge)) 42%, transparent);
 }
 [data-jr="sombre"] .jr-lueur {
-  color: #fff; background: none; box-shadow: none;
+  color: #fff; font-weight: inherit; background: none;
   text-shadow:
     0 0 6px var(--jr-teinte, var(--jr-rouge)),
     0 0 20px var(--jr-teinte, var(--jr-rouge));
@@ -922,4 +961,44 @@
   .jr-at-actions .jr-bouton { min-height: 44px; }
   .jr-barre-2-ok, .jr-barre-2-non, .jr-encre-choix, .jr-barre-2-fermer { min-height: 44px; }
   .jr-barre-2-fermer { width: 44px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RETOUCHES
+   ═══════════════════════════════════════════════════════════ */
+
+/* Deux mesures se suivent : seule la premiere pousse vers la droite,
+   sinon l espace libre se partage entre elles et les separe. */
+.jr-mesure + .jr-mesure { margin-left: 0; }
+
+/* ── Le menu d une piece ───────────────────────────────────── */
+/* Il partait dans un portail, hors du dossier, et retombait sur le
+   style d avant : coins arrondis, fond de l application, sans rapport
+   avec le papier. */
+[data-jr].jr-liste {
+  min-width: 190px; padding: 0; border-radius: 0;
+  background: var(--jr-papier); color: var(--jr-encre);
+  border: 1px solid var(--jr-trait);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+.jr-liste [role="menuitem"] {
+  display: flex; align-items: center; gap: 10px;
+  min-height: 42px; padding: 0 13px; border-radius: 0;
+  border-bottom: 1px solid var(--jr-trait);
+  font-family: var(--jr-mono); font-size: max(11px, 0.6875rem);
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--jr-encre-2); cursor: pointer;
+}
+.jr-liste [role="menuitem"]:last-child { border-bottom: 0; }
+.jr-liste [role="menuitem"] svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--jr-encre-3); }
+.jr-liste [role="menuitem"]:focus,
+.jr-liste [role="menuitem"][data-highlighted] {
+  background: var(--jr-papier-2); color: var(--jr-encre);
+}
+.jr-liste [role="menuitem"][data-highlighted] svg { color: var(--jr-encre); }
+.jr-liste [role="menuitem"].est-rouge,
+.jr-liste [role="menuitem"].est-rouge svg { color: var(--jr-rouge-encre); }
+.jr-liste [role="menuitem"].est-rouge[data-highlighted],
+.jr-liste [role="menuitem"].est-rouge[data-highlighted] svg {
+  background: var(--jr-rouge); color: var(--jr-papier);
 }

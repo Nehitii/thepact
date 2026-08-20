@@ -1854,7 +1854,10 @@
       "open": "What do the states mean?",
       "short": "Legend",
       "title": "State legend",
-      "hint": "One state per entry. It serves nobody but you: it is what you will find again when filtering."
+      "hint": "One state per entry. It serves nobody but you: it is what you will find again when filtering.",
+      "measures": "The two measures",
+      "valenceDesc": "Which way the day leaned, from darkest to brightest. It does not say whether the day was productive — only which side it fell on.",
+      "energyDesc": "What was left in the tank. A good day can run on empty and a bad one at full charge — which is why there are two of them."
     },
     "moodsDesc": {
       "flow": "It moves by itself. The work happens without friction.",
@@ -1902,7 +1905,8 @@
       "nouvelleRef": "New document",
       "lecture_one": "{{count}} min read",
       "lecture_other": "{{count}} min read"
-    }
+    },
+    "energy": "Energy"
   },
   "onboarding": {
     "welcome": "Welcome to The Pact",

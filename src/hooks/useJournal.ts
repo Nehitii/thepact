@@ -143,6 +143,95 @@ function remplacerDansLeCache(
   );
 }
 
+/* ── L appartenance a la liste des epinglees ────────────────
+ *
+ * Epingler ne change pas le contenu d une entree : cela change la
+ * liste a laquelle elle appartient. Or « les epinglees » est une
+ * requete a part entiere, avec sa propre cle. Remplacer l entree sur
+ * place ne pouvait donc pas l y faire entrer : il fallait actualiser
+ * la page pour que le serveur reponde de nouveau.
+ */
+type PageJournal = { data: JournalEntry[]; suivant: Curseur | null };
+type CacheJournal = { pages: PageJournal[]; pageParams: unknown[] };
+type ComptesJournal = { total: number; epinglees: number; ceMois: number };
+
+/** L ordre de la liste : du plus recent au plus ancien, id en second. */
+const vientApres = (a: JournalEntry, b: JournalEntry) =>
+  a.created_at < b.created_at || (a.created_at === b.created_at && a.id < b.id);
+
+function retirerDuCache(ancien: CacheJournal, id: string): CacheJournal {
+  return { ...ancien, pages: ancien.pages.map((p) => ({ ...p, data: p.data.filter((e) => e.id !== id) })) };
+}
+
+function insererDansLeCache(ancien: CacheJournal, entree: JournalEntry): CacheJournal {
+  if (ancien.pages.length === 0) return ancien;
+  if (ancien.pages.some((p) => p.data.some((e) => e.id === entree.id))) return ancien;
+
+  /* Si elle se range apres tout ce qui est charge et qu il reste des
+     pages a lire, elle arrivera avec la suivante : l ajouter ici la
+     ferait remonter a une place qui n est pas la sienne. */
+  const derniere = ancien.pages[ancien.pages.length - 1];
+  const dernierElement = derniere.data[derniere.data.length - 1];
+  if (dernierElement && derniere.suivant && vientApres(entree, dernierElement)) return ancien;
+
+  const pages = ancien.pages.map((p) => ({ ...p, data: [...p.data] }));
+  for (const p of pages) {
+    const i = p.data.findIndex((e) => vientApres(e, entree));
+    if (i !== -1) {
+      p.data.splice(i, 0, entree);
+      return { ...ancien, pages };
+    }
+  }
+  pages[pages.length - 1].data.push(entree);
+  return { ...ancien, pages };
+}
+
+/** L entree telle que le cache la connait, pour la modifier de tete. */
+function entreeDuCache(
+  client: ReturnType<typeof useQueryClient>,
+  userId: string,
+  id: string,
+): JournalEntry | undefined {
+  for (const [, donnees] of client.getQueriesData<CacheJournal>({ queryKey: ["journal-entries", userId] })) {
+    for (const p of donnees?.pages ?? []) {
+      const trouvee = p.data.find((e) => e.id === id);
+      if (trouvee) return trouvee;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Pose l entree epinglee ou desepinglee partout ou elle doit l etre :
+ * a jour dans les listes qui la contiennent deja, presente ou absente
+ * de la liste des epinglees.
+ */
+function appliquerEpinglage(
+  client: ReturnType<typeof useQueryClient>,
+  userId: string,
+  entree: JournalEntry,
+) {
+  remplacerDansLeCache(client, userId, entree);
+
+  for (const requete of client.getQueryCache().findAll({ queryKey: ["journal-entries", userId] })) {
+    const cle = requete.queryKey as [string, string, string, string | null, boolean];
+    /* Seule la liste des epinglees change de membres. */
+    if (cle[4] !== true) continue;
+    const recherche = cle[2];
+    const humeur = cle[3];
+
+    if (!entree.is_favorite) {
+      client.setQueryData<CacheJournal>(cle, (a) => (a ? retirerDuCache(a, entree.id) : a));
+      continue;
+    }
+    /* Une liste filtree par une recherche ne se complete pas de tete :
+       ce que le serveur retient ne se devine pas ici. */
+    if (recherche) continue;
+    if (humeur && humeur !== entree.mood) continue;
+    client.setQueryData<CacheJournal>(cle, (a) => (a ? insererDansLeCache(a, entree) : a));
+  }
+}
+
 export function useCreateJournalEntry() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -240,12 +329,42 @@ export function useToggleFavorite() {
       if (error) throw error;
       return { entry: data as JournalEntry, userId };
     },
-    onSuccess: ({ entry, userId }) => {
-      remplacerDansLeCache(queryClient, userId, entry);
-      queryClient.invalidateQueries({ queryKey: ["journal-counts", userId] });
+    /* On n attend pas le serveur pour deplacer l entree : le geste doit
+       repondre sous le doigt. Si la base refuse, tout revient. */
+    onMutate: async ({ id, userId, isFavorite }) => {
+      await queryClient.cancelQueries({ queryKey: ["journal-entries", userId] });
+      await queryClient.cancelQueries({ queryKey: ["journal-counts", userId] });
+
+      const listes = queryClient.getQueriesData<CacheJournal>({ queryKey: ["journal-entries", userId] });
+      const comptes = queryClient.getQueryData<ComptesJournal>(["journal-counts", userId]);
+
+      const connue = entreeDuCache(queryClient, userId, id);
+      if (connue) appliquerEpinglage(queryClient, userId, { ...connue, is_favorite: isFavorite });
+      if (comptes) {
+        queryClient.setQueryData<ComptesJournal>(["journal-counts", userId], {
+          ...comptes,
+          epinglees: Math.max(0, comptes.epinglees + (isFavorite ? 1 : -1)),
+        });
+      }
+      return { listes, comptes, userId };
     },
+
+    onSuccess: ({ entry, userId }) => {
+      appliquerEpinglage(queryClient, userId, entry);
+      queryClient.invalidateQueries({ queryKey: ["journal-counts", userId] });
+      /* Les listes d epinglees filtrees par une recherche n ont pas pu
+         etre completees de tete : le serveur tranche. */
+      queryClient.invalidateQueries({
+        predicate: (q) =>
+          q.queryKey[0] === "journal-entries" && q.queryKey[1] === userId
+          && q.queryKey[4] === true && !!q.queryKey[2],
+      });
+    },
+
     /* Elle etait la seule mutation muette en cas d echec. */
-    onError: (error: Error) => {
+    onError: (error: Error, _variables, contexte) => {
+      for (const [cle, donnees] of contexte?.listes ?? []) queryClient.setQueryData(cle, donnees);
+      if (contexte?.comptes) queryClient.setQueryData(["journal-counts", contexte.userId], contexte.comptes);
       toast.error(tr("journal.toasts.pinFailed"), { description: error.message });
     },
   });

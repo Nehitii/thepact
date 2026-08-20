@@ -24,9 +24,12 @@ interface JournalEntryCardProps {
   entry: JournalEntry;
   onEdit?: (entry: JournalEntry) => void;
   onDelete?: (id: string) => void;
+  /* Le menu part dans un portail, hors du dossier : sans la lumiere
+     de la page, il retombait sur le style d avant. */
+  theme?: "clair" | "sombre";
 }
 
-export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardProps) {
+export function JournalEntryCard({ entry, onEdit, onDelete, theme = "sombre" }: JournalEntryCardProps) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const toggleFav = useToggleFavorite();
@@ -84,20 +87,17 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
                   <MoreVertical className="w-4 h-4" aria-hidden="true" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="font-mono text-xs min-w-[170px]">
-                <DropdownMenuItem onClick={() => onEdit?.(entry)} className="cursor-pointer gap-2">
-                  <Pencil className="w-3.5 h-3.5" aria-hidden="true" />{t("journal.card.edit")}
+              <DropdownMenuContent align="end" className="jr-liste" data-jr={theme}>
+                <DropdownMenuItem onClick={() => onEdit?.(entry)}>
+                  <Pencil aria-hidden="true" />{t("journal.card.edit")}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleToggleFavorite} className="cursor-pointer gap-2">
+                <DropdownMenuItem onClick={handleToggleFavorite}>
                   {entry.is_favorite
-                    ? <><PinOff className="w-3.5 h-3.5" aria-hidden="true" />{t("journal.card.unpin")}</>
-                    : <><Pin className="w-3.5 h-3.5" aria-hidden="true" />{t("journal.card.pin")}</>}
+                    ? <><PinOff aria-hidden="true" />{t("journal.card.unpin")}</>
+                    : <><Pin aria-hidden="true" />{t("journal.card.pin")}</>}
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onDelete?.(entry.id)}
-                  className="cursor-pointer gap-2 text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="w-3.5 h-3.5" aria-hidden="true" />{t("journal.card.delete")}
+                <DropdownMenuItem onClick={() => onDelete?.(entry.id)} className="est-rouge">
+                  <Trash2 aria-hidden="true" />{t("journal.card.delete")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -125,6 +125,14 @@ export function JournalEntryCard({ entry, onEdit, onDelete }: JournalEntryCardPr
                 {t("journal.valence")}
                 <i><u style={{ width: `${entry.valence_level * 10}%` }} /></i>
                 {entry.valence_level}/10
+              </span>
+            )}
+            {/* L energie etait demandee a l ecriture et jamais relue. */}
+            {entry.energy_level != null && (
+              <span className="jr-mesure est-energie">
+                {t("journal.energy")}
+                <i><u style={{ width: `${entry.energy_level * 10}%` }} /></i>
+                {entry.energy_level}/10
               </span>
             )}
           </div>

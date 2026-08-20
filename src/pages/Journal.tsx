@@ -232,6 +232,30 @@ export default function Journal() {
                     </div>
                   ))}
                 </div>
+
+                {/* Les deux mesures portees au pied de chaque piece :
+                    elles etaient demandees a l ecriture sans qu on
+                    dise jamais ce qu elles pesent. */}
+                <p className="jr-legende-tete jr-legende-tete-2">
+                  <b>02</b>{t("journal.legend.measures")}
+                </p>
+                <div className="jr-legende-corps">
+                  <div className="jr-legende-ligne">
+                    <span className="jr-legende-sym" aria-hidden="true">◑</span>
+                    <span>
+                      <b className="jr-legende-nom">{t("journal.valence")}</b>
+                      <span className="jr-legende-def">{t("journal.legend.valenceDesc")}</span>
+                    </span>
+                  </div>
+                  <div className="jr-legende-ligne">
+                    <span className="jr-legende-sym" aria-hidden="true">▮</span>
+                    <span>
+                      <b className="jr-legende-nom">{t("journal.energy")}</b>
+                      <span className="jr-legende-def">{t("journal.legend.energyDesc")}</span>
+                    </span>
+                  </div>
+                </div>
+
                 <p className="jr-legende-pied">{t("journal.legend.hint")}</p>
               </PopoverContent>
             </Popover>
@@ -266,6 +290,7 @@ export default function Journal() {
                 <JournalEntryCard
                   key={entry.id}
                   entry={entry}
+                  theme={theme}
                   onEdit={handleEdit}
                   onDelete={(id) => setDeletingEntryId(id)}
                 />
